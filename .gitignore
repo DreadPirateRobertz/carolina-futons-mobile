@@ -1,0 +1,8 @@
+.runtime/
+.claude/commands/
+.logs/
+node_modules/
+coverage/
+.expo/
+dist/
+*.tsbuildinfo
