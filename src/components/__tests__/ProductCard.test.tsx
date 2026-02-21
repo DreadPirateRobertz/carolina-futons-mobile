@@ -1,14 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/ProductCard
-// import { ProductCard } from '@/components/ProductCard';
-
-// Placeholder until component exists
-const ProductCard = (props: any) => {
-  throw new Error('ProductCard component not yet implemented');
-};
+import { ProductCard } from '../ProductCard';
 
 const mockProduct = {
   id: 'futon-001',

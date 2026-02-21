@@ -1,13 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/LoadingSpinner
-// import { LoadingSpinner } from '@/components/LoadingSpinner';
-
-const LoadingSpinner = (props: any) => {
-  throw new Error('LoadingSpinner component not yet implemented');
-};
+import { LoadingSpinner } from '../LoadingSpinner';
 
 describe('LoadingSpinner', () => {
   it('renders with default size', () => {

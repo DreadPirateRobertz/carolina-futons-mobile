@@ -1,14 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/CategoryCard
-// import { CategoryCard } from '@/components/CategoryCard';
-
-// Placeholder until component exists
-const CategoryCard = (props: any) => {
-  throw new Error('CategoryCard component not yet implemented');
-};
+import { CategoryCard } from '../CategoryCard';
 
 const mockCategory = {
   id: 'cat-001',

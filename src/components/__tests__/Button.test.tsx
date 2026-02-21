@@ -1,14 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/Button
-// import { Button } from '@/components/Button';
-
-// Placeholder until component exists
-const Button = (props: any) => {
-  throw new Error('Button component not yet implemented');
-};
+import { Button } from '../Button';
 
 describe('Button', () => {
   describe('rendering', () => {

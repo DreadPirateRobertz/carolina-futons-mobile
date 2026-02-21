@@ -1,14 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/Header
-// import { Header } from '@/components/Header';
-
-// Placeholder until component exists
-const Header = (props: any) => {
-  throw new Error('Header component not yet implemented');
-};
+import { Header } from '../Header';
 
 describe('Header', () => {
   describe('rendering', () => {

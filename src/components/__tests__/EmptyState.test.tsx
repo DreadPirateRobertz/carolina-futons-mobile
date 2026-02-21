@@ -1,13 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
-// TDD: Tests written before implementation
-// Component will be at: @/components/EmptyState
-// import { EmptyState } from '@/components/EmptyState';
-
-const EmptyState = (props: any) => {
-  throw new Error('EmptyState component not yet implemented');
-};
+import { EmptyState } from '../EmptyState';
 
 describe('EmptyState', () => {
   describe('rendering', () => {
