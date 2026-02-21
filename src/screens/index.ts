@@ -13,3 +13,5 @@ export { SignUpScreen } from './SignUpScreen';
 export { ForgotPasswordScreen } from './ForgotPasswordScreen';
 export { NotificationPreferencesScreen } from './NotificationPreferencesScreen';
 export { WishlistScreen } from './WishlistScreen';
+export { StoreLocatorScreen } from './StoreLocatorScreen';
+export { StoreDetailScreen } from './StoreDetailScreen';

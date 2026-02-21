@@ -1,18 +1,15 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { ThemeProvider } from '@/theme';
 import { StoreLocatorScreen } from '../StoreLocatorScreen';
-import { StoreLocatorProvider } from '@/hooks/useStoreLocator';
-import { ThemeProvider } from '@/theme/ThemeProvider';
+import { STORES } from '@/data/stores';
 
-function renderScreen(props: Partial<React.ComponentProps<typeof StoreLocatorScreen>> = {}) {
-  return render(
+const renderScreen = (props?: Partial<React.ComponentProps<typeof StoreLocatorScreen>>) =>
+  render(
     <ThemeProvider>
-      <StoreLocatorProvider>
-        <StoreLocatorScreen {...props} />
-      </StoreLocatorProvider>
+      <StoreLocatorScreen {...props} />
     </ThemeProvider>,
   );
-}
 
 describe('StoreLocatorScreen', () => {
   describe('rendering', () => {
@@ -21,101 +18,91 @@ describe('StoreLocatorScreen', () => {
       expect(getByTestId('store-locator-screen')).toBeTruthy();
     });
 
-    it('accepts custom testID', () => {
+    it('renders custom testID', () => {
       const { getByTestId } = renderScreen({ testID: 'custom-locator' });
       expect(getByTestId('custom-locator')).toBeTruthy();
     });
 
-    it('renders screen header', () => {
+    it('renders header with title', () => {
       const { getByText } = renderScreen();
       expect(getByText('Find a Showroom')).toBeTruthy();
     });
 
-    it('renders view mode toggle', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('view-mode-toggle')).toBeTruthy();
+    it('renders store count in subtitle', () => {
+      const { getByText } = renderScreen();
+      expect(getByText(`${STORES.length} locations across the Carolinas`)).toBeTruthy();
     });
-  });
 
-  describe('list view', () => {
-    it('shows store cards in list view by default', () => {
+    it('renders store list', () => {
       const { getByTestId } = renderScreen();
       expect(getByTestId('store-list')).toBeTruthy();
     });
 
-    it('renders at least one store card', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('store-list').props.children).toBeTruthy();
-    });
-  });
-
-  describe('map view', () => {
-    it('switches to map view when toggle pressed', () => {
-      const { getByTestId } = renderScreen();
-      fireEvent.press(getByTestId('view-mode-map'));
-      expect(getByTestId('store-map')).toBeTruthy();
-    });
-
-    it('switches back to list view', () => {
-      const { getByTestId } = renderScreen();
-      fireEvent.press(getByTestId('view-mode-map'));
-      fireEvent.press(getByTestId('view-mode-list'));
-      expect(getByTestId('store-list')).toBeTruthy();
-    });
-  });
-
-  describe('store detail navigation', () => {
-    it('calls onStorePress when a store card is tapped', () => {
-      const onStorePress = jest.fn();
-      const { getByTestId } = renderScreen({ onStorePress });
-      // Tap the first store card
-      const list = getByTestId('store-list');
-      expect(list).toBeTruthy();
+    it('renders a card for each store', () => {
+      const { getAllByTestId } = renderScreen();
+      const cards = getAllByTestId(/^store-card-/);
+      expect(cards.length).toBe(STORES.length);
     });
   });
 
   describe('search', () => {
-    it('renders search input', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('store-search-input')).toBeTruthy();
+    it('filters stores by city name', () => {
+      const { getByPlaceholderText, queryByTestId } = renderScreen();
+      const searchInput = getByPlaceholderText('Search by city, state, or zip...');
+      fireEvent.changeText(searchInput, 'Charlotte');
+      expect(queryByTestId('store-card-store-charlotte')).toBeTruthy();
+      expect(queryByTestId('store-card-store-asheville')).toBeFalsy();
     });
 
-    it('search input has placeholder', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('store-search-input').props.placeholder).toBeTruthy();
+    it('filters stores by state', () => {
+      const { getByPlaceholderText, queryByTestId } = renderScreen();
+      const searchInput = getByPlaceholderText('Search by city, state, or zip...');
+      fireEvent.changeText(searchInput, 'SC');
+      expect(queryByTestId('store-card-store-greenville')).toBeTruthy();
+      expect(queryByTestId('store-card-store-asheville')).toBeFalsy();
+    });
+
+    it('filters stores by zip code', () => {
+      const { getByPlaceholderText, queryByTestId } = renderScreen();
+      const searchInput = getByPlaceholderText('Search by city, state, or zip...');
+      fireEvent.changeText(searchInput, '28801');
+      expect(queryByTestId('store-card-store-asheville')).toBeTruthy();
+      expect(queryByTestId('store-card-store-charlotte')).toBeFalsy();
+    });
+
+    it('shows empty state when no results match', () => {
+      const { getByPlaceholderText, getByTestId } = renderScreen();
+      const searchInput = getByPlaceholderText('Search by city, state, or zip...');
+      fireEvent.changeText(searchInput, 'Nonexistent City');
+      expect(getByTestId('store-locator-empty')).toBeTruthy();
+    });
+
+    it('search is case insensitive', () => {
+      const { getByPlaceholderText, queryByTestId } = renderScreen();
+      const searchInput = getByPlaceholderText('Search by city, state, or zip...');
+      fireEvent.changeText(searchInput, 'ASHEVILLE');
+      expect(queryByTestId('store-card-store-asheville')).toBeTruthy();
     });
   });
 
-  describe('back button', () => {
-    it('does not render back button when onBack not provided', () => {
-      const { queryByTestId } = renderScreen();
-      expect(queryByTestId('locator-back-button')).toBeNull();
-    });
-
-    it('renders back button when onBack provided', () => {
-      const { getByTestId } = renderScreen({ onBack: jest.fn() });
-      expect(getByTestId('locator-back-button')).toBeTruthy();
-    });
-
-    it('calls onBack when pressed', () => {
-      const onBack = jest.fn();
-      const { getByTestId } = renderScreen({ onBack });
-      fireEvent.press(getByTestId('locator-back-button'));
-      expect(onBack).toHaveBeenCalledTimes(1);
+  describe('distance sorting', () => {
+    it('sorts stores by distance when user location provided', () => {
+      // Raleigh coordinates — Raleigh store should be first
+      const { getAllByTestId } = renderScreen({
+        userLatitude: 35.7876,
+        userLongitude: -78.6389,
+      });
+      const cards = getAllByTestId(/^store-card-/);
+      expect(cards[0].props.testID).toBe('store-card-store-raleigh');
     });
   });
 
-  describe('accessibility', () => {
-    it('view mode toggle has accessible labels', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('view-mode-list').props.accessibilityLabel).toBe('List view');
-      expect(getByTestId('view-mode-map').props.accessibilityLabel).toBe('Map view');
-    });
-
-    it('view mode buttons show selected state', () => {
-      const { getByTestId } = renderScreen();
-      expect(getByTestId('view-mode-list').props.accessibilityState?.selected).toBe(true);
-      expect(getByTestId('view-mode-map').props.accessibilityState?.selected).toBe(false);
+  describe('interaction', () => {
+    it('calls onStorePress when store card tapped', () => {
+      const onStorePress = jest.fn();
+      const { getByTestId } = renderScreen({ onStorePress });
+      fireEvent.press(getByTestId('store-card-store-asheville'));
+      expect(onStorePress).toHaveBeenCalledWith(expect.objectContaining({ id: 'store-asheville' }));
     });
   });
 });

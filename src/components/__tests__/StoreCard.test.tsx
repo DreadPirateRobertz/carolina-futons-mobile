@@ -1,166 +1,112 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { ThemeProvider } from '@/theme';
 import { StoreCard } from '../StoreCard';
-import { ThemeProvider } from '@/theme/ThemeProvider';
+import { type Store } from '@/data/stores';
 
-const baseStore = {
-  id: 'store-asheville',
-  name: 'Carolina Futons - Asheville',
-  address: '123 Biltmore Ave, Asheville, NC 28801',
-  phone: '(828) 555-0123',
-  distance: 2.4,
-  hours: {
-    monday: '10:00 AM - 7:00 PM',
-    tuesday: '10:00 AM - 7:00 PM',
-    wednesday: '10:00 AM - 7:00 PM',
-    thursday: '10:00 AM - 7:00 PM',
-    friday: '10:00 AM - 8:00 PM',
-    saturday: '10:00 AM - 6:00 PM',
-    sunday: '12:00 PM - 5:00 PM',
-  },
-  services: ['showroom', 'appointments', 'delivery'],
-  photos: ['store-front.jpg', 'showroom-1.jpg'],
-  coordinates: { latitude: 35.5951, longitude: -82.5515 },
+const mockStore: Store = {
+  id: 'store-test',
+  name: 'Carolina Futons — Test',
+  address: '100 Main St',
+  city: 'Asheville',
+  state: 'NC',
+  zip: '28801',
+  phone: '8285550100',
+  email: 'test@carolinafutons.com',
+  latitude: 35.5946,
+  longitude: -82.554,
+  hours: [
+    { day: 'Monday', open: '10:00', close: '18:00' },
+    { day: 'Tuesday', open: '10:00', close: '18:00' },
+    { day: 'Wednesday', open: '10:00', close: '18:00' },
+    { day: 'Thursday', open: '10:00', close: '20:00' },
+    { day: 'Friday', open: '10:00', close: '20:00' },
+    { day: 'Saturday', open: '09:00', close: '18:00' },
+    { day: 'Sunday', open: '12:00', close: '17:00' },
+  ],
+  photos: ['https://placeholder.co/600x400?text=Test'],
+  features: ['Full showroom', 'Design consultation', 'Free parking'],
+  description: 'Test showroom description.',
 };
 
-function renderStoreCard(
-  overrides: Partial<typeof baseStore> = {},
-  props: Record<string, any> = {},
-) {
-  return render(
+const renderCard = (props?: Partial<React.ComponentProps<typeof StoreCard>>) =>
+  render(
     <ThemeProvider>
-      <StoreCard store={{ ...baseStore, ...overrides }} {...props} />
+      <StoreCard store={mockStore} {...props} />
     </ThemeProvider>,
   );
-}
 
 describe('StoreCard', () => {
-  describe('rendering', () => {
-    it('renders with testID', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(getByTestId('store-card-store-asheville')).toBeTruthy();
-    });
-
-    it('shows store name', () => {
-      const { getByText } = renderStoreCard();
-      expect(getByText('Carolina Futons - Asheville')).toBeTruthy();
-    });
-
-    it('shows store address', () => {
-      const { getByText } = renderStoreCard();
-      expect(getByText('123 Biltmore Ave, Asheville, NC 28801')).toBeTruthy();
-    });
-
-    it('shows phone number', () => {
-      const { getByText } = renderStoreCard();
-      expect(getByText('(828) 555-0123')).toBeTruthy();
-    });
-
-    it('shows distance', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(getByTestId('store-distance-store-asheville').props.children).toContain('2.4');
-    });
+  it('renders store name', () => {
+    const { getByText } = renderCard({ testID: 'card' });
+    expect(getByText('Carolina Futons — Test')).toBeTruthy();
   });
 
-  describe('hours display', () => {
-    it('renders hours section', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(getByTestId('store-hours-store-asheville')).toBeTruthy();
-    });
-
-    it('shows today open status', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(getByTestId('store-open-status-store-asheville')).toBeTruthy();
-    });
+  it('renders address', () => {
+    const { getByText } = renderCard({ testID: 'card' });
+    expect(getByText('100 Main St, Asheville, NC 28801')).toBeTruthy();
   });
 
-  describe('services', () => {
-    it('renders service badges', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(getByTestId('service-badge-showroom')).toBeTruthy();
-      expect(getByTestId('service-badge-appointments')).toBeTruthy();
-      expect(getByTestId('service-badge-delivery')).toBeTruthy();
-    });
-
-    it('does not render missing services', () => {
-      const { queryByTestId } = renderStoreCard({ services: ['showroom'] });
-      expect(queryByTestId('service-badge-showroom')).toBeTruthy();
-      expect(queryByTestId('service-badge-appointments')).toBeNull();
-    });
+  it('renders formatted phone number', () => {
+    const { getByText } = renderCard();
+    expect(getByText('(828) 555-0100')).toBeTruthy();
   });
 
-  describe('interactions', () => {
-    it('calls onPress with store when card tapped', () => {
-      const onPress = jest.fn();
-      const { getByTestId } = renderStoreCard({}, { onPress });
-      fireEvent.press(getByTestId('store-card-store-asheville'));
-      expect(onPress).toHaveBeenCalledWith(expect.objectContaining({ id: 'store-asheville' }));
-    });
-
-    it('calls onGetDirections with store coordinates', () => {
-      const onGetDirections = jest.fn();
-      const { getByTestId } = renderStoreCard({}, { onGetDirections });
-      fireEvent.press(getByTestId('directions-button-store-asheville'));
-      expect(onGetDirections).toHaveBeenCalledWith(
-        expect.objectContaining({
-          latitude: 35.5951,
-          longitude: -82.5515,
-        }),
-      );
-    });
-
-    it('calls onCall with phone number', () => {
-      const onCall = jest.fn();
-      const { getByTestId } = renderStoreCard({}, { onCall });
-      fireEvent.press(getByTestId('call-button-store-asheville'));
-      expect(onCall).toHaveBeenCalledWith('(828) 555-0123');
-    });
-
-    it('does not crash when callbacks not provided', () => {
-      const { getByTestId } = renderStoreCard();
-      expect(() => fireEvent.press(getByTestId('store-card-store-asheville'))).not.toThrow();
-    });
+  it('renders open/closed status badge', () => {
+    const { getByTestId } = renderCard({ testID: 'card' });
+    const status = getByTestId('card-status');
+    expect(status).toBeTruthy();
   });
 
-  describe('appointment booking', () => {
-    it('shows book appointment button when service available', () => {
-      const { getByTestId } = renderStoreCard({ services: ['showroom', 'appointments'] });
-      expect(getByTestId('book-appointment-button-store-asheville')).toBeTruthy();
-    });
-
-    it('hides book appointment button when service not available', () => {
-      const { queryByTestId } = renderStoreCard({ services: ['showroom'] });
-      expect(queryByTestId('book-appointment-button-store-asheville')).toBeNull();
-    });
-
-    it('calls onBookAppointment with store ID', () => {
-      const onBookAppointment = jest.fn();
-      const { getByTestId } = renderStoreCard({}, { onBookAppointment });
-      fireEvent.press(getByTestId('book-appointment-button-store-asheville'));
-      expect(onBookAppointment).toHaveBeenCalledWith('store-asheville');
-    });
+  it('renders feature chips', () => {
+    const { getByText } = renderCard();
+    expect(getByText('Full showroom')).toBeTruthy();
+    expect(getByText('Design consultation')).toBeTruthy();
+    expect(getByText('Free parking')).toBeTruthy();
   });
 
-  describe('accessibility', () => {
-    it('has accessible label with store name and distance', () => {
-      const { getByTestId } = renderStoreCard();
-      const card = getByTestId('store-card-store-asheville');
-      expect(card.props.accessibilityLabel).toContain('Carolina Futons - Asheville');
-      expect(card.props.accessibilityLabel).toContain('2.4');
-    });
+  it('limits feature chips to 3', () => {
+    const manyFeatures: Store = {
+      ...mockStore,
+      features: ['A', 'B', 'C', 'D', 'E'],
+    };
+    const { getByText, queryByText } = render(
+      <ThemeProvider>
+        <StoreCard store={manyFeatures} />
+      </ThemeProvider>,
+    );
+    expect(getByText('A')).toBeTruthy();
+    expect(getByText('B')).toBeTruthy();
+    expect(getByText('C')).toBeTruthy();
+    expect(queryByText('D')).toBeFalsy();
+  });
 
-    it('directions button has accessibility label', () => {
-      const { getByTestId } = renderStoreCard();
-      const btn = getByTestId('directions-button-store-asheville');
-      expect(btn.props.accessibilityLabel).toContain('directions');
-      expect(btn.props.accessibilityRole).toBe('button');
-    });
+  it('renders distance when provided', () => {
+    const { getByTestId } = renderCard({ distance: 12.5, testID: 'card' });
+    expect(getByTestId('card-distance')).toBeTruthy();
+  });
 
-    it('call button has accessibility label', () => {
-      const { getByTestId } = renderStoreCard();
-      const btn = getByTestId('call-button-store-asheville');
-      expect(btn.props.accessibilityLabel).toContain('call');
-      expect(btn.props.accessibilityRole).toBe('button');
-    });
+  it('does not render distance when not provided', () => {
+    const { queryByTestId } = renderCard({ testID: 'card' });
+    expect(queryByTestId('card-distance')).toBeFalsy();
+  });
+
+  it('calls onPress with store when tapped', () => {
+    const onPress = jest.fn();
+    const { getByTestId } = renderCard({ onPress, testID: 'card' });
+    fireEvent.press(getByTestId('card'));
+    expect(onPress).toHaveBeenCalledWith(mockStore);
+  });
+
+  it('uses default testID based on store id', () => {
+    const { getByTestId } = renderCard();
+    expect(getByTestId('store-card-store-test')).toBeTruthy();
+  });
+
+  it('has accessibility label', () => {
+    const { getByTestId } = renderCard({ testID: 'card' });
+    const card = getByTestId('card');
+    expect(card.props.accessibilityLabel).toContain('Carolina Futons');
+    expect(card.props.accessibilityRole).toBe('button');
   });
 });
