@@ -1,1 +1,3 @@
-// Component barrel exports - implementations in cm-wi5
+// Component barrel exports
+export { ARFutonOverlay } from './ARFutonOverlay';
+export { ARControls } from './ARControls';
