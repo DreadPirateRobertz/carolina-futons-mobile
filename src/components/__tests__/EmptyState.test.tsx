@@ -12,16 +12,12 @@ const EmptyState = (props: any) => {
 describe('EmptyState', () => {
   describe('rendering', () => {
     it('renders title', () => {
-      const { getByText } = render(
-        <EmptyState title="No Items" message="Your cart is empty" />
-      );
+      const { getByText } = render(<EmptyState title="No Items" message="Your cart is empty" />);
       expect(getByText('No Items')).toBeTruthy();
     });
 
     it('renders message', () => {
-      const { getByText } = render(
-        <EmptyState title="No Items" message="Your cart is empty" />
-      );
+      const { getByText } = render(<EmptyState title="No Items" message="Your cart is empty" />);
       expect(getByText('Your cart is empty')).toBeTruthy();
     });
 
@@ -32,7 +28,7 @@ describe('EmptyState', () => {
           message="Your cart is empty"
           icon="cart"
           testID="empty-state"
-        />
+        />,
       );
       expect(getByTestId('empty-state-icon')).toBeTruthy();
     });
@@ -45,7 +41,7 @@ describe('EmptyState', () => {
           title="No Results"
           message="Try a different search"
           action={{ label: 'Browse All', onPress: jest.fn() }}
-        />
+        />,
       );
       expect(getByText('Browse All')).toBeTruthy();
     });
@@ -57,7 +53,7 @@ describe('EmptyState', () => {
           title="No Results"
           message="Try a different search"
           action={{ label: 'Browse All', onPress }}
-        />
+        />,
       );
       fireEvent.press(getByText('Browse All'));
       expect(onPress).toHaveBeenCalledTimes(1);
@@ -65,11 +61,7 @@ describe('EmptyState', () => {
 
     it('does not render action button when no action prop', () => {
       const { queryByTestId } = render(
-        <EmptyState
-          title="No Items"
-          message="Your cart is empty"
-          testID="empty-state"
-        />
+        <EmptyState title="No Items" message="Your cart is empty" testID="empty-state" />,
       );
       expect(queryByTestId('empty-state-action')).toBeFalsy();
     });
