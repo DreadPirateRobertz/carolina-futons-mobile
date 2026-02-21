@@ -3,14 +3,16 @@ import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '@/theme';
 import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
+import { WishlistButton } from './WishlistButton';
 
 interface Props {
   product: Product;
   onPress?: (product: Product) => void;
+  onLongPress?: (product: Product) => void;
   testID?: string;
 }
 
-export function ProductCard({ product, onPress, testID }: Props) {
+export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 
   const badgeColor =
@@ -30,6 +32,7 @@ export function ProductCard({ product, onPress, testID }: Props) {
         { backgroundColor: colors.white, borderRadius: borderRadius.card },
       ]}
       onPress={() => onPress?.(product)}
+      onLongPress={onLongPress ? () => onLongPress(product) : undefined}
       testID={testID ?? `product-card-${product.id}`}
       accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
       accessibilityRole="button"
@@ -48,6 +51,7 @@ export function ProductCard({ product, onPress, testID }: Props) {
           resizeMode="cover"
           accessibilityLabel={product.images[0]?.alt}
         />
+        <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
         {product.badge && (
           <View style={[styles.badge, { backgroundColor: badgeColor }]}>
             <Text style={styles.badgeText}>{product.badge}</Text>

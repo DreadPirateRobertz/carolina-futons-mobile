@@ -11,3 +11,4 @@ export { SearchBar } from './SearchBar';
 export { CategoryFilter } from './CategoryFilter';
 export { SortPicker } from './SortPicker';
 export { OfflineBanner } from './OfflineBanner';
+export { WishlistButton } from './WishlistButton';

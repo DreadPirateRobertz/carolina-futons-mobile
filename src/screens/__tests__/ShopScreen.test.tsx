@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS, CATEGORIES, SORT_OPTIONS } from '@/data/products';
 
 function renderShop(props: { onProductPress?: jest.Mock } = {}) {
@@ -9,7 +10,9 @@ function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   return {
     ...render(
       <ThemeProvider>
-        <ShopScreen onProductPress={onProductPress} />
+        <WishlistProvider>
+          <ShopScreen onProductPress={onProductPress} />
+        </WishlistProvider>
       </ThemeProvider>,
     ),
     onProductPress,

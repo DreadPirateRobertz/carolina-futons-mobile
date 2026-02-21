@@ -18,6 +18,8 @@ import {
   inchesToFeetDisplay,
 } from '@/data/futons';
 import { formatPrice } from '@/utils';
+import { WishlistButton } from '@/components/WishlistButton';
+import { PRODUCTS } from '@/data/products';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 300;
@@ -42,6 +44,7 @@ export function ProductDetailScreen({
   const { colors, spacing, typography, borderRadius, shadows } = useTheme();
 
   const model = FUTON_MODELS.find((m) => m.id === productId) ?? FUTON_MODELS[0];
+  const catalogProduct = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -133,6 +136,15 @@ export function ProductDetailScreen({
             <Text style={[styles.backButtonText, { color: colors.espresso }]}>{'‹'}</Text>
           </TouchableOpacity>
         )}
+
+        {/* Wishlist button */}
+        <View style={styles.wishlistButtonContainer}>
+          <WishlistButton
+            product={catalogProduct}
+            size="lg"
+            testID="detail-wishlist-button"
+          />
+        </View>
 
         {/* Image Gallery */}
         <FlatList
@@ -541,6 +553,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '300',
     marginTop: -2,
+  },
+  wishlistButtonContainer: {
+    position: 'absolute',
+    top: 52,
+    right: 16,
+    zIndex: 10,
   },
   gallerySlide: {
     height: GALLERY_HEIGHT,

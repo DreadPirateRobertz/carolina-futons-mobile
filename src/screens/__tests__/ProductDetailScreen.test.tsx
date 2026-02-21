@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { WishlistProvider } from '@/hooks/useWishlist';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
@@ -15,7 +16,9 @@ function renderDetail(
 ) {
   return render(
     <ThemeProvider>
-      <ProductDetailScreen {...props} />
+      <WishlistProvider>
+        <ProductDetailScreen {...props} />
+      </WishlistProvider>
     </ThemeProvider>,
   );
 }

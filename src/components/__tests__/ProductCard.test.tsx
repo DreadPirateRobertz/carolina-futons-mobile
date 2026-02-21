@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ProductCard } from '../ProductCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS, type Product } from '@/data/products';
 
 const futon = PRODUCTS.find((p) => p.category === 'futons')!;
@@ -13,7 +14,9 @@ function renderCard(overrides: { product?: Product; onPress?: jest.Mock } = {}) 
   return {
     ...render(
       <ThemeProvider>
-        <ProductCard product={overrides.product ?? futon} onPress={onPress} />
+        <WishlistProvider>
+          <ProductCard product={overrides.product ?? futon} onPress={onPress} />
+        </WishlistProvider>
       </ThemeProvider>,
     ),
     onPress,
@@ -98,7 +101,9 @@ describe('ProductCard', () => {
     it('does not crash when onPress is not provided', () => {
       const { getByTestId } = render(
         <ThemeProvider>
-          <ProductCard product={futon} />
+          <WishlistProvider>
+            <ProductCard product={futon} />
+          </WishlistProvider>
         </ThemeProvider>,
       );
       fireEvent.press(getByTestId(`product-card-${futon.id}`));
