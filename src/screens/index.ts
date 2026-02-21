@@ -8,3 +8,6 @@ export { CategoryScreen } from './CategoryScreen';
 export { ARScreen } from './ARScreen';
 export { OrderHistoryScreen } from './OrderHistoryScreen';
 export { OrderDetailScreen } from './OrderDetailScreen';
+export { LoginScreen } from './LoginScreen';
+export { SignUpScreen } from './SignUpScreen';
+export { ForgotPasswordScreen } from './ForgotPasswordScreen';
