@@ -1,0 +1,175 @@
+import React from 'react';
+import { render } from '@testing-library/react-native';
+
+// Mock gesture handler
+jest.mock('react-native-gesture-handler', () => {
+  const { View } = require('react-native');
+  const { createElement } = require('react');
+  return {
+    Gesture: {
+      Pan: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
+      Pinch: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
+      Rotation: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
+      Simultaneous: () => ({}),
+    },
+    GestureDetector: ({ children }: any) => children,
+  };
+});
+
+// Mock reanimated
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: { View, createAnimatedComponent: (c: any) => c },
+    useSharedValue: (init: any) => ({ value: init }),
+    useAnimatedStyle: (fn: any) => fn(),
+    withSpring: (val: any) => val,
+  };
+});
+
+import { ARFutonOverlay } from '../ARFutonOverlay';
+import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
+
+const asheville = FUTON_MODELS[0];
+const blueRidge = FUTON_MODELS[1];
+const pisgah = FUTON_MODELS[2];
+const naturalLinen = FABRICS[0];
+const mountainBlue = FABRICS[2];
+const charcoal = FABRICS.find((f) => f.id === 'charcoal')!;
+
+describe('ARFutonOverlay', () => {
+  describe('Rendering', () => {
+    it('renders without crashing', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('overlay')).toBeTruthy();
+    });
+
+    it('renders with each futon model', () => {
+      for (const model of FUTON_MODELS) {
+        const { getByTestId, unmount } = render(
+          <ARFutonOverlay
+            model={model}
+            fabric={naturalLinen}
+            showDimensions={false}
+            testID="overlay"
+          />,
+        );
+        expect(getByTestId('overlay')).toBeTruthy();
+        unmount();
+      }
+    });
+
+    it('renders with each fabric', () => {
+      for (const fabric of FABRICS) {
+        const { getByTestId, unmount } = render(
+          <ARFutonOverlay
+            model={asheville}
+            fabric={fabric}
+            showDimensions={false}
+            testID="overlay"
+          />,
+        );
+        expect(getByTestId('overlay')).toBeTruthy();
+        unmount();
+      }
+    });
+
+    it('shows model name badge', () => {
+      const { getByText } = render(
+        <ARFutonOverlay model={asheville} fabric={naturalLinen} showDimensions={false} />,
+      );
+      expect(getByText('The Asheville')).toBeTruthy();
+    });
+
+    it('shows correct model name for each model', () => {
+      for (const model of FUTON_MODELS) {
+        const { getByText, unmount } = render(
+          <ARFutonOverlay model={model} fabric={naturalLinen} showDimensions={false} />,
+        );
+        expect(getByText(model.name)).toBeTruthy();
+        unmount();
+      }
+    });
+  });
+
+  describe('Dimensions', () => {
+    it('hides dimensions when showDimensions is false', () => {
+      const { queryByText } = render(
+        <ARFutonOverlay model={asheville} fabric={naturalLinen} showDimensions={false} />,
+      );
+      expect(queryByText(/W$/)).toBeNull();
+      expect(queryByText(/D$/)).toBeNull();
+      expect(queryByText(/H$/)).toBeNull();
+    });
+
+    it('shows W/D/H dimensions when showDimensions is true', () => {
+      const { getByText } = render(
+        <ARFutonOverlay model={asheville} fabric={naturalLinen} showDimensions={true} />,
+      );
+      // Asheville: 54" W = 4'6" W, 34" D = 2'10" D, 33" H = 2'9" H
+      expect(getByText('4\'6" W')).toBeTruthy();
+      expect(getByText('2\'10" D')).toBeTruthy();
+      expect(getByText('2\'9" H')).toBeTruthy();
+    });
+
+    it('shows correct dimensions for Blue Ridge model', () => {
+      const { getByText } = render(
+        <ARFutonOverlay model={blueRidge} fabric={naturalLinen} showDimensions={true} />,
+      );
+      // Blue Ridge: 60" W = 5' W, 36" D = 3' D, 35" H = 2'11" H
+      expect(getByText("5' W")).toBeTruthy();
+      expect(getByText("3' D")).toBeTruthy();
+      expect(getByText('2\'11" H')).toBeTruthy();
+    });
+
+    it('shows correct dimensions for Pisgah model', () => {
+      const { getByText } = render(
+        <ARFutonOverlay model={pisgah} fabric={naturalLinen} showDimensions={true} />,
+      );
+      // Pisgah: 39" W = 3'3" W, 32" D = 2'8" D, 31" H = 2'7" H
+      expect(getByText('3\'3" W')).toBeTruthy();
+      expect(getByText('2\'8" D')).toBeTruthy();
+      expect(getByText('2\'7" H')).toBeTruthy();
+    });
+  });
+
+  describe('Cross-model/fabric combinations', () => {
+    it('renders every model × fabric combination without error', () => {
+      let rendered = 0;
+      for (const model of FUTON_MODELS) {
+        for (const fabric of FABRICS) {
+          const { getByText, unmount } = render(
+            <ARFutonOverlay model={model} fabric={fabric} showDimensions={false} />,
+          );
+          expect(getByText(model.name)).toBeTruthy();
+          unmount();
+          rendered++;
+        }
+      }
+      // 4 models × 8 fabrics = 32 combinations
+      expect(rendered).toBe(FUTON_MODELS.length * FABRICS.length);
+    });
+
+    it('renders every model with dimensions without error', () => {
+      for (const model of FUTON_MODELS) {
+        const { getByText, unmount } = render(
+          <ARFutonOverlay model={model} fabric={naturalLinen} showDimensions={true} />,
+        );
+        expect(getByText(model.name)).toBeTruthy();
+        // Should have W, D, H labels
+        expect(getByText(/W$/)).toBeTruthy();
+        expect(getByText(/D$/)).toBeTruthy();
+        expect(getByText(/H$/)).toBeTruthy();
+        unmount();
+      }
+    });
+  });
+});

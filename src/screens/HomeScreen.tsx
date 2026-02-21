@@ -15,12 +15,18 @@ export function HomeScreen({ onOpenAR }: Props) {
       testID="home-screen"
     >
       <Text
-        style={[styles.title, { color: colors.espresso, ...typography.h2, fontFamily: typography.headingFamily }]}
+        style={[
+          styles.title,
+          { color: colors.espresso, ...typography.h2, fontFamily: typography.headingFamily },
+        ]}
       >
         Welcome to Carolina Futons
       </Text>
       <Text
-        style={[styles.subtitle, { color: colors.espressoLight, ...typography.body, fontFamily: typography.bodyFamily }]}
+        style={[
+          styles.subtitle,
+          { color: colors.espressoLight, ...typography.body, fontFamily: typography.bodyFamily },
+        ]}
       >
         Handcrafted comfort from the Blue Ridge Mountains
       </Text>
