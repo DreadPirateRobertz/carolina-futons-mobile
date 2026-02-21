@@ -6,3 +6,5 @@ export { AccountScreen } from './AccountScreen';
 export { ProductDetailScreen } from './ProductDetailScreen';
 export { CategoryScreen } from './CategoryScreen';
 export { ARScreen } from './ARScreen';
+export { OrderHistoryScreen } from './OrderHistoryScreen';
+export { OrderDetailScreen } from './OrderDetailScreen';
