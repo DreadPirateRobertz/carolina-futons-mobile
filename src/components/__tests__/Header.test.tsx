@@ -87,7 +87,7 @@ describe('Header', () => {
     });
 
     it('shows logo when no title is provided', () => {
-      const { getByTestId, queryByTestId } = render(<Header testID="header" />);
+      const { getByTestId } = render(<Header testID="header" />);
       expect(getByTestId('header-logo')).toBeTruthy();
     });
   });

@@ -26,10 +26,13 @@ jobs:
         run: npm ci
 
       - name: Type check
-        run: npx tsc --noEmit || true
+        run: npx tsc --noEmit
 
       - name: Run tests
-        run: npx jest --ci --coverage || true
+        run: npx jest --ci --coverage --testPathIgnorePatterns='src/components/__tests__|src/navigation/__tests__'
+
+      - name: Run TDD stub tests (allowed to fail)
+        run: npx jest --ci --testPathPattern='src/(components|navigation)/__tests__' || true
 
   lint:
     runs-on: ubuntu-latest
@@ -46,4 +49,4 @@ jobs:
         run: npm ci
 
       - name: ESLint
-        run: npx eslint src/ --ext .ts,.tsx || true
+        run: npx eslint src/ --ext .ts,.tsx
