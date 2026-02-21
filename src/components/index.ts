@@ -10,3 +10,4 @@ export { EmptyState } from './EmptyState';
 export { SearchBar } from './SearchBar';
 export { CategoryFilter } from './CategoryFilter';
 export { SortPicker } from './SortPicker';
+export { OfflineBanner } from './OfflineBanner';
