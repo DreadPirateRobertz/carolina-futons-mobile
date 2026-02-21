@@ -32,5 +32,7 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-// Silence the warning about animated values
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Silence animated warnings
+jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), {
+  virtual: true,
+});
