@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,21 +15,34 @@ import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from 
 import { formatPrice } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { PRODUCTS } from '@/data/products';
+import { getReviewsForProduct, getReviewSummary, sortReviews } from '@/data/reviews';
+import { ReviewCard } from '@/components/ReviewCard';
+import { ReviewSummary } from '@/components/ReviewSummary';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 300;
 
 const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as const;
 
+type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest';
+
 interface Props {
   productId?: string;
   onAddToCart?: (model: FutonModel, fabric: Fabric, quantity: number) => void;
   onBack?: () => void;
   onOpenAR?: (modelId: string) => void;
+  onViewAllReviews?: (productId: string) => void;
   testID?: string;
 }
 
-export function ProductDetailScreen({ productId, onAddToCart, onBack, onOpenAR, testID }: Props) {
+export function ProductDetailScreen({
+  productId,
+  onAddToCart,
+  onBack,
+  onOpenAR,
+  onViewAllReviews,
+  testID,
+}: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const model = FUTON_MODELS.find((m) => m.id === productId) ?? FUTON_MODELS[0];
@@ -38,6 +51,14 @@ export function ProductDetailScreen({ productId, onAddToCart, onBack, onOpenAR, 
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
+  const [reviewSort, setReviewSort] = useState<ReviewSort>('helpful');
+
+  const reviewSummary = useMemo(() => getReviewSummary(model.id), [model.id]);
+  const reviews = useMemo(() => {
+    const all = getReviewsForProduct(model.id);
+    return sortReviews(all, reviewSort);
+  }, [model.id, reviewSort]);
+  const previewReviews = reviews.slice(0, 3);
 
   const totalPrice = model.basePrice + selectedFabric.price;
 
@@ -265,6 +286,69 @@ export function ProductDetailScreen({ productId, onAddToCart, onBack, onOpenAR, 
               mutedColor={colors.espressoLight}
             />
           </View>
+        </View>
+
+        {/* Reviews Section */}
+        <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="reviews-section">
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Reviews</Text>
+          <ReviewSummary summary={reviewSummary} testID="review-summary" />
+
+          {/* Sort pills */}
+          <View style={styles.sortRow} testID="review-sort-options">
+            {(['helpful', 'recent', 'highest', 'lowest'] as const).map((sort) => (
+              <TouchableOpacity
+                key={sort}
+                style={[
+                  styles.sortPill,
+                  {
+                    backgroundColor: reviewSort === sort ? colors.espresso : colors.sandLight,
+                    borderRadius: borderRadius.pill,
+                  },
+                ]}
+                onPress={() => setReviewSort(sort)}
+                testID={`sort-${sort}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: reviewSort === sort }}
+              >
+                <Text
+                  style={[
+                    styles.sortPillText,
+                    { color: reviewSort === sort ? colors.white : colors.espressoLight },
+                  ]}
+                >
+                  {sort === 'helpful'
+                    ? 'Most Helpful'
+                    : sort === 'recent'
+                      ? 'Most Recent'
+                      : sort === 'highest'
+                        ? 'Highest'
+                        : 'Lowest'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Preview reviews */}
+          {previewReviews.map((review) => (
+            <ReviewCard key={review.id} review={review} testID={`review-card-${review.id}`} />
+          ))}
+
+          {/* View all reviews link */}
+          {reviews.length > 3 && (
+            <TouchableOpacity
+              style={[
+                styles.viewAllButton,
+                { borderColor: colors.espresso, borderRadius: borderRadius.button },
+              ]}
+              onPress={() => onViewAllReviews?.(model.id)}
+              testID="view-all-reviews"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.viewAllText, { color: colors.espresso }]}>
+                View All {reviewSummary.totalReviews} Reviews
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Try in AR CTA */}
@@ -713,5 +797,30 @@ const styles = StyleSheet.create({
   },
   placeholderFuton: {
     position: 'relative',
+  },
+  sortRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 16,
+    flexWrap: 'wrap',
+  },
+  sortPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  sortPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  viewAllButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    marginTop: 8,
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

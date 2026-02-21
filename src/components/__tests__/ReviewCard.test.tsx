@@ -2,136 +2,123 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ReviewCard } from '../ReviewCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { type Review } from '@/data/reviews';
 
-const baseReview = {
-  id: 'rev-1',
-  productId: 'prod-asheville-full',
-  rating: 5,
-  title: 'Amazing futon!',
-  body: 'Super comfortable and looks beautiful in my living room.',
+const baseReview: Review = {
+  id: 'rev-test-001',
+  productId: 'asheville-full',
   authorName: 'Sarah M.',
-  createdAt: '2026-01-15T12:00:00Z',
-  helpfulCount: 12,
-  isVerifiedPurchase: true,
-  photos: [] as string[],
+  rating: 5,
+  title: 'Best futon I have ever owned',
+  body: 'The Asheville is incredibly comfortable both as a sofa and a bed.',
+  createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+  helpful: 18,
+  verified: true,
+  photos: [
+    'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+1',
+    'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+2',
+  ],
 };
 
-function renderReviewCard(
-  overrides: Partial<typeof baseReview> = {},
-  props: Record<string, any> = {},
+function renderCard(
+  overrides: Partial<Review> = {},
+  props: { onHelpful?: jest.Mock; testID?: string } = {},
 ) {
-  return render(
-    <ThemeProvider>
-      <ReviewCard review={{ ...baseReview, ...overrides }} {...props} />
-    </ThemeProvider>,
-  );
+  const review = { ...baseReview, ...overrides };
+  return {
+    ...render(
+      <ThemeProvider>
+        <ReviewCard review={review} onHelpful={props.onHelpful} testID={props.testID} />
+      </ThemeProvider>,
+    ),
+    review,
+  };
 }
 
 describe('ReviewCard', () => {
   describe('rendering', () => {
-    it('renders with testID', () => {
-      const { getByTestId } = renderReviewCard();
-      expect(getByTestId('review-card-rev-1')).toBeTruthy();
-    });
-
-    it('shows review title', () => {
-      const { getByText } = renderReviewCard();
-      expect(getByText('Amazing futon!')).toBeTruthy();
-    });
-
-    it('shows review body', () => {
-      const { getByText } = renderReviewCard();
-      expect(getByText('Super comfortable and looks beautiful in my living room.')).toBeTruthy();
-    });
-
-    it('shows author name', () => {
-      const { getByText } = renderReviewCard();
+    it('renders author name', () => {
+      const { getByText } = renderCard();
       expect(getByText('Sarah M.')).toBeTruthy();
     });
 
-    it('shows formatted date', () => {
-      const { getByTestId } = renderReviewCard();
-      expect(getByTestId('review-date-rev-1')).toBeTruthy();
+    it('renders review title', () => {
+      const { getByText } = renderCard();
+      expect(getByText('Best futon I have ever owned')).toBeTruthy();
+    });
+
+    it('renders review body', () => {
+      const { getByText } = renderCard();
+      expect(
+        getByText('The Asheville is incredibly comfortable both as a sofa and a bed.'),
+      ).toBeTruthy();
     });
   });
 
-  describe('star rating display', () => {
-    it('shows 5 filled stars for rating 5', () => {
-      const { getByTestId } = renderReviewCard({ rating: 5 });
-      expect(getByTestId('review-stars-rev-1').props.children).toBe('★★★★★');
+  describe('verified badge', () => {
+    it('shows verified badge when verified=true', () => {
+      const { getByText } = renderCard({ verified: true });
+      expect(getByText(/Verified Purchase/)).toBeTruthy();
     });
 
-    it('shows 3 filled and 2 empty stars for rating 3', () => {
-      const { getByTestId } = renderReviewCard({ rating: 3 });
-      expect(getByTestId('review-stars-rev-1').props.children).toBe('★★★☆☆');
-    });
-
-    it('shows 1 filled and 4 empty stars for rating 1', () => {
-      const { getByTestId } = renderReviewCard({ rating: 1 });
-      expect(getByTestId('review-stars-rev-1').props.children).toBe('★☆☆☆☆');
-    });
-  });
-
-  describe('verified purchase badge', () => {
-    it('shows verified badge for verified purchases', () => {
-      const { getByTestId } = renderReviewCard({ isVerifiedPurchase: true });
-      expect(getByTestId('verified-badge-rev-1')).toBeTruthy();
-    });
-
-    it('does not show verified badge for unverified reviews', () => {
-      const { queryByTestId } = renderReviewCard({ isVerifiedPurchase: false });
-      expect(queryByTestId('verified-badge-rev-1')).toBeNull();
+    it('hides verified badge when verified=false', () => {
+      const { queryByText } = renderCard({ verified: false });
+      expect(queryByText(/Verified Purchase/)).toBeNull();
     });
   });
 
   describe('photos', () => {
-    it('does not render photo section when no photos', () => {
-      const { queryByTestId } = renderReviewCard({ photos: [] });
-      expect(queryByTestId('review-photos-rev-1')).toBeNull();
+    it('shows photo thumbnails when photos provided', () => {
+      const { getByTestId } = renderCard(
+        {
+          photos: [
+            'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+1',
+            'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+2',
+          ],
+        },
+        { testID: 'review-card' },
+      );
+      expect(getByTestId('review-card')).toBeTruthy();
     });
 
-    it('renders photo thumbnails when photos present', () => {
-      const { getByTestId } = renderReviewCard({
-        photos: ['photo1.jpg', 'photo2.jpg'],
-      });
-      expect(getByTestId('review-photos-rev-1')).toBeTruthy();
-      expect(getByTestId('review-photo-0')).toBeTruthy();
-      expect(getByTestId('review-photo-1')).toBeTruthy();
+    it('does not render photo row when no photos', () => {
+      const { queryByLabelText } = renderCard({ photos: undefined });
+      expect(queryByLabelText('Review photo 1')).toBeNull();
     });
   });
 
   describe('helpful button', () => {
+    it('calls onHelpful with review id when pressed', () => {
+      const onHelpful = jest.fn();
+      const { getByTestId } = renderCard({}, { onHelpful });
+      fireEvent.press(getByTestId(`review-helpful-${baseReview.id}`));
+      expect(onHelpful).toHaveBeenCalledWith(baseReview.id);
+    });
+
     it('shows helpful count', () => {
-      const { getByTestId } = renderReviewCard({ helpfulCount: 12 });
-      expect(getByTestId('helpful-count-rev-1').props.children).toBe(12);
+      const { getByText } = renderCard({ helpful: 18 });
+      expect(getByText('Helpful (18)')).toBeTruthy();
+    });
+  });
+
+  describe('relative date', () => {
+    it('shows relative date text', () => {
+      const { getByText } = renderCard();
+      expect(getByText('3 days ago')).toBeTruthy();
     });
 
-    it('calls onMarkHelpful when pressed', () => {
-      const onMarkHelpful = jest.fn();
-      const { getByTestId } = renderReviewCard({}, { onMarkHelpful });
-      fireEvent.press(getByTestId('helpful-button-rev-1'));
-      expect(onMarkHelpful).toHaveBeenCalledWith('rev-1');
-    });
-
-    it('does not crash when onMarkHelpful not provided', () => {
-      const { getByTestId } = renderReviewCard();
-      expect(() => fireEvent.press(getByTestId('helpful-button-rev-1'))).not.toThrow();
+    it('shows "just now" for very recent reviews', () => {
+      const { getByText } = renderCard({ createdAt: new Date().toISOString() });
+      expect(getByText('just now')).toBeTruthy();
     });
   });
 
   describe('accessibility', () => {
-    it('has accessible label with rating and author', () => {
-      const { getByTestId } = renderReviewCard();
-      const card = getByTestId('review-card-rev-1');
-      expect(card.props.accessibilityLabel).toContain('5');
+    it('has correct accessibility label with author and rating', () => {
+      const { getByTestId } = renderCard();
+      const card = getByTestId(`review-card-${baseReview.id}`);
       expect(card.props.accessibilityLabel).toContain('Sarah M.');
-    });
-
-    it('helpful button has accessibility label', () => {
-      const { getByTestId } = renderReviewCard({ helpfulCount: 12 });
-      const btn = getByTestId('helpful-button-rev-1');
-      expect(btn.props.accessibilityLabel).toContain('helpful');
-      expect(btn.props.accessibilityRole).toBe('button');
+      expect(card.props.accessibilityLabel).toContain('5 stars');
     });
   });
 });

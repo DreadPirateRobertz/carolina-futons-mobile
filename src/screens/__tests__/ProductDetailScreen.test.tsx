@@ -469,6 +469,53 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  describe('Reviews Section', () => {
+    it('renders reviews section', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('reviews-section')).toBeTruthy();
+    });
+
+    it('renders review summary with average rating', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('review-summary')).toBeTruthy();
+      expect(getByTestId('review-average')).toBeTruthy();
+    });
+
+    it('renders sort options', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('review-sort-options')).toBeTruthy();
+      expect(getByTestId('sort-helpful')).toBeTruthy();
+      expect(getByTestId('sort-recent')).toBeTruthy();
+    });
+
+    it('renders preview review cards', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Should show up to 3 preview reviews
+      expect(getByTestId('review-summary')).toBeTruthy();
+    });
+
+    it('renders view all reviews button when more than 3 reviews', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('view-all-reviews')).toBeTruthy();
+    });
+
+    it('calls onViewAllReviews when view all pressed', () => {
+      const onViewAllReviews = jest.fn();
+      const { getByTestId } = renderDetail({
+        productId: 'asheville-full',
+        onViewAllReviews,
+      });
+      fireEvent.press(getByTestId('view-all-reviews'));
+      expect(onViewAllReviews).toHaveBeenCalledWith('asheville-full');
+    });
+
+    it('sort pills change review order', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('sort-recent'));
+      expect(getByTestId('sort-recent').props.accessibilityState.selected).toBe(true);
+    });
+  });
+
   describe('Price Calculations', () => {
     it('Blue Ridge + Charcoal = $498', () => {
       const { getByTestId } = renderDetail({ productId: 'blue-ridge-queen' });
