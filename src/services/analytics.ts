@@ -1,216 +1,205 @@
 /**
- * Analytics and crash reporting service.
+ * Analytics service for event tracking, screen views, and user identification.
  *
- * Abstraction layer over analytics SDK. For production:
- * - expo-analytics or expo-firebase-analytics for event tracking
- * - Sentry (@sentry/react-native) for crash reporting + breadcrumbs
- * - This module provides a provider-agnostic API so the underlying
- *   SDK can be swapped without touching screen/component code.
+ * Abstraction layer that logs in development and can be swapped for a real
+ * analytics provider (Amplitude, Mixpanel, Firebase Analytics) in production.
+ *
+ * Usage:
+ *   analytics.trackEvent('add_to_cart', { productId: 'abc', price: 349 });
+ *   analytics.trackScreenView('ProductDetail', { productId: 'abc' });
+ *   analytics.identify('user-123', { email: 'user@example.com' });
  */
-
-// --- Event types ---
 
 export type AnalyticsEventName =
   | 'screen_view'
-  | 'product_view'
   | 'add_to_cart'
   | 'remove_from_cart'
+  | 'add_to_wishlist'
+  | 'remove_from_wishlist'
+  | 'share_wishlist'
   | 'begin_checkout'
   | 'purchase'
   | 'search'
-  | 'share'
-  | 'sign_up'
-  | 'login'
-  | 'add_to_wishlist'
-  | 'select_category'
+  | 'filter_category'
+  | 'sort_products'
+  | 'open_ar'
+  | 'select_fabric'
+  | 'view_product'
   | 'app_open'
+  | 'app_background'
   | 'deep_link_opened'
+  | 'notification_received'
   | 'notification_opened'
-  | 'ar_session_start'
-  | 'ar_session_end';
+  | 'error';
 
 export interface AnalyticsEvent {
   name: AnalyticsEventName;
-  params?: Record<string, string | number | boolean>;
-  timestamp?: string;
+  properties?: Record<string, string | number | boolean>;
+  timestamp: number;
 }
 
 export interface UserProperties {
-  userId?: string;
   email?: string;
-  isGuest: boolean;
+  name?: string;
+  memberSince?: string;
+  totalOrders?: number;
+  [key: string]: string | number | boolean | undefined;
 }
 
-export interface ScreenViewEvent {
-  screenName: string;
-  screenClass?: string;
+export interface AnalyticsProvider {
+  trackEvent(name: AnalyticsEventName, properties?: Record<string, string | number | boolean>): void;
+  trackScreenView(screenName: string, properties?: Record<string, string | number | boolean>): void;
+  identify(userId: string, properties?: UserProperties): void;
+  reset(): void;
+  setEnabled(enabled: boolean): void;
 }
 
-export interface EcommerceItem {
-  itemId: string;
-  itemName: string;
-  category?: string;
-  price: number;
-  quantity: number;
+/** In-memory event buffer for dev/testing */
+const eventBuffer: AnalyticsEvent[] = [];
+const MAX_BUFFER_SIZE = 500;
+
+let _enabled = true;
+let _userId: string | null = null;
+let _userProperties: UserProperties = {};
+let _provider: AnalyticsProvider | null = null;
+
+/** Register a real analytics provider (e.g., Amplitude, Firebase) */
+export function registerProvider(provider: AnalyticsProvider): void {
+  _provider = provider;
 }
 
-// --- Crash reporting types ---
-
-export type CrashSeverity = 'fatal' | 'error' | 'warning' | 'info';
-
-export interface CrashContext {
-  screen?: string;
-  action?: string;
-  extra?: Record<string, string>;
-}
-
-export interface Breadcrumb {
-  category: string;
-  message: string;
-  level: CrashSeverity;
-  timestamp: string;
-}
-
-// --- In-memory event log (mock backend) ---
-
-const eventLog: AnalyticsEvent[] = [];
-const breadcrumbs: Breadcrumb[] = [];
-let currentUser: UserProperties = { isGuest: true };
-let initialized = false;
-
-const MAX_BREADCRUMBS = 50;
-
-// --- Analytics API ---
-
-/** Initialize analytics SDK. Call once at app startup. */
-export function initAnalytics(): void {
-  initialized = true;
-  trackEvent('app_open');
-}
-
-/** Check if analytics has been initialized. */
-export function isInitialized(): boolean {
-  return initialized;
-}
-
-/** Track a named event with optional params. */
+/** Track a named event with optional properties */
 export function trackEvent(
   name: AnalyticsEventName,
-  params?: Record<string, string | number | boolean>,
+  properties?: Record<string, string | number | boolean>,
 ): void {
+  if (!_enabled) return;
+
   const event: AnalyticsEvent = {
     name,
-    params,
-    timestamp: new Date().toISOString(),
+    properties,
+    timestamp: Date.now(),
   };
-  eventLog.push(event);
-  addBreadcrumb('analytics', `Event: ${name}`, 'info');
-}
 
-/** Track a screen view. */
-export function trackScreenView(screen: ScreenViewEvent): void {
-  trackEvent('screen_view', {
-    screen_name: screen.screenName,
-    ...(screen.screenClass && { screen_class: screen.screenClass }),
-  });
-}
+  // Buffer for dev/testing
+  eventBuffer.push(event);
+  if (eventBuffer.length > MAX_BUFFER_SIZE) {
+    eventBuffer.shift();
+  }
 
-/** Track e-commerce add-to-cart. */
-export function trackAddToCart(item: EcommerceItem): void {
-  trackEvent('add_to_cart', {
-    item_id: item.itemId,
-    item_name: item.itemName,
-    price: item.price,
-    quantity: item.quantity,
-    ...(item.category && { category: item.category }),
-  });
-}
-
-/** Track e-commerce purchase. */
-export function trackPurchase(
-  orderId: string,
-  total: number,
-  items: EcommerceItem[],
-): void {
-  trackEvent('purchase', {
-    order_id: orderId,
-    value: total,
-    item_count: items.length,
-  });
-}
-
-/** Set user properties for attribution. */
-export function setUserProperties(props: UserProperties): void {
-  currentUser = { ...props };
-  addBreadcrumb(
-    'user',
-    props.isGuest ? 'Guest user' : `User: ${props.userId}`,
-    'info',
-  );
-}
-
-/** Get current user properties. */
-export function getUserProperties(): UserProperties {
-  return { ...currentUser };
-}
-
-// --- Crash reporting API ---
-
-/** Report an error to crash reporting. */
-export function reportCrash(
-  error: Error,
-  severity: CrashSeverity = 'error',
-  context?: CrashContext,
-): void {
-  addBreadcrumb('crash', `${severity}: ${error.message}`, severity);
-  // In production: Sentry.captureException(error, { level: severity, extra: context })
-  eventLog.push({
-    name: 'screen_view', // placeholder — real SDK uses separate crash channel
-    params: {
-      _crash: true,
-      error_message: error.message,
-      severity,
-      ...(context?.screen && { screen: context.screen }),
-      ...(context?.action && { action: context.action }),
-    },
-    timestamp: new Date().toISOString(),
-  });
-}
-
-/** Add a breadcrumb for crash context trail. */
-export function addBreadcrumb(
-  category: string,
-  message: string,
-  level: CrashSeverity = 'info',
-): void {
-  breadcrumbs.push({
-    category,
-    message,
-    level,
-    timestamp: new Date().toISOString(),
-  });
-  // Keep bounded
-  if (breadcrumbs.length > MAX_BREADCRUMBS) {
-    breadcrumbs.splice(0, breadcrumbs.length - MAX_BREADCRUMBS);
+  // Delegate to real provider if registered
+  if (_provider) {
+    _provider.trackEvent(name, properties);
+  } else if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.log(`[Analytics] ${name}`, properties ?? '');
   }
 }
 
-/** Get breadcrumb trail (for debugging / test assertions). */
-export function getBreadcrumbs(): Breadcrumb[] {
-  return [...breadcrumbs];
+/** Track a screen view */
+export function trackScreenView(
+  screenName: string,
+  properties?: Record<string, string | number | boolean>,
+): void {
+  trackEvent('screen_view', { screen_name: screenName, ...properties });
 }
 
-// --- Test helpers ---
+/** Identify a user for analytics attribution */
+export function identify(userId: string, properties?: UserProperties): void {
+  _userId = userId;
+  _userProperties = { ..._userProperties, ...properties };
 
-/** Get all logged events (for test assertions). */
-export function getEventLog(): AnalyticsEvent[] {
-  return [...eventLog];
+  if (_provider) {
+    _provider.identify(userId, _userProperties);
+  } else if (__DEV__) {
+    // eslint-disable-next-line no-console
+    console.log(`[Analytics] identify: ${userId}`, _userProperties);
+  }
 }
 
-/** Reset all analytics state. Use in tests only. */
-export function resetAnalytics(): void {
-  eventLog.length = 0;
-  breadcrumbs.length = 0;
-  currentUser = { isGuest: true };
-  initialized = false;
+/** Reset analytics state (on logout) */
+export function reset(): void {
+  _userId = null;
+  _userProperties = {};
+  eventBuffer.length = 0;
+
+  if (_provider) {
+    _provider.reset();
+  }
 }
+
+/** Enable or disable analytics collection */
+export function setEnabled(enabled: boolean): void {
+  _enabled = enabled;
+  if (_provider) {
+    _provider.setEnabled(enabled);
+  }
+}
+
+/** Get current user ID */
+export function getUserId(): string | null {
+  return _userId;
+}
+
+/** Get whether analytics is enabled */
+export function isEnabled(): boolean {
+  return _enabled;
+}
+
+/** Get buffered events (for testing/debugging) */
+export function getEventBuffer(): readonly AnalyticsEvent[] {
+  return eventBuffer;
+}
+
+/** Clear the event buffer */
+export function clearEventBuffer(): void {
+  eventBuffer.length = 0;
+}
+
+/** Get events by name from the buffer */
+export function getEventsByName(name: AnalyticsEventName): AnalyticsEvent[] {
+  return eventBuffer.filter((e) => e.name === name);
+}
+
+/** Convenience: pre-defined event helpers */
+export const events = {
+  addToCart(productId: string, price: number, quantity: number) {
+    trackEvent('add_to_cart', { product_id: productId, price, quantity });
+  },
+  removeFromCart(productId: string) {
+    trackEvent('remove_from_cart', { product_id: productId });
+  },
+  addToWishlist(productId: string, price: number) {
+    trackEvent('add_to_wishlist', { product_id: productId, price });
+  },
+  removeFromWishlist(productId: string) {
+    trackEvent('remove_from_wishlist', { product_id: productId });
+  },
+  shareWishlist(itemCount: number) {
+    trackEvent('share_wishlist', { item_count: itemCount });
+  },
+  search(query: string, resultCount: number) {
+    trackEvent('search', { query, result_count: resultCount });
+  },
+  filterCategory(category: string) {
+    trackEvent('filter_category', { category });
+  },
+  sortProducts(sortBy: string) {
+    trackEvent('sort_products', { sort_by: sortBy });
+  },
+  viewProduct(productId: string, source: string) {
+    trackEvent('view_product', { product_id: productId, source });
+  },
+  openAR(productId: string) {
+    trackEvent('open_ar', { product_id: productId });
+  },
+  selectFabric(productId: string, fabricId: string) {
+    trackEvent('select_fabric', { product_id: productId, fabric_id: fabricId });
+  },
+  purchase(orderId: string, total: number, itemCount: number) {
+    trackEvent('purchase', { order_id: orderId, total, item_count: itemCount });
+  },
+  deepLinkOpened(url: string, screen: string) {
+    trackEvent('deep_link_opened', { url, screen });
+  },
+} as const;

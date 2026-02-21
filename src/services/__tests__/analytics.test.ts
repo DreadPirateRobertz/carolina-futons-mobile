@@ -1,189 +1,289 @@
 import {
-  initAnalytics,
-  isInitialized,
   trackEvent,
   trackScreenView,
-  trackAddToCart,
-  trackPurchase,
-  setUserProperties,
-  getUserProperties,
-  reportCrash,
-  addBreadcrumb,
-  getBreadcrumbs,
-  getEventLog,
-  resetAnalytics,
+  identify,
+  reset,
+  setEnabled,
+  isEnabled,
+  getUserId,
+  getEventBuffer,
+  clearEventBuffer,
+  getEventsByName,
+  registerProvider,
+  events,
+  type AnalyticsProvider,
 } from '../analytics';
 
+// Reset state before each test
 beforeEach(() => {
-  resetAnalytics();
+  clearEventBuffer();
+  reset();
+  setEnabled(true);
+  registerProvider(null as unknown as AnalyticsProvider); // clear provider
 });
 
 describe('analytics', () => {
-  describe('initAnalytics', () => {
-    it('sets initialized flag', () => {
-      expect(isInitialized()).toBe(false);
-      initAnalytics();
-      expect(isInitialized()).toBe(true);
-    });
-
-    it('logs app_open event', () => {
-      initAnalytics();
-      const events = getEventLog();
-      expect(events[0].name).toBe('app_open');
-    });
-  });
-
   describe('trackEvent', () => {
-    it('logs event with name and params', () => {
-      trackEvent('search', { query: 'futon' });
-      const events = getEventLog();
-      expect(events).toHaveLength(1);
-      expect(events[0].name).toBe('search');
-      expect(events[0].params?.query).toBe('futon');
-    });
-
-    it('logs event without params', () => {
-      trackEvent('app_open');
-      expect(getEventLog()[0].params).toBeUndefined();
+    it('adds event to buffer', () => {
+      trackEvent('add_to_cart', { product_id: 'abc' });
+      const buffer = getEventBuffer();
+      expect(buffer).toHaveLength(1);
+      expect(buffer[0].name).toBe('add_to_cart');
+      expect(buffer[0].properties).toEqual({ product_id: 'abc' });
     });
 
     it('includes timestamp', () => {
-      trackEvent('login');
-      expect(getEventLog()[0].timestamp).toBeTruthy();
+      const before = Date.now();
+      trackEvent('search');
+      const after = Date.now();
+      const event = getEventBuffer()[0];
+      expect(event.timestamp).toBeGreaterThanOrEqual(before);
+      expect(event.timestamp).toBeLessThanOrEqual(after);
     });
 
-    it('adds breadcrumb for each event', () => {
-      trackEvent('share');
-      const crumbs = getBreadcrumbs();
-      expect(crumbs.some((c) => c.message.includes('share'))).toBe(true);
+    it('does not track when disabled', () => {
+      setEnabled(false);
+      trackEvent('add_to_cart');
+      expect(getEventBuffer()).toHaveLength(0);
+    });
+
+    it('caps buffer at 500 events', () => {
+      for (let i = 0; i < 510; i++) {
+        trackEvent('search', { i });
+      }
+      expect(getEventBuffer()).toHaveLength(500);
+    });
+
+    it('works without properties', () => {
+      trackEvent('app_open');
+      expect(getEventBuffer()[0].properties).toBeUndefined();
     });
   });
 
   describe('trackScreenView', () => {
-    it('logs screen_view event', () => {
-      trackScreenView({ screenName: 'Home' });
-      const e = getEventLog()[0];
-      expect(e.name).toBe('screen_view');
-      expect(e.params?.screen_name).toBe('Home');
-    });
-
-    it('includes screen class when provided', () => {
-      trackScreenView({ screenName: 'Product', screenClass: 'ProductDetailScreen' });
-      expect(getEventLog()[0].params?.screen_class).toBe('ProductDetailScreen');
-    });
-  });
-
-  describe('trackAddToCart', () => {
-    it('logs add_to_cart with item details', () => {
-      trackAddToCart({
-        itemId: 'asheville-full',
-        itemName: 'Asheville Full',
-        price: 599,
-        quantity: 1,
-        category: 'frames',
+    it('tracks screen_view event with screen name', () => {
+      trackScreenView('ProductDetail', { product_id: 'abc' });
+      const buffer = getEventBuffer();
+      expect(buffer).toHaveLength(1);
+      expect(buffer[0].name).toBe('screen_view');
+      expect(buffer[0].properties).toEqual({
+        screen_name: 'ProductDetail',
+        product_id: 'abc',
       });
-      const e = getEventLog()[0];
-      expect(e.name).toBe('add_to_cart');
-      expect(e.params?.item_id).toBe('asheville-full');
-      expect(e.params?.price).toBe(599);
-      expect(e.params?.category).toBe('frames');
     });
 
-    it('omits category when not provided', () => {
-      trackAddToCart({
-        itemId: 'x',
-        itemName: 'X',
-        price: 100,
-        quantity: 1,
-      });
-      expect(getEventLog()[0].params?.category).toBeUndefined();
+    it('works without extra properties', () => {
+      trackScreenView('Home');
+      expect(getEventBuffer()[0].properties).toEqual({ screen_name: 'Home' });
     });
   });
 
-  describe('trackPurchase', () => {
-    it('logs purchase with order details', () => {
-      trackPurchase('ord-123', 599, [
-        { itemId: 'a', itemName: 'A', price: 599, quantity: 1 },
-      ]);
-      const e = getEventLog()[0];
-      expect(e.name).toBe('purchase');
-      expect(e.params?.order_id).toBe('ord-123');
-      expect(e.params?.value).toBe(599);
-      expect(e.params?.item_count).toBe(1);
+  describe('identify', () => {
+    it('sets user ID', () => {
+      identify('user-123');
+      expect(getUserId()).toBe('user-123');
+    });
+
+    it('accepts user properties', () => {
+      identify('user-123', { email: 'test@example.com' });
+      expect(getUserId()).toBe('user-123');
     });
   });
 
-  describe('setUserProperties / getUserProperties', () => {
-    it('defaults to guest', () => {
-      expect(getUserProperties().isGuest).toBe(true);
+  describe('reset', () => {
+    it('clears user ID', () => {
+      identify('user-123');
+      reset();
+      expect(getUserId()).toBeNull();
     });
 
-    it('sets authenticated user', () => {
-      setUserProperties({ userId: 'u1', email: 'a@b.com', isGuest: false });
-      const props = getUserProperties();
-      expect(props.userId).toBe('u1');
-      expect(props.isGuest).toBe(false);
-    });
-
-    it('adds breadcrumb on set', () => {
-      setUserProperties({ userId: 'u1', isGuest: false });
-      expect(getBreadcrumbs().some((c) => c.category === 'user')).toBe(true);
-    });
-  });
-
-  describe('reportCrash', () => {
-    it('adds crash breadcrumb', () => {
-      reportCrash(new Error('test crash'));
-      const crumbs = getBreadcrumbs();
-      expect(crumbs.some((c) => c.category === 'crash')).toBe(true);
-    });
-
-    it('logs crash event with error message', () => {
-      reportCrash(new Error('boom'), 'fatal', { screen: 'Cart' });
-      const events = getEventLog();
-      const crash = events.find((e) => e.params?._crash === true);
-      expect(crash).toBeTruthy();
-      expect(crash!.params?.error_message).toBe('boom');
-      expect(crash!.params?.severity).toBe('fatal');
-      expect(crash!.params?.screen).toBe('Cart');
-    });
-
-    it('defaults severity to error', () => {
-      reportCrash(new Error('oops'));
-      const crash = getEventLog().find((e) => e.params?._crash === true);
-      expect(crash!.params?.severity).toBe('error');
-    });
-  });
-
-  describe('breadcrumbs', () => {
-    it('stores breadcrumbs in order', () => {
-      addBreadcrumb('nav', 'Went to Home', 'info');
-      addBreadcrumb('nav', 'Went to Shop', 'info');
-      const crumbs = getBreadcrumbs();
-      expect(crumbs[0].message).toBe('Went to Home');
-      expect(crumbs[1].message).toBe('Went to Shop');
-    });
-
-    it('caps at 50 breadcrumbs', () => {
-      for (let i = 0; i < 60; i++) {
-        addBreadcrumb('test', `crumb-${i}`);
-      }
-      expect(getBreadcrumbs()).toHaveLength(50);
-      // Oldest should be trimmed
-      expect(getBreadcrumbs()[0].message).toBe('crumb-10');
-    });
-  });
-
-  describe('resetAnalytics', () => {
-    it('clears all state', () => {
-      initAnalytics();
+    it('clears event buffer', () => {
       trackEvent('search');
-      setUserProperties({ userId: 'x', isGuest: false });
-      resetAnalytics();
-      expect(getEventLog()).toHaveLength(0);
-      expect(getBreadcrumbs()).toHaveLength(0);
-      expect(getUserProperties().isGuest).toBe(true);
-      expect(isInitialized()).toBe(false);
+      trackEvent('add_to_cart');
+      reset();
+      expect(getEventBuffer()).toHaveLength(0);
+    });
+  });
+
+  describe('setEnabled / isEnabled', () => {
+    it('starts enabled', () => {
+      expect(isEnabled()).toBe(true);
+    });
+
+    it('can be disabled', () => {
+      setEnabled(false);
+      expect(isEnabled()).toBe(false);
+    });
+
+    it('can be re-enabled', () => {
+      setEnabled(false);
+      setEnabled(true);
+      expect(isEnabled()).toBe(true);
+    });
+  });
+
+  describe('getEventsByName', () => {
+    it('filters events by name', () => {
+      trackEvent('search', { query: 'futon' });
+      trackEvent('add_to_cart', { product_id: 'abc' });
+      trackEvent('search', { query: 'mattress' });
+      const searches = getEventsByName('search');
+      expect(searches).toHaveLength(2);
+      expect(searches[0].properties).toEqual({ query: 'futon' });
+      expect(searches[1].properties).toEqual({ query: 'mattress' });
+    });
+
+    it('returns empty array when no matches', () => {
+      trackEvent('search');
+      expect(getEventsByName('purchase')).toHaveLength(0);
+    });
+  });
+
+  describe('clearEventBuffer', () => {
+    it('removes all events', () => {
+      trackEvent('search');
+      trackEvent('add_to_cart');
+      clearEventBuffer();
+      expect(getEventBuffer()).toHaveLength(0);
+    });
+  });
+
+  describe('provider delegation', () => {
+    it('delegates to registered provider', () => {
+      const provider: AnalyticsProvider = {
+        trackEvent: jest.fn(),
+        trackScreenView: jest.fn(),
+        identify: jest.fn(),
+        reset: jest.fn(),
+        setEnabled: jest.fn(),
+      };
+      registerProvider(provider);
+      trackEvent('add_to_cart', { product_id: 'abc' });
+      expect(provider.trackEvent).toHaveBeenCalledWith('add_to_cart', {
+        product_id: 'abc',
+      });
+    });
+
+    it('delegates identify to provider', () => {
+      const provider: AnalyticsProvider = {
+        trackEvent: jest.fn(),
+        trackScreenView: jest.fn(),
+        identify: jest.fn(),
+        reset: jest.fn(),
+        setEnabled: jest.fn(),
+      };
+      registerProvider(provider);
+      identify('user-456', { email: 'x@y.com' });
+      expect(provider.identify).toHaveBeenCalledWith('user-456', {
+        email: 'x@y.com',
+      });
+    });
+
+    it('delegates reset to provider', () => {
+      const provider: AnalyticsProvider = {
+        trackEvent: jest.fn(),
+        trackScreenView: jest.fn(),
+        identify: jest.fn(),
+        reset: jest.fn(),
+        setEnabled: jest.fn(),
+      };
+      registerProvider(provider);
+      reset();
+      expect(provider.reset).toHaveBeenCalled();
+    });
+  });
+
+  describe('event helpers', () => {
+    it('events.addToCart tracks correctly', () => {
+      events.addToCart('prod-1', 349, 2);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('add_to_cart');
+      expect(ev.properties).toEqual({ product_id: 'prod-1', price: 349, quantity: 2 });
+    });
+
+    it('events.search tracks correctly', () => {
+      events.search('futon', 5);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('search');
+      expect(ev.properties).toEqual({ query: 'futon', result_count: 5 });
+    });
+
+    it('events.viewProduct tracks correctly', () => {
+      events.viewProduct('prod-1', 'shop');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('view_product');
+      expect(ev.properties).toEqual({ product_id: 'prod-1', source: 'shop' });
+    });
+
+    it('events.openAR tracks correctly', () => {
+      events.openAR('prod-1');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('open_ar');
+      expect(ev.properties).toEqual({ product_id: 'prod-1' });
+    });
+
+    it('events.purchase tracks correctly', () => {
+      events.purchase('order-1', 698, 2);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('purchase');
+      expect(ev.properties).toEqual({ order_id: 'order-1', total: 698, item_count: 2 });
+    });
+
+    it('events.selectFabric tracks correctly', () => {
+      events.selectFabric('prod-1', 'mountain-blue');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('select_fabric');
+      expect(ev.properties).toEqual({ product_id: 'prod-1', fabric_id: 'mountain-blue' });
+    });
+
+    it('events.addToWishlist tracks correctly', () => {
+      events.addToWishlist('prod-1', 349);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('add_to_wishlist');
+      expect(ev.properties).toEqual({ product_id: 'prod-1', price: 349 });
+    });
+
+    it('events.shareWishlist tracks correctly', () => {
+      events.shareWishlist(3);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('share_wishlist');
+      expect(ev.properties).toEqual({ item_count: 3 });
+    });
+
+    it('events.deepLinkOpened tracks correctly', () => {
+      events.deepLinkOpened('carolinafutons://product/abc', 'ProductDetail');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('deep_link_opened');
+      expect(ev.properties).toEqual({
+        url: 'carolinafutons://product/abc',
+        screen: 'ProductDetail',
+      });
+    });
+
+    it('events.filterCategory tracks correctly', () => {
+      events.filterCategory('futons');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('filter_category');
+      expect(ev.properties).toEqual({ category: 'futons' });
+    });
+
+    it('events.sortProducts tracks correctly', () => {
+      events.sortProducts('price-asc');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('sort_products');
+      expect(ev.properties).toEqual({ sort_by: 'price-asc' });
+    });
+
+    it('events.removeFromCart tracks correctly', () => {
+      events.removeFromCart('prod-1');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('remove_from_cart');
+    });
+
+    it('events.removeFromWishlist tracks correctly', () => {
+      events.removeFromWishlist('prod-1');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('remove_from_wishlist');
     });
   });
 });
