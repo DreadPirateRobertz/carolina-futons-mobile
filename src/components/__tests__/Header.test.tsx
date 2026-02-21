@@ -53,9 +53,7 @@ describe('Header', () => {
   describe('search interaction', () => {
     it('calls onSearchPress when search icon is tapped', () => {
       const onSearchPress = jest.fn();
-      const { getByTestId } = render(
-        <Header onSearchPress={onSearchPress} testID="header" />
-      );
+      const { getByTestId } = render(<Header onSearchPress={onSearchPress} testID="header" />);
       fireEvent.press(getByTestId('header-search'));
       expect(onSearchPress).toHaveBeenCalledTimes(1);
     });
@@ -64,9 +62,7 @@ describe('Header', () => {
   describe('cart interaction', () => {
     it('calls onCartPress when cart icon is tapped', () => {
       const onCartPress = jest.fn();
-      const { getByTestId } = render(
-        <Header onCartPress={onCartPress} testID="header" />
-      );
+      const { getByTestId } = render(<Header onCartPress={onCartPress} testID="header" />);
       fireEvent.press(getByTestId('header-cart'));
       expect(onCartPress).toHaveBeenCalledTimes(1);
     });
@@ -85,9 +81,7 @@ describe('Header', () => {
 
     it('calls onBackPress when back button is tapped', () => {
       const onBackPress = jest.fn();
-      const { getByTestId } = render(
-        <Header showBack onBackPress={onBackPress} testID="header" />
-      );
+      const { getByTestId } = render(<Header showBack onBackPress={onBackPress} testID="header" />);
       fireEvent.press(getByTestId('header-back'));
       expect(onBackPress).toHaveBeenCalledTimes(1);
     });

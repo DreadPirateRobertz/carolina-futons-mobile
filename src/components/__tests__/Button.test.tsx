@@ -19,7 +19,7 @@ describe('Button', () => {
 
     it('renders with testID for automation', () => {
       const { getByTestId } = render(
-        <Button label="Buy Now" onPress={() => {}} testID="buy-button" />
+        <Button label="Buy Now" onPress={() => {}} testID="buy-button" />,
       );
       expect(getByTestId('buy-button')).toBeTruthy();
     });
@@ -27,9 +27,7 @@ describe('Button', () => {
 
   describe('variants', () => {
     it('renders primary variant by default', () => {
-      const { getByTestId } = render(
-        <Button label="Primary" onPress={() => {}} testID="btn" />
-      );
+      const { getByTestId } = render(<Button label="Primary" onPress={() => {}} testID="btn" />);
       const button = getByTestId('btn');
       // Primary should have solid background style
       expect(button).toBeTruthy();
@@ -37,14 +35,14 @@ describe('Button', () => {
 
     it('renders secondary variant', () => {
       const { getByTestId } = render(
-        <Button label="Secondary" variant="secondary" onPress={() => {}} testID="btn" />
+        <Button label="Secondary" variant="secondary" onPress={() => {}} testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
     });
 
     it('renders ghost variant', () => {
       const { getByTestId } = render(
-        <Button label="Ghost" variant="ghost" onPress={() => {}} testID="btn" />
+        <Button label="Ghost" variant="ghost" onPress={() => {}} testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
     });
@@ -60,9 +58,7 @@ describe('Button', () => {
 
     it('does not call onPress when disabled', () => {
       const onPress = jest.fn();
-      const { getByText } = render(
-        <Button label="Disabled" onPress={onPress} disabled />
-      );
+      const { getByText } = render(<Button label="Disabled" onPress={onPress} disabled />);
       fireEvent.press(getByText('Disabled'));
       expect(onPress).not.toHaveBeenCalled();
     });
@@ -71,7 +67,7 @@ describe('Button', () => {
   describe('loading state', () => {
     it('shows loading indicator when loading', () => {
       const { getByTestId, queryByText } = render(
-        <Button label="Submit" onPress={() => {}} loading testID="btn" />
+        <Button label="Submit" onPress={() => {}} loading testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
       // Label should be hidden or replaced during loading
@@ -81,7 +77,7 @@ describe('Button', () => {
     it('disables press when loading', () => {
       const onPress = jest.fn();
       const { getByTestId } = render(
-        <Button label="Submit" onPress={onPress} loading testID="btn" />
+        <Button label="Submit" onPress={onPress} loading testID="btn" />,
       );
       fireEvent.press(getByTestId('btn'));
       expect(onPress).not.toHaveBeenCalled();
@@ -91,21 +87,21 @@ describe('Button', () => {
   describe('sizing', () => {
     it('renders small size', () => {
       const { getByTestId } = render(
-        <Button label="Small" size="sm" onPress={() => {}} testID="btn" />
+        <Button label="Small" size="sm" onPress={() => {}} testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
     });
 
     it('renders large size', () => {
       const { getByTestId } = render(
-        <Button label="Large" size="lg" onPress={() => {}} testID="btn" />
+        <Button label="Large" size="lg" onPress={() => {}} testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
     });
 
     it('renders full width when fullWidth prop is set', () => {
       const { getByTestId } = render(
-        <Button label="Full Width" fullWidth onPress={() => {}} testID="btn" />
+        <Button label="Full Width" fullWidth onPress={() => {}} testID="btn" />,
       );
       expect(getByTestId('btn')).toBeTruthy();
     });
@@ -113,16 +109,12 @@ describe('Button', () => {
 
   describe('accessibility', () => {
     it('has accessible role of button', () => {
-      const { getByRole } = render(
-        <Button label="Accessible" onPress={() => {}} />
-      );
+      const { getByRole } = render(<Button label="Accessible" onPress={() => {}} />);
       expect(getByRole('button')).toBeTruthy();
     });
 
     it('conveys disabled state to accessibility', () => {
-      const { getByRole } = render(
-        <Button label="Disabled" onPress={() => {}} disabled />
-      );
+      const { getByRole } = render(<Button label="Disabled" onPress={() => {}} disabled />);
       const button = getByRole('button');
       expect(button.props.accessibilityState?.disabled).toBe(true);
     });

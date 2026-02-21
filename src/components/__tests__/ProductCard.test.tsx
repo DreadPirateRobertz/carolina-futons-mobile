@@ -21,37 +21,31 @@ const mockProduct = {
 describe('ProductCard', () => {
   describe('rendering', () => {
     it('renders product name', () => {
-      const { getByText } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} />
-      );
+      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
       expect(getByText('Carolina Classic Futon')).toBeTruthy();
     });
 
     it('renders formatted price', () => {
-      const { getByText } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} />
-      );
+      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
       expect(getByText('$299.99')).toBeTruthy();
     });
 
     it('renders product image', () => {
       const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />
+        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
       );
       expect(getByTestId('product-card-image')).toBeTruthy();
     });
 
     it('renders badge when provided', () => {
-      const { getByText } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} />
-      );
+      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
       expect(getByText('Sale')).toBeTruthy();
     });
 
     it('does not render badge when not provided', () => {
       const productNoBadge = { ...mockProduct, badge: undefined };
       const { queryByTestId } = render(
-        <ProductCard product={productNoBadge} onPress={() => {}} testID="product-card" />
+        <ProductCard product={productNoBadge} onPress={() => {}} testID="product-card" />,
       );
       expect(queryByTestId('product-card-badge')).toBeFalsy();
     });
@@ -65,18 +59,14 @@ describe('ProductCard', () => {
         originalPrice: 299.99,
         badge: 'Sale',
       };
-      const { getByText } = render(
-        <ProductCard product={saleProduct} onPress={() => {}} />
-      );
+      const { getByText } = render(<ProductCard product={saleProduct} onPress={() => {}} />);
       expect(getByText('$249.99')).toBeTruthy();
       expect(getByText('$299.99')).toBeTruthy();
     });
 
     it('shows price formatted with two decimal places', () => {
       const product = { ...mockProduct, price: 300 };
-      const { getByText } = render(
-        <ProductCard product={product} onPress={() => {}} />
-      );
+      const { getByText } = render(<ProductCard product={product} onPress={() => {}} />);
       expect(getByText('$300.00')).toBeTruthy();
     });
   });
@@ -85,7 +75,7 @@ describe('ProductCard', () => {
     it('calls onPress with product when tapped', () => {
       const onPress = jest.fn();
       const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={onPress} testID="product-card" />
+        <ProductCard product={mockProduct} onPress={onPress} testID="product-card" />,
       );
       fireEvent.press(getByTestId('product-card'));
       expect(onPress).toHaveBeenCalledWith(mockProduct);
@@ -95,7 +85,7 @@ describe('ProductCard', () => {
   describe('image handling', () => {
     it('shows placeholder when image fails to load', () => {
       const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />
+        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
       );
       const image = getByTestId('product-card-image');
       fireEvent(image, 'error');
@@ -107,7 +97,7 @@ describe('ProductCard', () => {
   describe('accessibility', () => {
     it('has accessible label with product name and price', () => {
       const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />
+        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
       );
       const card = getByTestId('product-card');
       expect(card.props.accessibilityLabel).toContain('Carolina Classic Futon');

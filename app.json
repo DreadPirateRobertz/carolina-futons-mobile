@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Carolina Futons",
+    "slug": "carolina-futons-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E8D5B7"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.carolinafutons.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#E8D5B7"
+      },
+      "package": "com.carolinafutons.mobile"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "carolinafutons"
+  }
+}
