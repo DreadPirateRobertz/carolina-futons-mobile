@@ -1,0 +1,6 @@
+{
+  "database": "dolt",
+  "jsonl_export": "interactions.jsonl",
+  "backend": "dolt",
+  "dolt_database": "beads_cm"
+}
