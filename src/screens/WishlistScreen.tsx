@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
   const { count, getProducts, getShareText, remove, clear } = useWishlist();
 
@@ -83,9 +83,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         />
         {item.priceDrop > 0 && (
           <View style={[styles.priceDropBadge, { backgroundColor: colors.success }]}>
-            <Text style={styles.priceDropText}>
-              {formatPrice(item.priceDrop)} off!
-            </Text>
+            <Text style={styles.priceDropText}>{formatPrice(item.priceDrop)} off!</Text>
           </View>
         )}
       </View>
@@ -111,7 +109,10 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
           <View style={styles.actionRow}>
             <TouchableOpacity
               onPress={handleShare}
-              style={[styles.actionButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button },
+              ]}
               testID="wishlist-share"
               accessibilityLabel="Share wishlist"
               accessibilityRole="button"
@@ -120,12 +121,18 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleClearAll}
-              style={[styles.actionButton, styles.clearButton, { borderRadius: borderRadius.button, borderColor: colors.espressoLight }]}
+              style={[
+                styles.actionButton,
+                styles.clearButton,
+                { borderRadius: borderRadius.button, borderColor: colors.espressoLight },
+              ]}
               testID="wishlist-clear"
               accessibilityLabel="Clear all items from wishlist"
               accessibilityRole="button"
             >
-              <Text style={[styles.clearButtonText, { color: colors.espressoLight }]}>Clear All</Text>
+              <Text style={[styles.clearButtonText, { color: colors.espressoLight }]}>
+                Clear All
+              </Text>
             </TouchableOpacity>
           </View>
         )}

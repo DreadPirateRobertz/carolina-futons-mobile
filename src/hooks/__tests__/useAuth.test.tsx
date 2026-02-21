@@ -5,7 +5,19 @@ import { AuthProvider, useAuth, validateEmail, validatePassword, validateName } 
 
 /** Test harness exposing auth state + actions */
 function AuthHarness() {
-  const { user, loading, error, isAuthenticated, signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, clearError } = useAuth();
+  const {
+    user,
+    loading,
+    error,
+    isAuthenticated,
+    signIn,
+    signUp,
+    signInWithGoogle,
+    signInWithApple,
+    resetPassword,
+    signOut,
+    clearError,
+  } = useAuth();
 
   return (
     <View>
@@ -18,8 +30,14 @@ function AuthHarness() {
 
       <TouchableOpacity testID="sign-in" onPress={() => signIn('test@test.com', 'Pass1234')} />
       <TouchableOpacity testID="sign-in-bad" onPress={() => signIn('bad@test.com', 'Pass1234')} />
-      <TouchableOpacity testID="sign-up" onPress={() => signUp('new@test.com', 'Pass1234', 'New User')} />
-      <TouchableOpacity testID="sign-up-taken" onPress={() => signUp('taken@test.com', 'Pass1234', 'Taken')} />
+      <TouchableOpacity
+        testID="sign-up"
+        onPress={() => signUp('new@test.com', 'Pass1234', 'New User')}
+      />
+      <TouchableOpacity
+        testID="sign-up-taken"
+        onPress={() => signUp('taken@test.com', 'Pass1234', 'Taken')}
+      />
       <TouchableOpacity testID="google" onPress={() => signInWithGoogle()} />
       <TouchableOpacity testID="apple" onPress={() => signInWithApple()} />
       <TouchableOpacity testID="reset" onPress={() => resetPassword('test@test.com')} />
@@ -154,7 +172,10 @@ describe('useAuth', () => {
 
   describe('Error: useAuth outside provider', () => {
     it('throws', () => {
-      function Bad() { useAuth(); return null; }
+      function Bad() {
+        useAuth();
+        return null;
+      }
       expect(() => render(<Bad />)).toThrow('useAuth must be used within an AuthProvider');
     });
   });

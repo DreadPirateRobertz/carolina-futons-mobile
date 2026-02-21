@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
-import { PRODUCTS, CATEGORIES, SORT_OPTIONS } from '@/data/products';
+import { PRODUCTS } from '@/data/products';
 
 function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();

@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -62,26 +56,15 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
         {/* Profile header */}
         <View style={[styles.profileHeader, { paddingHorizontal: spacing.lg }]}>
           <View
-            style={[
-              styles.avatar,
-              { backgroundColor: colors.mountainBlue, borderRadius: 30 },
-            ]}
+            style={[styles.avatar, { backgroundColor: colors.mountainBlue, borderRadius: 30 }]}
             testID="user-avatar"
           >
-            <Text style={styles.avatarText}>
-              {user.displayName.charAt(0).toUpperCase()}
-            </Text>
+            <Text style={styles.avatarText}>{user.displayName.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text
-            style={[styles.userName, { color: colors.espresso }]}
-            testID="user-display-name"
-          >
+          <Text style={[styles.userName, { color: colors.espresso }]} testID="user-display-name">
             {user.displayName}
           </Text>
-          <Text
-            style={[styles.userEmail, { color: colors.espressoLight }]}
-            testID="user-email"
-          >
+          <Text style={[styles.userEmail, { color: colors.espressoLight }]} testID="user-email">
             {user.email}
           </Text>
         </View>
@@ -134,9 +117,7 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
             accessibilityLabel="Sign out"
             accessibilityRole="button"
           >
-            <Text style={[styles.signOutText, { color: colors.sunsetCoral }]}>
-              Sign Out
-            </Text>
+            <Text style={[styles.signOutText, { color: colors.sunsetCoral }]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

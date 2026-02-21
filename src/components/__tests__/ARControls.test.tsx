@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ARControls } from '../ARControls';
-import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
 const defaultModel = FUTON_MODELS[0]; // Asheville, $349
 const defaultFabric = FABRICS[0]; // Natural Linen, $0
@@ -180,7 +180,7 @@ describe('ARControls', () => {
 
   describe('testID', () => {
     it('applies testID to container', () => {
-      const { getByTestId } = renderControls();
+      renderControls();
       // Default props don't pass testID, but the container should exist
       // Let's test with explicit testID
       const { getByTestId: get2 } = render(

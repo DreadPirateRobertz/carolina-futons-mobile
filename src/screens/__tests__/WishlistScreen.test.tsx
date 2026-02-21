@@ -47,7 +47,7 @@ describe('WishlistScreen', () => {
     });
 
     it('shows browse button in empty state', () => {
-      const { getByTestId, onBrowse } = renderScreen();
+      const { getByTestId } = renderScreen();
       expect(getByTestId('wishlist-empty-action')).toBeTruthy();
     });
 
@@ -152,7 +152,9 @@ describe('WishlistScreen', () => {
 
   describe('share', () => {
     it('calls Share.share when share button pressed', async () => {
-      const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as any);
+      const shareSpy = jest
+        .spyOn(Share, 'share')
+        .mockResolvedValue({ action: 'sharedAction' } as any);
       const { getByTestId } = renderScreen({
         items: makeItems(product1),
       });

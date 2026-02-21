@@ -10,11 +10,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import {
-  MOCK_ORDERS,
-  ORDER_STATUS_CONFIG,
-  type Order,
-} from '@/data/orders';
+import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
 import { useCart } from '@/hooks/useCart';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { formatPrice } from '@/utils';
@@ -79,10 +75,7 @@ export function OrderDetailScreen({
         style={[styles.root, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'order-detail-screen'}
       >
-        <Text
-          style={[styles.notFound, { color: colors.espressoLight }]}
-          testID="order-not-found"
-        >
+        <Text style={[styles.notFound, { color: colors.espressoLight }]} testID="order-not-found">
           Order not found
         </Text>
       </View>
@@ -124,9 +117,7 @@ export function OrderDetailScreen({
             ]}
             testID="order-detail-status"
           >
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {statusConfig.label}
-            </Text>
+            <Text style={[styles.statusText, { color: statusColor }]}>{statusConfig.label}</Text>
           </View>
         </View>
       </View>
@@ -138,10 +129,7 @@ export function OrderDetailScreen({
       >
         {/* Order date */}
         <Text
-          style={[
-            styles.dateText,
-            { color: colors.espressoLight, paddingHorizontal: spacing.lg },
-          ]}
+          style={[styles.dateText, { color: colors.espressoLight, paddingHorizontal: spacing.lg }]}
           testID="order-detail-date"
         >
           Placed {formatDate(order.createdAt)}
@@ -186,9 +174,7 @@ export function OrderDetailScreen({
 
         {/* Line items */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Items
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Items</Text>
           {order.items.map((item) => (
             <View
               key={item.id}
@@ -203,9 +189,7 @@ export function OrderDetailScreen({
               testID={`order-line-item-${item.id}`}
             >
               <View style={styles.lineItemTop}>
-                <View
-                  style={[styles.fabricDot, { backgroundColor: item.fabricColor }]}
-                />
+                <View style={[styles.fabricDot, { backgroundColor: item.fabricColor }]} />
                 <View style={styles.lineItemInfo}>
                   <Text style={[styles.lineItemName, { color: colors.espresso }]}>
                     {item.modelName}
@@ -242,7 +226,9 @@ export function OrderDetailScreen({
         >
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Subtotal</Text>
-            <Text style={[styles.totalValue, { color: colors.espresso }]}>{formatPrice(order.subtotal)}</Text>
+            <Text style={[styles.totalValue, { color: colors.espresso }]}>
+              {formatPrice(order.subtotal)}
+            </Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Shipping</Text>
@@ -257,7 +243,9 @@ export function OrderDetailScreen({
           </View>
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Tax</Text>
-            <Text style={[styles.totalValue, { color: colors.espresso }]}>{formatPrice(order.tax)}</Text>
+            <Text style={[styles.totalValue, { color: colors.espresso }]}>
+              {formatPrice(order.tax)}
+            </Text>
           </View>
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
           <View style={styles.totalRow}>
@@ -273,9 +261,7 @@ export function OrderDetailScreen({
 
         {/* Shipping address */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Shipping Address
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Shipping Address</Text>
           <View
             style={[
               styles.addressCard,
@@ -302,9 +288,7 @@ export function OrderDetailScreen({
 
         {/* Payment */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Payment
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment</Text>
           <Text
             style={[styles.paymentText, { color: colors.espressoLight }]}
             testID="order-payment-method"

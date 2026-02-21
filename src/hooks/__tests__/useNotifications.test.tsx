@@ -120,7 +120,10 @@ describe('useNotifications', () => {
 
   describe('Error handling', () => {
     it('throws outside provider', () => {
-      function Bad() { useNotifications(); return null; }
+      function Bad() {
+        useNotifications();
+        return null;
+      }
       expect(() => render(<Bad />)).toThrow(
         'useNotifications must be used within a NotificationProvider',
       );

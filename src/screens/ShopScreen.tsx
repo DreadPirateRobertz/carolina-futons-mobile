@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function ShopScreen({ onProductPress, testID }: Props) {
-  const { colors, spacing, typography } = useTheme();
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const {
     products,
@@ -24,7 +24,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     selectedCategory,
     sortBy,
     isLoading,
-    hasMore,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,

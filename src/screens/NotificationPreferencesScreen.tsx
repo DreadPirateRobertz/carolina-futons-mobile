@@ -1,13 +1,5 @@
 import React, { useCallback } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  Platform,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useTheme } from '@/theme';
 import { useNotifications } from '@/hooks/useNotifications';
 import {
@@ -30,8 +22,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
 
 export function NotificationPreferencesScreen({ onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
-  const { permissionStatus, preferences, togglePreference, requestPermission } =
-    useNotifications();
+  const { permissionStatus, preferences, togglePreference, requestPermission } = useNotifications();
 
   const handleToggle = useCallback(
     (key: keyof NotificationPreferences) => {
@@ -66,10 +57,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
         </Text>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Permission status */}
         {permissionStatus !== 'granted' && (
           <View
@@ -109,10 +97,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
 
         {permissionStatus === 'denied' && (
           <Text
-            style={[
-              styles.deniedNote,
-              { color: colors.sunsetCoral, marginHorizontal: spacing.lg },
-            ]}
+            style={[styles.deniedNote, { color: colors.sunsetCoral, marginHorizontal: spacing.lg }]}
             testID="permission-denied-note"
           >
             Notifications are blocked. Enable them in your device settings.
@@ -121,9 +106,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
 
         {/* Preference toggles */}
         <View style={{ paddingHorizontal: spacing.lg }}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Notification Types
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Notification Types</Text>
           {NOTIFICATION_TYPES.map((type) => {
             const config = NOTIFICATION_TYPE_CONFIG[type];
             const isEnabled = preferences[config.prefKey];
@@ -142,9 +125,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
                 testID={`pref-row-${type}`}
               >
                 <View style={styles.prefInfo}>
-                  <Text style={[styles.prefLabel, { color: colors.espresso }]}>
-                    {config.label}
-                  </Text>
+                  <Text style={[styles.prefLabel, { color: colors.espresso }]}>{config.label}</Text>
                   <Text style={[styles.prefDesc, { color: colors.espressoLight }]}>
                     {config.description}
                   </Text>

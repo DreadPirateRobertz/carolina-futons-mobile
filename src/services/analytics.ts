@@ -47,7 +47,10 @@ export interface UserProperties {
 }
 
 export interface AnalyticsProvider {
-  trackEvent(name: AnalyticsEventName, properties?: Record<string, string | number | boolean>): void;
+  trackEvent(
+    name: AnalyticsEventName,
+    properties?: Record<string, string | number | boolean>,
+  ): void;
   trackScreenView(screenName: string, properties?: Record<string, string | number | boolean>): void;
   identify(userId: string, properties?: UserProperties): void;
   reset(): void;

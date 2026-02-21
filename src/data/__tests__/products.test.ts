@@ -1,12 +1,4 @@
-import {
-  PRODUCTS,
-  CATEGORIES,
-  SORT_OPTIONS,
-  type Product,
-  type ProductCategory,
-  type CategoryInfo,
-  type SortOption,
-} from '../products';
+import { PRODUCTS, CATEGORIES, SORT_OPTIONS, type Product, type CategoryInfo } from '../products';
 
 describe('Product catalog data integrity', () => {
   it('has at least 10 products', () => {

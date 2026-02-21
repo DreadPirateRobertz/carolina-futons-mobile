@@ -20,9 +20,8 @@ interface Props {
 }
 
 export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
-  const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } =
-    useAuth();
+  const { colors, borderRadius, shadows } = useTheme();
+  const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,12 +73,13 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
         {/* Auth error */}
         {error && (
           <View
-            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md }]}
+            style={[
+              styles.errorBanner,
+              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+            ]}
             testID="login-error"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>
-              {error}
-            </Text>
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
           </View>
         )}
 
@@ -97,7 +97,11 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
               },
             ]}
             value={email}
-            onChangeText={(t) => { setEmail(t); setEmailError(null); clearError(); }}
+            onChangeText={(t) => {
+              setEmail(t);
+              setEmailError(null);
+              clearError();
+            }}
             placeholder="you@example.com"
             placeholderTextColor={colors.muted}
             keyboardType="email-address"
@@ -108,7 +112,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
             accessibilityLabel="Email address"
           />
           {emailError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="login-email-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="login-email-error"
+            >
               {emailError}
             </Text>
           )}
@@ -128,7 +135,11 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
               },
             ]}
             value={password}
-            onChangeText={(t) => { setPassword(t); setPasswordError(null); clearError(); }}
+            onChangeText={(t) => {
+              setPassword(t);
+              setPasswordError(null);
+              clearError();
+            }}
             placeholder="Your password"
             placeholderTextColor={colors.muted}
             secureTextEntry
@@ -138,7 +149,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
             accessibilityLabel="Password"
           />
           {passwordError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="login-password-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="login-password-error"
+            >
               {passwordError}
             </Text>
           )}
@@ -150,9 +164,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           testID="forgot-password-link"
           accessibilityRole="link"
         >
-          <Text style={[styles.forgotText, { color: colors.mountainBlue }]}>
-            Forgot password?
-          </Text>
+          <Text style={[styles.forgotText, { color: colors.mountainBlue }]}>Forgot password?</Text>
         </TouchableOpacity>
 
         {/* Sign in button */}
@@ -220,7 +232,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           accessibilityRole="button"
         >
           <Text style={[styles.socialButtonText, { color: colors.espresso }]}>
-            G  Continue with Google
+            G Continue with Google
           </Text>
         </TouchableOpacity>
 
@@ -229,14 +241,8 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           <Text style={[styles.signUpText, { color: colors.espressoLight }]}>
             Don't have an account?{' '}
           </Text>
-          <TouchableOpacity
-            onPress={onSignUp}
-            testID="sign-up-link"
-            accessibilityRole="link"
-          >
-            <Text style={[styles.signUpLink, { color: colors.mountainBlue }]}>
-              Sign Up
-            </Text>
+          <TouchableOpacity onPress={onSignUp} testID="sign-up-link" accessibilityRole="link">
+            <Text style={[styles.signUpLink, { color: colors.mountainBlue }]}>Sign Up</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

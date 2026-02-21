@@ -4,52 +4,43 @@ import {
   formatBadgeCount,
   DEFAULT_PREFERENCES,
   NOTIFICATION_TYPE_CONFIG,
-  type NotificationPreferences,
   type NotificationType,
 } from '../notifications';
 
 describe('Notification service', () => {
   describe('getDeepLinkForNotification', () => {
     it('returns order detail link for order_update with orderId', () => {
-      expect(
-        getDeepLinkForNotification('order_update', { orderId: 'ord-001' }),
-      ).toBe('carolinafutons://orders/ord-001');
+      expect(getDeepLinkForNotification('order_update', { orderId: 'ord-001' })).toBe(
+        'carolinafutons://orders/ord-001',
+      );
     });
 
     it('returns orders list link for order_update without orderId', () => {
-      expect(getDeepLinkForNotification('order_update')).toBe(
-        'carolinafutons://orders',
-      );
+      expect(getDeepLinkForNotification('order_update')).toBe('carolinafutons://orders');
     });
 
     it('returns product link for promotion with productId', () => {
-      expect(
-        getDeepLinkForNotification('promotion', { productId: 'asheville-full' }),
-      ).toBe('carolinafutons://product/asheville-full');
+      expect(getDeepLinkForNotification('promotion', { productId: 'asheville-full' })).toBe(
+        'carolinafutons://product/asheville-full',
+      );
     });
 
     it('returns shop link for promotion without productId', () => {
-      expect(getDeepLinkForNotification('promotion')).toBe(
-        'carolinafutons://shop',
-      );
+      expect(getDeepLinkForNotification('promotion')).toBe('carolinafutons://shop');
     });
 
     it('returns product link for back_in_stock with productId', () => {
-      expect(
-        getDeepLinkForNotification('back_in_stock', { productId: 'pisgah-twin' }),
-      ).toBe('carolinafutons://product/pisgah-twin');
+      expect(getDeepLinkForNotification('back_in_stock', { productId: 'pisgah-twin' })).toBe(
+        'carolinafutons://product/pisgah-twin',
+      );
     });
 
     it('returns wishlist link for back_in_stock without productId', () => {
-      expect(getDeepLinkForNotification('back_in_stock')).toBe(
-        'carolinafutons://wishlist',
-      );
+      expect(getDeepLinkForNotification('back_in_stock')).toBe('carolinafutons://wishlist');
     });
 
     it('returns cart link for cart_reminder', () => {
-      expect(getDeepLinkForNotification('cart_reminder')).toBe(
-        'carolinafutons://cart',
-      );
+      expect(getDeepLinkForNotification('cart_reminder')).toBe('carolinafutons://cart');
     });
   });
 

@@ -10,9 +10,7 @@ describe('linkingConfig', () => {
   });
 
   it('has www universal link prefix', () => {
-    expect(linkingConfig.prefixes).toContain(
-      'https://www.carolinafutons.com',
-    );
+    expect(linkingConfig.prefixes).toContain('https://www.carolinafutons.com');
   });
 
   it('maps Home screen', () => {
@@ -62,9 +60,7 @@ describe('linkingConfig', () => {
   });
 
   it('maps NotificationPreferences screen', () => {
-    expect(linkingConfig.config.screens.NotificationPreferences).toBe(
-      'notifications',
-    );
+    expect(linkingConfig.config.screens.NotificationPreferences).toBe('notifications');
   });
 });
 

@@ -19,9 +19,8 @@ interface Props {
 }
 
 export function SignUpScreen({ onLogin, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
-  const { signUp, signInWithGoogle, signInWithApple, loading, error, clearError } =
-    useAuth();
+  const { colors, borderRadius, shadows } = useTheme();
+  const { signUp, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -66,12 +65,13 @@ export function SignUpScreen({ onLogin, testID }: Props) {
 
         {error && (
           <View
-            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md }]}
+            style={[
+              styles.errorBanner,
+              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+            ]}
             testID="signup-error"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>
-              {error}
-            </Text>
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
           </View>
         )}
 
@@ -89,7 +89,11 @@ export function SignUpScreen({ onLogin, testID }: Props) {
               },
             ]}
             value={name}
-            onChangeText={(t) => { setName(t); setNameError(null); clearError(); }}
+            onChangeText={(t) => {
+              setName(t);
+              setNameError(null);
+              clearError();
+            }}
             placeholder="Your name"
             placeholderTextColor={colors.muted}
             autoComplete="name"
@@ -98,7 +102,10 @@ export function SignUpScreen({ onLogin, testID }: Props) {
             accessibilityLabel="Full name"
           />
           {nameError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="signup-name-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="signup-name-error"
+            >
               {nameError}
             </Text>
           )}
@@ -118,7 +125,11 @@ export function SignUpScreen({ onLogin, testID }: Props) {
               },
             ]}
             value={email}
-            onChangeText={(t) => { setEmail(t); setEmailError(null); clearError(); }}
+            onChangeText={(t) => {
+              setEmail(t);
+              setEmailError(null);
+              clearError();
+            }}
             placeholder="you@example.com"
             placeholderTextColor={colors.muted}
             keyboardType="email-address"
@@ -129,7 +140,10 @@ export function SignUpScreen({ onLogin, testID }: Props) {
             accessibilityLabel="Email address"
           />
           {emailError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="signup-email-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="signup-email-error"
+            >
               {emailError}
             </Text>
           )}
@@ -149,7 +163,11 @@ export function SignUpScreen({ onLogin, testID }: Props) {
               },
             ]}
             value={password}
-            onChangeText={(t) => { setPassword(t); setPasswordError(null); clearError(); }}
+            onChangeText={(t) => {
+              setPassword(t);
+              setPasswordError(null);
+              clearError();
+            }}
             placeholder="Min 8 chars, 1 uppercase, 1 number"
             placeholderTextColor={colors.muted}
             secureTextEntry
@@ -159,7 +177,10 @@ export function SignUpScreen({ onLogin, testID }: Props) {
             accessibilityLabel="Password"
           />
           {passwordError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="signup-password-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="signup-password-error"
+            >
               {passwordError}
             </Text>
           )}
@@ -230,7 +251,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           accessibilityRole="button"
         >
           <Text style={[styles.socialButtonText, { color: colors.espresso }]}>
-            G  Continue with Google
+            G Continue with Google
           </Text>
         </TouchableOpacity>
 
@@ -239,14 +260,8 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           <Text style={[styles.loginText, { color: colors.espressoLight }]}>
             Already have an account?{' '}
           </Text>
-          <TouchableOpacity
-            onPress={onLogin}
-            testID="login-link"
-            accessibilityRole="link"
-          >
-            <Text style={[styles.loginLink, { color: colors.mountainBlue }]}>
-              Sign In
-            </Text>
+          <TouchableOpacity onPress={onLogin} testID="login-link" accessibilityRole="link">
+            <Text style={[styles.loginLink, { color: colors.mountainBlue }]}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

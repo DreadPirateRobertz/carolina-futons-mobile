@@ -4,9 +4,7 @@ import { OrderHistoryScreen } from '../OrderHistoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { MOCK_ORDERS, type Order } from '@/data/orders';
 
-function renderOrderHistory(
-  props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {},
-) {
+function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {}) {
   return render(
     <ThemeProvider>
       <OrderHistoryScreen {...props} />
@@ -46,9 +44,7 @@ describe('OrderHistoryScreen', () => {
     it('shows order number on each card', () => {
       const { getByTestId } = renderOrderHistory();
       for (const order of MOCK_ORDERS) {
-        expect(getByTestId(`order-number-${order.id}`).props.children).toBe(
-          order.orderNumber,
-        );
+        expect(getByTestId(`order-number-${order.id}`).props.children).toBe(order.orderNumber);
       }
     });
 
@@ -69,9 +65,7 @@ describe('OrderHistoryScreen', () => {
       // Single-item order
       expect(getByTestId('order-items-ord-001').props.children).toBe('The Asheville');
       // Multi-item order
-      expect(getByTestId('order-items-ord-002').props.children).toBe(
-        'The Blue Ridge + 1 more',
-      );
+      expect(getByTestId('order-items-ord-002').props.children).toBe('The Blue Ridge + 1 more');
     });
 
     it('orders are sorted newest-first', () => {

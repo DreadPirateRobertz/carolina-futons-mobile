@@ -105,18 +105,12 @@ export function captureException(
     _provider.captureException(error, severity, context);
   } else if (__DEV__) {
     // eslint-disable-next-line no-console
-    console.warn(
-      `[CrashReporting] ${severity}: ${error.message}`,
-      context ?? '',
-    );
+    console.warn(`[CrashReporting] ${severity}: ${error.message}`, context ?? '');
   }
 }
 
 /** Capture a message (non-exception) */
-export function captureMessage(
-  message: string,
-  severity: ErrorSeverity = 'info',
-): void {
+export function captureMessage(message: string, severity: ErrorSeverity = 'info'): void {
   if (_provider) {
     _provider.captureMessage(message, severity);
   } else if (__DEV__) {

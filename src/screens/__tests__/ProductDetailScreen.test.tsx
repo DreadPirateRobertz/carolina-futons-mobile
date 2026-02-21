@@ -9,11 +9,7 @@ const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
 const mountainBlue = FABRICS.find((f) => f.id === 'mountain-blue')!; // $29
-const espressoBrown = FABRICS.find((f) => f.id === 'espresso-brown')!; // $49
-
-function renderDetail(
-  props: Partial<React.ComponentProps<typeof ProductDetailScreen>> = {},
-) {
+function renderDetail(props: Partial<React.ComponentProps<typeof ProductDetailScreen>> = {}) {
   return render(
     <ThemeProvider>
       <WishlistProvider>
@@ -59,16 +55,12 @@ describe('ProductDetailScreen', () => {
 
     it('shows product tagline', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      expect(getByTestId('product-tagline').props.children).toBe(
-        asheville.tagline,
-      );
+      expect(getByTestId('product-tagline').props.children).toBe(asheville.tagline);
     });
 
     it('product name has header accessibility role', () => {
       const { getByTestId } = renderDetail();
-      expect(getByTestId('product-name').props.accessibilityRole).toBe(
-        'header',
-      );
+      expect(getByTestId('product-name').props.accessibilityRole).toBe('header');
     });
 
     it('shows base price for default fabric (no surcharge)', () => {
@@ -135,10 +127,7 @@ describe('ProductDetailScreen', () => {
     it('shows selected fabric name', () => {
       const { getByTestId } = renderDetail();
       // Default is first fabric (Natural Linen)
-      expect(getByTestId('selected-fabric-name').props.children).toEqual([
-        'Natural Linen',
-        false,
-      ]);
+      expect(getByTestId('selected-fabric-name').props.children).toEqual(['Natural Linen', false]);
     });
 
     it('shows fabric surcharge when premium fabric selected', () => {
@@ -180,9 +169,7 @@ describe('ProductDetailScreen', () => {
     it('fabric swatches have accessibility labels', () => {
       const { getByTestId } = renderDetail();
       const swatch = getByTestId('fabric-swatch-mountain-blue');
-      expect(swatch.props.accessibilityLabel).toBe(
-        'Mountain Blue, add $29.00',
-      );
+      expect(swatch.props.accessibilityLabel).toBe('Mountain Blue, add $29.00');
       expect(swatch.props.accessibilityRole).toBe('button');
     });
 
@@ -300,19 +287,13 @@ describe('ProductDetailScreen', () => {
 
     it('quantity buttons have accessibility labels', () => {
       const { getByTestId } = renderDetail();
-      expect(getByTestId('quantity-decrement').props.accessibilityLabel).toBe(
-        'Decrease quantity',
-      );
-      expect(getByTestId('quantity-increment').props.accessibilityLabel).toBe(
-        'Increase quantity',
-      );
+      expect(getByTestId('quantity-decrement').props.accessibilityLabel).toBe('Decrease quantity');
+      expect(getByTestId('quantity-increment').props.accessibilityLabel).toBe('Increase quantity');
     });
 
     it('quantity value has accessibility label', () => {
       const { getByTestId } = renderDetail();
-      expect(getByTestId('quantity-value').props.accessibilityLabel).toBe(
-        'Quantity: 1',
-      );
+      expect(getByTestId('quantity-value').props.accessibilityLabel).toBe('Quantity: 1');
     });
   });
 
@@ -378,17 +359,13 @@ describe('ProductDetailScreen', () => {
 
     it('does not crash when onAddToCart not provided', () => {
       const { getByTestId } = renderDetail();
-      expect(() =>
-        fireEvent.press(getByTestId('add-to-cart-button')),
-      ).not.toThrow();
+      expect(() => fireEvent.press(getByTestId('add-to-cart-button'))).not.toThrow();
     });
 
     it('add to cart button has dynamic accessibility label', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const btn = getByTestId('add-to-cart-button');
-      expect(btn.props.accessibilityLabel).toBe(
-        'Add 1 The Asheville to cart for $349.00',
-      );
+      expect(btn.props.accessibilityLabel).toBe('Add 1 The Asheville to cart for $349.00');
     });
 
     it('accessibility label updates with quantity', () => {
@@ -396,9 +373,7 @@ describe('ProductDetailScreen', () => {
       fireEvent.press(getByTestId('quantity-increment'));
       fireEvent.press(getByTestId('quantity-increment'));
       const btn = getByTestId('add-to-cart-button');
-      expect(btn.props.accessibilityLabel).toBe(
-        'Add 3 The Asheville to cart for $1047.00',
-      );
+      expect(btn.props.accessibilityLabel).toBe('Add 3 The Asheville to cart for $1047.00');
     });
   });
 
@@ -425,17 +400,13 @@ describe('ProductDetailScreen', () => {
 
     it('does not crash when onOpenAR not provided', () => {
       const { getByTestId } = renderDetail();
-      expect(() =>
-        fireEvent.press(getByTestId('detail-ar-button')),
-      ).not.toThrow();
+      expect(() => fireEvent.press(getByTestId('detail-ar-button'))).not.toThrow();
     });
 
     it('has accessibility label with model name', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const btn = getByTestId('detail-ar-button');
-      expect(btn.props.accessibilityLabel).toBe(
-        'Try The Asheville in your room with AR camera',
-      );
+      expect(btn.props.accessibilityLabel).toBe('Try The Asheville in your room with AR camera');
     });
   });
 

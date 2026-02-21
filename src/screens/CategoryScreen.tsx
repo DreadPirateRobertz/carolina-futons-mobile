@@ -1,21 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import {
-  PRODUCTS,
-  SORT_OPTIONS,
-  type Product,
-  type ProductCategory,
-  type SortOption,
-} from '@/data/products';
+import { PRODUCTS, type Product, type ProductCategory, type SortOption } from '@/data/products';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
@@ -35,7 +22,7 @@ export function CategoryScreen({
   onBack,
   testID,
 }: Props) {
-  const { colors, spacing, borderRadius, typography } = useTheme();
+  const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
   const [sortBy, setSortBy] = useState<SortOption>('featured');
 
@@ -71,9 +58,7 @@ export function CategoryScreen({
   }, [categoryId, sortBy]);
 
   const renderProduct = useCallback(
-    ({ item }: { item: Product }) => (
-      <ProductCard product={item} onPress={onProductPress} />
-    ),
+    ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,
     [onProductPress],
   );
 

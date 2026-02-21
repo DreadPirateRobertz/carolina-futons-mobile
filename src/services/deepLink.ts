@@ -136,10 +136,7 @@ export function buildCategoryShareUrl(slug: string): string {
 }
 
 /** Build a shareable deep link with UTM params */
-export function buildShareUrlWithUTM(
-  baseUrl: string,
-  utm: Partial<UTMParams>,
-): string {
+export function buildShareUrlWithUTM(baseUrl: string, utm: Partial<UTMParams>): string {
   const params = new URLSearchParams();
   if (utm.source) params.set('utm_source', utm.source);
   if (utm.medium) params.set('utm_medium', utm.medium);

@@ -46,9 +46,6 @@ function renderWithCartReader(
 }
 
 const deliveredOrder = MOCK_ORDERS[0]; // ord-001, delivered, has tracking
-const shippedOrder = MOCK_ORDERS[1]; // ord-002, shipped, multi-item
-const processingOrder = MOCK_ORDERS[2]; // ord-003, processing, no tracking
-const cancelledOrder = MOCK_ORDERS[3]; // ord-004, cancelled
 
 describe('OrderDetailScreen', () => {
   beforeEach(() => {
@@ -71,9 +68,7 @@ describe('OrderDetailScreen', () => {
 
     it('shows order number in header', () => {
       const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
-      expect(getByTestId('order-detail-header').props.children).toBe(
-        deliveredOrder.orderNumber,
-      );
+      expect(getByTestId('order-detail-header').props.children).toBe(deliveredOrder.orderNumber);
     });
 
     it('shows status badge', () => {
@@ -162,16 +157,12 @@ describe('OrderDetailScreen', () => {
   describe('Payment', () => {
     it('shows payment method', () => {
       const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
-      expect(getByTestId('order-payment-method').props.children).toBe(
-        'Visa ····4242',
-      );
+      expect(getByTestId('order-payment-method').props.children).toBe('Visa ····4242');
     });
 
     it('shows BNPL payment for Affirm order', () => {
       const { getByTestId } = renderOrderDetail({ orderId: 'ord-002' });
-      expect(getByTestId('order-payment-method').props.children).toBe(
-        'Affirm (4 payments)',
-      );
+      expect(getByTestId('order-payment-method').props.children).toBe('Affirm (4 payments)');
     });
   });
 
@@ -245,9 +236,7 @@ describe('OrderDetailScreen', () => {
 
     it('re-order button has accessibility label', () => {
       const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
-      expect(getByTestId('reorder-button').props.accessibilityLabel).toBe(
-        'Re-order these items',
-      );
+      expect(getByTestId('reorder-button').props.accessibilityLabel).toBe('Re-order these items');
     });
   });
 });

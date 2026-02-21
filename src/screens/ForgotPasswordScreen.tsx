@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function ForgotPasswordScreen({ onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, borderRadius, shadows } = useTheme();
   const { resetPassword, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -91,9 +91,7 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
             accessibilityRole="button"
             style={styles.backLink}
           >
-            <Text style={[styles.backLinkText, { color: colors.espresso }]}>
-              {'‹ Back'}
-            </Text>
+            <Text style={[styles.backLinkText, { color: colors.espresso }]}>{'‹ Back'}</Text>
           </TouchableOpacity>
         )}
 
@@ -110,12 +108,13 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
 
         {error && (
           <View
-            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md }]}
+            style={[
+              styles.errorBanner,
+              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+            ]}
             testID="forgot-error"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>
-              {error}
-            </Text>
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
           </View>
         )}
 
@@ -132,7 +131,12 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
               },
             ]}
             value={email}
-            onChangeText={(t) => { setEmail(t); setEmailError(null); clearError(); setSent(false); }}
+            onChangeText={(t) => {
+              setEmail(t);
+              setEmailError(null);
+              clearError();
+              setSent(false);
+            }}
             placeholder="you@example.com"
             placeholderTextColor={colors.muted}
             keyboardType="email-address"
@@ -143,7 +147,10 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
             accessibilityLabel="Email address"
           />
           {emailError && (
-            <Text style={[styles.fieldError, { color: colors.sunsetCoral }]} testID="forgot-email-error">
+            <Text
+              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              testID="forgot-email-error"
+            >
               {emailError}
             </Text>
           )}

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const badgeColor =
     product.badge === 'Sale'

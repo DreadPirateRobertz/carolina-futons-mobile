@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function OfflineBanner({ testID }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
   const { isOnline } = useConnectivity();
 
   if (isOnline) return null;
@@ -20,9 +20,7 @@ export function OfflineBanner({ testID }: Props) {
       accessibilityRole="alert"
       accessibilityLabel="You are offline. Browsing cached products."
     >
-      <Text style={styles.bannerText}>
-        You're offline — browsing cached products
-      </Text>
+      <Text style={styles.bannerText}>You're offline — browsing cached products</Text>
     </View>
   );
 }

@@ -15,7 +15,7 @@ export function SearchBar({
   placeholder = 'Search products...',
   testID,
 }: Props) {
-  const { colors, spacing, borderRadius } = useTheme();
+  const { colors, borderRadius } = useTheme();
 
   return (
     <View

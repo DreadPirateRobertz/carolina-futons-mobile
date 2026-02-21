@@ -1,20 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
-import {
-  MOCK_ORDERS,
-  ORDER_STATUS_CONFIG,
-  type Order,
-  type OrderStatus,
-} from '@/data/orders';
+import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -34,9 +22,9 @@ export function OrderHistoryScreen({
   const [refreshing, setRefreshing] = useState(false);
 
   // Use prop orders or fall back to mock data
-  const orders = (ordersProp ?? MOCK_ORDERS).slice().sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  const orders = (ordersProp ?? MOCK_ORDERS)
+    .slice()
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -92,9 +80,7 @@ export function OrderHistoryScreen({
               ]}
               testID={`order-status-${item.id}`}
             >
-              <Text style={[styles.statusText, { color: statusColor }]}>
-                {statusConfig.label}
-              </Text>
+              <Text style={[styles.statusText, { color: statusColor }]}>{statusConfig.label}</Text>
             </View>
           </View>
 
@@ -137,9 +123,7 @@ export function OrderHistoryScreen({
           title="No orders yet"
           message="Once you place your first order, it will appear here."
           action={
-            onStartShopping
-              ? { label: 'Start Shopping', onPress: onStartShopping }
-              : undefined
+            onStartShopping ? { label: 'Start Shopping', onPress: onStartShopping } : undefined
           }
           testID="orders-empty-state"
         />
@@ -153,10 +137,7 @@ export function OrderHistoryScreen({
       testID={testID ?? 'order-history-screen'}
     >
       <Text
-        style={[
-          styles.headerTitle,
-          { color: colors.espresso, paddingHorizontal: spacing.lg },
-        ]}
+        style={[styles.headerTitle, { color: colors.espresso, paddingHorizontal: spacing.lg }]}
         accessibilityRole="header"
         testID="order-history-header"
       >

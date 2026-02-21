@@ -4,7 +4,6 @@ import { CartScreen } from '../CartScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
-import { Text, TouchableOpacity, View } from 'react-native';
 
 const asheville = FUTON_MODELS[0]; // $349
 const blueRidge = FUTON_MODELS[1]; // $449
@@ -14,7 +13,7 @@ const mountainBlue = FABRICS[2]; // $29
 /** Renders CartScreen wrapped in providers, with optional pre-seeded items */
 function renderCartScreen(
   props: Partial<React.ComponentProps<typeof CartScreen>> = {},
-  seedItems?: Array<{ model: typeof asheville; fabric: typeof naturalLinen; qty: number }>,
+  seedItems?: { model: typeof asheville; fabric: typeof naturalLinen; qty: number }[],
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -34,7 +33,7 @@ function renderCartScreen(
 function CartSeeder({
   items,
 }: {
-  items: Array<{ model: typeof asheville; fabric: typeof naturalLinen; qty: number }>;
+  items: { model: typeof asheville; fabric: typeof naturalLinen; qty: number }[];
 }) {
   const { addItem } = useCart();
   React.useEffect(() => {
@@ -71,9 +70,7 @@ describe('CartScreen', () => {
   });
 
   describe('Cart with items', () => {
-    const seed = [
-      { model: asheville, fabric: naturalLinen, qty: 1 },
-    ];
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
 
     it('renders cart screen with testID', () => {
       const { getByTestId } = renderCartScreen({}, seed);
@@ -92,9 +89,9 @@ describe('CartScreen', () => {
 
     it('shows product name on item', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(
-        getByTestId('cart-item-name-asheville-full:natural-linen').props.children,
-      ).toBe('The Asheville');
+      expect(getByTestId('cart-item-name-asheville-full:natural-linen').props.children).toBe(
+        'The Asheville',
+      );
     });
 
     it('shows fabric name on item', () => {
@@ -104,16 +101,14 @@ describe('CartScreen', () => {
 
     it('shows item quantity', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(
-        getByTestId('cart-item-qty-asheville-full:natural-linen').props.children,
-      ).toBe(1);
+      expect(getByTestId('cart-item-qty-asheville-full:natural-linen').props.children).toBe(1);
     });
 
     it('shows item line total', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(
-        getByTestId('cart-item-price-asheville-full:natural-linen').props.children,
-      ).toBe('$349.00');
+      expect(getByTestId('cart-item-price-asheville-full:natural-linen').props.children).toBe(
+        '$349.00',
+      );
     });
   });
 
@@ -193,9 +188,7 @@ describe('CartScreen', () => {
 
     it('has accessibility label with total', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(getByTestId('checkout-button').props.accessibilityLabel).toContain(
-        '$422.43',
-      );
+      expect(getByTestId('checkout-button').props.accessibilityLabel).toContain('$422.43');
     });
   });
 
@@ -204,33 +197,21 @@ describe('CartScreen', () => {
 
     it('increments item quantity', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(
-        getByTestId('cart-item-increment-asheville-full:natural-linen'),
-      );
-      expect(
-        getByTestId('cart-item-qty-asheville-full:natural-linen').props.children,
-      ).toBe(3);
+      fireEvent.press(getByTestId('cart-item-increment-asheville-full:natural-linen'));
+      expect(getByTestId('cart-item-qty-asheville-full:natural-linen').props.children).toBe(3);
     });
 
     it('decrements item quantity', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(
-        getByTestId('cart-item-decrement-asheville-full:natural-linen'),
-      );
-      expect(
-        getByTestId('cart-item-qty-asheville-full:natural-linen').props.children,
-      ).toBe(1);
+      fireEvent.press(getByTestId('cart-item-decrement-asheville-full:natural-linen'));
+      expect(getByTestId('cart-item-qty-asheville-full:natural-linen').props.children).toBe(1);
     });
 
     it('removes item when decremented to 0', () => {
       const seed1 = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
       const { getByTestId, queryByTestId } = renderCartScreen({}, seed1);
-      fireEvent.press(
-        getByTestId('cart-item-decrement-asheville-full:natural-linen'),
-      );
-      expect(
-        queryByTestId('cart-item-asheville-full:natural-linen'),
-      ).toBeNull();
+      fireEvent.press(getByTestId('cart-item-decrement-asheville-full:natural-linen'));
+      expect(queryByTestId('cart-item-asheville-full:natural-linen')).toBeNull();
     });
   });
 
@@ -242,15 +223,9 @@ describe('CartScreen', () => {
 
     it('removes item when X pressed', () => {
       const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(
-        getByTestId('cart-item-remove-asheville-full:natural-linen'),
-      );
-      expect(
-        queryByTestId('cart-item-asheville-full:natural-linen'),
-      ).toBeNull();
-      expect(
-        getByTestId('cart-item-blue-ridge-queen:mountain-blue'),
-      ).toBeTruthy();
+      fireEvent.press(getByTestId('cart-item-remove-asheville-full:natural-linen'));
+      expect(queryByTestId('cart-item-asheville-full:natural-linen')).toBeNull();
+      expect(getByTestId('cart-item-blue-ridge-queen:mountain-blue')).toBeTruthy();
     });
   });
 

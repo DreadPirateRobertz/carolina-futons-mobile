@@ -1,10 +1,11 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { ARFutonOverlay } from '../ARFutonOverlay';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
+
 // Mock gesture handler
 jest.mock('react-native-gesture-handler', () => {
-  const { View } = require('react-native');
-  const { createElement } = require('react');
   return {
     Gesture: {
       Pan: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
@@ -28,15 +29,10 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-import { ARFutonOverlay } from '../ARFutonOverlay';
-import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
-
 const asheville = FUTON_MODELS[0];
 const blueRidge = FUTON_MODELS[1];
 const pisgah = FUTON_MODELS[2];
 const naturalLinen = FABRICS[0];
-const mountainBlue = FABRICS[2];
-const charcoal = FABRICS.find((f) => f.id === 'charcoal')!;
 
 describe('ARFutonOverlay', () => {
   describe('Rendering', () => {

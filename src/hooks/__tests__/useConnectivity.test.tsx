@@ -46,7 +46,10 @@ describe('useConnectivity', () => {
   });
 
   it('throws outside provider', () => {
-    function Bad() { useConnectivity(); return null; }
+    function Bad() {
+      useConnectivity();
+      return null;
+    }
     expect(() => render(<Bad />)).toThrow(
       'useConnectivity must be used within a ConnectivityProvider',
     );

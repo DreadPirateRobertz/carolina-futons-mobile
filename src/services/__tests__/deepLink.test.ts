@@ -8,7 +8,6 @@ import {
   storePendingDeepLink,
   consumePendingDeepLink,
   type ParsedDeepLink,
-  type UTMParams,
 } from '../deepLink';
 
 describe('deepLink', () => {
@@ -20,31 +19,23 @@ describe('deepLink', () => {
     });
 
     it('parses universal link', () => {
-      const result = parseDeepLink(
-        'https://carolinafutons.com/product/asheville-full',
-      );
+      const result = parseDeepLink('https://carolinafutons.com/product/asheville-full');
       expect(result.path).toBe('product/asheville-full');
     });
 
     it('parses universal link with www', () => {
-      const result = parseDeepLink(
-        'https://www.carolinafutons.com/category/frames',
-      );
+      const result = parseDeepLink('https://www.carolinafutons.com/category/frames');
       expect(result.path).toBe('category/frames');
     });
 
     it('parses query params', () => {
-      const result = parseDeepLink(
-        'carolinafutons://shop?sort=price&color=blue',
-      );
+      const result = parseDeepLink('carolinafutons://shop?sort=price&color=blue');
       expect(result.params.sort).toBe('price');
       expect(result.params.color).toBe('blue');
     });
 
     it('decodes URL-encoded params', () => {
-      const result = parseDeepLink(
-        'carolinafutons://shop?name=hello%20world',
-      );
+      const result = parseDeepLink('carolinafutons://shop?name=hello%20world');
       expect(result.params.name).toBe('hello world');
     });
 
@@ -215,18 +206,17 @@ describe('deepLink', () => {
 
   describe('buildCategoryShareUrl', () => {
     it('builds category URL', () => {
-      expect(buildCategoryShareUrl('frames')).toBe(
-        'https://carolinafutons.com/category/frames',
-      );
+      expect(buildCategoryShareUrl('frames')).toBe('https://carolinafutons.com/category/frames');
     });
   });
 
   describe('buildShareUrlWithUTM', () => {
     it('appends UTM params', () => {
-      const url = buildShareUrlWithUTM(
-        'https://carolinafutons.com/product/asheville-full',
-        { source: 'app', medium: 'share', campaign: 'product-share' },
-      );
+      const url = buildShareUrlWithUTM('https://carolinafutons.com/product/asheville-full', {
+        source: 'app',
+        medium: 'share',
+        campaign: 'product-share',
+      });
       expect(url).toContain('utm_source=app');
       expect(url).toContain('utm_medium=share');
       expect(url).toContain('utm_campaign=product-share');
@@ -238,10 +228,7 @@ describe('deepLink', () => {
     });
 
     it('only includes provided UTM params', () => {
-      const url = buildShareUrlWithUTM(
-        'https://carolinafutons.com/shop',
-        { source: 'app' },
-      );
+      const url = buildShareUrlWithUTM('https://carolinafutons.com/shop', { source: 'app' });
       expect(url).toContain('utm_source=app');
       expect(url).not.toContain('utm_medium');
       expect(url).not.toContain('utm_campaign');

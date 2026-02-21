@@ -119,9 +119,9 @@ describe('NotificationPreferencesScreen', () => {
 
     it('enable button has accessibility label', () => {
       const { getByTestId } = renderNotifPrefs();
-      expect(
-        getByTestId('enable-notifications-button').props.accessibilityLabel,
-      ).toBe('Enable push notifications');
+      expect(getByTestId('enable-notifications-button').props.accessibilityLabel).toBe(
+        'Enable push notifications',
+      );
     });
   });
 });

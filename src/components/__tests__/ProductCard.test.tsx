@@ -47,8 +47,7 @@ describe('ProductCard', () => {
 
     it('renders star rating', () => {
       const { getByText } = renderCard();
-      const stars =
-        '★'.repeat(Math.round(futon.rating)) + '☆'.repeat(5 - Math.round(futon.rating));
+      const stars = '★'.repeat(Math.round(futon.rating)) + '☆'.repeat(5 - Math.round(futon.rating));
       expect(getByText(stars)).toBeTruthy();
     });
 

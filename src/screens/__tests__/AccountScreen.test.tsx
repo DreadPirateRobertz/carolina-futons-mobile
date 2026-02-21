@@ -3,7 +3,6 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
-import { Text, TouchableOpacity, View } from 'react-native';
 
 function renderAccount(
   props: Partial<React.ComponentProps<typeof AccountScreen>> = {},

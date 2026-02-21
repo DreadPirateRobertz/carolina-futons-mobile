@@ -86,7 +86,17 @@ describe('Design Tokens', () => {
     });
 
     it('defines type scale with fontSize and lineHeight', () => {
-      const scaleKeys = ['heroTitle', 'h1', 'h2', 'h3', 'h4', 'bodyLarge', 'body', 'bodySmall', 'caption'];
+      const scaleKeys = [
+        'heroTitle',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'bodyLarge',
+        'body',
+        'bodySmall',
+        'caption',
+      ];
       scaleKeys.forEach((key) => {
         const style = typography[key as keyof typeof typography];
         expect(style).toHaveProperty('fontSize');

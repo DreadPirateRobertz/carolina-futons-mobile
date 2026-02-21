@@ -32,9 +32,7 @@ describe('OfflineBanner', () => {
 
   it('has accessibility label', () => {
     const { getByTestId } = renderBanner(false);
-    expect(getByTestId('offline-banner').props.accessibilityLabel).toContain(
-      'offline',
-    );
+    expect(getByTestId('offline-banner').props.accessibilityLabel).toContain('offline');
   });
 
   it('shows offline message text', () => {

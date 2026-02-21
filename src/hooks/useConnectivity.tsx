@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
 
 interface ConnectivityContextValue {
   isOnline: boolean;
@@ -23,16 +23,9 @@ export function ConnectivityProvider({
 }) {
   const [isOnline, setOnline] = useState(initialOnline);
 
-  const value = useMemo<ConnectivityContextValue>(
-    () => ({ isOnline, setOnline }),
-    [isOnline],
-  );
+  const value = useMemo<ConnectivityContextValue>(() => ({ isOnline, setOnline }), [isOnline]);
 
-  return (
-    <ConnectivityContext.Provider value={value}>
-      {children}
-    </ConnectivityContext.Provider>
-  );
+  return <ConnectivityContext.Provider value={value}>{children}</ConnectivityContext.Provider>;
 }
 
 export function useConnectivity(): ConnectivityContextValue {

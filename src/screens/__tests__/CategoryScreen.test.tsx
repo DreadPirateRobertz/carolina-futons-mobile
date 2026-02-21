@@ -8,9 +8,7 @@ import { PRODUCTS } from '@/data/products';
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
 const coverProducts = PRODUCTS.filter((p) => p.category === 'covers');
 
-function renderCategory(
-  props: Partial<React.ComponentProps<typeof CategoryScreen>> = {},
-) {
+function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScreen>> = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const onBack = props.onBack ?? jest.fn();
   return {
@@ -95,7 +93,7 @@ describe('CategoryScreen', () => {
   describe('empty state', () => {
     it('shows empty state for category with no products', () => {
       // Use a category ID that has no products in our mock data
-      const { getByTestId } = renderCategory({
+      renderCategory({
         categoryId: 'futons' as any,
         categoryTitle: 'Empty Category',
       });
@@ -150,9 +148,7 @@ describe('CategoryScreen', () => {
       });
       const firstFuton = futonProducts[0];
       fireEvent.press(getByTestId(`product-card-${firstFuton.id}`));
-      expect(onProductPress).toHaveBeenCalledWith(
-        expect.objectContaining({ id: firstFuton.id }),
-      );
+      expect(onProductPress).toHaveBeenCalledWith(expect.objectContaining({ id: firstFuton.id }));
     });
   });
 });

@@ -11,12 +11,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import {
-  FUTON_MODELS,
-  type FutonModel,
-  type Fabric,
-  inchesToFeetDisplay,
-} from '@/data/futons';
+import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 import { formatPrice } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { PRODUCTS } from '@/data/products';
@@ -34,14 +29,8 @@ interface Props {
   testID?: string;
 }
 
-export function ProductDetailScreen({
-  productId,
-  onAddToCart,
-  onBack,
-  onOpenAR,
-  testID,
-}: Props) {
-  const { colors, spacing, typography, borderRadius, shadows } = useTheme();
+export function ProductDetailScreen({ productId, onAddToCart, onBack, onOpenAR, testID }: Props) {
+  const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const model = FUTON_MODELS.find((m) => m.id === productId) ?? FUTON_MODELS[0];
   const catalogProduct = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
@@ -84,33 +73,20 @@ export function ProductDetailScreen({
     onOpenAR?.(model.id);
   }, [model.id, onOpenAR]);
 
-  const onGalleryScroll = useCallback(
-    (e: { nativeEvent: { contentOffset: { x: number } } }) => {
-      const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-      setActiveGalleryIndex(index);
-    },
-    [],
-  );
+  const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    setActiveGalleryIndex(index);
+  }, []);
 
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
       <View
-        style={[
-          styles.gallerySlide,
-          { width: SCREEN_WIDTH, backgroundColor: colors.sandLight },
-        ]}
+        style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: colors.sandLight }]}
         testID={`gallery-slide-${index}`}
       >
-        <FutonPlaceholder
-          model={model}
-          fabric={selectedFabric}
-          viewLabel={item}
-          index={index}
-        />
+        <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={item} index={index} />
         <View style={styles.galleryLabel}>
-          <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>
-            {item}
-          </Text>
+          <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>{item}</Text>
         </View>
       </View>
     ),
@@ -118,7 +94,10 @@ export function ProductDetailScreen({
   );
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.sandBase }]} testID={testID ?? 'product-detail-screen'}>
+    <View
+      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      testID={testID ?? 'product-detail-screen'}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -139,11 +118,7 @@ export function ProductDetailScreen({
 
         {/* Wishlist button */}
         <View style={styles.wishlistButtonContainer}>
-          <WishlistButton
-            product={catalogProduct}
-            size="lg"
-            testID="detail-wishlist-button"
-          />
+          <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
         </View>
 
         {/* Image Gallery */}
@@ -168,8 +143,7 @@ export function ProductDetailScreen({
               style={[
                 styles.paginationDot,
                 {
-                  backgroundColor:
-                    i === activeGalleryIndex ? colors.espresso : colors.sandDark,
+                  backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
                 },
               ]}
               testID={`gallery-dot-${i}`}
@@ -211,10 +185,11 @@ export function ProductDetailScreen({
 
         {/* Fabric Selector */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Fabric
-          </Text>
-          <Text style={[styles.fabricName, { color: colors.espressoLight }]} testID="selected-fabric-name">
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Fabric</Text>
+          <Text
+            style={[styles.fabricName, { color: colors.espressoLight }]}
+            testID="selected-fabric-name"
+          >
             {selectedFabric.name}
             {selectedFabric.price > 0 && ` (+${formatPrice(selectedFabric.price)})`}
           </Text>
@@ -241,9 +216,7 @@ export function ProductDetailScreen({
                 accessibilityRole="button"
                 accessibilityState={{ selected: fabric.id === selectedFabric.id }}
               >
-                {fabric.id === selectedFabric.id && (
-                  <Text style={styles.fabricCheck}>✓</Text>
-                )}
+                {fabric.id === selectedFabric.id && <Text style={styles.fabricCheck}>✓</Text>}
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -251,9 +224,7 @@ export function ProductDetailScreen({
 
         {/* Dimensions */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Dimensions
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Dimensions</Text>
           <View
             style={[
               styles.dimensionsCard,

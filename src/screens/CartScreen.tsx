@@ -1,12 +1,5 @@
 import React, { useCallback } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
@@ -24,9 +17,8 @@ interface Props {
 }
 
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
-  const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } =
-    useCart();
+  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
 
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
@@ -107,9 +99,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           accessibilityLabel="Clear all items from cart"
           accessibilityRole="button"
         >
-          <Text style={[styles.clearText, { color: colors.mountainBlue }]}>
-            Clear All
-          </Text>
+          <Text style={[styles.clearText, { color: colors.mountainBlue }]}>Clear All</Text>
         </TouchableOpacity>
       </View>
 
@@ -146,28 +136,17 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           ]}
           testID="order-summary"
         >
-          <Text
-            style={[styles.summaryTitle, { color: colors.espresso }]}
-          >
-            Order Summary
-          </Text>
+          <Text style={[styles.summaryTitle, { color: colors.espresso }]}>Order Summary</Text>
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>
-              Subtotal
-            </Text>
-            <Text
-              style={[styles.summaryValue, { color: colors.espresso }]}
-              testID="cart-subtotal"
-            >
+            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>Subtotal</Text>
+            <Text style={[styles.summaryValue, { color: colors.espresso }]} testID="cart-subtotal">
               {formatPrice(subtotal)}
             </Text>
           </View>
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>
-              Shipping
-            </Text>
+            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>Shipping</Text>
             <Text
               style={[
                 styles.summaryValue,
@@ -189,13 +168,8 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           )}
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>
-              Tax (7%)
-            </Text>
-            <Text
-              style={[styles.summaryValue, { color: colors.espresso }]}
-              testID="cart-tax"
-            >
+            <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>Tax (7%)</Text>
+            <Text style={[styles.summaryValue, { color: colors.espresso }]} testID="cart-tax">
               {formatPrice(tax)}
             </Text>
           </View>
@@ -203,13 +177,8 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.totalLabel, { color: colors.espresso }]}>
-              Total
-            </Text>
-            <Text
-              style={[styles.totalValue, { color: colors.espresso }]}
-              testID="cart-total"
-            >
+            <Text style={[styles.totalLabel, { color: colors.espresso }]}>Total</Text>
+            <Text style={[styles.totalValue, { color: colors.espresso }]} testID="cart-total">
               {formatPrice(total)}
             </Text>
           </View>
@@ -229,10 +198,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         >
           <Text style={[styles.bnplText, { color: colors.mountainBlueDark }]}>
             Or 4 interest-free payments of{' '}
-            <Text style={styles.bnplAmount}>
-              {formatPrice(total / 4)}
-            </Text>{' '}
-            with Klarna or Affirm
+            <Text style={styles.bnplAmount}>{formatPrice(total / 4)}</Text> with Klarna or Affirm
           </Text>
         </View>
 
@@ -252,9 +218,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
             accessibilityLabel={`Proceed to checkout, total ${formatPrice(total)}`}
             accessibilityRole="button"
           >
-            <Text style={styles.checkoutButtonText}>
-              Checkout — {formatPrice(total)}
-            </Text>
+            <Text style={styles.checkoutButtonText}>Checkout — {formatPrice(total)}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -299,10 +263,7 @@ function CartItemRow({
       {/* Fabric color indicator + product info */}
       <View style={styles.itemTop}>
         <View
-          style={[
-            styles.fabricDot,
-            { backgroundColor: item.fabric.color },
-          ]}
+          style={[styles.fabricDot, { backgroundColor: item.fabric.color }]}
           testID={`cart-item-fabric-${item.id}`}
         />
         <View style={styles.itemInfo}>
@@ -335,18 +296,13 @@ function CartItemRow({
       <View style={styles.itemBottom}>
         <View style={styles.quantityRow}>
           <TouchableOpacity
-            style={[
-              styles.qtyButton,
-              { backgroundColor: colors.sandDark, borderRadius: br.sm },
-            ]}
+            style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
             onPress={onDecrement}
             testID={`cart-item-decrement-${item.id}`}
             accessibilityLabel="Decrease quantity"
             accessibilityRole="button"
           >
-            <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>
-              −
-            </Text>
+            <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>−</Text>
           </TouchableOpacity>
           <Text
             style={[styles.qtyValue, { color: colors.espresso }]}

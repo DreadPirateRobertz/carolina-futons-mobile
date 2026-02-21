@@ -28,9 +28,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       if (existing) {
         return {
           items: state.items.map((i) =>
-            i.id === itemId
-              ? { ...i, quantity: Math.min(10, i.quantity + action.quantity) }
-              : i,
+            i.id === itemId ? { ...i, quantity: Math.min(10, i.quantity + action.quantity) } : i,
           ),
         };
       }
@@ -55,9 +53,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
       return {
         items: state.items.map((i) =>
-          i.id === action.itemId
-            ? { ...i, quantity: Math.min(10, action.quantity) }
-            : i,
+          i.id === action.itemId ? { ...i, quantity: Math.min(10, action.quantity) } : i,
         ),
       };
     }
@@ -83,12 +79,9 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
-  const addItem = useCallback(
-    (model: FutonModel, fabric: Fabric, quantity: number) => {
-      dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
-    },
-    [],
-  );
+  const addItem = useCallback((model: FutonModel, fabric: Fabric, quantity: number) => {
+    dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
+  }, []);
 
   const removeItem = useCallback((itemId: string) => {
     dispatch({ type: 'REMOVE_ITEM', itemId });

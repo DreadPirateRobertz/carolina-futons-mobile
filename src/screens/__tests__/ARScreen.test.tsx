@@ -1,6 +1,11 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
+import { ARScreen } from '../ARScreen';
+import { useCameraPermissions } from 'expo-camera';
+import * as Haptics from 'expo-haptics';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
+
 // Mock expo-camera
 jest.mock('expo-camera', () => {
   const { createElement } = require('react');
@@ -46,11 +51,6 @@ jest.mock('react-native-reanimated', () => {
     withSpring: (val: any) => val,
   };
 });
-
-import { ARScreen } from '../ARScreen';
-import { useCameraPermissions } from 'expo-camera';
-import * as Haptics from 'expo-haptics';
-import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
 describe('ARScreen', () => {
   beforeEach(() => {

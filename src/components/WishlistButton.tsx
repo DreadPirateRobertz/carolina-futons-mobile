@@ -45,7 +45,9 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
       ]}
       onPress={handlePress}
       testID={testID ?? `wishlist-btn-${product.id}`}
-      accessibilityLabel={active ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+      accessibilityLabel={
+        active ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`
+      }
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

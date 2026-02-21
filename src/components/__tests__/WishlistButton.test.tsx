@@ -43,9 +43,7 @@ describe('WishlistButton', () => {
 
   it('has correct accessibility label when not in wishlist', () => {
     const { getByTestId } = renderButton();
-    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityLabel).toContain(
-      'Add',
-    );
+    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityLabel).toContain('Add');
     expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityLabel).toContain(
       product.name,
     );
@@ -54,17 +52,13 @@ describe('WishlistButton', () => {
   it('has correct accessibility label when in wishlist', () => {
     const { getByTestId } = renderButton();
     fireEvent.press(getByTestId(`wishlist-btn-${product.id}`));
-    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityLabel).toContain(
-      'Remove',
-    );
+    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityLabel).toContain('Remove');
   });
 
   it('has selected accessibility state when active', () => {
     const { getByTestId } = renderButton();
     fireEvent.press(getByTestId(`wishlist-btn-${product.id}`));
-    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityState.selected).toBe(
-      true,
-    );
+    expect(getByTestId(`wishlist-btn-${product.id}`).props.accessibilityState.selected).toBe(true);
   });
 
   it('renders in small size', () => {

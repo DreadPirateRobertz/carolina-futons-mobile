@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { WishlistProvider, useWishlist } from '../useWishlist';
 import { PRODUCTS } from '@/data/products';
@@ -30,7 +30,9 @@ function TestHarness() {
   );
 }
 
-function renderHarness(initialItems?: { productId: string; addedAt: number; savedPrice: number }[]) {
+function renderHarness(
+  initialItems?: { productId: string; addedAt: number; savedPrice: number }[],
+) {
   return render(
     <WishlistProvider initialItems={initialItems}>
       <TestHarness />
@@ -182,9 +184,9 @@ describe('useWishlist', () => {
   describe('error boundary', () => {
     it('throws when used outside provider', () => {
       const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-      expect(() =>
-        render(<TestHarness />),
-      ).toThrow('useWishlist must be used within a WishlistProvider');
+      expect(() => render(<TestHarness />)).toThrow(
+        'useWishlist must be used within a WishlistProvider',
+      );
       consoleError.mockRestore();
     });
   });

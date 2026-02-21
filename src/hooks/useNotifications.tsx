@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
-import {
-  type NotificationPreferences,
-  type NotificationType,
-  DEFAULT_PREFERENCES,
-} from '@/services/notifications';
+import { type NotificationPreferences, DEFAULT_PREFERENCES } from '@/services/notifications';
 
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
 
@@ -79,12 +75,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     dispatch({ type: 'SET_TOKEN', token: 'ExponentPushToken[mock-token-123]' });
   }, []);
 
-  const togglePreference = useCallback(
-    (key: keyof NotificationPreferences) => {
-      dispatch({ type: 'TOGGLE_PREF', key });
-    },
-    [],
-  );
+  const togglePreference = useCallback((key: keyof NotificationPreferences) => {
+    dispatch({ type: 'TOGGLE_PREF', key });
+  }, []);
 
   const setPreferences = useCallback((prefs: NotificationPreferences) => {
     dispatch({ type: 'SET_PREFERENCES', prefs });
@@ -113,11 +106,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     [state, requestPermission, togglePreference, setPreferences, setBadgeCount, clearBadge],
   );
 
-  return (
-    <NotificationContext.Provider value={value}>
-      {children}
-    </NotificationContext.Provider>
-  );
+  return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }
 
 export function useNotifications(): NotificationContextValue {

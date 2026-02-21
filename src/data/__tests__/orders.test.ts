@@ -1,9 +1,4 @@
-import {
-  MOCK_ORDERS,
-  ORDER_STATUS_CONFIG,
-  getTrackingUrl,
-  type OrderStatus,
-} from '../orders';
+import { MOCK_ORDERS, ORDER_STATUS_CONFIG, getTrackingUrl, type OrderStatus } from '../orders';
 
 describe('Order data model', () => {
   describe('MOCK_ORDERS', () => {
@@ -71,9 +66,7 @@ describe('Order data model', () => {
 
     it('returns USPS tracking URL', () => {
       const url = getTrackingUrl('USPS', '9400111');
-      expect(url).toBe(
-        'https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111',
-      );
+      expect(url).toBe('https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111');
     });
 
     it('returns empty string for unknown carrier', () => {

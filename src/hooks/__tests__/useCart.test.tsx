@@ -12,14 +12,15 @@ const espressoBrown = FABRICS[5]; // $49
 
 /** Test harness that exposes cart state + actions */
 function CartHarness() {
-  const { items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart } =
-    useCart();
+  const { items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart } = useCart();
 
   return (
     <View>
       <Text testID="item-count">{itemCount}</Text>
       <Text testID="subtotal">{subtotal}</Text>
-      <Text testID="items-json">{JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity, unit: i.unitPrice })))}</Text>
+      <Text testID="items-json">
+        {JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity, unit: i.unitPrice })))}
+      </Text>
 
       <TouchableOpacity
         testID="add-asheville-linen"
@@ -196,9 +197,7 @@ describe('useCart', () => {
         useCart();
         return null;
       }
-      expect(() => render(<BadComponent />)).toThrow(
-        'useCart must be used within a CartProvider',
-      );
+      expect(() => render(<BadComponent />)).toThrow('useCart must be used within a CartProvider');
     });
   });
 });

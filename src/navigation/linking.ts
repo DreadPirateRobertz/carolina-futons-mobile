@@ -19,16 +19,15 @@
 export interface LinkingConfig {
   prefixes: string[];
   config: {
-    screens: Record<string, string | { path: string; parse?: Record<string, (v: string) => string> }>;
+    screens: Record<
+      string,
+      string | { path: string; parse?: Record<string, (v: string) => string> }
+    >;
   };
 }
 
 export const linkingConfig: LinkingConfig = {
-  prefixes: [
-    'carolinafutons://',
-    'https://carolinafutons.com',
-    'https://www.carolinafutons.com',
-  ],
+  prefixes: ['carolinafutons://', 'https://carolinafutons.com', 'https://www.carolinafutons.com'],
   config: {
     screens: {
       Home: 'home',

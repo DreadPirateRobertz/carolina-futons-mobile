@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
 
 export interface User {
   id: string;
@@ -105,26 +105,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const signUp = useCallback(
-    async (email: string, password: string, displayName: string) => {
-      dispatch({ type: 'AUTH_START' });
-      await simulateDelay();
-      if (email === 'taken@test.com') {
-        dispatch({ type: 'AUTH_ERROR', error: 'An account with this email already exists' });
-        return;
-      }
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        user: {
-          id: 'user-new',
-          email: email.trim().toLowerCase(),
-          displayName: displayName.trim(),
-          provider: 'email',
-        },
-      });
-    },
-    [],
-  );
+  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
+    dispatch({ type: 'AUTH_START' });
+    await simulateDelay();
+    if (email === 'taken@test.com') {
+      dispatch({ type: 'AUTH_ERROR', error: 'An account with this email already exists' });
+      return;
+    }
+    dispatch({
+      type: 'AUTH_SUCCESS',
+      user: {
+        id: 'user-new',
+        email: email.trim().toLowerCase(),
+        displayName: displayName.trim(),
+        provider: 'email',
+      },
+    });
+  }, []);
 
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });

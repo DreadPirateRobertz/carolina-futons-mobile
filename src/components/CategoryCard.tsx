@@ -32,11 +32,7 @@ export function CategoryCard({ category, onPress, variant = 'featured', testID }
 
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        isCompact ? styles.compact : styles.featured,
-        shadows.card,
-      ]}
+      style={[styles.card, isCompact ? styles.compact : styles.featured, shadows.card]}
       onPress={handlePress}
       testID={testID}
       accessibilityLabel={`Browse ${category.title}`}
@@ -59,9 +55,7 @@ export function CategoryCard({ category, onPress, variant = 'featured', testID }
         />
       )}
       <View style={styles.overlay} testID={testID ? `${testID}-overlay` : undefined}>
-        <Text style={[styles.title, isCompact && styles.titleCompact]}>
-          {category.title}
-        </Text>
+        <Text style={[styles.title, isCompact && styles.titleCompact]}>{category.title}</Text>
       </View>
     </TouchableOpacity>
   );

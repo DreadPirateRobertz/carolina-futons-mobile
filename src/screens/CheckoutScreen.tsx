@@ -1,12 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
@@ -70,7 +63,7 @@ interface Props {
 }
 
 export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
@@ -133,15 +126,9 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             Items ({items.length})
           </Text>
           {items.map((item) => (
-            <View
-              key={item.id}
-              style={styles.itemRow}
-              testID={`checkout-item-${item.id}`}
-            >
+            <View key={item.id} style={styles.itemRow} testID={`checkout-item-${item.id}`}>
               <View style={styles.itemInfo}>
-                <Text style={[styles.itemName, { color: colors.espresso }]}>
-                  {item.model.name}
-                </Text>
+                <Text style={[styles.itemName, { color: colors.espresso }]}>{item.model.name}</Text>
                 <Text style={[styles.itemDetail, { color: colors.espressoLight }]}>
                   {item.fabric.name} x{item.quantity}
                 </Text>
@@ -168,7 +155,9 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
         >
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Subtotal</Text>
-            <Text style={[styles.totalValue, { color: colors.espresso }]}>{formatPrice(subtotal)}</Text>
+            <Text style={[styles.totalValue, { color: colors.espresso }]}>
+              {formatPrice(subtotal)}
+            </Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Shipping</Text>
@@ -199,9 +188,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
-            Payment Method
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -210,10 +197,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
                 {
                   backgroundColor: colors.sandLight,
                   borderRadius: borderRadius.md,
-                  borderColor:
-                    selectedMethod === option.id
-                      ? colors.mountainBlue
-                      : colors.sandDark,
+                  borderColor: selectedMethod === option.id ? colors.mountainBlue : colors.sandDark,
                 },
               ]}
               onPress={() => handleSelectMethod(option.id)}
@@ -226,25 +210,18 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
                 style={[
                   styles.radioOuter,
                   {
-                    borderColor:
-                      selectedMethod === option.id
-                        ? colors.mountainBlue
-                        : colors.muted,
+                    borderColor: selectedMethod === option.id ? colors.mountainBlue : colors.muted,
                   },
                 ]}
               >
                 {selectedMethod === option.id && (
-                  <View
-                    style={[
-                      styles.radioInner,
-                      { backgroundColor: colors.mountainBlue },
-                    ]}
-                  />
+                  <View style={[styles.radioInner, { backgroundColor: colors.mountainBlue }]} />
                 )}
               </View>
               <View style={styles.paymentInfo}>
                 <Text style={[styles.paymentLabel, { color: colors.espresso }]}>
-                  {option.icon ? `${option.icon} ` : ''}{option.label}
+                  {option.icon ? `${option.icon} ` : ''}
+                  {option.label}
                 </Text>
                 <Text style={[styles.paymentDesc, { color: colors.espressoLight }]}>
                   {option.description}
@@ -285,9 +262,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             style={[
               styles.placeOrderButton,
               {
-                backgroundColor: selectedMethod
-                  ? colors.sunsetCoral
-                  : colors.muted,
+                backgroundColor: selectedMethod ? colors.sunsetCoral : colors.muted,
                 borderRadius: borderRadius.button,
               },
               selectedMethod ? shadows.button : undefined,
@@ -304,9 +279,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             accessibilityState={{ disabled: !selectedMethod }}
           >
             <Text style={styles.placeOrderText}>
-              {selectedMethod
-                ? `Place Order — ${formatPrice(total)}`
-                : 'Select Payment Method'}
+              {selectedMethod ? `Place Order — ${formatPrice(total)}` : 'Select Payment Method'}
             </Text>
           </TouchableOpacity>
         </View>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
@@ -14,7 +13,7 @@ const mountainBlue = FABRICS[2]; // $29
 function CartSeeder({
   items,
 }: {
-  items: Array<{ model: typeof asheville; fabric: typeof naturalLinen; qty: number }>;
+  items: { model: typeof asheville; fabric: typeof naturalLinen; qty: number }[];
 }) {
   const { addItem } = useCart();
   React.useEffect(() => {
@@ -25,7 +24,7 @@ function CartSeeder({
 
 function renderCheckout(
   props: Partial<React.ComponentProps<typeof CheckoutScreen>> = {},
-  seedItems?: Array<{ model: typeof asheville; fabric: typeof naturalLinen; qty: number }>,
+  seedItems?: { model: typeof asheville; fabric: typeof naturalLinen; qty: number }[],
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
@@ -83,9 +82,7 @@ describe('CheckoutScreen', () => {
   describe('Order items', () => {
     it('shows checkout items', () => {
       const { getByTestId } = renderCheckout({}, seed);
-      expect(
-        getByTestId('checkout-item-asheville-full:natural-linen'),
-      ).toBeTruthy();
+      expect(getByTestId('checkout-item-asheville-full:natural-linen')).toBeTruthy();
     });
 
     it('shows multiple items', () => {

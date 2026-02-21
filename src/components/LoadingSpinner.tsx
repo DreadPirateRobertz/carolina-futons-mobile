@@ -8,17 +8,9 @@ interface Props {
   testID?: string;
 }
 
-export function LoadingSpinner({
-  size = 'small',
-  color = colors.mountainBlue,
-  testID,
-}: Props) {
+export function LoadingSpinner({ size = 'small', color = colors.mountainBlue, testID }: Props) {
   return (
-    <View
-      style={styles.container}
-      testID={testID}
-      accessibilityRole="progressbar"
-    >
+    <View style={styles.container} testID={testID} accessibilityRole="progressbar">
       <ActivityIndicator size={size} color={color} />
     </View>
   );

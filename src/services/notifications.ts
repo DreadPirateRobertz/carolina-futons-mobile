@@ -10,13 +10,7 @@
  * Expo push API (https://expo.dev/push). This module handles client-side.
  */
 
-import { Platform } from 'react-native';
-
-export type NotificationType =
-  | 'order_update'
-  | 'promotion'
-  | 'back_in_stock'
-  | 'cart_reminder';
+export type NotificationType = 'order_update' | 'promotion' | 'back_in_stock' | 'cart_reminder';
 
 export interface NotificationPreferences {
   orderUpdates: boolean;
@@ -46,9 +40,7 @@ export function getDeepLinkForNotification(
 ): string {
   switch (type) {
     case 'order_update':
-      return data?.orderId
-        ? `carolinafutons://orders/${data.orderId}`
-        : 'carolinafutons://orders';
+      return data?.orderId ? `carolinafutons://orders/${data.orderId}` : 'carolinafutons://orders';
     case 'promotion':
       return data?.productId
         ? `carolinafutons://product/${data.productId}`
