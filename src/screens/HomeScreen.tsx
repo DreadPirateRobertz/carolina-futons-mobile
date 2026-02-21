@@ -4,9 +4,10 @@ import { useTheme } from '@/theme';
 
 interface Props {
   onOpenAR?: () => void;
+  onOpenShop?: () => void;
 }
 
-export function HomeScreen({ onOpenAR }: Props) {
+export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
   const { colors, spacing, typography } = useTheme();
 
   return (
@@ -33,16 +34,31 @@ export function HomeScreen({ onOpenAR }: Props) {
 
       {/* AR CTA */}
       <TouchableOpacity
-        style={[styles.arButton, { backgroundColor: colors.sunsetCoral }]}
+        style={[styles.ctaButton, { backgroundColor: colors.sunsetCoral }]}
         onPress={onOpenAR}
         testID="home-ar-button"
         accessibilityLabel="Try futons in your room with AR camera"
         accessibilityRole="button"
       >
-        <Text style={styles.arButtonIcon}>📷</Text>
+        <Text style={styles.ctaIcon}>📷</Text>
         <View>
-          <Text style={styles.arButtonTitle}>Try in Your Room</Text>
-          <Text style={styles.arButtonSubtitle}>See how our futons fit using your camera</Text>
+          <Text style={styles.ctaTitle}>Try in Your Room</Text>
+          <Text style={styles.ctaSubtitle}>See how our futons fit using your camera</Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Shop CTA */}
+      <TouchableOpacity
+        style={[styles.ctaButton, { backgroundColor: colors.mountainBlue }]}
+        onPress={onOpenShop}
+        testID="home-shop-button"
+        accessibilityLabel="Browse our products"
+        accessibilityRole="button"
+      >
+        <Text style={styles.ctaIcon}>🛋️</Text>
+        <View>
+          <Text style={styles.ctaTitle}>Browse Products</Text>
+          <Text style={styles.ctaSubtitle}>Futons, covers, mattresses & more</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -62,29 +78,30 @@ const styles = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
   },
-  arButton: {
+  ctaButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 32,
+    width: '100%',
+    marginTop: 16,
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 16,
     gap: 14,
-    shadowColor: '#E8845C',
+    shadowColor: '#3A2518',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
-  arButtonIcon: {
+  ctaIcon: {
     fontSize: 28,
   },
-  arButtonTitle: {
+  ctaTitle: {
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
   },
-  arButtonSubtitle: {
+  ctaSubtitle: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     marginTop: 2,

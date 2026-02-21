@@ -1,76 +1,90 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { colors, spacing, borderRadius, shadows, typography } from '@/theme/tokens';
+import React from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { useTheme } from '@/theme';
+import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  badge?: string;
-  originalPrice?: number;
-}
 
 interface Props {
   product: Product;
-  onPress: (product: Product) => void;
+  onPress?: (product: Product) => void;
   testID?: string;
 }
 
 export function ProductCard({ product, onPress, testID }: Props) {
-  const [imageError, setImageError] = useState(false);
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 
-  const handlePress = useCallback(() => {
-    onPress(product);
-  }, [product, onPress]);
-
-  const handleImageError = useCallback(() => {
-    setImageError(true);
-  }, []);
+  const badgeColor =
+    product.badge === 'Sale'
+      ? colors.sunsetCoral
+      : product.badge === 'New'
+        ? colors.mountainBlue
+        : product.badge === 'Bestseller'
+          ? colors.success
+          : colors.espressoLight;
 
   return (
     <TouchableOpacity
-      style={[styles.card, shadows.card]}
-      onPress={handlePress}
-      testID={testID}
+      style={[
+        styles.card,
+        shadows.card,
+        { backgroundColor: colors.white, borderRadius: borderRadius.card },
+      ]}
+      onPress={() => onPress?.(product)}
+      testID={testID ?? `product-card-${product.id}`}
       accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
       accessibilityRole="button"
+      activeOpacity={0.7}
     >
       {/* Image */}
-      <View style={styles.imageContainer}>
-        {imageError ? (
-          <View
-            style={styles.imagePlaceholder}
-            testID={testID ? `${testID}-image-placeholder` : undefined}
-          >
-            <Text style={styles.placeholderText}>🛋️</Text>
-          </View>
-        ) : (
-          <Image
-            source={{ uri: product.image }}
-            style={styles.image}
-            testID={testID ? `${testID}-image` : undefined}
-            onError={handleImageError}
-            resizeMode="cover"
-          />
-        )}
+      <View
+        style={[
+          styles.imageContainer,
+          { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
+        ]}
+      >
+        <Image
+          source={{ uri: product.images[0]?.uri }}
+          style={styles.image}
+          resizeMode="cover"
+          accessibilityLabel={product.images[0]?.alt}
+        />
         {product.badge && (
-          <View style={styles.badge} testID={testID ? `${testID}-badge` : undefined}>
+          <View style={[styles.badge, { backgroundColor: badgeColor }]}>
             <Text style={styles.badgeText}>{product.badge}</Text>
+          </View>
+        )}
+        {!product.inStock && (
+          <View style={styles.outOfStockOverlay}>
+            <Text style={styles.outOfStockText}>Out of Stock</Text>
           </View>
         )}
       </View>
 
       {/* Info */}
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={2}>
+      <View style={[styles.info, { padding: spacing.sm }]}>
+        <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
           {product.name}
         </Text>
+        <Text style={[styles.description, { color: colors.espressoLight }]} numberOfLines={1}>
+          {product.shortDescription}
+        </Text>
+
+        {/* Rating */}
+        <View style={styles.ratingRow}>
+          <Text style={[styles.ratingStars, { color: colors.sunsetCoral }]}>
+            {'★'.repeat(Math.round(product.rating))}
+            {'☆'.repeat(5 - Math.round(product.rating))}
+          </Text>
+          <Text style={[styles.reviewCount, { color: colors.muted }]}>({product.reviewCount})</Text>
+        </View>
+
+        {/* Price */}
         <View style={styles.priceRow}>
-          <Text style={styles.price}>{formatPrice(product.price)}</Text>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <Text style={styles.originalPrice}>
+          <Text style={[styles.price, { color: colors.espresso }]}>
+            {formatPrice(product.price)}
+          </Text>
+          {product.originalPrice && (
+            <Text style={[styles.originalPrice, { color: colors.muted }]}>
               {formatPrice(product.originalPrice)}
             </Text>
           )}
@@ -82,64 +96,82 @@ export function ProductCard({ product, onPress, testID }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.sandLight,
-    borderRadius: borderRadius.card,
+    flex: 1,
+    marginHorizontal: 6,
+    marginBottom: 12,
     overflow: 'hidden',
   },
   imageContainer: {
     aspectRatio: 4 / 3,
-    backgroundColor: colors.sandDark,
-    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#F2E8D5',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  imagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.sandDark,
-  },
-  placeholderText: {
-    fontSize: 40,
-  },
   badge: {
     position: 'absolute',
-    top: spacing.sm,
-    left: spacing.sm,
-    backgroundColor: colors.sunsetCoral,
-    paddingHorizontal: spacing.sm,
+    top: 8,
+    left: 8,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: borderRadius.sm,
+    borderRadius: 4,
   },
   badgeText: {
-    ...typography.caption,
     color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  outOfStockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  outOfStockText: {
+    color: '#FFFFFF',
+    fontSize: 14,
     fontWeight: '700',
   },
   info: {
-    padding: spacing.md,
+    gap: 4,
   },
   name: {
-    ...typography.body,
-    color: colors.espresso,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 4,
+    lineHeight: 18,
+  },
+  description: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  ratingStars: {
+    fontSize: 12,
+    letterSpacing: 1,
+  },
+  reviewCount: {
+    fontSize: 11,
   },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
+    marginTop: 2,
   },
   price: {
-    ...typography.price,
-    color: colors.espresso,
+    fontSize: 16,
+    fontWeight: '700',
   },
   originalPrice: {
-    ...typography.priceStrike,
-    color: colors.muted,
+    fontSize: 13,
     textDecorationLine: 'line-through',
   },
 });

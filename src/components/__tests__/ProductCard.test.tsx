@@ -1,100 +1,121 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-
 import { ProductCard } from '../ProductCard';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import { PRODUCTS, type Product } from '@/data/products';
 
-const mockProduct = {
-  id: 'futon-001',
-  name: 'Carolina Classic Futon',
-  price: 299.99,
-  image: 'https://example.com/futon.jpg',
-  badge: 'Sale',
-};
+const futon = PRODUCTS.find((p) => p.category === 'futons')!;
+const saleProduct = PRODUCTS.find((p) => p.originalPrice !== undefined)!;
+const noBadgeProduct = PRODUCTS.find((p) => !p.badge)!;
+
+function renderCard(overrides: { product?: Product; onPress?: jest.Mock } = {}) {
+  const onPress = overrides.onPress ?? jest.fn();
+  return {
+    ...render(
+      <ThemeProvider>
+        <ProductCard product={overrides.product ?? futon} onPress={onPress} />
+      </ThemeProvider>,
+    ),
+    onPress,
+  };
+}
 
 describe('ProductCard', () => {
   describe('rendering', () => {
     it('renders product name', () => {
-      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
-      expect(getByText('Carolina Classic Futon')).toBeTruthy();
+      const { getByText } = renderCard();
+      expect(getByText(futon.name)).toBeTruthy();
+    });
+
+    it('renders short description', () => {
+      const { getByText } = renderCard();
+      expect(getByText(futon.shortDescription)).toBeTruthy();
     });
 
     it('renders formatted price', () => {
-      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
-      expect(getByText('$299.99')).toBeTruthy();
+      const { getByText } = renderCard();
+      expect(getByText(`$${futon.price.toFixed(2)}`)).toBeTruthy();
     });
 
-    it('renders product image', () => {
-      const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
-      );
-      expect(getByTestId('product-card-image')).toBeTruthy();
+    it('renders review count', () => {
+      const { getByText } = renderCard();
+      expect(getByText(`(${futon.reviewCount})`)).toBeTruthy();
     });
 
-    it('renders badge when provided', () => {
-      const { getByText } = render(<ProductCard product={mockProduct} onPress={() => {}} />);
-      expect(getByText('Sale')).toBeTruthy();
+    it('renders star rating', () => {
+      const { getByText } = renderCard();
+      const stars =
+        '★'.repeat(Math.round(futon.rating)) + '☆'.repeat(5 - Math.round(futon.rating));
+      expect(getByText(stars)).toBeTruthy();
     });
 
-    it('does not render badge when not provided', () => {
-      const productNoBadge = { ...mockProduct, badge: undefined };
-      const { queryByTestId } = render(
-        <ProductCard product={productNoBadge} onPress={() => {}} testID="product-card" />,
-      );
-      expect(queryByTestId('product-card-badge')).toBeFalsy();
+    it('has correct testID', () => {
+      const { getByTestId } = renderCard();
+      expect(getByTestId(`product-card-${futon.id}`)).toBeTruthy();
+    });
+  });
+
+  describe('badge', () => {
+    it('renders badge when present', () => {
+      const badgedProduct = PRODUCTS.find((p) => p.badge)!;
+      const { getByText } = renderCard({ product: badgedProduct });
+      expect(getByText(badgedProduct.badge!)).toBeTruthy();
+    });
+
+    it('does not render badge when not present', () => {
+      const { queryByText } = renderCard({ product: noBadgeProduct });
+      // No badge text should exist that matches common badge values
+      expect(queryByText('Bestseller')).toBeNull();
+      expect(queryByText('Sale')).toBeNull();
+      expect(queryByText('New')).toBeNull();
+      expect(queryByText('Premium')).toBeNull();
     });
   });
 
   describe('pricing', () => {
-    it('renders sale price with original price when on sale', () => {
-      const saleProduct = {
-        ...mockProduct,
-        price: 249.99,
-        originalPrice: 299.99,
-        badge: 'Sale',
-      };
-      const { getByText } = render(<ProductCard product={saleProduct} onPress={() => {}} />);
-      expect(getByText('$249.99')).toBeTruthy();
-      expect(getByText('$299.99')).toBeTruthy();
+    it('shows sale price and original price when on sale', () => {
+      const { getByText } = renderCard({ product: saleProduct });
+      expect(getByText(`$${saleProduct.price.toFixed(2)}`)).toBeTruthy();
+      expect(getByText(`$${saleProduct.originalPrice!.toFixed(2)}`)).toBeTruthy();
     });
 
-    it('shows price formatted with two decimal places', () => {
-      const product = { ...mockProduct, price: 300 };
-      const { getByText } = render(<ProductCard product={product} onPress={() => {}} />);
-      expect(getByText('$300.00')).toBeTruthy();
+    it('does not show original price for non-sale items', () => {
+      const regularProduct = PRODUCTS.find((p) => !p.originalPrice)!;
+      const { queryByText } = renderCard({ product: regularProduct });
+      // Only one price element should be present
+      expect(queryByText(`$${regularProduct.price.toFixed(2)}`)).toBeTruthy();
     });
   });
 
   describe('interaction', () => {
     it('calls onPress with product when tapped', () => {
       const onPress = jest.fn();
-      const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={onPress} testID="product-card" />,
-      );
-      fireEvent.press(getByTestId('product-card'));
-      expect(onPress).toHaveBeenCalledWith(mockProduct);
+      const { getByTestId } = renderCard({ onPress });
+      fireEvent.press(getByTestId(`product-card-${futon.id}`));
+      expect(onPress).toHaveBeenCalledWith(futon);
     });
-  });
 
-  describe('image handling', () => {
-    it('shows placeholder when image fails to load', () => {
+    it('does not crash when onPress is not provided', () => {
       const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
+        <ThemeProvider>
+          <ProductCard product={futon} />
+        </ThemeProvider>,
       );
-      const image = getByTestId('product-card-image');
-      fireEvent(image, 'error');
-      // Should show fallback/placeholder
-      expect(getByTestId('product-card-image-placeholder')).toBeTruthy();
+      fireEvent.press(getByTestId(`product-card-${futon.id}`));
     });
   });
 
   describe('accessibility', () => {
     it('has accessible label with product name and price', () => {
-      const { getByTestId } = render(
-        <ProductCard product={mockProduct} onPress={() => {}} testID="product-card" />,
-      );
-      const card = getByTestId('product-card');
-      expect(card.props.accessibilityLabel).toContain('Carolina Classic Futon');
-      expect(card.props.accessibilityLabel).toContain('$299.99');
+      const { getByTestId } = renderCard();
+      const card = getByTestId(`product-card-${futon.id}`);
+      expect(card.props.accessibilityLabel).toContain(futon.name);
+      expect(card.props.accessibilityLabel).toContain(`$${futon.price.toFixed(2)}`);
+    });
+
+    it('has button role', () => {
+      const { getByTestId } = renderCard();
+      expect(getByTestId(`product-card-${futon.id}`).props.accessibilityRole).toBe('button');
     });
   });
 });

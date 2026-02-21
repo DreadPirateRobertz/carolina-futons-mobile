@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-function renderHomeScreen(props: { onOpenAR?: () => void } = {}) {
+function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void } = {}) {
   return render(
     <ThemeProvider>
       <HomeScreen {...props} />
@@ -47,6 +47,32 @@ describe('HomeScreen', () => {
     const { getByTestId } = renderHomeScreen();
     const btn = getByTestId('home-ar-button');
     expect(btn.props.accessibilityLabel).toBe('Try futons in your room with AR camera');
+    expect(btn.props.accessibilityRole).toBe('button');
+  });
+
+  it('renders Shop CTA button', () => {
+    const { getByTestId, getByText } = renderHomeScreen();
+    expect(getByTestId('home-shop-button')).toBeTruthy();
+    expect(getByText('Browse Products')).toBeTruthy();
+    expect(getByText('Futons, covers, mattresses & more')).toBeTruthy();
+  });
+
+  it('calls onOpenShop when Shop button pressed', () => {
+    const onOpenShop = jest.fn();
+    const { getByTestId } = renderHomeScreen({ onOpenShop });
+    fireEvent.press(getByTestId('home-shop-button'));
+    expect(onOpenShop).toHaveBeenCalledTimes(1);
+  });
+
+  it('Shop button does not crash when onOpenShop not provided', () => {
+    const { getByTestId } = renderHomeScreen();
+    fireEvent.press(getByTestId('home-shop-button'));
+  });
+
+  it('Shop button has correct accessibility', () => {
+    const { getByTestId } = renderHomeScreen();
+    const btn = getByTestId('home-shop-button');
+    expect(btn.props.accessibilityLabel).toBe('Browse our products');
     expect(btn.props.accessibilityRole).toBe('button');
   });
 });
