@@ -6,12 +6,10 @@ coverage/
 .expo/
 dist/
 *.tsbuildinfo
-.env
-.env.local
+web-build/
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
-web-build/

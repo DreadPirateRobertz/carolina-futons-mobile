@@ -32,7 +32,10 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
-// Silence animated warnings
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper', () => ({}), {
-  virtual: true,
-});
+// Silence the warning about animated values
+// NativeAnimatedHelper path changed in RN 0.76+ new architecture
+try {
+  jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+} catch {
+  // Module path does not exist in this RN version — safe to ignore
+}

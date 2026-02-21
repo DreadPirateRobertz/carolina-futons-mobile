@@ -6,7 +6,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["jest"]
+    "types": ["react-native", "jest"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "src/**/*", "__tests__/**/*"]
+  "include": ["**/*.ts", "**/*.tsx", "src/**/*"]
 }

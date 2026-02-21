@@ -1,16 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, Text, View } from 'react-native';
 
 export function HomeScreen() {
   return (
-    <SafeAreaView style={styles.container} testID="home-screen">
-      <View style={styles.content}>
-        <Text style={styles.title}>Carolina Futons</Text>
-        <Text style={styles.subtitle}>Hendersonville, NC</Text>
-        <Text style={styles.tagline}>Blue Ridge Mountain comfort, delivered.</Text>
-      </View>
-    </SafeAreaView>
+    <View style={styles.container} testID="home-screen">
+      <Text style={styles.title}>Welcome to Carolina Futons</Text>
+      <Text style={styles.subtitle}>Handcrafted comfort from the Blue Ridge Mountains</Text>
+    </View>
   );
 }
 
@@ -18,27 +14,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E8D5B7',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 24,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: '700',
     color: '#3A2518',
+    textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#5C4033',
-    marginBottom: 16,
-  },
-  tagline: {
     fontSize: 16,
-    color: '#5B8FA8',
-    fontStyle: 'italic',
+    color: '#5C4033',
+    textAlign: 'center',
   },
 });

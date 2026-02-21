@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export function AccountScreen() {
   return (
     <View style={styles.container} testID="account-screen">
-      <Text style={styles.text}>Account</Text>
+      <Text style={styles.title}>Account</Text>
     </View>
   );
 }
@@ -12,12 +12,13 @@ export function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#E8D5B7',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  text: {
+  title: {
     fontSize: 24,
+    fontWeight: '700',
     color: '#3A2518',
   },
 });
