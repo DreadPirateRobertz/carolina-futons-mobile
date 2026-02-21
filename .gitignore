@@ -13,3 +13,5 @@ web-build/
 *.key
 *.mobileprovision
 *.orig.*
+dolt-access.lock
+dolt/
