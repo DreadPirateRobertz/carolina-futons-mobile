@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
-  setupFilesAfterSetup: [
+  setupFiles: [
     './jest.setup.js',
   ],
   transformIgnorePatterns: [
