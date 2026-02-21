@@ -7,9 +7,7 @@ import { PRODUCTS } from '@/data/products';
 
 const items = PRODUCTS.slice(0, 4);
 
-function renderCarousel(
-  props: Partial<React.ComponentProps<typeof RecommendationCarousel>> = {},
-) {
+function renderCarousel(props: Partial<React.ComponentProps<typeof RecommendationCarousel>> = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   return {
     ...render(

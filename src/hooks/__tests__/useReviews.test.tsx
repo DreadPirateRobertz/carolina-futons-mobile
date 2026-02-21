@@ -27,7 +27,9 @@ function ReviewsHarness({ productId }: { productId: string }) {
       <Text testID="sort-by">{sortBy}</Text>
       <Text testID="is-submitting">{isSubmitting ? 'yes' : 'no'}</Text>
       <Text testID="reviews-json">
-        {JSON.stringify(reviews.map((r) => ({ id: r.id, rating: r.rating, helpful: r.helpfulCount })))}
+        {JSON.stringify(
+          reviews.map((r: any) => ({ id: r.id, rating: r.rating, helpful: r.helpfulCount })),
+        )}
       </Text>
 
       <TouchableOpacity
@@ -191,9 +193,9 @@ describe('useReviews', () => {
   describe('error boundary', () => {
     it('throws when used outside ReviewsProvider', () => {
       const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
-      expect(() =>
-        render(<ReviewsHarness productId={product.id} />),
-      ).toThrow('useReviews must be used within a ReviewsProvider');
+      expect(() => render(<ReviewsHarness productId={product.id} />)).toThrow(
+        'useReviews must be used within a ReviewsProvider',
+      );
       consoleError.mockRestore();
     });
   });

@@ -16,7 +16,10 @@ const baseReview = {
   photos: [] as string[],
 };
 
-function renderReviewCard(overrides: Partial<typeof baseReview> = {}, props: Record<string, any> = {}) {
+function renderReviewCard(
+  overrides: Partial<typeof baseReview> = {},
+  props: Record<string, any> = {},
+) {
   return render(
     <ThemeProvider>
       <ReviewCard review={{ ...baseReview, ...overrides }} {...props} />

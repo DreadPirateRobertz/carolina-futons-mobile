@@ -24,7 +24,7 @@ function StoreLocatorHarness() {
       <Text testID="selected-store-name">{selectedStore?.name ?? 'none'}</Text>
       <Text testID="sorted-count">{sortedByDistance.length}</Text>
       <Text testID="stores-json">
-        {JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name })))}
+        {JSON.stringify(stores.map((s: any) => ({ id: s.id, name: s.name })))}
       </Text>
 
       <TouchableOpacity testID="view-map" onPress={() => setViewMode('map')} />
@@ -42,10 +42,7 @@ function StoreLocatorHarness() {
         testID="filter-appointments"
         onPress={() => filterByServices(['appointments'])}
       />
-      <TouchableOpacity
-        testID="filter-clear"
-        onPress={() => filterByServices([])}
-      />
+      <TouchableOpacity testID="filter-clear" onPress={() => filterByServices([])} />
     </View>
   );
 }

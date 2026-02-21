@@ -28,11 +28,9 @@ function RecommendationsHarness() {
       <Text testID="also-bought-count">{alsoBoought.length}</Text>
       <Text testID="recommended-count">{recommendedForYou.length}</Text>
       <Text testID="recently-viewed-json">
-        {JSON.stringify(recentlyViewed.map((p) => p.id))}
+        {JSON.stringify(recentlyViewed.map((p: any) => p.id))}
       </Text>
-      <Text testID="similar-json">
-        {JSON.stringify(similarItems.map((p) => p.id))}
-      </Text>
+      <Text testID="similar-json">{JSON.stringify(similarItems.map((p: any) => p.id))}</Text>
 
       <TouchableOpacity testID="view-product-1" onPress={() => trackView(product1.id)} />
       <TouchableOpacity testID="view-product-2" onPress={() => trackView(product2.id)} />
