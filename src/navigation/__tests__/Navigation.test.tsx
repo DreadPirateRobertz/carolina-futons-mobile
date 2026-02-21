@@ -17,9 +17,7 @@ const TabNavigator = (props: any) => {
 
 // Helper to render with navigation context
 const renderWithNavigation = (component: React.ReactElement) => {
-  return render(
-    <NavigationContainer>{component}</NavigationContainer>
-  );
+  return render(<NavigationContainer>{component}</NavigationContainer>);
 };
 
 describe('Tab Navigation', () => {
@@ -78,16 +76,12 @@ describe('Tab Navigation', () => {
 
   describe('cart badge in tab bar', () => {
     it('shows cart item count badge on Cart tab', () => {
-      const { getByTestId } = renderWithNavigation(
-        <TabNavigator cartItemCount={3} />
-      );
+      const { getByTestId } = renderWithNavigation(<TabNavigator cartItemCount={3} />);
       expect(getByTestId('cart-tab-badge')).toBeTruthy();
     });
 
     it('hides badge when cart is empty', () => {
-      const { queryByTestId } = renderWithNavigation(
-        <TabNavigator cartItemCount={0} />
-      );
+      const { queryByTestId } = renderWithNavigation(<TabNavigator cartItemCount={0} />);
       expect(queryByTestId('cart-tab-badge')).toBeFalsy();
     });
   });
@@ -163,7 +157,7 @@ describe('Deep Linking', () => {
         }}
       >
         <AppNavigator />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
     await waitFor(() => {
       expect(getByTestId('product-detail-screen')).toBeTruthy();

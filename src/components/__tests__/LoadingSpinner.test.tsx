@@ -21,9 +21,7 @@ describe('LoadingSpinner', () => {
   });
 
   it('renders with custom color', () => {
-    const { getByTestId } = render(
-      <LoadingSpinner color="#5B8FA8" testID="spinner" />
-    );
+    const { getByTestId } = render(<LoadingSpinner color="#5B8FA8" testID="spinner" />);
     expect(getByTestId('spinner')).toBeTruthy();
   });
 
