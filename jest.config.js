@@ -24,7 +24,5 @@ module.exports = {
     'StoreCard\\.test\\.tsx',
     'StoreLocatorScreen\\.test\\.tsx',
     'useStoreLocator\\.test\\.tsx',
-    'RecommendationCarousel\\.test\\.tsx',
-    'useRecommendations\\.test\\.tsx',
   ],
 };
