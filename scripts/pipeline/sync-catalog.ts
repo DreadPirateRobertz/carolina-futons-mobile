@@ -83,27 +83,28 @@ function main(): void {
     }
 
     // Update GLB URL with new hash
+    const bt = '`';
     const glbUrlPattern = new RegExp(
-      `(productId:\\s*'${model.productId}'[\\s\\S]*?glbUrl:\\s*\`)([^`]+)(\`)`
+      '(productId:\\s*\'' + model.productId + '\'[\\s\\S]*?glbUrl:\\s*' + bt + ')([^' + bt + ']+)(' + bt + ')'
     );
-    const expectedGlbUrl = `\${MODEL_CDN_BASE}/glb/${slug}-${model.contentHash}.glb`;
+    const expectedGlbUrl = '${MODEL_CDN_BASE}/glb/' + slug + '-' + model.contentHash + '.glb';
     if (glbUrlPattern.test(newContent)) {
       const match = newContent.match(glbUrlPattern);
       if (match && match[2] !== expectedGlbUrl) {
-        newContent = newContent.replace(glbUrlPattern, `$1${expectedGlbUrl}$3`);
+        newContent = newContent.replace(glbUrlPattern, '$1' + expectedGlbUrl + '$3');
         updatedCount++;
       }
     }
 
     // Update USDZ URL with new hash
     const usdzUrlPattern = new RegExp(
-      `(productId:\\s*'${model.productId}'[\\s\\S]*?usdzUrl:\\s*\`)([^`]+)(\`)`
+      '(productId:\\s*\'' + model.productId + '\'[\\s\\S]*?usdzUrl:\\s*' + bt + ')([^' + bt + ']+)(' + bt + ')'
     );
-    const expectedUsdzUrl = `\${MODEL_CDN_BASE}/usdz/${slug}-${model.contentHash}.usdz`;
+    const expectedUsdzUrl = '${MODEL_CDN_BASE}/usdz/' + slug + '-' + model.contentHash + '.usdz';
     if (usdzUrlPattern.test(newContent)) {
       const match = newContent.match(usdzUrlPattern);
       if (match && match[2] !== expectedUsdzUrl) {
-        newContent = newContent.replace(usdzUrlPattern, `$1${expectedUsdzUrl}$3`);
+        newContent = newContent.replace(usdzUrlPattern, '$1' + expectedUsdzUrl + '$3');
         updatedCount++;
       }
     }
