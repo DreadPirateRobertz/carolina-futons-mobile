@@ -32,6 +32,21 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
+// Mock expo-file-system
+jest.mock('expo-file-system', () => ({
+  cacheDirectory: '/mock-cache/',
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn(() =>
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 })
+    ),
+  })),
+}));
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {
