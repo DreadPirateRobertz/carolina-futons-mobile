@@ -54,8 +54,59 @@ jest.mock('react-native-reanimated', () => {
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    withTiming: (val: any) => val,
+    withSequence: (...vals: any[]) => vals[vals.length - 1],
+    withRepeat: (val: any) => val,
+    interpolate: (val: any, _input: any, output: any) => output[0],
+    Easing: { inOut: () => ({}), ease: {} },
+    FadeIn: { duration: () => ({}) },
+    FadeOut: { duration: () => ({}) },
   };
 });
+
+// Mock surface detection service
+jest.mock('@/services/surfaceDetection', () => ({
+  subscribe: jest.fn(() => jest.fn()),
+  getState: jest.fn(() => ({
+    phase: 'idle',
+    planes: [],
+    primaryPlane: null,
+    scanProgress: 0,
+    instruction: 'Tap to start scanning your room',
+  })),
+  startScanning: jest.fn(),
+  stopScanning: jest.fn(),
+  reset: jest.fn(),
+  _resetAll: jest.fn(),
+}));
+
+// Mock SurfacePlaneOverlay — calls onPlacementReady immediately so futon overlay shows
+jest.mock('@/components/SurfacePlaneOverlay', () => {
+  const { createElement, useEffect } = require('react');
+  const { View } = require('react-native');
+  return {
+    SurfacePlaneOverlay: ({ onPlacementReady, testID }: any) => {
+      useEffect(() => {
+        if (onPlacementReady) onPlacementReady({ id: 'mock-plane', type: 'horizontal', confidence: 0.95 });
+      }, [onPlacementReady]);
+      return createElement(View, { testID });
+    },
+  };
+});
+
+// Mock lighting estimation service
+jest.mock('@/services/lightingEstimation', () => ({
+  start: jest.fn(),
+  stop: jest.fn(),
+  getEstimate: jest.fn(() => ({
+    ambientIntensity: 0.7,
+    colorTemperature: 5000,
+    shadowOpacity: 0.2,
+    shadowTint: 'rgba(0, 0, 0, 0.2)',
+  })),
+  getCondition: jest.fn(() => 'normal'),
+  _reset: jest.fn(),
+}));
 
 // Mock react-native-view-shot
 jest.mock('react-native-view-shot', () => {

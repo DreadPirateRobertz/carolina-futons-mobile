@@ -8,6 +8,8 @@ interface Props {
   model: FutonModel;
   fabric: Fabric;
   showDimensions: boolean;
+  /** Shadow opacity from lighting estimation (0–0.4). Defaults to 0.15. */
+  shadowOpacity?: number;
   testID?: string;
 }
 
@@ -18,7 +20,7 @@ const SPRING_CONFIG = { damping: 20, stiffness: 200 };
  * Renders a perspective futon shape colored with the selected fabric.
  * Supports pan (drag), pinch (scale), and rotation gestures simultaneously.
  */
-export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props) {
+export function ARFutonOverlay({ model, fabric, showDimensions, shadowOpacity = 0.15, testID }: Props) {
   // Gesture state
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -157,11 +159,15 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
             ]}
           />
 
-          {/* Shadow beneath */}
+          {/* Shadow beneath — opacity driven by lighting estimation */}
           <View
             style={[
               styles.futonShadow,
-              { width: baseWidth * 0.9, top: baseDepth + backHeight * 0.25 },
+              {
+                width: baseWidth * 0.9,
+                top: baseDepth + backHeight * 0.25,
+                backgroundColor: `rgba(0,0,0,${shadowOpacity})`,
+              },
             ]}
           />
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -11,6 +11,9 @@ import { FUTON_MODELS, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
+import { SurfacePlaneOverlay } from '@/components/SurfacePlaneOverlay';
+import * as SurfaceDetection from '@/services/surfaceDetection';
+import * as LightingEstimation from '@/services/lightingEstimation';
 import { events } from '@/services/analytics';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -42,6 +45,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [showDimensions, setShowDimensions] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
+  const [surfaceReady, setSurfaceReady] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
@@ -50,6 +54,20 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Map current futon model to its product for wishlist
   const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
   const isInWishlist = currentProduct ? wishlist.isInWishlist(currentProduct.id) : false;
+
+  // Reset surface detection when screen mounts/unmounts
+  useEffect(() => {
+    return () => {
+      SurfaceDetection.reset();
+    };
+  }, []);
+
+  const handlePlacementReady = useCallback(() => {
+    setSurfaceReady(true);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, []);
 
   const handleSelectModel = useCallback(
     (model: FutonModel) => {
@@ -229,28 +247,41 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       {/* Capturable area: camera feed + overlay + watermark */}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
         <CameraView style={styles.camera} facing="back" testID="ar-camera">
-          {/* Crosshair / placement guide */}
-          <View style={styles.crosshairContainer}>
-            <View style={styles.crosshairH} />
-            <View style={styles.crosshairV} />
-          </View>
+          {/* Surface plane detection overlay */}
+          <SurfacePlaneOverlay
+            onPlacementReady={handlePlacementReady}
+            testID="surface-plane-overlay"
+          />
 
-          {/* Instruction hint */}
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintText}>
-              Drag to position · Pinch to resize · Two-finger rotate
-            </Text>
-          </View>
+          {/* Crosshair / placement guide — shown after surface detected */}
+          {surfaceReady && (
+            <View style={styles.crosshairContainer}>
+              <View style={styles.crosshairH} />
+              <View style={styles.crosshairV} />
+            </View>
+          )}
 
-          {/* Futon overlay - centered, user drags from there */}
-          <View style={styles.overlayContainer}>
-            <ARFutonOverlay
-              model={selectedModel}
-              fabric={selectedFabric}
-              showDimensions={showDimensions}
-              testID="ar-futon-overlay"
-            />
-          </View>
+          {/* Instruction hint — shown after surface detected */}
+          {surfaceReady && (
+            <View style={styles.hintContainer}>
+              <Text style={styles.hintText}>
+                Drag to position · Pinch to resize · Two-finger rotate
+              </Text>
+            </View>
+          )}
+
+          {/* Futon overlay - shown after surface detected */}
+          {surfaceReady && (
+            <View style={styles.overlayContainer}>
+              <ARFutonOverlay
+                model={selectedModel}
+                fabric={selectedFabric}
+                showDimensions={showDimensions}
+                shadowOpacity={LightingEstimation.getEstimate().shadowOpacity}
+                testID="ar-futon-overlay"
+              />
+            </View>
+          )}
 
           {/* Watermark — visible in captures */}
           <View style={styles.watermarkContainer} testID="ar-watermark">
