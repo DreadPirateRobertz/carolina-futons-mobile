@@ -273,7 +273,6 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         onAddToCart={handleAddToCart}
         onShare={handleShare}
         onSaveToGallery={handleSaveToGallery}
-        onAddToCart={handleAddToCart}
         onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}

@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useProducts } from '@/hooks/useProducts';
+import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { type Product } from '@/data/products';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -24,12 +25,22 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     selectedCategory,
     sortBy,
     isLoading,
+    suggestions,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
     loadMore,
     refresh,
   } = useProducts();
+  const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+
+  const handleSubmitSearch = useCallback(
+    (query: string) => {
+      setSearchQuery(query);
+      addSearch(query);
+    },
+    [setSearchQuery, addSearch],
+  );
 
   const renderProduct = useCallback(
     ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,
@@ -46,9 +57,17 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           <Text style={[styles.title, { color: colors.espresso }]}>Shop</Text>
         </View>
 
-        {/* Search */}
+        {/* Search with autocomplete */}
         <View style={[styles.searchContainer, { paddingHorizontal: spacing.md }]}>
-          <SearchBar value={searchQuery} onChangeText={setSearchQuery} />
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            suggestions={suggestions}
+            recentSearches={recentSearches}
+            onSubmitSearch={handleSubmitSearch}
+            onRemoveRecent={removeSearch}
+            onClearRecent={clearAll}
+          />
         </View>
 
         {/* Category chips */}
@@ -70,9 +89,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       categories,
       colors,
       spacing,
+      suggestions,
+      recentSearches,
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
+      handleSubmitSearch,
+      removeSearch,
+      clearAll,
     ],
   );
 
@@ -121,6 +145,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         refreshing={false}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         testID="product-list"
       />
     </View>

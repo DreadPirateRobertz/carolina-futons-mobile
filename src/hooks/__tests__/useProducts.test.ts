@@ -220,4 +220,59 @@ describe('useProducts', () => {
       }
     });
   });
+
+  describe('fuzzy search', () => {
+    it('finds products with partial/fuzzy query', () => {
+      const { result } = renderHook(() => useProducts());
+      // "ashvl" doesn't exactly match "Asheville" but fuzzy should find it
+      act(() => result.current.setSearchQuery('ashvl'));
+      expect(result.current.products.length).toBeGreaterThan(0);
+      expect(result.current.products.some((p) => p.name.includes('Asheville'))).toBe(true);
+    });
+
+    it('ranks exact matches higher than fuzzy matches', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('asheville'));
+      // First result should be the Asheville product
+      expect(result.current.products[0].name).toContain('Asheville');
+    });
+
+    it('returns empty for completely unrelated query', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('xyznothing'));
+      expect(result.current.products.length).toBe(0);
+    });
+  });
+
+  describe('suggestions', () => {
+    it('returns empty suggestions when query is empty', () => {
+      const { result } = renderHook(() => useProducts());
+      expect(result.current.suggestions).toEqual([]);
+    });
+
+    it('returns empty suggestions when query is short (< 2 chars)', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('f'));
+      expect(result.current.suggestions).toEqual([]);
+    });
+
+    it('returns suggestions for 2+ char query', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('fu'));
+      expect(result.current.suggestions.length).toBeGreaterThan(0);
+    });
+
+    it('suggestions are product names', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('ash'));
+      expect(result.current.suggestions.length).toBeGreaterThan(0);
+      expect(result.current.suggestions[0]).toContain('Asheville');
+    });
+
+    it('caps suggestions at 5', () => {
+      const { result } = renderHook(() => useProducts());
+      act(() => result.current.setSearchQuery('the'));
+      expect(result.current.suggestions.length).toBeLessThanOrEqual(5);
+    });
+  });
 });

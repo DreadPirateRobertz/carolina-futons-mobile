@@ -7,8 +7,12 @@ import {
   type SortOption,
   type CategoryInfo,
 } from '@/data/products';
+import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 
 const PAGE_SIZE = 8;
+const PRODUCT_NAMES = PRODUCTS.map((p) => p.name);
+
+const getSearchableText = (p: Product) => [p.name, p.shortDescription, p.category];
 
 interface UseProductsReturn {
   products: Product[];
@@ -18,6 +22,8 @@ interface UseProductsReturn {
   sortBy: SortOption;
   isLoading: boolean;
   hasMore: boolean;
+  /** Autocomplete suggestions for current query */
+  suggestions: string[];
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: ProductCategory | null) => void;
   setSortBy: (sort: SortOption) => void;
@@ -26,7 +32,7 @@ interface UseProductsReturn {
 }
 
 /**
- * Product browsing hook with search, filter, sort, and pagination.
+ * Product browsing hook with fuzzy search, autocomplete, filter, sort, and pagination.
  * Uses local mock data; designed for drop-in Wix CMS API replacement.
  */
 export function useProducts(): UseProductsReturn {
@@ -36,19 +42,21 @@ export function useProducts(): UseProductsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
 
+  // Autocomplete suggestions from product names
+  const suggestions = useMemo(
+    () => (searchQuery.trim().length >= 2 ? getSuggestions(searchQuery, PRODUCT_NAMES, 5) : []),
+    [searchQuery],
+  );
+
   // Filter and sort products
   const filteredSorted = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result: Product[];
 
-    // Search filter
+    // Fuzzy search filter
     if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.shortDescription.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q),
-      );
+      result = fuzzySearch(PRODUCTS, searchQuery, getSearchableText).map((r) => r.item);
+    } else {
+      result = [...PRODUCTS];
     }
 
     // Category filter
@@ -56,30 +64,32 @@ export function useProducts(): UseProductsReturn {
       result = result.filter((p) => p.category === selectedCategory);
     }
 
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        // In mock, reverse order simulates newest
-        result.reverse();
-        break;
-      case 'featured':
-      default:
-        // Default order (bestsellers first via badge, then by review count)
-        result.sort((a, b) => {
-          if (a.badge === 'Bestseller' && b.badge !== 'Bestseller') return -1;
-          if (b.badge === 'Bestseller' && a.badge !== 'Bestseller') return 1;
-          return b.reviewCount - a.reviewCount;
-        });
-        break;
+    // Sort (skip if search is active — fuzzy results are already relevance-sorted)
+    if (!searchQuery.trim() || sortBy !== 'featured') {
+      switch (sortBy) {
+        case 'price-asc':
+          result.sort((a, b) => a.price - b.price);
+          break;
+        case 'price-desc':
+          result.sort((a, b) => b.price - a.price);
+          break;
+        case 'rating':
+          result.sort((a, b) => b.rating - a.rating);
+          break;
+        case 'newest':
+          // In mock, reverse order simulates newest
+          result.reverse();
+          break;
+        case 'featured':
+        default:
+          // Default order (bestsellers first via badge, then by review count)
+          result.sort((a, b) => {
+            if (a.badge === 'Bestseller' && b.badge !== 'Bestseller') return -1;
+            if (b.badge === 'Bestseller' && a.badge !== 'Bestseller') return 1;
+            return b.reviewCount - a.reviewCount;
+          });
+          break;
+      }
     }
 
     return result;
@@ -129,6 +139,7 @@ export function useProducts(): UseProductsReturn {
     sortBy,
     isLoading,
     hasMore,
+    suggestions,
     setSearchQuery: handleSearchQuery,
     setSelectedCategory: handleCategory,
     setSortBy: handleSort,
