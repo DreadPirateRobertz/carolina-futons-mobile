@@ -18,6 +18,8 @@ interface Props {
   isPlaced?: boolean;
   /** Product category — murphy-beds get snap-to-wall behavior */
   category?: string;
+  /** Shadow opacity from lighting estimation (0-1). Defaults to 0.15. */
+  shadowOpacity?: number;
   testID?: string;
 }
 
@@ -52,6 +54,7 @@ export function ARFutonOverlay({
   showDimensions,
   isPlaced = true,
   category,
+  shadowOpacity = 0.15,
   testID,
 }: Props) {
   const isMurphyBed = category === 'murphy-beds';
@@ -156,7 +159,7 @@ export function ARFutonOverlay({
     // Linear interpolation: map scale from [SCALE_MIN..SCALE_MAX] to output range
     const t = (scale.value - SCALE_MIN) / (SCALE_MAX - SCALE_MIN); // 0..1
     const shadowScale = 0.75 + t * (1.05 - 0.75);
-    const shadowOpacity = 0.2 + t * (0.1 - 0.2);
+    const dynamicOpacity = 0.2 + t * (0.1 - 0.2);
     const shadowBlur = 4 + t * (14 - 4);
 
     return {
@@ -165,7 +168,7 @@ export function ARFutonOverlay({
         { translateY: shadowOffsetY.value },
         { scaleX: shadowScale },
       ],
-      opacity: shadowOpacity,
+      opacity: dynamicOpacity,
       height: shadowBlur,
     };
   });
@@ -260,11 +263,15 @@ export function ARFutonOverlay({
             ]}
           />
 
-          {/* Real-time dynamic shadow beneath */}
+          {/* Real-time dynamic shadow beneath — base opacity from lighting estimation */}
           <Animated.View
             style={[
               styles.futonShadow,
-              { width: baseWidth * 0.9, top: baseDepth + backHeight * 0.25 },
+              {
+                width: baseWidth * 0.9,
+                top: baseDepth + backHeight * 0.25,
+                backgroundColor: `rgba(0,0,0,${shadowOpacity})`,
+              },
               shadowAnimatedStyle,
             ]}
             testID="ar-dynamic-shadow"
