@@ -25,6 +25,7 @@ export type AnalyticsEventName =
   | 'open_ar'
   | 'select_fabric'
   | 'view_product'
+  | 'ar_view_in_room_tap'
   | 'app_open'
   | 'app_background'
   | 'deep_link_opened'
