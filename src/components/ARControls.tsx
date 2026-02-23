@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { type FutonModel, type Fabric } from '@/data/futons';
 import { formatPrice } from '@/utils';
 
@@ -12,12 +12,18 @@ interface Props {
   onSelectFabric: (fabric: Fabric) => void;
   onToggleDimensions: () => void;
   onClose: () => void;
+  onShare?: () => void;
+  onSaveToGallery?: () => void;
+  onToggleWishlist?: () => void;
+  isInWishlist?: boolean;
+  wishlistSaved?: boolean;
+  isCapturing?: boolean;
   testID?: string;
 }
 
 /**
  * Bottom control panel for the AR camera view.
- * Futon model selector, fabric swatches, dimension toggle, and close button.
+ * Futon model selector, fabric swatches, dimension toggle, share/save actions, and close button.
  */
 export function ARControls({
   models,
@@ -28,6 +34,12 @@ export function ARControls({
   onSelectFabric,
   onToggleDimensions,
   onClose,
+  onShare,
+  onSaveToGallery,
+  onToggleWishlist,
+  isInWishlist,
+  wishlistSaved,
+  isCapturing,
   testID,
 }: Props) {
   const totalPrice = selectedModel.basePrice + selectedFabric.price;
@@ -120,6 +132,58 @@ export function ARControls({
             );
           })}
         </ScrollView>
+      </View>
+
+      {/* Share / Save toolbar */}
+      <View style={styles.shareToolbar}>
+        {onShare && (
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={onShare}
+            disabled={isCapturing}
+            testID="ar-share"
+            accessibilityLabel="Share AR screenshot"
+            accessibilityRole="button"
+          >
+            {isCapturing ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <>
+                <Text style={styles.shareButtonIcon}>↗</Text>
+                <Text style={styles.shareButtonText}>Share</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+        {onSaveToGallery && (
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={onSaveToGallery}
+            disabled={isCapturing}
+            testID="ar-save-gallery"
+            accessibilityLabel="Save to photo library"
+            accessibilityRole="button"
+          >
+            <Text style={styles.shareButtonIcon}>⬇</Text>
+            <Text style={styles.shareButtonText}>Save</Text>
+          </TouchableOpacity>
+        )}
+        {onToggleWishlist && (
+          <TouchableOpacity
+            style={[styles.shareButton, isInWishlist && styles.wishlistButtonActive]}
+            onPress={onToggleWishlist}
+            testID="ar-wishlist"
+            accessibilityLabel={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.shareButtonIcon, isInWishlist && styles.wishlistIconActive]}>
+              {isInWishlist ? '♥' : '♡'}
+            </Text>
+            <Text style={[styles.shareButtonText, isInWishlist && styles.wishlistTextActive]}>
+              {wishlistSaved ? 'Saved!' : isInWishlist ? 'Wishlisted' : 'Wishlist'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Action buttons */}
@@ -240,7 +304,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.6)',
   },
   fabricSection: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   fabricLabel: {
     color: 'rgba(255,255,255,0.6)',
@@ -274,6 +338,42 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     maxWidth: 50,
     textAlign: 'center',
+  },
+  shareToolbar: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  shareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  shareButtonIcon: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  shareButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  wishlistButtonActive: {
+    backgroundColor: 'rgba(232, 132, 92, 0.2)',
+    borderColor: '#E8845C',
+  },
+  wishlistIconActive: {
+    color: '#E8845C',
+  },
+  wishlistTextActive: {
+    color: '#E8845C',
   },
   actions: {
     flexDirection: 'row',

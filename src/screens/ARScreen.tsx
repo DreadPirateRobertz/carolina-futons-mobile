@@ -1,11 +1,18 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
+import ViewShot, { captureRef } from 'react-native-view-shot';
+import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 import { FUTON_MODELS, type FutonModel, type Fabric } from '@/data/futons';
+import { PRODUCTS } from '@/data/products';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
+import { events } from '@/services/analytics';
+import { formatPrice } from '@/utils';
+import { useWishlist } from '@/hooks/useWishlist';
 
 interface Props {
   onClose?: () => void;
@@ -17,6 +24,7 @@ interface Props {
  * AR Camera Overlay screen.
  * Shows the device camera with a futon model overlaid in the scene.
  * User can drag/pinch/rotate the futon, swap fabrics, view dimensions.
+ * Supports screenshot capture, sharing, saving to gallery, and wishlist.
  */
 export function ARScreen({ onClose, initialModelId, testID }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -26,11 +34,19 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   );
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(selectedModel.fabrics[0]);
   const [showDimensions, setShowDimensions] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [wishlistSaved, setWishlistSaved] = useState(false);
+
+  const viewShotRef = useRef<ViewShot>(null);
+  const wishlist = useWishlist();
+
+  // Map current futon model to its product for wishlist
+  const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
+  const isInWishlist = currentProduct ? wishlist.isInWishlist(currentProduct.id) : false;
 
   const handleSelectModel = useCallback(
     (model: FutonModel) => {
       setSelectedModel(model);
-      // Keep fabric if available on new model, else reset
       if (!model.fabrics.find((f) => f.id === selectedFabric.id)) {
         setSelectedFabric(model.fabrics[0]);
       }
@@ -58,6 +74,90 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   const handleClose = useCallback(() => {
     onClose?.();
   }, [onClose]);
+
+  /** Capture the AR scene (camera + overlay + watermark) as an image URI */
+  const captureScene = useCallback(async (): Promise<string | null> => {
+    if (!viewShotRef.current) return null;
+    try {
+      setIsCapturing(true);
+      const uri = await captureRef(viewShotRef, {
+        format: 'png',
+        quality: 1,
+      });
+      events.arScreenshot(selectedModel.id, selectedFabric.id);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      return uri;
+    } catch {
+      Alert.alert('Capture Failed', 'Could not capture the AR scene. Please try again.');
+      return null;
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [selectedModel.id, selectedFabric.id]);
+
+  /** Share the AR screenshot via native share sheet */
+  const handleShare = useCallback(async () => {
+    const uri = await captureScene();
+    if (!uri) return;
+
+    const message = `Check out the ${selectedModel.name} in ${selectedFabric.name} — ${formatPrice(selectedModel.basePrice + selectedFabric.price)}!\n\nViewed in AR with Carolina Futons\ncarolinafutons.com`;
+
+    try {
+      if (Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/png',
+          dialogTitle: 'Share your AR view',
+        });
+      } else {
+        await Share.share({ message, url: uri });
+      }
+      events.arShare(selectedModel.id, selectedFabric.id);
+    } catch {
+      // User cancelled share — not an error
+    }
+  }, [captureScene, selectedModel, selectedFabric]);
+
+  /** Save the AR screenshot to device gallery */
+  const handleSaveToGallery = useCallback(async () => {
+    const uri = await captureScene();
+    if (!uri) return;
+
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Please allow photo library access to save AR screenshots.',
+        );
+        return;
+      }
+      await MediaLibrary.saveToLibraryAsync(uri);
+      events.arSaveToGallery(selectedModel.id, selectedFabric.id);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      Alert.alert('Saved', 'AR screenshot saved to your photo library.');
+    } catch {
+      Alert.alert('Save Failed', 'Could not save to your photo library. Please try again.');
+    }
+  }, [captureScene, selectedModel.id, selectedFabric.id]);
+
+  /** Toggle wishlist for the current futon model */
+  const handleToggleWishlist = useCallback(() => {
+    if (!currentProduct) return;
+    wishlist.toggle(currentProduct);
+    const nowInWishlist = !isInWishlist;
+    if (nowInWishlist) {
+      events.arSaveToWishlist(selectedModel.id, selectedFabric.id);
+      setWishlistSaved(true);
+      setTimeout(() => setWishlistSaved(false), 2000);
+    }
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
 
   // Permission not yet determined
   if (!permission) {
@@ -105,31 +205,39 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   // Camera granted — show AR view
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
-      {/* Camera feed */}
-      <CameraView style={styles.camera} facing="back" testID="ar-camera">
-        {/* Crosshair / placement guide */}
-        <View style={styles.crosshairContainer}>
-          <View style={styles.crosshairH} />
-          <View style={styles.crosshairV} />
-        </View>
+      {/* Capturable area: camera feed + overlay + watermark */}
+      <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
+        <CameraView style={styles.camera} facing="back" testID="ar-camera">
+          {/* Crosshair / placement guide */}
+          <View style={styles.crosshairContainer}>
+            <View style={styles.crosshairH} />
+            <View style={styles.crosshairV} />
+          </View>
 
-        {/* Instruction hint */}
-        <View style={styles.hintContainer}>
-          <Text style={styles.hintText}>
-            Drag to position · Pinch to resize · Two-finger rotate
-          </Text>
-        </View>
+          {/* Instruction hint */}
+          <View style={styles.hintContainer}>
+            <Text style={styles.hintText}>
+              Drag to position · Pinch to resize · Two-finger rotate
+            </Text>
+          </View>
 
-        {/* Futon overlay - centered, user drags from there */}
-        <View style={styles.overlayContainer}>
-          <ARFutonOverlay
-            model={selectedModel}
-            fabric={selectedFabric}
-            showDimensions={showDimensions}
-            testID="ar-futon-overlay"
-          />
-        </View>
-      </CameraView>
+          {/* Futon overlay - centered, user drags from there */}
+          <View style={styles.overlayContainer}>
+            <ARFutonOverlay
+              model={selectedModel}
+              fabric={selectedFabric}
+              showDimensions={showDimensions}
+              testID="ar-futon-overlay"
+            />
+          </View>
+
+          {/* Watermark — visible in captures */}
+          <View style={styles.watermarkContainer} testID="ar-watermark">
+            <Text style={styles.watermarkText}>Carolina Futons</Text>
+            <Text style={styles.watermarkSubtext}>carolinafutons.com</Text>
+          </View>
+        </CameraView>
+      </ViewShot>
 
       {/* Bottom controls */}
       <ARControls
@@ -141,6 +249,12 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
         onSelectFabric={handleSelectFabric}
         onToggleDimensions={handleToggleDimensions}
         onClose={handleClose}
+        onShare={handleShare}
+        onSaveToGallery={handleSaveToGallery}
+        onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
+        isInWishlist={isInWishlist}
+        wishlistSaved={wishlistSaved}
+        isCapturing={isCapturing}
         testID="ar-controls"
       />
     </GestureHandlerRootView>
@@ -262,5 +376,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    alignItems: 'flex-end',
+    opacity: 0.6,
+  },
+  watermarkText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  watermarkSubtext: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+    marginTop: 1,
   },
 });

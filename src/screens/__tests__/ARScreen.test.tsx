@@ -1,10 +1,11 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { WishlistProvider } from '@/hooks/useWishlist';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -21,7 +22,9 @@ jest.mock('expo-camera', () => {
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(),
   impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light' },
+  NotificationFeedbackType: { Success: 'success' },
 }));
 
 // Mock gesture handler
@@ -52,6 +55,40 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
+// Mock react-native-view-shot
+jest.mock('react-native-view-shot', () => {
+  const { createElement, forwardRef } = require('react');
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: forwardRef(({ children, ...props }: any, ref: any) =>
+      createElement(View, { ...props, ref }, children),
+    ),
+    captureRef: jest.fn(() => Promise.resolve('/tmp/screenshot.png')),
+  };
+});
+
+// Mock expo-media-library
+jest.mock('expo-media-library', () => ({
+  requestPermissionsAsync: jest.fn(() => Promise.resolve({ status: 'granted' })),
+  saveToLibraryAsync: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock expo-sharing
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(true)),
+  shareAsync: jest.fn(() => Promise.resolve()),
+}));
+
+/** Helper to render ARScreen with required providers */
+function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
+  return render(
+    <WishlistProvider>
+      <ARScreen {...props} />
+    </WishlistProvider>,
+  );
+}
+
 describe('ARScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -63,7 +100,7 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Camera Permission Flow', () => {
     it('renders camera view when permission granted', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       expect(getByTestId('ar-screen')).toBeTruthy();
       expect(getByTestId('ar-camera')).toBeTruthy();
       expect(getByTestId('ar-futon-overlay')).toBeTruthy();
@@ -72,7 +109,7 @@ describe('ARScreen', () => {
 
     it('shows loading state when permission is null (not yet determined)', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
-      const { getByTestId, getByText, queryByTestId } = render(<ARScreen />);
+      const { getByTestId, getByText, queryByTestId } = renderARScreen();
       expect(getByTestId('ar-loading')).toBeTruthy();
       expect(getByText('Initializing camera...')).toBeTruthy();
       expect(queryByTestId('ar-camera')).toBeNull();
@@ -81,7 +118,7 @@ describe('ARScreen', () => {
 
     it('shows permission request screen when not granted', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
-      const { getByTestId, getByText, queryByTestId } = render(<ARScreen />);
+      const { getByTestId, getByText, queryByTestId } = renderARScreen();
       expect(getByTestId('ar-permission')).toBeTruthy();
       expect(getByText('See Futons in Your Room')).toBeTruthy();
       expect(getByText(/Point your camera at your room/)).toBeTruthy();
@@ -93,7 +130,7 @@ describe('ARScreen', () => {
     it('requests permission when Allow Camera Access button is pressed', () => {
       const mockRequest = jest.fn();
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, mockRequest]);
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-grant-permission'));
       expect(mockRequest).toHaveBeenCalledTimes(1);
     });
@@ -101,18 +138,26 @@ describe('ARScreen', () => {
     it('shows "Maybe Later" dismiss only when onClose is provided', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
 
-      const { queryByTestId, rerender } = render(<ARScreen />);
+      const { queryByTestId, rerender } = render(
+        <WishlistProvider>
+          <ARScreen />
+        </WishlistProvider>,
+      );
       expect(queryByTestId('ar-permission-dismiss')).toBeNull();
 
       const onClose = jest.fn();
-      rerender(<ARScreen onClose={onClose} />);
+      rerender(
+        <WishlistProvider>
+          <ARScreen onClose={onClose} />
+        </WishlistProvider>,
+      );
       expect(queryByTestId('ar-permission-dismiss')).toBeTruthy();
     });
 
     it('"Maybe Later" calls onClose when pressed', () => {
       const onClose = jest.fn();
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
-      const { getByTestId } = render(<ARScreen onClose={onClose} />);
+      const { getByTestId } = renderARScreen({ onClose });
       fireEvent.press(getByTestId('ar-permission-dismiss'));
       expect(onClose).toHaveBeenCalledTimes(1);
     });
@@ -123,24 +168,31 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Camera View UI', () => {
     it('uses back-facing camera', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       const camera = getByTestId('ar-camera');
       expect(camera.props.accessibilityHint).toBe('back');
     });
 
     it('shows gesture instruction hint', () => {
-      const { getByText } = render(<ARScreen />);
+      const { getByText } = renderARScreen();
       expect(getByText(/Drag to position · Pinch to resize · Two-finger rotate/)).toBeTruthy();
     });
 
     it('uses custom testID when provided', () => {
-      const { getByTestId } = render(<ARScreen testID="custom-ar" />);
+      const { getByTestId } = renderARScreen({ testID: 'custom-ar' });
       expect(getByTestId('custom-ar')).toBeTruthy();
     });
 
     it('uses default testID "ar-screen" when not provided', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       expect(getByTestId('ar-screen')).toBeTruthy();
+    });
+
+    it('renders Carolina Futons watermark', () => {
+      const { getByTestId, getByText } = renderARScreen();
+      expect(getByTestId('ar-watermark')).toBeTruthy();
+      expect(getByText('Carolina Futons')).toBeTruthy();
+      expect(getByText('carolinafutons.com')).toBeTruthy();
     });
   });
 
@@ -149,29 +201,29 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Model Selection', () => {
     it('defaults to first model (Asheville) when no initialModelId', () => {
-      const { getAllByText } = render(<ARScreen />);
+      const { getAllByText } = renderARScreen();
       expect(getAllByText('The Asheville').length).toBeGreaterThanOrEqual(1);
     });
 
     it('uses initialModelId when valid', () => {
-      const { getAllByText } = render(<ARScreen initialModelId="pisgah-twin" />);
+      const { getAllByText } = renderARScreen({ initialModelId: 'pisgah-twin' });
       expect(getAllByText('The Pisgah').length).toBeGreaterThanOrEqual(1);
     });
 
     it('falls back to first model when initialModelId is invalid', () => {
-      const { getAllByText } = render(<ARScreen initialModelId="nonexistent-model" />);
+      const { getAllByText } = renderARScreen({ initialModelId: 'nonexistent-model' });
       expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders all 4 model selector chips', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       for (const model of FUTON_MODELS) {
         expect(getByTestId(`ar-model-${model.id}`)).toBeTruthy();
       }
     });
 
     it('switches to selected model on chip press', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       expect(getAllByText('The Blue Ridge').length).toBeGreaterThanOrEqual(1);
@@ -181,7 +233,7 @@ describe('ARScreen', () => {
     });
 
     it('updates price when switching to more expensive model', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       expect(getAllByText(/\$349\.00/).length).toBeGreaterThanOrEqual(1);
 
@@ -190,21 +242,21 @@ describe('ARScreen', () => {
     });
 
     it('updates price when switching to cheaper model', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       fireEvent.press(getByTestId('ar-model-pisgah-twin'));
       expect(getAllByText(/\$279\.00/).length).toBeGreaterThanOrEqual(1);
     });
 
     it('each model chip shows model tagline', () => {
-      const { getByText } = render(<ARScreen />);
+      const { getByText } = renderARScreen();
       for (const model of FUTON_MODELS) {
         expect(getByText(model.tagline)).toBeTruthy();
       }
     });
 
     it('model chips have accessibility labels and roles', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       for (const model of FUTON_MODELS) {
         const chip = getByTestId(`ar-model-${model.id}`);
         expect(chip.props.accessibilityLabel).toBe(model.name);
@@ -218,26 +270,26 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Fabric Selection', () => {
     it('renders all 8 fabric swatches', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       for (const fabric of FABRICS) {
         expect(getByTestId(`ar-fabric-${fabric.id}`)).toBeTruthy();
       }
     });
 
     it('defaults to first fabric shown in subtitle', () => {
-      const { getAllByText } = render(<ARScreen />);
+      const { getAllByText } = renderARScreen();
       // Price subtitle: "The Asheville · Natural Linen"
       expect(getAllByText(/Natural Linen/).length).toBeGreaterThanOrEqual(1);
     });
 
     it('switches fabric on swatch press', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));
       expect(getAllByText(/Mountain Blue/).length).toBeGreaterThanOrEqual(1);
     });
 
     it('updates total price when selecting premium fabric (+$29)', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       expect(getAllByText(/\$349\.00/).length).toBeGreaterThanOrEqual(1);
 
@@ -246,14 +298,14 @@ describe('ARScreen', () => {
     });
 
     it('updates total price with most expensive fabric (+$49)', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       fireEvent.press(getByTestId('ar-fabric-espresso-brown'));
       expect(getAllByText(/\$398\.00/).length).toBeGreaterThanOrEqual(1);
     });
 
     it('price updates correctly with model + fabric combination', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       // Blue Ridge ($449) + Charcoal (+$49) = $498
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
@@ -262,7 +314,7 @@ describe('ARScreen', () => {
     });
 
     it('price returns to base when switching back to free fabric', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));
       expect(getAllByText(/\$378\.00/).length).toBeGreaterThanOrEqual(1);
@@ -272,7 +324,7 @@ describe('ARScreen', () => {
     });
 
     it('fabric swatches have accessibility labels with price for premium fabrics', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
 
       const freeSwatch = getByTestId('ar-fabric-natural-linen');
       expect(freeSwatch.props.accessibilityLabel).toBe('Natural Linen');
@@ -282,7 +334,7 @@ describe('ARScreen', () => {
     });
 
     it('fabric swatches have correct selected accessibility state', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
 
       const first = getByTestId('ar-fabric-natural-linen');
       expect(first.props.accessibilityState).toEqual({ selected: true });
@@ -297,12 +349,12 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Dimension Overlay', () => {
     it('dimensions are hidden by default', () => {
-      const { queryByText } = render(<ARScreen />);
+      const { queryByText } = renderARScreen();
       expect(queryByText(/4'6" W/)).toBeNull();
     });
 
     it('shows W/D/H text after toggle press', () => {
-      const { getByTestId, getByText } = render(<ARScreen />);
+      const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       // Asheville: 54" W, 34" D, 33" H
       expect(getByText(/4'6" W/)).toBeTruthy();
@@ -311,7 +363,7 @@ describe('ARScreen', () => {
     });
 
     it('hides dimensions after second toggle press', () => {
-      const { getByTestId, queryByText } = render(<ARScreen />);
+      const { getByTestId, queryByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       expect(queryByText(/4'6" W/)).toBeTruthy();
       fireEvent.press(getByTestId('ar-dimension-toggle'));
@@ -319,7 +371,7 @@ describe('ARScreen', () => {
     });
 
     it('shows correct dimensions for Pisgah model', () => {
-      const { getByTestId, getByText } = render(<ARScreen />);
+      const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-model-pisgah-twin'));
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       // Pisgah: 39" = 3'3", 32" = 2'8", 31" = 2'7"
@@ -329,7 +381,7 @@ describe('ARScreen', () => {
     });
 
     it('shows correct dimensions for Blue Ridge model', () => {
-      const { getByTestId, getByText } = render(<ARScreen />);
+      const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       // Blue Ridge: 60" = 5', 36" = 3', 35" = 2'11"
@@ -339,7 +391,7 @@ describe('ARScreen', () => {
     });
 
     it('dimension toggle has correct accessibility', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       const toggle = getByTestId('ar-dimension-toggle');
       expect(toggle.props.accessibilityLabel).toBe('Toggle dimensions');
       expect(toggle.props.accessibilityRole).toBe('button');
@@ -352,18 +404,18 @@ describe('ARScreen', () => {
   describe('Close Button', () => {
     it('calls onClose when close button pressed', () => {
       const onClose = jest.fn();
-      const { getByTestId } = render(<ARScreen onClose={onClose} />);
+      const { getByTestId } = renderARScreen({ onClose });
       fireEvent.press(getByTestId('ar-close'));
       expect(onClose).toHaveBeenCalledTimes(1);
     });
 
     it('does not crash when close pressed without onClose prop', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-close'));
     });
 
     it('close button has correct accessibility', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       const close = getByTestId('ar-close');
       expect(close.props.accessibilityLabel).toBe('Close AR view');
       expect(close.props.accessibilityRole).toBe('button');
@@ -375,29 +427,29 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Add to Cart', () => {
     it('renders add to cart button', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       expect(getByTestId('ar-add-to-cart')).toBeTruthy();
     });
 
     it('shows correct price on add to cart button', () => {
-      const { getByText } = render(<ARScreen />);
+      const { getByText } = renderARScreen();
       expect(getByText(/Add to Cart — \$349\.00/)).toBeTruthy();
     });
 
     it('add to cart price updates with model change', () => {
-      const { getByTestId, getByText } = render(<ARScreen />);
+      const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       expect(getByText(/Add to Cart — \$449\.00/)).toBeTruthy();
     });
 
     it('add to cart price updates with fabric change', () => {
-      const { getByTestId, getByText } = render(<ARScreen />);
+      const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-fabric-espresso-brown'));
       expect(getByText(/Add to Cart — \$398\.00/)).toBeTruthy();
     });
 
     it('add to cart button has correct accessibility', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       const btn = getByTestId('ar-add-to-cart');
       expect(btn.props.accessibilityLabel).toBe('Add to cart');
       expect(btn.props.accessibilityRole).toBe('button');
@@ -409,21 +461,78 @@ describe('ARScreen', () => {
   // =========================================================================
   describe('Haptic Feedback', () => {
     it('fires selection haptic on model change', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       expect(Haptics.selectionAsync).toHaveBeenCalled();
     });
 
     it('fires selection haptic on fabric change', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));
       expect(Haptics.selectionAsync).toHaveBeenCalled();
     });
 
     it('fires impact haptic on dimension toggle', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       expect(Haptics.impactAsync).toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // Share / Save / Wishlist
+  // =========================================================================
+  describe('Share and Save', () => {
+    it('renders share button', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-share')).toBeTruthy();
+    });
+
+    it('renders save to gallery button', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-save-gallery')).toBeTruthy();
+    });
+
+    it('share button has correct accessibility', () => {
+      const { getByTestId } = renderARScreen();
+      const btn = getByTestId('ar-share');
+      expect(btn.props.accessibilityLabel).toBe('Share AR screenshot');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('save button has correct accessibility', () => {
+      const { getByTestId } = renderARScreen();
+      const btn = getByTestId('ar-save-gallery');
+      expect(btn.props.accessibilityLabel).toBe('Save to photo library');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('renders wishlist button', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-wishlist')).toBeTruthy();
+    });
+
+    it('wishlist button shows "Wishlist" when not saved', () => {
+      const { getByText } = renderARScreen();
+      expect(getByText('Wishlist')).toBeTruthy();
+    });
+
+    it('wishlist button toggles to "Saved!" on press', () => {
+      jest.useFakeTimers();
+      const { getByTestId, getByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-wishlist'));
+      // Immediately shows "Saved!" feedback
+      expect(getByText('Saved!')).toBeTruthy();
+      // After 2s, switches to "Wishlisted"
+      act(() => { jest.advanceTimersByTime(2000); });
+      expect(getByText('Wishlisted')).toBeTruthy();
+      jest.useRealTimers();
+    });
+
+    it('wishlist button has correct accessibility label', () => {
+      const { getByTestId } = renderARScreen();
+      const btn = getByTestId('ar-wishlist');
+      expect(btn.props.accessibilityLabel).toBe('Add to wishlist');
     });
   });
 
@@ -433,7 +542,7 @@ describe('ARScreen', () => {
   describe('Complex Interaction Sequences', () => {
     it('full user flow: select model -> fabric -> toggle dims -> close', () => {
       const onClose = jest.fn();
-      const { getByTestId, getAllByText, getByText } = render(<ARScreen onClose={onClose} />);
+      const { getByTestId, getAllByText, getByText } = renderARScreen({ onClose });
 
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       expect(getAllByText('The Blue Ridge').length).toBeGreaterThanOrEqual(1);
@@ -452,7 +561,7 @@ describe('ARScreen', () => {
     });
 
     it('switching models preserves fabric when available', () => {
-      const { getByTestId, getAllByText } = render(<ARScreen />);
+      const { getByTestId, getAllByText } = renderARScreen();
 
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));
       expect(getAllByText(/Mountain Blue/).length).toBeGreaterThanOrEqual(1);
@@ -462,7 +571,7 @@ describe('ARScreen', () => {
     });
 
     it('rapidly switching models does not crash', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
 
       for (let i = 0; i < 3; i++) {
         for (const model of FUTON_MODELS) {
@@ -473,7 +582,7 @@ describe('ARScreen', () => {
     });
 
     it('rapidly switching fabrics does not crash', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
 
       for (let i = 0; i < 3; i++) {
         for (const fabric of FABRICS) {
@@ -484,7 +593,7 @@ describe('ARScreen', () => {
     });
 
     it('rapidly toggling dimensions does not crash', () => {
-      const { getByTestId } = render(<ARScreen />);
+      const { getByTestId } = renderARScreen();
 
       for (let i = 0; i < 10; i++) {
         fireEvent.press(getByTestId('ar-dimension-toggle'));

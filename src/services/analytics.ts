@@ -31,6 +31,10 @@ export type AnalyticsEventName =
   | 'deep_link_opened'
   | 'notification_received'
   | 'notification_opened'
+  | 'ar_screenshot'
+  | 'ar_share'
+  | 'ar_save_to_gallery'
+  | 'ar_save_to_wishlist'
   | 'error';
 
 export interface AnalyticsEvent {
@@ -205,5 +209,17 @@ export const events = {
   },
   deepLinkOpened(url: string, screen: string) {
     trackEvent('deep_link_opened', { url, screen });
+  },
+  arScreenshot(modelId: string, fabricId: string) {
+    trackEvent('ar_screenshot', { model_id: modelId, fabric_id: fabricId });
+  },
+  arShare(modelId: string, fabricId: string) {
+    trackEvent('ar_share', { model_id: modelId, fabric_id: fabricId });
+  },
+  arSaveToGallery(modelId: string, fabricId: string) {
+    trackEvent('ar_save_to_gallery', { model_id: modelId, fabric_id: fabricId });
+  },
+  arSaveToWishlist(modelId: string, fabricId: string) {
+    trackEvent('ar_save_to_wishlist', { model_id: modelId, fabric_id: fabricId });
   },
 } as const;
