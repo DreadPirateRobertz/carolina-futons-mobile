@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { trackEvent } from '@/services/analytics';
+import { events } from '@/services/analytics';
 import type { Product } from '@/data/products';
 
 const AR_CATEGORIES = new Set(['futons', 'frames', 'murphy-beds']);
@@ -32,11 +32,7 @@ export function ViewInRoomButton({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    trackEvent('ar_view_in_room_tap', {
-      productId: product.id,
-      productName: product.name,
-      category: product.category,
-    });
+    events.arViewInRoomTap(product.id, product.category);
 
     onPress?.(product);
   }, [product, onPress, disabled]);

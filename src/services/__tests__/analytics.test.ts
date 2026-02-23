@@ -285,5 +285,54 @@ describe('analytics', () => {
       const ev = getEventBuffer()[0];
       expect(ev.name).toBe('remove_from_wishlist');
     });
+
+    it('events.arViewInRoomTap tracks correctly', () => {
+      events.arViewInRoomTap('prod-asheville-full', 'futons');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_view_in_room_tap');
+      expect(ev.properties).toEqual({ product_id: 'prod-asheville-full', category: 'futons' });
+    });
+
+    it('events.arModelSelected tracks correctly', () => {
+      events.arModelSelected('asheville-full', 'prod-asheville-full');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_model_selected');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', product_id: 'prod-asheville-full' });
+    });
+
+    it('events.arAddToCart tracks correctly', () => {
+      events.arAddToCart('asheville-full', 'mountain-blue', 378);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_add_to_cart');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'mountain-blue', price: 378 });
+    });
+
+    it('events.arScreenshot tracks correctly', () => {
+      events.arScreenshot('asheville-full', 'mountain-blue');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_screenshot');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'mountain-blue' });
+    });
+
+    it('events.arShare tracks correctly', () => {
+      events.arShare('asheville-full', 'slate-gray');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_share');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'slate-gray' });
+    });
+
+    it('events.arSaveToGallery tracks correctly', () => {
+      events.arSaveToGallery('asheville-full', 'natural-linen');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_save_to_gallery');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'natural-linen' });
+    });
+
+    it('events.arSaveToWishlist tracks correctly', () => {
+      events.arSaveToWishlist('asheville-full', 'mountain-blue');
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('ar_save_to_wishlist');
+      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'mountain-blue' });
+    });
   });
 });

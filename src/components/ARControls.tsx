@@ -14,6 +14,7 @@ interface Props {
   onClose: () => void;
   onShare?: () => void;
   onSaveToGallery?: () => void;
+  onAddToCart?: () => void;
   onToggleWishlist?: () => void;
   isInWishlist?: boolean;
   wishlistSaved?: boolean;
@@ -36,6 +37,7 @@ export function ARControls({
   onClose,
   onShare,
   onSaveToGallery,
+  onAddToCart,
   onToggleWishlist,
   isInWishlist,
   wishlistSaved,
@@ -190,6 +192,7 @@ export function ARControls({
       <View style={styles.actions}>
         <TouchableOpacity
           style={styles.addToCartButton}
+          onPress={onAddToCart}
           testID="ar-add-to-cart"
           accessibilityLabel="Add to cart"
           accessibilityRole="button"
