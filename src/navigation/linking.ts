@@ -7,31 +7,32 @@
  * Supported routes:
  *   carolinafutons://product/{slug}    → ProductDetailScreen
  *   carolinafutons://category/{slug}   → CategoryScreen
- *   carolinafutons://cart              → CartScreen
+ *   carolinafutons://cart              → CartScreen (via Tabs)
  *   carolinafutons://checkout          → CheckoutScreen
  *   carolinafutons://orders            → OrderHistoryScreen
  *   carolinafutons://orders/{id}       → OrderDetailScreen
- *   carolinafutons://account           → AccountScreen
- *   carolinafutons://shop              → ShopScreen
- *   carolinafutons://home              → HomeScreen
+ *   carolinafutons://account           → AccountScreen (via Tabs)
+ *   carolinafutons://shop              → ShopScreen (via Tabs)
+ *   carolinafutons://home              → HomeScreen (via Tabs)
+ *   carolinafutons://ar                → ARScreen (modal)
  */
 
-export interface LinkingConfig {
-  prefixes: string[];
-  config: {
-    screens: Record<
-      string,
-      string | { path: string; parse?: Record<string, (v: string) => string> }
-    >;
-  };
-}
+import type { LinkingOptions } from '@react-navigation/native';
+import type { RootStackParamList } from './AppNavigator';
 
-export const linkingConfig: LinkingConfig = {
+export const linkingConfig: LinkingOptions<RootStackParamList> = {
   prefixes: ['carolinafutons://', 'https://carolinafutons.com', 'https://www.carolinafutons.com'],
   config: {
     screens: {
-      Home: 'home',
-      Shop: 'shop',
+      Tabs: {
+        screens: {
+          Home: 'home',
+          Shop: 'shop',
+          Cart: 'cart',
+          Account: 'account',
+        },
+      },
+      AR: 'ar',
       Category: 'category/:slug',
       ProductDetail: {
         path: 'product/:slug',
@@ -39,14 +40,15 @@ export const linkingConfig: LinkingConfig = {
           slug: (slug: string) => slug,
         },
       },
-      Cart: 'cart',
       Checkout: 'checkout',
       OrderHistory: 'orders',
       OrderDetail: 'orders/:orderId',
-      Account: 'account',
       Login: 'login',
       SignUp: 'signup',
       NotificationPreferences: 'notifications',
+      Wishlist: 'wishlist',
+      StoreLocator: 'stores',
+      StoreDetail: 'stores/:storeId',
     },
   },
 };
@@ -62,4 +64,7 @@ export const SUPPORTED_PATHS = [
   'signup',
   'orders',
   'notifications',
+  'ar',
+  'wishlist',
+  'stores',
 ] as const;

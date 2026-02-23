@@ -1,13 +1,16 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void } = {}) {
   return render(
-    <ThemeProvider>
-      <HomeScreen {...props} />
-    </ThemeProvider>,
+    <NavigationContainer>
+      <ThemeProvider>
+        <HomeScreen {...props} />
+      </ThemeProvider>
+    </NavigationContainer>,
   );
 }
 

@@ -4,31 +4,20 @@
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
+  const React = require('react');
   const inset = { top: 0, right: 0, bottom: 0, left: 0 };
+  const frame = { x: 0, y: 0, width: 390, height: 844 };
+  const SafeAreaContext = React.createContext({ insets: inset, frame });
   return {
-    SafeAreaProvider: ({ children }) => children,
+    SafeAreaContext,
+    SafeAreaProvider: ({ children }) =>
+      React.createElement(SafeAreaContext.Provider, { value: { insets: inset, frame } }, children),
     SafeAreaView: ({ children }) => children,
+    SafeAreaInsetsContext: SafeAreaContext,
+    SafeAreaFrameContext: SafeAreaContext,
     useSafeAreaInsets: () => inset,
-    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
-  };
-});
-
-// Mock @react-navigation/native
-jest.mock('@react-navigation/native', () => {
-  const actual = jest.requireActual('@react-navigation/native');
-  return {
-    ...actual,
-    useNavigation: () => ({
-      navigate: jest.fn(),
-      goBack: jest.fn(),
-      dispatch: jest.fn(),
-      setOptions: jest.fn(),
-    }),
-    useRoute: () => ({
-      params: {},
-    }),
-    useIsFocused: () => true,
-    NavigationContainer: ({ children }) => children,
+    useSafeAreaFrame: () => frame,
+    initialWindowMetrics: { insets: inset, frame },
   };
 });
 

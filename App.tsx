@@ -1,47 +1,28 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@/theme';
-import { WishlistProvider } from '@/hooks/useWishlist';
+import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
-import { HomeScreen, ARScreen, ShopScreen } from '@/screens';
-
-type Screen = 'home' | 'ar' | 'shop';
+import { WishlistProvider } from '@/hooks/useWishlist';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
+import { AppNavigator, linkingConfig } from '@/navigation';
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home');
-
-  const openAR = useCallback(() => setScreen('ar'), []);
-  const openShop = useCallback(() => setScreen('shop'), []);
-  const goHome = useCallback(() => setScreen('home'), []);
-
-  if (screen === 'ar') {
-    return (
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <ARScreen onClose={goHome} />
-            </WishlistProvider>
-          </CartProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    );
-  }
-
-  if (screen === 'shop') {
-    return (
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <ShopScreen />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    );
-  }
-
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <HomeScreen onOpenAR={openAR} onOpenShop={openShop} />
+        <ConnectivityProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <NavigationContainer linking={linkingConfig}>
+                  <AppNavigator />
+                </NavigationContainer>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ConnectivityProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

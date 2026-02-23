@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
@@ -84,11 +85,13 @@ jest.mock('expo-sharing', () => ({
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <CartProvider>
-      <WishlistProvider>
-        <ARScreen {...props} />
-      </WishlistProvider>
-    </CartProvider>,
+    <NavigationContainer>
+      <CartProvider>
+        <WishlistProvider>
+          <ARScreen {...props} />
+        </WishlistProvider>
+      </CartProvider>
+    </NavigationContainer>,
   );
 }
 
@@ -138,26 +141,11 @@ describe('ARScreen', () => {
       expect(mockRequest).toHaveBeenCalledTimes(1);
     });
 
-    it('shows "Maybe Later" dismiss only when onClose is provided', () => {
+    it('shows "Maybe Later" dismiss button on permission screen', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
 
-      const { queryByTestId, rerender } = render(
-        <CartProvider>
-          <WishlistProvider>
-            <ARScreen />
-          </WishlistProvider>
-        </CartProvider>,
-      );
-      expect(queryByTestId('ar-permission-dismiss')).toBeNull();
-
-      const onClose = jest.fn();
-      rerender(
-        <CartProvider>
-          <WishlistProvider>
-            <ARScreen onClose={onClose} />
-          </WishlistProvider>
-        </CartProvider>,
-      );
+      const { queryByTestId } = renderARScreen();
+      // Always shown — user can dismiss via navigation.goBack() or onClose
       expect(queryByTestId('ar-permission-dismiss')).toBeTruthy();
     });
 
@@ -470,12 +458,14 @@ describe('ARScreen', () => {
         return null;
       }
       const { getByTestId } = render(
-        <CartProvider>
-          <WishlistProvider>
-            <CartSpy />
-            <ARScreen />
-          </WishlistProvider>
-        </CartProvider>,
+        <NavigationContainer>
+          <CartProvider>
+            <WishlistProvider>
+              <CartSpy />
+              <ARScreen />
+            </WishlistProvider>
+          </CartProvider>
+        </NavigationContainer>,
       );
       fireEvent.press(getByTestId('ar-add-to-cart'));
       expect(cartItems).toHaveLength(1);
@@ -492,12 +482,14 @@ describe('ARScreen', () => {
         return null;
       }
       const { getByTestId } = render(
-        <CartProvider>
-          <WishlistProvider>
-            <CartSpy />
-            <ARScreen />
-          </WishlistProvider>
-        </CartProvider>,
+        <NavigationContainer>
+          <CartProvider>
+            <WishlistProvider>
+              <CartSpy />
+              <ARScreen />
+            </WishlistProvider>
+          </CartProvider>
+        </NavigationContainer>,
       );
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));

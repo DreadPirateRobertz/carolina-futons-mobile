@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 interface Props {
   onOpenAR?: () => void;
@@ -9,6 +12,21 @@ interface Props {
 
 export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
   const { colors, spacing, typography } = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const handleOpenAR = useCallback(() => {
+    if (onOpenAR) return onOpenAR();
+    navigation.navigate('AR');
+  }, [onOpenAR, navigation]);
+
+  const handleOpenShop = useCallback(() => {
+    if (onOpenShop) return onOpenShop();
+    // In tab context, navigate via parent; standalone, try direct navigation
+    const parent = navigation.getParent?.();
+    if (parent) {
+      parent.navigate('Shop' as never);
+    }
+  }, [onOpenShop, navigation]);
 
   return (
     <View
@@ -35,7 +53,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
       {/* AR CTA */}
       <TouchableOpacity
         style={[styles.ctaButton, { backgroundColor: colors.sunsetCoral }]}
-        onPress={onOpenAR}
+        onPress={handleOpenAR}
         testID="home-ar-button"
         accessibilityLabel="Try futons in your room with AR camera"
         accessibilityRole="button"
@@ -50,7 +68,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
       {/* Shop CTA */}
       <TouchableOpacity
         style={[styles.ctaButton, { backgroundColor: colors.mountainBlue }]}
-        onPress={onOpenShop}
+        onPress={handleOpenShop}
         testID="home-shop-button"
         accessibilityLabel="Browse our products"
         accessibilityRole="button"

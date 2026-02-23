@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -18,6 +19,7 @@ import { useCart } from '@/hooks/useCart';
 interface Props {
   onClose?: () => void;
   initialModelId?: string;
+  route?: { params?: { initialModelId?: string } };
   testID?: string;
 }
 
@@ -27,11 +29,14 @@ interface Props {
  * User can drag/pinch/rotate the futon, swap fabrics, view dimensions.
  * Supports screenshot capture, sharing, saving to gallery, and wishlist.
  */
-export function ARScreen({ onClose, initialModelId, testID }: Props) {
+export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
+  const navigation = useNavigation();
+  // Support both direct props and route params from React Navigation
+  const modelId = initialModelId ?? route?.params?.initialModelId;
   const [permission, requestPermission] = useCameraPermissions();
 
   const [selectedModel, setSelectedModel] = useState<FutonModel>(
-    FUTON_MODELS.find((m) => m.id === initialModelId) ?? FUTON_MODELS[0],
+    FUTON_MODELS.find((m) => m.id === modelId) ?? FUTON_MODELS[0],
   );
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(selectedModel.fabrics[0]);
   const [showDimensions, setShowDimensions] = useState(false);
@@ -79,8 +84,9 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   }, []);
 
   const handleClose = useCallback(() => {
-    onClose?.();
-  }, [onClose]);
+    if (onClose) return onClose();
+    navigation.goBack();
+  }, [onClose, navigation]);
 
   const handleAddToCart = useCallback(() => {
     cart.addItem(selectedModel, selectedFabric, 1);
@@ -203,7 +209,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
           >
             <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
           </TouchableOpacity>
-          {onClose && (
+          {(onClose || navigation) && (
             <TouchableOpacity
               style={styles.permissionDismiss}
               onPress={handleClose}

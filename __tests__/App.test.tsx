@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -46,56 +46,62 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
+// Mock native stack — use a minimal JS-based stack for testing
+jest.mock('@react-navigation/native-stack', () => {
+  const { createNavigatorFactory, useNavigationBuilder, StackRouter } = require('@react-navigation/core');
+  const { createElement } = require('react');
+  const { View } = require('react-native');
+
+  function NativeStackNavigator({ children, screenOptions, ...rest }: any) {
+    const { state, descriptors, NavigationContent } = useNavigationBuilder(StackRouter, {
+      children,
+      screenOptions,
+      ...rest,
+    });
+    return createElement(
+      NavigationContent,
+      null,
+      state.routes.map((route: any, i: number) => {
+        if (i !== state.index) return null;
+        return createElement(View, { key: route.key }, descriptors[route.key].render());
+      }),
+    );
+  }
+
+  return {
+    createNativeStackNavigator: createNavigatorFactory(NativeStackNavigator),
+  };
+});
+
 import App from '../App';
 
 describe('App', () => {
-  it('renders HomeScreen by default', () => {
+  it('renders HomeScreen by default', async () => {
     const { getByTestId, getByText } = render(<App />);
-    expect(getByTestId('home-screen')).toBeTruthy();
+    await waitFor(() => {
+      expect(getByTestId('home-screen')).toBeTruthy();
+    });
     expect(getByText('Welcome to Carolina Futons')).toBeTruthy();
   });
 
-  it('navigates to AR screen when AR button pressed', () => {
-    const { getByTestId, queryByTestId } = render(<App />);
-    expect(getByTestId('home-screen')).toBeTruthy();
-
-    // Press AR button
-    fireEvent.press(getByTestId('home-ar-button'));
-
-    // Should now show AR screen, not home
-    expect(getByTestId('ar-screen')).toBeTruthy();
-    expect(queryByTestId('home-screen')).toBeNull();
+  it('renders tab bar with Home, Shop, Cart, Account', async () => {
+    const { getByText } = render(<App />);
+    await waitFor(() => {
+      expect(getByText('Home')).toBeTruthy();
+    });
+    expect(getByText('Shop')).toBeTruthy();
+    expect(getByText('Cart')).toBeTruthy();
+    expect(getByText('Account')).toBeTruthy();
   });
 
-  it('navigates back to home when AR close pressed', () => {
-    const { getByTestId, queryByTestId } = render(<App />);
-
-    // Go to AR
-    fireEvent.press(getByTestId('home-ar-button'));
-    expect(getByTestId('ar-screen')).toBeTruthy();
-
-    // Close AR
-    fireEvent.press(getByTestId('ar-close'));
-
-    // Should be back on home
-    expect(getByTestId('home-screen')).toBeTruthy();
-    expect(queryByTestId('ar-screen')).toBeNull();
-  });
-
-  it('can round-trip home → AR → home → AR', () => {
-    const { getByTestId, queryByTestId } = render(<App />);
-
-    // Home → AR
-    fireEvent.press(getByTestId('home-ar-button'));
-    expect(getByTestId('ar-screen')).toBeTruthy();
-
-    // AR → Home
-    fireEvent.press(getByTestId('ar-close'));
-    expect(getByTestId('home-screen')).toBeTruthy();
-
-    // Home → AR again
-    fireEvent.press(getByTestId('home-ar-button'));
-    expect(getByTestId('ar-screen')).toBeTruthy();
-    expect(queryByTestId('home-screen')).toBeNull();
+  it('navigates to Shop tab when tapped', async () => {
+    const { getByText, getByTestId } = render(<App />);
+    await waitFor(() => {
+      expect(getByText('Shop')).toBeTruthy();
+    });
+    fireEvent.press(getByText('Shop'));
+    await waitFor(() => {
+      expect(getByTestId('shop-screen')).toBeTruthy();
+    });
   });
 });
