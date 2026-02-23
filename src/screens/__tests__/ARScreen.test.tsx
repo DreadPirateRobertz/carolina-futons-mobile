@@ -80,6 +80,19 @@ jest.mock('expo-sharing', () => ({
   shareAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// Mock camera permission cache
+const mockLoadCachedPermission = jest.fn(() => Promise.resolve('undetermined'));
+const mockSaveCachedPermission = jest.fn(() => Promise.resolve());
+const mockGetCachedPermissionSync = jest.fn(() => null);
+const mockResetPermCache = jest.fn();
+
+jest.mock('@/services/cameraPermissionCache', () => ({
+  loadCachedPermission: (...args: any[]) => mockLoadCachedPermission(...args),
+  saveCachedPermission: (...args: any[]) => mockSaveCachedPermission(...args),
+  getCachedPermissionSync: () => mockGetCachedPermissionSync(),
+  resetCache: () => mockResetPermCache(),
+}));
+
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
@@ -599,6 +612,136 @@ describe('ARScreen', () => {
         fireEvent.press(getByTestId('ar-dimension-toggle'));
       }
       expect(getByTestId('ar-screen')).toBeTruthy();
+    });
+  });
+
+  // =========================================================================
+  // Camera Error Handling & Fallback UI
+  // =========================================================================
+  describe('Camera Error Handling', () => {
+    it('shows fallback UI when camera reports mount error', () => {
+      // CameraView mock needs to support onMountError
+      const CameraViewMock = jest.fn();
+      jest.requireMock('expo-camera').CameraView = ({ children, onMountError, testID }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        // Simulate calling onMountError on mount
+        const React = require('react');
+        React.useEffect(() => {
+          if (onMountError) onMountError({ message: 'Camera init failed' });
+        }, []);
+        return createElement(View, { testID }, children);
+      };
+
+      const { getByTestId, getByText } = renderARScreen();
+      expect(getByTestId('ar-camera-fallback')).toBeTruthy();
+      expect(getByText(/Camera unavailable/)).toBeTruthy();
+    });
+
+    it('shows retry button in fallback UI', () => {
+      jest.requireMock('expo-camera').CameraView = ({ children, onMountError, testID }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        const React = require('react');
+        React.useEffect(() => {
+          if (onMountError) onMountError({ message: 'Camera init failed' });
+        }, []);
+        return createElement(View, { testID }, children);
+      };
+
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-retry-camera')).toBeTruthy();
+    });
+
+    it('still shows futon overlay and controls in fallback mode', () => {
+      jest.requireMock('expo-camera').CameraView = ({ children, onMountError, testID }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        const React = require('react');
+        React.useEffect(() => {
+          if (onMountError) onMountError({ message: 'Camera init failed' });
+        }, []);
+        return createElement(View, { testID }, children);
+      };
+
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-futon-overlay')).toBeTruthy();
+      expect(getByTestId('ar-controls')).toBeTruthy();
+    });
+
+    it('retry button attempts to reinitialize camera', () => {
+      let mountErrorCallback: any = null;
+      jest.requireMock('expo-camera').CameraView = ({ children, onMountError, testID }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        const React = require('react');
+        React.useEffect(() => {
+          mountErrorCallback = onMountError;
+          if (onMountError) onMountError({ message: 'Camera init failed' });
+        }, []);
+        return createElement(View, { testID }, children);
+      };
+
+      const { getByTestId, queryByTestId } = renderARScreen();
+      expect(getByTestId('ar-camera-fallback')).toBeTruthy();
+
+      // Reset CameraView mock to succeed
+      jest.requireMock('expo-camera').CameraView = ({ children, testID, facing }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        return createElement(View, { testID, accessibilityHint: facing }, children);
+      };
+
+      fireEvent.press(getByTestId('ar-retry-camera'));
+      // After retry, camera fallback should be gone (camera re-mounted)
+      expect(queryByTestId('ar-camera-fallback')).toBeNull();
+      expect(getByTestId('ar-camera')).toBeTruthy();
+    });
+
+    afterEach(() => {
+      // Restore CameraView mock
+      jest.requireMock('expo-camera').CameraView = ({ children, testID, facing }: any) => {
+        const { createElement } = require('react');
+        const { View } = require('react-native');
+        return createElement(View, { testID, accessibilityHint: facing }, children);
+      };
+    });
+  });
+
+  // =========================================================================
+  // Permission State Persistence
+  // =========================================================================
+  describe('Permission State Persistence', () => {
+    it('loads cached permission on mount', () => {
+      renderARScreen();
+      expect(mockLoadCachedPermission).toHaveBeenCalled();
+    });
+
+    it('saves "granted" when permission is granted', () => {
+      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+      renderARScreen();
+      expect(mockSaveCachedPermission).toHaveBeenCalledWith('granted');
+    });
+
+    it('saves "denied" when permission is denied', () => {
+      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+      renderARScreen();
+      expect(mockSaveCachedPermission).toHaveBeenCalledWith('denied');
+    });
+
+    it('shows permission prompt instead of loading when cached state is "denied"', () => {
+      (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
+      mockGetCachedPermissionSync.mockReturnValue('denied');
+      const { getByTestId, queryByTestId } = renderARScreen();
+      expect(getByTestId('ar-permission')).toBeTruthy();
+      expect(queryByTestId('ar-loading')).toBeNull();
+    });
+
+    it('shows loading state when cached state is null (first launch)', () => {
+      (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
+      mockGetCachedPermissionSync.mockReturnValue(null);
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-loading')).toBeTruthy();
     });
   });
 });

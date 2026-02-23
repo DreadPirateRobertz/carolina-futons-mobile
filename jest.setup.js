@@ -47,6 +47,18 @@ jest.mock('expo-file-system', () => ({
   })),
 }));
 
+// Mock @react-native-async-storage/async-storage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    getItem: jest.fn(() => Promise.resolve(null)),
+    setItem: jest.fn(() => Promise.resolve()),
+    removeItem: jest.fn(() => Promise.resolve()),
+    clear: jest.fn(() => Promise.resolve()),
+    getAllKeys: jest.fn(() => Promise.resolve([])),
+  },
+}));
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -13,6 +13,11 @@ import { ARControls } from '@/components/ARControls';
 import { events } from '@/services/analytics';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
+import {
+  loadCachedPermission,
+  saveCachedPermission,
+  getCachedPermissionSync,
+} from '@/services/cameraPermissionCache';
 
 interface Props {
   onClose?: () => void;
@@ -28,6 +33,7 @@ interface Props {
  */
 export function ARScreen({ onClose, initialModelId, testID }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
+  const [cameraError, setCameraError] = useState(false);
 
   const [selectedModel, setSelectedModel] = useState<FutonModel>(
     FUTON_MODELS.find((m) => m.id === initialModelId) ?? FUTON_MODELS[0],
@@ -39,6 +45,18 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
+
+  // Load cached permission on mount for faster UI decisions
+  useEffect(() => {
+    loadCachedPermission();
+  }, []);
+
+  // Persist permission state whenever it changes
+  useEffect(() => {
+    if (permission) {
+      saveCachedPermission(permission.granted ? 'granted' : 'denied');
+    }
+  }, [permission]);
 
   // Map current futon model to its product for wishlist
   const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
@@ -74,6 +92,14 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   const handleClose = useCallback(() => {
     onClose?.();
   }, [onClose]);
+
+  const handleCameraError = useCallback(() => {
+    setCameraError(true);
+  }, []);
+
+  const handleRetryCamera = useCallback(() => {
+    setCameraError(false);
+  }, []);
 
   /** Capture the AR scene (camera + overlay + watermark) as an image URI */
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -159,8 +185,42 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
     }
   }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
 
-  // Permission not yet determined
+  // Permission not yet determined — use cached state to avoid flash
   if (!permission) {
+    const cached = getCachedPermissionSync();
+    if (cached === 'denied') {
+      // Show permission request immediately instead of loading spinner
+      return (
+        <View style={styles.permissionContainer} testID="ar-permission">
+          <View style={styles.permissionCard}>
+            <Text style={styles.permissionIcon}>{'\ud83d\udcf7'}</Text>
+            <Text style={styles.permissionTitle}>See Futons in Your Room</Text>
+            <Text style={styles.permissionDescription}>
+              Point your camera at your room to see how our futons look in your space. We need camera
+              access to make the magic happen.
+            </Text>
+            <TouchableOpacity
+              style={styles.permissionButton}
+              onPress={requestPermission}
+              testID="ar-grant-permission"
+              accessibilityLabel="Allow camera access"
+              accessibilityRole="button"
+            >
+              <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
+            </TouchableOpacity>
+            {onClose && (
+              <TouchableOpacity
+                style={styles.permissionDismiss}
+                onPress={handleClose}
+                testID="ar-permission-dismiss"
+              >
+                <Text style={styles.permissionDismissText}>Maybe Later</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      );
+    }
     return (
       <View style={styles.permissionContainer} testID="ar-loading">
         <Text style={styles.permissionText}>Initializing camera...</Text>
@@ -173,7 +233,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
     return (
       <View style={styles.permissionContainer} testID="ar-permission">
         <View style={styles.permissionCard}>
-          <Text style={styles.permissionIcon}>📷</Text>
+          <Text style={styles.permissionIcon}>{'\ud83d\udcf7'}</Text>
           <Text style={styles.permissionTitle}>See Futons in Your Room</Text>
           <Text style={styles.permissionDescription}>
             Point your camera at your room to see how our futons look in your space. We need camera
@@ -202,12 +262,71 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
     );
   }
 
+  // Camera error — show fallback with overlay-only mode
+  if (cameraError) {
+    return (
+      <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
+        <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
+          <View style={[styles.camera, styles.fallbackBackground]} testID="ar-camera-fallback">
+            <View style={styles.fallbackBanner}>
+              <Text style={styles.fallbackIcon}>{'\u26a0\ufe0f'}</Text>
+              <Text style={styles.fallbackText}>
+                Camera unavailable. You can still browse futon models below.
+              </Text>
+              <TouchableOpacity
+                onPress={handleRetryCamera}
+                testID="ar-retry-camera"
+                accessibilityLabel="Retry camera"
+                accessibilityRole="button"
+              >
+                <Text style={styles.fallbackRetryText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Futon overlay still works without camera */}
+            <View style={styles.overlayContainer}>
+              <ARFutonOverlay
+                model={selectedModel}
+                fabric={selectedFabric}
+                showDimensions={showDimensions}
+                testID="ar-futon-overlay"
+              />
+            </View>
+          </View>
+        </ViewShot>
+
+        <ARControls
+          models={FUTON_MODELS}
+          selectedModel={selectedModel}
+          selectedFabric={selectedFabric}
+          showDimensions={showDimensions}
+          onSelectModel={handleSelectModel}
+          onSelectFabric={handleSelectFabric}
+          onToggleDimensions={handleToggleDimensions}
+          onClose={handleClose}
+          onShare={handleShare}
+          onSaveToGallery={handleSaveToGallery}
+          onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
+          isInWishlist={isInWishlist}
+          wishlistSaved={wishlistSaved}
+          isCapturing={isCapturing}
+          testID="ar-controls"
+        />
+      </GestureHandlerRootView>
+    );
+  }
+
   // Camera granted — show AR view
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
       {/* Capturable area: camera feed + overlay + watermark */}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
-        <CameraView style={styles.camera} facing="back" testID="ar-camera">
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          testID="ar-camera"
+          onMountError={handleCameraError}
+        >
           {/* Crosshair / placement guide */}
           <View style={styles.crosshairContainer}>
             <View style={styles.crosshairH} />
@@ -326,6 +445,36 @@ const styles = StyleSheet.create({
   permissionDismissText: {
     color: 'rgba(242, 232, 213, 0.5)',
     fontSize: 14,
+  },
+  fallbackBackground: {
+    backgroundColor: '#2A2018',
+  },
+  fallbackBanner: {
+    position: 'absolute',
+    top: 60,
+    left: 16,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    zIndex: 10,
+  },
+  fallbackIcon: {
+    fontSize: 20,
+  },
+  fallbackText: {
+    color: '#F2E8D5',
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 18,
+  },
+  fallbackRetryText: {
+    color: '#E8845C',
+    fontSize: 14,
+    fontWeight: '700',
   },
   crosshairContainer: {
     position: 'absolute',
