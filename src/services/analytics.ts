@@ -26,6 +26,8 @@ export type AnalyticsEventName =
   | 'select_fabric'
   | 'view_product'
   | 'ar_view_in_room_tap'
+  | 'ar_model_selected'
+  | 'ar_add_to_cart'
   | 'app_open'
   | 'app_background'
   | 'deep_link_opened'
@@ -221,5 +223,14 @@ export const events = {
   },
   arSaveToWishlist(modelId: string, fabricId: string) {
     trackEvent('ar_save_to_wishlist', { model_id: modelId, fabric_id: fabricId });
+  },
+  arViewInRoomTap(productId: string, category: string) {
+    trackEvent('ar_view_in_room_tap', { product_id: productId, category });
+  },
+  arModelSelected(modelId: string, productId: string) {
+    trackEvent('ar_model_selected', { model_id: modelId, product_id: productId });
+  },
+  arAddToCart(modelId: string, fabricId: string, price: number) {
+    trackEvent('ar_add_to_cart', { model_id: modelId, fabric_id: fabricId, price });
   },
 } as const;

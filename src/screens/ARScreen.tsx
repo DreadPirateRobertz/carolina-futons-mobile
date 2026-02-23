@@ -50,6 +50,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
       if (!model.fabrics.find((f) => f.id === selectedFabric.id)) {
         setSelectedFabric(model.fabrics[0]);
       }
+      events.arModelSelected(model.id, `prod-${model.id}`);
       if (Platform.OS !== 'web') {
         Haptics.selectionAsync();
       }
@@ -57,12 +58,24 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
     [selectedFabric],
   );
 
-  const handleSelectFabric = useCallback((fabric: Fabric) => {
-    setSelectedFabric(fabric);
+  const handleSelectFabric = useCallback(
+    (fabric: Fabric) => {
+      setSelectedFabric(fabric);
+      events.selectFabric(`prod-${selectedModel.id}`, fabric.id);
+      if (Platform.OS !== 'web') {
+        Haptics.selectionAsync();
+      }
+    },
+    [selectedModel.id],
+  );
+
+  const handleAddToCart = useCallback(() => {
+    const totalPrice = selectedModel.basePrice + selectedFabric.price;
+    events.arAddToCart(selectedModel.id, selectedFabric.id, totalPrice);
     if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, []);
+  }, [selectedModel, selectedFabric]);
 
   const handleToggleDimensions = useCallback(() => {
     setShowDimensions((prev) => !prev);
@@ -251,6 +264,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
         onClose={handleClose}
         onShare={handleShare}
         onSaveToGallery={handleSaveToGallery}
+        onAddToCart={handleAddToCart}
         onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}
