@@ -12,7 +12,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
-import { formatPrice } from '@/utils';
+import { formatPrice, openARViewer } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { PRODUCTS } from '@/data/products';
 import { getReviewsForProduct, getReviewSummary, sortReviews } from '@/data/reviews';
@@ -92,7 +92,8 @@ export function ProductDetailScreen({
 
   const handleOpenAR = useCallback(() => {
     onOpenAR?.(model.id);
-  }, [model.id, onOpenAR]);
+    openARViewer(model.id, model.name);
+  }, [model.id, model.name, onOpenAR]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
