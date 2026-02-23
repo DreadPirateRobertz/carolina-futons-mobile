@@ -13,7 +13,12 @@
     "test:coverage": "npx jest --coverage",
     "lint": "eslint src/ --ext .ts,.tsx",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "pipeline:generate": "npx tsx scripts/pipeline/generate.ts",
+    "pipeline:convert": "npx tsx scripts/pipeline/convert.ts",
+    "pipeline:validate": "npx tsx scripts/pipeline/validate.ts --dir scripts/pipeline/output",
+    "pipeline:sync": "npx tsx scripts/pipeline/sync-catalog.ts",
+    "pipeline:all": "npm run pipeline:generate && npm run pipeline:convert && npm run pipeline:validate && npm run pipeline:sync"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
