@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
+import { WishlistProvider } from '@/hooks/useWishlist';
 
 // ============================================================================
 // AR Camera Feature — Integration Test Scaffolding (cm-88d)
@@ -94,6 +95,14 @@ try {
   arSupport = null;
 }
 
+// Helper: wrap ARScreen in required providers
+const renderAR = (props: any = {}) =>
+  render(
+    <WishlistProvider>
+      <ARScreen {...props} />
+    </WishlistProvider>,
+  );
+
 // ============================================================================
 // 1. Product-to-AR-Model Data Integrity
 // ============================================================================
@@ -177,32 +186,24 @@ describeARScreen('AR Screen Launch with Product Context', () => {
   });
 
   it('launches with correct model when given initialModelId', () => {
-    const { getAllByText } = render(
-      <ARScreen initialModelId="blue-ridge-queen" />,
-    );
+    const { getAllByText } = renderAR({ initialModelId: 'blue-ridge-queen' });
     expect(getAllByText('The Blue Ridge').length).toBeGreaterThanOrEqual(1);
   });
 
   it('launches with correct price for selected model', () => {
-    const { getAllByText } = render(
-      <ARScreen initialModelId="pisgah-twin" />,
-    );
+    const { getAllByText } = renderAR({ initialModelId: 'pisgah-twin' });
     expect(getAllByText(/\$279\.00/).length).toBeGreaterThanOrEqual(1);
   });
 
   it('all 4 models are selectable from AR view regardless of entry point', () => {
-    const { getByTestId } = render(
-      <ARScreen initialModelId="pisgah-twin" />,
-    );
+    const { getByTestId } = renderAR({ initialModelId: 'pisgah-twin' });
     for (const model of FUTON_MODELS) {
       expect(getByTestId(`ar-model-${model.id}`)).toBeTruthy();
     }
   });
 
   it('can switch from initial model to another and back', () => {
-    const { getByTestId, getAllByText } = render(
-      <ARScreen initialModelId="asheville-full" />,
-    );
+    const { getByTestId, getAllByText } = renderAR({ initialModelId: 'asheville-full' });
 
     // Switch to Blue Ridge
     fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
@@ -219,18 +220,18 @@ describeARScreen('AR Screen Launch with Product Context', () => {
 // ============================================================================
 describeARScreen('AR Model Loading States', () => {
   it('shows futon overlay immediately (current 2D implementation)', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     expect(getByTestId('ar-futon-overlay')).toBeTruthy();
   });
 
   it('overlay remains visible after model switch', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
     expect(getByTestId('ar-futon-overlay')).toBeTruthy();
   });
 
   it('overlay remains visible after fabric switch', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     fireEvent.press(getByTestId('ar-fabric-charcoal'));
     expect(getByTestId('ar-futon-overlay')).toBeTruthy();
   });
@@ -274,19 +275,19 @@ describeWithARSupport('Unsupported Device Fallback', () => {
 // ============================================================================
 describeARScreen('AR Session Lifecycle', () => {
   it('mounts without errors', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     expect(getByTestId('ar-screen')).toBeTruthy();
   });
 
   it('unmounts cleanly', () => {
-    const { unmount, getByTestId } = render(<ARScreen />);
+    const { unmount, getByTestId } = renderAR();
     expect(getByTestId('ar-screen')).toBeTruthy();
     expect(() => unmount()).not.toThrow();
   });
 
   it('multiple mount/unmount cycles do not leak', () => {
     for (let i = 0; i < 5; i++) {
-      const { unmount, getByTestId } = render(<ARScreen />);
+      const { unmount, getByTestId } = renderAR();
       expect(getByTestId('ar-screen')).toBeTruthy();
       unmount();
     }
@@ -294,7 +295,7 @@ describeARScreen('AR Session Lifecycle', () => {
 
   it('onClose fires exactly once per press', () => {
     const onClose = jest.fn();
-    const { getByTestId } = render(<ARScreen onClose={onClose} />);
+    const { getByTestId } = renderAR({ onClose });
     fireEvent.press(getByTestId('ar-close'));
     fireEvent.press(getByTestId('ar-close'));
     expect(onClose).toHaveBeenCalledTimes(2);
@@ -306,12 +307,12 @@ describeARScreen('AR Session Lifecycle', () => {
 // ============================================================================
 describeARScreen('Add to Cart from AR View', () => {
   it('renders add-to-cart button with correct initial price', () => {
-    const { getByText } = render(<ARScreen />);
+    const { getByText } = renderAR();
     expect(getByText(/Add to Cart — \$349\.00/)).toBeTruthy();
   });
 
   it('add-to-cart reflects model + premium fabric total', () => {
-    const { getByTestId, getByText } = render(<ARScreen />);
+    const { getByTestId, getByText } = renderAR();
 
     // Select Blue Ridge ($449) + Charcoal (+$49) = $498
     fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
@@ -320,7 +321,7 @@ describeARScreen('Add to Cart from AR View', () => {
   });
 
   it('add-to-cart reflects price after switching back to free fabric', () => {
-    const { getByTestId, getByText } = render(<ARScreen />);
+    const { getByTestId, getByText } = renderAR();
 
     fireEvent.press(getByTestId('ar-fabric-espresso-brown')); // +$49
     expect(getByText(/Add to Cart — \$398\.00/)).toBeTruthy();
@@ -330,7 +331,7 @@ describeARScreen('Add to Cart from AR View', () => {
   });
 
   it('add-to-cart has correct accessibility for screen readers', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     const btn = getByTestId('ar-add-to-cart');
     expect(btn.props.accessibilityLabel).toBe('Add to cart');
     expect(btn.props.accessibilityRole).toBe('button');
@@ -343,9 +344,7 @@ describeARScreen('Add to Cart from AR View', () => {
 describeARScreen('Full Integration Flow', () => {
   it('complete user journey: launch → browse models → pick fabric → dimensions → add to cart → close', () => {
     const onClose = jest.fn();
-    const { getByTestId, getAllByText, getByText } = render(
-      <ARScreen initialModelId="asheville-full" onClose={onClose} />,
-    );
+    const { getByTestId, getAllByText, getByText } = renderAR({ initialModelId: 'asheville-full', onClose });
 
     // Verify launched with Asheville
     expect(getAllByText('The Asheville').length).toBeGreaterThanOrEqual(1);
@@ -377,7 +376,7 @@ describeARScreen('Full Integration Flow', () => {
   });
 
   it('rapid model cycling during integration flow does not crash', () => {
-    const { getByTestId, getAllByText } = render(<ARScreen />);
+    const { getByTestId, getAllByText } = renderAR();
 
     // Rapid cycle through all models 3 times
     for (let i = 0; i < 3; i++) {
@@ -403,9 +402,7 @@ describeARScreen('Full Integration Flow', () => {
 
   it('each model entry point shows correct initial price in add-to-cart', () => {
     for (const model of FUTON_MODELS) {
-      const { getByText, unmount } = render(
-        <ARScreen initialModelId={model.id} />,
-      );
+      const { getByText, unmount } = renderAR({ initialModelId: model.id });
       const expectedPrice = `Add to Cart — $${model.basePrice.toFixed(2)}`;
       expect(getByText(expectedPrice)).toBeTruthy();
       unmount();
@@ -418,7 +415,7 @@ describeARScreen('Full Integration Flow', () => {
 // ============================================================================
 describeARScreen('AR Accessibility', () => {
   it('all interactive elements have accessibility roles', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
 
     // Close button
     expect(getByTestId('ar-close').props.accessibilityRole).toBe('button');
@@ -433,14 +430,14 @@ describeARScreen('AR Accessibility', () => {
   });
 
   it('all model chips have accessibility labels matching model names', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     for (const model of FUTON_MODELS) {
       expect(getByTestId(`ar-model-${model.id}`).props.accessibilityLabel).toBe(model.name);
     }
   });
 
   it('selected model chip has selected accessibility state', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     const defaultChip = getByTestId(`ar-model-${FUTON_MODELS[0].id}`);
     expect(defaultChip.props.accessibilityState).toEqual({ selected: true });
 
@@ -449,7 +446,7 @@ describeARScreen('AR Accessibility', () => {
   });
 
   it('fabric swatches have accessibility labels', () => {
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     for (const fabric of FABRICS) {
       const swatch = getByTestId(`ar-fabric-${fabric.id}`);
       expect(swatch.props.accessibilityLabel).toBeTruthy();
@@ -461,7 +458,7 @@ describeARScreen('AR Accessibility', () => {
     const { useCameraPermissions } = require('expo-camera');
     (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
 
-    const { getByTestId } = render(<ARScreen />);
+    const { getByTestId } = renderAR();
     const grantBtn = getByTestId('ar-grant-permission');
     expect(grantBtn.props.accessibilityLabel).toBe('Allow camera access');
     expect(grantBtn.props.accessibilityRole).toBe('button');
