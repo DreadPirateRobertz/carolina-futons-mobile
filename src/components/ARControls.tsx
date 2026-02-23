@@ -38,7 +38,6 @@ export function ARControls({
   onAddToCart,
   onShare,
   onSaveToGallery,
-  onAddToCart,
   onToggleWishlist,
   isInWishlist,
   wishlistSaved,

@@ -71,14 +71,6 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
     [selectedModel.id],
   );
 
-  const handleAddToCart = useCallback(() => {
-    const totalPrice = selectedModel.basePrice + selectedFabric.price;
-    events.arAddToCart(selectedModel.id, selectedFabric.id, totalPrice);
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-  }, [selectedModel, selectedFabric]);
-
   const handleToggleDimensions = useCallback(() => {
     setShowDimensions((prev) => !prev);
     if (Platform.OS !== 'web') {
