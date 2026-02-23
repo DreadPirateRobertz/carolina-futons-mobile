@@ -4,7 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { trackEvent } from '@/services/analytics';
 import type { Product } from '@/data/products';
 
-const AR_CATEGORIES = new Set(['futons', 'frames']);
+const AR_CATEGORIES = new Set(['futons', 'frames', 'murphy-beds']);
 
 interface Props {
   product: Product;
@@ -16,7 +16,7 @@ interface Props {
 
 /**
  * "View in Your Room" button for launching AR product preview.
- * Only renders for AR-eligible products (futons/frames, in-stock).
+ * Only renders for AR-eligible products (futons/frames/murphy-beds, in-stock).
  */
 export function ViewInRoomButton({
   product,

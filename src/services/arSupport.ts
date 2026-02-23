@@ -11,6 +11,7 @@
 import { Platform } from 'react-native';
 import type { ProductCategory } from '@/data/products';
 import * as self from '@/services/arSupport';
+import { hasARModel } from '@/data/models3d';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,16 +31,8 @@ interface ProductLike {
 let _cachedSupport: boolean | null = null;
 let _cachedTier: DeviceTier | null = null;
 
-// AR-eligible product categories
-const AR_CATEGORIES = new Set<string>(['futons', 'frames']);
-
-// Product ID → AR model ID mapping
-const PRODUCT_MODEL_MAP: Record<string, string> = {
-  'prod-asheville-full': 'asheville-full',
-  'prod-blue-ridge-queen': 'blue-ridge-queen',
-  'prod-pisgah-twin': 'pisgah-twin',
-  'prod-biltmore-loveseat': 'biltmore-loveseat',
-};
+// AR-eligible product categories (includes murphy-beds for cm-9k2)
+const AR_CATEGORIES = new Set<string>(['futons', 'frames', 'murphy-beds']);
 
 // ---------------------------------------------------------------------------
 // Core API
@@ -114,7 +107,7 @@ export async function getDeviceTier(): Promise<DeviceTier> {
 
 /**
  * Check if a product is eligible for AR viewing.
- * Only futons and frames that are in-stock qualify.
+ * Only futons, frames, and murphy-beds that are in-stock qualify.
  */
 export function isProductAREnabled(product: ProductLike): boolean {
   if (!product.inStock) return false;
@@ -123,10 +116,12 @@ export function isProductAREnabled(product: ProductLike): boolean {
 
 /**
  * Map a product ID to its AR model ID.
+ * Uses the 3D model catalog for dynamic lookup.
  * Returns undefined for products without AR models.
  */
 export function getARModelId(productId: string): string | undefined {
-  return PRODUCT_MODEL_MAP[productId];
+  if (!hasARModel(productId)) return undefined;
+  return productId.replace(/^prod-/, '');
 }
 
 /**

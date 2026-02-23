@@ -1,0 +1,33 @@
+{
+  "catalogPath": "../../src/data/catalog-MASTER.json",
+  "inputDir": "./input",
+  "outputDir": "./output",
+  "cdnBase": "https://cdn.carolinafutons.com/models",
+  "formats": {
+    "glb": {
+      "maxSizeBytes": 20971520,
+      "targetSizeBytes": 8388608,
+      "compression": "draco",
+      "textureFormat": "ktx2",
+      "textureResolution": 2048
+    },
+    "usdz": {
+      "maxSizeBytes": 26214400,
+      "targetSizeBytes": 15728640,
+      "scaleUnit": "centimeters"
+    }
+  },
+  "validation": {
+    "maxTriangles": 100000,
+    "targetTriangles": 65000,
+    "requiredPbrProperties": ["baseColorTexture", "normalTexture", "metallicRoughnessTexture"],
+    "originPosition": "bottom-center",
+    "minFrameRate": 60
+  },
+  "tools": {
+    "gltfTransform": "npx @gltf-transform/cli",
+    "usdzconvert": "usdzconvert",
+    "gltfValidator": "npx gltf-validator",
+    "blender": "blender"
+  }
+}

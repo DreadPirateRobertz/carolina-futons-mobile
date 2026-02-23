@@ -1,0 +1,266 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-02-22T00:00:00Z",
+  "description": "Master product catalog for 3D model pipeline. Top 10 AR-priority products.",
+  "products": [
+    {
+      "id": "prod-murphy-queen-vertical",
+      "name": "The Hendersonville Queen Murphy Cabinet Bed",
+      "slug": "hendersonville-queen-murphy-cabinet-bed",
+      "category": "murphy-beds",
+      "arPriority": 1,
+      "basePrice": 1299,
+      "dimensions": {
+        "closed": { "width": 64, "depth": 24, "height": 42, "unit": "inches" },
+        "open": { "width": 64, "depth": 85, "height": 42, "unit": "inches" }
+      },
+      "materials": ["hardwood-oak", "metal-hardware"],
+      "finishes": ["Honey Oak", "Espresso", "Natural"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware", "detail-hinge"],
+        "directory": "photos/murphy-queen-vertical/"
+      },
+      "modelSpec": {
+        "targetTriangles": 75000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-murphy-full-horizontal",
+      "name": "The Appalachian Full Horizontal Murphy Cabinet",
+      "slug": "appalachian-full-horizontal-murphy-cabinet",
+      "category": "murphy-beds",
+      "arPriority": 2,
+      "basePrice": 1149,
+      "dimensions": {
+        "closed": { "width": 78, "depth": 20, "height": 44, "unit": "inches" },
+        "open": { "width": 78, "depth": 58, "height": 44, "unit": "inches" }
+      },
+      "materials": ["hardwood-maple", "metal-hardware"],
+      "finishes": ["Maple Natural", "Walnut Stain", "White"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware", "detail-hinge"],
+        "directory": "photos/murphy-full-horizontal/"
+      },
+      "modelSpec": {
+        "targetTriangles": 70000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-murphy-queen-bookcase",
+      "name": "The Smoky Mountain Queen Bookcase Murphy",
+      "slug": "smoky-mountain-queen-bookcase-murphy",
+      "category": "murphy-beds",
+      "arPriority": 3,
+      "basePrice": 1699,
+      "dimensions": {
+        "closed": { "width": 100, "depth": 24, "height": 84, "unit": "inches" },
+        "open": { "width": 100, "depth": 85, "height": 84, "unit": "inches" }
+      },
+      "materials": ["hardwood-oak", "metal-hardware", "mdf-shelving"],
+      "finishes": ["Espresso", "Honey Oak", "Gray Wash"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-bookcase", "detail-hardware", "detail-hinge"],
+        "directory": "photos/murphy-queen-bookcase/"
+      },
+      "modelSpec": {
+        "targetTriangles": 80000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-murphy-twin-cabinet",
+      "name": "The Brevard Twin Cabinet Bed",
+      "slug": "brevard-twin-cabinet-bed",
+      "category": "murphy-beds",
+      "arPriority": 4,
+      "basePrice": 899,
+      "dimensions": {
+        "closed": { "width": 44, "depth": 24, "height": 38, "unit": "inches" },
+        "open": { "width": 44, "depth": 78, "height": 38, "unit": "inches" }
+      },
+      "materials": ["hardwood-birch", "metal-hardware"],
+      "finishes": ["Natural Birch", "Espresso", "White"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware"],
+        "directory": "photos/murphy-twin-cabinet/"
+      },
+      "modelSpec": {
+        "targetTriangles": 55000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-murphy-queen-desk",
+      "name": "The Chimney Rock Queen Desk Murphy",
+      "slug": "chimney-rock-queen-desk-murphy",
+      "category": "murphy-beds",
+      "arPriority": 5,
+      "basePrice": 1899,
+      "dimensions": {
+        "closed": { "width": 66, "depth": 26, "height": 84, "unit": "inches" },
+        "open": { "width": 66, "depth": 88, "height": 84, "unit": "inches" }
+      },
+      "materials": ["hardwood-oak", "metal-hardware", "laminate-desktop"],
+      "finishes": ["Espresso", "Walnut", "Gray Wash"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "front-desk-mode", "side-left", "side-right", "3q-front", "top-down", "detail-desk", "detail-hardware"],
+        "directory": "photos/murphy-queen-desk/"
+      },
+      "modelSpec": {
+        "targetTriangles": 80000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open", "desk-mode"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-murphy-full-storage",
+      "name": "The Nantahala Full Storage Murphy",
+      "slug": "nantahala-full-storage-murphy",
+      "category": "murphy-beds",
+      "arPriority": 6,
+      "basePrice": 1449,
+      "dimensions": {
+        "closed": { "width": 60, "depth": 24, "height": 82, "unit": "inches" },
+        "open": { "width": 60, "depth": 80, "height": 82, "unit": "inches" }
+      },
+      "materials": ["hardwood-oak", "metal-hardware"],
+      "finishes": ["Honey Oak", "Espresso", "Natural"],
+      "photoInputs": {
+        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-storage", "detail-hardware"],
+        "directory": "photos/murphy-full-storage/"
+      },
+      "modelSpec": {
+        "targetTriangles": 75000,
+        "textureResolution": 2048,
+        "configurations": ["closed", "open"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-asheville-full",
+      "name": "The Asheville Full Futon",
+      "slug": "asheville-full-futon",
+      "category": "futons",
+      "arPriority": 7,
+      "basePrice": 349,
+      "dimensions": {
+        "sofa": { "width": 54, "depth": 34, "height": 33, "unit": "inches" },
+        "bed": { "width": 54, "depth": 75, "height": 18, "unit": "inches" }
+      },
+      "materials": ["hardwood-frame", "fabric-upholstery"],
+      "finishes": ["Natural Linen", "Slate Gray", "Mountain Blue", "Sunset Coral"],
+      "photoInputs": {
+        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric", "detail-frame"],
+        "directory": "photos/asheville-full/"
+      },
+      "modelSpec": {
+        "targetTriangles": 65000,
+        "textureResolution": 2048,
+        "configurations": ["sofa"],
+        "hasFabricVariants": true
+      }
+    },
+    {
+      "id": "prod-blue-ridge-queen",
+      "name": "The Blue Ridge Queen Futon",
+      "slug": "blue-ridge-queen-futon",
+      "category": "futons",
+      "arPriority": 8,
+      "basePrice": 449,
+      "dimensions": {
+        "sofa": { "width": 60, "depth": 36, "height": 35, "unit": "inches" },
+        "bed": { "width": 60, "depth": 79, "height": 19, "unit": "inches" }
+      },
+      "materials": ["hardwood-ash-frame", "fabric-upholstery"],
+      "finishes": ["Natural Linen", "Slate Gray", "Mountain Blue", "Espresso Brown", "Charcoal"],
+      "photoInputs": {
+        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric", "detail-frame"],
+        "directory": "photos/blue-ridge-queen/"
+      },
+      "modelSpec": {
+        "targetTriangles": 70000,
+        "textureResolution": 2048,
+        "configurations": ["sofa"],
+        "hasFabricVariants": true
+      }
+    },
+    {
+      "id": "prod-hardwood-frame",
+      "name": "Solid Hardwood Frame",
+      "slug": "solid-hardwood-frame",
+      "category": "frames",
+      "arPriority": 9,
+      "basePrice": 199,
+      "dimensions": {
+        "sofa": { "width": 54, "depth": 38, "height": 33, "unit": "inches" }
+      },
+      "materials": ["hardwood-frame", "metal-hardware"],
+      "finishes": ["Honey Oak", "Espresso", "Natural"],
+      "photoInputs": {
+        "required": ["front", "side-left", "side-right", "3q-front", "top-down", "detail-finish", "detail-hardware"],
+        "directory": "photos/hardwood-frame/"
+      },
+      "modelSpec": {
+        "targetTriangles": 50000,
+        "textureResolution": 2048,
+        "configurations": ["default"],
+        "hasFabricVariants": false
+      }
+    },
+    {
+      "id": "prod-pisgah-twin",
+      "name": "The Pisgah Twin Futon",
+      "slug": "pisgah-twin-futon",
+      "category": "futons",
+      "arPriority": 10,
+      "basePrice": 279,
+      "dimensions": {
+        "sofa": { "width": 39, "depth": 32, "height": 31, "unit": "inches" },
+        "bed": { "width": 39, "depth": 72, "height": 17, "unit": "inches" }
+      },
+      "materials": ["hardwood-frame", "fabric-upholstery"],
+      "finishes": ["Natural Linen", "Slate Gray", "Forest Green"],
+      "photoInputs": {
+        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric"],
+        "directory": "photos/pisgah-twin/"
+      },
+      "modelSpec": {
+        "targetTriangles": 55000,
+        "textureResolution": 2048,
+        "configurations": ["sofa"],
+        "hasFabricVariants": true
+      }
+    }
+  ],
+  "pipeline": {
+    "outputFormats": ["glb", "usdz"],
+    "cdnBase": "https://cdn.carolinafutons.com/models",
+    "qualityTargets": {
+      "maxTriangles": 100000,
+      "maxGlbSizeBytes": 20971520,
+      "maxUsdzSizeBytes": 26214400,
+      "targetTriangles": 65000,
+      "targetGlbSizeBytes": 8388608,
+      "targetUsdzSizeBytes": 15728640,
+      "textureResolution": 2048,
+      "minFrameRate": 60
+    },
+    "tools": {
+      "optimizer": "gltf-transform",
+      "usdzConverter": "usdzconvert",
+      "validator": "gltf-validator",
+      "qaViewer": "reality-converter"
+    }
+  }
+}

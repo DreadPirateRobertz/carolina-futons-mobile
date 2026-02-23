@@ -24,5 +24,6 @@ module.exports = {
     'StoreCard\\.test\\.tsx',
     'StoreLocatorScreen\\.test\\.tsx',
     'useStoreLocator\\.test\\.tsx',
+    'ARIntegration\\.test\\.tsx',
   ],
 };

@@ -40,10 +40,66 @@ function inToM(inches: number): number {
 
 /**
  * 3D model catalog.
- * Only products with AR-suitable geometry are included (futons, frames).
+ * Only products with AR-suitable geometry are included (futons, frames, murphy-beds).
  * Covers, pillows, and small accessories are excluded from AR.
  */
 export const MODELS_3D: Model3DAsset[] = [
+  // --- Murphy Cabinet Beds ---
+  {
+    productId: 'prod-murphy-queen-vertical',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-vertical-q1r2s3.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-vertical-q1r2s3.usdz`,
+    dimensions: { width: inToM(64), depth: inToM(24), height: inToM(42) },
+    fileSizeBytes: 7_200_000,
+    contentHash: 'q1r2s3',
+    hasFabricVariants: false,
+  },
+  {
+    productId: 'prod-murphy-full-horizontal',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-horizontal-t4u5v6.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-horizontal-t4u5v6.usdz`,
+    dimensions: { width: inToM(78), depth: inToM(20), height: inToM(44) },
+    fileSizeBytes: 6_500_000,
+    contentHash: 't4u5v6',
+    hasFabricVariants: false,
+  },
+  {
+    productId: 'prod-murphy-queen-bookcase',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-bookcase-w7x8y9.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-bookcase-w7x8y9.usdz`,
+    dimensions: { width: inToM(100), depth: inToM(24), height: inToM(84) },
+    fileSizeBytes: 8_400_000,
+    contentHash: 'w7x8y9',
+    hasFabricVariants: false,
+  },
+  {
+    productId: 'prod-murphy-twin-cabinet',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-twin-cabinet-z0a1b2.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-twin-cabinet-z0a1b2.usdz`,
+    dimensions: { width: inToM(44), depth: inToM(24), height: inToM(38) },
+    fileSizeBytes: 4_800_000,
+    contentHash: 'z0a1b2',
+    hasFabricVariants: false,
+  },
+  {
+    productId: 'prod-murphy-queen-desk',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-desk-c3d4e5.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-desk-c3d4e5.usdz`,
+    dimensions: { width: inToM(66), depth: inToM(26), height: inToM(84) },
+    fileSizeBytes: 8_100_000,
+    contentHash: 'c3d4e5',
+    hasFabricVariants: false,
+  },
+  {
+    productId: 'prod-murphy-full-storage',
+    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-storage-f6g7h8.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-storage-f6g7h8.usdz`,
+    dimensions: { width: inToM(60), depth: inToM(24), height: inToM(82) },
+    fileSizeBytes: 7_000_000,
+    contentHash: 'f6g7h8',
+    hasFabricVariants: false,
+  },
+  // --- Futons & Frames ---
   {
     productId: 'prod-asheville-full',
     glbUrl: `${MODEL_CDN_BASE}/glb/asheville-full-a1b2c3.glb`,

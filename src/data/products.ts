@@ -35,6 +35,7 @@ export type ProductCategory =
   | 'covers'
   | 'mattresses'
   | 'frames'
+  | 'murphy-beds'
   | 'pillows'
   | 'accessories';
 
@@ -56,6 +57,7 @@ export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 export const CATEGORIES: CategoryInfo[] = [
   { id: 'futons', label: 'Futons', count: 8 },
+  { id: 'murphy-beds', label: 'Murphy Beds', count: 6 },
   { id: 'covers', label: 'Covers', count: 12 },
   { id: 'mattresses', label: 'Mattresses', count: 6 },
   { id: 'frames', label: 'Frames', count: 5 },
@@ -154,6 +156,137 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural Linen', 'Mauve Blush', 'Espresso Brown'],
     dimensions: { width: 48, depth: 33, height: 32 },
+  },
+  // --- Murphy Cabinet Beds ---
+  {
+    id: 'prod-murphy-queen-vertical',
+    name: 'The Hendersonville Queen Murphy Cabinet Bed',
+    slug: 'hendersonville-queen-murphy-cabinet-bed',
+    category: 'murphy-beds',
+    price: 1299,
+    description:
+      'Queen-size vertical Murphy cabinet bed in solid oak. Folds into a stylish 42" tall cabinet when closed. Gas-piston mechanism for effortless operation.',
+    shortDescription: 'Queen vertical Murphy bed, solid oak',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Hendersonville',
+        alt: 'The Hendersonville Queen Murphy Cabinet Bed',
+      },
+    ],
+    badge: 'Bestseller',
+    rating: 4.9,
+    reviewCount: 178,
+    inStock: true,
+    fabricOptions: ['Honey Oak', 'Espresso', 'Natural'],
+    dimensions: { width: 64, depth: 24, height: 42 },
+  },
+  {
+    id: 'prod-murphy-full-horizontal',
+    name: 'The Appalachian Full Horizontal Murphy Cabinet',
+    slug: 'appalachian-full-horizontal-murphy-cabinet',
+    category: 'murphy-beds',
+    price: 1149,
+    description:
+      'Full-size horizontal Murphy cabinet in solid maple. Perfect for rooms with low ceilings. Includes built-in USB charging ports.',
+    shortDescription: 'Full horizontal Murphy, solid maple',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/C9A0A0/3A2518?text=Appalachian',
+        alt: 'The Appalachian Full Horizontal Murphy Cabinet',
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 92,
+    inStock: true,
+    fabricOptions: ['Maple Natural', 'Walnut Stain', 'White'],
+    dimensions: { width: 78, depth: 20, height: 44 },
+  },
+  {
+    id: 'prod-murphy-queen-bookcase',
+    name: 'The Smoky Mountain Queen Bookcase Murphy',
+    slug: 'smoky-mountain-queen-bookcase-murphy',
+    category: 'murphy-beds',
+    price: 1699,
+    description:
+      'Queen Murphy bed flanked by two full-height bookcases. 84" tall wall unit provides ample storage and display space. LED shelf lighting included.',
+    shortDescription: 'Queen Murphy with bookcase side units',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/5B8FA8/FFFFFF?text=Smoky+Mountain',
+        alt: 'The Smoky Mountain Queen Bookcase Murphy',
+      },
+    ],
+    badge: 'Premium',
+    rating: 4.8,
+    reviewCount: 64,
+    inStock: true,
+    fabricOptions: ['Espresso', 'Honey Oak', 'Gray Wash'],
+    dimensions: { width: 100, depth: 24, height: 84 },
+  },
+  {
+    id: 'prod-murphy-twin-cabinet',
+    name: 'The Brevard Twin Cabinet Bed',
+    slug: 'brevard-twin-cabinet-bed',
+    category: 'murphy-beds',
+    price: 899,
+    description:
+      'Compact twin-size cabinet bed in solid birch. Just 38" tall closed — doubles as a console table or TV stand. Ideal for guest rooms and studios.',
+    shortDescription: 'Twin cabinet bed, doubles as console',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/4A7C59/FFFFFF?text=Brevard',
+        alt: 'The Brevard Twin Cabinet Bed',
+      },
+    ],
+    rating: 4.6,
+    reviewCount: 143,
+    inStock: true,
+    fabricOptions: ['Natural Birch', 'Espresso', 'White'],
+    dimensions: { width: 44, depth: 24, height: 38 },
+  },
+  {
+    id: 'prod-murphy-queen-desk',
+    name: 'The Chimney Rock Queen Desk Murphy',
+    slug: 'chimney-rock-queen-desk-murphy',
+    category: 'murphy-beds',
+    price: 1899,
+    originalPrice: 2099,
+    description:
+      'Queen Murphy with integrated fold-down desk. Work by day, sleep at night — the ultimate space saver. Desk surface stays level when bed deploys.',
+    shortDescription: 'Queen Murphy with fold-down desk',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/E8845C/FFFFFF?text=Chimney+Rock',
+        alt: 'The Chimney Rock Queen Desk Murphy',
+      },
+    ],
+    badge: 'Sale',
+    rating: 4.9,
+    reviewCount: 87,
+    inStock: true,
+    fabricOptions: ['Espresso', 'Walnut', 'Gray Wash'],
+    dimensions: { width: 66, depth: 26, height: 84 },
+  },
+  {
+    id: 'prod-murphy-full-storage',
+    name: 'The Nantahala Full Storage Murphy',
+    slug: 'nantahala-full-storage-murphy',
+    category: 'murphy-beds',
+    price: 1449,
+    description:
+      'Full-size Murphy bed with top storage cabinet and side shelving. Solid oak construction with soft-close hinges throughout.',
+    shortDescription: 'Full Murphy with integrated storage',
+    images: [
+      {
+        uri: 'https://placeholder.co/400x300/6B7B8D/FFFFFF?text=Nantahala',
+        alt: 'The Nantahala Full Storage Murphy',
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 56,
+    inStock: true,
+    fabricOptions: ['Honey Oak', 'Espresso', 'Natural'],
+    dimensions: { width: 60, depth: 24, height: 82 },
   },
   {
     id: 'prod-mountain-cover-full',
