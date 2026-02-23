@@ -32,9 +32,11 @@ jest.mock('@/services/arSupport', () => ({
 }));
 
 // Mock analytics
-const mockTrackEvent = jest.fn();
+const mockArViewInRoomTap = jest.fn();
 jest.mock('@/services/analytics', () => ({
-  trackEvent: (...args: any[]) => mockTrackEvent(...args),
+  events: {
+    arViewInRoomTap: (...args: any[]) => mockArViewInRoomTap(...args),
+  },
 }));
 
 // --- Test Fixtures ---
@@ -196,11 +198,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     it('tracks analytics event on press', () => {
       const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
-      expect(mockTrackEvent).toHaveBeenCalledWith('ar_view_in_room_tap', {
-        productId: futonProduct.id,
-        productName: futonProduct.name,
-        category: futonProduct.category,
-      });
+      expect(mockArViewInRoomTap).toHaveBeenCalledWith(futonProduct.id, futonProduct.category);
     });
   });
 
