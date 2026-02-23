@@ -6,6 +6,7 @@ import { useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CartProvider, useCart } from '@/hooks/useCart';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -83,9 +84,11 @@ jest.mock('expo-sharing', () => ({
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <WishlistProvider>
-      <ARScreen {...props} />
-    </WishlistProvider>,
+    <CartProvider>
+      <WishlistProvider>
+        <ARScreen {...props} />
+      </WishlistProvider>
+    </CartProvider>,
   );
 }
 
@@ -139,17 +142,21 @@ describe('ARScreen', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
 
       const { queryByTestId, rerender } = render(
-        <WishlistProvider>
-          <ARScreen />
-        </WishlistProvider>,
+        <CartProvider>
+          <WishlistProvider>
+            <ARScreen />
+          </WishlistProvider>
+        </CartProvider>,
       );
       expect(queryByTestId('ar-permission-dismiss')).toBeNull();
 
       const onClose = jest.fn();
       rerender(
-        <WishlistProvider>
-          <ARScreen onClose={onClose} />
-        </WishlistProvider>,
+        <CartProvider>
+          <WishlistProvider>
+            <ARScreen onClose={onClose} />
+          </WishlistProvider>
+        </CartProvider>,
       );
       expect(queryByTestId('ar-permission-dismiss')).toBeTruthy();
     });
@@ -453,6 +460,57 @@ describe('ARScreen', () => {
       const btn = getByTestId('ar-add-to-cart');
       expect(btn.props.accessibilityLabel).toBe('Add to cart');
       expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('adds selected model and fabric to cart when pressed', () => {
+      let cartItems: any[] = [];
+      function CartSpy() {
+        const { items } = useCart();
+        cartItems = items;
+        return null;
+      }
+      const { getByTestId } = render(
+        <CartProvider>
+          <WishlistProvider>
+            <CartSpy />
+            <ARScreen />
+          </WishlistProvider>
+        </CartProvider>,
+      );
+      fireEvent.press(getByTestId('ar-add-to-cart'));
+      expect(cartItems).toHaveLength(1);
+      expect(cartItems[0].model.id).toBe(FUTON_MODELS[0].id);
+      expect(cartItems[0].fabric.id).toBe(FUTON_MODELS[0].fabrics[0].id);
+      expect(cartItems[0].quantity).toBe(1);
+    });
+
+    it('adds correct model after switching model and fabric', () => {
+      let cartItems: any[] = [];
+      function CartSpy() {
+        const { items } = useCart();
+        cartItems = items;
+        return null;
+      }
+      const { getByTestId } = render(
+        <CartProvider>
+          <WishlistProvider>
+            <CartSpy />
+            <ARScreen />
+          </WishlistProvider>
+        </CartProvider>,
+      );
+      fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
+      fireEvent.press(getByTestId('ar-fabric-mountain-blue'));
+      fireEvent.press(getByTestId('ar-add-to-cart'));
+      expect(cartItems).toHaveLength(1);
+      expect(cartItems[0].model.id).toBe('blue-ridge-queen');
+      expect(cartItems[0].fabric.id).toBe('mountain-blue');
+    });
+
+    it('fires haptic feedback when adding to cart', () => {
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-add-to-cart'));
+      expect(Haptics.notificationAsync).toHaveBeenCalled();
     });
   });
 

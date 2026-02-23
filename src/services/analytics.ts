@@ -37,6 +37,7 @@ export type AnalyticsEventName =
   | 'ar_share'
   | 'ar_save_to_gallery'
   | 'ar_save_to_wishlist'
+  | 'ar_add_to_cart'
   | 'error';
 
 export interface AnalyticsEvent {

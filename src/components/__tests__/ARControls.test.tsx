@@ -163,6 +163,20 @@ describe('ARControls', () => {
       expect(btn.props.accessibilityLabel).toBe('Add to cart');
       expect(btn.props.accessibilityRole).toBe('button');
     });
+
+    it('calls onAddToCart when pressed', () => {
+      const onAddToCart = jest.fn();
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onAddToCart={onAddToCart} />,
+      );
+      fireEvent.press(getByTestId('ar-add-to-cart'));
+      expect(onAddToCart).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not crash when pressed without onAddToCart', () => {
+      const { getByTestId } = renderControls();
+      fireEvent.press(getByTestId('ar-add-to-cart'));
+    });
   });
 
   describe('Close Button', () => {

@@ -35,6 +35,7 @@ export function ARControls({
   onSelectFabric,
   onToggleDimensions,
   onClose,
+  onAddToCart,
   onShare,
   onSaveToGallery,
   onAddToCart,
