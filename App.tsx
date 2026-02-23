@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider } from '@/theme';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CartProvider } from '@/hooks/useCart';
 import { HomeScreen, ARScreen, ShopScreen } from '@/screens';
 
 type Screen = 'home' | 'ar' | 'shop';
@@ -17,9 +18,11 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <ThemeProvider>
-          <WishlistProvider>
-            <ARScreen onClose={goHome} />
-          </WishlistProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <ARScreen onClose={goHome} />
+            </WishlistProvider>
+          </CartProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     );

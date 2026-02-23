@@ -35,6 +35,7 @@ export type AnalyticsEventName =
   | 'ar_share'
   | 'ar_save_to_gallery'
   | 'ar_save_to_wishlist'
+  | 'ar_add_to_cart'
   | 'error';
 
 export interface AnalyticsEvent {
@@ -221,5 +222,8 @@ export const events = {
   },
   arSaveToWishlist(modelId: string, fabricId: string) {
     trackEvent('ar_save_to_wishlist', { model_id: modelId, fabric_id: fabricId });
+  },
+  arAddToCart(modelId: string, fabricId: string, price: number) {
+    trackEvent('ar_add_to_cart', { model_id: modelId, fabric_id: fabricId, price });
   },
 } as const;

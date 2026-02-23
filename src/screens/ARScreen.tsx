@@ -13,6 +13,7 @@ import { ARControls } from '@/components/ARControls';
 import { events } from '@/services/analytics';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCart } from '@/hooks/useCart';
 
 interface Props {
   onClose?: () => void;
@@ -39,6 +40,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
+  const cart = useCart();
 
   // Map current futon model to its product for wishlist
   const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
@@ -74,6 +76,14 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
   const handleClose = useCallback(() => {
     onClose?.();
   }, [onClose]);
+
+  const handleAddToCart = useCallback(() => {
+    cart.addItem(selectedModel, selectedFabric, 1);
+    events.arAddToCart(selectedModel.id, selectedFabric.id, selectedModel.basePrice + selectedFabric.price);
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [cart, selectedModel, selectedFabric]);
 
   /** Capture the AR scene (camera + overlay + watermark) as an image URI */
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -249,6 +259,7 @@ export function ARScreen({ onClose, initialModelId, testID }: Props) {
         onSelectFabric={handleSelectFabric}
         onToggleDimensions={handleToggleDimensions}
         onClose={handleClose}
+        onAddToCart={handleAddToCart}
         onShare={handleShare}
         onSaveToGallery={handleSaveToGallery}
         onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
