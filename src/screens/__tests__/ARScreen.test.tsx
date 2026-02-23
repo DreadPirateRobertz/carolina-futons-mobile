@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, act } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
@@ -83,9 +84,11 @@ jest.mock('expo-sharing', () => ({
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <WishlistProvider>
-      <ARScreen {...props} />
-    </WishlistProvider>,
+    <NavigationContainer>
+      <WishlistProvider>
+        <ARScreen {...props} />
+      </WishlistProvider>
+    </NavigationContainer>,
   );
 }
 
@@ -135,22 +138,11 @@ describe('ARScreen', () => {
       expect(mockRequest).toHaveBeenCalledTimes(1);
     });
 
-    it('shows "Maybe Later" dismiss only when onClose is provided', () => {
+    it('shows "Maybe Later" dismiss button on permission screen', () => {
       (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
 
-      const { queryByTestId, rerender } = render(
-        <WishlistProvider>
-          <ARScreen />
-        </WishlistProvider>,
-      );
-      expect(queryByTestId('ar-permission-dismiss')).toBeNull();
-
-      const onClose = jest.fn();
-      rerender(
-        <WishlistProvider>
-          <ARScreen onClose={onClose} />
-        </WishlistProvider>,
-      );
+      const { queryByTestId } = renderARScreen();
+      // Always shown — user can dismiss via navigation.goBack() or onClose
       expect(queryByTestId('ar-permission-dismiss')).toBeTruthy();
     });
 

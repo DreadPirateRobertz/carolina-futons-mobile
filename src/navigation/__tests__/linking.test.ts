@@ -13,54 +13,60 @@ describe('linkingConfig', () => {
     expect(linkingConfig.prefixes).toContain('https://www.carolinafutons.com');
   });
 
-  it('maps Home screen', () => {
-    expect(linkingConfig.config.screens.Home).toBe('home');
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps Home screen inside Tabs', () => {
+    expect(screens.Tabs.screens.Home).toBe('home');
   });
 
-  it('maps Shop screen', () => {
-    expect(linkingConfig.config.screens.Shop).toBe('shop');
+  it('maps Shop screen inside Tabs', () => {
+    expect(screens.Tabs.screens.Shop).toBe('shop');
   });
 
   it('maps Category screen with slug param', () => {
-    expect(linkingConfig.config.screens.Category).toBe('category/:slug');
+    expect(screens.Category).toBe('category/:slug');
   });
 
   it('maps ProductDetail screen with slug param', () => {
-    const pd = linkingConfig.config.screens.ProductDetail;
+    const pd = screens.ProductDetail;
     expect(typeof pd).toBe('object');
     expect((pd as { path: string }).path).toBe('product/:slug');
   });
 
-  it('maps Cart screen', () => {
-    expect(linkingConfig.config.screens.Cart).toBe('cart');
+  it('maps Cart screen inside Tabs', () => {
+    expect(screens.Tabs.screens.Cart).toBe('cart');
   });
 
   it('maps Checkout screen', () => {
-    expect(linkingConfig.config.screens.Checkout).toBe('checkout');
+    expect(screens.Checkout).toBe('checkout');
   });
 
   it('maps OrderHistory screen', () => {
-    expect(linkingConfig.config.screens.OrderHistory).toBe('orders');
+    expect(screens.OrderHistory).toBe('orders');
   });
 
   it('maps OrderDetail screen with orderId param', () => {
-    expect(linkingConfig.config.screens.OrderDetail).toBe('orders/:orderId');
+    expect(screens.OrderDetail).toBe('orders/:orderId');
   });
 
-  it('maps Account screen', () => {
-    expect(linkingConfig.config.screens.Account).toBe('account');
+  it('maps Account screen inside Tabs', () => {
+    expect(screens.Tabs.screens.Account).toBe('account');
   });
 
   it('maps Login screen', () => {
-    expect(linkingConfig.config.screens.Login).toBe('login');
+    expect(screens.Login).toBe('login');
   });
 
   it('maps SignUp screen', () => {
-    expect(linkingConfig.config.screens.SignUp).toBe('signup');
+    expect(screens.SignUp).toBe('signup');
   });
 
   it('maps NotificationPreferences screen', () => {
-    expect(linkingConfig.config.screens.NotificationPreferences).toBe('notifications');
+    expect(screens.NotificationPreferences).toBe('notifications');
+  });
+
+  it('maps AR screen', () => {
+    expect(screens.AR).toBe('ar');
   });
 });
 
@@ -95,5 +101,17 @@ describe('SUPPORTED_PATHS', () => {
 
   it('includes notifications', () => {
     expect(SUPPORTED_PATHS).toContain('notifications');
+  });
+
+  it('includes ar', () => {
+    expect(SUPPORTED_PATHS).toContain('ar');
+  });
+
+  it('includes wishlist', () => {
+    expect(SUPPORTED_PATHS).toContain('wishlist');
+  });
+
+  it('includes stores', () => {
+    expect(SUPPORTED_PATHS).toContain('stores');
   });
 });

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Platform } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
@@ -98,9 +99,11 @@ try {
 // Helper: wrap ARScreen in required providers
 const renderAR = (props: any = {}) =>
   render(
-    <WishlistProvider>
-      <ARScreen {...props} />
-    </WishlistProvider>,
+    <NavigationContainer>
+      <WishlistProvider>
+        <ARScreen {...props} />
+      </WishlistProvider>
+    </NavigationContainer>,
   );
 
 // ============================================================================
