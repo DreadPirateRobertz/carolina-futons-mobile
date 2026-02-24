@@ -16,20 +16,23 @@ import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { formatPrice } from '@/utils';
 
 interface Props {
-  orderId: string;
+  orderId?: string;
   orders?: Order[];
   onBack?: () => void;
   onReorderSuccess?: () => void;
   testID?: string;
+  route?: { params?: { orderId?: string } };
 }
 
 export function OrderDetailScreen({
-  orderId,
+  orderId: orderIdProp,
   orders: ordersProp,
   onBack,
   onReorderSuccess,
   testID,
+  route,
 }: Props) {
+  const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
 
