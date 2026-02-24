@@ -1,0 +1,25 @@
+{
+  "service": "tripo",
+  "photosDir": "./photos",
+  "outputDir": "./input",
+  "catalogPath": "../../src/data/catalog-MASTER.json",
+  "tripo": {
+    "apiKey": "YOUR_TRIPO_API_KEY",
+    "apiBase": "https://api.tripo3d.ai",
+    "modelVersion": "v2.0-20240919",
+    "outputFormat": "glb",
+    "targetTriangles": 65000,
+    "textureResolution": 2048,
+    "pollIntervalMs": 5000,
+    "timeoutMs": 600000
+  },
+  "meshy": {
+    "apiKey": "YOUR_MESHY_API_KEY",
+    "apiBase": "https://api.meshy.ai",
+    "topology": "quad",
+    "targetPolycount": 65000,
+    "textureResolution": 2048,
+    "pollIntervalMs": 5000,
+    "timeoutMs": 600000
+  }
+}

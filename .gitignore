@@ -15,3 +15,8 @@ web-build/
 *.orig.*
 dolt-access.lock
 dolt/
+
+# Pipeline secrets and generated output
+scripts/pipeline/generate.config.json
+scripts/pipeline/input/*.glb
+scripts/pipeline/output/
