@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook } from '@testing-library/react-native';
 import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
 import * as surfaceDetection from '@/services/surfaceDetection';
 import * as lightingEstimation from '@/services/lightingEstimation';
@@ -155,9 +155,6 @@ describe('useSurfaceDetection', () => {
     const config = { detectVertical: false, maxPlanes: 4 };
     renderHook(() => useSurfaceDetection(config));
 
-    expect(mockSurfaceDetection.startDetection).toHaveBeenCalledWith(
-      config,
-      expect.any(Object),
-    );
+    expect(mockSurfaceDetection.startDetection).toHaveBeenCalledWith(config, expect.any(Object));
   });
 });

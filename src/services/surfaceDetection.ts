@@ -184,8 +184,9 @@ export function getDetectionState(): DetectionState {
  * Finds the nearest suitable floor plane and returns a placement position.
  */
 export function hitTest(screenX: number, screenY: number): PlacementAnchor | null {
-  const floors = Array.from(_planes.values())
-    .filter((p) => p.type === 'floor' && p.confidence >= _config.confidenceThreshold);
+  const floors = Array.from(_planes.values()).filter(
+    (p) => p.type === 'floor' && p.confidence >= _config.confidenceThreshold,
+  );
 
   if (floors.length === 0) return null;
 

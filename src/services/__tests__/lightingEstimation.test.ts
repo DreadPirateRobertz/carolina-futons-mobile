@@ -168,15 +168,11 @@ describe('lightingEstimation', () => {
 
   describe('getLightingWarning', () => {
     it('returns null for bright conditions', () => {
-      expect(
-        getLightingWarning({ ambientIntensity: 600 } as LightEstimate),
-      ).toBeNull();
+      expect(getLightingWarning({ ambientIntensity: 600 } as LightEstimate)).toBeNull();
     });
 
     it('returns null for normal conditions', () => {
-      expect(
-        getLightingWarning({ ambientIntensity: 300 } as LightEstimate),
-      ).toBeNull();
+      expect(getLightingWarning({ ambientIntensity: 300 } as LightEstimate)).toBeNull();
     });
 
     it('returns warning for dim conditions', () => {

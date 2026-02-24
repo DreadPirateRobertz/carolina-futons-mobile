@@ -122,11 +122,7 @@ export function PlaneIndicator({
           />
         ))}
         {wallPlanes.map((plane) => (
-          <WallPlaneOverlay
-            key={plane.id}
-            plane={plane}
-            testID={`wall-plane-${plane.id}`}
-          />
+          <WallPlaneOverlay key={plane.id} plane={plane} testID={`wall-plane-${plane.id}`} />
         ))}
       </Animated.View>
 
@@ -195,11 +191,7 @@ function FloorPlaneOverlay({
         {Array.from({ length: 4 }).map((_, i) => (
           <View
             key={`h-${i}`}
-            style={[
-              styles.gridLine,
-              styles.gridLineH,
-              { top: `${(i + 1) * 20}%` as `${number}%` },
-            ]}
+            style={[styles.gridLine, styles.gridLineH, { top: `${(i + 1) * 20}%` as `${number}%` }]}
           />
         ))}
         {Array.from({ length: 4 }).map((_, i) => (
@@ -229,13 +221,7 @@ function FloorPlaneOverlay({
   );
 }
 
-function WallPlaneOverlay({
-  plane,
-  testID,
-}: {
-  plane: DetectedPlane;
-  testID?: string;
-}) {
+function WallPlaneOverlay({ plane, testID }: { plane: DetectedPlane; testID?: string }) {
   const left = `${(plane.center.x - plane.extent.width / 8) * 100}%` as `${number}%`;
   const top = `${(plane.center.y - plane.extent.height / 8) * 100}%` as `${number}%`;
   const width = `${(plane.extent.width / 4) * 100}%` as `${number}%`;

@@ -140,8 +140,7 @@ describe('surfaceDetection', () => {
 
       advanceTimers(5000);
 
-      const planes = onPlaneDetected.mock.calls
-        .map((c) => c[0] as DetectedPlane);
+      const planes = onPlaneDetected.mock.calls.map((c) => c[0] as DetectedPlane);
       expect(planes.every((p) => p.type !== 'wall')).toBe(true);
       stopDetection();
     });

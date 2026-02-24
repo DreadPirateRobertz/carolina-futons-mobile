@@ -10,7 +10,6 @@ import {
   startDetection,
   stopDetection,
   getDetectedPlanes,
-  getDetectionState,
   hitTest,
   resetDetection,
   type DetectedPlane,
@@ -106,12 +105,9 @@ export function useSurfaceDetection(
     };
   }, []);
 
-  const performHitTest = useCallback(
-    (screenX: number, screenY: number): PlacementAnchor | null => {
-      return hitTest(screenX, screenY);
-    },
-    [],
-  );
+  const performHitTest = useCallback((screenX: number, screenY: number): PlacementAnchor | null => {
+    return hitTest(screenX, screenY);
+  }, []);
 
   const hasFloor = planes.some((p) => p.type === 'floor');
   const hasWall = planes.some((p) => p.type === 'wall');

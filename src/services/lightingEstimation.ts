@@ -9,7 +9,6 @@
  * Works in typical living room lighting conditions (100-500 lux).
  */
 
-import { Platform } from 'react-native';
 import type { DeviceTier } from '@/services/arSupport';
 
 // ---------------------------------------------------------------------------
@@ -84,9 +83,7 @@ let _onUpdate: ((estimate: LightEstimate) => void) | null = null;
  * Start lighting estimation updates.
  * Begins polling for ambient light data from the camera/AR session.
  */
-export function startLightingEstimation(
-  onUpdate?: (estimate: LightEstimate) => void,
-): void {
+export function startLightingEstimation(onUpdate?: (estimate: LightEstimate) => void): void {
   if (_isRunning) return;
 
   _isRunning = true;
@@ -270,7 +267,10 @@ function _simulateLightingUpdate(): void {
       y: dy / mag,
       z: dz / mag,
     },
-    primaryLightIntensity: Math.max(0.1, Math.min(1, prev.primaryLightIntensity + (Math.random() - 0.5) * 0.05)),
+    primaryLightIntensity: Math.max(
+      0.1,
+      Math.min(1, prev.primaryLightIntensity + (Math.random() - 0.5) * 0.05),
+    ),
     timestamp: now,
   };
 
