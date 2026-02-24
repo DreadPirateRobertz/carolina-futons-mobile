@@ -46,7 +46,14 @@ const WALL_SNAP_THRESHOLD = 60;
  * - Snap-to-wall for murphy cabinet beds
  * - Real-time shadow that responds to position and scale
  */
-export function ARFutonOverlay({ model, fabric, showDimensions, isPlaced = true, category, testID }: Props) {
+export function ARFutonOverlay({
+  model,
+  fabric,
+  showDimensions,
+  isPlaced = true,
+  category,
+  testID,
+}: Props) {
   const isMurphyBed = category === 'murphy-beds';
 
   // Gesture state
