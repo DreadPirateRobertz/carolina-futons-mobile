@@ -42,6 +42,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [showDimensions, setShowDimensions] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
+  const [isPlaced, setIsPlaced] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
@@ -57,6 +58,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       if (!model.fabrics.find((f) => f.id === selectedFabric.id)) {
         setSelectedFabric(model.fabrics[0]);
       }
+      // Re-place when switching models so user positions the new product
+      setIsPlaced(false);
       events.arModelSelected(model.id, `prod-${model.id}`);
       if (Platform.OS !== 'web') {
         Haptics.selectionAsync();
@@ -184,6 +187,18 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
 
+  /** Place product on surface when user taps the camera view */
+  const handleTapToPlace = useCallback(() => {
+    if (isPlaced) return; // Already placed
+    setIsPlaced(true);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [isPlaced]);
+
+  // Determine product category for snap-to-wall behavior
+  const productCategory = currentProduct?.category;
+
   // Permission not yet determined
   if (!permission) {
     return (
@@ -233,16 +248,32 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       {/* Capturable area: camera feed + overlay + watermark */}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
         <CameraView style={styles.camera} facing="back" testID="ar-camera">
-          {/* Crosshair / placement guide */}
-          <View style={styles.crosshairContainer}>
-            <View style={styles.crosshairH} />
-            <View style={styles.crosshairV} />
-          </View>
+          {/* Crosshair / placement guide — visible until product is placed */}
+          {!isPlaced && (
+            <TouchableOpacity
+              style={styles.crosshairTapArea}
+              onPress={handleTapToPlace}
+              activeOpacity={0.8}
+              testID="ar-tap-to-place"
+              accessibilityLabel="Tap to place product"
+              accessibilityRole="button"
+            >
+              <View style={styles.crosshairContainer}>
+                <View style={styles.crosshairH} />
+                <View style={styles.crosshairV} />
+              </View>
+              <View style={styles.placementHint}>
+                <Text style={styles.placementHintText}>Tap to place</Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
-          {/* Instruction hint */}
+          {/* Instruction hint — changes based on placement state */}
           <View style={styles.hintContainer}>
             <Text style={styles.hintText}>
-              Drag to position · Pinch to resize · Two-finger rotate
+              {isPlaced
+                ? 'Drag to position · Pinch to resize · Two-finger rotate'
+                : 'Point at a surface and tap to place'}
             </Text>
           </View>
 
@@ -252,6 +283,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
               model={selectedModel}
               fabric={selectedFabric}
               showDimensions={showDimensions}
+              isPlaced={isPlaced}
+              category={productCategory}
               testID="ar-futon-overlay"
             />
           </View>
@@ -353,17 +386,24 @@ const styles = StyleSheet.create({
     color: 'rgba(242, 232, 213, 0.5)',
     fontSize: 14,
   },
-  crosshairContainer: {
+  crosshairTapArea: {
     position: 'absolute',
-    top: '50%',
+    top: '40%',
     left: '50%',
-    width: 40,
-    height: 40,
-    marginLeft: -20,
-    marginTop: -20,
+    width: 120,
+    height: 120,
+    marginLeft: -60,
+    marginTop: -60,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.4,
+    zIndex: 10,
+  },
+  crosshairContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    opacity: 0.6,
   },
   crosshairH: {
     position: 'absolute',
@@ -376,6 +416,19 @@ const styles = StyleSheet.create({
     width: 1,
     height: 40,
     backgroundColor: '#FFFFFF',
+  },
+  placementHint: {
+    marginTop: 8,
+  },
+  placementHintText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   hintContainer: {
     position: 'absolute',
