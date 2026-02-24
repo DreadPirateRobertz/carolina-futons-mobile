@@ -1,6 +1,12 @@
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import React, { useMemo } from 'react';
+import { StyleSheet, View, Text, Dimensions } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 
@@ -8,17 +14,48 @@ interface Props {
   model: FutonModel;
   fabric: Fabric;
   showDimensions: boolean;
+  /** Whether the product has been placed via tap (controls visibility) */
+  isPlaced?: boolean;
+  /** Product category — murphy-beds get snap-to-wall behavior */
+  category?: string;
   testID?: string;
 }
 
 const SPRING_CONFIG = { damping: 20, stiffness: 200 };
+const SNAP_SPRING = { damping: 25, stiffness: 300 };
+const SCREEN = Dimensions.get('window');
+
+/**
+ * Realistic scale range: ±30% from true size.
+ * This prevents unrealistic sizing — a 54" futon can't be pinched to 16" or 162".
+ */
+const SCALE_MIN = 0.7;
+const SCALE_MAX = 1.3;
+
+/** Distance from screen edge (dp) that triggers wall snap for murphy beds */
+const WALL_SNAP_THRESHOLD = 60;
 
 /**
  * Draggable, scalable, rotatable futon overlay for the AR camera view.
  * Renders a perspective futon shape colored with the selected fabric.
- * Supports pan (drag), pinch (scale), and rotation gestures simultaneously.
+ * Supports:
+ * - Pan (drag) to move
+ * - Pinch to scale (constrained to realistic ±30% range)
+ * - Two-finger rotation
+ * - Tap-to-place (initially hidden until surface tap)
+ * - Snap-to-wall for murphy cabinet beds
+ * - Real-time shadow that responds to position and scale
  */
-export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props) {
+export function ARFutonOverlay({
+  model,
+  fabric,
+  showDimensions,
+  isPlaced = true,
+  category,
+  testID,
+}: Props) {
+  const isMurphyBed = category === 'murphy-beds';
+
   // Gesture state
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -29,6 +66,13 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
   const savedScale = useSharedValue(1);
   const savedRotation = useSharedValue(0);
 
+  // Shadow dynamics — track position offset for shadow direction
+  const shadowOffsetX = useSharedValue(0);
+  const shadowOffsetY = useSharedValue(4);
+
+  // Wall snap state for murphy beds
+  const isSnappedToWall = useSharedValue(false);
+
   const panGesture = Gesture.Pan()
     .onStart(() => {
       savedTranslateX.value = translateX.value;
@@ -37,11 +81,39 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
     .onUpdate((e) => {
       translateX.value = savedTranslateX.value + e.translationX;
       translateY.value = savedTranslateY.value + e.translationY;
+
+      // Dynamic shadow: offset in the opposite direction of drag
+      shadowOffsetX.value = -e.velocityX * 0.005;
+      shadowOffsetY.value = 4 + Math.abs(e.velocityY * 0.003);
     })
     .onEnd(() => {
-      // Snap with spring for natural feel
-      translateX.value = withSpring(translateX.value, SPRING_CONFIG);
+      // Murphy beds: snap to nearest wall (screen edge) if close enough
+      if (isMurphyBed) {
+        const halfScreen = SCREEN.width / 2;
+        const distToLeft = halfScreen + translateX.value;
+        const distToRight = halfScreen - translateX.value;
+
+        if (distToLeft < WALL_SNAP_THRESHOLD) {
+          // Snap to left wall
+          translateX.value = withSpring(-(halfScreen - 30), SNAP_SPRING);
+          isSnappedToWall.value = true;
+        } else if (distToRight < WALL_SNAP_THRESHOLD) {
+          // Snap to right wall
+          translateX.value = withSpring(halfScreen - 30, SNAP_SPRING);
+          isSnappedToWall.value = true;
+        } else {
+          translateX.value = withSpring(translateX.value, SPRING_CONFIG);
+          isSnappedToWall.value = false;
+        }
+      } else {
+        translateX.value = withSpring(translateX.value, SPRING_CONFIG);
+      }
+
       translateY.value = withSpring(translateY.value, SPRING_CONFIG);
+
+      // Settle shadow back to resting position
+      shadowOffsetX.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.quad) });
+      shadowOffsetY.value = withTiming(4, { duration: 300, easing: Easing.out(Easing.quad) });
     });
 
   const pinchGesture = Gesture.Pinch()
@@ -49,7 +121,8 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
       savedScale.value = scale.value;
     })
     .onUpdate((e) => {
-      scale.value = Math.max(0.3, Math.min(3, savedScale.value * e.scale));
+      // Constrained to realistic range (±30% of true size)
+      scale.value = Math.max(SCALE_MIN, Math.min(SCALE_MAX, savedScale.value * e.scale));
     })
     .onEnd(() => {
       scale.value = withSpring(scale.value, SPRING_CONFIG);
@@ -75,7 +148,27 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
       { scale: scale.value },
       { rotate: `${rotation.value}rad` },
     ],
+    opacity: isPlaced ? 1 : 0,
   }));
+
+  // Dynamic shadow style: reacts to movement, scale, and position
+  const shadowAnimatedStyle = useAnimatedStyle(() => {
+    // Linear interpolation: map scale from [SCALE_MIN..SCALE_MAX] to output range
+    const t = (scale.value - SCALE_MIN) / (SCALE_MAX - SCALE_MIN); // 0..1
+    const shadowScale = 0.75 + t * (1.05 - 0.75);
+    const shadowOpacity = 0.2 + t * (0.1 - 0.2);
+    const shadowBlur = 4 + t * (14 - 4);
+
+    return {
+      transform: [
+        { translateX: shadowOffsetX.value },
+        { translateY: shadowOffsetY.value },
+        { scaleX: shadowScale },
+      ],
+      opacity: shadowOpacity,
+      height: shadowBlur,
+    };
+  });
 
   // Futon proportions based on model dimensions
   const aspectRatio = model.dimensions.width / model.dimensions.depth;
@@ -86,6 +179,16 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
   const seatCushionDepth = baseDepth - backHeight;
 
   const darkerFabric = darkenColor(fabric.color, 0.15);
+
+  // Wall snap indicator visibility
+  const wallSnapBadge = useMemo(() => {
+    if (!isMurphyBed) return null;
+    return (
+      <View style={styles.snapBadge} testID="ar-snap-badge">
+        <Text style={styles.snapBadgeText}>Drag near wall to snap</Text>
+      </View>
+    );
+  }, [isMurphyBed]);
 
   return (
     <GestureDetector gesture={composedGesture}>
@@ -157,11 +260,21 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
             ]}
           />
 
-          {/* Shadow beneath */}
-          <View
+          {/* Real-time dynamic shadow beneath */}
+          <Animated.View
             style={[
               styles.futonShadow,
               { width: baseWidth * 0.9, top: baseDepth + backHeight * 0.25 },
+              shadowAnimatedStyle,
+            ]}
+            testID="ar-dynamic-shadow"
+          />
+
+          {/* Secondary ambient shadow for depth */}
+          <View
+            style={[
+              styles.ambientShadow,
+              { width: baseWidth * 0.7, top: baseDepth + backHeight * 0.3 },
             ]}
           />
 
@@ -216,6 +329,9 @@ export function ARFutonOverlay({ model, fabric, showDimensions, testID }: Props)
         <View style={styles.modelBadge}>
           <Text style={styles.modelBadgeText}>{model.name}</Text>
         </View>
+
+        {/* Murphy bed wall snap hint */}
+        {wallSnapBadge}
       </Animated.View>
     </GestureDetector>
   );
@@ -290,6 +406,14 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     alignSelf: 'center',
     left: '5%',
+  },
+  ambientShadow: {
+    position: 'absolute',
+    height: 4,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    borderRadius: 100,
+    alignSelf: 'center',
+    left: '15%',
   },
   leg: {
     position: 'absolute',
@@ -378,6 +502,19 @@ const styles = StyleSheet.create({
   modelBadgeText: {
     color: '#FFFFFF',
     fontSize: 13,
+    fontWeight: '600',
+  },
+  snapBadge: {
+    marginTop: 4,
+    backgroundColor: 'rgba(91,143,168,0.8)',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'center',
+  },
+  snapBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
     fontWeight: '600',
   },
 });

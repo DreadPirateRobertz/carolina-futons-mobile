@@ -54,6 +54,8 @@ jest.mock('react-native-reanimated', () => {
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    withTiming: (val: any) => val,
+    Easing: { out: () => ({}), quad: {} },
   };
 });
 
@@ -168,9 +170,26 @@ describe('ARScreen', () => {
       expect(camera.props.accessibilityHint).toBe('back');
     });
 
-    it('shows gesture instruction hint', () => {
+    it('shows tap-to-place hint before placement', () => {
       const { getByText } = renderARScreen();
+      expect(getByText(/Point at a surface and tap to place/)).toBeTruthy();
+    });
+
+    it('shows gesture instruction hint after placement', () => {
+      const { getByTestId, getByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-tap-to-place'));
       expect(getByText(/Drag to position · Pinch to resize · Two-finger rotate/)).toBeTruthy();
+    });
+
+    it('renders tap-to-place target before placement', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-tap-to-place')).toBeTruthy();
+    });
+
+    it('hides tap-to-place target after placement', () => {
+      const { getByTestId, queryByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-tap-to-place'));
+      expect(queryByTestId('ar-tap-to-place')).toBeNull();
     });
 
     it('uses custom testID when provided', () => {
