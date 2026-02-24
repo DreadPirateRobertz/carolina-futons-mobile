@@ -83,7 +83,9 @@ describe('catalog-MASTER.json', () => {
   let products: CatalogProduct[];
 
   beforeAll(() => {
-    const catalog = JSON.parse(fs.readFileSync(path.join(SRC_DATA_DIR, 'catalog-MASTER.json'), 'utf-8'));
+    const catalog = JSON.parse(
+      fs.readFileSync(path.join(SRC_DATA_DIR, 'catalog-MASTER.json'), 'utf-8'),
+    );
     products = catalog.products;
   });
 
@@ -153,7 +155,9 @@ describe('catalog-MASTER.json', () => {
 
 describe('models3d ↔ catalog consistency', () => {
   it('all catalog product IDs appear in models3d.ts with GLB and USDZ URLs', () => {
-    const catalog = JSON.parse(fs.readFileSync(path.join(SRC_DATA_DIR, 'catalog-MASTER.json'), 'utf-8'));
+    const catalog = JSON.parse(
+      fs.readFileSync(path.join(SRC_DATA_DIR, 'catalog-MASTER.json'), 'utf-8'),
+    );
     const models3dContent = fs.readFileSync(path.join(SRC_DATA_DIR, 'models3d.ts'), 'utf-8');
 
     for (const product of catalog.products as CatalogProduct[]) {
