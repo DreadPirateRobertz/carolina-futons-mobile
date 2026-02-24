@@ -78,7 +78,7 @@ describe('fuzzySearch', () => {
     { id: 4, name: 'Cedar Frame Full Size', desc: 'Solid wood futon frame' },
   ];
 
-  const getText = (item: typeof items[number]) => [item.name, item.desc];
+  const getText = (item: (typeof items)[number]) => [item.name, item.desc];
 
   it('returns all items when query is empty', () => {
     const results = fuzzySearch(items, '', getText);

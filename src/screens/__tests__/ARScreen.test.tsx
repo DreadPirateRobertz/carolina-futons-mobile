@@ -574,7 +574,9 @@ describe('ARScreen', () => {
       // Immediately shows "Saved!" feedback
       expect(getByText('Saved!')).toBeTruthy();
       // After 2s, switches to "Wishlisted"
-      act(() => { jest.advanceTimersByTime(2000); });
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
       expect(getByText('Wishlisted')).toBeTruthy();
       jest.useRealTimers();
     });

@@ -166,9 +166,7 @@ describe('ARControls', () => {
 
     it('calls onAddToCart when pressed', () => {
       const onAddToCart = jest.fn();
-      const { getByTestId } = render(
-        <ARControls {...defaultProps} onAddToCart={onAddToCart} />,
-      );
+      const { getByTestId } = render(<ARControls {...defaultProps} onAddToCart={onAddToCart} />);
       fireEvent.press(getByTestId('ar-add-to-cart'));
       expect(onAddToCart).toHaveBeenCalledTimes(1);
     });

@@ -27,10 +27,7 @@ describe('getARModelAssets', () => {
 
 describe('buildSceneViewerUrl', () => {
   it('builds a Scene Viewer URL with file and mode params', () => {
-    const url = buildSceneViewerUrl(
-      `${ASSET_BASE}/asheville-full.glb`,
-      'The Asheville',
-    );
+    const url = buildSceneViewerUrl(`${ASSET_BASE}/asheville-full.glb`, 'The Asheville');
     expect(url).toContain('arvr.google.com/scene-viewer/1.0');
     expect(url).toContain('file=');
     expect(url).toContain('mode=ar_preferred');
@@ -46,12 +43,8 @@ describe('openARViewer', () => {
 
     it('opens USDZ URL via Linking on iOS', async () => {
       await openARViewer('asheville-full', 'The Asheville');
-      expect(Linking.canOpenURL).toHaveBeenCalledWith(
-        `${ASSET_BASE}/asheville-full.usdz`,
-      );
-      expect(Linking.openURL).toHaveBeenCalledWith(
-        `${ASSET_BASE}/asheville-full.usdz`,
-      );
+      expect(Linking.canOpenURL).toHaveBeenCalledWith(`${ASSET_BASE}/asheville-full.usdz`);
+      expect(Linking.openURL).toHaveBeenCalledWith(`${ASSET_BASE}/asheville-full.usdz`);
     });
 
     it('shows alert when iOS device cannot open AR', async () => {

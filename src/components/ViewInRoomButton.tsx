@@ -46,11 +46,7 @@ export function ViewInRoomButton({
 
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        isCompact && styles.buttonCompact,
-        disabled && styles.buttonDisabled,
-      ]}
+      style={[styles.button, isCompact && styles.buttonCompact, disabled && styles.buttonDisabled]}
       onPress={handlePress}
       disabled={disabled}
       testID={testID}
@@ -61,14 +57,10 @@ export function ViewInRoomButton({
       activeOpacity={0.7}
     >
       <View testID="view-in-room-camera-icon" style={styles.iconContainer}>
-        <Text style={[styles.icon, isCompact && styles.iconCompact]}>
-          {'\u{1F4F7}'}
-        </Text>
+        <Text style={[styles.icon, isCompact && styles.iconCompact]}>{'\u{1F4F7}'}</Text>
       </View>
       {!isCompact && (
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>
-          View in Your Room
-        </Text>
+        <Text style={[styles.label, disabled && styles.labelDisabled]}>View in Your Room</Text>
       )}
     </TouchableOpacity>
   );

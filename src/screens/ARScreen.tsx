@@ -90,7 +90,11 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
 
   const handleAddToCart = useCallback(() => {
     cart.addItem(selectedModel, selectedFabric, 1);
-    events.arAddToCart(selectedModel.id, selectedFabric.id, selectedModel.basePrice + selectedFabric.price);
+    events.arAddToCart(
+      selectedModel.id,
+      selectedFabric.id,
+      selectedModel.basePrice + selectedFabric.price,
+    );
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }

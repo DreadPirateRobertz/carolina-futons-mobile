@@ -297,14 +297,21 @@ describe('analytics', () => {
       events.arModelSelected('asheville-full', 'prod-asheville-full');
       const ev = getEventBuffer()[0];
       expect(ev.name).toBe('ar_model_selected');
-      expect(ev.properties).toEqual({ model_id: 'asheville-full', product_id: 'prod-asheville-full' });
+      expect(ev.properties).toEqual({
+        model_id: 'asheville-full',
+        product_id: 'prod-asheville-full',
+      });
     });
 
     it('events.arAddToCart tracks correctly', () => {
       events.arAddToCart('asheville-full', 'mountain-blue', 378);
       const ev = getEventBuffer()[0];
       expect(ev.name).toBe('ar_add_to_cart');
-      expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'mountain-blue', price: 378 });
+      expect(ev.properties).toEqual({
+        model_id: 'asheville-full',
+        fabric_id: 'mountain-blue',
+        price: 378,
+      });
     });
 
     it('events.arScreenshot tracks correctly', () => {
