@@ -239,4 +239,30 @@ describe('OrderDetailScreen', () => {
       expect(getByTestId('reorder-button').props.accessibilityLabel).toBe('Re-order these items');
     });
   });
+
+  describe('Hook Integration (useOrders / useFutonModels)', () => {
+    it('finds order via hook when no orders prop given', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
+      expect(getByTestId('order-detail-header').props.children).toBe('CF-2026-0147');
+    });
+
+    it('orders prop overrides hook data', () => {
+      const { getByTestId } = renderOrderDetail({
+        orderId: 'ord-001',
+        orders: MOCK_ORDERS,
+      });
+      expect(getByTestId('order-detail-header').props.children).toBe('CF-2026-0147');
+    });
+
+    it('reorder resolves model and fabric via useFutonModels hook', () => {
+      const onReorderSuccess = jest.fn();
+      const { getByTestId } = renderWithCartReader({
+        orderId: 'ord-001',
+        onReorderSuccess,
+      });
+      fireEvent.press(getByTestId('reorder-button'));
+      expect(getByTestId('cart-count').props.children).toBe(1);
+      expect(onReorderSuccess).toHaveBeenCalled();
+    });
+  });
 });

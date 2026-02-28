@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
-import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { useOrders } from '@/hooks/useOrders';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -20,11 +21,12 @@ export function OrderHistoryScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
+  const { orders: hookOrders } = useOrders();
 
-  // Use prop orders or fall back to mock data
-  const orders = (ordersProp ?? MOCK_ORDERS)
-    .slice()
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Use prop orders or fall back to hook data (already sorted newest-first)
+  const orders = ordersProp
+    ? ordersProp.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    : hookOrders;
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
