@@ -28,6 +28,9 @@ export type DetectionState =
   | 'limited'
   | 'error';
 
+/** UI-facing detection phase for the SurfaceIndicator */
+export type DetectionPhase = 'initializing' | 'scanning' | 'detected' | 'ready';
+
 /** A detected surface plane in the AR scene */
 export interface DetectedPlane {
   /** Unique plane identifier */

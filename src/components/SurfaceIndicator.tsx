@@ -80,11 +80,7 @@ export function SurfaceIndicator({
 
   const gridStyle = useAnimatedStyle(() => ({
     opacity: gridOpacity.value,
-    transform: [
-      { scale: readyScale.value },
-      { perspective: 600 },
-      { rotateX: '55deg' },
-    ],
+    transform: [{ scale: readyScale.value }, { perspective: 600 }, { rotateX: '55deg' }],
   }));
 
   const dotColor =
@@ -102,11 +98,7 @@ export function SurfaceIndicator({
         : 'rgba(0, 0, 0, 0.6)';
 
   const statusTextColor =
-    phase === 'ready'
-      ? '#4ADE80'
-      : !isLightingSufficient
-        ? '#FBBF24'
-        : '#FFFFFF';
+    phase === 'ready' ? '#4ADE80' : !isLightingSufficient ? '#FBBF24' : '#FFFFFF';
 
   return (
     <View style={styles.container} testID={testID ?? 'surface-indicator'} pointerEvents="none">
@@ -130,10 +122,11 @@ export function SurfaceIndicator({
 
       {/* Status pill */}
       <View style={styles.statusContainer}>
-        <View style={[styles.statusPill, { backgroundColor: statusPillColor }]} testID="surface-status">
-          {(phase === 'scanning' || phase === 'initializing') && (
-            <ScanningDot />
-          )}
+        <View
+          style={[styles.statusPill, { backgroundColor: statusPillColor }]}
+          testID="surface-status"
+        >
+          {(phase === 'scanning' || phase === 'initializing') && <ScanningDot />}
           {phase === 'ready' && <Text style={styles.readyIcon}>+</Text>}
           <Text
             style={[styles.statusText, { color: statusTextColor }]}
@@ -169,9 +162,7 @@ function DotCell({
   // Stagger the animation based on distance from center
   const centerRow = (DOT_ROWS - 1) / 2;
   const centerCol = (DOT_COLS - 1) / 2;
-  const distFromCenter = Math.sqrt(
-    Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2),
-  );
+  const distFromCenter = Math.sqrt(Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2));
   const maxDist = Math.sqrt(Math.pow(centerRow, 2) + Math.pow(centerCol, 2));
   const normalizedDist = distFromCenter / maxDist;
 
@@ -201,15 +192,7 @@ function DotCell({
     };
   });
 
-  return (
-    <Animated.View
-      style={[
-        styles.dot,
-        { backgroundColor: color },
-        dotStyle,
-      ]}
-    />
-  );
+  return <Animated.View style={[styles.dot, { backgroundColor: color }, dotStyle]} />;
 }
 
 /** Animated scanning indicator dot in the status pill */
@@ -218,10 +201,7 @@ function ScanningDot() {
 
   useEffect(() => {
     pulse.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 600 }),
-        withTiming(0, { duration: 600 }),
-      ),
+      withSequence(withTiming(1, { duration: 600 }), withTiming(0, { duration: 600 })),
       -1,
       false,
     );

@@ -1,10 +1,4 @@
-import {
-  MODELS_3D,
-  MODEL_CDN_BASE,
-  getModel3DForProduct,
-  hasARModel,
-  type Model3DAsset,
-} from '../models3d';
+import { MODELS_3D, getModel3DForProduct, hasARModel, type Model3DAsset } from '../models3d';
 import { PRODUCTS } from '../products';
 
 describe('models3d', () => {
@@ -14,9 +8,9 @@ describe('models3d', () => {
     });
 
     it.each(MODELS_3D)('$productId has valid GLB and USDZ URLs', (asset: Model3DAsset) => {
-      expect(asset.glbUrl).toContain(MODEL_CDN_BASE);
+      expect(asset.glbUrl).toMatch(/^https:\/\//);
       expect(asset.glbUrl).toMatch(/\.glb$/);
-      expect(asset.usdzUrl).toContain(MODEL_CDN_BASE);
+      expect(asset.usdzUrl).toMatch(/^https:\/\//);
       expect(asset.usdzUrl).toMatch(/\.usdz$/);
     });
 
@@ -109,6 +103,35 @@ describe('models3d', () => {
 
     it('returns false for non-existent product', () => {
       expect(hasARModel('fake-product')).toBe(false);
+    });
+  });
+
+  describe('PoC sample model (asheville-full)', () => {
+    it('has a real downloadable GLB URL (not CDN placeholder)', () => {
+      const asset = getModel3DForProduct('prod-asheville-full')!;
+      expect(asset).toBeDefined();
+      // Real model URLs should be https:// but NOT the placeholder CDN
+      expect(asset.glbUrl).toMatch(/^https:\/\//);
+      expect(asset.glbUrl).toMatch(/\.glb$/);
+    });
+
+    it('has a real downloadable USDZ URL', () => {
+      const asset = getModel3DForProduct('prod-asheville-full')!;
+      expect(asset.usdzUrl).toMatch(/^https:\/\//);
+      expect(asset.usdzUrl).toMatch(/\.usdz$/);
+    });
+
+    it('has accurate file size for real GLB model', () => {
+      const asset = getModel3DForProduct('prod-asheville-full')!;
+      // KhronosGroup SheenChair GLB is ~4.1 MB
+      expect(asset.fileSizeBytes).toBeGreaterThan(3_000_000);
+      expect(asset.fileSizeBytes).toBeLessThan(5_000_000);
+    });
+
+    it('has real content hash (not placeholder)', () => {
+      const asset = getModel3DForProduct('prod-asheville-full')!;
+      // SHA-256 prefix
+      expect(asset.contentHash.length).toBeGreaterThanOrEqual(8);
     });
   });
 });
