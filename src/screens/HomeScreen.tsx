@@ -11,7 +11,7 @@ interface Props {
 }
 
 export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
-  const { colors, spacing, typography } = useTheme();
+  const { colors, spacing, typography, shadows, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleOpenAR = useCallback(() => {
@@ -52,7 +52,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
 
       {/* AR CTA */}
       <TouchableOpacity
-        style={[styles.ctaButton, { backgroundColor: colors.sunsetCoral }]}
+        style={[styles.ctaButton, shadows.cardHover, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.xl }]}
         onPress={handleOpenAR}
         testID="home-ar-button"
         accessibilityLabel="Try futons in your room with AR camera"
@@ -67,7 +67,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
 
       {/* Shop CTA */}
       <TouchableOpacity
-        style={[styles.ctaButton, { backgroundColor: colors.mountainBlue }]}
+        style={[styles.ctaButton, shadows.cardHover, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.xl }]}
         onPress={handleOpenShop}
         testID="home-shop-button"
         accessibilityLabel="Browse our products"
@@ -103,13 +103,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 24,
     paddingVertical: 16,
-    borderRadius: 16,
     gap: 14,
-    shadowColor: '#3A2518',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
   },
   ctaIcon: {
     fontSize: 28,

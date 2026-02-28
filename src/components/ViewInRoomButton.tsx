@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/theme';
 import { events } from '@/services/analytics';
 import type { Product } from '@/data/products';
 
@@ -25,6 +26,8 @@ export function ViewInRoomButton({
   disabled = false,
   testID = 'view-in-room-btn',
 }: Props) {
+  const { colors, borderRadius } = useTheme();
+
   const handlePress = useCallback(() => {
     if (disabled) return;
 
@@ -46,7 +49,16 @@ export function ViewInRoomButton({
 
   return (
     <TouchableOpacity
-      style={[styles.button, isCompact && styles.buttonCompact, disabled && styles.buttonDisabled]}
+      style={[
+        styles.button,
+        {
+          backgroundColor: `${colors.sunsetCoral}1F`,
+          borderColor: colors.sunsetCoral,
+          borderRadius: borderRadius.lg,
+        },
+        isCompact && { ...styles.buttonCompact, borderRadius: borderRadius.md },
+        disabled && styles.buttonDisabled,
+      ]}
       onPress={handlePress}
       disabled={disabled}
       testID={testID}
@@ -60,7 +72,9 @@ export function ViewInRoomButton({
         <Text style={[styles.icon, isCompact && styles.iconCompact]}>{'\u{1F4F7}'}</Text>
       </View>
       {!isCompact && (
-        <Text style={[styles.label, disabled && styles.labelDisabled]}>View in Your Room</Text>
+        <Text style={[styles.label, { color: colors.sunsetCoral }, disabled && styles.labelDisabled]}>
+          View in Your Room
+        </Text>
       )}
     </TouchableOpacity>
   );
@@ -70,10 +84,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(232, 132, 92, 0.12)',
     borderWidth: 1,
-    borderColor: '#E8845C',
-    borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 8,
@@ -81,7 +92,6 @@ const styles = StyleSheet.create({
   buttonCompact: {
     paddingHorizontal: 10,
     paddingVertical: 8,
-    borderRadius: 8,
   },
   buttonDisabled: {
     opacity: 0.4,
@@ -97,11 +107,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   label: {
-    color: '#E8845C',
     fontSize: 14,
     fontWeight: '600',
   },
   labelDisabled: {
-    color: 'rgba(232, 132, 92, 0.5)',
+    opacity: 0.5,
   },
 });
