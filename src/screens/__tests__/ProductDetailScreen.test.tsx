@@ -5,6 +5,7 @@ import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { PRODUCTS } from '@/data/products';
 
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
@@ -591,6 +592,52 @@ describe('ProductDetailScreen', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('detail-ar-button'));
       expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Hook Integration (useProduct / useFutonModels)', () => {
+    it('resolves catalog product via prod- prefix convention', () => {
+      // The screen should map futon model ID → product ID (prod-{modelId})
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // WishlistButton should receive the correct catalog product
+      expect(getByTestId('detail-wishlist-button')).toBeTruthy();
+    });
+
+    it('renders wishlist button for all valid futon model IDs', () => {
+      for (const model of FUTON_MODELS) {
+        const catalogProduct = PRODUCTS.find((p) => p.id === `prod-${model.id}`);
+        expect(catalogProduct).toBeTruthy();
+        const { getByTestId, unmount } = renderDetail({ productId: model.id });
+        expect(getByTestId('detail-wishlist-button')).toBeTruthy();
+        unmount();
+      }
+    });
+
+    it('hides wishlist button when catalog product not found', () => {
+      const { queryByTestId } = renderDetail({ productId: 'nonexistent' });
+      expect(queryByTestId('detail-wishlist-button')).toBeNull();
+    });
+
+    it('still renders model info when catalog product not found', () => {
+      // Unknown productId falls back to first futon model
+      const { getByTestId } = renderDetail({ productId: 'nonexistent' });
+      expect(getByTestId('product-name').props.children).toBe(asheville.name);
+      expect(getByTestId('total-price')).toBeTruthy();
+    });
+
+    it('AR button works even without catalog product', () => {
+      const onOpenAR = jest.fn();
+      const { getByTestId } = renderDetail({ productId: 'nonexistent', onOpenAR });
+      expect(() => fireEvent.press(getByTestId('detail-ar-button'))).not.toThrow();
+      expect(onOpenAR).toHaveBeenCalledWith('asheville-full'); // falls back to first model
+    });
+
+    it('AR web navigation uses catalog product ID when available', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'web' });
+      const { getByTestId } = renderDetail({ productId: 'blue-ridge-queen' });
+      fireEvent.press(getByTestId('detail-ar-button'));
+      const navParams = mockNavigate.mock.calls[0][1];
+      expect(navParams.productId).toBe('prod-blue-ridge-queen');
     });
   });
 });
