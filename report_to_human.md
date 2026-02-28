@@ -1,8 +1,8 @@
-# Dallas Status Report — 2026-02-28
+# Dallas Status Report — 2026-02-28 (Updated 17:10)
 
 ## Summary
 
-The crew is executing the Wix API integration + screen refactor pipeline. We're replacing all direct mock data imports with hook-based data access, preparing for live Wix backend drop-in. Design alignment with melania is complete.
+The crew is executing the Wix API integration + screen refactor pipeline. All direct mock data imports are being replaced with hook-based data access, preparing for live Wix backend drop-in. Design alignment with melania is complete — tokens verified, fully aligned.
 
 ---
 
@@ -10,48 +10,56 @@ The crew is executing the Wix API integration + screen refactor pipeline. We're 
 
 | PR | Branch | Bead | Description |
 |----|--------|------|-------------|
-| #19 | `cm-wix-api-client` | cm-kpr | Wix Stores REST API client (31 tests) |
+| #19 | `cm-wix-api-client` | cm-kpr | Wix Stores REST API client (31 tests) **← UNBLOCKS AUTH** |
 | #20 | `cm-wix-data-integration` | cm-ptv | useProduct, useOrders, useFutonModels hooks (54 tests) — ripley |
 | #21 | `cm-a0w-category-screen-refactor` | cm-a0w | CategoryScreen refactor to useProducts hook — ripley |
 | #22 | `cm-41j-arscreen-refactor` | cm-41j | ARScreen: hooks replace direct data imports (7 new tests) |
 | #23 | `cm-dy0-order-screens-refactor` | cm-dy0 | OrderHistory+OrderDetail: hooks replace MOCK_ORDERS (21 new tests) |
+| #26 | `cm-a7m-store-screens-refactor` | cm-a7m | StoreLocator+StoreDetail: hooks replace STORES (21 new tests) |
 
 ## Completed This Session (dallas)
 
-1. **cm-41j (ARScreen refactor)** — PR #22 pushed. Replaced `FUTON_MODELS`/`PRODUCTS` imports with `useFutonModels`/`useProductByModelId` hooks. Loading + error states. 7 integration tests.
-2. **cm-dy0 (Order screens refactor)** — PR #23 pushed. Replaced `MOCK_ORDERS` imports with `useOrders`/`useOrderById` hooks. Loading + error states. 21 new tests (10 hook + 11 integration).
+1. **cm-41j (ARScreen refactor)** — PR #22. Replaced `FUTON_MODELS`/`PRODUCTS` with hooks. 7 tests.
+2. **cm-dy0 (Order screens refactor)** — PR #23. Replaced `MOCK_ORDERS` with hooks. 21 tests.
+3. **cm-a7m (Store screens refactor)** — PR #26. Replaced `STORES` with hooks. 21 tests.
+4. **Design token verification** — confirmed `src/theme/tokens.ts` 100% aligned with melania's design system.
+5. **Bishop coordination** — replied on cm-4j6 auth: unify WixClient, align interfaces, rebase on `cm-wix-api-client`.
 
 ## Completed This Session (crew)
 
 - **ripley**: cm-ptv (3 API hooks, 54 tests), cm-a0w (CategoryScreen refactor), mock data audit
-- **bishop**: Wix SDK + Members auth research
+- **bishop**: Wix SDK + Members auth research, picked up cm-4j6 (auth integration), branch `cm-wix-auth` in progress
+
+## Screen Refactor Progress (cm-a7m)
+
+| Screen | Status | PR | Notes |
+|--------|--------|-----|-------|
+| CategoryScreen | PR open | #21 | ripley |
+| ARScreen | PR open | #22 | dallas |
+| OrderHistoryScreen | PR open | #23 | dallas |
+| OrderDetailScreen | PR open | #23 | dallas |
+| StoreLocatorScreen | PR open | #26 | dallas |
+| StoreDetailScreen | PR open | #26 | dallas |
+| ProductDetailScreen | closed | — | cm-0xx closed |
+| WishlistScreen | type-only import | — | no data array import, just types |
+| ShopScreen | type-only import | — | no data array import, just types |
+
+**7/9 screens done.** WishlistScreen and ShopScreen only import types (not data arrays), so no hook refactor needed.
 
 ## In Progress (tracked beads)
 
 | Bead | Priority | Owner | Status |
 |------|----------|-------|--------|
-| cm-pk5 | P0 | — | Wix Members auth client module |
-| cm-kpr | P0 | dallas | Wix API client integration (PR #19) |
-| cm-4j6 | P0 | — | Wix Members auth integration (needs SDK research from bishop) |
-| cm-dy0 | P1 | dallas | Order screens refactor (PR #23 — done, awaiting review) |
-| cm-0xx | P1 | — | ProductDetailScreen refactor |
-| cm-248 | P1 | — | Design doc: carolinafutons.com visual reference |
-| cm-41j | P2 | dallas | ARScreen refactor (PR #22 — done, awaiting review) |
+| cm-kpr | P0 | dallas | Wix API client (PR #19 — awaiting review) |
+| cm-4j6 | P0 | bishop | Wix Members auth integration (branch `cm-wix-auth`) |
+| cm-a7m | P1 | dallas | Screen refactors — 7/9 done (PR #26 latest) |
 
-## Ready Work (unblocked, unclaimed)
+## Design Alignment (melania) — VERIFIED
 
-| Bead | Priority | Description |
-|------|----------|-------------|
-| cm-a7m | P1 | Refactor 9 screens from src/data imports to API hooks (parent bead) |
-
-## Design Alignment (melania)
-
-Melania provided full brand design specs for AR Camera and mobile UI:
-- **Colors**: Sand #E8D5B7, Espresso #3A2518, Mountain Blue #5B8FA8, Coral #E8845C, Green CTA #4A7C59
-- **Typography**: Playfair Display headings, system sans-serif body
-- **Spacing**: 8px base grid, border radii 4/8/12px
-- **AR-specific**: No trust bar in AR (keep immersive), product cards match web pattern
-- **Interaction**: Web hover → mobile press/long-press, web modal → mobile bottom sheet
+Mobile tokens (`src/theme/tokens.ts`) confirmed 100% aligned with melania's design system:
+- Colors, spacing, border radii, shadows (espresso-based), typography (Playfair Display + Source Sans 3), transitions — all exact match with `sharedTokens.js`
+- Product card pattern (image+name+price+swatches+badge) documented for catalog views
+- CTA colors: sunsetCoral for primary, success green for Add to Cart, mountainBlue for secondary
 
 ## Architecture Pattern
 
@@ -69,7 +77,7 @@ Each hook returns `{ data, isLoading, error }` so screens handle all async lifec
 
 ## Next Steps
 
-1. melania reviews PRs #19–#23 (5 PRs in queue)
-2. Continue screen refactors (cm-0xx ProductDetailScreen, cm-a7m remaining 9 screens)
-3. Wix Members auth client (cm-pk5, P0) — blocked on bishop's SDK research
-4. Close cm-41j and cm-dy0 after merge
+1. **melania reviews PRs #19–#26** (6 PRs in queue — #19 highest priority, unblocks auth)
+2. **bishop lands cm-4j6** (Wix auth) — coordinating client unification with dallas
+3. **Close cm-a7m** once all screen refactor PRs merge
+4. **Connect hooks to live Wix API** once #19 merges
