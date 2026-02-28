@@ -1,49 +1,45 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Text, Pressable, View } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { AuthProvider, useAuth, validateEmail, validatePassword, validateName } from '../useAuth';
 
-/** Test harness exposing auth state + actions */
-function AuthHarness() {
-  const {
-    user,
-    loading,
-    error,
-    isAuthenticated,
-    signIn,
-    signUp,
-    signInWithGoogle,
-    signInWithApple,
-    resetPassword,
-    signOut,
-    clearError,
-  } = useAuth();
+// --- Mock WixAuthService ---
 
+const mockService = {
+  loginWithEmail: jest.fn(),
+  register: jest.fn(),
+  loginWithOAuth: jest.fn(),
+  sendPasswordReset: jest.fn(),
+  logout: jest.fn(),
+  restoreSession: jest.fn(),
+  getCurrentMember: jest.fn(),
+  isLoggedIn: jest.fn(() => false),
+  refreshSession: jest.fn(),
+};
+
+jest.mock('@/services/wix/wixAuth', () => ({
+  WixAuthService: jest.fn(() => mockService),
+}));
+
+// --- Test Harness ---
+
+function AuthHarness() {
+  const auth = useAuth();
   return (
     <View>
-      <Text testID="is-auth">{String(isAuthenticated)}</Text>
-      <Text testID="loading">{String(loading)}</Text>
-      <Text testID="error">{error ?? ''}</Text>
-      <Text testID="user-email">{user?.email ?? ''}</Text>
-      <Text testID="user-name">{user?.displayName ?? ''}</Text>
-      <Text testID="user-provider">{user?.provider ?? ''}</Text>
-
-      <TouchableOpacity testID="sign-in" onPress={() => signIn('test@test.com', 'Pass1234')} />
-      <TouchableOpacity testID="sign-in-bad" onPress={() => signIn('bad@test.com', 'Pass1234')} />
-      <TouchableOpacity
-        testID="sign-up"
-        onPress={() => signUp('new@test.com', 'Pass1234', 'New User')}
-      />
-      <TouchableOpacity
-        testID="sign-up-taken"
-        onPress={() => signUp('taken@test.com', 'Pass1234', 'Taken')}
-      />
-      <TouchableOpacity testID="google" onPress={() => signInWithGoogle()} />
-      <TouchableOpacity testID="apple" onPress={() => signInWithApple()} />
-      <TouchableOpacity testID="reset" onPress={() => resetPassword('test@test.com')} />
-      <TouchableOpacity testID="reset-bad" onPress={() => resetPassword('notfound@test.com')} />
-      <TouchableOpacity testID="sign-out" onPress={signOut} />
-      <TouchableOpacity testID="clear-error" onPress={clearError} />
+      <Text testID="loading">{String(auth.loading)}</Text>
+      <Text testID="error">{auth.error ?? ''}</Text>
+      <Text testID="user">{auth.user ? JSON.stringify(auth.user) : 'null'}</Text>
+      <Text testID="is-auth">{String(auth.isAuthenticated)}</Text>
+      <Text testID="user-email">{auth.user?.email ?? ''}</Text>
+      <Text testID="user-name">{auth.user?.displayName ?? ''}</Text>
+      <Pressable testID="sign-in" onPress={() => auth.signIn('user@test.com', 'Password1')} />
+      <Pressable testID="sign-up" onPress={() => auth.signUp('new@test.com', 'Password1', 'New User')} />
+      <Pressable testID="google" onPress={() => auth.signInWithGoogle()} />
+      <Pressable testID="apple" onPress={() => auth.signInWithApple()} />
+      <Pressable testID="reset" onPress={() => auth.resetPassword('user@test.com')} />
+      <Pressable testID="sign-out" onPress={() => auth.signOut()} />
+      <Pressable testID="clear-error" onPress={() => auth.clearError()} />
     </View>
   );
 }
@@ -56,30 +52,79 @@ function renderAuth() {
   );
 }
 
+const mockUser = {
+  id: 'member-123',
+  email: 'user@test.com',
+  displayName: 'Test User',
+  provider: 'wix' as const,
+};
+
 describe('useAuth', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockService.restoreSession.mockResolvedValue(false);
+    mockService.getCurrentMember.mockResolvedValue(null);
+    mockService.logout.mockResolvedValue(undefined);
+    mockService.sendPasswordReset.mockResolvedValue({ success: true });
+  });
+
   describe('Initial state', () => {
-    it('starts not authenticated', () => {
+    it('starts with loading then settles to not authenticated', async () => {
       const { getByTestId } = renderAuth();
+      await waitFor(() => {
+        expect(getByTestId('loading').props.children).toBe('false');
+      });
       expect(getByTestId('is-auth').props.children).toBe('false');
-      expect(getByTestId('loading').props.children).toBe('false');
       expect(getByTestId('error').props.children).toBe('');
+    });
+  });
+
+  describe('Session restore', () => {
+    it('restores session and loads user on mount', async () => {
+      mockService.restoreSession.mockResolvedValue(true);
+      mockService.getCurrentMember.mockResolvedValue(mockUser);
+
+      const { getByTestId } = renderAuth();
+
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+      expect(getByTestId('user-email').props.children).toBe('user@test.com');
     });
   });
 
   describe('Email sign in', () => {
     it('signs in with valid credentials', async () => {
+      mockService.loginWithEmail.mockResolvedValue({ success: true });
+      mockService.getCurrentMember.mockResolvedValue(mockUser);
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-in'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
-      expect(getByTestId('user-email').props.children).toBe('test@test.com');
-      expect(getByTestId('user-provider').props.children).toBe('email');
+      expect(mockService.loginWithEmail).toHaveBeenCalledWith('user@test.com', 'Password1');
+      expect(getByTestId('user-email').props.children).toBe('user@test.com');
     });
 
     it('shows error for bad credentials', async () => {
+      mockService.loginWithEmail.mockResolvedValue({
+        success: false,
+        error: 'Invalid email or password',
+      });
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-in-bad'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-in'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('error').props.children).toBe('Invalid email or password');
       });
@@ -89,17 +134,39 @@ describe('useAuth', () => {
 
   describe('Sign up', () => {
     it('creates account successfully', async () => {
+      mockService.register.mockResolvedValue({ success: true });
+      mockService.getCurrentMember.mockResolvedValue({
+        ...mockUser,
+        displayName: 'New User',
+      });
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-up'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-up'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
+      expect(mockService.register).toHaveBeenCalledWith('new@test.com', 'Password1', 'New User');
       expect(getByTestId('user-name').props.children).toBe('New User');
     });
 
     it('shows error for taken email', async () => {
+      mockService.register.mockResolvedValue({
+        success: false,
+        error: 'An account with this email already exists',
+      });
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-up-taken'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-up'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('error').props.children).toContain('already exists');
       });
@@ -107,76 +174,137 @@ describe('useAuth', () => {
   });
 
   describe('Social sign in', () => {
-    it('signs in with Google', async () => {
+    it('signs in with Google via OAuth', async () => {
+      mockService.loginWithOAuth.mockResolvedValue({ success: true });
+      mockService.getCurrentMember.mockResolvedValue(mockUser);
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('google'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('google'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
-      expect(getByTestId('user-provider').props.children).toBe('google');
+      expect(mockService.loginWithOAuth).toHaveBeenCalled();
     });
 
-    it('signs in with Apple', async () => {
+    it('signs in with Apple via OAuth', async () => {
+      mockService.loginWithOAuth.mockResolvedValue({ success: true });
+      mockService.getCurrentMember.mockResolvedValue(mockUser);
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('apple'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('apple'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
-      expect(getByTestId('user-provider').props.children).toBe('apple');
+      expect(mockService.loginWithOAuth).toHaveBeenCalled();
+    });
+
+    it('shows error when OAuth cancelled', async () => {
+      mockService.loginWithOAuth.mockResolvedValue({
+        success: false,
+        error: 'Login cancelled',
+      });
+
+      const { getByTestId } = renderAuth();
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('google'));
+      });
+
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Login cancelled');
+      });
     });
   });
 
   describe('Password reset', () => {
     it('succeeds for valid email', async () => {
+      mockService.sendPasswordReset.mockResolvedValue({ success: true });
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('reset'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('reset'));
+      });
+
       await waitFor(() => {
         expect(getByTestId('loading').props.children).toBe('false');
       });
+      expect(mockService.sendPasswordReset).toHaveBeenCalledWith('user@test.com');
       expect(getByTestId('error').props.children).toBe('');
-    });
-
-    it('shows error for unknown email', async () => {
-      const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('reset-bad'));
-      await waitFor(() => {
-        expect(getByTestId('error').props.children).toContain('No account found');
-      });
     });
   });
 
   describe('Sign out', () => {
     it('signs out authenticated user', async () => {
+      mockService.loginWithEmail.mockResolvedValue({ success: true });
+      mockService.getCurrentMember.mockResolvedValue(mockUser);
+
       const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-in'));
+      });
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
-      fireEvent.press(getByTestId('sign-out'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-out'));
+      });
+
       expect(getByTestId('is-auth').props.children).toBe('false');
       expect(getByTestId('user-email').props.children).toBe('');
+      expect(mockService.logout).toHaveBeenCalled();
     });
   });
 
   describe('Clear error', () => {
     it('clears auth error', async () => {
-      const { getByTestId } = renderAuth();
-      fireEvent.press(getByTestId('sign-in-bad'));
-      await waitFor(() => {
-        expect(getByTestId('error').props.children).toBeTruthy();
+      mockService.loginWithEmail.mockResolvedValue({
+        success: false,
+        error: 'Some error',
       });
-      fireEvent.press(getByTestId('clear-error'));
+
+      const { getByTestId } = renderAuth();
+      await waitFor(() => expect(getByTestId('loading').props.children).toBe('false'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('sign-in'));
+      });
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Some error');
+      });
+
+      await act(async () => {
+        fireEvent.press(getByTestId('clear-error'));
+      });
+
       expect(getByTestId('error').props.children).toBe('');
     });
   });
 
   describe('Error: useAuth outside provider', () => {
     it('throws', () => {
+      const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
       function Bad() {
         useAuth();
         return null;
       }
       expect(() => render(<Bad />)).toThrow('useAuth must be used within an AuthProvider');
+      spy.mockRestore();
     });
   });
 });

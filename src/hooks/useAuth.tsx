@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import { WixAuthService } from '@/services/wix/wixAuth';
 
 export interface User {
   id: string;
   email: string;
   displayName: string;
-  provider: 'email' | 'google' | 'apple';
+  provider: 'email' | 'google' | 'apple' | 'wix';
 }
 
 interface AuthState {
@@ -18,7 +19,8 @@ type AuthAction =
   | { type: 'AUTH_SUCCESS'; user: User }
   | { type: 'AUTH_ERROR'; error: string }
   | { type: 'SIGN_OUT' }
-  | { type: 'CLEAR_ERROR' };
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'INIT_DONE' };
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
@@ -32,6 +34,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       return { user: null, loading: false, error: null };
     case 'CLEAR_ERROR':
       return { ...state, error: null, loading: false };
+    case 'INIT_DONE':
+      return { ...state, loading: false };
     default:
       return state;
   }
@@ -74,97 +78,94 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** Simulated auth delay for realistic UX */
-function simulateDelay(ms = 800): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
-    loading: false,
+    loading: true,
     error: null,
   });
 
+  const authService = useMemo(() => new WixAuthService(), []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const restored = await authService.restoreSession();
+      if (!mounted) return;
+      if (restored) {
+        const member = await authService.getCurrentMember();
+        if (mounted && member) {
+          dispatch({ type: 'AUTH_SUCCESS', user: member });
+          return;
+        }
+      }
+      if (mounted) dispatch({ type: 'INIT_DONE' });
+    })();
+    return () => { mounted = false; };
+  }, [authService]);
+
   const signIn = useCallback(async (email: string, password: string) => {
     dispatch({ type: 'AUTH_START' });
-    await simulateDelay();
-    // Mock: reject known-bad creds, accept everything else
-    if (email === 'bad@test.com') {
-      dispatch({ type: 'AUTH_ERROR', error: 'Invalid email or password' });
-      return;
+    const result = await authService.loginWithEmail(email, password);
+    if (result.success) {
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+        return;
+      }
     }
-    dispatch({
-      type: 'AUTH_SUCCESS',
-      user: {
-        id: 'user-1',
-        email: email.trim().toLowerCase(),
-        displayName: email.split('@')[0],
-        provider: 'email',
-      },
-    });
-  }, []);
+    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Login failed' });
+  }, [authService]);
 
   const signUp = useCallback(async (email: string, password: string, displayName: string) => {
     dispatch({ type: 'AUTH_START' });
-    await simulateDelay();
-    if (email === 'taken@test.com') {
-      dispatch({ type: 'AUTH_ERROR', error: 'An account with this email already exists' });
-      return;
+    const result = await authService.register(email, password, displayName);
+    if (result.success) {
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+        return;
+      }
     }
-    dispatch({
-      type: 'AUTH_SUCCESS',
-      user: {
-        id: 'user-new',
-        email: email.trim().toLowerCase(),
-        displayName: displayName.trim(),
-        provider: 'email',
-      },
-    });
-  }, []);
+    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Registration failed' });
+  }, [authService]);
 
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
-    await simulateDelay();
-    dispatch({
-      type: 'AUTH_SUCCESS',
-      user: {
-        id: 'google-user-1',
-        email: 'user@gmail.com',
-        displayName: 'Google User',
-        provider: 'google',
-      },
-    });
-  }, []);
+    const result = await authService.loginWithOAuth();
+    if (result.success) {
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+        return;
+      }
+    }
+    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Google login failed' });
+  }, [authService]);
 
   const signInWithApple = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
-    await simulateDelay();
-    dispatch({
-      type: 'AUTH_SUCCESS',
-      user: {
-        id: 'apple-user-1',
-        email: 'user@icloud.com',
-        displayName: 'Apple User',
-        provider: 'apple',
-      },
-    });
-  }, []);
+    const result = await authService.loginWithOAuth();
+    if (result.success) {
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+        return;
+      }
+    }
+    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Apple login failed' });
+  }, [authService]);
 
   const resetPassword = useCallback(async (email: string) => {
     dispatch({ type: 'AUTH_START' });
-    await simulateDelay();
-    if (email === 'notfound@test.com') {
-      dispatch({ type: 'AUTH_ERROR', error: 'No account found with this email' });
-      return;
-    }
-    // Always "succeeds" for existing emails (for security, don't reveal account existence in prod)
+    await authService.sendPasswordReset(email);
     dispatch({ type: 'CLEAR_ERROR' });
-  }, []);
+  }, [authService]);
 
   const signOut = useCallback(() => {
+    authService.logout();
     dispatch({ type: 'SIGN_OUT' });
-  }, []);
+  }, [authService]);
 
   const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });

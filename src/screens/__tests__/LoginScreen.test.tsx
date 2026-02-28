@@ -4,6 +4,20 @@ import { LoginScreen } from '../LoginScreen';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('@/services/wix/wixAuth', () => ({
+  WixAuthService: jest.fn(() => ({
+    loginWithEmail: jest.fn().mockResolvedValue({ success: false, error: 'Invalid email or password' }),
+    register: jest.fn().mockResolvedValue({ success: true }),
+    loginWithOAuth: jest.fn().mockResolvedValue({ success: true }),
+    sendPasswordReset: jest.fn().mockResolvedValue({ success: true }),
+    logout: jest.fn(),
+    restoreSession: jest.fn().mockResolvedValue(false),
+    getCurrentMember: jest.fn().mockResolvedValue(null),
+    isLoggedIn: jest.fn(() => false),
+    refreshSession: jest.fn().mockResolvedValue(true),
+  })),
+}));
+
 function renderLogin(props: Partial<React.ComponentProps<typeof LoginScreen>> = {}) {
   return render(
     <ThemeProvider>
@@ -58,28 +72,40 @@ describe('LoginScreen', () => {
   });
 
   describe('Form validation', () => {
-    it('shows email error for empty email', () => {
+    it('shows email error for empty email', async () => {
       const { getByTestId } = renderLogin();
+      await waitFor(() => {
+        expect(getByTestId('login-submit-button').props.accessibilityState?.disabled).not.toBe(true);
+      });
       fireEvent.press(getByTestId('login-submit-button'));
       expect(getByTestId('login-email-error')).toBeTruthy();
     });
 
-    it('shows password error for empty password', () => {
+    it('shows password error for empty password', async () => {
       const { getByTestId } = renderLogin();
+      await waitFor(() => {
+        expect(getByTestId('login-submit-button').props.accessibilityState?.disabled).not.toBe(true);
+      });
       fireEvent.changeText(getByTestId('login-email-input'), 'test@test.com');
       fireEvent.press(getByTestId('login-submit-button'));
       expect(getByTestId('login-password-error')).toBeTruthy();
     });
 
-    it('shows email error for invalid email', () => {
+    it('shows email error for invalid email', async () => {
       const { getByTestId } = renderLogin();
+      await waitFor(() => {
+        expect(getByTestId('login-submit-button').props.accessibilityState?.disabled).not.toBe(true);
+      });
       fireEvent.changeText(getByTestId('login-email-input'), 'notanemail');
       fireEvent.press(getByTestId('login-submit-button'));
       expect(getByTestId('login-email-error')).toBeTruthy();
     });
 
-    it('clears email error when typing', () => {
+    it('clears email error when typing', async () => {
       const { getByTestId, queryByTestId } = renderLogin();
+      await waitFor(() => {
+        expect(getByTestId('login-submit-button').props.accessibilityState?.disabled).not.toBe(true);
+      });
       fireEvent.press(getByTestId('login-submit-button'));
       expect(getByTestId('login-email-error')).toBeTruthy();
       fireEvent.changeText(getByTestId('login-email-input'), 'a');

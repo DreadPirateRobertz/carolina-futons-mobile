@@ -4,6 +4,29 @@ import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+const mockUser = {
+  id: 'member-123',
+  email: 'test@test.com',
+  displayName: 'test',
+  provider: 'wix' as const,
+};
+
+const mockWixAuth = {
+  loginWithEmail: jest.fn().mockResolvedValue({ success: true }),
+  register: jest.fn().mockResolvedValue({ success: true }),
+  loginWithOAuth: jest.fn().mockResolvedValue({ success: true }),
+  sendPasswordReset: jest.fn().mockResolvedValue({ success: true }),
+  logout: jest.fn(),
+  restoreSession: jest.fn().mockResolvedValue(false),
+  getCurrentMember: jest.fn().mockResolvedValue(mockUser),
+  isLoggedIn: jest.fn(() => false),
+  refreshSession: jest.fn().mockResolvedValue(true),
+};
+
+jest.mock('@/services/wix/wixAuth', () => ({
+  WixAuthService: jest.fn(() => mockWixAuth),
+}));
+
 function renderAccount(
   props: Partial<React.ComponentProps<typeof AccountScreen>> = {},
   authenticated = false,
