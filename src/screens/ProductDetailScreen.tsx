@@ -15,16 +15,15 @@ import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from 
 import { formatPrice, openARViewer } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { PRODUCTS } from '@/data/products';
-import { getReviewsForProduct, getReviewSummary, sortReviews } from '@/data/reviews';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
+import { ReviewForm } from '@/components/ReviewForm';
+import { useReviews } from '@/hooks/useReviews';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 300;
 
 const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as const;
-
-type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest';
 
 interface Props {
   productId?: string;
@@ -51,13 +50,16 @@ export function ProductDetailScreen({
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
-  const [reviewSort, setReviewSort] = useState<ReviewSort>('helpful');
-
-  const reviewSummary = useMemo(() => getReviewSummary(model.id), [model.id]);
-  const reviews = useMemo(() => {
-    const all = getReviewsForProduct(model.id);
-    return sortReviews(all, reviewSort);
-  }, [model.id, reviewSort]);
+  const {
+    reviews,
+    summary: reviewSummary,
+    sort: reviewSort,
+    setSort: setReviewSort,
+    isSubmitting: isReviewSubmitting,
+    submitReview,
+    showForm: showReviewForm,
+    setShowForm: setShowReviewForm,
+  } = useReviews(model.id);
   const previewReviews = reviews.slice(0, 3);
 
   const totalPrice = model.basePrice + selectedFabric.price;
@@ -349,6 +351,45 @@ export function ProductDetailScreen({
                 View All {reviewSummary.totalReviews} Reviews
               </Text>
             </TouchableOpacity>
+          )}
+
+          {/* Write a Review */}
+          {!showReviewForm ? (
+            <TouchableOpacity
+              style={[
+                styles.writeReviewButton,
+                {
+                  backgroundColor: colors.sunsetCoral,
+                  borderRadius: borderRadius.button,
+                },
+              ]}
+              onPress={() => setShowReviewForm(true)}
+              testID="write-review-button"
+              accessibilityLabel="Write a review"
+              accessibilityRole="button"
+            >
+              <Text style={styles.writeReviewText}>Write a Review</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.reviewFormContainer} testID="review-form-container">
+              <View style={styles.reviewFormHeader}>
+                <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
+                  Write Your Review
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setShowReviewForm(false)}
+                  testID="cancel-review"
+                  accessibilityLabel="Cancel review"
+                >
+                  <Text style={[styles.cancelText, { color: colors.muted }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+              <ReviewForm
+                onSubmit={submitReview}
+                isSubmitting={isReviewSubmitting}
+                testID="review-form"
+              />
+            </View>
           )}
         </View>
 
@@ -823,5 +864,28 @@ const styles = StyleSheet.create({
   viewAllText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  writeReviewButton: {
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  writeReviewText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  reviewFormContainer: {
+    marginTop: 16,
+  },
+  reviewFormHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  cancelText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

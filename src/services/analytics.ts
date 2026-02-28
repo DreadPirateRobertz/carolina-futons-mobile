@@ -38,6 +38,8 @@ export type AnalyticsEventName =
   | 'ar_save_to_gallery'
   | 'ar_save_to_wishlist'
   | 'ar_add_to_cart'
+  | 'submit_review'
+  | 'helpful_vote'
   | 'ar_surface_detected'
   | 'ar_surface_tracking'
   | 'ar_furniture_placed'
@@ -238,6 +240,12 @@ export const events = {
   },
   arAddToCart(modelId: string, fabricId: string, price: number) {
     trackEvent('ar_add_to_cart', { model_id: modelId, fabric_id: fabricId, price });
+  },
+  submitReview(productId: string, rating: number) {
+    trackEvent('submit_review', { product_id: productId, rating });
+  },
+  helpfulVote(reviewId: string, productId: string) {
+    trackEvent('helpful_vote', { review_id: reviewId, product_id: productId });
   },
   arSurfaceDetected(planeType: string, confidence: number) {
     trackEvent('ar_surface_detected', { plane_type: planeType, confidence });
