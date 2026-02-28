@@ -511,7 +511,132 @@ describeARScreen('AR Accessibility', () => {
 });
 
 // ============================================================================
-// 9. 3D Model Catalog — PoC Model Validation
+// 9. Edge Cases & Error States
+// ============================================================================
+describeARScreen('Edge Cases & Error States', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('defaults to first model when initialModelId is invalid', () => {
+    const { getAllByText } = renderAR({ initialModelId: 'nonexistent-model-xyz' });
+    // Should fall back to FUTON_MODELS[0]
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('defaults to first model when initialModelId is undefined', () => {
+    const { getAllByText } = renderAR({});
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('defaults to first model when initialModelId is empty string', () => {
+    const { getAllByText } = renderAR({ initialModelId: '' });
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('camera permission denied shows permission screen with grant button', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+
+    const { getByTestId, queryByTestId } = renderAR();
+    expect(getByTestId('ar-permission')).toBeTruthy();
+    expect(getByTestId('ar-grant-permission')).toBeTruthy();
+    // AR screen should NOT render when permission denied
+    expect(queryByTestId('ar-screen')).toBeNull();
+
+    // Reset mock for other tests
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('camera permission pending shows loading state', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
+
+    const { getByTestId, queryByTestId } = renderAR();
+    expect(getByTestId('ar-loading')).toBeTruthy();
+    expect(queryByTestId('ar-screen')).toBeNull();
+
+    // Reset mock
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('permission dismiss button calls onClose', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+
+    const onClose = jest.fn();
+    const { getByTestId } = renderAR({ onClose });
+    fireEvent.press(getByTestId('ar-permission-dismiss'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    // Reset mock
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('selecting same model again is a no-op (no crash)', () => {
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    // Press the already-selected model multiple times
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    expect(getByTestId('ar-screen')).toBeTruthy();
+  });
+
+  it('selecting same fabric again is a no-op (no crash)', () => {
+    const { getByTestId } = renderAR();
+    const firstFabric = FABRICS[0];
+    fireEvent.press(getByTestId(`ar-fabric-${firstFabric.id}`));
+    fireEvent.press(getByTestId(`ar-fabric-${firstFabric.id}`));
+    expect(getByTestId('ar-screen')).toBeTruthy();
+  });
+
+  it('add-to-cart fires analytics with correct model+fabric+price', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.arAddToCart.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    // Select a premium fabric
+    fireEvent.press(getByTestId('ar-fabric-charcoal')); // +$49
+    fireEvent.press(getByTestId('ar-add-to-cart'));
+
+    expect(mockEvents.arAddToCart).toHaveBeenCalledWith(
+      'asheville-full',
+      'charcoal',
+      349 + 49, // base + fabric premium
+    );
+  });
+
+  it('model switch fires analytics event', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.arModelSelected.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
+
+    expect(mockEvents.arModelSelected).toHaveBeenCalledWith(
+      'blue-ridge-queen',
+      'prod-blue-ridge-queen',
+    );
+  });
+
+  it('fabric switch fires analytics event', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.selectFabric.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    fireEvent.press(getByTestId('ar-fabric-sunset-coral'));
+
+    expect(mockEvents.selectFabric).toHaveBeenCalledWith(
+      'prod-asheville-full',
+      'sunset-coral',
+    );
+  });
+});
+
+// ============================================================================
+// 10. 3D Model Catalog — PoC Model Validation
 // ============================================================================
 
 let models3d: any;
@@ -576,7 +701,7 @@ describeWithModels3D('3D Model Catalog — PoC Validation', () => {
 });
 
 // ============================================================================
-// 10. Web Platform AR Flow — Integration
+// 11. Web Platform AR Flow — Integration
 // ============================================================================
 
 let openARViewerModule: any;
