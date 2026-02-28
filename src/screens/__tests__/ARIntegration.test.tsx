@@ -71,6 +71,35 @@ jest.mock('react-native-reanimated', () => {
 const mockTrackEvent = jest.fn();
 jest.mock('@/services/analytics', () => ({
   trackEvent: (...args: any[]) => mockTrackEvent(...args),
+  events: {
+    addToCart: jest.fn(),
+    removeFromCart: jest.fn(),
+    addToWishlist: jest.fn(),
+    removeFromWishlist: jest.fn(),
+    shareWishlist: jest.fn(),
+    search: jest.fn(),
+    filterCategory: jest.fn(),
+    sortProducts: jest.fn(),
+    viewProduct: jest.fn(),
+    openAR: jest.fn(),
+    selectFabric: jest.fn(),
+    purchase: jest.fn(),
+    deepLinkOpened: jest.fn(),
+    arScreenshot: jest.fn(),
+    arShare: jest.fn(),
+    arSaveToGallery: jest.fn(),
+    arSaveToWishlist: jest.fn(),
+    arViewInRoomTap: jest.fn(),
+    arModelSelected: jest.fn(),
+    arAddToCart: jest.fn(),
+    submitReview: jest.fn(),
+    helpfulVote: jest.fn(),
+    arSurfaceDetected: jest.fn(),
+    arSurfaceTracking: jest.fn(),
+    arFurniturePlaced: jest.fn(),
+    arLightingWarning: jest.fn(),
+    arProductPickerOpen: jest.fn(),
+  },
 }));
 
 // --- Test Fixtures ---
