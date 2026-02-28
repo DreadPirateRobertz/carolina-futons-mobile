@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { FutonModel, Fabric } from '@/data/futons';
 
 export interface CartItem {
@@ -17,7 +17,8 @@ type CartAction =
   | { type: 'ADD_ITEM'; model: FutonModel; fabric: Fabric; quantity: number }
   | { type: 'REMOVE_ITEM'; itemId: string }
   | { type: 'UPDATE_QUANTITY'; itemId: string; quantity: number }
-  | { type: 'CLEAR' };
+  | { type: 'CLEAR' }
+  | { type: 'LOAD'; items: CartItem[] };
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -59,6 +60,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
     case 'CLEAR':
       return { items: [] };
+    case 'LOAD':
+      return { items: action.items };
     default:
       return state;
   }
@@ -76,8 +79,44 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+const CART_STORAGE_KEY = 'cfutons_cart';
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+
+  // Load from AsyncStorage on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const AsyncStorage = await import('@react-native-async-storage/async-storage').then(
+          (m) => m.default,
+        );
+        const stored = await AsyncStorage.getItem(CART_STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored) as CartItem[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            dispatch({ type: 'LOAD', items: parsed });
+          }
+        }
+      } catch {
+        // AsyncStorage not available — operate in-memory
+      }
+    })();
+  }, []);
+
+  // Persist to AsyncStorage whenever items change
+  useEffect(() => {
+    (async () => {
+      try {
+        const AsyncStorage = await import('@react-native-async-storage/async-storage').then(
+          (m) => m.default,
+        );
+        await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state.items));
+      } catch {
+        // no-op
+      }
+    })();
+  }, [state.items]);
 
   const addItem = useCallback((model: FutonModel, fabric: Fabric, quantity: number) => {
     dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
