@@ -5,6 +5,11 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
+  useRoute: () => ({ params: {} }),
+}));
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
@@ -380,7 +385,7 @@ describe('ProductDetailScreen', () => {
   describe('AR CTA', () => {
     it('renders AR button', () => {
       const { getByTestId } = renderDetail();
-      expect(getByTestId('detail-ar-button')).toBeTruthy();
+      expect(getByTestId('ar-cta-button')).toBeTruthy();
     });
 
     it('shows try in room text', () => {
@@ -394,18 +399,18 @@ describe('ProductDetailScreen', () => {
         productId: 'blue-ridge-queen',
         onOpenAR,
       });
-      fireEvent.press(getByTestId('detail-ar-button'));
+      fireEvent.press(getByTestId('ar-cta-button'));
       expect(onOpenAR).toHaveBeenCalledWith('blue-ridge-queen');
     });
 
     it('does not crash when onOpenAR not provided', () => {
       const { getByTestId } = renderDetail();
-      expect(() => fireEvent.press(getByTestId('detail-ar-button'))).not.toThrow();
+      expect(() => fireEvent.press(getByTestId('ar-cta-button'))).not.toThrow();
     });
 
     it('has accessibility label with model name', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      const btn = getByTestId('detail-ar-button');
+      const btn = getByTestId('ar-cta-button');
       expect(btn.props.accessibilityLabel).toBe('Try The Asheville in your room with AR camera');
     });
   });

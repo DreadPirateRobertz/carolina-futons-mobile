@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
 import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 import { formatPrice, openARViewer } from '@/utils';
@@ -44,6 +45,7 @@ export function ProductDetailScreen({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
+  const navigation = useNavigation<any>();
 
   const model = FUTON_MODELS.find((m) => m.id === productId) ?? FUTON_MODELS[0];
   const catalogProduct = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
@@ -95,13 +97,17 @@ export function ProductDetailScreen({
 
   const handleOpenAR = useCallback(() => {
     onOpenAR?.(model.id);
-    // Use catalog URLs if available, otherwise fall back to default URL construction
-    const model3d = getModel3DForProduct(catalogProduct.id);
-    const assets = model3d
-      ? { usdzUrl: model3d.usdzUrl, glbUrl: model3d.glbUrl }
-      : undefined;
-    openARViewer(model.id, model.name, { assets });
-  }, [model.id, model.name, catalogProduct.id, onOpenAR]);
+    openARViewer(model.id, model.name, {
+      onWebModelView: (params) => {
+        navigation.navigate('ARWeb', {
+          glbUrl: params.glbUrl,
+          usdzUrl: params.usdzUrl,
+          title: params.modelName,
+          productId: params.modelId,
+        });
+      },
+    });
+  }, [model.id, model.name, navigation, onOpenAR]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -410,7 +416,7 @@ export function ProductDetailScreen({
               },
             ]}
             onPress={handleOpenAR}
-            testID="detail-ar-button"
+            testID="ar-cta-button"
             accessibilityLabel={`Try ${model.name} in your room with AR camera`}
             accessibilityRole="button"
           >
