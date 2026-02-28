@@ -12,10 +12,11 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
-import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
+import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 import { formatPrice, openARViewer } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
-import { PRODUCTS } from '@/data/products';
+import { useFutonModels } from '@/hooks/useFutonModels';
+import { useProduct } from '@/hooks/useProduct';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
@@ -45,8 +46,10 @@ export function ProductDetailScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
-  const model = FUTON_MODELS.find((m) => m.id === productId) ?? FUTON_MODELS[0];
-  const catalogProduct = PRODUCTS.find((p) => p.id === productId) ?? PRODUCTS[0];
+  const { models, getModel } = useFutonModels();
+  const model = getModel(productId ?? '') ?? models[0];
+  const catalogProductId = productId ? `prod-${productId}` : '';
+  const { product: catalogProduct } = useProduct(catalogProductId);
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -102,11 +105,11 @@ export function ProductDetailScreen({
           glbUrl: params.glbUrl,
           usdzUrl: params.usdzUrl,
           title: params.modelName,
-          productId: catalogProduct.id,
+          productId: catalogProduct?.id ?? `prod-${model.id}`,
         });
       },
     });
-  }, [model.id, model.name, catalogProduct.id, onOpenAR, navigation]);
+  }, [model.id, model.name, catalogProduct?.id, onOpenAR, navigation]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -152,9 +155,11 @@ export function ProductDetailScreen({
         )}
 
         {/* Wishlist button */}
-        <View style={styles.wishlistButtonContainer}>
-          <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
-        </View>
+        {catalogProduct && (
+          <View style={styles.wishlistButtonContainer}>
+            <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
+          </View>
+        )}
 
         {/* Image Gallery */}
         <FlatList
