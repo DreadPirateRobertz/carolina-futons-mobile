@@ -322,6 +322,44 @@ export class WixClient {
     };
   }
 
+  // ── Wix Data (Custom CMS Collections) ───────────────────────
+
+  async queryData<T = Record<string, unknown>>(
+    collectionId: string,
+    options: {
+      filter?: Record<string, unknown>;
+      sort?: { fieldName: string; order: 'ASC' | 'DESC' }[];
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<{ items: T[]; totalResults: number }> {
+    if (!collectionId) throw new WixApiError('Collection ID is required');
+
+    const { filter, sort, limit = 50, offset = 0 } = options;
+
+    const body = {
+      dataCollectionId: collectionId,
+      query: {
+        paging: {
+          limit: Math.min(Math.max(1, limit), 100),
+          offset: Math.max(0, offset),
+        },
+        ...(filter ? { filter } : {}),
+        ...(sort?.length ? { sort } : {}),
+      },
+    };
+
+    const data = await this.post<{
+      dataItems: { data: T }[];
+      pagingMetadata: { total: number };
+    }>('/wix-data/v2/items/query', body);
+
+    return {
+      items: (data.dataItems ?? []).map((item) => item.data),
+      totalResults: data.pagingMetadata?.total ?? 0,
+    };
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {

@@ -457,6 +457,70 @@ describe('WixClient', () => {
       expect(result.variants).toHaveLength(0);
     });
   });
+
+  // ============================================================
+  // queryData (generic CMS collection queries)
+  // ============================================================
+
+  describe('queryData', () => {
+    it('queries a custom CMS collection', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({
+          dataItems: [
+            { data: { _id: 'rev-1', productId: 'prod-1', rating: 5, body: 'Great!' } },
+            { data: { _id: 'rev-2', productId: 'prod-1', rating: 4, body: 'Good' } },
+          ],
+          pagingMetadata: { total: 2 },
+        }),
+      );
+
+      const client = new WixClient(TEST_CONFIG);
+      const result = await client.queryData('Reviews', {
+        filter: { productId: { $eq: 'prod-1' }, status: { $eq: 'approved' } },
+        sort: [{ fieldName: '_createdDate', order: 'DESC' }],
+        limit: 10,
+      });
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0]).toEqual({ _id: 'rev-1', productId: 'prod-1', rating: 5, body: 'Great!' });
+      expect(result.totalResults).toBe(2);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.dataCollectionId).toBe('Reviews');
+      expect(body.query.filter.productId).toEqual({ $eq: 'prod-1' });
+    });
+
+    it('sends correct endpoint', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }),
+      );
+
+      const client = new WixClient(TEST_CONFIG);
+      await client.queryData('SomeCollection');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/wix-data/v2/items/query',
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
+    it('rejects empty collection ID', async () => {
+      const client = new WixClient(TEST_CONFIG);
+      await expect(client.queryData('')).rejects.toThrow('Collection ID is required');
+    });
+
+    it('handles empty result set', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }),
+      );
+
+      const client = new WixClient(TEST_CONFIG);
+      const result = await client.queryData('Reviews');
+
+      expect(result.items).toEqual([]);
+      expect(result.totalResults).toBe(0);
+    });
+  });
 });
 
 // ============================================================
