@@ -16,6 +16,17 @@ export interface ARModelAssets {
   glbUrl: string; // Android Scene Viewer
 }
 
+export interface WebModelViewParams {
+  glbUrl: string;
+  usdzUrl: string;
+  modelId: string;
+  modelName: string;
+}
+
+export interface OpenARViewerOptions {
+  onWebModelView?: (params: WebModelViewParams) => void;
+}
+
 /**
  * Resolve AR asset URLs for a model ID (slug without `prod-` prefix).
  * Looks up the 3D model catalog first for pipeline-generated URLs;
@@ -53,7 +64,11 @@ export function buildSceneViewerUrl(glbUrl: string, title: string): string {
  * - iOS: Opens .usdz URL which triggers Apple Quick Look AR natively
  * - Android: Opens Scene Viewer intent with .glb model
  */
-export async function openARViewer(modelId: string, modelName: string): Promise<void> {
+export async function openARViewer(
+  modelId: string,
+  modelName: string,
+  options?: OpenARViewerOptions,
+): Promise<void> {
   const assets = getARModelAssets(modelId);
 
   if (Platform.OS === 'ios') {
@@ -90,6 +105,15 @@ export async function openARViewer(modelId: string, modelName: string): Promise<
       }
     }
   } else {
-    Alert.alert('AR Not Available', 'AR viewing is only available on mobile devices.');
+    if (options?.onWebModelView) {
+      options.onWebModelView({
+        glbUrl: assets.glbUrl,
+        usdzUrl: assets.usdzUrl,
+        modelId,
+        modelName,
+      });
+    } else {
+      Alert.alert('AR Not Available', 'AR viewing is only available on mobile devices.');
+    }
   }
 }
