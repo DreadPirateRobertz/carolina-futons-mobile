@@ -131,11 +131,15 @@ describe('Notification → Deep Link → Screen routing', () => {
 
 describe('UTM tracking through notification deep links', () => {
   it('preserves UTM params through the full pipeline', () => {
-    const { utm } = notificationToRoute('promotion', { productId: 'asheville-full' }, {
-      utm_source: 'push',
-      utm_medium: 'notification',
-      utm_campaign: 'spring-sale',
-    });
+    const { utm } = notificationToRoute(
+      'promotion',
+      { productId: 'asheville-full' },
+      {
+        utm_source: 'push',
+        utm_medium: 'notification',
+        utm_campaign: 'spring-sale',
+      },
+    );
 
     expect(utm).not.toBeNull();
     expect(utm!.source).toBe('push');
@@ -144,11 +148,15 @@ describe('UTM tracking through notification deep links', () => {
   });
 
   it('tracks UTM for order update notifications', () => {
-    const { utm, route } = notificationToRoute('order_update', { orderId: 'ord-123' }, {
-      utm_source: 'push',
-      utm_medium: 'transactional',
-      utm_campaign: 'order-shipped',
-    });
+    const { utm, route } = notificationToRoute(
+      'order_update',
+      { orderId: 'ord-123' },
+      {
+        utm_source: 'push',
+        utm_medium: 'transactional',
+        utm_campaign: 'order-shipped',
+      },
+    );
 
     expect(route).toEqual({ screen: 'OrderDetail', params: { orderId: 'ord-123' } });
     expect(utm!.source).toBe('push');
@@ -175,9 +183,13 @@ describe('UTM tracking through notification deep links', () => {
   });
 
   it('partial UTM params are preserved', () => {
-    const { utm } = notificationToRoute('promotion', { productId: 'asheville-full' }, {
-      utm_source: 'push',
-    });
+    const { utm } = notificationToRoute(
+      'promotion',
+      { productId: 'asheville-full' },
+      {
+        utm_source: 'push',
+      },
+    );
     expect(utm).not.toBeNull();
     expect(utm!.source).toBe('push');
     expect(utm!.medium).toBeNull();
@@ -190,7 +202,12 @@ describe('UTM tracking through notification deep links', () => {
 // ============================================================================
 
 describe('Notification preference gating before deep link routing', () => {
-  const allTypes: NotificationType[] = ['order_update', 'promotion', 'back_in_stock', 'cart_reminder'];
+  const allTypes: NotificationType[] = [
+    'order_update',
+    'promotion',
+    'back_in_stock',
+    'cart_reminder',
+  ];
 
   it('default preferences allow order_update, promotion, back_in_stock but not cart_reminder', () => {
     expect(shouldShowNotification('order_update', DEFAULT_PREFERENCES)).toBe(true);
@@ -296,7 +313,12 @@ describe('Edge cases in notification deep link pipeline', () => {
   });
 
   it('all notification types produce valid deep links', () => {
-    const types: NotificationType[] = ['order_update', 'promotion', 'back_in_stock', 'cart_reminder'];
+    const types: NotificationType[] = [
+      'order_update',
+      'promotion',
+      'back_in_stock',
+      'cart_reminder',
+    ];
     for (const type of types) {
       const deepLink = getDeepLinkForNotification(type);
       expect(deepLink).toMatch(/^carolinafutons:\/\//);
@@ -306,7 +328,8 @@ describe('Edge cases in notification deep link pipeline', () => {
   });
 
   it('deep link with both path params and UTM params', () => {
-    const deepLink = 'carolinafutons://orders/ord-999?utm_source=push&utm_medium=transactional&utm_campaign=delivery';
+    const deepLink =
+      'carolinafutons://orders/ord-999?utm_source=push&utm_medium=transactional&utm_campaign=delivery';
     const parsed = parseDeepLink(deepLink);
     const route = resolveRoute(parsed);
 

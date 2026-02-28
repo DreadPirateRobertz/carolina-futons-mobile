@@ -129,9 +129,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('renders for frame products', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} product={frameProduct} />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} product={frameProduct} />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
@@ -160,9 +158,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('renders with custom testID', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />);
       expect(getByTestId('custom-ar-btn')).toBeTruthy();
     });
   });
@@ -173,18 +169,14 @@ describeIfImplemented('ViewInRoomButton', () => {
   describe('Interaction', () => {
     it('calls onPress with product when tapped', () => {
       const onPress = jest.fn();
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} onPress={onPress} />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} onPress={onPress} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(onPress).toHaveBeenCalledWith(futonProduct);
     });
 
     it('does not crash when onPress is not provided', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton product={futonProduct} />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton product={futonProduct} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
     });
 
@@ -231,16 +223,12 @@ describeIfImplemented('ViewInRoomButton', () => {
   // ==========================================================================
   describe('Size Variants', () => {
     it('renders compact size variant (for ProductCard)', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} size="compact" />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="compact" />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('renders full size variant (for ProductDetailScreen)', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} size="full" />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="full" />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
@@ -251,9 +239,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('compact variant still shows icon', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} size="compact" />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="compact" />);
       expect(getByTestId('view-in-room-camera-icon')).toBeTruthy();
     });
   });
@@ -272,9 +258,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('shows disabled accessibility state when disabled', () => {
-      const { getByTestId } = render(
-        <ViewInRoomButton {...defaultProps} disabled />,
-      );
+      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} disabled />);
       expect(getByTestId('view-in-room-btn').props.accessibilityState).toEqual(
         expect.objectContaining({ disabled: true }),
       );

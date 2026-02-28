@@ -14,3 +14,4 @@ export { OfflineBanner } from './OfflineBanner';
 export { WishlistButton } from './WishlistButton';
 export { ErrorBoundary } from './ErrorBoundary';
 export { StoreCard } from './StoreCard';
+export { PlaneIndicator } from './PlaneIndicator';

@@ -39,6 +39,10 @@ export type AnalyticsEventName =
   | 'ar_save_to_wishlist'
   | 'ar_add_to_cart'
   | 'ar_product_picker_open'
+  | 'ar_surface_detected'
+  | 'ar_surface_tracking'
+  | 'ar_furniture_placed'
+  | 'ar_lighting_warning'
   | 'error';
 
 export interface AnalyticsEvent {
@@ -237,5 +241,17 @@ export const events = {
   },
   arProductPickerOpen(currentModelId: string) {
     trackEvent('ar_product_picker_open', { current_model_id: currentModelId });
+  },
+  arSurfaceDetected(planeType: string, confidence: number) {
+    trackEvent('ar_surface_detected', { plane_type: planeType, confidence });
+  },
+  arSurfaceTracking(planeCount: number) {
+    trackEvent('ar_surface_tracking', { plane_count: planeCount });
+  },
+  arFurniturePlaced(modelId: string, planeId: string) {
+    trackEvent('ar_furniture_placed', { model_id: modelId, plane_id: planeId });
+  },
+  arLightingWarning(condition: string) {
+    trackEvent('ar_lighting_warning', { condition });
   },
 } as const;

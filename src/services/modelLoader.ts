@@ -96,7 +96,7 @@ export async function ensureCacheDir(): Promise<void> {
 /** Check if a model is already cached and valid */
 export async function getCachedModel(
   productId: string,
-  contentHash: string
+  contentHash: string,
 ): Promise<string | null> {
   const filePath = getCacheFilePath(productId, contentHash);
   const info = await FileSystem.getInfoAsync(filePath);
@@ -104,7 +104,7 @@ export async function getCachedModel(
     // Touch the access time in manifest
     const manifest = await readManifest();
     const entry = manifest.entries.find(
-      (e) => e.productId === productId && e.contentHash === contentHash
+      (e) => e.productId === productId && e.contentHash === contentHash,
     );
     if (entry) {
       entry.lastAccessedMs = Date.now();
@@ -123,7 +123,7 @@ export function calculateCacheSize(manifest: CacheManifest): number {
 /** Evict least-recently-used entries until we have room for newBytes */
 export async function evictIfNeeded(
   manifest: CacheManifest,
-  newBytes: number
+  newBytes: number,
 ): Promise<CacheManifest> {
   let currentSize = calculateCacheSize(manifest);
   // Sort by lastAccessed ascending (oldest first)
@@ -140,7 +140,7 @@ export async function evictIfNeeded(
       // File may already be gone
     }
     const idx = remaining.findIndex(
-      (e) => e.productId === entry.productId && e.contentHash === entry.contentHash
+      (e) => e.productId === entry.productId && e.contentHash === entry.contentHash,
     );
     if (idx !== -1) {
       remaining.splice(idx, 1);
@@ -162,7 +162,7 @@ export async function evictIfNeeded(
  */
 export async function loadModelForProduct(
   productId: string,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
 ): Promise<string | null> {
   const notify = onProgress ?? (() => {});
 
@@ -204,7 +204,7 @@ export async function loadModelForProduct(
             ? downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite
             : 0;
         notify({ state: 'downloading', progress });
-      }
+      },
     );
 
     const result = await downloadResumable.downloadAsync();

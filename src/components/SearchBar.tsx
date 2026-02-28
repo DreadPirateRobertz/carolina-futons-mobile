@@ -98,7 +98,11 @@ export function SearchBar({
         <View
           style={[
             styles.dropdown,
-            { backgroundColor: colors.sandLight, borderBottomLeftRadius: borderRadius.lg, borderBottomRightRadius: borderRadius.lg },
+            {
+              backgroundColor: colors.sandLight,
+              borderBottomLeftRadius: borderRadius.lg,
+              borderBottomRightRadius: borderRadius.lg,
+            },
           ]}
           testID="search-dropdown"
         >
@@ -146,7 +150,10 @@ export function SearchBar({
                     testID={`recent-${query}`}
                   >
                     <Text style={[styles.dropdownIcon, { color: colors.muted }]}>🕐</Text>
-                    <Text style={[styles.dropdownText, { color: colors.espresso }]} numberOfLines={1}>
+                    <Text
+                      style={[styles.dropdownText, { color: colors.espresso }]}
+                      numberOfLines={1}
+                    >
                       {query}
                     </Text>
                   </TouchableOpacity>

@@ -27,10 +27,7 @@ import {
  * Helper: full pipeline from notification to resolved route.
  * Simulates what happens when a user taps a push notification.
  */
-function notificationToRoute(
-  type: NotificationType,
-  data?: Record<string, string>,
-): DeepLinkRoute {
+function notificationToRoute(type: NotificationType, data?: Record<string, string>): DeepLinkRoute {
   const url = getDeepLinkForNotification(type, data);
   const parsed = parseDeepLink(url);
   return resolveRoute(parsed);
@@ -173,8 +170,7 @@ describe('UTM tracking in notification deep links', () => {
     // NOTE: parseDeepLink uses decodeURIComponent which does not decode '+' as space.
     // Standard query string encoding uses '+' for spaces, but decodeURIComponent only
     // handles %XX encoding. This is a known limitation — use %20 for spaces in UTM params.
-    const url =
-      'https://carolinafutons.com/shop?utm_source=google&utm_term=futon+sale';
+    const url = 'https://carolinafutons.com/shop?utm_source=google&utm_term=futon+sale';
     const parsed = parseDeepLink(url);
     expect(parsed.utm!.term).toBe('futon+sale'); // not 'futon sale'
   });
@@ -262,9 +258,7 @@ describe('Notification preferences gate deep link generation', () => {
   });
 
   it('only cart_reminder is disabled by default', () => {
-    const enabledByDefault = allTypes.filter((t) =>
-      shouldShowNotification(t, DEFAULT_PREFERENCES),
-    );
+    const enabledByDefault = allTypes.filter((t) => shouldShowNotification(t, DEFAULT_PREFERENCES));
     const disabledByDefault = allTypes.filter(
       (t) => !shouldShowNotification(t, DEFAULT_PREFERENCES),
     );

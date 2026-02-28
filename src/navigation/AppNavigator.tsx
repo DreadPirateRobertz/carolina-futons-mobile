@@ -48,16 +48,8 @@ export function AppNavigator() {
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
       <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-      <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ presentation: 'modal' }}
-      />
-      <Stack.Screen
-        name="SignUp"
-        component={SignUpScreen}
-        options={{ presentation: 'modal' }}
-      />
+      <Stack.Screen name="Login" component={LoginScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen name="SignUp" component={SignUpScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
       <Stack.Screen name="Wishlist" component={WishlistScreen} />
