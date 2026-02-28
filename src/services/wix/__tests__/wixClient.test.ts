@@ -6,6 +6,9 @@ import {
   transformWixProduct,
   transformWixCollection,
   WixApiError,
+  setCollectionCategoryMap,
+  getCollectionCategoryMap,
+  resolveCategory,
 } from '../wixClient';
 import type { Product, ProductCategory } from '@/data/products';
 
@@ -314,6 +317,45 @@ describe('WixClient', () => {
   });
 
   // ============================================================
+  // getProductBySlug
+  // ============================================================
+
+  describe('getProductBySlug', () => {
+    it('fetches product by slug via query filter', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({
+          products: [WIX_PRODUCT_FIXTURE],
+          totalResults: 1,
+        }),
+      );
+
+      const client = new WixClient(TEST_CONFIG);
+      const product = await client.getProductBySlug('asheville-full-futon');
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.query.filter).toEqual({ slug: { $eq: 'asheville-full-futon' } });
+      expect(body.query.paging.limit).toBe(1);
+      expect(product.name).toBe('The Asheville Full Futon');
+    });
+
+    it('throws WixApiError when product not found by slug', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ products: [], totalResults: 0 }),
+      );
+
+      const client = new WixClient(TEST_CONFIG);
+      await expect(client.getProductBySlug('nonexistent')).rejects.toThrow(
+        'Product not found: nonexistent',
+      );
+    });
+
+    it('rejects empty slug', async () => {
+      const client = new WixClient(TEST_CONFIG);
+      await expect(client.getProductBySlug('')).rejects.toThrow('Product slug is required');
+    });
+  });
+
+  // ============================================================
   // queryCollections
   // ============================================================
 
@@ -529,5 +571,52 @@ describe('transformWixCollection', () => {
     const collection = transformWixCollection(noMedia as WixCollection);
 
     expect(collection.imageUrl).toBeUndefined();
+  });
+});
+
+// ============================================================
+// Collection → Category mapping
+// ============================================================
+
+describe('collection-category mapping', () => {
+  it('resolves known collection slugs to ProductCategory', () => {
+    expect(resolveCategory('futons')).toBe('futons');
+    expect(resolveCategory('murphy-beds')).toBe('murphy-beds');
+    expect(resolveCategory('covers')).toBe('covers');
+    expect(resolveCategory('mattresses')).toBe('mattresses');
+    expect(resolveCategory('frames')).toBe('frames');
+    expect(resolveCategory('pillows')).toBe('pillows');
+    expect(resolveCategory('accessories')).toBe('accessories');
+  });
+
+  it('resolves alternate collection slugs (aliases)', () => {
+    expect(resolveCategory('murphy-cabinet-beds')).toBe('murphy-beds');
+    expect(resolveCategory('futon-covers')).toBe('covers');
+    expect(resolveCategory('futon-mattresses')).toBe('mattresses');
+    expect(resolveCategory('futon-frames')).toBe('frames');
+  });
+
+  it('defaults unknown slugs to futons', () => {
+    expect(resolveCategory('unknown-collection')).toBe('futons');
+    expect(resolveCategory('')).toBe('futons');
+  });
+
+  it('allows overriding the collection map', () => {
+    const original = getCollectionCategoryMap();
+
+    setCollectionCategoryMap({ 'custom-collection': 'pillows' as ProductCategory });
+    expect(resolveCategory('custom-collection')).toBe('pillows');
+    expect(resolveCategory('futons')).toBe('futons'); // Default still works? No — map was replaced
+
+    // Restore
+    setCollectionCategoryMap(original);
+    expect(resolveCategory('futons')).toBe('futons');
+  });
+
+  it('getCollectionCategoryMap returns a copy (not reference)', () => {
+    const map1 = getCollectionCategoryMap();
+    const map2 = getCollectionCategoryMap();
+    expect(map1).toEqual(map2);
+    expect(map1).not.toBe(map2); // Different object references
   });
 });

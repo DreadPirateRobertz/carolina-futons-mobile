@@ -3,6 +3,9 @@ export {
   WixApiError,
   transformWixProduct,
   transformWixCollection,
+  setCollectionCategoryMap,
+  getCollectionCategoryMap,
+  resolveCategory,
   type WixClientConfig,
   type WixProduct,
   type WixCollection,
@@ -18,3 +21,5 @@ export {
   useWixProducts,
   useWixCollections,
 } from './wixProvider';
+
+export { getWixConfig, isWixConfigured } from './config';

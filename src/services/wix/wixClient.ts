@@ -133,6 +133,38 @@ export class WixApiError extends Error {
   }
 }
 
+// ── Collection → Category mapping ──────────────────────────────
+// Maps Wix collection slugs to our local ProductCategory type.
+// This is configurable so the app can adapt to collection name changes.
+
+const DEFAULT_COLLECTION_MAP: Record<string, ProductCategory> = {
+  futons: 'futons',
+  'murphy-beds': 'murphy-beds',
+  'murphy-cabinet-beds': 'murphy-beds',
+  covers: 'covers',
+  'futon-covers': 'covers',
+  mattresses: 'mattresses',
+  'futon-mattresses': 'mattresses',
+  frames: 'frames',
+  'futon-frames': 'frames',
+  pillows: 'pillows',
+  accessories: 'accessories',
+};
+
+let collectionMap = { ...DEFAULT_COLLECTION_MAP };
+
+export function setCollectionCategoryMap(map: Record<string, ProductCategory>): void {
+  collectionMap = { ...map };
+}
+
+export function getCollectionCategoryMap(): Record<string, ProductCategory> {
+  return { ...collectionMap };
+}
+
+export function resolveCategory(collectionSlug: string): ProductCategory {
+  return collectionMap[collectionSlug] ?? ('futons' as ProductCategory);
+}
+
 // ── Sort mapping ───────────────────────────────────────────────
 
 const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
@@ -203,6 +235,28 @@ export class WixClient {
     );
 
     return transformWixProduct(data.product);
+  }
+
+  async getProductBySlug(slug: string): Promise<Product> {
+    if (!slug) throw new WixApiError('Product slug is required');
+
+    const body = {
+      query: {
+        filter: { slug: { $eq: slug } },
+        paging: { limit: 1 },
+      },
+    };
+
+    const data = await this.post<{ products: WixProduct[]; totalResults: number }>(
+      '/stores-reader/v1/products/query',
+      body,
+    );
+
+    if (!data.products?.length) {
+      throw new WixApiError(`Product not found: ${slug}`, 404);
+    }
+
+    return transformWixProduct(data.products[0]);
   }
 
   // ── Collections ────────────────────────────────────────────
