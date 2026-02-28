@@ -11,3 +11,10 @@ export {
   type QueryProductsOptions,
   type QueryCollectionsOptions,
 } from './wixClient';
+
+export {
+  WixProvider,
+  useWixClient,
+  useWixProducts,
+  useWixCollections,
+} from './wixProvider';
