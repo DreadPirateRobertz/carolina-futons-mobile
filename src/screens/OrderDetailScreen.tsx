@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
 import { useCart } from '@/hooks/useCart';
-import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { useOrders } from '@/hooks/useOrders';
+import { useFutonModels } from '@/hooks/useFutonModels';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -35,9 +36,12 @@ export function OrderDetailScreen({
   const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
+  const { getOrder, orders: hookOrders } = useOrders();
+  const { getModel, getFabric } = useFutonModels();
 
-  const allOrders = ordersProp ?? MOCK_ORDERS;
-  const order = allOrders.find((o) => o.id === orderId);
+  const order = ordersProp
+    ? ordersProp.find((o) => o.id === orderId)
+    : getOrder(orderId);
 
   const formatDate = useCallback((iso: string) => {
     const d = new Date(iso);
@@ -59,8 +63,8 @@ export function OrderDetailScreen({
     if (!order) return;
     let added = 0;
     for (const item of order.items) {
-      const model = FUTON_MODELS.find((m) => m.id === item.modelId);
-      const fabric = FABRICS.find((f) => f.id === item.fabricId);
+      const model = getModel(item.modelId);
+      const fabric = getFabric(item.fabricId);
       if (model && fabric) {
         addItem(model, fabric, item.quantity);
         added++;
@@ -70,7 +74,7 @@ export function OrderDetailScreen({
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
     onReorderSuccess?.();
-  }, [order, addItem, onReorderSuccess]);
+  }, [order, addItem, onReorderSuccess, getModel, getFabric]);
 
   if (!order) {
     return (

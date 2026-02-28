@@ -123,6 +123,23 @@ describe('OrderHistoryScreen', () => {
     });
   });
 
+  describe('Hook Integration (useOrders)', () => {
+    it('renders mock orders from useOrders hook when no orders prop given', () => {
+      const { getByTestId } = renderOrderHistory();
+      // Should render orders from the hook (same as MOCK_ORDERS)
+      expect(getByTestId('order-list')).toBeTruthy();
+      expect(getByTestId('order-card-ord-001')).toBeTruthy();
+    });
+
+    it('orders prop overrides hook data', () => {
+      const { queryByTestId, getByTestId } = renderOrderHistory({
+        orders: [],
+      });
+      expect(getByTestId('orders-empty-state')).toBeTruthy();
+      expect(queryByTestId('order-card-ord-001')).toBeNull();
+    });
+  });
+
   describe('Custom orders prop', () => {
     const customOrders: Order[] = [
       {
