@@ -102,4 +102,54 @@ describe('useOrders', () => {
     const order = result.current.getOrder(MOCK_ORDERS[0].id);
     expect(order).toEqual(MOCK_ORDERS[0]);
   });
+
+  // --- Boundary conditions ---
+
+  it('every order has required fields', () => {
+    const { result } = renderHook(() => useOrders());
+    for (const order of result.current.orders) {
+      expect(order.id).toBeDefined();
+      expect(order.orderNumber).toBeDefined();
+      expect(order.status).toBeDefined();
+      expect(order.createdAt).toBeDefined();
+      expect(order.items.length).toBeGreaterThan(0);
+      expect(typeof order.total).toBe('number');
+      expect(order.shippingAddress).toBeDefined();
+      expect(order.paymentMethod).toBeDefined();
+    }
+  });
+
+  it('cycles through all status filters without error', () => {
+    const { result } = renderHook(() => useOrders());
+    const statuses: Array<'processing' | 'shipped' | 'delivered' | 'cancelled'> = [
+      'processing', 'shipped', 'delivered', 'cancelled',
+    ];
+    for (const status of statuses) {
+      act(() => {
+        result.current.setStatusFilter(status);
+      });
+      expect(result.current.orders.every((o) => o.status === status)).toBe(true);
+    }
+  });
+
+  it('getOrder with empty string returns undefined', () => {
+    const { result } = renderHook(() => useOrders());
+    expect(result.current.getOrder('')).toBeUndefined();
+  });
+
+  it('statusFilter state is null initially', () => {
+    const { result } = renderHook(() => useOrders());
+    expect(result.current.statusFilter).toBeNull();
+  });
+
+  it('order line items have valid price data', () => {
+    const { result } = renderHook(() => useOrders());
+    for (const order of result.current.orders) {
+      for (const item of order.items) {
+        expect(item.unitPrice).toBeGreaterThan(0);
+        expect(item.quantity).toBeGreaterThan(0);
+        expect(item.lineTotal).toBe(item.unitPrice * item.quantity);
+      }
+    }
+  });
 });

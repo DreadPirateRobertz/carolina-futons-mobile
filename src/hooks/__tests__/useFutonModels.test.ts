@@ -89,4 +89,59 @@ describe('useFutonModels', () => {
       expect(model.dimensions).toHaveProperty('seatHeight');
     }
   });
+
+  // --- Boundary conditions ---
+
+  it('every model has a valid basePrice > 0', () => {
+    const { result } = renderHook(() => useFutonModels());
+    for (const model of result.current.models) {
+      expect(model.basePrice).toBeGreaterThan(0);
+    }
+  });
+
+  it('every fabric has a color hex string', () => {
+    const { result } = renderHook(() => useFutonModels());
+    for (const fabric of result.current.fabrics) {
+      expect(fabric.color).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+
+  it('every fabric has a non-negative price', () => {
+    const { result } = renderHook(() => useFutonModels());
+    for (const fabric of result.current.fabrics) {
+      expect(fabric.price).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('getModel with empty string returns undefined', () => {
+    const { result } = renderHook(() => useFutonModels());
+    expect(result.current.getModel('')).toBeUndefined();
+  });
+
+  it('getFabric with empty string returns undefined', () => {
+    const { result } = renderHook(() => useFutonModels());
+    expect(result.current.getFabric('')).toBeUndefined();
+  });
+
+  it('all model IDs are unique', () => {
+    const { result } = renderHook(() => useFutonModels());
+    const ids = result.current.models.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('all fabric IDs are unique', () => {
+    const { result } = renderHook(() => useFutonModels());
+    const ids = result.current.fabrics.map((f) => f.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('model dimensions are positive numbers', () => {
+    const { result } = renderHook(() => useFutonModels());
+    for (const model of result.current.models) {
+      expect(model.dimensions.width).toBeGreaterThan(0);
+      expect(model.dimensions.depth).toBeGreaterThan(0);
+      expect(model.dimensions.height).toBeGreaterThan(0);
+      expect(model.dimensions.seatHeight).toBeGreaterThan(0);
+    }
+  });
 });
