@@ -18,7 +18,9 @@ import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
+import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
+import { OfflineBanner } from '@/components/OfflineBanner';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,9 +54,12 @@ export default function App() {
           <AuthProvider>
             <CartProvider>
               <WishlistProvider>
-                <NavigationContainer linking={linkingConfig}>
-                  <AppNavigator />
-                </NavigationContainer>
+                <NotificationProvider>
+                  <NavigationContainer linking={linkingConfig}>
+                    <OfflineBanner />
+                    <AppNavigator />
+                  </NavigationContainer>
+                </NotificationProvider>
               </WishlistProvider>
             </CartProvider>
           </AuthProvider>
