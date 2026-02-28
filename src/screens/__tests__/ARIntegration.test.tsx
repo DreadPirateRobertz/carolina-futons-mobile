@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CartProvider } from '@/hooks/useCart';
 
 // ============================================================================
 // AR Camera Feature — Integration Test Scaffolding (cm-88d)
@@ -61,6 +62,9 @@ jest.mock('react-native-reanimated', () => {
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    withTiming: (val: any) => val,
+    withRepeat: (val: any) => val,
+    Easing: { inOut: () => ({}), linear: {} },
   };
 });
 
@@ -100,9 +104,11 @@ try {
 const renderAR = (props: any = {}) =>
   render(
     <NavigationContainer>
-      <WishlistProvider>
-        <ARScreen {...props} />
-      </WishlistProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <ARScreen {...props} />
+        </WishlistProvider>
+      </CartProvider>
     </NavigationContainer>,
   );
 
@@ -472,5 +478,141 @@ describeARScreen('AR Accessibility', () => {
     const grantBtn = getByTestId('ar-grant-permission');
     expect(grantBtn.props.accessibilityLabel).toBe('Allow camera access');
     expect(grantBtn.props.accessibilityRole).toBe('button');
+  });
+});
+
+// ============================================================================
+// 9. 3D Model Catalog — PoC Model Validation
+// ============================================================================
+
+let models3d: any;
+try {
+  models3d = require('../../data/models3d');
+} catch {
+  models3d = null;
+}
+
+const describeWithModels3D = models3d ? describe : describe.skip;
+
+describeWithModels3D('3D Model Catalog — PoC Validation', () => {
+  it('catalog has at least one product with a non-placeholder GLB URL', () => {
+    const { MODELS_3D } = models3d;
+    const realModels = MODELS_3D.filter(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(realModels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('PoC model GLB URL points to a valid HTTPS source', () => {
+    const { MODELS_3D } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(pocModel).toBeDefined();
+    expect(pocModel.glbUrl).toMatch(/^https:\/\//);
+    expect(pocModel.glbUrl).toMatch(/\.glb$/);
+  });
+
+  it('PoC model has valid dimensions (furniture-scale, in meters)', () => {
+    const { MODELS_3D } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(pocModel).toBeDefined();
+    // Furniture dimensions: 0.3m - 3m range
+    expect(pocModel.dimensions.width).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.width).toBeLessThan(3);
+    expect(pocModel.dimensions.depth).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.depth).toBeLessThan(3);
+    expect(pocModel.dimensions.height).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.height).toBeLessThan(3);
+  });
+
+  it('every model has matching productId format', () => {
+    const { MODELS_3D } = models3d;
+    for (const model of MODELS_3D) {
+      expect(model.productId).toMatch(/^prod-/);
+    }
+  });
+
+  it('getModel3DForProduct returns PoC model by productId', () => {
+    const { MODELS_3D, getModel3DForProduct } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    const result = getModel3DForProduct(pocModel.productId);
+    expect(result).toBeDefined();
+    expect(result!.glbUrl).toBe(pocModel.glbUrl);
+  });
+});
+
+// ============================================================================
+// 10. Web Platform AR Flow — Integration
+// ============================================================================
+
+let openARViewerModule: any;
+try {
+  openARViewerModule = require('../../utils/openARViewer');
+} catch {
+  openARViewerModule = null;
+}
+
+const describeWebARFlow = openARViewerModule && models3d ? describe : describe.skip;
+
+describeWebARFlow('Web Platform AR Flow', () => {
+  const originalPlatformOS = Platform.OS;
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', { value: originalPlatformOS });
+  });
+
+  it('openARViewer invokes onWebModelView on web platform', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    expect(onWebModelView).toHaveBeenCalledTimes(1);
+    expect(onWebModelView).toHaveBeenCalledWith(
+      expect.objectContaining({
+        glbUrl: expect.any(String),
+        usdzUrl: expect.any(String),
+        modelId: 'asheville-full',
+        modelName: 'The Asheville',
+      }),
+    );
+  });
+
+  it('onWebModelView receives catalog GLB URL for known products', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    const catalogEntry = models3d.getModel3DForProduct('prod-asheville-full');
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    expect(onWebModelView).toHaveBeenCalledWith(
+      expect.objectContaining({
+        glbUrl: catalogEntry.glbUrl,
+        usdzUrl: catalogEntry.usdzUrl,
+      }),
+    );
+  });
+
+  it('web flow provides all params needed for ARWebScreen navigation', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    const params = onWebModelView.mock.calls[0][0];
+    // ARWebScreenParams requires: glbUrl, usdzUrl, title (modelName), productId (modelId)
+    expect(params).toHaveProperty('glbUrl');
+    expect(params).toHaveProperty('usdzUrl');
+    expect(params).toHaveProperty('modelId');
+    expect(params).toHaveProperty('modelName');
+    expect(typeof params.glbUrl).toBe('string');
+    expect(typeof params.usdzUrl).toBe('string');
+    expect(params.glbUrl.length).toBeGreaterThan(0);
+    expect(params.usdzUrl.length).toBeGreaterThan(0);
   });
 });
