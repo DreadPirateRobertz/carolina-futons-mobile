@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CommonActions } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
 import { ARScreen } from '@/screens/ARScreen';
 import { ProductDetailScreen } from '@/screens/ProductDetailScreen';
@@ -15,8 +17,11 @@ import { WishlistScreen } from '@/screens/WishlistScreen';
 import { StoreLocatorScreen } from '@/screens/StoreLocatorScreen';
 import { StoreDetailScreen } from '@/screens/StoreDetailScreen';
 import { ARWebScreen, type ARWebScreenParams } from '@/screens/ARWebScreen';
+import { OnboardingScreen } from '@/screens/OnboardingScreen';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Tabs: undefined;
   AR: { initialModelId?: string } | undefined;
   ProductDetail: { slug: string };
@@ -37,8 +42,34 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
+  const { isLoading, hasSeenOnboarding, completeOnboarding } = useOnboarding();
+
+  const handleOnboardingComplete = useCallback(() => {
+    completeOnboarding();
+  }, [completeOnboarding]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8D5B7' }} testID="onboarding-loading">
+        <ActivityIndicator size="large" color="#E8845C" />
+      </View>
+    );
+  }
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={hasSeenOnboarding ? 'Tabs' : 'Onboarding'}>
+      <Stack.Screen name="Onboarding">
+        {({ navigation: nav }) => (
+          <OnboardingScreen
+            onComplete={() => {
+              handleOnboardingComplete();
+              nav.dispatch(
+                CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
+              );
+            }}
+          />
+        )}
+      </Stack.Screen>
       <Stack.Screen name="Tabs" component={TabNavigator} />
       <Stack.Screen
         name="AR"
