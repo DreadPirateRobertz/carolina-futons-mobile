@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 import { formatPrice, openARViewer } from '@/utils';
+import { getModel3DForProduct } from '@/data/models3d';
 import { WishlistButton } from '@/components/WishlistButton';
 import { PRODUCTS } from '@/data/products';
 import { ReviewCard } from '@/components/ReviewCard';
@@ -94,8 +95,13 @@ export function ProductDetailScreen({
 
   const handleOpenAR = useCallback(() => {
     onOpenAR?.(model.id);
-    openARViewer(model.id, model.name);
-  }, [model.id, model.name, onOpenAR]);
+    // Use catalog URLs if available, otherwise fall back to default URL construction
+    const model3d = getModel3DForProduct(catalogProduct.id);
+    const assets = model3d
+      ? { usdzUrl: model3d.usdzUrl, glbUrl: model3d.glbUrl }
+      : undefined;
+    openARViewer(model.id, model.name, { assets });
+  }, [model.id, model.name, catalogProduct.id, onOpenAR]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);

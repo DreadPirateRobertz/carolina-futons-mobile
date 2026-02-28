@@ -163,6 +163,26 @@ describeIfImplemented('arSupport service', () => {
   });
 
   // ==========================================================================
+  // supportsModelViewer (web 3D viewer capability)
+  // ==========================================================================
+  describe('supportsModelViewer', () => {
+    it('returns true on web platform', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'web' });
+      expect(arSupport.supportsModelViewer()).toBe(true);
+    });
+
+    it('returns false on iOS', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'ios' });
+      expect(arSupport.supportsModelViewer()).toBe(false);
+    });
+
+    it('returns false on Android', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'android' });
+      expect(arSupport.supportsModelViewer()).toBe(false);
+    });
+  });
+
+  // ==========================================================================
   // Model mapping (Product → FutonModel ID)
   // ==========================================================================
   describe('getARModelId', () => {

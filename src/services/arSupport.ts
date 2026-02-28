@@ -231,6 +231,14 @@ export function supportsSurfaceDetection(): boolean {
 }
 
 /**
+ * Check if the current platform supports the <model-viewer> web component
+ * for interactive 3D product viewing (web only).
+ */
+export function supportsModelViewer(): boolean {
+  return Platform.OS === 'web';
+}
+
+/**
  * Reset cached state. Used by tests to isolate between runs.
  */
 export function resetCache(): void {
