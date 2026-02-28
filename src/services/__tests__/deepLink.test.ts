@@ -188,6 +188,33 @@ describe('deepLink', () => {
       expect(resolveRoute(makeLink('signin'))).toEqual({ screen: 'Login' });
     });
 
+    it('resolves wishlist', () => {
+      expect(resolveRoute(makeLink('wishlist'))).toEqual({ screen: 'Wishlist' });
+    });
+
+    it('resolves ar', () => {
+      expect(resolveRoute(makeLink('ar'))).toEqual({ screen: 'AR' });
+    });
+
+    it('resolves signup', () => {
+      expect(resolveRoute(makeLink('signup'))).toEqual({ screen: 'SignUp' });
+    });
+
+    it('resolves notifications', () => {
+      expect(resolveRoute(makeLink('notifications'))).toEqual({ screen: 'NotificationPreferences' });
+    });
+
+    it('resolves stores to StoreLocator', () => {
+      expect(resolveRoute(makeLink('stores'))).toEqual({ screen: 'StoreLocator' });
+    });
+
+    it('resolves stores with ID to StoreDetail', () => {
+      expect(resolveRoute(makeLink('stores/charlotte'))).toEqual({
+        screen: 'StoreDetail',
+        params: { storeId: 'charlotte' },
+      });
+    });
+
     it('resolves unknown path to NotFound', () => {
       expect(resolveRoute(makeLink('unknown/path'))).toEqual({
         screen: 'NotFound',

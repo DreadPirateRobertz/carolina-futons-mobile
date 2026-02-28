@@ -93,15 +93,9 @@ describe('Push notification → deep link → route (end-to-end)', () => {
       });
     });
 
-    it('routes to NotFound for wishlist fallback (missing route)', () => {
-      // BUG EXPOSURE: getDeepLinkForNotification returns carolinafutons://wishlist
-      // but resolveRoute doesn't handle 'wishlist' path → falls through to NotFound.
-      // This should route to Wishlist screen once resolveRoute is updated.
+    it('routes to Wishlist when no productId', () => {
       const route = notificationToRoute('back_in_stock');
-      expect(route).toEqual({
-        screen: 'NotFound',
-        params: { path: 'wishlist' },
-      });
+      expect(route).toEqual({ screen: 'Wishlist' });
     });
   });
 
