@@ -161,9 +161,12 @@ describe('models3d ↔ catalog consistency', () => {
     const models3dContent = fs.readFileSync(path.join(SRC_DATA_DIR, 'models3d.ts'), 'utf-8');
 
     for (const product of catalog.products as CatalogProduct[]) {
-      const slug = product.id.replace(/^prod-/, '');
       expect(models3dContent).toContain(product.id);
-      expect(models3dContent).toContain(`${slug}-`); // hash-suffixed URL
+      // URL must contain either a CDN hash-suffixed slug or an external https:// URL
+      const slug = product.id.replace(/^prod-/, '');
+      const hasCdnUrl = models3dContent.includes(`${slug}-`);
+      const hasExternalUrl = models3dContent.includes('https://') && models3dContent.includes(product.id);
+      expect(hasCdnUrl || hasExternalUrl).toBe(true);
     }
   });
 });

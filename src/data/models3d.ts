@@ -101,12 +101,15 @@ export const MODELS_3D: Model3DAsset[] = [
   },
   // --- Futons & Frames ---
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
+    // GLB: fabric chair with wood frame, ~4.1 MB
+    // USDZ: Apple sample teapot (placeholder until usdzconvert is set up)
     productId: 'prod-asheville-full',
-    glbUrl: `${MODEL_CDN_BASE}/glb/asheville-full-a1b2c3.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/asheville-full-a1b2c3.usdz`,
+    glbUrl: 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb',
+    usdzUrl: 'https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz',
     dimensions: { width: inToM(54), depth: inToM(34), height: inToM(33) },
-    fileSizeBytes: 6_800_000,
-    contentHash: 'a1b2c3',
+    fileSizeBytes: 4_125_648,
+    contentHash: '14c9a033',
     hasFabricVariants: true,
   },
   {

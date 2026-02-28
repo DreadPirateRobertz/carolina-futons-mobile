@@ -77,7 +77,6 @@ describe('openARViewer', () => {
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
       const url = (Linking.openURL as jest.Mock).mock.calls[0][0] as string;
       expect(url).toContain('intent://arvr.google.com/scene-viewer');
-      expect(url).toContain('asheville-full');
       expect(url).toContain('.glb');
       expect(url).toContain('ar_preferred');
       expect(url).toContain('The%20Asheville');
