@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
 import { FUTON_MODELS, type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
 import { formatPrice, openARViewer } from '@/utils';
@@ -50,6 +51,7 @@ export function ProductDetailScreen({
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
+  const navigation = useNavigation<any>();
   const {
     reviews,
     summary: reviewSummary,
@@ -94,8 +96,17 @@ export function ProductDetailScreen({
 
   const handleOpenAR = useCallback(() => {
     onOpenAR?.(model.id);
-    openARViewer(model.id, model.name);
-  }, [model.id, model.name, onOpenAR]);
+    openARViewer(model.id, model.name, {
+      onWebModelView: (params) => {
+        navigation.navigate('ARWeb', {
+          glbUrl: params.glbUrl,
+          usdzUrl: params.usdzUrl,
+          title: params.modelName,
+          productId: catalogProduct.id,
+        });
+      },
+    });
+  }, [model.id, model.name, catalogProduct.id, onOpenAR, navigation]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);

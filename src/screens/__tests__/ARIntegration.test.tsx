@@ -6,6 +6,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CartProvider } from '@/hooks/useCart';
 
 // ============================================================================
 // AR Camera Feature — Integration Test Scaffolding (cm-88d)
@@ -61,12 +62,44 @@ jest.mock('react-native-reanimated', () => {
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    withTiming: (val: any) => val,
+    withRepeat: (val: any) => val,
+    Easing: { inOut: () => ({}), linear: {} },
   };
 });
 
 const mockTrackEvent = jest.fn();
 jest.mock('@/services/analytics', () => ({
   trackEvent: (...args: any[]) => mockTrackEvent(...args),
+  events: {
+    addToCart: jest.fn(),
+    removeFromCart: jest.fn(),
+    addToWishlist: jest.fn(),
+    removeFromWishlist: jest.fn(),
+    shareWishlist: jest.fn(),
+    search: jest.fn(),
+    filterCategory: jest.fn(),
+    sortProducts: jest.fn(),
+    viewProduct: jest.fn(),
+    openAR: jest.fn(),
+    selectFabric: jest.fn(),
+    purchase: jest.fn(),
+    deepLinkOpened: jest.fn(),
+    arScreenshot: jest.fn(),
+    arShare: jest.fn(),
+    arSaveToGallery: jest.fn(),
+    arSaveToWishlist: jest.fn(),
+    arViewInRoomTap: jest.fn(),
+    arModelSelected: jest.fn(),
+    arAddToCart: jest.fn(),
+    submitReview: jest.fn(),
+    helpfulVote: jest.fn(),
+    arSurfaceDetected: jest.fn(),
+    arSurfaceTracking: jest.fn(),
+    arFurniturePlaced: jest.fn(),
+    arLightingWarning: jest.fn(),
+    arProductPickerOpen: jest.fn(),
+  },
 }));
 
 // --- Test Fixtures ---
@@ -100,9 +133,11 @@ try {
 const renderAR = (props: any = {}) =>
   render(
     <NavigationContainer>
-      <WishlistProvider>
-        <ARScreen {...props} />
-      </WishlistProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <ARScreen {...props} />
+        </WishlistProvider>
+      </CartProvider>
     </NavigationContainer>,
   );
 
@@ -472,5 +507,266 @@ describeARScreen('AR Accessibility', () => {
     const grantBtn = getByTestId('ar-grant-permission');
     expect(grantBtn.props.accessibilityLabel).toBe('Allow camera access');
     expect(grantBtn.props.accessibilityRole).toBe('button');
+  });
+});
+
+// ============================================================================
+// 9. Edge Cases & Error States
+// ============================================================================
+describeARScreen('Edge Cases & Error States', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('defaults to first model when initialModelId is invalid', () => {
+    const { getAllByText } = renderAR({ initialModelId: 'nonexistent-model-xyz' });
+    // Should fall back to FUTON_MODELS[0]
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('defaults to first model when initialModelId is undefined', () => {
+    const { getAllByText } = renderAR({});
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('defaults to first model when initialModelId is empty string', () => {
+    const { getAllByText } = renderAR({ initialModelId: '' });
+    expect(getAllByText(FUTON_MODELS[0].name).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('camera permission denied shows permission screen with grant button', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+
+    const { getByTestId, queryByTestId } = renderAR();
+    expect(getByTestId('ar-permission')).toBeTruthy();
+    expect(getByTestId('ar-grant-permission')).toBeTruthy();
+    // AR screen should NOT render when permission denied
+    expect(queryByTestId('ar-screen')).toBeNull();
+
+    // Reset mock for other tests
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('camera permission pending shows loading state', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
+
+    const { getByTestId, queryByTestId } = renderAR();
+    expect(getByTestId('ar-loading')).toBeTruthy();
+    expect(queryByTestId('ar-screen')).toBeNull();
+
+    // Reset mock
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('permission dismiss button calls onClose', () => {
+    const { useCameraPermissions } = require('expo-camera');
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+
+    const onClose = jest.fn();
+    const { getByTestId } = renderAR({ onClose });
+    fireEvent.press(getByTestId('ar-permission-dismiss'));
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    // Reset mock
+    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+  });
+
+  it('selecting same model again is a no-op (no crash)', () => {
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    // Press the already-selected model multiple times
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    fireEvent.press(getByTestId('ar-model-asheville-full'));
+    expect(getByTestId('ar-screen')).toBeTruthy();
+  });
+
+  it('selecting same fabric again is a no-op (no crash)', () => {
+    const { getByTestId } = renderAR();
+    const firstFabric = FABRICS[0];
+    fireEvent.press(getByTestId(`ar-fabric-${firstFabric.id}`));
+    fireEvent.press(getByTestId(`ar-fabric-${firstFabric.id}`));
+    expect(getByTestId('ar-screen')).toBeTruthy();
+  });
+
+  it('add-to-cart fires analytics with correct model+fabric+price', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.arAddToCart.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    // Select a premium fabric
+    fireEvent.press(getByTestId('ar-fabric-charcoal')); // +$49
+    fireEvent.press(getByTestId('ar-add-to-cart'));
+
+    expect(mockEvents.arAddToCart).toHaveBeenCalledWith(
+      'asheville-full',
+      'charcoal',
+      349 + 49, // base + fabric premium
+    );
+  });
+
+  it('model switch fires analytics event', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.arModelSelected.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
+
+    expect(mockEvents.arModelSelected).toHaveBeenCalledWith(
+      'blue-ridge-queen',
+      'prod-blue-ridge-queen',
+    );
+  });
+
+  it('fabric switch fires analytics event', () => {
+    const { events: mockEvents } = require('@/services/analytics');
+    mockEvents.selectFabric.mockClear();
+
+    const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
+    fireEvent.press(getByTestId('ar-fabric-sunset-coral'));
+
+    expect(mockEvents.selectFabric).toHaveBeenCalledWith(
+      'prod-asheville-full',
+      'sunset-coral',
+    );
+  });
+});
+
+// ============================================================================
+// 10. 3D Model Catalog — PoC Model Validation
+// ============================================================================
+
+let models3d: any;
+try {
+  models3d = require('../../data/models3d');
+} catch {
+  models3d = null;
+}
+
+const describeWithModels3D = models3d ? describe : describe.skip;
+
+describeWithModels3D('3D Model Catalog — PoC Validation', () => {
+  it('catalog has at least one product with a non-placeholder GLB URL', () => {
+    const { MODELS_3D } = models3d;
+    const realModels = MODELS_3D.filter(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(realModels.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('PoC model GLB URL points to a valid HTTPS source', () => {
+    const { MODELS_3D } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(pocModel).toBeDefined();
+    expect(pocModel.glbUrl).toMatch(/^https:\/\//);
+    expect(pocModel.glbUrl).toMatch(/\.glb$/);
+  });
+
+  it('PoC model has valid dimensions (furniture-scale, in meters)', () => {
+    const { MODELS_3D } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    expect(pocModel).toBeDefined();
+    // Furniture dimensions: 0.3m - 3m range
+    expect(pocModel.dimensions.width).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.width).toBeLessThan(3);
+    expect(pocModel.dimensions.depth).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.depth).toBeLessThan(3);
+    expect(pocModel.dimensions.height).toBeGreaterThan(0.3);
+    expect(pocModel.dimensions.height).toBeLessThan(3);
+  });
+
+  it('every model has matching productId format', () => {
+    const { MODELS_3D } = models3d;
+    for (const model of MODELS_3D) {
+      expect(model.productId).toMatch(/^prod-/);
+    }
+  });
+
+  it('getModel3DForProduct returns PoC model by productId', () => {
+    const { MODELS_3D, getModel3DForProduct } = models3d;
+    const pocModel = MODELS_3D.find(
+      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
+    );
+    const result = getModel3DForProduct(pocModel.productId);
+    expect(result).toBeDefined();
+    expect(result!.glbUrl).toBe(pocModel.glbUrl);
+  });
+});
+
+// ============================================================================
+// 11. Web Platform AR Flow — Integration
+// ============================================================================
+
+let openARViewerModule: any;
+try {
+  openARViewerModule = require('../../utils/openARViewer');
+} catch {
+  openARViewerModule = null;
+}
+
+const describeWebARFlow = openARViewerModule && models3d ? describe : describe.skip;
+
+describeWebARFlow('Web Platform AR Flow', () => {
+  const originalPlatformOS = Platform.OS;
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', { value: originalPlatformOS });
+  });
+
+  it('openARViewer invokes onWebModelView on web platform', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    expect(onWebModelView).toHaveBeenCalledTimes(1);
+    expect(onWebModelView).toHaveBeenCalledWith(
+      expect.objectContaining({
+        glbUrl: expect.any(String),
+        usdzUrl: expect.any(String),
+        modelId: 'asheville-full',
+        modelName: 'The Asheville',
+      }),
+    );
+  });
+
+  it('onWebModelView receives catalog GLB URL for known products', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    const catalogEntry = models3d.getModel3DForProduct('prod-asheville-full');
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    expect(onWebModelView).toHaveBeenCalledWith(
+      expect.objectContaining({
+        glbUrl: catalogEntry.glbUrl,
+        usdzUrl: catalogEntry.usdzUrl,
+      }),
+    );
+  });
+
+  it('web flow provides all params needed for ARWebScreen navigation', async () => {
+    Object.defineProperty(Platform, 'OS', { value: 'web' });
+    const onWebModelView = jest.fn();
+    await openARViewerModule.openARViewer('asheville-full', 'The Asheville', {
+      onWebModelView,
+    });
+    const params = onWebModelView.mock.calls[0][0];
+    // ARWebScreenParams requires: glbUrl, usdzUrl, title (modelName), productId (modelId)
+    expect(params).toHaveProperty('glbUrl');
+    expect(params).toHaveProperty('usdzUrl');
+    expect(params).toHaveProperty('modelId');
+    expect(params).toHaveProperty('modelName');
+    expect(typeof params.glbUrl).toBe('string');
+    expect(typeof params.usdzUrl).toBe('string');
+    expect(params.glbUrl.length).toBeGreaterThan(0);
+    expect(params.usdzUrl.length).toBeGreaterThan(0);
   });
 });

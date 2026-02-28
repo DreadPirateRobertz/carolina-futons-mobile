@@ -1,9 +1,15 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { Platform } from 'react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+
+const mockNavigate = jest.fn();
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
+}));
 
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
@@ -546,6 +552,45 @@ describe('ProductDetailScreen', () => {
       }
       // ($319 + $49) × 5 = $1840
       expect(getByText('Add to Cart — $1840.00')).toBeTruthy();
+    });
+  });
+
+  describe('Web AR Routing', () => {
+    const originalOS = Platform.OS;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      Object.defineProperty(Platform, 'OS', { value: originalOS });
+    });
+
+    it('navigates to ARWeb screen on web platform when AR button tapped', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'web' });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-ar-button'));
+      expect(mockNavigate).toHaveBeenCalledWith('ARWeb', expect.objectContaining({
+        glbUrl: expect.any(String),
+        usdzUrl: expect.any(String),
+        title: 'The Asheville',
+        productId: expect.stringContaining('prod-'),
+      }));
+    });
+
+    it('passes catalog GLB URL for known product on web', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'web' });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-ar-button'));
+      const navParams = mockNavigate.mock.calls[0][1];
+      expect(navParams.glbUrl).toContain('.glb');
+    });
+
+    it('does not navigate on native platforms', () => {
+      Object.defineProperty(Platform, 'OS', { value: 'ios' });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-ar-button'));
+      expect(mockNavigate).not.toHaveBeenCalled();
     });
   });
 });
