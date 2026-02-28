@@ -1,0 +1,93 @@
+import { withRetry, type RetryOptions } from '../retry';
+
+describe('withRetry', () => {
+  it('returns result on first success', async () => {
+    const fn = jest.fn().mockResolvedValue('ok');
+    const result = await withRetry(fn);
+    expect(result).toBe('ok');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries on failure and succeeds eventually', async () => {
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fail 1'))
+      .mockRejectedValueOnce(new Error('fail 2'))
+      .mockResolvedValue('ok');
+
+    const result = await withRetry(fn, { maxRetries: 3, baseDelayMs: 10 });
+    expect(result).toBe('ok');
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('throws after max retries exhausted', async () => {
+    const fn = jest.fn().mockRejectedValue(new Error('always fails'));
+
+    await expect(
+      withRetry(fn, { maxRetries: 2, baseDelayMs: 10 }),
+    ).rejects.toThrow('always fails');
+    expect(fn).toHaveBeenCalledTimes(3); // initial + 2 retries
+  });
+
+  it('does not retry when maxRetries is 0', async () => {
+    const fn = jest.fn().mockRejectedValue(new Error('fail'));
+
+    await expect(withRetry(fn, { maxRetries: 0 })).rejects.toThrow('fail');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('respects shouldRetry predicate — stops on non-retryable error', async () => {
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockRejectedValueOnce(new Error('permanent'));
+
+    const shouldRetry = (err: Error) => err.message === 'transient';
+
+    await expect(
+      withRetry(fn, { maxRetries: 3, baseDelayMs: 10, shouldRetry }),
+    ).rejects.toThrow('permanent');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('respects shouldRetry predicate — retries retryable errors', async () => {
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockRejectedValueOnce(new Error('transient'))
+      .mockResolvedValue('recovered');
+
+    const shouldRetry = (err: Error) => err.message === 'transient';
+
+    const result = await withRetry(fn, { maxRetries: 3, baseDelayMs: 10, shouldRetry });
+    expect(result).toBe('recovered');
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('backoff increases between retries', async () => {
+    const timestamps: number[] = [];
+    const fn = jest.fn().mockImplementation(() => {
+      timestamps.push(Date.now());
+      if (timestamps.length < 3) {
+        return Promise.reject(new Error('fail'));
+      }
+      return Promise.resolve('ok');
+    });
+
+    await withRetry(fn, { maxRetries: 3, baseDelayMs: 20 });
+
+    expect(timestamps.length).toBe(3);
+    // Second gap should be larger than first (exponential)
+    const gap1 = timestamps[1] - timestamps[0];
+    const gap2 = timestamps[2] - timestamps[1];
+    expect(gap2).toBeGreaterThanOrEqual(gap1);
+  });
+
+  it('wraps non-Error throws into Error', async () => {
+    const fn = jest.fn().mockRejectedValue('string error');
+
+    await expect(
+      withRetry(fn, { maxRetries: 0 }),
+    ).rejects.toThrow('string error');
+  });
+});

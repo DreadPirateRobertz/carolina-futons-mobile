@@ -12,6 +12,7 @@
  */
 
 import type { Product, ProductImage, ProductCategory } from '@/data/products';
+import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
 
@@ -332,6 +333,20 @@ export class WixClient {
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {
+    return withRetry(
+      () => this.rawPost<T>(path, body),
+      { shouldRetry: isRetryableError },
+    );
+  }
+
+  private async get<T>(path: string): Promise<T> {
+    return withRetry(
+      () => this.rawGet<T>(path),
+      { shouldRetry: isRetryableError },
+    );
+  }
+
+  private async rawPost<T>(path: string, body: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     let response: Response;
     try {
@@ -360,7 +375,7 @@ export class WixClient {
     return response.json() as Promise<T>;
   }
 
-  private async get<T>(path: string): Promise<T> {
+  private async rawGet<T>(path: string): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     let response: Response;
     try {
@@ -387,6 +402,21 @@ export class WixClient {
 
     return response.json() as Promise<T>;
   }
+}
+
+// ── Retry policy ───────────────────────────────────────────────
+
+function isRetryableError(err: Error): boolean {
+  if (err instanceof WixApiError) {
+    // Don't retry client errors (4xx) — they won't resolve with retry
+    if (err.statusCode && err.statusCode >= 400 && err.statusCode < 500) {
+      return false;
+    }
+    // Retry server errors (5xx) and network errors (no statusCode)
+    return true;
+  }
+  // Network/unknown errors — retry
+  return true;
 }
 
 // ── Transform functions ────────────────────────────────────────
