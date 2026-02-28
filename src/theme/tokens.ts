@@ -19,6 +19,7 @@ export const colors = {
   mauve: '#C9A0A0',
   skyGradientTop: '#B8D4E3',
   skyGradientBottom: '#F0C87A',
+  offWhite: '#FAF7F2',
   white: '#FFFFFF',
   overlay: 'rgba(58, 37, 24, 0.6)',
   // Semantic / status

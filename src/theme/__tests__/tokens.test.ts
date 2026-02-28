@@ -18,7 +18,12 @@ describe('Design Tokens', () => {
       expect(colors.success).toBeDefined();
       expect(colors.error).toBeDefined();
       expect(colors.muted).toBeDefined();
+      expect(colors.offWhite).toBeDefined();
       expect(colors.white).toBeDefined();
+    });
+
+    it('has correct offWhite token matching web sharedTokens', () => {
+      expect(colors.offWhite).toBe('#FAF7F2');
     });
 
     it('uses valid hex color format for solid colors', () => {

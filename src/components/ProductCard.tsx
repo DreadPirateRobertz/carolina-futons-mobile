@@ -21,7 +21,7 @@ export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
       : product.badge === 'New'
         ? colors.mountainBlue
         : product.badge === 'Bestseller'
-          ? colors.success
+          ? colors.mountainBlue
           : colors.espressoLight;
 
   return (

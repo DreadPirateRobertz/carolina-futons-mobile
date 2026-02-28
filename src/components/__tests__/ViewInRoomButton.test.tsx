@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Platform } from 'react-native';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import { type Product } from '@/data/products';
 import { type FutonModel } from '@/data/futons';
 
@@ -106,6 +107,10 @@ try {
   ViewInRoomButton = null;
 }
 
+function renderWithTheme(ui: React.ReactElement) {
+  return render(<ThemeProvider>{ui}</ThemeProvider>);
+}
+
 const describeIfImplemented = ViewInRoomButton ? describe : describe.skip;
 
 describeIfImplemented('ViewInRoomButton', () => {
@@ -124,41 +129,41 @@ describeIfImplemented('ViewInRoomButton', () => {
   // ==========================================================================
   describe('Rendering', () => {
     it('renders for futon products', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('renders for frame products', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} product={frameProduct} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} product={frameProduct} />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('does NOT render for non-AR categories (covers)', () => {
-      const { queryByTestId } = render(
+      const { queryByTestId } = renderWithTheme(
         <ViewInRoomButton {...defaultProps} product={coverProduct} />,
       );
       expect(queryByTestId('view-in-room-btn')).toBeNull();
     });
 
     it('does NOT render for out-of-stock products', () => {
-      const { queryByTestId } = render(
+      const { queryByTestId } = renderWithTheme(
         <ViewInRoomButton {...defaultProps} product={outOfStockFuton} />,
       );
       expect(queryByTestId('view-in-room-btn')).toBeNull();
     });
 
     it('shows "View in Your Room" text', () => {
-      const { getByText } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByText } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       expect(getByText('View in Your Room')).toBeTruthy();
     });
 
     it('shows camera icon', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       expect(getByTestId('view-in-room-camera-icon')).toBeTruthy();
     });
 
     it('renders with custom testID', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />);
       expect(getByTestId('custom-ar-btn')).toBeTruthy();
     });
   });
@@ -169,26 +174,26 @@ describeIfImplemented('ViewInRoomButton', () => {
   describe('Interaction', () => {
     it('calls onPress with product when tapped', () => {
       const onPress = jest.fn();
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} onPress={onPress} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} onPress={onPress} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(onPress).toHaveBeenCalledWith(futonProduct);
     });
 
     it('does not crash when onPress is not provided', () => {
-      const { getByTestId } = render(<ViewInRoomButton product={futonProduct} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton product={futonProduct} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
     });
 
     it('fires haptic feedback on press', () => {
       const Haptics = require('expo-haptics');
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
       expect(Haptics.impactAsync).toHaveBeenCalled();
     });
 
     it('tracks analytics event on press', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       fireEvent.press(getByTestId('view-in-room-btn'));
       expect(mockArViewInRoomTap).toHaveBeenCalledWith(futonProduct.id, futonProduct.category);
     });
@@ -199,7 +204,7 @@ describeIfImplemented('ViewInRoomButton', () => {
   // ==========================================================================
   describe('Accessibility', () => {
     it('has correct accessibility label', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       const btn = getByTestId('view-in-room-btn');
       expect(btn.props.accessibilityLabel).toBe(
         'View The Asheville Full Futon in your room using AR camera',
@@ -207,12 +212,12 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('has button accessibility role', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       expect(getByTestId('view-in-room-btn').props.accessibilityRole).toBe('button');
     });
 
     it('has descriptive accessibility hint', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       const btn = getByTestId('view-in-room-btn');
       expect(btn.props.accessibilityHint).toContain('camera');
     });
@@ -223,23 +228,23 @@ describeIfImplemented('ViewInRoomButton', () => {
   // ==========================================================================
   describe('Size Variants', () => {
     it('renders compact size variant (for ProductCard)', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="compact" />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} size="compact" />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('renders full size variant (for ProductDetailScreen)', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="full" />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} size="full" />);
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('defaults to full size', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} />);
       // Full variant shows the text label
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
     it('compact variant still shows icon', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} size="compact" />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} size="compact" />);
       expect(getByTestId('view-in-room-camera-icon')).toBeTruthy();
     });
   });
@@ -250,7 +255,7 @@ describeIfImplemented('ViewInRoomButton', () => {
   describe('Disabled State', () => {
     it('can be explicitly disabled', () => {
       const onPress = jest.fn();
-      const { getByTestId } = render(
+      const { getByTestId } = renderWithTheme(
         <ViewInRoomButton {...defaultProps} onPress={onPress} disabled />,
       );
       fireEvent.press(getByTestId('view-in-room-btn'));
@@ -258,7 +263,7 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('shows disabled accessibility state when disabled', () => {
-      const { getByTestId } = render(<ViewInRoomButton {...defaultProps} disabled />);
+      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} disabled />);
       expect(getByTestId('view-in-room-btn').props.accessibilityState).toEqual(
         expect.objectContaining({ disabled: true }),
       );
