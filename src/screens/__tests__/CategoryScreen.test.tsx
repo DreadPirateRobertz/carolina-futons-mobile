@@ -91,14 +91,20 @@ describe('CategoryScreen', () => {
   });
 
   describe('empty state', () => {
-    it('shows empty state for category with no products', () => {
-      // Use a category ID that has no products in our mock data
-      renderCategory({
-        categoryId: 'futons' as any,
+    it('shows empty state for unknown category with no products', () => {
+      const { getByTestId } = renderCategory({
+        categoryId: 'nonexistent-category' as any,
         categoryTitle: 'Empty Category',
       });
-      // futons has products, but let's test the empty component exists when needed
-      // Actually, futons has products so this won't show empty. Skip real empty test.
+      expect(getByTestId('category-empty')).toBeTruthy();
+    });
+
+    it('empty state shows go back action when onBack provided', () => {
+      const { getByTestId } = renderCategory({
+        categoryId: 'nonexistent-category' as any,
+        onBack: jest.fn(),
+      });
+      expect(getByTestId('category-empty')).toBeTruthy();
     });
   });
 

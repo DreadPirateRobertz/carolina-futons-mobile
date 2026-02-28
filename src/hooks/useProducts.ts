@@ -31,13 +31,19 @@ interface UseProductsReturn {
   refresh: () => void;
 }
 
+interface UseProductsOptions {
+  initialCategory?: ProductCategory;
+}
+
 /**
  * Product browsing hook with fuzzy search, autocomplete, filter, sort, and pagination.
  * Uses local mock data; designed for drop-in Wix CMS API replacement.
  */
-export function useProducts(): UseProductsReturn {
+export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(
+    options?.initialCategory ?? null,
+  );
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
