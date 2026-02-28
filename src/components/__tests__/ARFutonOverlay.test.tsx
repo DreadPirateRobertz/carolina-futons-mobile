@@ -26,6 +26,8 @@ jest.mock('react-native-reanimated', () => {
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    withTiming: (val: any) => val,
+    Easing: { out: () => ({}), quad: {} },
   };
 });
 
@@ -164,6 +166,132 @@ describe('ARFutonOverlay', () => {
         expect(getByText(/W$/)).toBeTruthy();
         expect(getByText(/D$/)).toBeTruthy();
         expect(getByText(/H$/)).toBeTruthy();
+        unmount();
+      }
+    });
+  });
+
+  describe('Tap-to-place visibility', () => {
+    it('renders with full opacity when isPlaced is true', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          isPlaced={true}
+          testID="overlay"
+        />,
+      );
+      const overlay = getByTestId('overlay');
+      const style = overlay.props.style;
+      // Animated style should include opacity: 1
+      const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style;
+      expect(flatStyle.opacity).toBe(1);
+    });
+
+    it('renders with zero opacity when isPlaced is false', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          isPlaced={false}
+          testID="overlay"
+        />,
+      );
+      const overlay = getByTestId('overlay');
+      const style = overlay.props.style;
+      const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style;
+      expect(flatStyle.opacity).toBe(0);
+    });
+
+    it('defaults to visible when isPlaced is not specified', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      const overlay = getByTestId('overlay');
+      const style = overlay.props.style;
+      const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style;
+      expect(flatStyle.opacity).toBe(1);
+    });
+  });
+
+  describe('Murphy bed snap-to-wall', () => {
+    it('shows snap-to-wall hint for murphy-beds category', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          category="murphy-beds"
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('ar-snap-badge')).toBeTruthy();
+    });
+
+    it('does not show snap badge for futons category', () => {
+      const { queryByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          category="futons"
+          testID="overlay"
+        />,
+      );
+      expect(queryByTestId('ar-snap-badge')).toBeNull();
+    });
+
+    it('does not show snap badge when no category specified', () => {
+      const { queryByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      expect(queryByTestId('ar-snap-badge')).toBeNull();
+    });
+
+    it('snap badge shows correct text', () => {
+      const { getByText } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          category="murphy-beds"
+        />,
+      );
+      expect(getByText('Drag near wall to snap')).toBeTruthy();
+    });
+  });
+
+  describe('Dynamic shadow', () => {
+    it('renders dynamic shadow element', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
+    });
+
+    it('renders dynamic shadow for every model', () => {
+      for (const model of FUTON_MODELS) {
+        const { getByTestId, unmount } = render(
+          <ARFutonOverlay model={model} fabric={naturalLinen} showDimensions={false} />,
+        );
+        expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
         unmount();
       }
     });

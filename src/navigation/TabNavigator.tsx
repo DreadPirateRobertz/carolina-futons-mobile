@@ -47,21 +47,27 @@ export function TabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Home" focused={focused} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon label="Home" focused={focused} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Shop"
         component={ShopScreen}
         options={{
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Shop" focused={focused} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon label="Shop" focused={focused} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="Cart"
         component={CartScreen}
         options={{
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Cart" focused={focused} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon label="Cart" focused={focused} color={color} />
+          ),
           tabBarBadge: itemCount > 0 ? itemCount : undefined,
           tabBarBadgeStyle: { backgroundColor: colors.sunsetCoral },
         }}
@@ -70,7 +76,9 @@ export function TabNavigator() {
         name="Account"
         component={AccountScreen}
         options={{
-          tabBarIcon: ({ focused, color }) => <TabIcon label="Account" focused={focused} color={color} />,
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon label="Account" focused={focused} color={color} />
+          ),
         }}
       />
     </Tab.Navigator>

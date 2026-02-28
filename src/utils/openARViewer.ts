@@ -3,24 +3,34 @@
  *
  * Phase 1: Uses platform native AR viewers via Linking.openURL().
  * No native code or extra dependencies required.
+ *
+ * URLs are resolved from the 3D model catalog (models3d.ts) which is kept
+ * in sync with the asset pipeline via sync-catalog.ts.
  */
 import { Alert, Linking, Platform } from 'react-native';
 
-const AR_ASSET_BASE_URL = 'https://assets.carolinafutons.com/ar-models';
+import { getModel3DForProduct, MODEL_CDN_BASE } from '@/data/models3d';
 
-/**
- * Maps a futon model ID to AR asset URLs.
- * In production, these would come from the CMS/CDN.
- */
 export interface ARModelAssets {
   usdzUrl: string; // iOS Quick Look
   glbUrl: string; // Android Scene Viewer
 }
 
+/**
+ * Resolve AR asset URLs for a model ID (slug without `prod-` prefix).
+ * Looks up the 3D model catalog first for pipeline-generated URLs;
+ * falls back to CDN convention if the product isn't in the catalog.
+ */
 export function getARModelAssets(modelId: string): ARModelAssets {
+  const productId = `prod-${modelId}`;
+  const asset = getModel3DForProduct(productId);
+  if (asset) {
+    return { usdzUrl: asset.usdzUrl, glbUrl: asset.glbUrl };
+  }
+  // Fallback for models not yet in the pipeline catalog
   return {
-    usdzUrl: `${AR_ASSET_BASE_URL}/${modelId}.usdz`,
-    glbUrl: `${AR_ASSET_BASE_URL}/${modelId}.glb`,
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/${modelId}.usdz`,
+    glbUrl: `${MODEL_CDN_BASE}/glb/${modelId}.glb`,
   };
 }
 

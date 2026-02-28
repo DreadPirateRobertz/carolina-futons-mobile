@@ -19,6 +19,25 @@ import { hasARModel } from '@/data/models3d';
 
 export type DeviceTier = 'premium' | 'standard' | 'fallback';
 
+export type PlaneDetectionCapability = 'horizontal' | 'vertical' | 'both' | 'none';
+
+export interface ARCapabilities {
+  /** Whether AR is supported at all */
+  isSupported: boolean;
+  /** Device quality tier */
+  tier: DeviceTier;
+  /** Plane detection capability */
+  planeDetection: PlaneDetectionCapability;
+  /** Whether device has LiDAR (iOS Pro models) for instant plane detection */
+  hasLiDAR: boolean;
+  /** Whether device supports lighting estimation */
+  supportsLightingEstimation: boolean;
+  /** Whether device supports people/object occlusion */
+  supportsOcclusion: boolean;
+  /** AR framework name */
+  framework: 'ARKit' | 'ARCore' | 'none';
+}
+
 interface ProductLike {
   category: ProductCategory | string;
   inStock: boolean;
@@ -124,10 +143,98 @@ export function getARModelId(productId: string): string | undefined {
   return productId.replace(/^prod-/, '');
 }
 
+// ---------------------------------------------------------------------------
+// AR Capabilities (surface detection features per device)
+// ---------------------------------------------------------------------------
+
+let _cachedCapabilities: ARCapabilities | null = null;
+
+/**
+ * Get full AR capabilities for the current device.
+ * Includes plane detection support, LiDAR, lighting estimation, etc.
+ */
+export async function getARCapabilities(): Promise<ARCapabilities> {
+  if (_cachedCapabilities !== null) {
+    return _cachedCapabilities;
+  }
+
+  const supported = await self.checkARSupport();
+  const tier = await self.getDeviceTier();
+
+  if (!supported) {
+    _cachedCapabilities = {
+      isSupported: false,
+      tier: 'fallback',
+      planeDetection: 'none',
+      hasLiDAR: false,
+      supportsLightingEstimation: false,
+      supportsOcclusion: false,
+      framework: 'none',
+    };
+    return _cachedCapabilities;
+  }
+
+  if (Platform.OS === 'ios') {
+    // ARKit supports horizontal + vertical plane detection on all AR devices.
+    // LiDAR available on iPhone 12 Pro+ and iPad Pro 2020+.
+    // In production, would check for LiDAR via native bridge.
+    _cachedCapabilities = {
+      isSupported: true,
+      tier,
+      planeDetection: 'both',
+      hasLiDAR: tier === 'premium', // Approximation; real check via native module
+      supportsLightingEstimation: true,
+      supportsOcclusion: tier === 'premium',
+      framework: 'ARKit',
+    };
+  } else {
+    // ARCore supports horizontal + vertical since ARCore 1.2.
+    // Depth API available on ~87% of ARCore devices.
+    _cachedCapabilities = {
+      isSupported: true,
+      tier,
+      planeDetection: 'both',
+      hasLiDAR: false,
+      supportsLightingEstimation: true,
+      supportsOcclusion: false,
+      framework: 'ARCore',
+    };
+  }
+
+  return _cachedCapabilities;
+}
+
+/**
+ * Synchronous capabilities check using cached value.
+ * Returns minimal fallback before getARCapabilities() has been called.
+ */
+export function getARCapabilitiesSync(): ARCapabilities {
+  return (
+    _cachedCapabilities ?? {
+      isSupported: false,
+      tier: 'fallback' as DeviceTier,
+      planeDetection: 'none' as PlaneDetectionCapability,
+      hasLiDAR: false,
+      supportsLightingEstimation: false,
+      supportsOcclusion: false,
+      framework: 'none' as const,
+    }
+  );
+}
+
+/**
+ * Check if device supports surface plane detection for furniture placement.
+ */
+export function supportsSurfaceDetection(): boolean {
+  const caps = getARCapabilitiesSync();
+  return caps.planeDetection === 'horizontal' || caps.planeDetection === 'both';
+}
+
 /**
  * Reset cached state. Used by tests to isolate between runs.
  */
 export function resetCache(): void {
   _cachedSupport = null;
   _cachedTier = null;
+  _cachedCapabilities = null;
 }

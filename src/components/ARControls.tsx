@@ -1,5 +1,12 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import { type FutonModel, type Fabric } from '@/data/futons';
 import { formatPrice } from '@/utils';
 

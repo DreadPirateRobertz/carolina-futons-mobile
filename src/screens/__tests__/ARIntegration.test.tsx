@@ -252,17 +252,21 @@ describeWithARSupport('Unsupported Device Fallback', () => {
 
   it('isProductAREnabled returns false for non-futon products', () => {
     const coverProduct = PRODUCTS.find((p) => p.category === 'covers')!;
-    expect(arSupport.isProductAREnabled({
-      category: coverProduct.category,
-      inStock: coverProduct.inStock,
-    })).toBe(false);
+    expect(
+      arSupport.isProductAREnabled({
+        category: coverProduct.category,
+        inStock: coverProduct.inStock,
+      }),
+    ).toBe(false);
   });
 
   it('isProductAREnabled returns true for in-stock futons', () => {
-    expect(arSupport.isProductAREnabled({
-      category: 'futons',
-      inStock: true,
-    })).toBe(true);
+    expect(
+      arSupport.isProductAREnabled({
+        category: 'futons',
+        inStock: true,
+      }),
+    ).toBe(true);
   });
 
   it('web platform always returns fallback tier', async () => {
@@ -347,7 +351,10 @@ describeARScreen('Add to Cart from AR View', () => {
 describeARScreen('Full Integration Flow', () => {
   it('complete user journey: launch → browse models → pick fabric → dimensions → add to cart → close', () => {
     const onClose = jest.fn();
-    const { getByTestId, getAllByText, getByText } = renderAR({ initialModelId: 'asheville-full', onClose });
+    const { getByTestId, getAllByText, getByText } = renderAR({
+      initialModelId: 'asheville-full',
+      onClose,
+    });
 
     // Verify launched with Asheville
     expect(getAllByText('The Asheville').length).toBeGreaterThanOrEqual(1);

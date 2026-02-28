@@ -116,11 +116,7 @@ export function fuzzySearch<T>(
  * Generate autocomplete suggestions from product names.
  * Returns unique suggestions sorted by relevance.
  */
-export function getSuggestions(
-  query: string,
-  names: string[],
-  maxResults = 5,
-): string[] {
+export function getSuggestions(query: string, names: string[], maxResults = 5): string[] {
   if (!query.trim()) return [];
 
   const q = query.toLowerCase().trim();

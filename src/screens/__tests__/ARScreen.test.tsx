@@ -52,10 +52,66 @@ jest.mock('react-native-reanimated', () => {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
-    useAnimatedStyle: (fn: any) => fn(),
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     withSpring: (val: any) => val,
+    withRepeat: (val: any) => val,
+    withSequence: (...vals: any[]) => vals[0],
+    withTiming: (val: any) => val,
+    Easing: { out: () => ({}), quad: {}, inOut: () => ({}), ease: {} },
   };
 });
+
+// Mock surface detection hook
+jest.mock('@/hooks/useSurfaceDetection', () => ({
+  useSurfaceDetection: () => ({
+    detectionState: 'tracking',
+    planes: [
+      {
+        id: 'plane-1',
+        type: 'floor',
+        alignment: 'horizontal',
+        center: { x: 0.5, y: 0.65, z: 1.5 },
+        extent: { width: 2.5, height: 1.8 },
+        rotation: 0,
+        confidence: 0.85,
+        lastUpdated: Date.now(),
+      },
+    ],
+    hasFloor: true,
+    hasWall: false,
+    lightEstimate: {
+      ambientIntensity: 350,
+      ambientColorTemperature: 4500,
+      primaryLightDirection: { x: 0.3, y: -0.8, z: 0.5 },
+      primaryLightIntensity: 0.6,
+      timestamp: Date.now(),
+    },
+    shadowParams: {
+      opacity: 0.25,
+      blur: 8,
+      offsetX: -2.4,
+      offsetY: 6.4,
+      color: 'rgba(0, 0, 10, 0.25)',
+    },
+    lightingCondition: 'normal',
+    lightingWarning: null,
+    performHitTest: jest.fn(() => ({
+      planeId: 'plane-1',
+      position: { x: 0.5, y: 0.5 },
+      worldPosition: { x: 0.5, y: 0, z: 1.5 },
+      isValid: true,
+      distance: 1.5,
+    })),
+    isActive: true,
+    error: null,
+  }),
+}));
 
 // Mock react-native-view-shot
 jest.mock('react-native-view-shot', () => {
@@ -168,9 +224,15 @@ describe('ARScreen', () => {
       expect(camera.props.accessibilityHint).toBe('back');
     });
 
-    it('shows gesture instruction hint', () => {
+    it('shows context-aware instruction hint', () => {
       const { getByText } = renderARScreen();
-      expect(getByText(/Drag to position · Pinch to resize · Two-finger rotate/)).toBeTruthy();
+      // In tracking state with no placement, shows tap-to-place hint
+      expect(getByText('Tap on the floor to place furniture')).toBeTruthy();
+    });
+
+    it('renders touch area for placing furniture', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-touch-area')).toBeTruthy();
     });
 
     it('uses custom testID when provided', () => {
@@ -574,7 +636,9 @@ describe('ARScreen', () => {
       // Immediately shows "Saved!" feedback
       expect(getByText('Saved!')).toBeTruthy();
       // After 2s, switches to "Wishlisted"
-      act(() => { jest.advanceTimersByTime(2000); });
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
       expect(getByText('Wishlisted')).toBeTruthy();
       jest.useRealTimers();
     });

@@ -61,6 +61,15 @@ describe('models3d', () => {
       expect(asset!.hasFabricVariants).toBe(true);
     });
 
+    it('returns asset for murphy bed products (no fabric variants)', () => {
+      const asset = getModel3DForProduct('prod-murphy-queen-vertical');
+      expect(asset).toBeDefined();
+      expect(asset!.productId).toBe('prod-murphy-queen-vertical');
+      expect(asset!.hasFabricVariants).toBe(false);
+      // 64" wide = ~1.626m
+      expect(asset!.dimensions.width).toBeCloseTo(1.626, 2);
+    });
+
     it('returns undefined for a product without AR model', () => {
       expect(getModel3DForProduct('prod-grip-strips')).toBeUndefined();
     });
@@ -76,6 +85,15 @@ describe('models3d', () => {
       expect(hasARModel('prod-blue-ridge-queen')).toBe(true);
       expect(hasARModel('prod-pisgah-twin')).toBe(true);
       expect(hasARModel('prod-biltmore-loveseat')).toBe(true);
+    });
+
+    it('returns true for murphy bed products', () => {
+      expect(hasARModel('prod-murphy-queen-vertical')).toBe(true);
+      expect(hasARModel('prod-murphy-full-horizontal')).toBe(true);
+      expect(hasARModel('prod-murphy-queen-bookcase')).toBe(true);
+      expect(hasARModel('prod-murphy-twin-cabinet')).toBe(true);
+      expect(hasARModel('prod-murphy-queen-desk')).toBe(true);
+      expect(hasARModel('prod-murphy-full-storage')).toBe(true);
     });
 
     it('returns true for frame product', () => {

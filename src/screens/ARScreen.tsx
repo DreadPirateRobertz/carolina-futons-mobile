@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -11,10 +11,12 @@ import { FUTON_MODELS, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
+import { PlaneIndicator } from '@/components/PlaneIndicator';
 import { events } from '@/services/analytics';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
+import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
 
 interface Props {
   onClose?: () => void;
@@ -24,14 +26,13 @@ interface Props {
 }
 
 /**
- * AR Camera Overlay screen.
- * Shows the device camera with a futon model overlaid in the scene.
- * User can drag/pinch/rotate the futon, swap fabrics, view dimensions.
- * Supports screenshot capture, sharing, saving to gallery, and wishlist.
+ * AR Camera screen with surface detection and lighting estimation.
+ * Opens the camera, detects floor/wall planes via ARKit (iOS) / ARCore (Android),
+ * shows visual indicators where furniture can be placed, and renders realistic
+ * shadows based on room lighting conditions.
  */
 export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const navigation = useNavigation();
-  // Support both direct props and route params from React Navigation
   const modelId = initialModelId ?? route?.params?.initialModelId;
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -42,12 +43,49 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [showDimensions, setShowDimensions] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
+  const [isPlaced, setIsPlaced] = useState(false);
+  const [hasPlacement, setHasPlacement] = useState(false);
+  const [lightingWarningDismissed, setLightingWarningDismissed] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
   const cart = useCart();
 
-  // Map current futon model to its product for wishlist
+  // Surface detection + lighting estimation
+  const {
+    detectionState,
+    planes,
+    hasFloor,
+    shadowParams,
+    lightingCondition,
+    lightingWarning,
+    performHitTest,
+  } = useSurfaceDetection({
+    detectHorizontal: true,
+    detectVertical: true,
+    minimumPlaneExtent: 0.3,
+    maxPlanes: 8,
+    confidenceThreshold: 0.6,
+  });
+
+  // Track surface detection analytics events
+  useEffect(() => {
+    if (detectionState === 'detected' && planes.length > 0) {
+      const first = planes[0];
+      events.arSurfaceDetected(first.type, first.confidence);
+    }
+    if (detectionState === 'tracking') {
+      events.arSurfaceTracking(planes.length);
+    }
+  }, [detectionState, planes]);
+
+  // Show lighting warning when conditions are poor
+  useEffect(() => {
+    if (lightingWarning && !lightingWarningDismissed) {
+      events.arLightingWarning(lightingCondition);
+    }
+  }, [lightingWarning, lightingWarningDismissed, lightingCondition]);
+
   const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
   const isInWishlist = currentProduct ? wishlist.isInWishlist(currentProduct.id) : false;
 
@@ -57,6 +95,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       if (!model.fabrics.find((f) => f.id === selectedFabric.id)) {
         setSelectedFabric(model.fabrics[0]);
       }
+      setIsPlaced(false);
+      setHasPlacement(false);
       events.arModelSelected(model.id, `prod-${model.id}`);
       if (Platform.OS !== 'web') {
         Haptics.selectionAsync();
@@ -90,13 +130,40 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
 
   const handleAddToCart = useCallback(() => {
     cart.addItem(selectedModel, selectedFabric, 1);
-    events.arAddToCart(selectedModel.id, selectedFabric.id, selectedModel.basePrice + selectedFabric.price);
+    events.arAddToCart(
+      selectedModel.id,
+      selectedFabric.id,
+      selectedModel.basePrice + selectedFabric.price,
+    );
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   }, [cart, selectedModel, selectedFabric]);
 
-  /** Capture the AR scene (camera + overlay + watermark) as an image URI */
+  /** Handle tap on camera view to place furniture on detected surface */
+  const handleCameraPress = useCallback(
+    (event: { nativeEvent: { locationX: number; locationY: number } }) => {
+      if (!hasFloor || detectionState !== 'tracking') return;
+
+      const { locationX, locationY } = event.nativeEvent;
+      const screenWidth = 390;
+      const screenHeight = 844;
+      const normalizedX = locationX / screenWidth;
+      const normalizedY = locationY / screenHeight;
+
+      const anchor = performHitTest(normalizedX, normalizedY);
+      if (anchor?.isValid) {
+        setIsPlaced(true);
+        setHasPlacement(true);
+        events.arFurniturePlaced(selectedModel.id, anchor.planeId);
+        if (Platform.OS !== 'web') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        }
+      }
+    },
+    [hasFloor, detectionState, performHitTest, selectedModel.id],
+  );
+
   const captureScene = useCallback(async (): Promise<string | null> => {
     if (!viewShotRef.current) return null;
     try {
@@ -118,7 +185,6 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [selectedModel.id, selectedFabric.id]);
 
-  /** Share the AR screenshot via native share sheet */
   const handleShare = useCallback(async () => {
     const uri = await captureScene();
     if (!uri) return;
@@ -140,7 +206,6 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [captureScene, selectedModel, selectedFabric]);
 
-  /** Save the AR screenshot to device gallery */
   const handleSaveToGallery = useCallback(async () => {
     const uri = await captureScene();
     if (!uri) return;
@@ -165,7 +230,6 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [captureScene, selectedModel.id, selectedFabric.id]);
 
-  /** Toggle wishlist for the current futon model */
   const handleToggleWishlist = useCallback(() => {
     if (!currentProduct) return;
     wishlist.toggle(currentProduct);
@@ -179,6 +243,9 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
+
+  // Determine product category for snap-to-wall behavior
+  const productCategory = currentProduct?.category;
 
   // Permission not yet determined
   if (!permission) {
@@ -223,36 +290,82 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     );
   }
 
-  // Camera granted — show AR view
+  // Camera granted — show AR view with surface detection
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
-      {/* Capturable area: camera feed + overlay + watermark */}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
         <CameraView style={styles.camera} facing="back" testID="ar-camera">
-          {/* Crosshair / placement guide */}
-          <View style={styles.crosshairContainer}>
-            <View style={styles.crosshairH} />
-            <View style={styles.crosshairV} />
-          </View>
+          {/* Surface plane indicators */}
+          <PlaneIndicator
+            planes={planes}
+            detectionState={detectionState}
+            shadowParams={shadowParams}
+            hasPlacement={hasPlacement}
+            testID="plane-indicator"
+          />
 
-          {/* Instruction hint */}
+          {/* Touch handler for placing furniture */}
+          <TouchableOpacity
+            style={styles.touchableArea}
+            activeOpacity={1}
+            onPress={handleCameraPress}
+            testID="ar-touch-area"
+          />
+
+          {/* Instruction hint — context-aware */}
           <View style={styles.hintContainer}>
             <Text style={styles.hintText}>
-              Drag to position · Pinch to resize · Two-finger rotate
+              {detectionState === 'scanning'
+                ? 'Point camera at floor to detect surface'
+                : detectionState === 'detected' || detectionState === 'tracking'
+                  ? hasPlacement
+                    ? 'Drag to position · Pinch to resize · Two-finger rotate'
+                    : 'Tap on the floor to place furniture'
+                  : 'Initializing AR...'}
             </Text>
           </View>
 
-          {/* Futon overlay - centered, user drags from there */}
+          {/* Lighting warning banner */}
+          {lightingWarning && !lightingWarningDismissed && (
+            <TouchableOpacity
+              style={styles.lightingWarning}
+              onPress={() => setLightingWarningDismissed(true)}
+              testID="lighting-warning"
+            >
+              <Text style={styles.lightingWarningText}>{lightingWarning}</Text>
+              <Text style={styles.lightingWarningDismiss}>✕</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Futon overlay — shown after placement */}
           <View style={styles.overlayContainer}>
             <ARFutonOverlay
               model={selectedModel}
               fabric={selectedFabric}
               showDimensions={showDimensions}
+              isPlaced={isPlaced}
+              category={productCategory}
               testID="ar-futon-overlay"
             />
           </View>
 
-          {/* Watermark — visible in captures */}
+          {/* Dynamic shadow under furniture based on lighting */}
+          {hasPlacement && (
+            <View
+              style={[
+                styles.furnitureShadow,
+                {
+                  shadowColor: shadowParams.color,
+                  shadowOffset: { width: shadowParams.offsetX, height: shadowParams.offsetY },
+                  shadowOpacity: shadowParams.opacity,
+                  shadowRadius: shadowParams.blur,
+                },
+              ]}
+              testID="ar-furniture-shadow"
+            />
+          )}
+
+          {/* Watermark */}
           <View style={styles.watermarkContainer} testID="ar-watermark">
             <Text style={styles.watermarkText}>Carolina Futons</Text>
             <Text style={styles.watermarkSubtext}>carolinafutons.com</Text>
@@ -349,29 +462,9 @@ const styles = StyleSheet.create({
     color: 'rgba(242, 232, 213, 0.5)',
     fontSize: 14,
   },
-  crosshairContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    width: 40,
-    height: 40,
-    marginLeft: -20,
-    marginTop: -20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    opacity: 0.4,
-  },
-  crosshairH: {
-    position: 'absolute',
-    width: 40,
-    height: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  crosshairV: {
-    position: 'absolute',
-    width: 1,
-    height: 40,
-    backgroundColor: '#FFFFFF',
+  touchableArea: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
   },
   hintContainer: {
     position: 'absolute',
@@ -379,6 +472,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
   hintText: {
     color: '#FFFFFF',
@@ -390,6 +484,31 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
   },
+  lightingWarning: {
+    position: 'absolute',
+    top: 140,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(232, 132, 92, 0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    zIndex: 10,
+  },
+  lightingWarningText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '500',
+    flex: 1,
+  },
+  lightingWarningDismiss: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '300',
+    marginLeft: 8,
+  },
   overlayContainer: {
     position: 'absolute',
     top: 0,
@@ -398,6 +517,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 2,
+  },
+  furnitureShadow: {
+    position: 'absolute',
+    bottom: '30%',
+    left: '15%',
+    right: '15%',
+    height: 10,
+    backgroundColor: 'transparent',
+    borderRadius: 100,
+    elevation: 8,
   },
   watermarkContainer: {
     position: 'absolute',
@@ -405,6 +535,7 @@ const styles = StyleSheet.create({
     right: 16,
     alignItems: 'flex-end',
     opacity: 0.6,
+    zIndex: 5,
   },
   watermarkText: {
     color: '#FFFFFF',

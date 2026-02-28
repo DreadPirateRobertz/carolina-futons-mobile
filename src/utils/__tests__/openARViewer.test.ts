@@ -1,36 +1,41 @@
 import { Alert, Linking, Platform } from 'react-native';
 import { openARViewer, getARModelAssets, buildSceneViewerUrl } from '../openARViewer';
+import { getModel3DForProduct, MODEL_CDN_BASE } from '@/data/models3d';
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
 jest.spyOn(Linking, 'canOpenURL').mockImplementation(() => Promise.resolve(true));
 jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-
-const ASSET_BASE = 'https://assets.carolinafutons.com/ar-models';
 
 beforeEach(() => {
   jest.clearAllMocks();
 });
 
 describe('getARModelAssets', () => {
-  it('returns USDZ and GLB URLs for a model ID', () => {
+  it('returns URLs from models3d catalog for known products', () => {
+    const asset = getModel3DForProduct('prod-asheville-full')!;
     const assets = getARModelAssets('asheville-full');
-    expect(assets.usdzUrl).toBe(`${ASSET_BASE}/asheville-full.usdz`);
-    expect(assets.glbUrl).toBe(`${ASSET_BASE}/asheville-full.glb`);
+    expect(assets.usdzUrl).toBe(asset.usdzUrl);
+    expect(assets.glbUrl).toBe(asset.glbUrl);
   });
 
-  it('works for any model ID', () => {
-    const assets = getARModelAssets('blue-ridge-queen');
-    expect(assets.usdzUrl).toContain('blue-ridge-queen.usdz');
-    expect(assets.glbUrl).toContain('blue-ridge-queen.glb');
+  it('returns URLs for murphy bed products', () => {
+    const asset = getModel3DForProduct('prod-murphy-queen-vertical')!;
+    const assets = getARModelAssets('murphy-queen-vertical');
+    expect(assets.usdzUrl).toBe(asset.usdzUrl);
+    expect(assets.glbUrl).toBe(asset.glbUrl);
+  });
+
+  it('falls back to CDN convention for unknown models', () => {
+    const assets = getARModelAssets('unknown-product');
+    expect(assets.usdzUrl).toBe(`${MODEL_CDN_BASE}/usdz/unknown-product.usdz`);
+    expect(assets.glbUrl).toBe(`${MODEL_CDN_BASE}/glb/unknown-product.glb`);
   });
 });
 
 describe('buildSceneViewerUrl', () => {
   it('builds a Scene Viewer URL with file and mode params', () => {
-    const url = buildSceneViewerUrl(
-      `${ASSET_BASE}/asheville-full.glb`,
-      'The Asheville',
-    );
+    const glbUrl = `${MODEL_CDN_BASE}/glb/asheville-full-a1b2c3.glb`;
+    const url = buildSceneViewerUrl(glbUrl, 'The Asheville');
     expect(url).toContain('arvr.google.com/scene-viewer/1.0');
     expect(url).toContain('file=');
     expect(url).toContain('mode=ar_preferred');
@@ -45,13 +50,10 @@ describe('openARViewer', () => {
     });
 
     it('opens USDZ URL via Linking on iOS', async () => {
+      const asset = getModel3DForProduct('prod-asheville-full')!;
       await openARViewer('asheville-full', 'The Asheville');
-      expect(Linking.canOpenURL).toHaveBeenCalledWith(
-        `${ASSET_BASE}/asheville-full.usdz`,
-      );
-      expect(Linking.openURL).toHaveBeenCalledWith(
-        `${ASSET_BASE}/asheville-full.usdz`,
-      );
+      expect(Linking.canOpenURL).toHaveBeenCalledWith(asset.usdzUrl);
+      expect(Linking.openURL).toHaveBeenCalledWith(asset.usdzUrl);
     });
 
     it('shows alert when iOS device cannot open AR', async () => {
@@ -75,7 +77,8 @@ describe('openARViewer', () => {
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
       const url = (Linking.openURL as jest.Mock).mock.calls[0][0] as string;
       expect(url).toContain('intent://arvr.google.com/scene-viewer');
-      expect(url).toContain('asheville-full.glb');
+      expect(url).toContain('asheville-full');
+      expect(url).toContain('.glb');
       expect(url).toContain('ar_preferred');
       expect(url).toContain('The%20Asheville');
     });
