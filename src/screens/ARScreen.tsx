@@ -8,9 +8,10 @@ import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import { FUTON_MODELS, type FutonModel, type Fabric } from '@/data/futons';
-import { PRODUCTS } from '@/data/products';
+import { PRODUCTS, type Product } from '@/data/products';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
+import { ARProductPicker } from '@/components/ARProductPicker';
 import { PlaneIndicator } from '@/components/PlaneIndicator';
 import { events } from '@/services/analytics';
 import { formatPrice } from '@/utils';
@@ -43,6 +44,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [showDimensions, setShowDimensions] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
+  const [showProductPicker, setShowProductPicker] = useState(false);
   const [isPlaced, setIsPlaced] = useState(false);
   const [hasPlacement, setHasPlacement] = useState(false);
   const [lightingWarningDismissed, setLightingWarningDismissed] = useState(false);
@@ -244,6 +246,34 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
 
+  /** Open the product picker overlay */
+  const handleOpenProductPicker = useCallback(() => {
+    setShowProductPicker(true);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, []);
+
+  /** Handle product selection from picker — switch model, keep placement */
+  const handlePickProduct = useCallback(
+    (product: Product) => {
+      const modelId = product.id.replace(/^prod-/, '');
+      const futonModel = FUTON_MODELS.find((m) => m.id === modelId);
+      if (futonModel) {
+        setSelectedModel(futonModel);
+        if (!futonModel.fabrics.find((f) => f.id === selectedFabric.id)) {
+          setSelectedFabric(futonModel.fabrics[0]);
+        }
+      }
+      events.arModelSelected(modelId, product.id);
+      setShowProductPicker(false);
+      if (Platform.OS !== 'web') {
+        Haptics.selectionAsync();
+      }
+    },
+    [selectedFabric],
+  );
+
   // Determine product category for snap-to-wall behavior
   const productCategory = currentProduct?.category;
 
@@ -387,11 +417,21 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         onShare={handleShare}
         onSaveToGallery={handleSaveToGallery}
         onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
+        onBrowseProducts={handleOpenProductPicker}
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}
         isCapturing={isCapturing}
         testID="ar-controls"
       />
+
+      {/* Product picker overlay */}
+      {showProductPicker && (
+        <ARProductPicker
+          selectedProductId={currentProduct?.id}
+          onSelectProduct={handlePickProduct}
+          onClose={() => setShowProductPicker(false)}
+        />
+      )}
     </GestureHandlerRootView>
   );
 }

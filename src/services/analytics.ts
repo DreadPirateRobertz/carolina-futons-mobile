@@ -42,6 +42,7 @@ export type AnalyticsEventName =
   | 'ar_surface_tracking'
   | 'ar_furniture_placed'
   | 'ar_lighting_warning'
+  | 'ar_product_picker_open'
   | 'error';
 
 export interface AnalyticsEvent {
@@ -249,5 +250,8 @@ export const events = {
   },
   arLightingWarning(condition: string) {
     trackEvent('ar_lighting_warning', { condition });
+  },
+  arProductPickerOpen(currentModelId: string) {
+    trackEvent('ar_product_picker_open', { current_model_id: currentModelId });
   },
 } as const;

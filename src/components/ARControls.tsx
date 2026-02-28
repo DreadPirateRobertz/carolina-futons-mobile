@@ -23,6 +23,7 @@ interface Props {
   onSaveToGallery?: () => void;
   onAddToCart?: () => void;
   onToggleWishlist?: () => void;
+  onBrowseProducts?: () => void;
   isInWishlist?: boolean;
   wishlistSaved?: boolean;
   isCapturing?: boolean;
@@ -46,6 +47,7 @@ export function ARControls({
   onShare,
   onSaveToGallery,
   onToggleWishlist,
+  onBrowseProducts,
   isInWishlist,
   wishlistSaved,
   isCapturing,
@@ -145,6 +147,18 @@ export function ARControls({
 
       {/* Share / Save toolbar */}
       <View style={styles.shareToolbar}>
+        {onBrowseProducts && (
+          <TouchableOpacity
+            style={styles.browseButton}
+            onPress={onBrowseProducts}
+            testID="ar-browse-products"
+            accessibilityLabel="Browse all products"
+            accessibilityRole="button"
+          >
+            <Text style={styles.browseButtonIcon}>▦</Text>
+            <Text style={styles.browseButtonText}>Browse</Text>
+          </TouchableOpacity>
+        )}
         {onShare && (
           <TouchableOpacity
             style={styles.shareButton}
@@ -353,6 +367,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginBottom: 12,
+  },
+  browseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#5B8FA8',
+    backgroundColor: 'rgba(91,143,168,0.2)',
+  },
+  browseButtonIcon: {
+    color: '#5B8FA8',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  browseButtonText: {
+    color: '#5B8FA8',
+    fontSize: 13,
+    fontWeight: '600',
   },
   shareButton: {
     flexDirection: 'row',
