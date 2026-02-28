@@ -107,9 +107,28 @@ describe('openARViewer', () => {
     });
   });
 
-  describe('Web / unsupported', () => {
-    it('shows alert on web platform', async () => {
+  describe('Web', () => {
+    beforeEach(() => {
       (Platform as any).OS = 'web';
+    });
+
+    it('calls onWebModelView callback on web platform', async () => {
+      const onWebModelView = jest.fn();
+      await openARViewer('asheville-full', 'The Asheville', { onWebModelView });
+      expect(Linking.openURL).not.toHaveBeenCalled();
+      expect(Alert.alert).not.toHaveBeenCalled();
+      expect(onWebModelView).toHaveBeenCalledTimes(1);
+      expect(onWebModelView).toHaveBeenCalledWith(
+        expect.objectContaining({
+          glbUrl: expect.any(String),
+          usdzUrl: expect.any(String),
+          modelId: 'asheville-full',
+          modelName: 'The Asheville',
+        }),
+      );
+    });
+
+    it('shows alert on web when no onWebModelView callback provided', async () => {
       await openARViewer('asheville-full', 'The Asheville');
       expect(Linking.openURL).not.toHaveBeenCalled();
       expect(Alert.alert).toHaveBeenCalledWith(

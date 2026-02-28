@@ -14,6 +14,7 @@ import { NotificationPreferencesScreen } from '@/screens/NotificationPreferences
 import { WishlistScreen } from '@/screens/WishlistScreen';
 import { StoreLocatorScreen } from '@/screens/StoreLocatorScreen';
 import { StoreDetailScreen } from '@/screens/StoreDetailScreen';
+import { ARWebScreen, type ARWebScreenParams } from '@/screens/ARWebScreen';
 
 export type RootStackParamList = {
   Tabs: undefined;
@@ -30,6 +31,7 @@ export type RootStackParamList = {
   Wishlist: undefined;
   StoreLocator: undefined;
   StoreDetail: { storeId: string };
+  ARWeb: ARWebScreenParams;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,6 +57,11 @@ export function AppNavigator() {
       <Stack.Screen name="Wishlist" component={WishlistScreen} />
       <Stack.Screen name="StoreLocator" component={StoreLocatorScreen} />
       <Stack.Screen name="StoreDetail" component={StoreDetailScreen} />
+      <Stack.Screen
+        name="ARWeb"
+        component={ARWebScreen}
+        options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+      />
     </Stack.Navigator>
   );
 }
