@@ -103,11 +103,11 @@ export const MODELS_3D: Model3DAsset[] = [
   {
     // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     // GLB: fabric chair with wood frame, ~4.1 MB
-    // USDZ: Apple sample teapot (placeholder until usdzconvert is set up)
+    // USDZ: Generated via convert-usdz.sh pipeline (cm-88d.7)
     productId: 'prod-asheville-full',
     glbUrl:
       'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb',
-    usdzUrl: 'https://developer.apple.com/augmented-reality/quick-look/models/teapot/teapot.usdz',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/asheville-full-14c9a033.usdz`,
     dimensions: { width: inToM(54), depth: inToM(34), height: inToM(33) },
     fileSizeBytes: 4_125_648,
     contentHash: '14c9a033',
