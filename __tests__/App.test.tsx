@@ -1,6 +1,25 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+// Mock font packages
+jest.mock('expo-font', () => ({
+  useFonts: () => [true],
+  isLoaded: () => true,
+}));
+jest.mock('@expo-google-fonts/playfair-display', () => ({
+  PlayfairDisplay_400Regular: 'PlayfairDisplay_400Regular',
+  PlayfairDisplay_700Bold: 'PlayfairDisplay_700Bold',
+}));
+jest.mock('@expo-google-fonts/source-sans-3', () => ({
+  SourceSans3_400Regular: 'SourceSans3_400Regular',
+  SourceSans3_600SemiBold: 'SourceSans3_600SemiBold',
+  SourceSans3_700Bold: 'SourceSans3_700Bold',
+}));
+jest.mock('expo-splash-screen', () => ({
+  preventAutoHideAsync: jest.fn(),
+  hideAsync: jest.fn(),
+}));
+
 // Mock expo-camera
 jest.mock('expo-camera', () => {
   const { createElement } = require('react');
