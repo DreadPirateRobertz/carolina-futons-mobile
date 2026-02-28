@@ -48,6 +48,45 @@ describe('useProducts', () => {
     });
   });
 
+  describe('initialCategory', () => {
+    it('starts with the given category pre-selected', () => {
+      const { result } = renderHook(() => useProducts({ initialCategory: 'futons' }));
+      expect(result.current.selectedCategory).toBe('futons');
+      expect(result.current.products.every((p) => p.category === 'futons')).toBe(true);
+    });
+
+    it('returns only products from the initial category', () => {
+      const futonCount = PRODUCTS.filter((p) => p.category === 'futons').length;
+      const { result } = renderHook(() => useProducts({ initialCategory: 'futons' }));
+      expect(result.current.products.length).toBe(futonCount);
+    });
+
+    it('allows changing category after initialization', () => {
+      const { result } = renderHook(() => useProducts({ initialCategory: 'futons' }));
+      act(() => result.current.setSelectedCategory('covers'));
+      expect(result.current.selectedCategory).toBe('covers');
+      expect(result.current.products.every((p) => p.category === 'covers')).toBe(true);
+    });
+
+    it('allows clearing category to show all', () => {
+      const { result } = renderHook(() => useProducts({ initialCategory: 'futons' }));
+      act(() => result.current.setSelectedCategory(null));
+      expect(result.current.selectedCategory).toBeNull();
+      const categories = new Set(result.current.products.map((p) => p.category));
+      expect(categories.size).toBeGreaterThan(1);
+    });
+
+    it('defaults to no category when not provided', () => {
+      const { result } = renderHook(() => useProducts());
+      expect(result.current.selectedCategory).toBeNull();
+    });
+
+    it('defaults to no category when empty options provided', () => {
+      const { result } = renderHook(() => useProducts({}));
+      expect(result.current.selectedCategory).toBeNull();
+    });
+  });
+
   describe('search', () => {
     it('filters by product name', () => {
       const { result } = renderHook(() => useProducts());

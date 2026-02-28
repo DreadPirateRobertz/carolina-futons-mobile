@@ -1,8 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { PRODUCTS, type Product, type ProductCategory, type SortOption } from '@/data/products';
+import type { Product, ProductCategory, SortOption } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
@@ -24,38 +25,17 @@ export function CategoryScreen({
 }: Props) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
-  const [sortBy, setSortBy] = useState<SortOption>('featured');
+
+  const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
+    initialCategory: categoryId,
+  });
+
+  // Sync hook state when categoryId prop changes
+  useEffect(() => {
+    setSelectedCategory(categoryId ?? null);
+  }, [categoryId, setSelectedCategory]);
 
   const title = categoryTitle ?? categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
-
-  const products = useMemo(() => {
-    let result = PRODUCTS.filter((p) => p.category === categoryId);
-
-    switch (sortBy) {
-      case 'price-asc':
-        result.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        result.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
-        break;
-      case 'newest':
-        result.reverse();
-        break;
-      case 'featured':
-      default:
-        result.sort((a, b) => {
-          if (a.badge === 'Bestseller' && b.badge !== 'Bestseller') return -1;
-          if (b.badge === 'Bestseller' && a.badge !== 'Bestseller') return 1;
-          return b.reviewCount - a.reviewCount;
-        });
-        break;
-    }
-
-    return result;
-  }, [categoryId, sortBy]);
 
   const renderProduct = useCallback(
     ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,
