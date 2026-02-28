@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { useTheme } from '@/theme';
-import { STORES, type Store, calculateDistance } from '@/data/stores';
+import { type Store, calculateDistance } from '@/data/stores';
+import { useStores } from '@/hooks/useStores';
 import { StoreCard } from '@/components/StoreCard';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchBar } from '@/components/SearchBar';
@@ -17,8 +18,11 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
   const { colors, spacing } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Data from hook — replaces direct STORES import
+  const { stores, isLoading, error } = useStores();
+
   const storesWithDistance = useMemo(() => {
-    return STORES.map((store) => ({
+    return stores.map((store) => ({
       store,
       distance:
         userLatitude != null && userLongitude != null
@@ -30,7 +34,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
       if (b.distance != null) return 1;
       return 0;
     });
-  }, [userLatitude, userLongitude]);
+  }, [stores, userLatitude, userLongitude]);
 
   const filtered = useMemo(() => {
     if (!searchQuery.trim()) return storesWithDistance;
@@ -72,6 +76,47 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
     [searchQuery],
   );
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="stores-loading"
+      >
+        <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
+          <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
+        </View>
+        <View style={styles.centeredMessage}>
+          <Text style={[styles.messageText, { color: colors.espressoLight }]}>
+            Loading showrooms...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="stores-error"
+      >
+        <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
+          <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
+        </View>
+        <View style={styles.centeredMessage}>
+          <Text style={[styles.messageText, { color: colors.espressoLight }]}>
+            We couldn't load showroom locations
+          </Text>
+          <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
+            {error.message}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View
       style={[styles.container, { backgroundColor: colors.sandBase }]}
@@ -80,7 +125,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
         <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
         <Text style={[styles.subtitle, { color: colors.espressoLight }]}>
-          {STORES.length} locations across the Carolinas
+          {stores.length} locations across the Carolinas
         </Text>
       </View>
 
@@ -127,5 +172,21 @@ const styles = StyleSheet.create({
   listContent: {
     flexGrow: 1,
     paddingBottom: 24,
+  },
+  centeredMessage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  messageText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  errorDetail: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    opacity: 0.7,
   },
 });

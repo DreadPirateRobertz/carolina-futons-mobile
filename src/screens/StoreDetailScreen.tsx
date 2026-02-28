@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import {
-  STORES,
   type Store,
   type AppointmentType,
   APPOINTMENT_TYPES,
   isStoreOpen,
   formatPhone,
 } from '@/data/stores';
+import { useStoreById } from '@/hooks/useStores';
 import { Button } from '@/components/Button';
 
 interface Props {
@@ -28,7 +28,11 @@ interface Props {
 
 export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
-  const store = storeProp ?? STORES.find((s) => s.id === storeId);
+
+  // Data from hook — replaces direct STORES import
+  const { store: hookStore, isLoading, error } = useStoreById(storeId);
+  const store = storeProp ?? hookStore;
+
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentType | null>(null);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
@@ -55,6 +59,37 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
     if (!selectedAppointment) return;
     setBookingConfirmed(true);
   }, [selectedAppointment]);
+
+  // Loading state
+  if (isLoading && !storeProp) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="store-loading"
+      >
+        <Text style={[styles.errorText, { color: colors.espressoLight }]}>
+          Loading store details...
+        </Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && !storeProp) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="store-error"
+      >
+        <Text style={[styles.errorText, { color: colors.espressoLight }]}>
+          We couldn't load this store
+        </Text>
+        <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
+          {error.message}
+        </Text>
+      </View>
+    );
+  }
 
   if (!store) {
     return (
@@ -377,5 +412,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 40,
+  },
+  errorDetail: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    opacity: 0.7,
   },
 });
