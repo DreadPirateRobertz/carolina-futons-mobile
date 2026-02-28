@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
+import { PRODUCTS, type Product } from '@/data/products';
 
 interface UseFutonModelsReturn {
   models: FutonModel[];
@@ -7,6 +8,7 @@ interface UseFutonModelsReturn {
   isLoading: boolean;
   error: Error | null;
   getModel: (modelId: string) => FutonModel | undefined;
+  getModelById: (modelId: string) => FutonModel | undefined;
   getFabric: (fabricId: string) => Fabric | undefined;
   refresh: () => void;
 }
@@ -45,7 +47,27 @@ export function useFutonModels(): UseFutonModelsReturn {
     isLoading,
     error,
     getModel,
+    getModelById: getModel,
     getFabric,
     refresh,
   };
+}
+
+interface UseProductByModelIdReturn {
+  product: Product | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+/**
+ * Looks up the Product matching a futon model ID.
+ * Convention: product ID = `prod-${modelId}`.
+ */
+export function useProductByModelId(modelId: string | undefined): UseProductByModelIdReturn {
+  const product = useMemo(() => {
+    if (!modelId) return null;
+    return PRODUCTS.find((p) => p.id === `prod-${modelId}`) ?? null;
+  }, [modelId]);
+
+  return { product, isLoading: false, error: null };
 }

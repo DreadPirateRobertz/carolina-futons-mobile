@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react-native';
-import { useFutonModels } from '../useFutonModels';
+import { useFutonModels, useProductByModelId } from '../useFutonModels';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { PRODUCTS } from '@/data/products';
 
 describe('useFutonModels', () => {
   // --- List all models ---
@@ -37,6 +38,22 @@ describe('useFutonModels', () => {
     const { result } = renderHook(() => useFutonModels());
     const model = result.current.getModel('nonexistent-model');
     expect(model).toBeUndefined();
+  });
+
+  it('getModelById is an alias for getModel', () => {
+    const { result } = renderHook(() => useFutonModels());
+    const model = result.current.getModelById(FUTON_MODELS[0].id);
+    expect(model).toEqual(FUTON_MODELS[0]);
+  });
+
+  it('getModelById returns undefined for invalid id', () => {
+    const { result } = renderHook(() => useFutonModels());
+    expect(result.current.getModelById('nonexistent')).toBeUndefined();
+  });
+
+  it('getModelById returns undefined for empty string', () => {
+    const { result } = renderHook(() => useFutonModels());
+    expect(result.current.getModelById('')).toBeUndefined();
   });
 
   // --- Single fabric by ID ---
@@ -143,5 +160,53 @@ describe('useFutonModels', () => {
       expect(model.dimensions.height).toBeGreaterThan(0);
       expect(model.dimensions.seatHeight).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('useProductByModelId', () => {
+  it('returns matching product for valid model id', () => {
+    const { result } = renderHook(() => useProductByModelId('asheville-full'));
+    expect(result.current.product).not.toBeNull();
+    expect(result.current.product!.id).toBe('prod-asheville-full');
+  });
+
+  it('returns null product for invalid model id', () => {
+    const { result } = renderHook(() => useProductByModelId('nonexistent'));
+    expect(result.current.product).toBeNull();
+  });
+
+  it('returns null product for undefined model id', () => {
+    const { result } = renderHook(() => useProductByModelId(undefined));
+    expect(result.current.product).toBeNull();
+  });
+
+  it('returns isLoading false for static data', () => {
+    const { result } = renderHook(() => useProductByModelId('asheville-full'));
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('returns no error for static data', () => {
+    const { result } = renderHook(() => useProductByModelId('asheville-full'));
+    expect(result.current.error).toBeNull();
+  });
+
+  it('updates product when model id changes', () => {
+    const { result, rerender } = renderHook(
+      ({ modelId }) => useProductByModelId(modelId),
+      { initialProps: { modelId: 'asheville-full' as string | undefined } },
+    );
+    expect(result.current.product!.id).toBe('prod-asheville-full');
+
+    rerender({ modelId: 'blue-ridge-queen' });
+    expect(result.current.product!.id).toBe('prod-blue-ridge-queen');
+  });
+
+  it('product has expected fields', () => {
+    const { result } = renderHook(() => useProductByModelId('asheville-full'));
+    const p = result.current.product!;
+    expect(p).toHaveProperty('id');
+    expect(p).toHaveProperty('name');
+    expect(p).toHaveProperty('price');
+    expect(p).toHaveProperty('category');
   });
 });
