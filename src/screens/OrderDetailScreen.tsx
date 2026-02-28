@@ -10,14 +10,14 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { ORDER_STATUS_CONFIG } from '@/data/orders';
+import { useOrderById } from '@/hooks/useOrders';
 import { useCart } from '@/hooks/useCart';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { formatPrice } from '@/utils';
 
 interface Props {
   orderId?: string;
-  orders?: Order[];
   onBack?: () => void;
   onReorderSuccess?: () => void;
   testID?: string;
@@ -26,18 +26,17 @@ interface Props {
 
 export function OrderDetailScreen({
   orderId: orderIdProp,
-  orders: ordersProp,
   onBack,
   onReorderSuccess,
   testID,
   route,
 }: Props) {
-  const orderId = orderIdProp ?? route?.params?.orderId ?? '';
+  const orderId = orderIdProp || route?.params?.orderId || '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
 
-  const allOrders = ordersProp ?? MOCK_ORDERS;
-  const order = allOrders.find((o) => o.id === orderId);
+  // Data from hook — replaces direct MOCK_ORDERS import
+  const { order, isLoading, error } = useOrderById(orderId);
 
   const formatDate = useCallback((iso: string) => {
     const d = new Date(iso);
@@ -71,6 +70,37 @@ export function OrderDetailScreen({
     }
     onReorderSuccess?.();
   }, [order, addItem, onReorderSuccess]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="order-loading"
+      >
+        <Text style={[styles.notFound, { color: colors.espressoLight }]}>
+          Loading order...
+        </Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="order-error"
+      >
+        <Text style={[styles.notFound, { color: colors.espressoLight }]}>
+          We couldn't load this order
+        </Text>
+        <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
+          {error.message}
+        </Text>
+      </View>
+    );
+  }
 
   if (!order) {
     return (
@@ -500,5 +530,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
+  },
+  errorDetail: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    opacity: 0.7,
   },
 });

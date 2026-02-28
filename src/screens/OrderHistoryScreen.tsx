@@ -2,7 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
-import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
+import { useOrders } from '@/hooks/useOrders';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -21,8 +22,11 @@ export function OrderHistoryScreen({
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Use prop orders or fall back to mock data
-  const orders = (ordersProp ?? MOCK_ORDERS)
+  // Data from hook — replaces direct MOCK_ORDERS import
+  const { orders: hookOrders, isLoading, error } = useOrders();
+
+  // Use prop orders or fall back to hook data
+  const orders = (ordersProp ?? hookOrders)
     .slice()
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -111,6 +115,47 @@ export function OrderHistoryScreen({
     },
     [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate],
   );
+
+  // Loading state
+  if (isLoading && !ordersProp) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="orders-loading"
+      >
+        <Text style={[styles.headerTitle, { color: colors.espresso, paddingHorizontal: spacing.lg }]}>
+          My Orders
+        </Text>
+        <View style={styles.centeredMessage}>
+          <Text style={[styles.messageText, { color: colors.espressoLight }]}>
+            Loading orders...
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && !ordersProp) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="orders-error"
+      >
+        <Text style={[styles.headerTitle, { color: colors.espresso, paddingHorizontal: spacing.lg }]}>
+          My Orders
+        </Text>
+        <View style={styles.centeredMessage}>
+          <Text style={[styles.messageText, { color: colors.espressoLight }]}>
+            We couldn't load your orders
+          </Text>
+          <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
+            {error.message}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   if (orders.length === 0) {
     return (
@@ -218,5 +263,21 @@ const styles = StyleSheet.create({
   orderTotal: {
     fontSize: 18,
     fontWeight: '700',
+  },
+  centeredMessage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  messageText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  errorDetail: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    opacity: 0.7,
   },
 });
