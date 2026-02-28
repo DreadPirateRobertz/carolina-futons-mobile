@@ -1,0 +1,42 @@
+import { useMemo, useCallback } from 'react';
+import { STORES, type Store } from '@/data/stores';
+
+interface UseStoresReturn {
+  stores: Store[];
+  isLoading: boolean;
+  error: Error | null;
+  getStoreById: (id: string) => Store | undefined;
+}
+
+/**
+ * Provides store/showroom data for locator and detail screens.
+ * Uses static data now; designed for drop-in Wix CMS API replacement.
+ */
+export function useStores(): UseStoresReturn {
+  const stores = useMemo(() => STORES, []);
+
+  const getStoreById = useCallback(
+    (id: string) => stores.find((s) => s.id === id),
+    [stores],
+  );
+
+  return { stores, isLoading: false, error: null, getStoreById };
+}
+
+interface UseStoreByIdReturn {
+  store: Store | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+/**
+ * Looks up a single store by ID.
+ */
+export function useStoreById(storeId: string | undefined): UseStoreByIdReturn {
+  const store = useMemo(() => {
+    if (!storeId) return null;
+    return STORES.find((s) => s.id === storeId) ?? null;
+  }, [storeId]);
+
+  return { store, isLoading: false, error: null };
+}
