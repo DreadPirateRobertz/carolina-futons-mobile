@@ -7,8 +7,9 @@ import * as Haptics from 'expo-haptics';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import { FUTON_MODELS, type FutonModel, type Fabric } from '@/data/futons';
-import { PRODUCTS, type Product } from '@/data/products';
+import type { FutonModel, Fabric } from '@/data/futons';
+import type { Product } from '@/data/products';
+import { useFutonModels, useProductByModelId } from '@/hooks/useFutonModels';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
 import { ARProductPicker } from '@/components/ARProductPicker';
@@ -37,10 +38,28 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const modelId = initialModelId ?? route?.params?.initialModelId;
   const [permission, requestPermission] = useCameraPermissions();
 
-  const [selectedModel, setSelectedModel] = useState<FutonModel>(
-    FUTON_MODELS.find((m) => m.id === modelId) ?? FUTON_MODELS[0],
-  );
-  const [selectedFabric, setSelectedFabric] = useState<Fabric>(selectedModel.fabrics[0]);
+  // Data from hooks — replaces direct FUTON_MODELS/PRODUCTS imports
+  const { models: futonModels, isLoading: modelsLoading, error: modelsError, getModelById } = useFutonModels();
+
+  const [selectedModel, setSelectedModel] = useState<FutonModel | null>(null);
+
+  // Initialize selectedModel once models are loaded
+  useEffect(() => {
+    if (futonModels.length > 0 && !selectedModel) {
+      setSelectedModel(getModelById(modelId ?? '') ?? futonModels[0]);
+    }
+  }, [futonModels, modelId, getModelById, selectedModel]);
+  const [selectedFabric, setSelectedFabric] = useState<Fabric | null>(null);
+
+  // Initialize selectedFabric when selectedModel changes
+  useEffect(() => {
+    if (selectedModel && !selectedFabric) {
+      setSelectedFabric(selectedModel.fabrics[0]);
+    }
+  }, [selectedModel, selectedFabric]);
+
+  // Product lookup via hook — replaces direct PRODUCTS.find(...)
+  const { product: currentProduct } = useProductByModelId(selectedModel?.id);
   const [showDimensions, setShowDimensions] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
@@ -88,13 +107,12 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [lightingWarning, lightingWarningDismissed, lightingCondition]);
 
-  const currentProduct = PRODUCTS.find((p) => p.id === `prod-${selectedModel.id}`) ?? null;
   const isInWishlist = currentProduct ? wishlist.isInWishlist(currentProduct.id) : false;
 
   const handleSelectModel = useCallback(
     (model: FutonModel) => {
       setSelectedModel(model);
-      if (!model.fabrics.find((f) => f.id === selectedFabric.id)) {
+      if (!selectedFabric || !model.fabrics.find((f) => f.id === selectedFabric.id)) {
         setSelectedFabric(model.fabrics[0]);
       }
       setIsPlaced(false);
@@ -110,12 +128,12 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const handleSelectFabric = useCallback(
     (fabric: Fabric) => {
       setSelectedFabric(fabric);
-      events.selectFabric(`prod-${selectedModel.id}`, fabric.id);
+      if (selectedModel) events.selectFabric(`prod-${selectedModel.id}`, fabric.id);
       if (Platform.OS !== 'web') {
         Haptics.selectionAsync();
       }
     },
-    [selectedModel.id],
+    [selectedModel?.id],
   );
 
   const handleToggleDimensions = useCallback(() => {
@@ -131,6 +149,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   }, [onClose, navigation]);
 
   const handleAddToCart = useCallback(() => {
+    if (!selectedModel || !selectedFabric) return;
     cart.addItem(selectedModel, selectedFabric, 1);
     events.arAddToCart(
       selectedModel.id,
@@ -157,13 +176,13 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       if (anchor?.isValid) {
         setIsPlaced(true);
         setHasPlacement(true);
-        events.arFurniturePlaced(selectedModel.id, anchor.planeId);
+        if (selectedModel) events.arFurniturePlaced(selectedModel.id, anchor.planeId);
         if (Platform.OS !== 'web') {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         }
       }
     },
-    [hasFloor, detectionState, performHitTest, selectedModel.id],
+    [hasFloor, detectionState, performHitTest, selectedModel?.id],
   );
 
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -174,7 +193,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         format: 'png',
         quality: 1,
       });
-      events.arScreenshot(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric) events.arScreenshot(selectedModel.id, selectedFabric.id);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -185,13 +204,13 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     } finally {
       setIsCapturing(false);
     }
-  }, [selectedModel.id, selectedFabric.id]);
+  }, [selectedModel?.id, selectedFabric?.id]);
 
   const handleShare = useCallback(async () => {
     const uri = await captureScene();
     if (!uri) return;
 
-    const message = `Check out the ${selectedModel.name} in ${selectedFabric.name} — ${formatPrice(selectedModel.basePrice + selectedFabric.price)}!\n\nViewed in AR with Carolina Futons\ncarolinafutons.com`;
+    const message = `Check out the ${selectedModel?.name} in ${selectedFabric?.name} — ${formatPrice((selectedModel?.basePrice ?? 0) + (selectedFabric?.price ?? 0))}!\n\nViewed in AR with Carolina Futons\ncarolinafutons.com`;
 
     try {
       if (Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
@@ -202,7 +221,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       } else {
         await Share.share({ message, url: uri });
       }
-      events.arShare(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric) events.arShare(selectedModel.id, selectedFabric.id);
     } catch {
       // User cancelled share — not an error
     }
@@ -222,7 +241,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         return;
       }
       await MediaLibrary.saveToLibraryAsync(uri);
-      events.arSaveToGallery(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric) events.arSaveToGallery(selectedModel.id, selectedFabric.id);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -230,21 +249,21 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     } catch {
       Alert.alert('Save Failed', 'Could not save to your photo library. Please try again.');
     }
-  }, [captureScene, selectedModel.id, selectedFabric.id]);
+  }, [captureScene, selectedModel?.id, selectedFabric?.id]);
 
   const handleToggleWishlist = useCallback(() => {
     if (!currentProduct) return;
     wishlist.toggle(currentProduct);
     const nowInWishlist = !isInWishlist;
     if (nowInWishlist) {
-      events.arSaveToWishlist(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric) events.arSaveToWishlist(selectedModel.id, selectedFabric.id);
       setWishlistSaved(true);
       setTimeout(() => setWishlistSaved(false), 2000);
     }
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [currentProduct, wishlist, isInWishlist, selectedModel.id, selectedFabric.id]);
+  }, [currentProduct, wishlist, isInWishlist, selectedModel?.id, selectedFabric?.id]);
 
   /** Open the product picker overlay */
   const handleOpenProductPicker = useCallback(() => {
@@ -258,10 +277,10 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const handlePickProduct = useCallback(
     (product: Product) => {
       const modelId = product.id.replace(/^prod-/, '');
-      const futonModel = FUTON_MODELS.find((m) => m.id === modelId);
+      const futonModel = getModelById(modelId);
       if (futonModel) {
         setSelectedModel(futonModel);
-        if (!futonModel.fabrics.find((f) => f.id === selectedFabric.id)) {
+        if (!selectedFabric || !futonModel.fabrics.find((f) => f.id === selectedFabric.id)) {
           setSelectedFabric(futonModel.fabrics[0]);
         }
       }
@@ -316,6 +335,36 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             </TouchableOpacity>
           )}
         </View>
+      </View>
+    );
+  }
+
+  // Models loading
+  if (modelsLoading) {
+    return (
+      <View style={styles.permissionContainer} testID="ar-loading">
+        <Text style={styles.permissionText}>Loading futon models...</Text>
+      </View>
+    );
+  }
+
+  // Models error
+  if (modelsError) {
+    return (
+      <View style={styles.permissionContainer} testID="ar-error">
+        <View style={styles.permissionCard}>
+          <Text style={styles.permissionTitle}>We couldn't load futon models</Text>
+          <Text style={styles.permissionDescription}>{modelsError.message}</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Waiting for model initialization
+  if (!selectedModel || !selectedFabric) {
+    return (
+      <View style={styles.permissionContainer} testID="ar-loading">
+        <Text style={styles.permissionText}>Loading...</Text>
       </View>
     );
   }
@@ -405,7 +454,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
 
       {/* Bottom controls */}
       <ARControls
-        models={FUTON_MODELS}
+        models={futonModels}
         selectedModel={selectedModel}
         selectedFabric={selectedFabric}
         showDimensions={showDimensions}
