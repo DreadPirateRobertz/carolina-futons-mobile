@@ -11,7 +11,9 @@
       "backgroundColor": "#E8D5B7",
       "resizeMode": "contain"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.carolinafutons.mobile"
@@ -28,7 +30,7 @@
     },
     "scheme": "carolinafutons",
     "plugins": [
-      "expo-router"
+      "expo-asset"
     ]
   }
 }
