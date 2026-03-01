@@ -126,11 +126,13 @@ export async function getDeviceTier(): Promise<DeviceTier> {
 
 /**
  * Check if a product is eligible for AR viewing.
- * Only futons, frames, and murphy-beds that are in-stock qualify.
+ * Only futons, frames, and murphy-beds that are in-stock and have a 3D model qualify.
  */
-export function isProductAREnabled(product: ProductLike): boolean {
+export function isProductAREnabled(product: ProductLike & { id?: string }): boolean {
   if (!product.inStock) return false;
-  return AR_CATEGORIES.has(product.category);
+  if (!AR_CATEGORIES.has(product.category)) return false;
+  if (product.id && !hasARModel(product.id)) return false;
+  return true;
 }
 
 /**

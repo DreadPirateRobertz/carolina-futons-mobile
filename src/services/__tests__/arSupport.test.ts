@@ -160,6 +160,22 @@ describeIfImplemented('arSupport service', () => {
     it('returns false for out-of-stock products regardless of category', () => {
       expect(arSupport.isProductAREnabled({ category: 'futons', inStock: false })).toBe(false);
     });
+
+    it('returns true for murphy-beds category', () => {
+      expect(arSupport.isProductAREnabled({ category: 'murphy-beds', inStock: true })).toBe(true);
+    });
+
+    it('returns true for product with id that has AR model', () => {
+      expect(arSupport.isProductAREnabled({ id: 'prod-asheville-full', category: 'futons', inStock: true })).toBe(true);
+    });
+
+    it('returns false for product with id that has no AR model', () => {
+      expect(arSupport.isProductAREnabled({ id: 'prod-nonexistent', category: 'futons', inStock: true })).toBe(false);
+    });
+
+    it('returns true when no id provided (backward compatible)', () => {
+      expect(arSupport.isProductAREnabled({ category: 'futons', inStock: true })).toBe(true);
+    });
   });
 
   // ==========================================================================
