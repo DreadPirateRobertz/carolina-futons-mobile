@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { FUTON_MODELS, FABRICS, inchesToFeetDisplay, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
 
-export { inchesToFeetDisplay };
+// Re-export types for screens — avoids direct src/data imports
 export type { FutonModel, Fabric };
 
 interface UseFutonModelsReturn {

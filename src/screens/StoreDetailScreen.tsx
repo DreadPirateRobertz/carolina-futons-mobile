@@ -10,14 +10,8 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '@/theme';
-import {
-  useStoreById,
-  isStoreOpen,
-  formatPhone,
-  APPOINTMENT_TYPES,
-  type Store,
-  type AppointmentType,
-} from '@/hooks/useStores';
+import { useStoreById, APPOINTMENT_TYPES, type Store, type AppointmentType } from '@/hooks/useStores';
+import { isStoreOpen, formatPhone } from '@/utils';
 import { Button } from '@/components/Button';
 
 interface Props {

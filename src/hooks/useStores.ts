@@ -1,15 +1,8 @@
 import { useMemo, useCallback } from 'react';
-import {
-  STORES,
-  calculateDistance,
-  isStoreOpen,
-  formatPhone,
-  APPOINTMENT_TYPES,
-  type Store,
-  type AppointmentType,
-} from '@/data/stores';
+import { STORES, APPOINTMENT_TYPES, type Store, type AppointmentType } from '@/data/stores';
 
-export { calculateDistance, isStoreOpen, formatPhone, APPOINTMENT_TYPES };
+// Re-export for screens — avoids direct src/data imports
+export { APPOINTMENT_TYPES };
 export type { Store, AppointmentType };
 
 interface UseStoresReturn {

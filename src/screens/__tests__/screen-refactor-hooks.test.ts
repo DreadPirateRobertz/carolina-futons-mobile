@@ -1,7 +1,8 @@
 /**
  * Refactor verification tests: screens must import types/constants from hooks,
- * not directly from @/data/ modules. This ensures the hook abstraction layer
- * is the single entry point for data, making Wix API migration seamless.
+ * not directly from @/data/ modules. Utility functions live in @/utils/.
+ * This ensures the hook abstraction layer is the single entry point for data,
+ * making Wix API migration seamless.
  *
  * Tests verify by reading source files and checking import statements.
  */
@@ -48,17 +49,16 @@ describe('Hook re-exports', () => {
     expect(exports.ORDER_STATUS_CONFIG.cancelled).toBeDefined();
   });
 
-  it('useStores re-exports store utilities', () => {
+  it('useStores re-exports APPOINTMENT_TYPES', () => {
     const exports = require('@/hooks/useStores');
-    expect(exports.calculateDistance).toBeDefined();
-    expect(exports.isStoreOpen).toBeDefined();
-    expect(exports.formatPhone).toBeDefined();
     expect(exports.APPOINTMENT_TYPES).toBeDefined();
   });
 
-  it('useFutonModels re-exports inchesToFeetDisplay', () => {
-    const exports = require('@/hooks/useFutonModels');
-    expect(exports.inchesToFeetDisplay).toBeDefined();
-    expect(exports.inchesToFeetDisplay(72)).toBe("6'");
+  it('utility functions live in @/utils', () => {
+    const utils = require('@/utils');
+    expect(utils.calculateDistance).toBeDefined();
+    expect(utils.isStoreOpen).toBeDefined();
+    expect(utils.formatPhone).toBeDefined();
+    expect(utils.inchesToFeetDisplay).toBeDefined();
   });
 });

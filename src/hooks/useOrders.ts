@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/data/orders';
 
+// Re-export for screens — avoids direct src/data imports
 export { ORDER_STATUS_CONFIG };
 export type { Order, OrderStatus };
 
