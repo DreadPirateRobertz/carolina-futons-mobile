@@ -1,10 +1,12 @@
 import React, { useCallback, lazy, Suspense } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { TabNavigator } from './TabNavigator';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
+import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
@@ -58,6 +60,11 @@ const CollectionDetailScreen = lazy(() =>
     default: m.CollectionDetailScreen,
   })),
 );
+const OrderConfirmationScreen = lazy(() =>
+  import('@/screens/OrderConfirmationScreen').then((m) => ({
+    default: m.OrderConfirmationScreen,
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -81,6 +88,7 @@ export type RootStackParamList = {
   ProductDetail: { slug: string };
   Category: { slug: string };
   Checkout: undefined;
+  OrderConfirmation: { order: OrderConfirmation };
   OrderHistory: undefined;
   OrderDetail: { orderId: string };
   Login: undefined;
@@ -144,7 +152,41 @@ export function AppNavigator() {
         />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
         <Stack.Screen name="Category" component={CategoryScreen} />
-        <Stack.Screen name="Checkout" component={CheckoutScreen} />
+        <Stack.Screen name="Checkout">
+          {({ navigation: nav }) => (
+            <CheckoutScreen
+              onOrderComplete={(order) => {
+                nav.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Tabs' }, { name: 'OrderConfirmation', params: { order } }],
+                  }),
+                );
+              }}
+              onBack={() => nav.goBack()}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="OrderConfirmation">
+          {({ route, navigation: nav }) => (
+            <OrderConfirmationScreen
+              order={(route.params as { order: OrderConfirmation }).order}
+              onContinueShopping={() => {
+                nav.dispatch(
+                  CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
+                );
+              }}
+              onViewOrders={() => {
+                nav.dispatch(
+                  CommonActions.reset({
+                    index: 1,
+                    routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
+                  }),
+                );
+              }}
+            />
+          )}
+        </Stack.Screen>
         <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
         <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
         <Stack.Screen name="Login" component={LoginScreen} options={{ presentation: 'modal' }} />
