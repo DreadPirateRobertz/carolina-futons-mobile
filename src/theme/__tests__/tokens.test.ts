@@ -1,4 +1,4 @@
-import { colors, spacing, borderRadius, typography, shadows, transitions } from '@/theme/tokens';
+import { colors, spacing, borderRadius, typography, shadows, transitions, easing } from '@/theme/tokens';
 
 describe('Design Tokens', () => {
   describe('colors', () => {
@@ -172,9 +172,44 @@ describe('Design Tokens', () => {
   });
 
   describe('transitions', () => {
-    it('defines timing values in milliseconds', () => {
-      expect(transitions.fast).toBeLessThan(transitions.medium);
-      expect(transitions.medium).toBeLessThan(transitions.slow);
+    it('defines duration and easing for each transition', () => {
+      for (const key of ['fast', 'medium', 'slow', 'cardHover'] as const) {
+        expect(transitions[key]).toHaveProperty('duration');
+        expect(transitions[key]).toHaveProperty('easing');
+        expect(typeof transitions[key].duration).toBe('number');
+        expect(typeof transitions[key].easing).toBe('function');
+      }
+    });
+
+    it('durations increase from fast to slow', () => {
+      expect(transitions.fast.duration).toBeLessThan(transitions.medium.duration);
+      expect(transitions.medium.duration).toBeLessThan(transitions.slow.duration);
+    });
+
+    it('cardHover uses Material standard curve', () => {
+      expect(transitions.cardHover.duration).toBe(300);
+      expect(transitions.cardHover.easing).toBe(easing.cardHover);
+    });
+  });
+
+  describe('easing', () => {
+    it('defines all easing functions', () => {
+      expect(typeof easing.ease).toBe('function');
+      expect(typeof easing.cardHover).toBe('function');
+      expect(typeof easing.easeIn).toBe('function');
+      expect(typeof easing.easeOut).toBe('function');
+    });
+
+    it('easing functions return values in [0,1] range', () => {
+      // Easing.bezier returns a function that maps t ∈ [0,1] → value
+      for (const fn of Object.values(easing)) {
+        expect(fn(0)).toBeCloseTo(0, 1);
+        expect(fn(1)).toBeCloseTo(1, 1);
+        // Mid-point should be between 0 and 1
+        const mid = fn(0.5);
+        expect(mid).toBeGreaterThanOrEqual(0);
+        expect(mid).toBeLessThanOrEqual(1);
+      }
     });
   });
 });

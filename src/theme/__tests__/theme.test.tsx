@@ -57,9 +57,10 @@ describe('Design Tokens', () => {
     expect(typography.body.fontSize).toBe(15);
   });
 
-  it('exports transition durations', () => {
-    expect(transitions.fast).toBe(150);
-    expect(transitions.medium).toBe(250);
+  it('exports transition configs with duration and easing', () => {
+    expect(transitions.fast.duration).toBe(150);
+    expect(transitions.medium.duration).toBe(250);
+    expect(typeof transitions.fast.easing).toBe('function');
   });
 });
 

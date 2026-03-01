@@ -114,9 +114,21 @@ export const typography = {
   button: { fontSize: 15, fontWeight: '600' as const, lineHeight: 15, letterSpacing: 0.5 },
 } as const;
 
+import { Easing } from 'react-native';
+
+// Easing curves matching web CSS transitions:
+// ease        → Easing.bezier(0.25, 0.1, 0.25, 1.0)
+// cardHover   → Easing.bezier(0.4, 0, 0.2, 1) (Material standard)
+export const easing = {
+  ease: Easing.bezier(0.25, 0.1, 0.25, 1.0),
+  cardHover: Easing.bezier(0.4, 0, 0.2, 1),
+  easeIn: Easing.bezier(0.42, 0, 1, 1),
+  easeOut: Easing.bezier(0, 0, 0.58, 1),
+};
+
 export const transitions = {
-  fast: 150,
-  medium: 250,
-  slow: 400,
-  cardHover: 300,
+  fast: { duration: 150, easing: easing.ease },
+  medium: { duration: 250, easing: easing.ease },
+  slow: { duration: 400, easing: easing.ease },
+  cardHover: { duration: 300, easing: easing.cardHover },
 } as const;
