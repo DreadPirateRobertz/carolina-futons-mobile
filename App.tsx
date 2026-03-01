@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
 import {
   PlayfairDisplay_400Regular,
@@ -22,6 +23,9 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -50,24 +54,29 @@ export default function App() {
 
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
-      <ThemeProvider>
-        <ConnectivityProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <NotificationProvider>
-                  <ErrorBoundary>
-                    <NavigationContainer linking={linkingConfig}>
-                      <OfflineBanner />
-                      <AppNavigator />
-                    </NavigationContainer>
-                  </ErrorBoundary>
-                </NotificationProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </ConnectivityProvider>
-      </ThemeProvider>
+      <StripeProvider
+        publishableKey={STRIPE_PUBLISHABLE_KEY}
+        merchantIdentifier={STRIPE_MERCHANT_ID}
+      >
+        <ThemeProvider>
+          <ConnectivityProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <NotificationProvider>
+                    <ErrorBoundary>
+                      <NavigationContainer linking={linkingConfig}>
+                        <OfflineBanner />
+                        <AppNavigator />
+                      </NavigationContainer>
+                    </ErrorBoundary>
+                  </NotificationProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ConnectivityProvider>
+        </ThemeProvider>
+      </StripeProvider>
     </SafeAreaProvider>
   );
 }
