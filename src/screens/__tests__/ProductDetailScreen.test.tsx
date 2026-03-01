@@ -571,12 +571,15 @@ describe('ProductDetailScreen', () => {
       Object.defineProperty(Platform, 'OS', { value: 'web' });
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('detail-ar-button'));
-      expect(mockNavigate).toHaveBeenCalledWith('ARWeb', expect.objectContaining({
-        glbUrl: expect.any(String),
-        usdzUrl: expect.any(String),
-        title: 'The Asheville',
-        productId: expect.stringContaining('prod-'),
-      }));
+      expect(mockNavigate).toHaveBeenCalledWith(
+        'ARWeb',
+        expect.objectContaining({
+          glbUrl: expect.any(String),
+          usdzUrl: expect.any(String),
+          title: 'The Asheville',
+          productId: expect.stringContaining('prod-'),
+        }),
+      );
     });
 
     it('passes catalog GLB URL for known product on web', () => {

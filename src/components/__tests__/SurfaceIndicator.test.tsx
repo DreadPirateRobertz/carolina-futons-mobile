@@ -32,9 +32,7 @@ describe('SurfaceIndicator', () => {
   });
 
   it('renders with custom testID', () => {
-    const { getByTestId } = render(
-      <SurfaceIndicator {...defaultProps} testID="custom-surface" />,
-    );
+    const { getByTestId } = render(<SurfaceIndicator {...defaultProps} testID="custom-surface" />);
     expect(getByTestId('custom-surface')).toBeTruthy();
   });
 

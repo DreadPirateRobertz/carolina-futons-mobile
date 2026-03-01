@@ -79,9 +79,7 @@ describe('useOfflineSync', () => {
 
     expect(onSync).toHaveBeenCalledTimes(1);
     expect(onSync).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ domain: 'cart', action: 'ADD_ITEM' }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ domain: 'cart', action: 'ADD_ITEM' })]),
     );
     expect(getByTestId('pending').props.children).toBe(0);
   });

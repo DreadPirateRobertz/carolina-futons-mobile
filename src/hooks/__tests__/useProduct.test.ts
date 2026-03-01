@@ -48,10 +48,9 @@ describe('useProduct', () => {
   });
 
   it('updates product when ID changes', () => {
-    const { result, rerender } = renderHook(
-      ({ id }: { id: string }) => useProduct(id),
-      { initialProps: { id: PRODUCTS[0].id } },
-    );
+    const { result, rerender } = renderHook(({ id }: { id: string }) => useProduct(id), {
+      initialProps: { id: PRODUCTS[0].id },
+    });
     expect(result.current.product?.id).toBe(PRODUCTS[0].id);
 
     rerender({ id: PRODUCTS[1].id });
@@ -59,10 +58,9 @@ describe('useProduct', () => {
   });
 
   it('handles rapid ID changes without stale data', () => {
-    const { result, rerender } = renderHook(
-      ({ id }: { id: string }) => useProduct(id),
-      { initialProps: { id: PRODUCTS[0].id } },
-    );
+    const { result, rerender } = renderHook(({ id }: { id: string }) => useProduct(id), {
+      initialProps: { id: PRODUCTS[0].id },
+    });
 
     // Rapid changes
     rerender({ id: PRODUCTS[1].id });
@@ -121,10 +119,9 @@ describe('useProduct', () => {
   });
 
   it('refresh after rerender returns correct product', () => {
-    const { result, rerender } = renderHook(
-      ({ id }: { id: string }) => useProduct(id),
-      { initialProps: { id: PRODUCTS[0].id } },
-    );
+    const { result, rerender } = renderHook(({ id }: { id: string }) => useProduct(id), {
+      initialProps: { id: PRODUCTS[0].id },
+    });
     rerender({ id: PRODUCTS[1].id });
     result.current.refresh();
     expect(result.current.product?.id).toBe(PRODUCTS[1].id);

@@ -42,10 +42,7 @@ describe('orderCache', () => {
     it('stores orders to AsyncStorage', async () => {
       mockSetItem.mockResolvedValue(undefined);
       await cacheOrders(SAMPLE_ORDERS as any);
-      expect(mockSetItem).toHaveBeenCalledWith(
-        ORDER_CACHE_KEY,
-        expect.any(String),
-      );
+      expect(mockSetItem).toHaveBeenCalledWith(ORDER_CACHE_KEY, expect.any(String));
       const stored = JSON.parse(mockSetItem.mock.calls[0][1]);
       expect(stored.orders).toHaveLength(2);
       expect(stored.cachedAt).toBeDefined();

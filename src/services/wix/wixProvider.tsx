@@ -62,11 +62,12 @@ export function useWixProducts(collectionId?: string): {
       });
       setProducts(result.products);
     } catch (err) {
-      const message = err instanceof WixApiError
-        ? err.message
-        : err instanceof Error
+      const message =
+        err instanceof WixApiError
           ? err.message
-          : 'Unknown error fetching products';
+          : err instanceof Error
+            ? err.message
+            : 'Unknown error fetching products';
       setError(message);
     } finally {
       setLoading(false);
@@ -98,11 +99,12 @@ export function useWixCollections(): {
       const result = await client.queryCollections({ limit: 100 });
       setCollections(result.collections);
     } catch (err) {
-      const message = err instanceof WixApiError
-        ? err.message
-        : err instanceof Error
+      const message =
+        err instanceof WixApiError
           ? err.message
-          : 'Unknown error fetching collections';
+          : err instanceof Error
+            ? err.message
+            : 'Unknown error fetching collections';
       setError(message);
     } finally {
       setLoading(false);

@@ -195,9 +195,7 @@ describe('WixClient', () => {
     });
 
     it('passes pagination parameters', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryProducts({ limit: 25, offset: 50 });
@@ -208,9 +206,7 @@ describe('WixClient', () => {
     });
 
     it('passes sort parameters', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryProducts({ sort: 'price-asc' });
@@ -220,9 +216,7 @@ describe('WixClient', () => {
     });
 
     it('passes category filter via collectionIds', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryProducts({ collectionId: 'collection-futons' });
@@ -236,9 +230,7 @@ describe('WixClient', () => {
     });
 
     it('passes search query filter', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryProducts({ search: 'asheville' });
@@ -252,9 +244,7 @@ describe('WixClient', () => {
     });
 
     it('clamps limit to 100 max', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryProducts({ limit: 500 });
@@ -264,9 +254,7 @@ describe('WixClient', () => {
     });
 
     it('throws WixApiError on non-200 response', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Unauthorized' }, 401),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Unauthorized' }, 401));
 
       const client = new WixClient(TEST_CONFIG);
       await expect(client.queryProducts()).rejects.toThrow(WixApiError);
@@ -286,9 +274,7 @@ describe('WixClient', () => {
 
   describe('getProduct', () => {
     it('fetches single product by ID', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ product: WIX_PRODUCT_FIXTURE }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ product: WIX_PRODUCT_FIXTURE }));
 
       const client = new WixClient(TEST_CONFIG);
       const product = await client.getProduct('wix-prod-001');
@@ -302,9 +288,7 @@ describe('WixClient', () => {
     });
 
     it('throws WixApiError for not found', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Product not found' }, 404),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Product not found' }, 404));
 
       const client = new WixClient(TEST_CONFIG);
       await expect(client.getProduct('nonexistent')).rejects.toThrow(WixApiError);
@@ -339,9 +323,7 @@ describe('WixClient', () => {
     });
 
     it('throws WixApiError when product not found by slug', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ products: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ products: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await expect(client.getProductBySlug('nonexistent')).rejects.toThrow(
@@ -380,9 +362,7 @@ describe('WixClient', () => {
     });
 
     it('passes pagination parameters', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ collections: [], totalResults: 0 }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ collections: [], totalResults: 0 }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryCollections({ limit: 10, offset: 0 });
@@ -405,9 +385,7 @@ describe('WixClient', () => {
               id: 'inv-001',
               productId: 'wix-prod-001',
               trackQuantity: true,
-              variants: [
-                { variantId: 'var-1', inStock: true, quantity: 15 },
-              ],
+              variants: [{ variantId: 'var-1', inStock: true, quantity: 15 }],
             },
           ],
         }),
@@ -429,9 +407,7 @@ describe('WixClient', () => {
               id: 'inv-001',
               productId: 'wix-prod-001',
               trackQuantity: true,
-              variants: [
-                { variantId: 'var-1', inStock: false, quantity: 0 },
-              ],
+              variants: [{ variantId: 'var-1', inStock: false, quantity: 0 }],
             },
           ],
         }),
@@ -445,9 +421,7 @@ describe('WixClient', () => {
     });
 
     it('handles missing inventory gracefully', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ inventoryItems: [] }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ inventoryItems: [] }));
 
       const client = new WixClient(TEST_CONFIG);
       const result = await client.getInventoryStatus('unknown-product');
@@ -482,7 +456,12 @@ describe('WixClient', () => {
       });
 
       expect(result.items).toHaveLength(2);
-      expect(result.items[0]).toEqual({ _id: 'rev-1', productId: 'prod-1', rating: 5, body: 'Great!' });
+      expect(result.items[0]).toEqual({
+        _id: 'rev-1',
+        productId: 'prod-1',
+        rating: 5,
+        body: 'Great!',
+      });
       expect(result.totalResults).toBe(2);
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
@@ -491,9 +470,7 @@ describe('WixClient', () => {
     });
 
     it('sends correct endpoint', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }));
 
       const client = new WixClient(TEST_CONFIG);
       await client.queryData('SomeCollection');
@@ -510,9 +487,7 @@ describe('WixClient', () => {
     });
 
     it('handles empty result set', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ dataItems: [], pagingMetadata: { total: 0 } }));
 
       const client = new WixClient(TEST_CONFIG);
       const result = await client.queryData('Reviews');

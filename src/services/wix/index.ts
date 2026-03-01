@@ -15,26 +15,12 @@ export {
   type QueryCollectionsOptions,
 } from './wixClient';
 
-export {
-  WixProvider,
-  useWixClient,
-  useWixProducts,
-  useWixCollections,
-} from './wixProvider';
+export { WixProvider, useWixClient, useWixProducts, useWixCollections } from './wixProvider';
 
 export { getWixConfig, isWixConfigured } from './config';
 
 export { getWixSdkClient, resetWixSdkClient } from './wixSdkClient';
 
-export {
-  WixAuthService,
-  type AuthResult,
-  type AuthUser,
-} from './wixAuth';
+export { WixAuthService, type AuthResult, type AuthUser } from './wixAuth';
 
-export {
-  saveTokens,
-  loadTokens,
-  clearTokens,
-  type WixTokens,
-} from './tokenStorage';
+export { saveTokens, loadTokens, clearTokens, type WixTokens } from './tokenStorage';

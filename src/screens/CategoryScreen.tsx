@@ -2,7 +2,12 @@ import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { useProducts, type Product, type ProductCategory, type SortOption } from '@/hooks/useProducts';
+import {
+  useProducts,
+  type Product,
+  type ProductCategory,
+  type SortOption,
+} from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';

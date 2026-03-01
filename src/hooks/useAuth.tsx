@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
 import { WixAuthService } from '@/services/wix/wixAuth';
 
 export interface User {
@@ -101,34 +108,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       if (mounted) dispatch({ type: 'INIT_DONE' });
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [authService]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    dispatch({ type: 'AUTH_START' });
-    const result = await authService.loginWithEmail(email, password);
-    if (result.success) {
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-        return;
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      dispatch({ type: 'AUTH_START' });
+      const result = await authService.loginWithEmail(email, password);
+      if (result.success) {
+        const member = await authService.getCurrentMember();
+        if (member) {
+          dispatch({ type: 'AUTH_SUCCESS', user: member });
+          return;
+        }
       }
-    }
-    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Login failed' });
-  }, [authService]);
+      dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Login failed' });
+    },
+    [authService],
+  );
 
-  const signUp = useCallback(async (email: string, password: string, displayName: string) => {
-    dispatch({ type: 'AUTH_START' });
-    const result = await authService.register(email, password, displayName);
-    if (result.success) {
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-        return;
+  const signUp = useCallback(
+    async (email: string, password: string, displayName: string) => {
+      dispatch({ type: 'AUTH_START' });
+      const result = await authService.register(email, password, displayName);
+      if (result.success) {
+        const member = await authService.getCurrentMember();
+        if (member) {
+          dispatch({ type: 'AUTH_SUCCESS', user: member });
+          return;
+        }
       }
-    }
-    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Registration failed' });
-  }, [authService]);
+      dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Registration failed' });
+    },
+    [authService],
+  );
 
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
@@ -156,11 +171,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Apple login failed' });
   }, [authService]);
 
-  const resetPassword = useCallback(async (email: string) => {
-    dispatch({ type: 'AUTH_START' });
-    await authService.sendPasswordReset(email);
-    dispatch({ type: 'CLEAR_ERROR' });
-  }, [authService]);
+  const resetPassword = useCallback(
+    async (email: string) => {
+      dispatch({ type: 'AUTH_START' });
+      await authService.sendPasswordReset(email);
+      dispatch({ type: 'CLEAR_ERROR' });
+    },
+    [authService],
+  );
 
   const signOut = useCallback(() => {
     authService.logout();

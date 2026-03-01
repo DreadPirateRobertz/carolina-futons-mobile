@@ -201,7 +201,9 @@ describe('deepLink', () => {
     });
 
     it('resolves notifications', () => {
-      expect(resolveRoute(makeLink('notifications'))).toEqual({ screen: 'NotificationPreferences' });
+      expect(resolveRoute(makeLink('notifications'))).toEqual({
+        screen: 'NotificationPreferences',
+      });
     });
 
     it('resolves stores to StoreLocator', () => {

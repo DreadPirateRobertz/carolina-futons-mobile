@@ -7,7 +7,12 @@ import * as Haptics from 'expo-haptics';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import { useFutonModels, useProductByModelId, type FutonModel, type Fabric } from '@/hooks/useFutonModels';
+import {
+  useFutonModels,
+  useProductByModelId,
+  type FutonModel,
+  type Fabric,
+} from '@/hooks/useFutonModels';
 import type { Product } from '@/hooks/useProducts';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
@@ -38,7 +43,12 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
 
   // Data from hooks — replaces direct FUTON_MODELS/PRODUCTS imports
-  const { models: futonModels, isLoading: modelsLoading, error: modelsError, getModelById } = useFutonModels();
+  const {
+    models: futonModels,
+    isLoading: modelsLoading,
+    error: modelsError,
+    getModelById,
+  } = useFutonModels();
 
   const [selectedModel, setSelectedModel] = useState<FutonModel | null>(null);
 
@@ -240,7 +250,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         return;
       }
       await MediaLibrary.saveToLibraryAsync(uri);
-      if (selectedModel && selectedFabric) events.arSaveToGallery(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric)
+        events.arSaveToGallery(selectedModel.id, selectedFabric.id);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -255,7 +266,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     wishlist.toggle(currentProduct);
     const nowInWishlist = !isInWishlist;
     if (nowInWishlist) {
-      if (selectedModel && selectedFabric) events.arSaveToWishlist(selectedModel.id, selectedFabric.id);
+      if (selectedModel && selectedFabric)
+        events.arSaveToWishlist(selectedModel.id, selectedFabric.id);
       setWishlistSaved(true);
       setTimeout(() => setWishlistSaved(false), 2000);
     }

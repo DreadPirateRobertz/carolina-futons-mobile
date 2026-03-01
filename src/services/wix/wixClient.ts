@@ -371,17 +371,11 @@ export class WixClient {
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {
-    return withRetry(
-      () => this.rawPost<T>(path, body),
-      { shouldRetry: isRetryableError },
-    );
+    return withRetry(() => this.rawPost<T>(path, body), { shouldRetry: isRetryableError });
   }
 
   private async get<T>(path: string): Promise<T> {
-    return withRetry(
-      () => this.rawGet<T>(path),
-      { shouldRetry: isRetryableError },
-    );
+    return withRetry(() => this.rawGet<T>(path), { shouldRetry: isRetryableError });
   }
 
   private async rawPost<T>(path: string, body: unknown): Promise<T> {
@@ -472,9 +466,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   const fabricOption = (wix.productOptions ?? []).find(
     (opt) => opt.name.toLowerCase() === 'fabric',
   );
-  const fabricOptions = fabricOption
-    ? fabricOption.choices.map((c) => c.value)
-    : [];
+  const fabricOptions = fabricOption ? fabricOption.choices.map((c) => c.value) : [];
 
   return {
     id: wix.id,
@@ -501,8 +493,6 @@ export function transformWixCollection(wix: WixCollection): WixCollectionInfo {
     name: wix.name,
     slug: wix.slug,
     productCount: wix.numberOfProducts ?? 0,
-    ...(wix.media?.mainMedia?.image?.url
-      ? { imageUrl: wix.media.mainMedia.image.url }
-      : {}),
+    ...(wix.media?.mainMedia?.image?.url ? { imageUrl: wix.media.mainMedia.image.url } : {}),
   };
 }

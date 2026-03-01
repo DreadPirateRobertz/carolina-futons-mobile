@@ -59,10 +59,7 @@ describe('ARProductPicker', () => {
     it('highlights selected product', () => {
       const selected = arEligibleProducts[0];
       const { getByTestId } = render(
-        <ARProductPicker
-          {...defaultProps}
-          selectedProductId={selected.id}
-        />,
+        <ARProductPicker {...defaultProps} selectedProductId={selected.id} />,
       );
       const tile = getByTestId(`ar-picker-${selected.id}`);
       expect(tile.props.accessibilityState).toEqual({ selected: true });

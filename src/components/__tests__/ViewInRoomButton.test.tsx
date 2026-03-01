@@ -134,7 +134,9 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('renders for frame products', () => {
-      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} product={frameProduct} />);
+      const { getByTestId } = renderWithTheme(
+        <ViewInRoomButton {...defaultProps} product={frameProduct} />,
+      );
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
@@ -163,7 +165,9 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('renders with custom testID', () => {
-      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />);
+      const { getByTestId } = renderWithTheme(
+        <ViewInRoomButton {...defaultProps} testID="custom-ar-btn" />,
+      );
       expect(getByTestId('custom-ar-btn')).toBeTruthy();
     });
   });
@@ -174,7 +178,9 @@ describeIfImplemented('ViewInRoomButton', () => {
   describe('Interaction', () => {
     it('calls onPress with product when tapped', () => {
       const onPress = jest.fn();
-      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} onPress={onPress} />);
+      const { getByTestId } = renderWithTheme(
+        <ViewInRoomButton {...defaultProps} onPress={onPress} />,
+      );
       fireEvent.press(getByTestId('view-in-room-btn'));
       expect(onPress).toHaveBeenCalledTimes(1);
       expect(onPress).toHaveBeenCalledWith(futonProduct);
@@ -228,7 +234,9 @@ describeIfImplemented('ViewInRoomButton', () => {
   // ==========================================================================
   describe('Size Variants', () => {
     it('renders compact size variant (for ProductCard)', () => {
-      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} size="compact" />);
+      const { getByTestId } = renderWithTheme(
+        <ViewInRoomButton {...defaultProps} size="compact" />,
+      );
       expect(getByTestId('view-in-room-btn')).toBeTruthy();
     });
 
@@ -244,7 +252,9 @@ describeIfImplemented('ViewInRoomButton', () => {
     });
 
     it('compact variant still shows icon', () => {
-      const { getByTestId } = renderWithTheme(<ViewInRoomButton {...defaultProps} size="compact" />);
+      const { getByTestId } = renderWithTheme(
+        <ViewInRoomButton {...defaultProps} size="compact" />,
+      );
       expect(getByTestId('view-in-room-camera-icon')).toBeTruthy();
     });
   });

@@ -16,10 +16,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: RetryOptions = {},
-): Promise<T> {
+export async function withRetry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const {
     maxRetries = DEFAULT_MAX_RETRIES,
     baseDelayMs = DEFAULT_BASE_DELAY_MS,

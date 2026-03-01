@@ -37,48 +37,36 @@ describe('OnboardingScreen', () => {
   });
 
   it('renders the first slide by default', () => {
-    const { getByTestId, getByText } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId, getByText } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     expect(getByTestId('onboarding-screen')).toBeTruthy();
     expect(getByText('Welcome to Carolina Futons')).toBeTruthy();
   });
 
   it('renders pagination dots matching slide count', () => {
-    const { getAllByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getAllByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     const dots = getAllByTestId(/^onboarding-dot-/);
     expect(dots.length).toBeGreaterThanOrEqual(3);
   });
 
   it('shows active dot for current slide', () => {
-    const { getByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     expect(getByTestId('onboarding-dot-0')).toBeTruthy();
   });
 
   it('shows Next button on non-final slides', () => {
-    const { getByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     expect(getByTestId('onboarding-next-button')).toBeTruthy();
   });
 
   it('advances to next slide when Next is pressed', () => {
-    const { getByTestId, getByText } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId, getByText } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     fireEvent.press(getByTestId('onboarding-next-button'));
     // Should now show second slide content
     expect(getByText('See It In Your Space')).toBeTruthy();
   });
 
   it('shows Get Started button on final slide', () => {
-    const { getByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     // Navigate to last slide
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
@@ -86,9 +74,7 @@ describe('OnboardingScreen', () => {
   });
 
   it('calls onComplete when Get Started is pressed', () => {
-    const { getByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-get-started-button'));
@@ -96,9 +82,7 @@ describe('OnboardingScreen', () => {
   });
 
   it('shows Skip button that calls onComplete', () => {
-    const { getByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     const skipButton = getByTestId('onboarding-skip-button');
     expect(skipButton).toBeTruthy();
     fireEvent.press(skipButton);
@@ -106,9 +90,7 @@ describe('OnboardingScreen', () => {
   });
 
   it('does not show Skip on final slide', () => {
-    const { getByTestId, queryByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
     expect(queryByTestId('onboarding-skip-button')).toBeNull();

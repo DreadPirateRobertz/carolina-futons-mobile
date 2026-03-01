@@ -36,9 +36,7 @@ export class WixAuthService {
       const response = await this.auth.login({ email, password });
 
       if (response.loginState === 'SUCCESS') {
-        const tokens = await this.auth.getMemberTokensForDirectLogin(
-          response.data.sessionToken,
-        );
+        const tokens = await this.auth.getMemberTokensForDirectLogin(response.data.sessionToken);
         this.auth.setTokens(tokens);
         await saveTokens(tokens);
         return { success: true };
@@ -56,19 +54,14 @@ export class WixAuthService {
         return { success: false, error: 'Your account is pending approval' };
       }
 
-      const errorMsg =
-        ERROR_MESSAGES[response.errorCode] ?? 'Invalid email or password';
+      const errorMsg = ERROR_MESSAGES[response.errorCode] ?? 'Invalid email or password';
       return { success: false, error: errorMsg };
     } catch (err) {
       return { success: false, error: (err as Error).message };
     }
   }
 
-  async register(
-    email: string,
-    password: string,
-    displayName: string,
-  ): Promise<AuthResult> {
+  async register(email: string, password: string, displayName: string): Promise<AuthResult> {
     try {
       const response = await this.auth.register({
         email,
@@ -77,9 +70,7 @@ export class WixAuthService {
       });
 
       if (response.loginState === 'SUCCESS') {
-        const tokens = await this.auth.getMemberTokensForDirectLogin(
-          response.data.sessionToken,
-        );
+        const tokens = await this.auth.getMemberTokensForDirectLogin(response.data.sessionToken);
         this.auth.setTokens(tokens);
         await saveTokens(tokens);
         return { success: true };
@@ -97,8 +88,7 @@ export class WixAuthService {
         return { success: false, error: 'Your account is pending approval' };
       }
 
-      const errorMsg =
-        ERROR_MESSAGES[response.errorCode] ?? 'Registration failed';
+      const errorMsg = ERROR_MESSAGES[response.errorCode] ?? 'Registration failed';
       return { success: false, error: errorMsg };
     } catch (err) {
       return { success: false, error: (err as Error).message };
@@ -120,8 +110,7 @@ export class WixAuthService {
       const url = new URL(result.url);
       const error = url.searchParams.get('error');
       if (error) {
-        const desc =
-          url.searchParams.get('error_description') ?? 'OAuth login failed';
+        const desc = url.searchParams.get('error_description') ?? 'OAuth login failed';
         return { success: false, error: desc };
       }
 

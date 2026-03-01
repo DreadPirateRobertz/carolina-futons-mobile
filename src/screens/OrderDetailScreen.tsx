@@ -38,9 +38,7 @@ export function OrderDetailScreen({
   const { getOrder, orders: hookOrders } = useOrders();
   const { getModel, getFabric } = useFutonModels();
 
-  const order = ordersProp
-    ? ordersProp.find((o) => o.id === orderId)
-    : getOrder(orderId);
+  const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);
 
   const formatDate = useCallback((iso: string) => {
     const d = new Date(iso);

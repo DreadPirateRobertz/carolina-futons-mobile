@@ -51,7 +51,13 @@ jest.mock('react-native-reanimated', () => {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
-    useAnimatedStyle: (fn: any) => { try { return fn(); } catch { return {}; } },
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     withSpring: (val: any) => val,
     withRepeat: (val: any) => val,
     withSequence: (...vals: any[]) => vals[0],
@@ -63,13 +69,45 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('@/hooks/useSurfaceDetection', () => ({
   useSurfaceDetection: () => ({
     detectionState: 'tracking',
-    planes: [{ id: 'plane-1', type: 'floor', alignment: 'horizontal', center: { x: 0.5, y: 0.65, z: 1.5 }, extent: { width: 2.5, height: 1.8 }, rotation: 0, confidence: 0.85, lastUpdated: Date.now() }],
-    hasFloor: true, hasWall: false,
-    lightEstimate: { ambientIntensity: 350, ambientColorTemperature: 4500, primaryLightDirection: { x: 0.3, y: -0.8, z: 0.5 }, primaryLightIntensity: 0.6, timestamp: Date.now() },
-    shadowParams: { opacity: 0.25, blur: 8, offsetX: -2.4, offsetY: 6.4, color: 'rgba(0, 0, 10, 0.25)' },
-    lightingCondition: 'normal', lightingWarning: null,
-    performHitTest: jest.fn(() => ({ planeId: 'plane-1', position: { x: 0.5, y: 0.5 }, worldPosition: { x: 0.5, y: 0, z: 1.5 }, isValid: true, distance: 1.5 })),
-    isActive: true, error: null,
+    planes: [
+      {
+        id: 'plane-1',
+        type: 'floor',
+        alignment: 'horizontal',
+        center: { x: 0.5, y: 0.65, z: 1.5 },
+        extent: { width: 2.5, height: 1.8 },
+        rotation: 0,
+        confidence: 0.85,
+        lastUpdated: Date.now(),
+      },
+    ],
+    hasFloor: true,
+    hasWall: false,
+    lightEstimate: {
+      ambientIntensity: 350,
+      ambientColorTemperature: 4500,
+      primaryLightDirection: { x: 0.3, y: -0.8, z: 0.5 },
+      primaryLightIntensity: 0.6,
+      timestamp: Date.now(),
+    },
+    shadowParams: {
+      opacity: 0.25,
+      blur: 8,
+      offsetX: -2.4,
+      offsetY: 6.4,
+      color: 'rgba(0, 0, 10, 0.25)',
+    },
+    lightingCondition: 'normal',
+    lightingWarning: null,
+    performHitTest: jest.fn(() => ({
+      planeId: 'plane-1',
+      position: { x: 0.5, y: 0.5 },
+      worldPosition: { x: 0.5, y: 0, z: 1.5 },
+      isValid: true,
+      distance: 1.5,
+    })),
+    isActive: true,
+    error: null,
   }),
 }));
 
@@ -78,7 +116,9 @@ jest.mock('react-native-view-shot', () => {
   const { View } = require('react-native');
   return {
     __esModule: true,
-    default: forwardRef(({ children, ...props }: any, ref: any) => createElement(View, { ...props, ref }, children)),
+    default: forwardRef(({ children, ...props }: any, ref: any) =>
+      createElement(View, { ...props, ref }, children),
+    ),
     captureRef: jest.fn(() => Promise.resolve('/tmp/screenshot.png')),
   };
 });
@@ -128,7 +168,12 @@ describe('ARScreen hook integration', () => {
     });
 
     mockUseProductByModelId.mockReturnValue({
-      product: { id: 'prod-asheville-full', name: 'Asheville Futon', price: 349, category: 'futons' },
+      product: {
+        id: 'prod-asheville-full',
+        name: 'Asheville Futon',
+        price: 349,
+        category: 'futons',
+      },
       isLoading: false,
       error: null,
     });

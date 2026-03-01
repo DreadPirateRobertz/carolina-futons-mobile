@@ -7,12 +7,9 @@ import {
   type SortOption,
   type CategoryInfo,
 } from '@/data/products';
-
-export type { Product, ProductCategory, SortOption, CategoryInfo };
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 
-// Re-export types for screens — avoids direct src/data imports
-export type { Product, ProductCategory, SortOption };
+export type { Product, ProductCategory, SortOption, CategoryInfo };
 
 const PAGE_SIZE = 8;
 const PRODUCT_NAMES = PRODUCTS.map((p) => p.name);

@@ -24,7 +24,9 @@ export function OrderHistoryScreen({
 
   // Use prop orders or fall back to hook data (already sorted newest-first)
   const orders = ordersProp
-    ? ordersProp.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    ? ordersProp
+        .slice()
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     : hookOrders;
 
   const handleRefresh = useCallback(() => {

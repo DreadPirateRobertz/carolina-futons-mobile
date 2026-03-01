@@ -10,7 +10,12 @@ import {
   Image,
 } from 'react-native';
 import { useTheme } from '@/theme';
-import { useStoreById, APPOINTMENT_TYPES, type Store, type AppointmentType } from '@/hooks/useStores';
+import {
+  useStoreById,
+  APPOINTMENT_TYPES,
+  type Store,
+  type AppointmentType,
+} from '@/hooks/useStores';
 import { isStoreOpen, formatPhone } from '@/utils';
 import { Button } from '@/components/Button';
 
@@ -57,10 +62,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
   // Loading state
   if (isLoading && !storeProp) {
     return (
-      <View
-        style={[styles.container, { backgroundColor: colors.sandBase }]}
-        testID="store-loading"
-      >
+      <View style={[styles.container, { backgroundColor: colors.sandBase }]} testID="store-loading">
         <Text style={[styles.errorText, { color: colors.espressoLight }]}>
           Loading store details...
         </Text>
@@ -71,16 +73,11 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
   // Error state
   if (error && !storeProp) {
     return (
-      <View
-        style={[styles.container, { backgroundColor: colors.sandBase }]}
-        testID="store-error"
-      >
+      <View style={[styles.container, { backgroundColor: colors.sandBase }]} testID="store-error">
         <Text style={[styles.errorText, { color: colors.espressoLight }]}>
           We couldn't load this store
         </Text>
-        <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
-          {error.message}
-        </Text>
+        <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>{error.message}</Text>
       </View>
     );
   }

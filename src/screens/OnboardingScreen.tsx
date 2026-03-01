@@ -13,20 +13,17 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     title: 'Welcome to Carolina Futons',
-    description:
-      'Handcrafted comfort from the Blue Ridge Mountains, delivered to your door.',
+    description: 'Handcrafted comfort from the Blue Ridge Mountains, delivered to your door.',
     emoji: '🛋️',
   },
   {
     title: 'See It In Your Space',
-    description:
-      'Use AR to preview how our futons look in your room before you buy.',
+    description: 'Use AR to preview how our futons look in your room before you buy.',
     emoji: '📱',
   },
   {
     title: 'Shop With Confidence',
-    description:
-      'Free shipping, easy returns, and flexible payment options on every order.',
+    description: 'Free shipping, easy returns, and flexible payment options on every order.',
     emoji: '✨',
   },
 ];
@@ -102,10 +99,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
             style={[
               styles.dot,
               {
-                backgroundColor:
-                  index === currentIndex
-                    ? colors.sunsetCoral
-                    : colors.sandLight,
+                backgroundColor: index === currentIndex ? colors.sunsetCoral : colors.sandLight,
                 width: index === currentIndex ? 24 : 8,
                 borderRadius: borderRadius.pill,
               },
@@ -131,9 +125,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
             accessibilityLabel="Get started"
             accessibilityRole="button"
           >
-            <Text style={[styles.actionButtonText, { color: colors.white }]}>
-              Get Started
-            </Text>
+            <Text style={[styles.actionButtonText, { color: colors.white }]}>Get Started</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -150,9 +142,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
             accessibilityLabel="Next slide"
             accessibilityRole="button"
           >
-            <Text style={[styles.actionButtonText, { color: colors.white }]}>
-              Next
-            </Text>
+            <Text style={[styles.actionButtonText, { color: colors.white }]}>Next</Text>
           </TouchableOpacity>
         )}
       </View>

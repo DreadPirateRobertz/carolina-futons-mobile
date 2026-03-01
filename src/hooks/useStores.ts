@@ -19,10 +19,7 @@ interface UseStoresReturn {
 export function useStores(): UseStoresReturn {
   const stores = useMemo(() => STORES, []);
 
-  const getStoreById = useCallback(
-    (id: string) => stores.find((s) => s.id === id),
-    [stores],
-  );
+  const getStoreById = useCallback((id: string) => stores.find((s) => s.id === id), [stores]);
 
   return { stores, isLoading: false, error: null, getStoreById };
 }

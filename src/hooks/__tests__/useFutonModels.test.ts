@@ -191,10 +191,9 @@ describe('useProductByModelId', () => {
   });
 
   it('updates product when model id changes', () => {
-    const { result, rerender } = renderHook(
-      ({ modelId }) => useProductByModelId(modelId),
-      { initialProps: { modelId: 'asheville-full' as string | undefined } },
-    );
+    const { result, rerender } = renderHook(({ modelId }) => useProductByModelId(modelId), {
+      initialProps: { modelId: 'asheville-full' as string | undefined },
+    });
     expect(result.current.product!.id).toBe('prod-asheville-full');
 
     rerender({ modelId: 'blue-ridge-queen' });

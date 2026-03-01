@@ -1,5 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
-import { FUTON_MODELS, FABRICS, inchesToFeetDisplay, type FutonModel, type Fabric } from '@/data/futons';
+import {
+  FUTON_MODELS,
+  FABRICS,
+  inchesToFeetDisplay,
+  type FutonModel,
+  type Fabric,
+} from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
 
 // Re-export types for screens — avoids direct src/data imports
@@ -26,19 +32,13 @@ export function useFutonModels(): UseFutonModelsReturn {
   const [isLoading] = useState(false);
   const [error] = useState<Error | null>(null);
 
-  const getModel = useCallback(
-    (modelId: string): FutonModel | undefined => {
-      return FUTON_MODELS.find((m) => m.id === modelId);
-    },
-    [],
-  );
+  const getModel = useCallback((modelId: string): FutonModel | undefined => {
+    return FUTON_MODELS.find((m) => m.id === modelId);
+  }, []);
 
-  const getFabric = useCallback(
-    (fabricId: string): Fabric | undefined => {
-      return FABRICS.find((f) => f.id === fabricId);
-    },
-    [],
-  );
+  const getFabric = useCallback((fabricId: string): Fabric | undefined => {
+    return FABRICS.find((f) => f.id === fabricId);
+  }, []);
 
   const refresh = useCallback(() => {
     // No-op for static fallback. Will trigger API refetch when integrated.

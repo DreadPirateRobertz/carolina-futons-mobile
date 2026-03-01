@@ -75,11 +75,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   }, [isOnline, syncNow]);
 
   const queueAction = useCallback(
-    (
-      domain: QueuedAction['domain'],
-      action: string,
-      payload: Record<string, unknown>,
-    ) => {
+    (domain: QueuedAction['domain'], action: string, payload: Record<string, unknown>) => {
       enqueue(domain, action, payload);
       setPendingCount(getQueueLength());
     },

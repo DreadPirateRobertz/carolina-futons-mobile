@@ -45,12 +45,7 @@ export function ARWebScreen({ route, onClose, testID }: Props) {
           <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
       </View>
-      <ModelViewerWeb
-        glbUrl={glbUrl}
-        usdzUrl={usdzUrl}
-        title={title}
-        testID="model-viewer-web"
-      />
+      <ModelViewerWeb glbUrl={glbUrl} usdzUrl={usdzUrl} title={title} testID="model-viewer-web" />
     </View>
   );
 }

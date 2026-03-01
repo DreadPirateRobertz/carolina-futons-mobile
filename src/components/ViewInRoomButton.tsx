@@ -72,7 +72,9 @@ export function ViewInRoomButton({
         <Text style={[styles.icon, isCompact && styles.iconCompact]}>{'\u{1F4F7}'}</Text>
       </View>
       {!isCompact && (
-        <Text style={[styles.label, { color: colors.sunsetCoral }, disabled && styles.labelDisabled]}>
+        <Text
+          style={[styles.label, { color: colors.sunsetCoral }, disabled && styles.labelDisabled]}
+        >
           View in Your Room
         </Text>
       )}

@@ -50,22 +50,31 @@ export function AppNavigator() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8D5B7' }} testID="onboarding-loading">
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#E8D5B7',
+        }}
+        testID="onboarding-loading"
+      >
         <ActivityIndicator size="large" color="#E8845C" />
       </View>
     );
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={hasSeenOnboarding ? 'Tabs' : 'Onboarding'}>
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={hasSeenOnboarding ? 'Tabs' : 'Onboarding'}
+    >
       <Stack.Screen name="Onboarding">
         {({ navigation: nav }) => (
           <OnboardingScreen
             onComplete={() => {
               handleOnboardingComplete();
-              nav.dispatch(
-                CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
-              );
+              nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
             }}
           />
         )}

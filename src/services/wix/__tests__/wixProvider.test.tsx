@@ -28,7 +28,12 @@ const TEST_PRODUCTS_RESPONSE = {
       visible: true,
       productType: 'physical',
       description: 'A test product',
-      price: { currency: 'USD', price: 299, discountedPrice: 299, formatted: { price: '$299', discountedPrice: '$299' } },
+      price: {
+        currency: 'USD',
+        price: 299,
+        discountedPrice: 299,
+        formatted: { price: '$299', discountedPrice: '$299' },
+      },
       media: { items: [], mainMedia: null },
       stock: { inStock: true, quantity: 10 },
       ribbons: [],
@@ -88,9 +93,7 @@ describe('WixProvider', () => {
       return null;
     }
 
-    expect(() => render(<BadConsumer />)).toThrow(
-      'useWixClient must be used within a WixProvider',
-    );
+    expect(() => render(<BadConsumer />)).toThrow('useWixClient must be used within a WixProvider');
   });
 
   it('creates client with custom base URL', () => {

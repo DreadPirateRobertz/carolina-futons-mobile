@@ -628,10 +628,7 @@ describeARScreen('Edge Cases & Error States', () => {
     const { getByTestId } = renderAR({ initialModelId: 'asheville-full' });
     fireEvent.press(getByTestId('ar-fabric-sunset-coral'));
 
-    expect(mockEvents.selectFabric).toHaveBeenCalledWith(
-      'prod-asheville-full',
-      'sunset-coral',
-    );
+    expect(mockEvents.selectFabric).toHaveBeenCalledWith('prod-asheville-full', 'sunset-coral');
   });
 });
 
@@ -651,17 +648,13 @@ const describeWithModels3D = models3d ? describe : describe.skip;
 describeWithModels3D('3D Model Catalog — PoC Validation', () => {
   it('catalog has at least one product with a non-placeholder GLB URL', () => {
     const { MODELS_3D } = models3d;
-    const realModels = MODELS_3D.filter(
-      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
-    );
+    const realModels = MODELS_3D.filter((m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'));
     expect(realModels.length).toBeGreaterThanOrEqual(1);
   });
 
   it('PoC model GLB URL points to a valid HTTPS source', () => {
     const { MODELS_3D } = models3d;
-    const pocModel = MODELS_3D.find(
-      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
-    );
+    const pocModel = MODELS_3D.find((m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'));
     expect(pocModel).toBeDefined();
     expect(pocModel.glbUrl).toMatch(/^https:\/\//);
     expect(pocModel.glbUrl).toMatch(/\.glb$/);
@@ -669,9 +662,7 @@ describeWithModels3D('3D Model Catalog — PoC Validation', () => {
 
   it('PoC model has valid dimensions (furniture-scale, in meters)', () => {
     const { MODELS_3D } = models3d;
-    const pocModel = MODELS_3D.find(
-      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
-    );
+    const pocModel = MODELS_3D.find((m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'));
     expect(pocModel).toBeDefined();
     // Furniture dimensions: 0.3m - 3m range
     expect(pocModel.dimensions.width).toBeGreaterThan(0.3);
@@ -691,9 +682,7 @@ describeWithModels3D('3D Model Catalog — PoC Validation', () => {
 
   it('getModel3DForProduct returns PoC model by productId', () => {
     const { MODELS_3D, getModel3DForProduct } = models3d;
-    const pocModel = MODELS_3D.find(
-      (m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'),
-    );
+    const pocModel = MODELS_3D.find((m: any) => !m.glbUrl.includes('cdn.carolinafutons.com'));
     const result = getModel3DForProduct(pocModel.productId);
     expect(result).toBeDefined();
     expect(result!.glbUrl).toBe(pocModel.glbUrl);

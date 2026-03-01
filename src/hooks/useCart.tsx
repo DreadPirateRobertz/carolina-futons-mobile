@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
 import type { FutonModel, Fabric } from '@/data/futons';
 
 export interface CartItem {

@@ -121,8 +121,11 @@ describe('useOrders', () => {
 
   it('cycles through all status filters without error', () => {
     const { result } = renderHook(() => useOrders());
-    const statuses: Array<'processing' | 'shipped' | 'delivered' | 'cancelled'> = [
-      'processing', 'shipped', 'delivered', 'cancelled',
+    const statuses: ('processing' | 'shipped' | 'delivered' | 'cancelled')[] = [
+      'processing',
+      'shipped',
+      'delivered',
+      'cancelled',
     ];
     for (const status of statuses) {
       act(() => {

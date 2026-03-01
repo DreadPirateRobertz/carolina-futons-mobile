@@ -52,7 +52,11 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
 
       {/* AR CTA */}
       <TouchableOpacity
-        style={[styles.ctaButton, shadows.cardHover, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.xl }]}
+        style={[
+          styles.ctaButton,
+          shadows.cardHover,
+          { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.xl },
+        ]}
         onPress={handleOpenAR}
         testID="home-ar-button"
         accessibilityLabel="Try futons in your room with AR camera"
@@ -67,7 +71,11 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
 
       {/* Shop CTA */}
       <TouchableOpacity
-        style={[styles.ctaButton, shadows.cardHover, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.xl }]}
+        style={[
+          styles.ctaButton,
+          shadows.cardHover,
+          { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.xl },
+        ]}
         onPress={handleOpenShop}
         testID="home-shop-button"
         accessibilityLabel="Browse our products"

@@ -23,9 +23,7 @@ describe('withRetry', () => {
   it('throws after max retries exhausted', async () => {
     const fn = jest.fn().mockRejectedValue(new Error('always fails'));
 
-    await expect(
-      withRetry(fn, { maxRetries: 2, baseDelayMs: 10 }),
-    ).rejects.toThrow('always fails');
+    await expect(withRetry(fn, { maxRetries: 2, baseDelayMs: 10 })).rejects.toThrow('always fails');
     expect(fn).toHaveBeenCalledTimes(3); // initial + 2 retries
   });
 
@@ -44,9 +42,9 @@ describe('withRetry', () => {
 
     const shouldRetry = (err: Error) => err.message === 'transient';
 
-    await expect(
-      withRetry(fn, { maxRetries: 3, baseDelayMs: 10, shouldRetry }),
-    ).rejects.toThrow('permanent');
+    await expect(withRetry(fn, { maxRetries: 3, baseDelayMs: 10, shouldRetry })).rejects.toThrow(
+      'permanent',
+    );
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
@@ -86,8 +84,6 @@ describe('withRetry', () => {
   it('wraps non-Error throws into Error', async () => {
     const fn = jest.fn().mockRejectedValue('string error');
 
-    await expect(
-      withRetry(fn, { maxRetries: 0 }),
-    ).rejects.toThrow('string error');
+    await expect(withRetry(fn, { maxRetries: 0 })).rejects.toThrow('string error');
   });
 });

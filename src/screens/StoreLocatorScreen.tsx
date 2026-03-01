@@ -22,18 +22,20 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
   const { stores, isLoading, error } = useStores();
 
   const storesWithDistance = useMemo(() => {
-    return stores.map((store) => ({
-      store,
-      distance:
-        userLatitude != null && userLongitude != null
-          ? calculateDistance(userLatitude, userLongitude, store.latitude, store.longitude)
-          : undefined,
-    })).sort((a, b) => {
-      if (a.distance != null && b.distance != null) return a.distance - b.distance;
-      if (a.distance != null) return -1;
-      if (b.distance != null) return 1;
-      return 0;
-    });
+    return stores
+      .map((store) => ({
+        store,
+        distance:
+          userLatitude != null && userLongitude != null
+            ? calculateDistance(userLatitude, userLongitude, store.latitude, store.longitude)
+            : undefined,
+      }))
+      .sort((a, b) => {
+        if (a.distance != null && b.distance != null) return a.distance - b.distance;
+        if (a.distance != null) return -1;
+        if (b.distance != null) return 1;
+        return 0;
+      });
   }, [stores, userLatitude, userLongitude]);
 
   const filtered = useMemo(() => {
@@ -98,10 +100,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
   // Error state
   if (error) {
     return (
-      <View
-        style={[styles.container, { backgroundColor: colors.sandBase }]}
-        testID="stores-error"
-      >
+      <View style={[styles.container, { backgroundColor: colors.sandBase }]} testID="stores-error">
         <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
           <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
         </View>
@@ -109,9 +108,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
           <Text style={[styles.messageText, { color: colors.espressoLight }]}>
             We couldn't load showroom locations
           </Text>
-          <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>
-            {error.message}
-          </Text>
+          <Text style={[styles.errorDetail, { color: colors.espressoLight }]}>{error.message}</Text>
         </View>
       </View>
     );

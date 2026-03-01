@@ -40,10 +40,7 @@ interface Props {
 export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, testID }: Props) {
   const [activeCategory, setActiveCategory] = useState<ProductCategory | 'all'>('all');
 
-  const arProducts = useMemo(
-    () => PRODUCTS.filter((p) => p.inStock && hasARModel(p.id)),
-    [],
-  );
+  const arProducts = useMemo(() => PRODUCTS.filter((p) => p.inStock && hasARModel(p.id)), []);
 
   const filteredProducts = useMemo(
     () =>
@@ -127,9 +124,7 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
               <Text style={[styles.categoryChipText, isActive && styles.categoryChipTextActive]}>
                 {cat.label}
               </Text>
-              <Text
-                style={[styles.categoryChipCount, isActive && styles.categoryChipCountActive]}
-              >
+              <Text style={[styles.categoryChipCount, isActive && styles.categoryChipCountActive]}>
                 {count}
               </Text>
             </TouchableOpacity>
