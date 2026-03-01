@@ -127,7 +127,16 @@ describe('Design Tokens', () => {
     });
 
     it('line heights use proportional ratios (lineHeight/fontSize >= 1.1)', () => {
-      const displayStyles = ['heroTitle', 'h1', 'h2', 'h3', 'h4', 'bodyLarge', 'body', 'bodySmall'] as const;
+      const displayStyles = [
+        'heroTitle',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'bodyLarge',
+        'body',
+        'bodySmall',
+      ] as const;
       displayStyles.forEach((key) => {
         const style = typography[key];
         const ratio = style.lineHeight / style.fontSize;
