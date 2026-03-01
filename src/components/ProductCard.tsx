@@ -1,5 +1,6 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import React, { memo } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
@@ -12,7 +13,7 @@ interface Props {
   testID?: string;
 }
 
-export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
+export const ProductCard = memo(function ProductCard({ product, onPress, onLongPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const badgeColor =
@@ -48,7 +49,9 @@ export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
         <Image
           source={{ uri: product.images[0]?.uri }}
           style={styles.image}
-          resizeMode="cover"
+          contentFit="cover"
+          transition={200}
+          recyclingKey={product.id}
           accessibilityLabel={product.images[0]?.alt}
         />
         <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
@@ -96,7 +99,7 @@ export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

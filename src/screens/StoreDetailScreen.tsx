@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   Linking,
   Platform,
-  Image,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import {
   useStoreById,
@@ -105,6 +105,8 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
         <Image
           source={{ uri: store.photos[0] }}
           style={styles.heroImage}
+          contentFit="cover"
+          transition={300}
           testID="store-detail-photo"
         />
       )}

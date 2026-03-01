@@ -145,6 +145,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
         testID="product-list"
       />
     </View>

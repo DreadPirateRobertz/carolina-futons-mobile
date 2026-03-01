@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import React, { useCallback, useMemo, memo } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { type Review } from '@/data/reviews';
 import { StarRating } from '@/components/StarRating';
@@ -32,7 +33,7 @@ function relativeDate(iso: string): string {
   return 'just now';
 }
 
-export function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
+export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 
   const handleHelpful = useCallback(() => {
@@ -110,7 +111,8 @@ export function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
               <Image
                 source={{ uri: photo }}
                 style={styles.photoImage}
-                resizeMode="cover"
+                contentFit="cover"
+                transition={200}
                 accessibilityLabel={`Review photo ${index + 1}`}
               />
             </View>
@@ -138,7 +140,7 @@ export function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

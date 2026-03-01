@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, memo } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { colors, spacing, borderRadius, shadows, typography } from '@/theme/tokens';
 
 interface Category {
@@ -17,7 +18,7 @@ interface Props {
   testID?: string;
 }
 
-export function CategoryCard({ category, onPress, variant = 'featured', testID }: Props) {
+export const CategoryCard = memo(function CategoryCard({ category, onPress, variant = 'featured', testID }: Props) {
   const [imageError, setImageError] = useState(false);
 
   const handlePress = useCallback(() => {
@@ -51,7 +52,8 @@ export function CategoryCard({ category, onPress, variant = 'featured', testID }
           style={styles.image}
           testID={testID ? `${testID}-image` : undefined}
           onError={handleImageError}
-          resizeMode="cover"
+          contentFit="cover"
+          transition={200}
         />
       )}
       <View style={styles.overlay} testID={testID ? `${testID}-overlay` : undefined}>
@@ -59,7 +61,7 @@ export function CategoryCard({ category, onPress, variant = 'featured', testID }
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

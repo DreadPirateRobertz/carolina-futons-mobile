@@ -12,7 +12,7 @@
       "resizeMode": "contain"
     },
     "assetBundlePatterns": [
-      "**/*"
+      "assets/*"
     ],
     "ios": {
       "supportsTablet": true,
@@ -55,7 +55,8 @@
     "plugins": [
       "expo-asset",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-image"
     ]
   }
 }

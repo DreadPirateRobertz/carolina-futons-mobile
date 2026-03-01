@@ -1,5 +1,6 @@
-import React from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import React, { useCallback, memo } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { StarRating } from './StarRating';
 import { Product } from '@/data/products';
@@ -12,6 +13,12 @@ interface RecommendationCarouselProps {
   testID?: string;
 }
 
+const Separator = memo(function Separator({ width }: { width: number }) {
+  return <View style={{ width }} />;
+});
+
+const keyExtractor = (item: Product) => item.id;
+
 export function RecommendationCarousel({
   title,
   products,
@@ -20,6 +27,59 @@ export function RecommendationCarousel({
   testID = 'recommendation-carousel',
 }: RecommendationCarouselProps) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
+
+  const renderItem = useCallback(
+    ({ item }: { item: Product }) => (
+      <TouchableOpacity
+        testID={`rec-card-${item.id}`}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name}, $${item.price.toFixed(2)}`}
+        onPress={() => onProductPress?.(item)}
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.white,
+            borderRadius: borderRadius.md,
+            ...shadows.card,
+          },
+        ]}
+      >
+        {item.images[0] && (
+          <Image
+            source={{ uri: item.images[0].uri }}
+            style={[
+              styles.image,
+              { borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md },
+            ]}
+            contentFit="cover"
+            transition={200}
+            recyclingKey={item.id}
+            accessibilityLabel={item.images[0].alt}
+          />
+        )}
+        <View style={[styles.cardBody, { padding: spacing.sm }]}>
+          <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={[styles.price, { color: colors.espresso }]}>
+            ${item.price.toFixed(2)}
+          </Text>
+          <StarRating
+            rating={item.rating}
+            size="sm"
+            count={item.reviewCount}
+            testID={`rec-card-rating-${item.id}`}
+          />
+        </View>
+      </TouchableOpacity>
+    ),
+    [onProductPress, colors, borderRadius, shadows, spacing],
+  );
+
+  const renderSeparator = useCallback(
+    () => <Separator width={spacing.sm} />,
+    [spacing.sm],
+  );
 
   if (products.length === 0) return null;
 
@@ -44,50 +104,11 @@ export function RecommendationCarousel({
         horizontal
         showsHorizontalScrollIndicator={false}
         data={products}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         contentContainerStyle={{ paddingHorizontal: spacing.md }}
-        ItemSeparatorComponent={() => <View style={{ width: spacing.sm }} />}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            testID={`rec-card-${item.id}`}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.name}, $${item.price.toFixed(2)}`}
-            onPress={() => onProductPress?.(item)}
-            style={[
-              styles.card,
-              {
-                backgroundColor: colors.white,
-                borderRadius: borderRadius.md,
-                ...shadows.card,
-              },
-            ]}
-          >
-            {item.images[0] && (
-              <Image
-                source={{ uri: item.images[0].uri }}
-                style={[
-                  styles.image,
-                  { borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md },
-                ]}
-                accessibilityLabel={item.images[0].alt}
-              />
-            )}
-            <View style={[styles.cardBody, { padding: spacing.sm }]}>
-              <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
-                {item.name}
-              </Text>
-              <Text style={[styles.price, { color: colors.espresso }]}>
-                ${item.price.toFixed(2)}
-              </Text>
-              <StarRating
-                rating={item.rating}
-                size="sm"
-                count={item.reviewCount}
-                testID={`rec-card-rating-${item.id}`}
-              />
-            </View>
-          </TouchableOpacity>
-        )}
+        ItemSeparatorComponent={renderSeparator}
+        renderItem={renderItem}
+        windowSize={3}
       />
     </View>
   );

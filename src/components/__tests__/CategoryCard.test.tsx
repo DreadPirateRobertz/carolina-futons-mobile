@@ -64,7 +64,7 @@ describe('CategoryCard', () => {
         <CategoryCard category={mockCategory} onPress={() => {}} testID="category-card" />,
       );
       const image = getByTestId('category-card-image');
-      fireEvent(image, 'error');
+      fireEvent(image, 'error', { nativeEvent: { error: 'Load failed' } });
       expect(getByTestId('category-card-image-placeholder')).toBeTruthy();
     });
   });
