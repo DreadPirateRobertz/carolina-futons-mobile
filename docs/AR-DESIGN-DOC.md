@@ -65,6 +65,43 @@ We leverage each platform's built-in AR capabilities instead of building a custo
 
 ---
 
+## 3D Model Catalog — Cross-Platform Source of Truth
+
+The canonical 3D model catalog lives at `shared/catalog-3d.json`. This is the single source of truth for all platforms (mobile and web). **Never edit platform-specific modules directly** — they are auto-generated.
+
+### Architecture
+
+```
+shared/catalog-3d.json          ← CANONICAL SOURCE OF TRUTH
+        ↓
+   scripts/sync-3d-catalog.ts    ← Sync script
+        ↓                    ↓
+src/data/models3d.ts    shared/models3d.web.js
+   (TypeScript, mobile)    (JavaScript, web)
+```
+
+### Workflow
+
+1. Edit `shared/catalog-3d.json` to add/update 3D model entries
+2. Run `npm run catalog:sync` to regenerate platform modules
+3. Commit all three files together
+4. CI (`catalog-sync` job) verifies modules match the catalog via `npm run catalog:check`
+
+### What the Catalog Contains
+
+Each model entry in `catalog-3d.json`:
+- `productId` — Links to product database
+- `category` — `murphy-beds`, `futons`, or `frames`
+- `dimensions` — Width/depth/height in inches (converted to meters for mobile)
+- `glbUrl` / `usdzUrl` — Explicit model URL, or `null` to use CDN convention (`{cdnBase}/{format}/{slug}-{hash}.{ext}`)
+- `fileSizeBytes`, `contentHash`, `hasFabricVariants`
+
+### Why This Exists
+
+Previously, model data was manually ported between mobile (`models3d.ts`) and web — creating drift risk. The canonical JSON eliminates this by making both platform modules generated artifacts.
+
+---
+
 ## 3D Model Formats
 
 Every product needs two model files:
@@ -232,10 +269,14 @@ src/
 ├── hooks/
 │   └── useSurfaceDetection.ts  ← React hook for surface detection state
 ├── data/
-│   └── models3d.ts             ← 3D model catalog (11 products, GLB+USDZ URLs)
+│   └── models3d.ts             ← 3D model catalog (AUTO-GENERATED from shared/catalog-3d.json)
 ├── utils/
 │   └── openARViewer.ts         ← Platform AR launcher (Quick Look/Scene Viewer)
+shared/
+├── catalog-3d.json             ← CANONICAL 3D model source of truth
+└── models3d.web.js             ← Web module (AUTO-GENERATED from catalog-3d.json)
 scripts/
+├── sync-3d-catalog.ts          ← Generates platform modules from catalog-3d.json
 └── pipeline/
     ├── generate.ts             ← Photo-to-3D via Tripo/Meshy API
     ├── convert.ts              ← GLB optimization + USDZ conversion
