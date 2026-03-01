@@ -1,6 +1,9 @@
 import { useState, useCallback, useMemo } from 'react';
-import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
+import { FUTON_MODELS, FABRICS, inchesToFeetDisplay, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
+
+export { inchesToFeetDisplay };
+export type { FutonModel, Fabric };
 
 interface UseFutonModelsReturn {
   models: FutonModel[];

@@ -10,9 +10,8 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import { ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
 import { useCart } from '@/hooks/useCart';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { formatPrice } from '@/utils';
 

@@ -1,5 +1,16 @@
 import { useMemo, useCallback } from 'react';
-import { STORES, type Store } from '@/data/stores';
+import {
+  STORES,
+  calculateDistance,
+  isStoreOpen,
+  formatPhone,
+  APPOINTMENT_TYPES,
+  type Store,
+  type AppointmentType,
+} from '@/data/stores';
+
+export { calculateDistance, isStoreOpen, formatPhone, APPOINTMENT_TYPES };
+export type { Store, AppointmentType };
 
 interface UseStoresReturn {
   stores: Store[];

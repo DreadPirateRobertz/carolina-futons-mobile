@@ -1,5 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
-import { MOCK_ORDERS, type Order, type OrderStatus } from '@/data/orders';
+import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/data/orders';
+
+export { ORDER_STATUS_CONFIG };
+export type { Order, OrderStatus };
 
 interface UseOrdersReturn {
   orders: Order[];
