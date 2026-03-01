@@ -11,7 +11,9 @@ describe('Browse Flow', () => {
     it('should display the home screen with welcome message', async () => {
       await waitAndExpectVisible('home-screen');
       await expect(element(by.text('Welcome to Carolina Futons'))).toBeVisible();
-      await expect(element(by.text('Handcrafted comfort from the Blue Ridge Mountains'))).toBeVisible();
+      await expect(
+        element(by.text('Handcrafted comfort from the Blue Ridge Mountains')),
+      ).toBeVisible();
     });
 
     it('should display AR and Shop CTAs', async () => {

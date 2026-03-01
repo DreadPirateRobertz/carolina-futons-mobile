@@ -53,7 +53,14 @@ const ARWebScreen = lazy(() =>
 
 function LazyFallback() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#E8D5B7' }}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#E8D5B7',
+      }}
+    >
       <ActivityIndicator size="large" color="#E8845C" />
     </View>
   );

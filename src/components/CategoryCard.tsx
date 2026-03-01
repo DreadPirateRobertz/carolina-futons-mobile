@@ -18,7 +18,12 @@ interface Props {
   testID?: string;
 }
 
-export const CategoryCard = memo(function CategoryCard({ category, onPress, variant = 'featured', testID }: Props) {
+export const CategoryCard = memo(function CategoryCard({
+  category,
+  onPress,
+  variant = 'featured',
+  testID,
+}: Props) {
   const [imageError, setImageError] = useState(false);
 
   const handlePress = useCallback(() => {

@@ -10,7 +10,7 @@ import {
   getCollectionCategoryMap,
   resolveCategory,
 } from '../wixClient';
-import type { Product, ProductCategory } from '@/data/products';
+import type { ProductCategory } from '@/data/products';
 
 // --- Mock fetch globally ---
 const mockFetch = jest.fn();

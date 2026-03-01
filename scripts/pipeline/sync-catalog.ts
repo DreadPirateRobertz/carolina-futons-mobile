@@ -32,9 +32,8 @@ function main(): void {
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const manifestIdx = args.indexOf('--manifest');
-  const manifestPath = manifestIdx !== -1
-    ? args[manifestIdx + 1]
-    : path.resolve(__dirname, 'output', 'manifest.json');
+  const manifestPath =
+    manifestIdx !== -1 ? args[manifestIdx + 1] : path.resolve(__dirname, 'output', 'manifest.json');
 
   if (!fs.existsSync(manifestPath)) {
     console.error(`Manifest not found: ${manifestPath}`);
@@ -56,7 +55,7 @@ function main(): void {
 
     // Update content hash
     const hashPattern = new RegExp(
-      `(productId:\\s*'${model.productId}'[\\s\\S]*?contentHash:\\s*')([^']+)(')`
+      `(productId:\\s*'${model.productId}'[\\s\\S]*?contentHash:\\s*')([^']+)(')`,
     );
     if (hashPattern.test(newContent)) {
       const match = newContent.match(hashPattern);
@@ -69,7 +68,7 @@ function main(): void {
 
     // Update file size
     const sizePattern = new RegExp(
-      `(productId:\\s*'${model.productId}'[\\s\\S]*?fileSizeBytes:\\s*)([\\d_]+)`
+      `(productId:\\s*'${model.productId}'[\\s\\S]*?fileSizeBytes:\\s*)([\\d_]+)`,
     );
     if (sizePattern.test(newContent)) {
       const match = newContent.match(sizePattern);
@@ -85,7 +84,15 @@ function main(): void {
     // Update GLB URL with new hash
     const bt = '`';
     const glbUrlPattern = new RegExp(
-      '(productId:\\s*\'' + model.productId + '\'[\\s\\S]*?glbUrl:\\s*' + bt + ')([^' + bt + ']+)(' + bt + ')'
+      "(productId:\\s*'" +
+        model.productId +
+        "'[\\s\\S]*?glbUrl:\\s*" +
+        bt +
+        ')([^' +
+        bt +
+        ']+)(' +
+        bt +
+        ')',
     );
     const expectedGlbUrl = '${MODEL_CDN_BASE}/glb/' + slug + '-' + model.contentHash + '.glb';
     if (glbUrlPattern.test(newContent)) {
@@ -98,7 +105,15 @@ function main(): void {
 
     // Update USDZ URL with new hash
     const usdzUrlPattern = new RegExp(
-      '(productId:\\s*\'' + model.productId + '\'[\\s\\S]*?usdzUrl:\\s*' + bt + ')([^' + bt + ']+)(' + bt + ')'
+      "(productId:\\s*'" +
+        model.productId +
+        "'[\\s\\S]*?usdzUrl:\\s*" +
+        bt +
+        ')([^' +
+        bt +
+        ']+)(' +
+        bt +
+        ')',
     );
     const expectedUsdzUrl = '${MODEL_CDN_BASE}/usdz/' + slug + '-' + model.contentHash + '.usdz';
     if (usdzUrlPattern.test(newContent)) {

@@ -1,10 +1,10 @@
 import React from 'react';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
-import { PRODUCTS, type Product } from '@/data/products';
+import { PRODUCTS } from '@/data/products';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider } from '@/hooks/useCart';
 
@@ -105,23 +105,15 @@ jest.mock('@/services/analytics', () => ({
 // --- Test Fixtures ---
 
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
-const ashevilleFuton = PRODUCTS.find((p) => p.id === 'prod-asheville-full')!;
-const blueRidgeFuton = PRODUCTS.find((p) => p.id === 'prod-blue-ridge-queen')!;
 
 // === Conditional imports — tests skip if modules don't exist yet ===
 
 let ARScreen: any;
-let ViewInRoomButton: any;
 let arSupport: any;
 try {
   ARScreen = require('../ARScreen').ARScreen;
 } catch {
   ARScreen = null;
-}
-try {
-  ViewInRoomButton = require('../../components/ViewInRoomButton').ViewInRoomButton;
-} catch {
-  ViewInRoomButton = null;
 }
 try {
   arSupport = require('../../services/arSupport');
@@ -421,7 +413,7 @@ describeARScreen('Full Integration Flow', () => {
   });
 
   it('rapid model cycling during integration flow does not crash', () => {
-    const { getByTestId, getAllByText } = renderAR();
+    const { getByTestId } = renderAR();
 
     // Rapid cycle through all models 3 times
     for (let i = 0; i < 3; i++) {

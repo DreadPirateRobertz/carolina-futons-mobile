@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { ConnectivityProvider } from '../useConnectivity';
 import { useOfflineSync, type SyncHandler } from '../useOfflineSync';
-import { _resetForTesting, getQueueLength, enqueue } from '@/services/offlineQueue';
+import { _resetForTesting } from '@/services/offlineQueue';
 import { useConnectivity } from '../useConnectivity';
 
 beforeEach(() => {

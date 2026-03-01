@@ -1,11 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import {
-  FUTON_MODELS,
-  FABRICS,
-  inchesToFeetDisplay,
-  type FutonModel,
-  type Fabric,
-} from '@/data/futons';
+import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
 
 // Re-export types for screens — avoids direct src/data imports

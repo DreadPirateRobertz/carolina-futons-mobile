@@ -23,8 +23,6 @@ import {
   type DeepLinkRoute,
 } from '../deepLink';
 
-import { trackEvent } from '../analytics';
-
 jest.mock('../analytics', () => ({
   trackEvent: jest.fn(),
 }));

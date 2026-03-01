@@ -1,5 +1,4 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SignUpScreen } from '../SignUpScreen';
 import { AuthProvider } from '@/hooks/useAuth';

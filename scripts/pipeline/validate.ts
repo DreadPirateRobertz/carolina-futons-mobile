@@ -58,7 +58,16 @@ function validateFile(filePath: string, spec: QualitySpec, strict: boolean): Rep
 
   if (format === 'unknown') {
     errors.push(`Unsupported format: .${ext}`);
-    return { file: filePath, format, sizeBytes: size, contentHash: hash(filePath), triangleCount, errors, warnings, passed: false };
+    return {
+      file: filePath,
+      format,
+      sizeBytes: size,
+      contentHash: hash(filePath),
+      triangleCount,
+      errors,
+      warnings,
+      passed: false,
+    };
   }
 
   // Size validation
@@ -66,10 +75,16 @@ function validateFile(filePath: string, spec: QualitySpec, strict: boolean): Rep
   const targetSize = format === 'glb' ? spec.targetGlbSizeBytes : spec.targetUsdzSizeBytes;
 
   if (size > maxSize) {
-    errors.push(`File size ${(size / 1e6).toFixed(1)}MB exceeds hard limit ${(maxSize / 1e6).toFixed(0)}MB`);
+    errors.push(
+      `File size ${(size / 1e6).toFixed(1)}MB exceeds hard limit ${(maxSize / 1e6).toFixed(0)}MB`,
+    );
   } else if (size > targetSize) {
     const msg = `File size ${(size / 1e6).toFixed(1)}MB exceeds target ${(targetSize / 1e6).toFixed(0)}MB`;
-    strict ? errors.push(msg) : warnings.push(msg);
+    if (strict) {
+      errors.push(msg);
+    } else {
+      warnings.push(msg);
+    }
   }
 
   // GLB-specific: run gltf-validator
@@ -94,7 +109,11 @@ function validateFile(filePath: string, spec: QualitySpec, strict: boolean): Rep
           errors.push(`Triangle count ${triangleCount} exceeds max ${spec.maxTriangles}`);
         } else if (triangleCount! > spec.targetTriangles) {
           const msg = `Triangle count ${triangleCount} exceeds target ${spec.targetTriangles}`;
-          strict ? errors.push(msg) : warnings.push(msg);
+          if (strict) {
+            errors.push(msg);
+          } else {
+            warnings.push(msg);
+          }
         }
       }
     } catch {

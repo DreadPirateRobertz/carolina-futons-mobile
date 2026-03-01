@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+import App from '../App';
+
 // Mock AsyncStorage — returning user (skip onboarding)
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve('true')),
@@ -73,7 +75,11 @@ jest.mock('react-native-reanimated', () => {
 
 // Mock native stack — use a minimal JS-based stack for testing
 jest.mock('@react-navigation/native-stack', () => {
-  const { createNavigatorFactory, useNavigationBuilder, StackRouter } = require('@react-navigation/core');
+  const {
+    createNavigatorFactory,
+    useNavigationBuilder,
+    StackRouter,
+  } = require('@react-navigation/core');
   const { createElement } = require('react');
   const { View } = require('react-native');
 
@@ -97,8 +103,6 @@ jest.mock('@react-navigation/native-stack', () => {
     createNativeStackNavigator: createNavigatorFactory(NativeStackNavigator),
   };
 });
-
-import App from '../App';
 
 describe('App', () => {
   it('renders HomeScreen by default', async () => {

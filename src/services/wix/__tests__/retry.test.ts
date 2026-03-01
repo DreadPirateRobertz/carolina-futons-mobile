@@ -1,4 +1,4 @@
-import { withRetry, type RetryOptions } from '../retry';
+import { withRetry } from '../retry';
 
 describe('withRetry', () => {
   it('returns result on first success', async () => {

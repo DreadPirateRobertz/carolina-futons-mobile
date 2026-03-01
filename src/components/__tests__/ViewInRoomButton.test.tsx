@@ -1,9 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { Platform } from 'react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { type Product } from '@/data/products';
-import { type FutonModel } from '@/data/futons';
 
 // ============================================================================
 // ViewInRoomButton — Test-first specs for cm-88d Phase 1

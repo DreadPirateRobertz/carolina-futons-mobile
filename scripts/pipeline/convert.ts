@@ -44,7 +44,13 @@ interface PipelineConfig {
   outputDir: string;
   cdnBase: string;
   formats: {
-    glb: { maxSizeBytes: number; targetSizeBytes: number; compression: string; textureFormat: string; textureResolution: number };
+    glb: {
+      maxSizeBytes: number;
+      targetSizeBytes: number;
+      compression: string;
+      textureFormat: string;
+      textureResolution: number;
+    };
     usdz: { maxSizeBytes: number; targetSizeBytes: number; scaleUnit: string };
   };
   validation: {
@@ -121,9 +127,13 @@ function validateGlb(filePath: string, config: PipelineConfig): ValidationResult
 
   // File size checks
   if (size > config.formats.glb.maxSizeBytes) {
-    errors.push(`GLB exceeds max size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.glb.maxSizeBytes / 1e6).toFixed(0)}MB`);
+    errors.push(
+      `GLB exceeds max size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.glb.maxSizeBytes / 1e6).toFixed(0)}MB`,
+    );
   } else if (size > config.formats.glb.targetSizeBytes) {
-    warnings.push(`GLB exceeds target size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.glb.targetSizeBytes / 1e6).toFixed(0)}MB`);
+    warnings.push(
+      `GLB exceeds target size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.glb.targetSizeBytes / 1e6).toFixed(0)}MB`,
+    );
   }
 
   // Run gltf-validator if available
@@ -131,7 +141,7 @@ function validateGlb(filePath: string, config: PipelineConfig): ValidationResult
   try {
     const validatorOutput = execSync(
       `${config.tools.gltfValidator} "${filePath}" --format json 2>/dev/null`,
-      { encoding: 'utf-8', timeout: 30000 }
+      { encoding: 'utf-8', timeout: 30000 },
     );
     const report = JSON.parse(validatorOutput);
 
@@ -144,9 +154,13 @@ function validateGlb(filePath: string, config: PipelineConfig): ValidationResult
     if (report.info?.totalTriangleCount) {
       triangleCount = report.info.totalTriangleCount;
       if (triangleCount! > config.validation.maxTriangles) {
-        errors.push(`Triangle count ${triangleCount} exceeds max ${config.validation.maxTriangles}`);
+        errors.push(
+          `Triangle count ${triangleCount} exceeds max ${config.validation.maxTriangles}`,
+        );
       } else if (triangleCount! > config.validation.targetTriangles) {
-        warnings.push(`Triangle count ${triangleCount} exceeds target ${config.validation.targetTriangles}`);
+        warnings.push(
+          `Triangle count ${triangleCount} exceeds target ${config.validation.targetTriangles}`,
+        );
       }
     }
   } catch {
@@ -168,9 +182,13 @@ function validateUsdz(filePath: string, config: PipelineConfig): ValidationResul
   const hash = contentHash(filePath);
 
   if (size > config.formats.usdz.maxSizeBytes) {
-    errors.push(`USDZ exceeds max size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.usdz.maxSizeBytes / 1e6).toFixed(0)}MB`);
+    errors.push(
+      `USDZ exceeds max size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.usdz.maxSizeBytes / 1e6).toFixed(0)}MB`,
+    );
   } else if (size > config.formats.usdz.targetSizeBytes) {
-    warnings.push(`USDZ exceeds target size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.usdz.targetSizeBytes / 1e6).toFixed(0)}MB`);
+    warnings.push(
+      `USDZ exceeds target size: ${(size / 1e6).toFixed(1)}MB > ${(config.formats.usdz.targetSizeBytes / 1e6).toFixed(0)}MB`,
+    );
   }
 
   return {
@@ -217,7 +235,7 @@ function convertToUsdz(glbPath: string, usdzPath: string, config: PipelineConfig
 function processProduct(
   product: CatalogProduct,
   config: PipelineConfig,
-  opts: { dryRun: boolean; skipUsdz: boolean }
+  opts: { dryRun: boolean; skipUsdz: boolean },
 ): ConversionResult {
   const slug = slugFromId(product.id);
   const inputGlb = path.join(config.inputDir, `${slug}.glb`);
@@ -226,7 +244,12 @@ function processProduct(
   if (!fs.existsSync(inputGlb)) {
     return {
       productId: product.id,
-      validation: { valid: false, errors: [`Input not found: ${inputGlb}`], warnings: [], stats: { fileSizeBytes: 0, contentHash: '' } },
+      validation: {
+        valid: false,
+        errors: [`Input not found: ${inputGlb}`],
+        warnings: [],
+        stats: { fileSizeBytes: 0, contentHash: '' },
+      },
       skipped: true,
     };
   }
@@ -249,7 +272,7 @@ function processProduct(
 
   try {
     optimizeGlb(inputGlb, optimizedGlbPath, config);
-  } catch (e) {
+  } catch {
     // Fallback: copy raw GLB if optimization fails
     warn(`gltf-transform optimization failed, using raw GLB for ${slug}`);
     fs.copyFileSync(inputGlb, optimizedGlbPath);
@@ -307,7 +330,10 @@ function generateManifest(results: ConversionResult[], config: PipelineConfig): 
     }));
 
   const manifestPath = path.join(config.outputDir, 'manifest.json');
-  fs.writeFileSync(manifestPath, JSON.stringify({ generatedAt: new Date().toISOString(), models: manifest }, null, 2));
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify({ generatedAt: new Date().toISOString(), models: manifest }, null, 2),
+  );
   success(`Manifest written: ${manifestPath} (${manifest.length} models)`);
 }
 
@@ -370,7 +396,9 @@ function main(): void {
     if (result.skipped && result.validation.errors.length > 0) {
       warn(`Skipped: ${result.validation.errors.join(', ')}`);
     } else if (!result.skipped) {
-      success(`${product.id}: GLB ${(result.glb!.sizeBytes / 1e6).toFixed(1)}MB${result.usdz ? `, USDZ ${(result.usdz.sizeBytes / 1e6).toFixed(1)}MB` : ''}`);
+      success(
+        `${product.id}: GLB ${(result.glb!.sizeBytes / 1e6).toFixed(1)}MB${result.usdz ? `, USDZ ${(result.usdz.sizeBytes / 1e6).toFixed(1)}MB` : ''}`,
+      );
     }
   }
 

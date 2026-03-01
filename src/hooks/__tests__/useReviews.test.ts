@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useReviews } from '../useReviews';
-import { getReviewsForProduct } from '@/data/reviews';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 jest.useFakeTimers();
