@@ -1,4 +1,4 @@
-import { fuzzyScore, fuzzySearch, getSuggestions, type FuzzyResult } from '../fuzzySearch';
+import { fuzzyScore, fuzzySearch, getSuggestions } from '../fuzzySearch';
 
 describe('fuzzyScore', () => {
   it('returns 1.0 for exact match', () => {

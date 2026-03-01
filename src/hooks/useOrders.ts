@@ -22,8 +22,8 @@ interface UseOrdersReturn {
  * When WixProvider is available, will fetch from Wix eCommerce API.
  */
 export function useOrders(): UseOrdersReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading] = useState(false);
+  const [error] = useState<Error | null>(null);
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
 
   // Sort by createdAt descending (most recent first)

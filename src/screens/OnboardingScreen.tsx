@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Slide {
   title: string;

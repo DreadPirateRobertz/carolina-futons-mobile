@@ -94,7 +94,7 @@ describe('generate pipeline', () => {
   describe('photo validation', () => {
     function validatePhotos(
       photos: string[],
-      required: string[]
+      required: string[],
     ): { valid: boolean; missing: string[]; found: string[] } {
       const photoNames = photos.map((p) => path.basename(p, path.extname(p)).toLowerCase());
       const found = required.filter((r) => photoNames.some((n) => n.includes(r)));
@@ -107,7 +107,12 @@ describe('generate pipeline', () => {
     }
 
     it('passes when all required photos present', () => {
-      const photos = ['/photos/front-closed.jpg', '/photos/front-open.jpg', '/photos/side-left.jpg', '/photos/side-right.jpg'];
+      const photos = [
+        '/photos/front-closed.jpg',
+        '/photos/front-open.jpg',
+        '/photos/side-left.jpg',
+        '/photos/side-right.jpg',
+      ];
       const required = ['front-closed', 'front-open', 'side-left', 'side-right'];
 
       const result = validatePhotos(photos, required);
@@ -174,7 +179,15 @@ describe('generate pipeline', () => {
 
   describe('catalog-MASTER.json', () => {
     it('has products with required fields for pipeline', () => {
-      const catalogPath = path.resolve(__dirname, '..', '..', '..', 'src', 'data', 'catalog-MASTER.json');
+      const catalogPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'src',
+        'data',
+        'catalog-MASTER.json',
+      );
       const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
 
       expect(catalog.products).toBeDefined();
@@ -195,7 +208,15 @@ describe('generate pipeline', () => {
     });
 
     it('products are ordered by arPriority', () => {
-      const catalogPath = path.resolve(__dirname, '..', '..', '..', 'src', 'data', 'catalog-MASTER.json');
+      const catalogPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'src',
+        'data',
+        'catalog-MASTER.json',
+      );
       const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
       const priorities = catalog.products.map((p: any) => p.arPriority);
 
@@ -207,7 +228,15 @@ describe('generate pipeline', () => {
 
   describe('models3d.ts coverage', () => {
     it('all catalog products have corresponding models3d entries', () => {
-      const catalogPath = path.resolve(__dirname, '..', '..', '..', 'src', 'data', 'catalog-MASTER.json');
+      const catalogPath = path.resolve(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'src',
+        'data',
+        'catalog-MASTER.json',
+      );
       const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
 
       // Read models3d.ts to extract product IDs

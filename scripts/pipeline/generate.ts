@@ -136,7 +136,7 @@ function findProductPhotos(photosDir: string, product: CatalogProduct): string[]
  */
 function validatePhotos(
   photos: string[],
-  product: CatalogProduct
+  product: CatalogProduct,
 ): { valid: boolean; missing: string[]; found: string[] } {
   const photoNames = photos.map((p) => path.basename(p, path.extname(p)).toLowerCase());
   const required = product.photoInputs.required;
@@ -158,17 +158,20 @@ async function generateWithTripo(
   photos: string[],
   product: CatalogProduct,
   outputPath: string,
-  config: GenerateConfig['tripo']
+  config: GenerateConfig['tripo'],
 ): Promise<void> {
   if (!config.apiKey || config.apiKey === 'YOUR_TRIPO_API_KEY') {
-    throw new Error('Tripo API key not configured. Set tripo.apiKey in generate.config.json or TRIPO_API_KEY env var.');
+    throw new Error(
+      'Tripo API key not configured. Set tripo.apiKey in generate.config.json or TRIPO_API_KEY env var.',
+    );
   }
 
   // Step 1: Upload images
   log(`Uploading ${photos.length} photos to Tripo...`);
   const imageTokens: string[] = [];
 
-  for (const photo of photos.slice(0, 8)) { // Tripo accepts up to 8 images
+  for (const photo of photos.slice(0, 8)) {
+    // Tripo accepts up to 8 images
     const formData = new FormData();
     const fileBuffer = fs.readFileSync(photo);
     const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
@@ -273,10 +276,12 @@ async function generateWithMeshy(
   photos: string[],
   product: CatalogProduct,
   outputPath: string,
-  config: GenerateConfig['meshy']
+  config: GenerateConfig['meshy'],
 ): Promise<void> {
   if (!config.apiKey || config.apiKey === 'YOUR_MESHY_API_KEY') {
-    throw new Error('Meshy API key not configured. Set meshy.apiKey in generate.config.json or MESHY_API_KEY env var.');
+    throw new Error(
+      'Meshy API key not configured. Set meshy.apiKey in generate.config.json or MESHY_API_KEY env var.',
+    );
   }
 
   // Step 1: Upload primary image
@@ -363,11 +368,7 @@ async function generateWithMeshy(
 // Service: Local (vendor-provided models)
 // ---------------------------------------------------------------------------
 
-function handleLocalModel(
-  product: CatalogProduct,
-  outputPath: string,
-  inputDir: string
-): void {
+function handleLocalModel(product: CatalogProduct, outputPath: string, inputDir: string): void {
   const slug = slugFromId(product.id);
   const localGlb = path.join(inputDir, `${slug}.glb`);
 
@@ -377,7 +378,9 @@ function handleLocalModel(
     return;
   }
 
-  throw new Error(`No local GLB found at ${localGlb}. Place vendor model there or use an AI service.`);
+  throw new Error(
+    `No local GLB found at ${localGlb}. Place vendor model there or use an AI service.`,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -388,7 +391,7 @@ async function processProduct(
   product: CatalogProduct,
   config: GenerateConfig,
   service: string,
-  dryRun: boolean
+  dryRun: boolean,
 ): Promise<GenerationResult> {
   const slug = slugFromId(product.id);
   const outputPath = path.join(config.outputDir, `${slug}.glb`);
@@ -546,7 +549,9 @@ async function main(): Promise<void> {
   // Ensure output dir
   fs.mkdirSync(config.outputDir, { recursive: true });
 
-  log(`Photo-to-3D generation — ${products.length} product(s) via ${service}${dryRun ? ' [DRY RUN]' : ''}`);
+  log(
+    `Photo-to-3D generation — ${products.length} product(s) via ${service}${dryRun ? ' [DRY RUN]' : ''}`,
+  );
   log(`Photos: ${config.photosDir}`);
   log(`Output: ${config.outputDir}`);
 

@@ -35,7 +35,7 @@ export function OrderDetailScreen({
   const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
-  const { getOrder, orders: hookOrders } = useOrders();
+  const { getOrder } = useOrders();
   const { getModel, getFabric } = useFutonModels();
 
   const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);

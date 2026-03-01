@@ -1,12 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import { PRODUCTS, type Product, type ProductCategory } from '@/data/products';
 import { hasARModel } from '@/data/models3d';
@@ -66,7 +59,12 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
           accessibilityRole="button"
           accessibilityState={{ selected: isSelected }}
         >
-          <Image source={{ uri: item.images[0]?.uri }} style={styles.tileImage} contentFit="cover" recyclingKey={item.id} />
+          <Image
+            source={{ uri: item.images[0]?.uri }}
+            style={styles.tileImage}
+            contentFit="cover"
+            recyclingKey={item.id}
+          />
           {item.badge && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{item.badge}</Text>

@@ -15,7 +15,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
-import { getModel3DForProduct, type Model3DAsset, MODEL_CDN_BASE } from '@/data/models3d';
+import { getModel3DForProduct, type Model3DAsset } from '@/data/models3d';
 
 /** Maximum disk cache budget for 3D models (200 MB) */
 export const MODEL_CACHE_BUDGET_BYTES = 200 * 1024 * 1024;

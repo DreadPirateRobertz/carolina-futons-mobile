@@ -61,9 +61,7 @@ export function RecommendationCarousel({
           <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
             {item.name}
           </Text>
-          <Text style={[styles.price, { color: colors.espresso }]}>
-            ${item.price.toFixed(2)}
-          </Text>
+          <Text style={[styles.price, { color: colors.espresso }]}>${item.price.toFixed(2)}</Text>
           <StarRating
             rating={item.rating}
             size="sm"
@@ -76,10 +74,7 @@ export function RecommendationCarousel({
     [onProductPress, colors, borderRadius, shadows, spacing],
   );
 
-  const renderSeparator = useCallback(
-    () => <Separator width={spacing.sm} />,
-    [spacing.sm],
-  );
+  const renderSeparator = useCallback(() => <Separator width={spacing.sm} />, [spacing.sm]);
 
   if (products.length === 0) return null;
 

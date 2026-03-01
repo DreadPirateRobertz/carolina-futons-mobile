@@ -15,13 +15,7 @@ import {
   type NotificationType,
   type NotificationPreferences,
 } from '../notifications';
-import {
-  parseDeepLink,
-  resolveRoute,
-  extractUTM,
-  buildShareUrlWithUTM,
-  type DeepLinkRoute,
-} from '../deepLink';
+import { parseDeepLink, resolveRoute, buildShareUrlWithUTM, type DeepLinkRoute } from '../deepLink';
 
 /**
  * Helper: full pipeline from notification to resolved route.

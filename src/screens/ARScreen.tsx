@@ -142,6 +142,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         Haptics.selectionAsync();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedModel?.id],
   );
 
@@ -191,6 +192,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [hasFloor, detectionState, performHitTest, selectedModel?.id],
   );
 
@@ -213,6 +215,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     } finally {
       setIsCapturing(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModel?.id, selectedFabric?.id]);
 
   const handleShare = useCallback(async () => {
@@ -259,6 +262,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     } catch {
       Alert.alert('Save Failed', 'Could not save to your photo library. Please try again.');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [captureScene, selectedModel?.id, selectedFabric?.id]);
 
   const handleToggleWishlist = useCallback(() => {
@@ -274,6 +278,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProduct, wishlist, isInWishlist, selectedModel?.id, selectedFabric?.id]);
 
   /** Open the product picker overlay */
@@ -301,6 +306,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         Haptics.selectionAsync();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedFabric],
   );
 

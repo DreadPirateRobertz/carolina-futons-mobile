@@ -1,7 +1,6 @@
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook } from '@testing-library/react-native';
 import { useFutonModels, useProductByModelId } from '../useFutonModels';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
-import { PRODUCTS } from '@/data/products';
 
 describe('useFutonModels', () => {
   // --- List all models ---

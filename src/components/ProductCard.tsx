@@ -13,7 +13,12 @@ interface Props {
   testID?: string;
 }
 
-export const ProductCard = memo(function ProductCard({ product, onPress, onLongPress, testID }: Props) {
+export const ProductCard = memo(function ProductCard({
+  product,
+  onPress,
+  onLongPress,
+  testID,
+}: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const badgeColor =

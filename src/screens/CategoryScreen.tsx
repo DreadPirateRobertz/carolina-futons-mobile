@@ -2,12 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import {
-  useProducts,
-  type Product,
-  type ProductCategory,
-  type SortOption,
-} from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
@@ -31,7 +26,10 @@ export function CategoryScreen({
   onBack,
   testID,
 }: Props) {
-  const resolvedCategory = (categoryId ?? slug ?? route?.params?.slug ?? 'futons') as ProductCategory;
+  const resolvedCategory = (categoryId ??
+    slug ??
+    route?.params?.slug ??
+    'futons') as ProductCategory;
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -44,7 +42,8 @@ export function CategoryScreen({
     setSelectedCategory(resolvedCategory ?? null);
   }, [resolvedCategory, setSelectedCategory]);
 
-  const title = categoryTitle ?? resolvedCategory.charAt(0).toUpperCase() + resolvedCategory.slice(1);
+  const title =
+    categoryTitle ?? resolvedCategory.charAt(0).toUpperCase() + resolvedCategory.slice(1);
 
   const renderProduct = useCallback(
     ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,

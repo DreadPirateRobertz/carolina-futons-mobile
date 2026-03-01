@@ -3,11 +3,11 @@
  * These tests mock the hooks to confirm ARScreen delegates data fetching properly.
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
-import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { FUTON_MODELS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider } from '@/hooks/useCart';
 
@@ -114,11 +114,13 @@ jest.mock('@/hooks/useSurfaceDetection', () => ({
 jest.mock('react-native-view-shot', () => {
   const { createElement, forwardRef } = require('react');
   const { View } = require('react-native');
+  const MockViewShot = forwardRef(({ children, ...props }: any, ref: any) =>
+    createElement(View, { ...props, ref }, children),
+  );
+  MockViewShot.displayName = 'MockViewShot';
   return {
     __esModule: true,
-    default: forwardRef(({ children, ...props }: any, ref: any) =>
-      createElement(View, { ...props, ref }, children),
-    ),
+    default: MockViewShot,
     captureRef: jest.fn(() => Promise.resolve('/tmp/screenshot.png')),
   };
 });

@@ -1,6 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
-import { Platform } from 'react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { ARWebScreen } from '../ARWebScreen';
 
 // Mock navigation

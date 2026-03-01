@@ -117,11 +117,13 @@ jest.mock('@/hooks/useSurfaceDetection', () => ({
 jest.mock('react-native-view-shot', () => {
   const { createElement, forwardRef } = require('react');
   const { View } = require('react-native');
+  const MockViewShot = forwardRef(({ children, ...props }: any, ref: any) =>
+    createElement(View, { ...props, ref }, children),
+  );
+  MockViewShot.displayName = 'MockViewShot';
   return {
     __esModule: true,
-    default: forwardRef(({ children, ...props }: any, ref: any) =>
-      createElement(View, { ...props, ref }, children),
-    ),
+    default: MockViewShot,
     captureRef: jest.fn(() => Promise.resolve('/tmp/screenshot.png')),
   };
 });
