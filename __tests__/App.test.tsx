@@ -1,6 +1,12 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+// Mock AsyncStorage — returning user (skip onboarding)
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(() => Promise.resolve('true')),
+  setItem: jest.fn(() => Promise.resolve()),
+}));
+
 // Mock font packages
 jest.mock('expo-font', () => ({
   useFonts: () => [true],
