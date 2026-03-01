@@ -23,3 +23,18 @@ export {
 } from './wixProvider';
 
 export { getWixConfig, isWixConfigured } from './config';
+
+export { getWixSdkClient, resetWixSdkClient } from './wixSdkClient';
+
+export {
+  WixAuthService,
+  type AuthResult,
+  type AuthUser,
+} from './wixAuth';
+
+export {
+  saveTokens,
+  loadTokens,
+  clearTokens,
+  type WixTokens,
+} from './tokenStorage';
