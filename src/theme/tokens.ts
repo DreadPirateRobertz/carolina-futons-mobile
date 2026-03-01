@@ -1,6 +1,7 @@
 /**
  * Carolina Futons Design Tokens
- * Blue Ridge Mountain palette - ported from web designTokens.js
+ * Blue Ridge Mountain palette — mirrors web sharedTokens.js
+ * Canonical values: cfutons/src/public/sharedTokens.js + brand-colors.md
  */
 
 export const colors = {
