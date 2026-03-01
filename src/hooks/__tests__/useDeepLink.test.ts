@@ -1,10 +1,7 @@
 import { renderHook, act } from '@testing-library/react-native';
 import * as Linking from 'expo-linking';
 import { useDeepLink } from '../useDeepLink';
-import {
-  consumePendingDeepLink,
-  storePendingDeepLink,
-} from '@/services/deepLink';
+import { consumePendingDeepLink, storePendingDeepLink } from '@/services/deepLink';
 
 jest.mock('expo-linking', () => ({
   getInitialURL: jest.fn(),
@@ -67,9 +64,7 @@ describe('useDeepLink', () => {
     });
 
     it('processes universal link initial URL', async () => {
-      mockGetInitialURL.mockResolvedValue(
-        'https://carolinafutons.com/category/frames',
-      );
+      mockGetInitialURL.mockResolvedValue('https://carolinafutons.com/category/frames');
       const { result } = renderHook(() => useDeepLink());
       await act(async () => {});
 
