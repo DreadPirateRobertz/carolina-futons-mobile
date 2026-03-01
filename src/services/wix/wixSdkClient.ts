@@ -8,17 +8,22 @@
 import { createClient, OAuthStrategy } from '@wix/sdk';
 import { members } from '@wix/members';
 
-const CLIENT_ID = process.env.EXPO_PUBLIC_WIX_CLIENT_ID ?? '';
-
 type WixSdkClient = ReturnType<typeof createClient>;
 
 let client: WixSdkClient | null = null;
 
 export function getWixSdkClient(): WixSdkClient {
   if (!client) {
+    const key = 'EXPO_PUBLIC_WIX_CLIENT_ID';
+    const clientId = process.env[key] ?? '';
+    if (!clientId) {
+      console.warn(
+        'EXPO_PUBLIC_WIX_CLIENT_ID is not set — Wix auth will fail at runtime.',
+      );
+    }
     client = createClient({
       modules: { members },
-      auth: OAuthStrategy({ clientId: CLIENT_ID }),
+      auth: OAuthStrategy({ clientId }),
     });
   }
   return client;
