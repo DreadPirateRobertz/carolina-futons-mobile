@@ -14,6 +14,8 @@ import { EmptyState } from '@/components/EmptyState';
 
 interface Props {
   categoryId?: ProductCategory;
+  slug?: string;
+  route?: { params?: { slug?: string } };
   categoryTitle?: string;
   onProductPress?: (product: Product) => void;
   onBack?: () => void;
@@ -21,25 +23,28 @@ interface Props {
 }
 
 export function CategoryScreen({
-  categoryId = 'futons',
+  categoryId,
+  slug,
+  route,
   categoryTitle,
   onProductPress,
   onBack,
   testID,
 }: Props) {
+  const resolvedCategory = (categoryId ?? slug ?? route?.params?.slug ?? 'futons') as ProductCategory;
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
   const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
-    initialCategory: categoryId,
+    initialCategory: resolvedCategory,
   });
 
-  // Sync hook state when categoryId prop changes
+  // Sync hook state when category changes
   useEffect(() => {
-    setSelectedCategory(categoryId ?? null);
-  }, [categoryId, setSelectedCategory]);
+    setSelectedCategory(resolvedCategory ?? null);
+  }, [resolvedCategory, setSelectedCategory]);
 
-  const title = categoryTitle ?? categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+  const title = categoryTitle ?? resolvedCategory.charAt(0).toUpperCase() + resolvedCategory.slice(1);
 
   const renderProduct = useCallback(
     ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,

@@ -29,6 +29,8 @@ const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as 
 
 interface Props {
   productId?: string;
+  slug?: string;
+  route?: { params?: { slug?: string } };
   onAddToCart?: (model: FutonModel, fabric: Fabric, quantity: number) => void;
   onBack?: () => void;
   onOpenAR?: (modelId: string) => void;
@@ -38,6 +40,8 @@ interface Props {
 
 export function ProductDetailScreen({
   productId,
+  slug,
+  route,
   onAddToCart,
   onBack,
   onOpenAR,
@@ -46,9 +50,10 @@ export function ProductDetailScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
+  const resolvedId = productId ?? slug ?? route?.params?.slug ?? '';
   const { models, getModel } = useFutonModels();
-  const model = getModel(productId ?? '') ?? models[0];
-  const catalogProductId = productId ? `prod-${productId}` : '';
+  const model = getModel(resolvedId) ?? models[0];
+  const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
   const { product: catalogProduct } = useProduct(catalogProductId);
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);

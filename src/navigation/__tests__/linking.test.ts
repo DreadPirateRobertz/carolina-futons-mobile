@@ -1,4 +1,29 @@
 import { linkingConfig, SUPPORTED_PATHS } from '../linking';
+import { getStateFromPath } from '@react-navigation/native';
+
+/** Helper: resolve a URL path to the deepest screen name */
+function getScreen(path: string): string {
+  const state = getStateFromPath(path, linkingConfig.config!);
+  if (!state) return 'NO_MATCH';
+  let current = state.routes[state.routes.length - 1];
+  while (current.state) {
+    const nested = current.state as any;
+    current = nested.routes[nested.routes.length - 1];
+  }
+  return current.name;
+}
+
+/** Helper: resolve a URL path to the deepest screen's params */
+function getParams(path: string): Record<string, any> | undefined {
+  const state = getStateFromPath(path, linkingConfig.config!);
+  if (!state) return undefined;
+  let current = state.routes[state.routes.length - 1];
+  while (current.state) {
+    const nested = current.state as any;
+    current = nested.routes[nested.routes.length - 1];
+  }
+  return current.params as Record<string, any> | undefined;
+}
 
 describe('linkingConfig', () => {
   it('has custom scheme prefix', () => {
@@ -113,5 +138,105 @@ describe('SUPPORTED_PATHS', () => {
 
   it('includes stores', () => {
     expect(SUPPORTED_PATHS).toContain('stores');
+  });
+});
+
+describe('deep link route resolution (getStateFromPath)', () => {
+  describe('product pages', () => {
+    it('resolves product/:slug to ProductDetail', () => {
+      expect(getScreen('product/asheville-full')).toBe('ProductDetail');
+    });
+
+    it('passes slug param to ProductDetail', () => {
+      expect(getParams('product/asheville-full')).toEqual({ slug: 'asheville-full' });
+    });
+
+    it('handles hyphenated product slugs', () => {
+      expect(getParams('product/carolina-classic-queen')).toEqual({
+        slug: 'carolina-classic-queen',
+      });
+    });
+  });
+
+  describe('categories', () => {
+    it('resolves category/:slug to Category', () => {
+      expect(getScreen('category/frames')).toBe('Category');
+    });
+
+    it('passes slug param to Category', () => {
+      expect(getParams('category/frames')).toEqual({ slug: 'frames' });
+    });
+  });
+
+  describe('order tracking', () => {
+    it('resolves /orders to OrderHistory', () => {
+      expect(getScreen('orders')).toBe('OrderHistory');
+    });
+
+    it('resolves /orders/:orderId to OrderDetail', () => {
+      expect(getScreen('orders/ord-12345')).toBe('OrderDetail');
+    });
+
+    it('passes orderId param to OrderDetail', () => {
+      expect(getParams('orders/ord-12345')).toEqual({ orderId: 'ord-12345' });
+    });
+  });
+
+  describe('tab screens', () => {
+    it('resolves /home to Home tab', () => {
+      expect(getScreen('home')).toBe('Home');
+    });
+
+    it('resolves /shop to Shop tab', () => {
+      expect(getScreen('shop')).toBe('Shop');
+    });
+
+    it('resolves /cart to Cart tab', () => {
+      expect(getScreen('cart')).toBe('Cart');
+    });
+
+    it('resolves /account to Account tab', () => {
+      expect(getScreen('account')).toBe('Account');
+    });
+  });
+
+  describe('store pages', () => {
+    it('resolves /stores to StoreLocator', () => {
+      expect(getScreen('stores')).toBe('StoreLocator');
+    });
+
+    it('resolves /stores/:storeId to StoreDetail', () => {
+      expect(getScreen('stores/charlotte')).toBe('StoreDetail');
+    });
+
+    it('passes storeId param to StoreDetail', () => {
+      expect(getParams('stores/charlotte')).toEqual({ storeId: 'charlotte' });
+    });
+  });
+
+  describe('other screens', () => {
+    it('resolves /checkout', () => {
+      expect(getScreen('checkout')).toBe('Checkout');
+    });
+
+    it('resolves /login', () => {
+      expect(getScreen('login')).toBe('Login');
+    });
+
+    it('resolves /signup', () => {
+      expect(getScreen('signup')).toBe('SignUp');
+    });
+
+    it('resolves /wishlist', () => {
+      expect(getScreen('wishlist')).toBe('Wishlist');
+    });
+
+    it('resolves /ar', () => {
+      expect(getScreen('ar')).toBe('AR');
+    });
+
+    it('resolves /notifications', () => {
+      expect(getScreen('notifications')).toBe('NotificationPreferences');
+    });
   });
 });
