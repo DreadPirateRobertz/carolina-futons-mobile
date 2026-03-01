@@ -23,6 +23,11 @@ describe('Screen refactor: no direct @/data/ imports', () => {
     'ShopScreen.tsx',
     'OrderHistoryScreen.tsx',
     'OrderDetailScreen.tsx',
+    'CategoryScreen.tsx',
+    'ARScreen.tsx',
+    'ProductDetailScreen.tsx',
+    'StoreLocatorScreen.tsx',
+    'StoreDetailScreen.tsx',
   ];
 
   for (const screen of screens) {
@@ -43,9 +48,17 @@ describe('Hook re-exports', () => {
     expect(exports.ORDER_STATUS_CONFIG.cancelled).toBeDefined();
   });
 
-  it('useProducts re-exports Product type (via PRODUCTS array)', () => {
-    // We verify that the module exports are accessible
-    const exports = require('@/hooks/useProducts');
-    expect(exports.useProducts).toBeDefined();
+  it('useStores re-exports store utilities', () => {
+    const exports = require('@/hooks/useStores');
+    expect(exports.calculateDistance).toBeDefined();
+    expect(exports.isStoreOpen).toBeDefined();
+    expect(exports.formatPhone).toBeDefined();
+    expect(exports.APPOINTMENT_TYPES).toBeDefined();
+  });
+
+  it('useFutonModels re-exports inchesToFeetDisplay', () => {
+    const exports = require('@/hooks/useFutonModels');
+    expect(exports.inchesToFeetDisplay).toBeDefined();
+    expect(exports.inchesToFeetDisplay(72)).toBe("6'");
   });
 });

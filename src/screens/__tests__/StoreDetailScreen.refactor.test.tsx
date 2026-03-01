@@ -10,6 +10,7 @@ import { STORES } from '@/data/stores';
 
 const mockUseStoreById = jest.fn();
 jest.mock('@/hooks/useStores', () => ({
+  ...jest.requireActual('@/hooks/useStores'),
   useStoreById: (...args: any[]) => mockUseStoreById(...args),
 }));
 

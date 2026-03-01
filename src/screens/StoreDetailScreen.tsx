@@ -11,13 +11,13 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import {
-  type Store,
-  type AppointmentType,
-  APPOINTMENT_TYPES,
+  useStoreById,
   isStoreOpen,
   formatPhone,
-} from '@/data/stores';
-import { useStoreById } from '@/hooks/useStores';
+  APPOINTMENT_TYPES,
+  type Store,
+  type AppointmentType,
+} from '@/hooks/useStores';
 import { Button } from '@/components/Button';
 
 interface Props {

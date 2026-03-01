@@ -12,7 +12,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
-import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
+import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/hooks/useFutonModels';
 import { formatPrice, openARViewer } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { useFutonModels } from '@/hooks/useFutonModels';
