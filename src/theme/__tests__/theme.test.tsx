@@ -53,7 +53,7 @@ describe('Design Tokens', () => {
   it('exports typography scale with font families', () => {
     expect(typography.headingFamily).toBe('PlayfairDisplay_700Bold');
     expect(typography.bodyFamily).toBe('SourceSans3_400Regular');
-    expect(typography.h1.fontSize).toBe(30);
+    expect(typography.h1.fontSize).toBe(34);
     expect(typography.body.fontSize).toBe(15);
   });
 

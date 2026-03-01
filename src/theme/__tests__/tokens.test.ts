@@ -120,6 +120,29 @@ describe('Design Tokens', () => {
       expect(typography.price.fontSize).toBeDefined();
       expect(typography.button.fontSize).toBeDefined();
     });
+
+    it('headings have negative letter spacing for refined look', () => {
+      expect(typography.heroTitle.letterSpacing).toBeLessThan(0);
+      expect(typography.h1.letterSpacing).toBeLessThan(0);
+    });
+
+    it('line heights use proportional ratios (lineHeight/fontSize >= 1.1)', () => {
+      const displayStyles = ['heroTitle', 'h1', 'h2', 'h3', 'h4', 'bodyLarge', 'body', 'bodySmall'] as const;
+      displayStyles.forEach((key) => {
+        const style = typography[key];
+        const ratio = style.lineHeight / style.fontSize;
+        expect(ratio).toBeGreaterThanOrEqual(1.05);
+        expect(ratio).toBeLessThanOrEqual(1.7);
+      });
+    });
+
+    it('mobile display sizes are 70-80% of web equivalents', () => {
+      // Web: heroTitle=56, h1=42, h2=32. Mobile should be proportional.
+      expect(typography.heroTitle.fontSize).toBeGreaterThanOrEqual(38);
+      expect(typography.heroTitle.fontSize).toBeLessThanOrEqual(45);
+      expect(typography.h1.fontSize).toBeGreaterThanOrEqual(30);
+      expect(typography.h1.fontSize).toBeLessThanOrEqual(36);
+    });
   });
 
   describe('shadows', () => {

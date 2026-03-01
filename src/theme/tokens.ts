@@ -97,20 +97,21 @@ export const typography = {
   bodyFamilySemiBold: 'SourceSans3_600SemiBold',
   bodyFamilyBold: 'SourceSans3_700Bold',
 
-  // Mobile-adapted scale (RN unitless = dp)
-  heroTitle: { fontSize: 36, fontWeight: '700' as const, lineHeight: 40 },
-  h1: { fontSize: 30, fontWeight: '700' as const, lineHeight: 36 },
-  h2: { fontSize: 24, fontWeight: '700' as const, lineHeight: 30 },
-  h3: { fontSize: 20, fontWeight: '600' as const, lineHeight: 26 },
+  // Mobile-adapted scale — proportional to web (designTokens.js)
+  // Display: ~75% of web, Body: ~94% of web, matching line height ratios
+  heroTitle: { fontSize: 42, fontWeight: '700' as const, lineHeight: 46, letterSpacing: -0.84 },
+  h1: { fontSize: 34, fontWeight: '700' as const, lineHeight: 39, letterSpacing: -0.34 },
+  h2: { fontSize: 26, fontWeight: '700' as const, lineHeight: 31 },
+  h3: { fontSize: 21, fontWeight: '600' as const, lineHeight: 27 },
   h4: { fontSize: 18, fontWeight: '600' as const, lineHeight: 24 },
-  bodyLarge: { fontSize: 17, fontWeight: '400' as const, lineHeight: 26 },
-  body: { fontSize: 15, fontWeight: '400' as const, lineHeight: 22 },
-  bodySmall: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 },
-  caption: { fontSize: 11, fontWeight: '500' as const, lineHeight: 14, letterSpacing: 0.3 },
-  navLink: { fontSize: 13, fontWeight: '600' as const, lineHeight: 13, letterSpacing: 0.5 },
+  bodyLarge: { fontSize: 17, fontWeight: '400' as const, lineHeight: 27 },
+  body: { fontSize: 15, fontWeight: '400' as const, lineHeight: 24 },
+  bodySmall: { fontSize: 13, fontWeight: '400' as const, lineHeight: 20 },
+  caption: { fontSize: 12, fontWeight: '500' as const, lineHeight: 17, letterSpacing: 0.24 },
+  navLink: { fontSize: 13, fontWeight: '600' as const, lineHeight: 13, letterSpacing: 0.52 },
   price: { fontSize: 20, fontWeight: '700' as const, lineHeight: 20 },
   priceStrike: { fontSize: 15, fontWeight: '400' as const, lineHeight: 15 },
-  button: { fontSize: 15, fontWeight: '600' as const, lineHeight: 15, letterSpacing: 0.5 },
+  button: { fontSize: 15, fontWeight: '600' as const, lineHeight: 15, letterSpacing: 0.6 },
 } as const;
 
 export const transitions = {
