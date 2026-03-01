@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,9 +20,12 @@ import { CartProvider } from '@/hooks/useCart';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { initAnalytics } from '@/services/analyticsInit';
+import { trackEvent } from '@/services/analytics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,6 +37,18 @@ export default function App() {
     SourceSans3_600SemiBold,
     SourceSans3_700Bold,
   });
+
+  const { navigationRef, onStateChange, onReady } = useScreenTracking();
+
+  useEffect(() => {
+    initAnalytics({
+      enableFirebase: true,
+      enableMixpanel: true,
+      mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
+    }).then(() => {
+      trackEvent('app_open');
+    });
+  }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
@@ -58,7 +73,12 @@ export default function App() {
               <WishlistProvider>
                 <NotificationProvider>
                   <ErrorBoundary>
-                    <NavigationContainer linking={linkingConfig}>
+                    <NavigationContainer
+                      ref={navigationRef}
+                      linking={linkingConfig}
+                      onStateChange={onStateChange}
+                      onReady={onReady}
+                    >
                       <OfflineBanner />
                       <AppNavigator />
                     </NavigationContainer>
