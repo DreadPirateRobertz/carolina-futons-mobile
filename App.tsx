@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import {
@@ -21,10 +21,22 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { initAnalytics } from '@/services/analyticsInit';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
 
 SplashScreen.preventAutoHideAsync();
 
+// Initialize analytics providers at module load
+initAnalytics({
+  firebase: true,
+  // Mixpanel token should come from env/config — placeholder for now
+  // mixpanel: { token: 'YOUR_MIXPANEL_TOKEN' },
+});
+
 export default function App() {
+  const navigationRef = useNavigationContainerRef();
+  const { onStateChange, onReady } = useScreenTracking(navigationRef);
+
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
@@ -55,7 +67,12 @@ export default function App() {
             <CartProvider>
               <WishlistProvider>
                 <NotificationProvider>
-                  <NavigationContainer linking={linkingConfig}>
+                  <NavigationContainer
+                    ref={navigationRef}
+                    linking={linkingConfig}
+                    onStateChange={onStateChange}
+                    onReady={onReady}
+                  >
                     <OfflineBanner />
                     <AppNavigator />
                   </NavigationContainer>
