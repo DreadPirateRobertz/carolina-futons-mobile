@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { useTheme } from '@/theme';
-import { useStores, calculateDistance, type Store } from '@/hooks/useStores';
+import { useStores, type Store } from '@/hooks/useStores';
+import { calculateDistance } from '@/utils';
 import { StoreCard } from '@/components/StoreCard';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchBar } from '@/components/SearchBar';

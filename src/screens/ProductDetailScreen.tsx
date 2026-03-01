@@ -12,8 +12,8 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
-import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/hooks/useFutonModels';
-import { formatPrice, openARViewer } from '@/utils';
+import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
+import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { useProduct } from '@/hooks/useProduct';
