@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useWishlist } from '@/hooks/useWishlist';
-import { type Product } from '@/data/products';
+import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
 import { formatPrice } from '@/utils';

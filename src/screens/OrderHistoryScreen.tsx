@@ -2,8 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
-import { ORDER_STATUS_CONFIG, type Order } from '@/data/orders';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { formatPrice } from '@/utils';
 
 interface Props {

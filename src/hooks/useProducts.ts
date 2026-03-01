@@ -7,6 +7,8 @@ import {
   type SortOption,
   type CategoryInfo,
 } from '@/data/products';
+
+export type { Product, ProductCategory, SortOption, CategoryInfo };
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 
 const PAGE_SIZE = 8;
