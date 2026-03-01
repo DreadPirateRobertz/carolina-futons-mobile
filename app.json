@@ -16,14 +16,37 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.carolinafutons.mobile"
+      "bundleIdentifier": "com.carolinafutons.mobile",
+      "associatedDomains": [
+        "applinks:carolinafutons.com",
+        "applinks:www.carolinafutons.com"
+      ]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#E8D5B7"
       },
-      "package": "com.carolinafutons.mobile"
+      "package": "com.carolinafutons.mobile",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
