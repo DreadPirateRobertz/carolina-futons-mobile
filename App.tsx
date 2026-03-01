@@ -21,6 +21,7 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,10 +56,12 @@ export default function App() {
             <CartProvider>
               <WishlistProvider>
                 <NotificationProvider>
-                  <NavigationContainer linking={linkingConfig}>
-                    <OfflineBanner />
-                    <AppNavigator />
-                  </NavigationContainer>
+                  <ErrorBoundary>
+                    <NavigationContainer linking={linkingConfig}>
+                      <OfflineBanner />
+                      <AppNavigator />
+                    </NavigationContainer>
+                  </ErrorBoundary>
                 </NotificationProvider>
               </WishlistProvider>
             </CartProvider>
