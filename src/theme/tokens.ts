@@ -4,6 +4,8 @@
  * Canonical values: cfutons/src/public/sharedTokens.js + brand-colors.md
  */
 
+import { Easing } from 'react-native';
+
 export const colors = {
   // Primary palette
   sandBase: '#E8D5B7',
@@ -113,8 +115,6 @@ export const typography = {
   priceStrike: { fontSize: 15, fontWeight: '400' as const, lineHeight: 15 },
   button: { fontSize: 15, fontWeight: '600' as const, lineHeight: 15, letterSpacing: 0.5 },
 } as const;
-
-import { Easing } from 'react-native';
 
 // Easing curves matching web CSS transitions:
 // ease        → Easing.bezier(0.25, 0.1, 0.25, 1.0)

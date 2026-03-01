@@ -1,4 +1,12 @@
-import { colors, spacing, borderRadius, typography, shadows, transitions, easing } from '@/theme/tokens';
+import {
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  shadows,
+  transitions,
+  easing,
+} from '@/theme/tokens';
 
 describe('Design Tokens', () => {
   describe('colors', () => {

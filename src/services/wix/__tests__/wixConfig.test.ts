@@ -2,6 +2,8 @@
  * Tests for wix/config.ts — env-based Wix API configuration.
  */
 
+export {}; // Force module scope for TypeScript
+
 // Cache original env values
 const originalEnv = { ...process.env };
 

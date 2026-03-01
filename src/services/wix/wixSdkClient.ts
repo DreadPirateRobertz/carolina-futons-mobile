@@ -17,9 +17,7 @@ export function getWixSdkClient(): WixSdkClient {
     const key = 'EXPO_PUBLIC_WIX_CLIENT_ID';
     const clientId = process.env[key] ?? '';
     if (!clientId) {
-      console.warn(
-        'EXPO_PUBLIC_WIX_CLIENT_ID is not set — Wix auth will fail at runtime.',
-      );
+      console.warn('EXPO_PUBLIC_WIX_CLIENT_ID is not set — Wix auth will fail at runtime.');
     }
     client = createClient({
       modules: { members },

@@ -2,6 +2,8 @@
  * Tests for wixSdkClient.ts — SDK client singleton with env validation.
  */
 
+export {}; // Force module scope for TypeScript
+
 jest.mock('@wix/sdk', () => ({
   createClient: jest.fn(() => ({ fake: 'client' })),
   OAuthStrategy: jest.fn((opts: { clientId: string }) => ({ strategy: 'oauth', ...opts })),
@@ -45,18 +47,14 @@ describe('getWixSdkClient', () => {
     process.env.EXPO_PUBLIC_WIX_CLIENT_ID = '';
     const { getWixSdkClient } = require('../wixSdkClient');
     getWixSdkClient();
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'),
-    );
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'));
   });
 
   it('warns when CLIENT_ID is not set', () => {
     delete process.env.EXPO_PUBLIC_WIX_CLIENT_ID;
     const { getWixSdkClient } = require('../wixSdkClient');
     getWixSdkClient();
-    expect(console.warn).toHaveBeenCalledWith(
-      expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'),
-    );
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'));
   });
 
   it('resetWixSdkClient clears the singleton', () => {
