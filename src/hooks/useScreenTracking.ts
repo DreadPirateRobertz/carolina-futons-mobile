@@ -10,17 +10,18 @@
  */
 
 import { useCallback, useRef } from 'react';
-import type { NavigationContainerRef } from '@react-navigation/native';
 import { trackScreenView } from '@/services/analytics';
 import { addBreadcrumb } from '@/services/crashReporting';
+
+interface NavigationRefLike {
+  current: { getCurrentRoute(): { name: string; params?: object } | undefined } | null;
+}
 
 /**
  * Returns an onStateChange callback to pass to NavigationContainer.
  * Tracks screen views automatically on navigation changes.
  */
-export function useScreenTracking(
-  navigationRef: React.RefObject<NavigationContainerRef<Record<string, unknown>> | null>,
-) {
+export function useScreenTracking(navigationRef: NavigationRefLike) {
   const previousRouteNameRef = useRef<string | undefined>();
 
   const onStateChange = useCallback(() => {
