@@ -50,6 +50,14 @@ const StoreDetailScreen = lazy(() =>
 const ARWebScreen = lazy(() =>
   import('@/screens/ARWebScreen').then((m) => ({ default: m.ARWebScreen })),
 );
+const CollectionsScreen = lazy(() =>
+  import('@/screens/CollectionsScreen').then((m) => ({ default: m.CollectionsScreen })),
+);
+const CollectionDetailScreen = lazy(() =>
+  import('@/screens/CollectionDetailScreen').then((m) => ({
+    default: m.CollectionDetailScreen,
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -83,6 +91,8 @@ export type RootStackParamList = {
   StoreLocator: undefined;
   StoreDetail: { storeId: string };
   ARWeb: ARWebScreenParams;
+  Collections: undefined;
+  CollectionDetail: { slug: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -149,6 +159,8 @@ export function AppNavigator() {
           component={ARWebScreen}
           options={{ presentation: 'fullScreenModal', animation: 'fade' }}
         />
+        <Stack.Screen name="Collections" component={CollectionsScreen} />
+        <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} />
       </Stack.Navigator>
     </Suspense>
   );
