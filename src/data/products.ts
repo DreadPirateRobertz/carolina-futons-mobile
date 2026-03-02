@@ -79,10 +79,10 @@ export const PRODUCTS: Product[] = [
       'Our bestselling full-size futon. Handcrafted solid hardwood frame with a premium innerspring mattress. Converts from sofa to bed in seconds.',
     shortDescription: 'Bestselling full-size futon with innerspring mattress',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/D4C5A9/3A2518?text=Asheville',
-        alt: 'The Asheville Full Futon',
-      },
+      { uri: 'https://placeholder.co/800x600/D4C5A9/3A2518?text=Asheville+Front', alt: 'The Asheville Full Futon - Front View' },
+      { uri: 'https://placeholder.co/800x600/D4C5A9/3A2518?text=Asheville+Side', alt: 'The Asheville Full Futon - Side View' },
+      { uri: 'https://placeholder.co/800x600/D4C5A9/3A2518?text=Asheville+Flat', alt: 'The Asheville Full Futon - Flat Position' },
+      { uri: 'https://placeholder.co/800x600/D4C5A9/3A2518?text=Asheville+Detail', alt: 'The Asheville Full Futon - Detail' },
     ],
     badge: 'Bestseller',
     rating: 4.8,
@@ -101,10 +101,10 @@ export const PRODUCTS: Product[] = [
       'Queen-size luxury comfort with solid ash frame and 8-inch pocket coil mattress. The ultimate guest room solution.',
     shortDescription: 'Queen-size luxury futon with pocket coil mattress',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/5B8FA8/FFFFFF?text=Blue+Ridge',
-        alt: 'The Blue Ridge Queen Futon',
-      },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Blue+Ridge+Front', alt: 'The Blue Ridge Queen Futon - Front View' },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Blue+Ridge+Side', alt: 'The Blue Ridge Queen Futon - Side View' },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Blue+Ridge+Flat', alt: 'The Blue Ridge Queen Futon - Flat Position' },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Blue+Ridge+Detail', alt: 'The Blue Ridge Queen Futon - Detail' },
     ],
     badge: 'Premium',
     rating: 4.9,
@@ -123,10 +123,10 @@ export const PRODUCTS: Product[] = [
       'Perfect for dorm rooms, studios, and small spaces. Compact design without compromising comfort.',
     shortDescription: 'Compact twin futon for small spaces',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/4A7C59/FFFFFF?text=Pisgah',
-        alt: 'The Pisgah Twin Futon',
-      },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Pisgah+Front', alt: 'The Pisgah Twin Futon - Front View' },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Pisgah+Side', alt: 'The Pisgah Twin Futon - Side View' },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Pisgah+Flat', alt: 'The Pisgah Twin Futon - Flat Position' },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Pisgah+Detail', alt: 'The Pisgah Twin Futon - Detail' },
     ],
     rating: 4.6,
     reviewCount: 89,
@@ -145,10 +145,10 @@ export const PRODUCTS: Product[] = [
       'Elegant loveseat futon inspired by the grandeur of the Biltmore Estate. Perfect for reading nooks.',
     shortDescription: 'Elegant loveseat futon with classic styling',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/C9A0A0/3A2518?text=Biltmore',
-        alt: 'The Biltmore Loveseat',
-      },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Biltmore+Front', alt: 'The Biltmore Loveseat - Front View' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Biltmore+Side', alt: 'The Biltmore Loveseat - Side View' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Biltmore+Flat', alt: 'The Biltmore Loveseat - Flat Position' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Biltmore+Detail', alt: 'The Biltmore Loveseat - Detail' },
     ],
     badge: 'Sale',
     rating: 4.7,
@@ -168,10 +168,9 @@ export const PRODUCTS: Product[] = [
       'Queen-size vertical Murphy cabinet bed in solid oak. Folds into a stylish 42" tall cabinet when closed. Gas-piston mechanism for effortless operation.',
     shortDescription: 'Queen vertical Murphy bed, solid oak',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Hendersonville',
-        alt: 'The Hendersonville Queen Murphy Cabinet Bed',
-      },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Hendersonville+Closed', alt: 'The Hendersonville Queen Murphy - Closed' },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Hendersonville+Open', alt: 'The Hendersonville Queen Murphy - Open' },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Hendersonville+Detail', alt: 'The Hendersonville Queen Murphy - Detail' },
     ],
     badge: 'Bestseller',
     rating: 4.9,
@@ -190,10 +189,9 @@ export const PRODUCTS: Product[] = [
       'Full-size horizontal Murphy cabinet in solid maple. Perfect for rooms with low ceilings. Includes built-in USB charging ports.',
     shortDescription: 'Full horizontal Murphy, solid maple',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/C9A0A0/3A2518?text=Appalachian',
-        alt: 'The Appalachian Full Horizontal Murphy Cabinet',
-      },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Appalachian+Closed', alt: 'The Appalachian Full Horizontal Murphy - Closed' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Appalachian+Open', alt: 'The Appalachian Full Horizontal Murphy - Open' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/3A2518?text=Appalachian+Detail', alt: 'The Appalachian Full Horizontal Murphy - Detail' },
     ],
     rating: 4.7,
     reviewCount: 92,
@@ -211,10 +209,9 @@ export const PRODUCTS: Product[] = [
       'Queen Murphy bed flanked by two full-height bookcases. 84" tall wall unit provides ample storage and display space. LED shelf lighting included.',
     shortDescription: 'Queen Murphy with bookcase side units',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/5B8FA8/FFFFFF?text=Smoky+Mountain',
-        alt: 'The Smoky Mountain Queen Bookcase Murphy',
-      },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Smoky+Mountain+Closed', alt: 'The Smoky Mountain Queen Bookcase Murphy - Closed' },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Smoky+Mountain+Open', alt: 'The Smoky Mountain Queen Bookcase Murphy - Open' },
+      { uri: 'https://placeholder.co/800x600/5B8FA8/FFFFFF?text=Smoky+Mountain+Detail', alt: 'The Smoky Mountain Queen Bookcase Murphy - Detail' },
     ],
     badge: 'Premium',
     rating: 4.8,
@@ -233,10 +230,9 @@ export const PRODUCTS: Product[] = [
       'Compact twin-size cabinet bed in solid birch. Just 38" tall closed — doubles as a console table or TV stand. Ideal for guest rooms and studios.',
     shortDescription: 'Twin cabinet bed, doubles as console',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/4A7C59/FFFFFF?text=Brevard',
-        alt: 'The Brevard Twin Cabinet Bed',
-      },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Brevard+Closed', alt: 'The Brevard Twin Cabinet Bed - Closed' },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Brevard+Open', alt: 'The Brevard Twin Cabinet Bed - Open' },
+      { uri: 'https://placeholder.co/800x600/4A7C59/FFFFFF?text=Brevard+Detail', alt: 'The Brevard Twin Cabinet Bed - Detail' },
     ],
     rating: 4.6,
     reviewCount: 143,
@@ -255,10 +251,9 @@ export const PRODUCTS: Product[] = [
       'Queen Murphy with integrated fold-down desk. Work by day, sleep at night — the ultimate space saver. Desk surface stays level when bed deploys.',
     shortDescription: 'Queen Murphy with fold-down desk',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/E8845C/FFFFFF?text=Chimney+Rock',
-        alt: 'The Chimney Rock Queen Desk Murphy',
-      },
+      { uri: 'https://placeholder.co/800x600/E8845C/FFFFFF?text=Chimney+Rock+Closed', alt: 'The Chimney Rock Queen Desk Murphy - Closed' },
+      { uri: 'https://placeholder.co/800x600/E8845C/FFFFFF?text=Chimney+Rock+Open', alt: 'The Chimney Rock Queen Desk Murphy - Open' },
+      { uri: 'https://placeholder.co/800x600/E8845C/FFFFFF?text=Chimney+Rock+Detail', alt: 'The Chimney Rock Queen Desk Murphy - Detail' },
     ],
     badge: 'Sale',
     rating: 4.9,
@@ -277,10 +272,9 @@ export const PRODUCTS: Product[] = [
       'Full-size Murphy bed with top storage cabinet and side shelving. Solid oak construction with soft-close hinges throughout.',
     shortDescription: 'Full Murphy with integrated storage',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/6B7B8D/FFFFFF?text=Nantahala',
-        alt: 'The Nantahala Full Storage Murphy',
-      },
+      { uri: 'https://placeholder.co/800x600/6B7B8D/FFFFFF?text=Nantahala+Closed', alt: 'The Nantahala Full Storage Murphy - Closed' },
+      { uri: 'https://placeholder.co/800x600/6B7B8D/FFFFFF?text=Nantahala+Open', alt: 'The Nantahala Full Storage Murphy - Open' },
+      { uri: 'https://placeholder.co/800x600/6B7B8D/FFFFFF?text=Nantahala+Detail', alt: 'The Nantahala Full Storage Murphy - Detail' },
     ],
     rating: 4.7,
     reviewCount: 56,
@@ -298,10 +292,8 @@ export const PRODUCTS: Product[] = [
       'Durable cotton-poly blend cover in our signature Mountain Weave pattern. Machine washable.',
     shortDescription: 'Durable cotton-poly cover, machine washable',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/E8D5B7/3A2518?text=Cover',
-        alt: 'Mountain Weave Futon Cover',
-      },
+      { uri: 'https://placeholder.co/800x600/E8D5B7/3A2518?text=Cover+Front', alt: 'Mountain Weave Futon Cover - Front' },
+      { uri: 'https://placeholder.co/800x600/E8D5B7/3A2518?text=Cover+Detail', alt: 'Mountain Weave Futon Cover - Fabric Detail' },
     ],
     rating: 4.5,
     reviewCount: 312,
@@ -320,10 +312,8 @@ export const PRODUCTS: Product[] = [
       'Premium 100% organic cotton cover in warm sunset tones. Pre-shrunk and fade-resistant.',
     shortDescription: 'Organic cotton cover in warm sunset tones',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/E8845C/FFFFFF?text=Sunset+Cover',
-        alt: 'Sunset Cotton Cover',
-      },
+      { uri: 'https://placeholder.co/800x600/E8845C/FFFFFF?text=Sunset+Cover+Front', alt: 'Sunset Cotton Cover - Front' },
+      { uri: 'https://placeholder.co/800x600/E8845C/FFFFFF?text=Sunset+Cover+Detail', alt: 'Sunset Cotton Cover - Fabric Detail' },
     ],
     badge: 'Sale',
     rating: 4.4,
@@ -342,10 +332,8 @@ export const PRODUCTS: Product[] = [
       '8-inch innerspring futon mattress with quilted cotton top. 312-coil count for superior support.',
     shortDescription: '8-inch innerspring with 312-coil support',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/F2E8D5/3A2518?text=Mattress',
-        alt: 'Premium Innerspring Mattress',
-      },
+      { uri: 'https://placeholder.co/800x600/F2E8D5/3A2518?text=Mattress+Front', alt: 'Premium Innerspring Mattress - Front' },
+      { uri: 'https://placeholder.co/800x600/F2E8D5/3A2518?text=Mattress+Detail', alt: 'Premium Innerspring Mattress - Cross Section' },
     ],
     rating: 4.7,
     reviewCount: 145,
@@ -363,10 +351,8 @@ export const PRODUCTS: Product[] = [
       '6-inch memory foam with cooling gel layer. CertiPUR-US certified. Ultimate comfort for daily sleeping.',
     shortDescription: 'Cooling gel memory foam, CertiPUR-US certified',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/A8CCD8/3A2518?text=Memory+Foam',
-        alt: 'Memory Foam Mattress',
-      },
+      { uri: 'https://placeholder.co/800x600/A8CCD8/3A2518?text=Memory+Foam+Front', alt: 'Memory Foam Mattress - Front' },
+      { uri: 'https://placeholder.co/800x600/A8CCD8/3A2518?text=Memory+Foam+Detail', alt: 'Memory Foam Mattress - Gel Layer Detail' },
     ],
     badge: 'New',
     rating: 4.8,
@@ -385,10 +371,8 @@ export const PRODUCTS: Product[] = [
       'Kiln-dried solid hardwood frame with a honey oak finish. Supports up to 600 lbs. Easy assembly.',
     shortDescription: 'Solid hardwood with honey oak finish',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Frame',
-        alt: 'Solid Hardwood Frame',
-      },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Frame+Front', alt: 'Solid Hardwood Frame - Front' },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Frame+Detail', alt: 'Solid Hardwood Frame - Joint Detail' },
     ],
     rating: 4.6,
     reviewCount: 203,
@@ -405,7 +389,8 @@ export const PRODUCTS: Product[] = [
     description: 'Set of 2 matching arm pillows. Memory foam fill with removable, washable covers.',
     shortDescription: 'Set of 2 memory foam arm pillows',
     images: [
-      { uri: 'https://placeholder.co/400x300/C9A0A0/FFFFFF?text=Pillows', alt: 'Arm Pillow Set' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/FFFFFF?text=Pillows+Pair', alt: 'Arm Pillow Set - Pair' },
+      { uri: 'https://placeholder.co/800x600/C9A0A0/FFFFFF?text=Pillows+Detail', alt: 'Arm Pillow Set - Fabric Detail' },
     ],
     rating: 4.3,
     reviewCount: 87,
@@ -423,10 +408,7 @@ export const PRODUCTS: Product[] = [
       'Keep your futon cover in place. Set of 4 adhesive grip strips. Works on all fabrics.',
     shortDescription: 'Set of 4 adhesive grip strips',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/999999/FFFFFF?text=Grip+Strips',
-        alt: 'Non-Slip Grip Strips',
-      },
+      { uri: 'https://placeholder.co/800x600/999999/FFFFFF?text=Grip+Strips', alt: 'Non-Slip Grip Strips' },
     ],
     rating: 4.1,
     reviewCount: 456,
@@ -443,10 +425,7 @@ export const PRODUCTS: Product[] = [
     description: 'Beeswax and lemon oil polish for hardwood frames. 8 oz bottle. Made in NC.',
     shortDescription: 'Beeswax & lemon oil polish, made in NC',
     images: [
-      {
-        uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Polish',
-        alt: 'Natural Wood Polish',
-      },
+      { uri: 'https://placeholder.co/800x600/D4BC96/3A2518?text=Polish', alt: 'Natural Wood Polish' },
     ],
     rating: 4.6,
     reviewCount: 89,

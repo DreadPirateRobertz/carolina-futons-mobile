@@ -9,14 +9,16 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
 import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
 import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
+import { ImageLightbox } from '@/components/ImageLightbox';
 import { useFutonModels } from '@/hooks/useFutonModels';
-import { useProduct } from '@/hooks/useProduct';
+import { useProduct, type ProductImage } from '@/hooks/useProduct';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
@@ -24,8 +26,6 @@ import { useReviews } from '@/hooks/useReviews';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 300;
-
-const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as const;
 
 interface Props {
   productId?: string;
@@ -58,8 +58,15 @@ export function ProductDetailScreen({
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+  const [lightboxVisible, setLightboxVisible] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<any>();
+
+  // Use catalog product images when available, otherwise generate from model
+  const galleryImages: ProductImage[] = catalogProduct?.images?.length
+    ? catalogProduct.images
+    : [{ uri: `https://placeholder.co/800x600/D4C5A9/3A2518?text=${encodeURIComponent(model.name)}`, alt: model.name }];
   const {
     reviews,
     summary: reviewSummary,
@@ -121,19 +128,37 @@ export function ProductDetailScreen({
     setActiveGalleryIndex(index);
   }, []);
 
+  const handleOpenLightbox = useCallback((index: number) => {
+    setLightboxIndex(index);
+    setLightboxVisible(true);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, []);
+
   const renderGalleryItem = useCallback(
-    ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
-      <View
+    ({ item, index }: { item: ProductImage; index: number }) => (
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={() => handleOpenLightbox(index)}
         style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: colors.sandLight }]}
         testID={`gallery-slide-${index}`}
+        accessibilityLabel={`${item.alt}. Tap to view fullscreen`}
+        accessibilityRole="imagebutton"
       >
-        <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={item} index={index} />
-        <View style={styles.galleryLabel}>
-          <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>{item}</Text>
+        <Image
+          source={{ uri: item.uri }}
+          style={styles.galleryImage}
+          contentFit="cover"
+          transition={200}
+          accessibilityLabel={item.alt}
+        />
+        <View style={styles.galleryZoomHint}>
+          <Text style={[styles.galleryZoomHintText, { color: colors.espressoLight }]}>Tap to zoom</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     ),
-    [model, selectedFabric, colors],
+    [colors, handleOpenLightbox],
   );
 
   return (
@@ -169,7 +194,7 @@ export function ProductDetailScreen({
         {/* Image Gallery */}
         <FlatList
           ref={galleryRef}
-          data={[...GALLERY_VIEWS]}
+          data={galleryImages}
           renderItem={renderGalleryItem}
           keyExtractor={(_, i) => `gallery-${i}`}
           horizontal
@@ -182,7 +207,7 @@ export function ProductDetailScreen({
 
         {/* Pagination dots */}
         <View style={styles.paginationContainer} testID="gallery-pagination">
-          {GALLERY_VIEWS.map((_, i) => (
+          {galleryImages.map((_, i) => (
             <View
               key={i}
               style={[
@@ -195,6 +220,15 @@ export function ProductDetailScreen({
             />
           ))}
         </View>
+
+        {/* Image Lightbox */}
+        <ImageLightbox
+          images={galleryImages}
+          initialIndex={lightboxIndex}
+          visible={lightboxVisible}
+          onClose={() => setLightboxVisible(false)}
+          testID="product-lightbox"
+        />
 
         {/* Product Info */}
         <View style={[styles.infoSection, { paddingHorizontal: spacing.lg }]}>
@@ -524,93 +558,6 @@ export function ProductDetailScreen({
   );
 }
 
-/** Simplified futon shape for gallery placeholders */
-function FutonPlaceholder({
-  model,
-  fabric,
-  viewLabel,
-  index,
-}: {
-  model: FutonModel;
-  fabric: Fabric;
-  viewLabel: string;
-  index: number;
-}) {
-  const aspectRatio = model.dimensions.width / model.dimensions.depth;
-  const baseWidth = 180;
-  const baseDepth = baseWidth / aspectRatio;
-  // Rotate/scale slightly per view for visual variety
-  const transforms = [
-    [{ rotateX: '10deg' }, { rotateY: '0deg' }],
-    [{ rotateX: '5deg' }, { rotateY: '25deg' }],
-    [{ rotateX: '40deg' }, { rotateY: '0deg' }],
-    [{ rotateX: '8deg' }, { rotateY: '-15deg' }],
-  ];
-  const viewTransforms = transforms[index] ?? transforms[0];
-
-  const darkerFabric = darkenColor(fabric.color, 0.15);
-
-  return (
-    <View
-      style={[
-        styles.placeholderFuton,
-        {
-          width: baseWidth,
-          height: baseDepth + 20,
-          transform: [{ perspective: 600 }, ...viewTransforms],
-        },
-      ]}
-      testID={`futon-placeholder-${index}`}
-    >
-      {/* Back cushion */}
-      <View
-        style={{
-          width: baseWidth - 20,
-          height: baseDepth * 0.4,
-          backgroundColor: darkerFabric,
-          borderTopLeftRadius: 6,
-          borderTopRightRadius: 6,
-          alignSelf: 'center',
-        }}
-      />
-      {/* Seat cushion */}
-      <View
-        style={{
-          width: baseWidth - 20,
-          height: baseDepth * 0.55,
-          backgroundColor: fabric.color,
-          borderRadius: 4,
-          marginTop: 2,
-          alignSelf: 'center',
-        }}
-      />
-      {/* Arms */}
-      <View
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 10,
-          height: baseDepth * 0.9,
-          backgroundColor: darkerFabric,
-          borderRadius: 3,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-          width: 10,
-          height: baseDepth * 0.9,
-          backgroundColor: darkerFabric,
-          borderRadius: 3,
-        }}
-      />
-    </View>
-  );
-}
-
 function DimensionItem({
   label,
   value,
@@ -631,14 +578,6 @@ function DimensionItem({
       <Text style={[styles.dimInches, { color: mutedColor }]}>{inches}"</Text>
     </View>
   );
-}
-
-function darkenColor(hex: string, amount: number): string {
-  const num = parseInt(hex.replace('#', ''), 16);
-  const r = Math.max(0, ((num >> 16) & 0xff) * (1 - amount));
-  const g = Math.max(0, ((num >> 8) & 0xff) * (1 - amount));
-  const b = Math.max(0, (num & 0xff) * (1 - amount));
-  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 }
 
 const styles = StyleSheet.create({
@@ -683,16 +622,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  galleryLabel: {
+  galleryImage: {
+    width: '100%',
+    height: '100%',
+  },
+  galleryZoomHint: {
     position: 'absolute',
     bottom: 12,
     right: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  galleryLabelText: {
-    fontSize: 12,
+  galleryZoomHintText: {
+    fontSize: 11,
     fontWeight: '500',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   paginationContainer: {
     flexDirection: 'row',
@@ -857,9 +803,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
-  },
-  placeholderFuton: {
-    position: 'relative',
   },
   sortRow: {
     flexDirection: 'row',

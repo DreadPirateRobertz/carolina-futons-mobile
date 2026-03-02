@@ -13,5 +13,6 @@ export { SortPicker } from './SortPicker';
 export { OfflineBanner } from './OfflineBanner';
 export { WishlistButton } from './WishlistButton';
 export { ErrorBoundary } from './ErrorBoundary';
+export { ImageLightbox } from './ImageLightbox';
 export { StoreCard } from './StoreCard';
 export { PlaneIndicator } from './PlaneIndicator';

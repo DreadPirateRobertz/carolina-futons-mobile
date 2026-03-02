@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { Platform } from 'react-native';
+import { Platform, View, Text } from 'react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -11,6 +11,38 @@ const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
 }));
+
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: {
+      View,
+      createAnimatedComponent: (c: any) => c,
+    },
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: () => ({}),
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+    runOnJS: (fn: any) => fn,
+  };
+});
+
+jest.mock('react-native-gesture-handler', () => {
+  const { createElement } = require('react');
+  const { View } = require('react-native');
+  return {
+    GestureHandlerRootView: ({ children, ...props }: any) => createElement(View, props, children),
+    GestureDetector: ({ children }: any) => children,
+    Gesture: {
+      Pinch: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
+      Pan: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
+      Tap: () => ({ numberOfTaps: () => ({ onEnd: () => ({}) }) }),
+      Simultaneous: () => ({}),
+      Exclusive: () => ({}),
+    },
+  };
+});
 
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
@@ -87,34 +119,34 @@ describe('ProductDetailScreen', () => {
       expect(getByTestId('gallery-list')).toBeTruthy();
     });
 
-    it('renders all four gallery slides', () => {
-      const { getByTestId } = renderDetail();
+    it('renders gallery slides matching product images', () => {
+      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Asheville has 4 images in catalog
       for (let i = 0; i < 4; i++) {
         expect(getByTestId(`gallery-slide-${i}`)).toBeTruthy();
       }
+      expect(queryByTestId('gallery-slide-4')).toBeNull();
     });
 
-    it('renders futon placeholders in gallery', () => {
-      const { getByTestId } = renderDetail();
-      for (let i = 0; i < 4; i++) {
-        expect(getByTestId(`futon-placeholder-${i}`)).toBeTruthy();
-      }
+    it('renders fallback gallery slide when no catalog product found', () => {
+      const { getByTestId, queryByTestId } = renderDetail();
+      // Default (no productId) falls back to single placeholder image
+      expect(getByTestId('gallery-slide-0')).toBeTruthy();
+      expect(queryByTestId('gallery-slide-1')).toBeNull();
     });
 
-    it('renders pagination dots', () => {
-      const { getByTestId } = renderDetail();
+    it('renders pagination dots matching image count', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       expect(getByTestId('gallery-pagination')).toBeTruthy();
       for (let i = 0; i < 4; i++) {
         expect(getByTestId(`gallery-dot-${i}`)).toBeTruthy();
       }
     });
 
-    it('renders gallery view labels', () => {
-      const { getByText } = renderDetail();
-      expect(getByText('Front View')).toBeTruthy();
-      expect(getByText('Side View')).toBeTruthy();
-      expect(getByText('Flat Position')).toBeTruthy();
-      expect(getByText('Detail')).toBeTruthy();
+    it('renders tap-to-zoom hint on gallery slides', () => {
+      const { getAllByText } = renderDetail({ productId: 'asheville-full' });
+      const hints = getAllByText('Tap to zoom');
+      expect(hints.length).toBeGreaterThan(0);
     });
   });
 

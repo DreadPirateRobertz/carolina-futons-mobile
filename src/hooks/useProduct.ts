@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { PRODUCTS, type Product } from '@/data/products';
+import { PRODUCTS, type Product, type ProductImage } from '@/data/products';
+
+export type { ProductImage };
 
 interface UseProductReturn {
   product: Product | null;
