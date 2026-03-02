@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
 
   if (!isAuthenticated || !user) {
@@ -20,10 +20,21 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
         testID={testID ?? 'account-screen'}
       >
         <View style={styles.guestContent}>
-          <Text style={[styles.guestTitle, { color: colors.espresso }]} testID="guest-title">
+          <Text
+            style={[
+              styles.guestTitle,
+              { color: colors.espresso, fontFamily: typography.headingFamily },
+            ]}
+            testID="guest-title"
+          >
             Your Account
           </Text>
-          <Text style={[styles.guestMessage, { color: colors.espressoLight }]}>
+          <Text
+            style={[
+              styles.guestMessage,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
             Sign in to view orders, save favorites, and manage your profile.
           </Text>
           <TouchableOpacity
@@ -61,7 +72,13 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
           >
             <Text style={styles.avatarText}>{user.displayName.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text style={[styles.userName, { color: colors.espresso }]} testID="user-display-name">
+          <Text
+            style={[
+              styles.userName,
+              { color: colors.espresso, fontFamily: typography.headingFamily },
+            ]}
+            testID="user-display-name"
+          >
             {user.displayName}
           </Text>
           <Text style={[styles.userEmail, { color: colors.espressoLight }]} testID="user-email">
