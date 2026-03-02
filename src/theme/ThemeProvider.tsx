@@ -40,7 +40,7 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children, initialColorMode }: ThemeProviderProps) {
   const systemScheme = useColorScheme();
   const [colorMode, setColorMode] = useState<ColorMode>(
-    initialColorMode ?? (systemScheme === 'dark' ? 'dark' : 'light'),
+    initialColorMode ?? 'dark',
   );
 
   const toggleColorMode = useCallback(() => {
