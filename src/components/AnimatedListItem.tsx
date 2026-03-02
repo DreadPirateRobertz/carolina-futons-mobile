@@ -9,12 +9,7 @@ interface Props {
   style?: ViewStyle;
 }
 
-export function AnimatedListItem({
-  children,
-  index,
-  delay = 80,
-  style,
-}: Props) {
+export function AnimatedListItem({ children, index, delay = 80, style }: Props) {
   return (
     <Animated.View
       entering={FadeInDown.delay(index * delay)

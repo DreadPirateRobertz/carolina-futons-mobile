@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ViewStyle } from 'react-native';
+import { DimensionValue, ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,13 +7,10 @@ import Animated, {
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-
-// Dark editorial surface color — will be replaced by darkPalette import
-// once Stream 1 (theme tokens) merges.
-const SKELETON_COLOR = '#352A22';
+import { darkPalette } from '@/theme/tokens';
 
 interface Props {
-  width?: number | string;
+  width?: DimensionValue;
   height?: number;
   variant?: 'rect' | 'circle' | 'text';
   borderRadius?: number;
@@ -40,12 +37,7 @@ export function SkeletonLoader({
   }));
 
   const radius =
-    customRadius ??
-    (variant === 'circle'
-      ? typeof width === 'number'
-        ? width / 2
-        : 24
-      : 6);
+    customRadius ?? (variant === 'circle' ? (typeof width === 'number' ? width / 2 : 24) : 6);
 
   return (
     <Animated.View
@@ -55,7 +47,7 @@ export function SkeletonLoader({
           width,
           height: variant === 'circle' ? width : height,
           borderRadius: radius,
-          backgroundColor: SKELETON_COLOR,
+          backgroundColor: darkPalette.surfaceElevated,
         },
         animatedStyle,
         style,

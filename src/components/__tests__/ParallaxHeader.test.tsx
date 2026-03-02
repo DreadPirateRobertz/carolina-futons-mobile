@@ -56,11 +56,7 @@ describe('ParallaxHeader', () => {
 
   it('renders overlay children', () => {
     const { getByText } = render(
-      <ParallaxHeader
-        imageUri="https://example.com/photo.jpg"
-        height={400}
-        scrollY={scrollY}
-      >
+      <ParallaxHeader imageUri="https://example.com/photo.jpg" height={400} scrollY={scrollY}>
         <Text>Overlay Content</Text>
       </ParallaxHeader>,
     );

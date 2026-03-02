@@ -35,22 +35,12 @@ export function ParallaxHeader({
       [-height * parallaxFactor, 0, height * parallaxFactor],
       Extrapolation.CLAMP,
     );
-    const scale = interpolate(
-      scrollY.value,
-      [-height, 0],
-      [2, 1],
-      Extrapolation.CLAMP,
-    );
+    const scale = interpolate(scrollY.value, [-height, 0], [2, 1], Extrapolation.CLAMP);
     return { transform: [{ translateY }, { scale }] };
   });
 
   const overlayStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      scrollY.value,
-      [0, height * 0.6],
-      [0, 0.6],
-      Extrapolation.CLAMP,
-    );
+    const opacity = interpolate(scrollY.value, [0, height * 0.6], [0, 0.6], Extrapolation.CLAMP);
     return { opacity };
   });
 

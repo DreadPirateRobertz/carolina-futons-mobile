@@ -14,7 +14,7 @@ jest.mock('expo-haptics', () => ({
 
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
-  const { View, Pressable } = require('react-native');
+  const { View } = require('react-native');
   return {
     __esModule: true,
     default: {
