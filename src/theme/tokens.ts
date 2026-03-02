@@ -32,6 +32,18 @@ export const colors = {
   mutedBrown: '#8B7355',
 } as const;
 
+/** Editorial dark palette for premium browse experience */
+export const darkPalette = {
+  background: '#1C1410',
+  surface: '#2A1F19',
+  surfaceElevated: '#352A22',
+  textPrimary: '#F5F0EB',
+  textMuted: '#B8A99A',
+  borderSubtle: 'rgba(245, 240, 235, 0.1)',
+  glass: 'rgba(42, 31, 25, 0.7)',
+  glassBorder: 'rgba(255, 255, 255, 0.08)',
+} as const;
+
 export const spacing = {
   xs: 4,
   sm: 8,

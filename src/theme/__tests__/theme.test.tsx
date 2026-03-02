@@ -65,9 +65,19 @@ describe('Design Tokens', () => {
 });
 
 describe('ThemeProvider', () => {
-  it('provides light theme by default', () => {
+  it('defaults to dark mode for editorial experience', () => {
     const { getByTestId } = render(
       <ThemeProvider>
+        <ThemeConsumer />
+      </ThemeProvider>,
+    );
+    expect(getByTestId('bg-color').props.children).toBe('#1C1410');
+    expect(getByTestId('color-mode').props.children).toBe('dark');
+  });
+
+  it('can be explicitly set to light mode', () => {
+    const { getByTestId } = render(
+      <ThemeProvider initialColorMode="light">
         <ThemeConsumer />
       </ThemeProvider>,
     );
@@ -101,7 +111,7 @@ describe('ThemeProvider', () => {
         <ThemeConsumer />
       </ThemeProvider>,
     );
-    expect(getByTestId('bg-color').props.children).toBe('#1A1410');
+    expect(getByTestId('bg-color').props.children).toBe('#1C1410');
   });
 });
 
