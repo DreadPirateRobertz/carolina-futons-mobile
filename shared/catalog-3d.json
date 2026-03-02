@@ -1,0 +1,117 @@
+{
+  "version": "1.0.0",
+  "description": "Canonical 3D model catalog — single source of truth for mobile and web platforms. Generated platform-specific modules via scripts/sync-3d-catalog.ts.",
+  "cdnBase": "https://cdn.carolinafutons.com/models",
+  "models": [
+    {
+      "productId": "prod-murphy-queen-vertical",
+      "category": "murphy-beds",
+      "dimensions": { "width": 64, "depth": 24, "height": 42, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 7200000,
+      "contentHash": "q1r2s3",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-murphy-full-horizontal",
+      "category": "murphy-beds",
+      "dimensions": { "width": 78, "depth": 20, "height": 44, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 6500000,
+      "contentHash": "t4u5v6",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-murphy-queen-bookcase",
+      "category": "murphy-beds",
+      "dimensions": { "width": 100, "depth": 24, "height": 84, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 8400000,
+      "contentHash": "w7x8y9",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-murphy-twin-cabinet",
+      "category": "murphy-beds",
+      "dimensions": { "width": 44, "depth": 24, "height": 38, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 4800000,
+      "contentHash": "z0a1b2",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-murphy-queen-desk",
+      "category": "murphy-beds",
+      "dimensions": { "width": 66, "depth": 26, "height": 84, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 8100000,
+      "contentHash": "c3d4e5",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-murphy-full-storage",
+      "category": "murphy-beds",
+      "dimensions": { "width": 60, "depth": 24, "height": 82, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 7000000,
+      "contentHash": "f6g7h8",
+      "hasFabricVariants": false
+    },
+    {
+      "productId": "prod-asheville-full",
+      "category": "futons",
+      "dimensions": { "width": 54, "depth": 34, "height": 33, "unit": "inches" },
+      "glbUrl": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb",
+      "usdzUrl": null,
+      "fileSizeBytes": 4125648,
+      "contentHash": "14c9a033",
+      "hasFabricVariants": true
+    },
+    {
+      "productId": "prod-blue-ridge-queen",
+      "category": "futons",
+      "dimensions": { "width": 60, "depth": 36, "height": 35, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 7500000,
+      "contentHash": "d4e5f6",
+      "hasFabricVariants": true
+    },
+    {
+      "productId": "prod-pisgah-twin",
+      "category": "futons",
+      "dimensions": { "width": 39, "depth": 32, "height": 31, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 5200000,
+      "contentHash": "g7h8i9",
+      "hasFabricVariants": true
+    },
+    {
+      "productId": "prod-biltmore-loveseat",
+      "category": "futons",
+      "dimensions": { "width": 48, "depth": 33, "height": 32, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 5800000,
+      "contentHash": "j0k1l2",
+      "hasFabricVariants": true
+    },
+    {
+      "productId": "prod-hardwood-frame",
+      "category": "frames",
+      "dimensions": { "width": 54, "depth": 38, "height": 33, "unit": "inches" },
+      "glbUrl": null,
+      "usdzUrl": null,
+      "fileSizeBytes": 4100000,
+      "contentHash": "m3n4o5",
+      "hasFabricVariants": false
+    }
+  ]
+}

@@ -23,7 +23,9 @@
     "e2e:build:android": "detox build --configuration android.emu.debug",
     "e2e:test:ios": "detox test --configuration ios.sim.debug",
     "e2e:test:android": "detox test --configuration android.emu.debug",
-    "e2e:prebuild": "npx expo prebuild --clean"
+    "e2e:prebuild": "npx expo prebuild --clean",
+    "catalog:sync": "npx tsx scripts/sync-3d-catalog.ts",
+    "catalog:check": "npx tsx scripts/sync-3d-catalog.ts --check"
   },
   "dependencies": {
     "@expo-google-fonts/playfair-display": "^0.4.2",
