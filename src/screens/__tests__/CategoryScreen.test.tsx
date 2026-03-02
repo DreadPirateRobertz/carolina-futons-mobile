@@ -1,9 +1,11 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { CategoryScreen } from '../CategoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS } from '@/data/products';
+
+jest.useFakeTimers();
 
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
 const coverProducts = PRODUCTS.filter((p) => p.category === 'covers');
@@ -11,17 +13,18 @@ const coverProducts = PRODUCTS.filter((p) => p.category === 'covers');
 function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScreen>> = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const onBack = props.onBack ?? jest.fn();
-  return {
-    ...render(
-      <ThemeProvider>
-        <WishlistProvider>
-          <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
-        </WishlistProvider>
-      </ThemeProvider>,
-    ),
-    onProductPress,
-    onBack,
-  };
+  const result = render(
+    <ThemeProvider>
+      <WishlistProvider>
+        <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
+      </WishlistProvider>
+    </ThemeProvider>,
+  );
+  // Advance past initial loading skeleton (600ms)
+  act(() => {
+    jest.advanceTimersByTime(700);
+  });
+  return { ...result, onProductPress, onBack };
 }
 
 describe('CategoryScreen', () => {
