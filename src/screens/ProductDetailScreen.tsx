@@ -12,6 +12,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
 import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
@@ -48,7 +49,7 @@ export function ProductDetailScreen({
   onViewAllReviews,
   testID,
 }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 
   const resolvedId = productId ?? slug ?? route?.params?.slug ?? '';
   const { models, getModel } = useFutonModels();
@@ -124,7 +125,7 @@ export function ProductDetailScreen({
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
       <View
-        style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: colors.sandLight }]}
+        style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
         testID={`gallery-slide-${index}`}
       >
         <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={item} index={index} />
@@ -199,14 +200,20 @@ export function ProductDetailScreen({
         {/* Product Info */}
         <View style={[styles.infoSection, { paddingHorizontal: spacing.lg }]}>
           <Text
-            style={[styles.productName, { color: colors.espresso }]}
+            style={[
+              styles.productName,
+              { color: colors.espresso, fontFamily: typography.headingFamily },
+            ]}
             testID="product-name"
             accessibilityRole="header"
           >
             {model.name}
           </Text>
           <Text
-            style={[styles.productTagline, { color: colors.espressoLight }]}
+            style={[
+              styles.productTagline,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
             testID="product-tagline"
           >
             {model.tagline}
@@ -214,7 +221,13 @@ export function ProductDetailScreen({
 
           {/* Price */}
           <View style={styles.priceRow} testID="price-section">
-            <Text style={[styles.totalPrice, { color: colors.espresso }]} testID="total-price">
+            <Text
+              style={[
+                styles.totalPrice,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
+              testID="total-price"
+            >
               {formatPrice(totalPrice)}
             </Text>
             {selectedFabric.price > 0 && (
@@ -230,7 +243,14 @@ export function ProductDetailScreen({
 
         {/* Fabric Selector */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Fabric</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            Fabric
+          </Text>
           <Text
             style={[styles.fabricName, { color: colors.espressoLight }]}
             testID="selected-fabric-name"
@@ -269,11 +289,21 @@ export function ProductDetailScreen({
 
         {/* Dimensions */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Dimensions</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            Dimensions
+          </Text>
           <View
             style={[
               styles.dimensionsCard,
-              { backgroundColor: colors.sandLight, borderRadius: borderRadius.card },
+              {
+                backgroundColor: darkPalette.surfaceElevated,
+                borderRadius: borderRadius.card,
+              },
               shadows.card,
             ]}
             testID="dimensions-card"
@@ -314,7 +344,14 @@ export function ProductDetailScreen({
 
         {/* Reviews Section */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="reviews-section">
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Reviews</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            Reviews
+          </Text>
           <ReviewSummary summary={reviewSummary} testID="review-summary" />
 
           {/* Sort pills */}
@@ -394,7 +431,12 @@ export function ProductDetailScreen({
           ) : (
             <View style={styles.reviewFormContainer} testID="review-form-container">
               <View style={styles.reviewFormHeader}>
-                <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                  ]}
+                >
                   Write Your Review
                 </Text>
                 <TouchableOpacity
