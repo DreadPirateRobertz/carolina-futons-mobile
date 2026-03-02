@@ -49,6 +49,8 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       Wishlist: 'wishlist',
       StoreLocator: 'stores',
       StoreDetail: 'stores/:storeId',
+      Collections: 'collections',
+      CollectionDetail: 'collections/:slug',
     },
   },
 };
@@ -67,4 +69,5 @@ export const SUPPORTED_PATHS = [
   'ar',
   'wishlist',
   'stores',
+  'collections',
 ] as const;
