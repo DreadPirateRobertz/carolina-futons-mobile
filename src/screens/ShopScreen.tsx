@@ -8,6 +8,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
+import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -24,6 +25,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     selectedCategory,
     sortBy,
     isLoading,
+    isInitialLoading,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
@@ -100,18 +102,21 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const renderEmpty = useCallback(
-    () => (
-      <View style={styles.emptyContainer} testID="shop-empty">
-        <Text style={[styles.emptyIcon]}>🔍</Text>
-        <Text style={[styles.emptyTitle, { color: colors.espresso }]}>No products found</Text>
-        <Text style={[styles.emptyMessage, { color: colors.espressoLight }]}>
-          {searchQuery
-            ? `No results for "${searchQuery}". Try a different search.`
-            : 'No products in this category yet.'}
-        </Text>
-      </View>
-    ),
-    [searchQuery, colors],
+    () =>
+      isInitialLoading ? (
+        <SkeletonProductGrid count={6} />
+      ) : (
+        <View style={styles.emptyContainer} testID="shop-empty">
+          <Text style={[styles.emptyIcon]}>🔍</Text>
+          <Text style={[styles.emptyTitle, { color: colors.espresso }]}>No products found</Text>
+          <Text style={[styles.emptyMessage, { color: colors.espressoLight }]}>
+            {searchQuery
+              ? `No results for "${searchQuery}". Try a different search.`
+              : 'No products in this category yet.'}
+          </Text>
+        </View>
+      ),
+    [searchQuery, colors, isInitialLoading],
   );
 
   const renderFooter = useCallback(

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   PRODUCTS,
   CATEGORIES,
@@ -23,6 +23,8 @@ interface UseProductsReturn {
   selectedCategory: ProductCategory | null;
   sortBy: SortOption;
   isLoading: boolean;
+  /** True only during the initial page load (before first data arrives) */
+  isInitialLoading: boolean;
   hasMore: boolean;
   /** Autocomplete suggestions for current query */
   suggestions: string[];
@@ -48,7 +50,14 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   );
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
+
+  // Simulate initial network fetch (mirrors future CMS API latency)
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoading(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Autocomplete suggestions from product names
   const suggestions = useMemo(
@@ -140,12 +149,13 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   }, []);
 
   return {
-    products,
+    products: isInitialLoading ? [] : products,
     categories: CATEGORIES,
     searchQuery,
     selectedCategory,
     sortBy,
     isLoading,
+    isInitialLoading,
     hasMore,
     suggestions,
     setSearchQuery: handleSearchQuery,
