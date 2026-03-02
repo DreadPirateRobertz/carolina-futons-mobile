@@ -1,6 +1,6 @@
 import React, { createContext, useMemo, useState, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
-import { colors, spacing, borderRadius, shadows, typography, transitions } from './tokens';
+import { colors, darkPalette, spacing, borderRadius, shadows, typography, transitions } from './tokens';
 
 type ColorMode = 'light' | 'dark';
 
@@ -8,13 +8,14 @@ type Colors = { [K in keyof typeof colors]: string };
 
 const darkColors: Colors = {
   ...colors,
-  // Invert key surfaces for dark mode
-  sandBase: '#1A1410',
-  sandLight: '#231C15',
-  sandDark: '#2E241A',
-  espresso: '#F2E8D5',
-  espressoLight: '#D4BC96',
-  white: '#1A1410',
+  // Editorial dark palette — maps semantic names to darkPalette
+  sandBase: darkPalette.background,
+  sandLight: darkPalette.surface,
+  sandDark: darkPalette.surfaceElevated,
+  espresso: darkPalette.textPrimary,
+  espressoLight: darkPalette.textMuted,
+  offWhite: darkPalette.surface,
+  white: darkPalette.background,
   overlay: 'rgba(0, 0, 0, 0.7)',
 };
 

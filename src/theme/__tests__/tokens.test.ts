@@ -1,5 +1,6 @@
 import {
   colors,
+  darkPalette,
   spacing,
   borderRadius,
   typography,
@@ -82,6 +83,33 @@ describe('Design Tokens', () => {
       Object.entries(canonical).forEach(([key, value]) => {
         expect(colors[key as keyof typeof colors]).toBe(value);
       });
+    });
+  });
+
+  describe('darkPalette', () => {
+    it('defines editorial dark palette colors', () => {
+      expect(darkPalette.background).toBe('#1C1410');
+      expect(darkPalette.surface).toBe('#2A1F19');
+      expect(darkPalette.surfaceElevated).toBe('#352A22');
+      expect(darkPalette.textPrimary).toBe('#F5F0EB');
+      expect(darkPalette.textMuted).toBe('#B8A99A');
+      expect(darkPalette.borderSubtle).toBe('rgba(245, 240, 235, 0.1)');
+      expect(darkPalette.glass).toBe('rgba(42, 31, 25, 0.7)');
+      expect(darkPalette.glassBorder).toBe('rgba(255, 255, 255, 0.08)');
+    });
+
+    it('all hex colors are valid format', () => {
+      const hexPattern = /^#[0-9A-Fa-f]{6}$/;
+      const hexKeys = ['background', 'surface', 'surfaceElevated', 'textPrimary', 'textMuted'] as const;
+      hexKeys.forEach((key) => {
+        expect(darkPalette[key]).toMatch(hexPattern);
+      });
+    });
+
+    it('glass colors use rgba format', () => {
+      expect(darkPalette.glass).toMatch(/^rgba\(/);
+      expect(darkPalette.glassBorder).toMatch(/^rgba\(/);
+      expect(darkPalette.borderSubtle).toMatch(/^rgba\(/);
     });
   });
 

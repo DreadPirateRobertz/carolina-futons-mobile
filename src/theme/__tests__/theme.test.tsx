@@ -101,7 +101,7 @@ describe('ThemeProvider', () => {
         <ThemeConsumer />
       </ThemeProvider>,
     );
-    expect(getByTestId('bg-color').props.children).toBe('#1A1410');
+    expect(getByTestId('bg-color').props.children).toBe('#1C1410');
   });
 });
 
