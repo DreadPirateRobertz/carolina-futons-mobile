@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
@@ -15,7 +16,7 @@ interface Props {
 }
 
 export function ShopScreen({ onProductPress, testID }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();
   const {
     products,
@@ -53,7 +54,17 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       <View>
         {/* Title */}
         <View style={[styles.titleRow, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.title, { color: colors.espresso }]}>Shop</Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.espresso,
+                fontFamily: typography.headingFamily,
+              },
+            ]}
+          >
+            Shop
+          </Text>
         </View>
 
         {/* Search with autocomplete */}
@@ -101,10 +112,25 @@ export function ShopScreen({ onProductPress, testID }: Props) {
 
   const renderEmpty = useCallback(
     () => (
-      <View style={styles.emptyContainer} testID="shop-empty">
+      <View
+        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+        testID="shop-empty"
+      >
         <Text style={[styles.emptyIcon]}>🔍</Text>
-        <Text style={[styles.emptyTitle, { color: colors.espresso }]}>No products found</Text>
-        <Text style={[styles.emptyMessage, { color: colors.espressoLight }]}>
+        <Text
+          style={[
+            styles.emptyTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
+        >
+          No products found
+        </Text>
+        <Text
+          style={[
+            styles.emptyMessage,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+        >
           {searchQuery
             ? `No results for "${searchQuery}". Try a different search.`
             : 'No products in this category yet.'}
@@ -163,8 +189,9 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '700',
+    letterSpacing: -0.5,
   },
   searchContainer: {
     marginBottom: 4,
