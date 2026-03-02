@@ -195,7 +195,13 @@ export function ARFutonOverlay({
 
   return (
     <GestureDetector gesture={composedGesture}>
-      <Animated.View testID={testID} style={[styles.container, animatedStyle]}>
+      <Animated.View
+        testID={testID}
+        style={[styles.container, animatedStyle]}
+        accessible
+        accessibilityLabel={`${model.name} in ${fabric.name} fabric. Drag to reposition, pinch to resize, rotate with two fingers`}
+        accessibilityRole="image"
+      >
         {/* Futon body - 3/4 perspective view */}
         <View
           style={[styles.futonBody, { width: baseWidth, height: baseDepth + backHeight * 0.3 }]}
@@ -333,7 +339,7 @@ export function ARFutonOverlay({
         )}
 
         {/* Model name badge */}
-        <View style={styles.modelBadge}>
+        <View style={styles.modelBadge} accessibilityElementsHidden>
           <Text style={styles.modelBadgeText}>{model.name}</Text>
         </View>
 

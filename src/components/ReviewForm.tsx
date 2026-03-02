@@ -48,10 +48,12 @@ export function ReviewForm({
       <TouchableOpacity
         key={starValue}
         onPress={() => handleStarPress(starValue)}
-        accessibilityLabel={`${starValue} stars`}
-        accessibilityRole="button"
+        accessibilityLabel={`${starValue} star${starValue !== 1 ? 's' : ''}`}
+        accessibilityRole="radio"
+        accessibilityState={{ selected: starValue === rating }}
         testID={`star-button-${starValue}`}
-        hitSlop={{ top: 4, bottom: 4, left: 2, right: 2 }}
+        style={styles.starTouchTarget}
+        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
       >
         <Text style={[styles.starText, { color }]}>{char}</Text>
       </TouchableOpacity>
@@ -61,7 +63,7 @@ export function ReviewForm({
   return (
     <View testID={testID} style={styles.container}>
       {/* Star Selector */}
-      <View testID="star-selector" accessibilityRole="radiogroup" style={styles.starSelector}>
+      <View testID="star-selector" accessibilityRole="radiogroup" accessibilityLabel="Rating" style={styles.starSelector}>
         {stars}
       </View>
 
@@ -72,7 +74,7 @@ export function ReviewForm({
 
       {/* Rating error */}
       {showRatingError && (
-        <Text testID="rating-error" style={[styles.errorText, { color: colors.error }]}>
+        <Text testID="rating-error" style={[styles.errorText, { color: colors.error }]} accessibilityLiveRegion="assertive" accessibilityRole="alert">
           Please select a rating
         </Text>
       )}
@@ -81,6 +83,7 @@ export function ReviewForm({
       <TextInput
         testID="review-title-input"
         placeholder="Review title"
+        accessibilityLabel="Review title"
         value={title}
         onChangeText={setTitle}
         style={[
@@ -98,6 +101,7 @@ export function ReviewForm({
       <TextInput
         testID="review-body-input"
         placeholder="Write your review..."
+        accessibilityLabel="Review body"
         value={body}
         onChangeText={setBody}
         multiline
@@ -156,6 +160,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
+  },
+  starTouchTarget: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   starText: {
     fontSize: 28,

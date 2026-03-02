@@ -63,7 +63,7 @@ export function Header({
           accessibilityLabel="Search products"
           accessibilityRole="button"
         >
-          <Text style={styles.icon}>🔍</Text>
+          <Text style={styles.icon} accessibilityElementsHidden importantForAccessibility="no">🔍</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -73,7 +73,7 @@ export function Header({
           accessibilityLabel={showBadge ? `Cart, ${cartCount} items` : 'Cart'}
           accessibilityRole="button"
         >
-          <Text style={styles.icon}>🛒</Text>
+          <Text style={styles.icon} accessibilityElementsHidden importantForAccessibility="no">🛒</Text>
           {showBadge && (
             <View style={styles.badge} testID={testID ? `${testID}-cart-badge` : undefined}>
               <Text style={styles.badgeText}>{badgeText}</Text>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     height: 56,
   },
   left: {
-    width: 44,
+    width: 48,
   },
   center: {
     flex: 1,
@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
     color: colors.espresso,
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

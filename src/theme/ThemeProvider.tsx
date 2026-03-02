@@ -16,6 +16,9 @@ const darkColors: Colors = {
   espressoLight: '#D4BC96',
   white: '#1A1410',
   overlay: 'rgba(0, 0, 0, 0.7)',
+  // Dark mode error banner
+  errorBannerBg: '#451A0A',
+  errorBannerText: '#FCA5A5',
 };
 
 export interface Theme {

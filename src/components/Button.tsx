@@ -69,7 +69,8 @@ export function Button({
       disabled={isDisabled}
       testID={testID}
       accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
+      accessibilityLabel={loading ? `${label}, loading` : label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.6,
   },
   label: {
     textAlign: 'center',

@@ -43,7 +43,7 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
         testID={testID ?? 'forgot-password-screen'}
       >
         <View style={styles.successContent}>
-          <Text style={styles.successIcon}>✉</Text>
+          <Text style={styles.successIcon} accessibilityElementsHidden importantForAccessibility="no">✉</Text>
           <Text
             style={[styles.successTitle, { color: colors.espresso }]}
             testID="reset-success-title"
@@ -110,11 +110,13 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
           <View
             style={[
               styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              { backgroundColor: colors.errorBannerBg, borderRadius: borderRadius.md },
             ]}
             testID="forgot-error"
+            accessibilityLiveRegion="assertive"
+            accessibilityRole="alert"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.errorBannerText }]}>{error}</Text>
           </View>
         )}
 
@@ -127,7 +129,7 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: emailError ? colors.error : colors.sandDark,
               },
             ]}
             value={email}
@@ -148,8 +150,9 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
           />
           {emailError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
               testID="forgot-email-error"
+              accessibilityLiveRegion="polite"
             >
               {emailError}
             </Text>
@@ -194,6 +197,8 @@ const styles = StyleSheet.create({
   },
   backLink: {
     marginBottom: 24,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   backLinkText: {
     fontSize: 16,

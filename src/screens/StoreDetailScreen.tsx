@@ -108,6 +108,9 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
           contentFit="cover"
           transition={300}
           testID="store-detail-photo"
+          accessibilityLabel={`Photo of ${store.name} store`}
+          accessibilityRole="image"
+          accessible
         />
       )}
 
@@ -120,6 +123,8 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
           <View
             style={[styles.statusBadge, { backgroundColor: open ? colors.success : colors.muted }]}
             testID="store-detail-status"
+            accessible
+            accessibilityLabel={`Store is currently ${open ? 'open' : 'closed'}`}
           >
             <Text style={styles.statusText}>{open ? 'Open' : 'Closed'}</Text>
           </View>
@@ -234,7 +239,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
             </Text>
           </View>
         ) : (
-          <>
+          <View accessibilityRole="radiogroup" accessibilityLabel="Appointment type">
             {APPOINTMENT_TYPES.map((type) => (
               <TouchableOpacity
                 key={type.value}
@@ -251,6 +256,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
                 onPress={() => setSelectedAppointment(type.value)}
                 testID={`appointment-${type.value}`}
                 accessibilityRole="radio"
+                accessibilityLabel={type.label}
                 accessibilityState={{ selected: selectedAppointment === type.value }}
               >
                 <Text
@@ -274,7 +280,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
               disabled={!selectedAppointment}
               testID="book-appointment-button"
             />
-          </>
+          </View>
         )}
       </View>
     </ScrollView>

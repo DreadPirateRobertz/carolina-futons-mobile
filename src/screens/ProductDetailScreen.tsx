@@ -181,7 +181,7 @@ export function ProductDetailScreen({
         />
 
         {/* Pagination dots */}
-        <View style={styles.paginationContainer} testID="gallery-pagination">
+        <View style={styles.paginationContainer} testID="gallery-pagination" accessible accessibilityLabel={`Image ${activeGalleryIndex + 1} of ${GALLERY_VIEWS.length}: ${GALLERY_VIEWS[activeGalleryIndex]}`} accessibilityRole="text">
           {GALLERY_VIEWS.map((_, i) => (
             <View
               key={i}
@@ -429,7 +429,7 @@ export function ProductDetailScreen({
             accessibilityLabel={`Try ${model.name} in your room with AR camera`}
             accessibilityRole="button"
           >
-            <Text style={styles.arCtaIcon}>📷</Text>
+            <Text style={styles.arCtaIcon} accessibilityElementsHidden importantForAccessibility="no">📷</Text>
             <Text style={styles.arCtaText}>Try in Your Room</Text>
           </TouchableOpacity>
         </View>
@@ -656,9 +656,9 @@ const styles = StyleSheet.create({
     top: 52,
     left: 16,
     zIndex: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -830,8 +830,8 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   quantityButton: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

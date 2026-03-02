@@ -101,7 +101,7 @@ export function SurfaceIndicator({
     phase === 'ready' ? '#4ADE80' : !isLightingSufficient ? '#FBBF24' : '#FFFFFF';
 
   return (
-    <View style={styles.container} testID={testID ?? 'surface-indicator'} pointerEvents="none">
+    <View style={styles.container} testID={testID ?? 'surface-indicator'} pointerEvents="none" accessible accessibilityLabel={`Surface detection: ${statusMessage}`} accessibilityLiveRegion="polite">
       {/* Plane grid visualization */}
       <Animated.View style={[styles.gridContainer, gridStyle]} testID="surface-grid">
         {Array.from({ length: DOT_ROWS }, (_, row) => (

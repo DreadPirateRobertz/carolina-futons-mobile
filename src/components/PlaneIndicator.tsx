@@ -100,13 +100,13 @@ export function PlaneIndicator({
   const wallPlanes = planes.filter((p) => p.type === 'wall');
 
   return (
-    <View style={styles.container} testID={testID} pointerEvents="none">
+    <View style={styles.container} testID={testID} pointerEvents="none" importantForAccessibility="yes">
       {/* Scanning animation */}
       {detectionState === 'scanning' && (
         <View style={styles.scanOverlay} testID="plane-scanning">
           <Animated.View style={[styles.scanLine, scanLineStyle]} />
           <View style={styles.scanHintContainer}>
-            <Text style={styles.scanHintText}>Move your device slowly to scan the room</Text>
+            <Text style={styles.scanHintText} accessibilityLiveRegion="polite">Move your device slowly to scan the room</Text>
           </View>
         </View>
       )}
@@ -135,7 +135,7 @@ export function PlaneIndicator({
             <View style={[styles.reticleLine, styles.reticleLineH]} />
             <View style={[styles.reticleLine, styles.reticleLineV]} />
           </Animated.View>
-          <Text style={styles.reticleHint}>Tap to place furniture</Text>
+          <Text style={styles.reticleHint} accessibilityLiveRegion="polite">Tap to place furniture</Text>
         </View>
       )}
 
@@ -286,7 +286,7 @@ function StatusBadge({
   }
 
   return (
-    <View style={[styles.statusBadge, { backgroundColor: color }]} testID="detection-status">
+    <View style={[styles.statusBadge, { backgroundColor: color }]} testID="detection-status" accessibilityLiveRegion="polite" accessible accessibilityLabel={label} accessibilityRole="text">
       <View style={[styles.statusDot, { backgroundColor: '#FFFFFF' }]} />
       <Text style={styles.statusText}>{label}</Text>
     </View>

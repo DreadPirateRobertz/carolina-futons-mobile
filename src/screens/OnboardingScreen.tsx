@@ -63,7 +63,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
 
       {/* Slide content */}
       <View style={styles.slideContainer}>
-        <Text style={styles.emoji}>{slide.emoji}</Text>
+        <Text style={styles.emoji} accessibilityElementsHidden importantForAccessibility="no">{slide.emoji}</Text>
         <Text
           style={[
             styles.title,
@@ -89,7 +89,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
       </View>
 
       {/* Pagination dots */}
-      <View style={styles.dotsContainer}>
+      <View style={styles.dotsContainer} accessible accessibilityLabel={`Page ${currentIndex + 1} of ${SLIDES.length}`} accessibilityRole="text">
         {SLIDES.map((_, index) => (
           <View
             key={index}
@@ -157,7 +157,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     zIndex: 10,
-    padding: 8,
+    padding: 12,
+    minWidth: 44,
+    minHeight: 44,
   },
   skipText: {
     fontSize: 15,

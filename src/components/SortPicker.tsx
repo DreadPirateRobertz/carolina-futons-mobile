@@ -53,8 +53,11 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
               shadows.modal,
               { backgroundColor: colors.white, borderRadius: borderRadius.lg },
             ]}
+            accessibilityViewIsModal
+            accessibilityRole="radiogroup"
+            accessibilityLabel="Sort options"
           >
-            <Text style={[styles.modalTitle, { color: colors.espresso }]}>Sort By</Text>
+            <Text style={[styles.modalTitle, { color: colors.espresso }]} accessibilityRole="header">Sort By</Text>
             {SORT_OPTIONS.map((option) => {
               const isSelected = option.value === value;
               return (
@@ -67,6 +70,7 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
                   }}
                   testID={`sort-option-${option.value}`}
                   accessibilityRole="radio"
+                  accessibilityLabel={`Sort by ${option.label}`}
                   accessibilityState={{ selected: isSelected }}
                 >
                   <Text

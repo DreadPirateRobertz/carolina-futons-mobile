@@ -189,6 +189,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
           <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
+          <View accessibilityRole="radiogroup" accessibilityLabel="Payment method">
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -229,6 +230,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
               </View>
             </TouchableOpacity>
           ))}
+          </View>
         </View>
 
         {/* BNPL breakdown */}

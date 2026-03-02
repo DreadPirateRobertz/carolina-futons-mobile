@@ -75,11 +75,13 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           <View
             style={[
               styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              { backgroundColor: colors.errorBannerBg, borderRadius: borderRadius.md },
             ]}
             testID="login-error"
+            accessibilityLiveRegion="assertive"
+            accessibilityRole="alert"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.errorBannerText }]}>{error}</Text>
           </View>
         )}
 
@@ -93,7 +95,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: emailError ? colors.error : colors.sandDark,
               },
             ]}
             value={email}
@@ -113,8 +115,9 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           />
           {emailError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
               testID="login-email-error"
+              accessibilityLiveRegion="polite"
             >
               {emailError}
             </Text>
@@ -131,7 +134,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: passwordError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: passwordError ? colors.error : colors.sandDark,
               },
             ]}
             value={password}
@@ -150,8 +153,9 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           />
           {passwordError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
               testID="login-password-error"
+              accessibilityLiveRegion="polite"
             >
               {passwordError}
             </Text>

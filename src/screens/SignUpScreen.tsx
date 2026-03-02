@@ -67,11 +67,13 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           <View
             style={[
               styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              { backgroundColor: colors.errorBannerBg, borderRadius: borderRadius.md },
             ]}
             testID="signup-error"
+            accessibilityLiveRegion="assertive"
+            accessibilityRole="alert"
           >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            <Text style={[styles.errorText, { color: colors.errorBannerText }]}>{error}</Text>
           </View>
         )}
 
@@ -85,7 +87,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: nameError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: nameError ? colors.error : colors.sandDark,
               },
             ]}
             value={name}
@@ -103,7 +105,8 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           />
           {nameError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
+              accessibilityLiveRegion="polite"
               testID="signup-name-error"
             >
               {nameError}
@@ -121,7 +124,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: emailError ? colors.error : colors.sandDark,
               },
             ]}
             value={email}
@@ -141,7 +144,8 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           />
           {emailError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
+              accessibilityLiveRegion="polite"
               testID="signup-email-error"
             >
               {emailError}
@@ -159,7 +163,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
                 backgroundColor: colors.sandLight,
                 color: colors.espresso,
                 borderRadius: borderRadius.md,
-                borderColor: passwordError ? colors.sunsetCoral : colors.sandDark,
+                borderColor: passwordError ? colors.error : colors.sandDark,
               },
             ]}
             value={password}
@@ -178,7 +182,8 @@ export function SignUpScreen({ onLogin, testID }: Props) {
           />
           {passwordError && (
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
+              style={[styles.fieldError, { color: colors.error }]}
+              accessibilityLiveRegion="polite"
               testID="signup-password-error"
             >
               {passwordError}

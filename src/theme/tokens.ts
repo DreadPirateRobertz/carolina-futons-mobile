@@ -24,9 +24,12 @@ export const colors = {
   overlay: 'rgba(58, 37, 24, 0.6)',
   // Semantic / status
   success: '#4A7C59',
-  error: '#E8845C',
-  muted: '#999999',
+  error: '#B5432A',
+  muted: '#6B5B4B',
   mutedBrown: '#8B7355',
+  // High-contrast error banner pair (WCAG AA on sandBase)
+  errorBannerBg: '#FDDDD3',
+  errorBannerText: '#7C2D12',
 } as const;
 
 export const spacing = {
