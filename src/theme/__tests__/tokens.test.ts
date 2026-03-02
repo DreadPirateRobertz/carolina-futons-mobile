@@ -100,7 +100,13 @@ describe('Design Tokens', () => {
 
     it('all hex colors are valid format', () => {
       const hexPattern = /^#[0-9A-Fa-f]{6}$/;
-      const hexKeys = ['background', 'surface', 'surfaceElevated', 'textPrimary', 'textMuted'] as const;
+      const hexKeys = [
+        'background',
+        'surface',
+        'surfaceElevated',
+        'textPrimary',
+        'textMuted',
+      ] as const;
       hexKeys.forEach((key) => {
         expect(darkPalette[key]).toMatch(hexPattern);
       });

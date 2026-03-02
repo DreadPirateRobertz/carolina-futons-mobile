@@ -1,6 +1,13 @@
 import React, { createContext, useMemo, useState, useCallback } from 'react';
-import { useColorScheme } from 'react-native';
-import { colors, darkPalette, spacing, borderRadius, shadows, typography, transitions } from './tokens';
+import {
+  colors,
+  darkPalette,
+  spacing,
+  borderRadius,
+  shadows,
+  typography,
+  transitions,
+} from './tokens';
 
 type ColorMode = 'light' | 'dark';
 
@@ -38,10 +45,7 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children, initialColorMode }: ThemeProviderProps) {
-  const systemScheme = useColorScheme();
-  const [colorMode, setColorMode] = useState<ColorMode>(
-    initialColorMode ?? 'dark',
-  );
+  const [colorMode, setColorMode] = useState<ColorMode>(initialColorMode ?? 'dark');
 
   const toggleColorMode = useCallback(() => {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
