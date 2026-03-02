@@ -73,6 +73,18 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
+// Mock Stripe SDK
+jest.mock('@stripe/stripe-react-native', () => {
+  const { createElement } = require('react');
+  return {
+    StripeProvider: ({ children }: any) => children,
+    useStripe: () => ({
+      initPaymentSheet: jest.fn().mockResolvedValue({ error: null }),
+      presentPaymentSheet: jest.fn().mockResolvedValue({ error: null }),
+    }),
+  };
+});
+
 // Mock native stack — use a minimal JS-based stack for testing
 jest.mock('@react-navigation/native-stack', () => {
   const {
