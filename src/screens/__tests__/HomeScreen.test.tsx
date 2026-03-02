@@ -15,9 +15,10 @@ function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => voi
 }
 
 describe('HomeScreen', () => {
-  it('renders welcome text', () => {
+  it('renders hero content', () => {
     const { getByText } = renderHomeScreen();
-    expect(getByText('Welcome to Carolina Futons')).toBeTruthy();
+    expect(getByText('Handcrafted in NC')).toBeTruthy();
+    expect(getByText(/Carolina/)).toBeTruthy();
     expect(getByText('Handcrafted comfort from the Blue Ridge Mountains')).toBeTruthy();
   });
 
