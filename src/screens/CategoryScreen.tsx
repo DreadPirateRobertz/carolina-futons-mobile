@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
@@ -32,6 +35,7 @@ export function CategoryScreen({
     'futons') as ProductCategory;
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
     initialCategory: resolvedCategory,
@@ -45,9 +49,20 @@ export function CategoryScreen({
   const title =
     categoryTitle ?? resolvedCategory.charAt(0).toUpperCase() + resolvedCategory.slice(1);
 
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      if (onProductPress) {
+        onProductPress(product);
+      } else {
+        navigation.navigate('ProductDetail', { slug: product.slug });
+      }
+    },
+    [onProductPress, navigation],
+  );
+
   const renderProduct = useCallback(
-    ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,
-    [onProductPress],
+    ({ item }: { item: Product }) => <ProductCard product={item} onPress={handleProductPress} />,
+    [handleProductPress],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);

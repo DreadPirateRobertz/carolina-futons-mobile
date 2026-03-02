@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { CategoryScreen } from '../CategoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -13,11 +14,13 @@ function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScree
   const onBack = props.onBack ?? jest.fn();
   return {
     ...render(
-      <ThemeProvider>
-        <WishlistProvider>
-          <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
-        </WishlistProvider>
-      </ThemeProvider>,
+      <NavigationContainer>
+        <ThemeProvider>
+          <WishlistProvider>
+            <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
+          </WishlistProvider>
+        </ThemeProvider>
+      </NavigationContainer>,
     ),
     onProductPress,
     onBack,

@@ -1,10 +1,22 @@
 import React, { memo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import Animated, { SharedTransition, withSpring } from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
 import { WishlistButton } from './WishlistButton';
+
+const SPRING_CONFIG = { damping: 18, stiffness: 160 };
+const heroTransition = SharedTransition.custom((values) => {
+  'worklet';
+  return {
+    originX: withSpring(values.targetOriginX, SPRING_CONFIG),
+    originY: withSpring(values.targetOriginY, SPRING_CONFIG),
+    width: withSpring(values.targetWidth, SPRING_CONFIG),
+    height: withSpring(values.targetHeight, SPRING_CONFIG),
+  };
+});
 
 interface Props {
   product: Product;
@@ -44,8 +56,10 @@ export const ProductCard = memo(function ProductCard({
       accessibilityRole="button"
       activeOpacity={0.7}
     >
-      {/* Image */}
-      <View
+      {/* Image — shared element transition to ProductDetail hero */}
+      <Animated.View
+        sharedTransitionTag={`product-image-${product.slug}`}
+        sharedTransitionStyle={heroTransition}
         style={[
           styles.imageContainer,
           { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
@@ -70,7 +84,7 @@ export const ProductCard = memo(function ProductCard({
             <Text style={styles.outOfStockText}>Out of Stock</Text>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Info */}
       <View style={[styles.info, { padding: spacing.sm }]}>

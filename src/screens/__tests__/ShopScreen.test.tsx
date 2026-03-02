@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -9,11 +10,13 @@ function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   return {
     ...render(
-      <ThemeProvider>
-        <WishlistProvider>
-          <ShopScreen onProductPress={onProductPress} />
-        </WishlistProvider>
-      </ThemeProvider>,
+      <NavigationContainer>
+        <ThemeProvider>
+          <WishlistProvider>
+            <ShopScreen onProductPress={onProductPress} />
+          </WishlistProvider>
+        </ThemeProvider>
+      </NavigationContainer>,
     ),
     onProductPress,
   };

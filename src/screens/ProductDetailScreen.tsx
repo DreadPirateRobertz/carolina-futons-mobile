@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import Animated, { SharedTransition, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
@@ -24,6 +25,17 @@ import { useReviews } from '@/hooks/useReviews';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 300;
+
+const SPRING_CONFIG = { damping: 18, stiffness: 160 };
+const heroTransition = SharedTransition.custom((values) => {
+  'worklet';
+  return {
+    originX: withSpring(values.targetOriginX, SPRING_CONFIG),
+    originY: withSpring(values.targetOriginY, SPRING_CONFIG),
+    width: withSpring(values.targetWidth, SPRING_CONFIG),
+    height: withSpring(values.targetHeight, SPRING_CONFIG),
+  };
+});
 
 const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as const;
 
@@ -166,35 +178,41 @@ export function ProductDetailScreen({
           </View>
         )}
 
-        {/* Image Gallery */}
-        <FlatList
-          ref={galleryRef}
-          data={[...GALLERY_VIEWS]}
-          renderItem={renderGalleryItem}
-          keyExtractor={(_, i) => `gallery-${i}`}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={onGalleryScroll}
-          scrollEventThrottle={16}
-          testID="gallery-list"
-        />
+        {/* Image Gallery — shared element transition from ProductCard */}
+        <Animated.View
+          sharedTransitionTag={`product-image-${resolvedId}`}
+          sharedTransitionStyle={heroTransition}
+          style={styles.galleryContainer}
+        >
+          <FlatList
+            ref={galleryRef}
+            data={[...GALLERY_VIEWS]}
+            renderItem={renderGalleryItem}
+            keyExtractor={(_, i) => `gallery-${i}`}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={onGalleryScroll}
+            scrollEventThrottle={16}
+            testID="gallery-list"
+          />
 
-        {/* Pagination dots */}
-        <View style={styles.paginationContainer} testID="gallery-pagination">
-          {GALLERY_VIEWS.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.paginationDot,
-                {
-                  backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
-                },
-              ]}
-              testID={`gallery-dot-${i}`}
-            />
-          ))}
-        </View>
+          {/* Pagination dots */}
+          <View style={styles.paginationContainer} testID="gallery-pagination">
+            {GALLERY_VIEWS.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.paginationDot,
+                  {
+                    backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
+                  },
+                ]}
+                testID={`gallery-dot-${i}`}
+              />
+            ))}
+          </View>
+        </Animated.View>
 
         {/* Product Info */}
         <View style={[styles.infoSection, { paddingHorizontal: spacing.lg }]}>
@@ -677,6 +695,9 @@ const styles = StyleSheet.create({
     top: 52,
     right: 16,
     zIndex: 10,
+  },
+  galleryContainer: {
+    overflow: 'hidden',
   },
   gallerySlide: {
     height: GALLERY_HEIGHT,

@@ -10,8 +10,11 @@ import {
   Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
@@ -27,9 +30,21 @@ interface Props {
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { count, getProducts, getShareText, remove, clear } = useWishlist();
 
   const products = getProducts();
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      if (onProductPress) {
+        onProductPress(product);
+      } else {
+        navigation.navigate('ProductDetail', { slug: product.slug });
+      }
+    },
+    [onProductPress, navigation],
+  );
 
   const handleRemove = useCallback(
     (productId: string) => {
@@ -77,7 +92,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
       <View style={styles.cardWrapper}>
         <ProductCard
           product={item}
-          onPress={onProductPress}
+          onPress={handleProductPress}
           onLongPress={() => handleLongPress(item)}
           testID={`wishlist-item-${item.id}`}
         />
@@ -88,7 +103,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         )}
       </View>
     ),
-    [onProductPress, handleLongPress, colors],
+    [handleProductPress, handleLongPress, colors],
   );
 
   const keyExtractor = useCallback(

@@ -64,12 +64,20 @@ jest.mock('react-native-gesture-handler', () => {
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
+  const SharedTransitionMock: any = {
+    custom: () => SharedTransitionMock,
+    duration: () => SharedTransitionMock,
+    progressAnimation: () => SharedTransitionMock,
+    defaultTransitionType: () => SharedTransitionMock,
+    reduceMotion: () => SharedTransitionMock,
+  };
   return {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
     useAnimatedStyle: (fn: any) => fn(),
     withSpring: (val: any) => val,
+    SharedTransition: SharedTransitionMock,
   };
 });
 

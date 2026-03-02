@@ -1,7 +1,10 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
@@ -17,6 +20,18 @@ interface Props {
 export function ShopScreen({ onProductPress, testID }: Props) {
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      if (onProductPress) {
+        onProductPress(product);
+      } else {
+        navigation.navigate('ProductDetail', { slug: product.slug });
+      }
+    },
+    [onProductPress, navigation],
+  );
   const {
     products,
     categories,
@@ -42,8 +57,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const renderProduct = useCallback(
-    ({ item }: { item: Product }) => <ProductCard product={item} onPress={onProductPress} />,
-    [onProductPress],
+    ({ item }: { item: Product }) => <ProductCard product={item} onPress={handleProductPress} />,
+    [handleProductPress],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);

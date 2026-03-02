@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
@@ -28,11 +29,13 @@ function renderScreen(
   const onBrowse = opts.onBrowse ?? jest.fn();
   return {
     ...render(
-      <ThemeProvider>
-        <WishlistProvider initialItems={opts.items ?? []}>
-          <WishlistScreen onProductPress={onProductPress} onBrowse={onBrowse} />
-        </WishlistProvider>
-      </ThemeProvider>,
+      <NavigationContainer>
+        <ThemeProvider>
+          <WishlistProvider initialItems={opts.items ?? []}>
+            <WishlistScreen onProductPress={onProductPress} onBrowse={onBrowse} />
+          </WishlistProvider>
+        </ThemeProvider>
+      </NavigationContainer>,
     ),
     onProductPress,
     onBrowse,
