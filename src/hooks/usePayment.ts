@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Platform } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
-import { useCart, type CartItem } from './useCart';
+import { useCart } from './useCart';
 import {
   createPaymentIntent,
   confirmOrder,
