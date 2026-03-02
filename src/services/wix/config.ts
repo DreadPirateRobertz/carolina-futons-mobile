@@ -12,19 +12,19 @@
 
 import type { WixClientConfig } from './wixClient';
 
-// Default to empty — app will show config error if not set
-const WIX_API_KEY = process.env.EXPO_PUBLIC_WIX_API_KEY ?? '';
-const WIX_SITE_ID = process.env.EXPO_PUBLIC_WIX_SITE_ID ?? '';
-const WIX_BASE_URL = process.env.EXPO_PUBLIC_WIX_BASE_URL ?? 'https://www.wixapis.com';
+// Dynamic lookup avoids babel-preset-expo inlining EXPO_PUBLIC_ vars at build time.
+function env(key: string, fallback = ''): string {
+  return process.env[key] ?? fallback;
+}
 
 export function getWixConfig(): WixClientConfig {
   return {
-    apiKey: WIX_API_KEY,
-    siteId: WIX_SITE_ID,
-    baseUrl: WIX_BASE_URL,
+    apiKey: env('EXPO_PUBLIC_WIX_API_KEY'),
+    siteId: env('EXPO_PUBLIC_WIX_SITE_ID'),
+    baseUrl: env('EXPO_PUBLIC_WIX_BASE_URL', 'https://www.wixapis.com'),
   };
 }
 
 export function isWixConfigured(): boolean {
-  return WIX_API_KEY.length > 0 && WIX_SITE_ID.length > 0;
+  return env('EXPO_PUBLIC_WIX_API_KEY').length > 0 && env('EXPO_PUBLIC_WIX_SITE_ID').length > 0;
 }

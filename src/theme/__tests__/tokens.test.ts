@@ -1,4 +1,12 @@
-import { colors, spacing, borderRadius, typography, shadows, transitions } from '@/theme/tokens';
+import {
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  shadows,
+  transitions,
+  easing,
+} from '@/theme/tokens';
 
 describe('Design Tokens', () => {
   describe('colors', () => {
@@ -43,6 +51,37 @@ describe('Design Tokens', () => {
 
     it('defines overlay color with alpha', () => {
       expect(colors.overlay).toMatch(/^rgba\(/);
+    });
+
+    it('matches canonical brand palette (sharedTokens.js)', () => {
+      // These values MUST match cfutons/src/public/sharedTokens.js
+      // If this test fails, the palettes have diverged — sync them.
+      const canonical: Record<string, string> = {
+        sandBase: '#E8D5B7',
+        sandLight: '#F2E8D5',
+        sandDark: '#D4BC96',
+        espresso: '#3A2518',
+        espressoLight: '#5C4033',
+        mountainBlue: '#5B8FA8',
+        mountainBlueDark: '#3D6B80',
+        mountainBlueLight: '#A8CCD8',
+        sunsetCoral: '#E8845C',
+        sunsetCoralDark: '#C96B44',
+        sunsetCoralLight: '#F2A882',
+        mauve: '#C9A0A0',
+        offWhite: '#FAF7F2',
+        white: '#FFFFFF',
+        skyGradientTop: '#B8D4E3',
+        skyGradientBottom: '#F0C87A',
+        overlay: 'rgba(58, 37, 24, 0.6)',
+        success: '#4A7C59',
+        error: '#E8845C',
+        muted: '#999999',
+        mutedBrown: '#8B7355',
+      };
+      Object.entries(canonical).forEach(([key, value]) => {
+        expect(colors[key as keyof typeof colors]).toBe(value);
+      });
     });
   });
 
@@ -173,9 +212,44 @@ describe('Design Tokens', () => {
   });
 
   describe('transitions', () => {
-    it('defines timing values in milliseconds', () => {
-      expect(transitions.fast).toBeLessThan(transitions.medium);
-      expect(transitions.medium).toBeLessThan(transitions.slow);
+    it('defines duration and easing for each transition', () => {
+      for (const key of ['fast', 'medium', 'slow', 'cardHover'] as const) {
+        expect(transitions[key]).toHaveProperty('duration');
+        expect(transitions[key]).toHaveProperty('easing');
+        expect(typeof transitions[key].duration).toBe('number');
+        expect(typeof transitions[key].easing).toBe('function');
+      }
+    });
+
+    it('durations increase from fast to slow', () => {
+      expect(transitions.fast.duration).toBeLessThan(transitions.medium.duration);
+      expect(transitions.medium.duration).toBeLessThan(transitions.slow.duration);
+    });
+
+    it('cardHover uses Material standard curve', () => {
+      expect(transitions.cardHover.duration).toBe(300);
+      expect(transitions.cardHover.easing).toBe(easing.cardHover);
+    });
+  });
+
+  describe('easing', () => {
+    it('defines all easing functions', () => {
+      expect(typeof easing.ease).toBe('function');
+      expect(typeof easing.cardHover).toBe('function');
+      expect(typeof easing.easeIn).toBe('function');
+      expect(typeof easing.easeOut).toBe('function');
+    });
+
+    it('easing functions return values in [0,1] range', () => {
+      // Easing.bezier returns a function that maps t ∈ [0,1] → value
+      for (const fn of Object.values(easing)) {
+        expect(fn(0)).toBeCloseTo(0, 1);
+        expect(fn(1)).toBeCloseTo(1, 1);
+        // Mid-point should be between 0 and 1
+        const mid = fn(0.5);
+        expect(mid).toBeGreaterThanOrEqual(0);
+        expect(mid).toBeLessThanOrEqual(1);
+      }
     });
   });
 });
