@@ -2,11 +2,14 @@ import React from 'react';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   type ViewStyle,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { colors, borderRadius, shadows, typography } from '@/theme/tokens';
+import { useSpringPress } from '@/hooks/useSpringPress';
+import { PRESS_SCALE } from '@/theme/animations';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -54,43 +57,52 @@ export function Button({
 }: Props) {
   const isDisabled = disabled || loading;
 
+  const { animatedStyle, onPressIn, onPressOut } = useSpringPress({
+    pressedScale: PRESS_SCALE.button,
+    haptic: variant === 'ghost' ? 'selection' : 'light',
+  });
+
   return (
-    <TouchableOpacity
-      style={[
-        styles.base,
-        variantStyles[variant],
-        sizeStyles[size],
-        { borderRadius: borderRadius.button },
-        variant === 'primary' && shadows.button,
-        fullWidth && styles.fullWidth,
-        isDisabled && styles.disabled,
-      ]}
-      onPress={onPress}
-      disabled={isDisabled}
-      testID={testID}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled }}
-    >
-      {loading ? (
-        <ActivityIndicator
-          size="small"
-          color={variant === 'ghost' ? colors.espresso : '#FFFFFF'}
-          testID={testID ? `${testID}-spinner` : undefined}
-        />
-      ) : (
-        <Text
-          style={[
-            styles.label,
-            typography.button,
-            {
-              color: variant === 'ghost' ? colors.espresso : '#FFFFFF',
-            },
-          ]}
-        >
-          {label}
-        </Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={[animatedStyle, fullWidth && styles.fullWidth]}>
+      <Pressable
+        style={[
+          styles.base,
+          variantStyles[variant],
+          sizeStyles[size],
+          { borderRadius: borderRadius.button },
+          variant === 'primary' && shadows.button,
+          fullWidth && styles.fullWidth,
+          isDisabled && styles.disabled,
+        ]}
+        onPress={onPress}
+        onPressIn={isDisabled ? undefined : onPressIn}
+        onPressOut={isDisabled ? undefined : onPressOut}
+        disabled={isDisabled}
+        testID={testID}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: isDisabled }}
+      >
+        {loading ? (
+          <ActivityIndicator
+            size="small"
+            color={variant === 'ghost' ? colors.espresso : '#FFFFFF'}
+            testID={testID ? `${testID}-spinner` : undefined}
+          />
+        ) : (
+          <Text
+            style={[
+              styles.label,
+              typography.button,
+              {
+                color: variant === 'ghost' ? colors.espresso : '#FFFFFF',
+              },
+            ]}
+          >
+            {label}
+          </Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

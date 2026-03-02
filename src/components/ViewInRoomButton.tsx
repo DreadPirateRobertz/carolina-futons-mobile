@@ -1,9 +1,12 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import { StyleSheet, Text, Pressable, View, Platform } from 'react-native';
+import Animated from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { events } from '@/services/analytics';
 import type { Product } from '@/data/products';
+import { useSpringPress } from '@/hooks/useSpringPress';
+import { PRESS_SCALE } from '@/theme/animations';
 
 const AR_CATEGORIES = new Set(['futons', 'frames', 'murphy-beds']);
 
@@ -28,6 +31,11 @@ export function ViewInRoomButton({
 }: Props) {
   const { colors, borderRadius } = useTheme();
 
+  const { animatedStyle, onPressIn, onPressOut } = useSpringPress({
+    pressedScale: PRESS_SCALE.button,
+    haptic: 'medium',
+  });
+
   const handlePress = useCallback(() => {
     if (disabled) return;
 
@@ -48,37 +56,40 @@ export function ViewInRoomButton({
   const isCompact = size === 'compact';
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        {
-          backgroundColor: `${colors.sunsetCoral}1F`,
-          borderColor: colors.sunsetCoral,
-          borderRadius: borderRadius.lg,
-        },
-        isCompact && { ...styles.buttonCompact, borderRadius: borderRadius.md },
-        disabled && styles.buttonDisabled,
-      ]}
-      onPress={handlePress}
-      disabled={disabled}
-      testID={testID}
-      accessibilityLabel={`View ${product.name} in your room using AR camera`}
-      accessibilityRole="button"
-      accessibilityHint="Opens your camera to preview this product in your room"
-      accessibilityState={{ disabled }}
-      activeOpacity={0.7}
-    >
-      <View testID="view-in-room-camera-icon" style={styles.iconContainer}>
-        <Text style={[styles.icon, isCompact && styles.iconCompact]}>{'\u{1F4F7}'}</Text>
-      </View>
-      {!isCompact && (
-        <Text
-          style={[styles.label, { color: colors.sunsetCoral }, disabled && styles.labelDisabled]}
-        >
-          View in Your Room
-        </Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={animatedStyle}>
+      <Pressable
+        style={[
+          styles.button,
+          {
+            backgroundColor: `${colors.sunsetCoral}1F`,
+            borderColor: colors.sunsetCoral,
+            borderRadius: borderRadius.lg,
+          },
+          isCompact && { ...styles.buttonCompact, borderRadius: borderRadius.md },
+          disabled && styles.buttonDisabled,
+        ]}
+        onPress={handlePress}
+        onPressIn={disabled ? undefined : onPressIn}
+        onPressOut={disabled ? undefined : onPressOut}
+        disabled={disabled}
+        testID={testID}
+        accessibilityLabel={`View ${product.name} in your room using AR camera`}
+        accessibilityRole="button"
+        accessibilityHint="Opens your camera to preview this product in your room"
+        accessibilityState={{ disabled }}
+      >
+        <View testID="view-in-room-camera-icon" style={styles.iconContainer}>
+          <Text style={[styles.icon, isCompact && styles.iconCompact]}>{'\u{1F4F7}'}</Text>
+        </View>
+        {!isCompact && (
+          <Text
+            style={[styles.label, { color: colors.sunsetCoral }, disabled && styles.labelDisabled]}
+          >
+            View in Your Room
+          </Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 

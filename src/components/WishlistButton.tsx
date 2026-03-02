@@ -1,8 +1,10 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
+import { StyleSheet, Pressable, Text, Platform } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { type Product } from '@/data/products';
 import { useWishlist } from '@/hooks/useWishlist';
+import { POP_SPRING, PRESS_SCALE } from '@/theme/animations';
 
 interface Props {
   product: Product;
@@ -23,37 +25,64 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
   const active = isInWishlist(product.id);
 
   const dims = SIZE_MAP[size];
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = useCallback(() => {
+    scale.value = withSpring(PRESS_SCALE.icon, POP_SPRING);
+  }, [scale]);
+
+  const handlePressOut = useCallback(() => {
+    scale.value = withSpring(1, POP_SPRING);
+  }, [scale]);
 
   const handlePress = useCallback(() => {
+    // Bounce pop on toggle
+    scale.value = withSpring(1.2, POP_SPRING);
+    setTimeout(() => {
+      scale.value = withSpring(1, POP_SPRING);
+    }, 100);
+
     toggle(product);
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-  }, [toggle, product]);
+  }, [toggle, product, scale]);
 
   return (
-    <TouchableOpacity
+    <Animated.View
       style={[
-        styles.button,
-        {
-          width: dims.button,
-          height: dims.button,
-          borderRadius: dims.button / 2,
-        },
+        animatedStyle,
         overlay && styles.overlay,
-        active && styles.active,
       ]}
-      onPress={handlePress}
-      testID={testID ?? `wishlist-btn-${product.id}`}
-      accessibilityLabel={
-        active ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`
-      }
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <Text style={[styles.icon, { fontSize: dims.icon }]}>{active ? '♥' : '♡'}</Text>
-    </TouchableOpacity>
+      <Pressable
+        style={[
+          styles.button,
+          {
+            width: dims.button,
+            height: dims.button,
+            borderRadius: dims.button / 2,
+          },
+          active && styles.active,
+        ]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        testID={testID ?? `wishlist-btn-${product.id}`}
+        accessibilityLabel={
+          active ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`
+        }
+        accessibilityRole="button"
+        accessibilityState={{ selected: active }}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={[styles.icon, { fontSize: dims.icon }]}>{active ? '♥' : '♡'}</Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 

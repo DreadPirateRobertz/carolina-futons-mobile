@@ -1,10 +1,13 @@
-import React, { memo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { memo, useCallback } from 'react';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
 import { WishlistButton } from './WishlistButton';
+import { useSpringPress } from '@/hooks/useSpringPress';
+import { PRESS_SCALE } from '@/theme/animations';
 
 interface Props {
   product: Product;
@@ -21,6 +24,17 @@ export const ProductCard = memo(function ProductCard({
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
+  const { animatedStyle, onPressIn, onPressOut } = useSpringPress({
+    pressedScale: PRESS_SCALE.card,
+    haptic: 'selection',
+  });
+
+  const handlePress = useCallback(() => onPress?.(product), [onPress, product]);
+  const handleLongPress = useCallback(
+    () => onLongPress?.(product),
+    [onLongPress, product],
+  );
+
   const badgeColor =
     product.badge === 'Sale'
       ? colors.sunsetCoral
@@ -31,78 +45,81 @@ export const ProductCard = memo(function ProductCard({
           : colors.espressoLight;
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.card,
-        shadows.card,
-        { backgroundColor: colors.white, borderRadius: borderRadius.card },
-      ]}
-      onPress={() => onPress?.(product)}
-      onLongPress={onLongPress ? () => onLongPress(product) : undefined}
-      testID={testID ?? `product-card-${product.id}`}
-      accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
-      accessibilityRole="button"
-      activeOpacity={0.7}
-    >
-      {/* Image */}
-      <View
+    <Animated.View style={[animatedStyle, styles.card, { borderRadius: borderRadius.card }]}>
+      <Pressable
         style={[
-          styles.imageContainer,
-          { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
+          styles.cardInner,
+          shadows.card,
+          { backgroundColor: colors.white, borderRadius: borderRadius.card },
         ]}
+        onPress={handlePress}
+        onLongPress={onLongPress ? handleLongPress : undefined}
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        testID={testID ?? `product-card-${product.id}`}
+        accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
+        accessibilityRole="button"
       >
-        <Image
-          source={{ uri: product.images[0]?.uri }}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-          recyclingKey={product.id}
-          accessibilityLabel={product.images[0]?.alt}
-        />
-        <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
-        {product.badge && (
-          <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-            <Text style={styles.badgeText}>{product.badge}</Text>
-          </View>
-        )}
-        {!product.inStock && (
-          <View style={styles.outOfStockOverlay}>
-            <Text style={styles.outOfStockText}>Out of Stock</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Info */}
-      <View style={[styles.info, { padding: spacing.sm }]}>
-        <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
-          {product.name}
-        </Text>
-        <Text style={[styles.description, { color: colors.espressoLight }]} numberOfLines={1}>
-          {product.shortDescription}
-        </Text>
-
-        {/* Rating */}
-        <View style={styles.ratingRow}>
-          <Text style={[styles.ratingStars, { color: colors.sunsetCoral }]}>
-            {'★'.repeat(Math.round(product.rating))}
-            {'☆'.repeat(5 - Math.round(product.rating))}
-          </Text>
-          <Text style={[styles.reviewCount, { color: colors.muted }]}>({product.reviewCount})</Text>
-        </View>
-
-        {/* Price */}
-        <View style={styles.priceRow}>
-          <Text style={[styles.price, { color: colors.espresso }]}>
-            {formatPrice(product.price)}
-          </Text>
-          {product.originalPrice && (
-            <Text style={[styles.originalPrice, { color: colors.muted }]}>
-              {formatPrice(product.originalPrice)}
-            </Text>
+        {/* Image */}
+        <View
+          style={[
+            styles.imageContainer,
+            { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
+          ]}
+        >
+          <Image
+            source={{ uri: product.images[0]?.uri }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+            recyclingKey={product.id}
+            accessibilityLabel={product.images[0]?.alt}
+          />
+          <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
+          {product.badge && (
+            <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+              <Text style={styles.badgeText}>{product.badge}</Text>
+            </View>
+          )}
+          {!product.inStock && (
+            <View style={styles.outOfStockOverlay}>
+              <Text style={styles.outOfStockText}>Out of Stock</Text>
+            </View>
           )}
         </View>
-      </View>
-    </TouchableOpacity>
+
+        {/* Info */}
+        <View style={[styles.info, { padding: spacing.sm }]}>
+          <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
+            {product.name}
+          </Text>
+          <Text style={[styles.description, { color: colors.espressoLight }]} numberOfLines={1}>
+            {product.shortDescription}
+          </Text>
+
+          {/* Rating */}
+          <View style={styles.ratingRow}>
+            <Text style={[styles.ratingStars, { color: colors.sunsetCoral }]}>
+              {'★'.repeat(Math.round(product.rating))}
+              {'☆'.repeat(5 - Math.round(product.rating))}
+            </Text>
+            <Text style={[styles.reviewCount, { color: colors.muted }]}>({product.reviewCount})</Text>
+          </View>
+
+          {/* Price */}
+          <View style={styles.priceRow}>
+            <Text style={[styles.price, { color: colors.espresso }]}>
+              {formatPrice(product.price)}
+            </Text>
+            {product.originalPrice && (
+              <Text style={[styles.originalPrice, { color: colors.muted }]}>
+                {formatPrice(product.originalPrice)}
+              </Text>
+            )}
+          </View>
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 });
 
@@ -111,6 +128,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 6,
     marginBottom: 12,
+  },
+  cardInner: {
+    flex: 1,
     overflow: 'hidden',
   },
   imageContainer: {
