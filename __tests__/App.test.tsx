@@ -110,7 +110,7 @@ describe('App', () => {
     await waitFor(() => {
       expect(getByTestId('home-screen')).toBeTruthy();
     });
-    expect(getByText('Welcome to Carolina Futons')).toBeTruthy();
+    expect(getByText('Handcrafted in NC')).toBeTruthy();
   });
 
   it('renders tab bar with Home, Shop, Cart, Account', async () => {
