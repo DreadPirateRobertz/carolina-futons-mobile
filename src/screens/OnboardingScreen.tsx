@@ -1,30 +1,73 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
+import {
+  useStyleQuiz,
+  type RoomType,
+  type StylePreference,
+  type PrimaryUse,
+} from '@/hooks/useStyleQuiz';
 
-interface Slide {
-  title: string;
-  description: string;
-  emoji: string;
+// ── Brand Story Slides ──────────────────────────────────────────────
+
+interface BrandSlide {
+  headline: string;
+  body: string;
+  accent: string;
 }
 
-const SLIDES: Slide[] = [
+const BRAND_SLIDES: BrandSlide[] = [
   {
-    title: 'Welcome to Carolina Futons',
-    description: 'Handcrafted comfort from the Blue Ridge Mountains, delivered to your door.',
-    emoji: '🛋️',
+    headline: 'Carolina Futons',
+    body: 'Handcrafted comfort from the Blue Ridge Mountains.\nReal wood. Real craftsmanship. Delivered to your door.',
+    accent: 'Est. Hendersonville, NC',
   },
   {
-    title: 'See It In Your Space',
-    description: 'Use AR to preview how our futons look in your room before you buy.',
-    emoji: '📱',
+    headline: 'Born in the\nBlue Ridge',
+    body: 'Every frame is built from Appalachian hardwood by local artisans who take pride in their craft.',
+    accent: 'Solid wood \u00b7 Built to last',
   },
   {
-    title: 'Shop With Confidence',
-    description: 'Free shipping, easy returns, and flexible payment options on every order.',
-    emoji: '✨',
+    headline: 'See It in\nYour Space',
+    body: 'Use augmented reality to preview how our futons look in your room before you buy.',
+    accent: 'Try AR \u00b7 Free shipping \u00b7 Easy returns',
   },
 ];
+
+// ── Style Quiz Questions ────────────────────────────────────────────
+
+interface QuizOption<T extends string> {
+  value: T;
+  label: string;
+  icon: string;
+}
+
+const ROOM_OPTIONS: QuizOption<RoomType>[] = [
+  { value: 'living-room', label: 'Living Room', icon: '\u{1F6CB}' },
+  { value: 'bedroom', label: 'Bedroom', icon: '\u{1F6CF}' },
+  { value: 'studio', label: 'Studio', icon: '\u{1F3E0}' },
+  { value: 'guest-room', label: 'Guest Room', icon: '\u{1F6AA}' },
+];
+
+const STYLE_OPTIONS: QuizOption<StylePreference>[] = [
+  { value: 'modern', label: 'Modern & Clean', icon: '\u2728' },
+  { value: 'rustic', label: 'Rustic & Warm', icon: '\u{1FAB5}' },
+  { value: 'classic', label: 'Classic & Cozy', icon: '\u{1F4D6}' },
+  { value: 'minimalist', label: 'Minimalist', icon: '\u25FB' },
+];
+
+const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
+  { value: 'seating', label: 'Everyday Seating', icon: '\u{1F9D8}' },
+  { value: 'guest-bed', label: 'Guest Bed', icon: '\u{1F634}' },
+  { value: 'dual-purpose', label: 'Dual-Purpose', icon: '\u{1F504}' },
+  { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
+];
+
+// ── Total Steps ─────────────────────────────────────────────────────
+
+const TOTAL_STEPS = BRAND_SLIDES.length + 3 + 1; // 3 brand + 3 quiz + 1 completion
+
+// ── Main Component ──────────────────────────────────────────────────
 
 interface Props {
   onComplete: () => void;
@@ -33,23 +76,243 @@ interface Props {
 
 export function OnboardingScreen({ onComplete, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [step, setStep] = useState(0);
+  const { preferences, setRoom, setStyle, setPrimaryUse, savePreferences } = useStyleQuiz();
 
-  const isLastSlide = currentIndex === SLIDES.length - 1;
-  const slide = SLIDES[currentIndex];
+  const isBrandPhase = step < BRAND_SLIDES.length;
+  const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
+  const isCompletionStep = step === TOTAL_STEPS - 1;
+  const isLastBrandSlide = step === BRAND_SLIDES.length - 1;
 
-  const handleNext = () => {
-    if (isLastSlide) return;
-    setCurrentIndex((i) => i + 1);
+  const handleNext = useCallback(() => {
+    setStep((s) => s + 1);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setStep((s) => Math.max(0, s - 1));
+  }, []);
+
+  const handleQuizSelect = useCallback(
+    (value: string) => {
+      if (quizStep === 0) setRoom(value as RoomType);
+      else if (quizStep === 1) setStyle(value as StylePreference);
+      else if (quizStep === 2) setPrimaryUse(value as PrimaryUse);
+      // Auto-advance after selection
+      setStep((s) => s + 1);
+    },
+    [quizStep, setRoom, setStyle, setPrimaryUse],
+  );
+
+  const handleFinish = useCallback(async () => {
+    await savePreferences();
+    onComplete();
+  }, [savePreferences, onComplete]);
+
+  // ── Progress Bar ────────────────────────────────────────────────
+
+  const renderProgress = () => (
+    <View style={[styles.progressContainer, { paddingHorizontal: spacing.lg }]}>
+      <View style={[styles.progressTrack, { backgroundColor: colors.sandDark, borderRadius: borderRadius.pill }]}>
+        <View
+          testID="onboarding-progress-bar"
+          style={[
+            styles.progressFill,
+            {
+              backgroundColor: colors.sunsetCoral,
+              borderRadius: borderRadius.pill,
+              width: `${((step + 1) / TOTAL_STEPS) * 100}%`,
+            },
+          ]}
+        />
+      </View>
+      <Text
+        style={[styles.progressLabel, { color: colors.muted, fontFamily: typography.bodyFamily }]}
+      >
+        {step + 1} / {TOTAL_STEPS}
+      </Text>
+    </View>
+  );
+
+  // ── Brand Story Slide ───────────────────────────────────────────
+
+  const renderBrandSlide = () => {
+    const slide = BRAND_SLIDES[step];
+    return (
+      <View style={styles.slideContainer} testID={`onboarding-brand-slide-${step}`}>
+        <Text
+          style={[
+            styles.accentLabel,
+            {
+              color: colors.sunsetCoral,
+              fontFamily: typography.bodyFamilySemiBold,
+            },
+          ]}
+        >
+          {slide.accent}
+        </Text>
+        <Text
+          style={[
+            step === 0 ? styles.heroHeadline : styles.headline,
+            {
+              color: colors.espresso,
+              fontFamily: typography.headingFamily,
+            },
+          ]}
+        >
+          {slide.headline}
+        </Text>
+        <Text
+          style={[
+            styles.bodyText,
+            {
+              color: colors.espressoLight,
+              fontFamily: typography.bodyFamily,
+            },
+          ]}
+        >
+          {slide.body}
+        </Text>
+      </View>
+    );
   };
+
+  // ── Quiz Step ───────────────────────────────────────────────────
+
+  const renderQuizStep = () => {
+    const questions: {
+      title: string;
+      subtitle: string;
+      options: QuizOption<string>[];
+      selected: string | null;
+    }[] = [
+      {
+        title: 'What room is\nthis for?',
+        subtitle: 'Help us find your perfect match',
+        options: ROOM_OPTIONS,
+        selected: preferences.room,
+      },
+      {
+        title: "What's your\nstyle?",
+        subtitle: 'We\u2019ll curate picks that fit',
+        options: STYLE_OPTIONS,
+        selected: preferences.style,
+      },
+      {
+        title: 'What do you\nneed most?',
+        subtitle: 'So we show the right features',
+        options: USE_OPTIONS,
+        selected: preferences.primaryUse,
+      },
+    ];
+
+    const q = questions[quizStep];
+    if (!q) return null;
+
+    return (
+      <View style={styles.quizContainer} testID={`onboarding-quiz-step-${quizStep}`}>
+        <Text
+          style={[
+            styles.quizTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
+        >
+          {q.title}
+        </Text>
+        <Text
+          style={[
+            styles.quizSubtitle,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          {q.subtitle}
+        </Text>
+        <View style={styles.optionsGrid}>
+          {q.options.map((option) => {
+            const isSelected = q.selected === option.value;
+            return (
+              <TouchableOpacity
+                key={option.value}
+                testID={`quiz-option-${option.value}`}
+                style={[
+                  styles.optionCard,
+                  {
+                    backgroundColor: isSelected ? colors.sunsetCoralLight : colors.white,
+                    borderRadius: borderRadius.card,
+                    borderColor: isSelected ? colors.sunsetCoral : colors.sandDark,
+                  },
+                  isSelected ? shadows.cardHover : shadows.card,
+                ]}
+                onPress={() => handleQuizSelect(option.value)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                accessibilityLabel={option.label}
+              >
+                <Text style={styles.optionIcon}>{option.icon}</Text>
+                <Text
+                  style={[
+                    styles.optionLabel,
+                    {
+                      color: isSelected ? colors.espresso : colors.espressoLight,
+                      fontFamily: isSelected
+                        ? typography.bodyFamilySemiBold
+                        : typography.bodyFamily,
+                    },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
+  // ── Completion ──────────────────────────────────────────────────
+
+  const renderCompletion = () => {
+    const styleName =
+      STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
+    return (
+      <View style={styles.slideContainer} testID="onboarding-completion">
+        <Text
+          style={[
+            styles.accentLabel,
+            { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+          ]}
+        >
+          You're all set
+        </Text>
+        <Text
+          style={[
+            styles.heroHeadline,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
+        >
+          Your space,{'\n'}your way
+        </Text>
+        <Text
+          style={[
+            styles.bodyText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          {`We\u2019ll highlight ${styleName.toLowerCase()} picks and features that fit your lifestyle. You can always update your preferences later.`}
+        </Text>
+      </View>
+    );
+  };
+
+  // ── Layout ──────────────────────────────────────────────────────
 
   return (
     <View
       style={[styles.root, { backgroundColor: colors.sandBase }]}
       testID={testID ?? 'onboarding-screen'}
     >
-      {/* Skip button */}
-      {!isLastSlide && (
+      {/* Skip button — visible except on completion */}
+      {!isCompletionStep && (
         <TouchableOpacity
           style={[styles.skipButton, { top: spacing.xxl }]}
           onPress={onComplete}
@@ -61,54 +324,38 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         </TouchableOpacity>
       )}
 
-      {/* Slide content */}
-      <View style={styles.slideContainer}>
-        <Text style={styles.emoji}>{slide.emoji}</Text>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: colors.espresso,
-              fontFamily: typography.headingFamily,
-            },
-          ]}
+      {/* Back button — visible after first slide */}
+      {step > 0 && !isCompletionStep && (
+        <TouchableOpacity
+          style={[styles.backButton, { top: spacing.xxl }]}
+          onPress={handleBack}
+          testID="onboarding-back-button"
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
         >
-          {slide.title}
-        </Text>
-        <Text
-          style={[
-            styles.description,
-            {
-              color: colors.espressoLight,
-              fontFamily: typography.bodyFamily,
-            },
-          ]}
-        >
-          {slide.description}
-        </Text>
+          <Text style={[styles.backText, { color: colors.espressoLight }]}>{'\u2190'}</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Progress */}
+      <View style={[styles.progressWrapper, { top: spacing.xxl + 40 }]}>
+        {renderProgress()}
       </View>
 
-      {/* Pagination dots */}
-      <View style={styles.dotsContainer}>
-        {SLIDES.map((_, index) => (
-          <View
-            key={index}
-            testID={`onboarding-dot-${index}`}
-            style={[
-              styles.dot,
-              {
-                backgroundColor: index === currentIndex ? colors.sunsetCoral : colors.sandLight,
-                width: index === currentIndex ? 24 : 8,
-                borderRadius: borderRadius.pill,
-              },
-            ]}
-          />
-        ))}
-      </View>
+      {/* Content */}
+      <ScrollView
+        contentContainerStyle={styles.contentContainer}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {isBrandPhase && renderBrandSlide()}
+        {!isBrandPhase && !isCompletionStep && renderQuizStep()}
+        {isCompletionStep && renderCompletion()}
+      </ScrollView>
 
-      {/* Action button */}
-      <View style={[styles.buttonContainer, { paddingHorizontal: spacing.lg }]}>
-        {isLastSlide ? (
+      {/* Bottom action — show Next for brand slides, Start Shopping for completion */}
+      {(isBrandPhase || isCompletionStep) && (
+        <View style={[styles.buttonContainer, { paddingHorizontal: spacing.lg }]}>
           <TouchableOpacity
             style={[
               styles.actionButton,
@@ -118,40 +365,31 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
               },
               shadows.button,
             ]}
-            onPress={onComplete}
-            testID="onboarding-get-started-button"
-            accessibilityLabel="Get started"
+            onPress={isCompletionStep ? handleFinish : handleNext}
+            testID={isCompletionStep ? 'onboarding-get-started-button' : 'onboarding-next-button'}
+            accessibilityLabel={isCompletionStep ? 'Start shopping' : 'Next'}
             accessibilityRole="button"
           >
-            <Text style={[styles.actionButtonText, { color: colors.white }]}>Get Started</Text>
+            <Text
+              style={[
+                styles.actionButtonText,
+                { color: colors.white, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
+              {isCompletionStep ? 'Start Shopping' : 'Next'}
+            </Text>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: colors.sunsetCoral,
-                borderRadius: borderRadius.button,
-              },
-              shadows.button,
-            ]}
-            onPress={handleNext}
-            testID="onboarding-next-button"
-            accessibilityLabel="Next slide"
-            accessibilityRole="button"
-          >
-            <Text style={[styles.actionButtonText, { color: colors.white }]}>Next</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
 
+// ── Styles ────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    justifyContent: 'center',
   },
   skipButton: {
     position: 'absolute',
@@ -163,37 +401,122 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  slideContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
+  backButton: {
+    position: 'absolute',
+    left: 24,
+    zIndex: 10,
+    padding: 8,
   },
-  emoji: {
-    fontSize: 64,
-    marginBottom: 24,
+  backText: {
+    fontSize: 22,
+    fontWeight: '400',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 16,
+  progressWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    zIndex: 5,
   },
-  description: {
-    fontSize: 16,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-  dotsContainer: {
+  progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    minWidth: 36,
+    textAlign: 'right',
+  },
+  contentContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
-    gap: 8,
+    paddingHorizontal: 32,
+    paddingTop: 120,
+    paddingBottom: 32,
+  },
+  // ── Brand slides ──
+  slideContainer: {
+    alignItems: 'center',
+  },
+  accentLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+  heroHeadline: {
+    fontSize: 42,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 46,
+    letterSpacing: -0.84,
+    marginBottom: 20,
+  },
+  headline: {
+    fontSize: 34,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 39,
+    letterSpacing: -0.34,
+    marginBottom: 20,
+  },
+  bodyText: {
+    fontSize: 17,
+    textAlign: 'center',
+    lineHeight: 27,
+    maxWidth: 300,
+  },
+  // ── Quiz ──
+  quizContainer: {
+    alignItems: 'center',
+  },
+  quizTitle: {
+    fontSize: 34,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 39,
+    letterSpacing: -0.34,
+    marginBottom: 8,
+  },
+  quizSubtitle: {
+    fontSize: 15,
+    textAlign: 'center',
+    lineHeight: 24,
     marginBottom: 32,
   },
-  dot: {
-    height: 8,
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
   },
+  optionCard: {
+    width: '46%',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    borderWidth: 1.5,
+  },
+  optionIcon: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  optionLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  // ── Bottom action ──
   buttonContainer: {
     paddingBottom: 48,
   },
