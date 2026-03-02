@@ -10,7 +10,7 @@ interface Props {
   testID?: string;
 }
 
-export function StoreCard({ store, distance, onPress, testID }: Props) {
+export const StoreCard = React.memo(function StoreCard({ store, distance, onPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const open = isStoreOpen(store);
 
@@ -75,7 +75,7 @@ export function StoreCard({ store, distance, onPress, testID }: Props) {
       )}
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

@@ -10,7 +10,7 @@ interface Props {
   testID?: string;
 }
 
-export function CategoryFilter({ categories, selected, onSelect, testID }: Props) {
+export const CategoryFilter = React.memo(function CategoryFilter({ categories, selected, onSelect, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 
   return (
@@ -68,7 +68,7 @@ export function CategoryFilter({ categories, selected, onSelect, testID }: Props
       })}
     </ScrollView>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -12,7 +12,7 @@ interface Props {
   testID?: string;
 }
 
-export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
+export const ProductCard = React.memo(function ProductCard({ product, onPress, onLongPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 
   const badgeColor =
@@ -96,7 +96,7 @@ export function ProductCard({ product, onPress, onLongPress, testID }: Props) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

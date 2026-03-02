@@ -12,7 +12,7 @@ interface RecommendationCarouselProps {
   testID?: string;
 }
 
-export function RecommendationCarousel({
+export const RecommendationCarousel = React.memo(function RecommendationCarousel({
   title,
   products,
   onProductPress,
@@ -63,14 +63,13 @@ export function RecommendationCarousel({
             ]}
           >
             {item.images[0] && (
-              <Image
-                source={{ uri: item.images[0].uri }}
-                style={[
-                  styles.image,
-                  { borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md },
-                ]}
-                accessibilityLabel={item.images[0].alt}
-              />
+              <View style={{ overflow: 'hidden', borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md }}>
+                <Image
+                  source={{ uri: item.images[0].uri }}
+                  style={styles.image}
+                  accessibilityLabel={item.images[0].alt}
+                />
+              </View>
             )}
             <View style={[styles.cardBody, { padding: spacing.sm }]}>
               <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
@@ -91,7 +90,7 @@ export function RecommendationCarousel({
       />
     </View>
   );
-}
+});
 
 const CARD_WIDTH = 160;
 

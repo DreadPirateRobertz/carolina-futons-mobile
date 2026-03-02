@@ -10,7 +10,7 @@ interface Props {
   testID?: string;
 }
 
-export function SortPicker({ value, onChange, resultCount, testID }: Props) {
+export const SortPicker = React.memo(function SortPicker({ value, onChange, resultCount, testID }: Props) {
   const { colors, borderRadius, shadows } = useTheme();
   const [showModal, setShowModal] = useState(false);
 
@@ -87,7 +87,7 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
       </Modal>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

@@ -9,10 +9,15 @@ import {
 } from '@/data/products';
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 
+// Re-export types for screens — avoids direct src/data imports
 export type { Product, ProductCategory, SortOption, CategoryInfo };
 
 const PAGE_SIZE = 8;
-const PRODUCT_NAMES = PRODUCTS.map((p) => p.name);
+let _productNames: string[] | null = null;
+function getProductNames(): string[] {
+  if (!_productNames) _productNames = PRODUCTS.map((p) => p.name);
+  return _productNames;
+}
 
 const getSearchableText = (p: Product) => [p.name, p.shortDescription, p.category];
 
@@ -52,7 +57,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
 
   // Autocomplete suggestions from product names
   const suggestions = useMemo(
-    () => (searchQuery.trim().length >= 2 ? getSuggestions(searchQuery, PRODUCT_NAMES, 5) : []),
+    () => (searchQuery.trim().length >= 2 ? getSuggestions(searchQuery, getProductNames(), 5) : []),
     [searchQuery],
   );
 

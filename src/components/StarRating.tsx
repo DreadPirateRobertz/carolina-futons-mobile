@@ -20,7 +20,7 @@ const SIZE_MAP = {
 
 const STAR_COUNT = 5;
 
-export function StarRating({
+export const StarRating = React.memo(function StarRating({
   rating,
   size = 'md',
   interactive = false,
@@ -89,7 +89,7 @@ export function StarRating({
       )}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
