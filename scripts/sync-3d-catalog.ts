@@ -15,6 +15,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFileSync } from 'child_process';
 
 interface CatalogModel {
   productId: string;
@@ -172,8 +173,7 @@ function generateTypeScript(catalog: Catalog): string {
       }
 
       lines.push(`    productId: '${model.productId}',`);
-      lines.push(`    glbUrl:`);
-      lines.push(`      ${glbUrl},`);
+      lines.push(`    glbUrl: ${glbUrl},`);
       lines.push(`    usdzUrl: ${usdzUrl},`);
       lines.push(`    dimensions: { width: inToM(${model.dimensions.width}), depth: inToM(${model.dimensions.depth}), height: inToM(${model.dimensions.height}) },`);
       lines.push(`    fileSizeBytes: ${formatSize(model.fileSizeBytes)},`);
@@ -281,9 +281,16 @@ function main(): void {
   if (check) {
     let mismatch = false;
 
+    // Format TS content through prettier to match committed output
+    const formattedTsContent = execFileSync(
+      'npx',
+      ['prettier', '--parser', 'typescript'],
+      { input: tsContent, encoding: 'utf-8' },
+    );
+
     if (fs.existsSync(tsOut)) {
       const existing = fs.readFileSync(tsOut, 'utf-8');
-      if (existing !== tsContent) {
+      if (existing !== formattedTsContent) {
         console.error(`MISMATCH: ${tsOut} is out of sync with ${catalogPath}`);
         mismatch = true;
       }
@@ -317,6 +324,7 @@ function main(): void {
   fs.mkdirSync(path.dirname(jsOut), { recursive: true });
 
   fs.writeFileSync(tsOut, tsContent);
+  execFileSync('npx', ['prettier', '--write', tsOut], { stdio: 'ignore' });
   console.log(`  Generated: ${tsOut}`);
 
   fs.writeFileSync(jsOut, jsContent);
