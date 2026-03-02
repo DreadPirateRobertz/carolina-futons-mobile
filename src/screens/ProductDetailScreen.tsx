@@ -3,12 +3,19 @@ import {
   StyleSheet,
   Text,
   View,
-  ScrollView,
   TouchableOpacity,
   FlatList,
   Dimensions,
   Platform,
+  ScrollView,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
@@ -23,7 +30,8 @@ import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const GALLERY_HEIGHT = 300;
+const GALLERY_HEIGHT = 400;
+const PARALLAX_MULTIPLIER = 0.5;
 
 const GALLERY_VIEWS = ['Front View', 'Side View', 'Flat Position', 'Detail'] as const;
 
@@ -74,6 +82,77 @@ export function ProductDetailScreen({
 
   const totalPrice = model.basePrice + selectedFabric.price;
 
+  // --- Parallax scroll tracking ---
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  // Gallery parallax: moves at half scroll speed, zooms on overscroll
+  const galleryParallaxStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, GALLERY_HEIGHT],
+      [0, GALLERY_HEIGHT * PARALLAX_MULTIPLIER],
+      Extrapolation.CLAMP,
+    );
+    const scale = interpolate(
+      scrollY.value,
+      [-200, 0, GALLERY_HEIGHT],
+      [1.5, 1, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
+
+  // Gallery overlay: fades in as user scrolls past gallery
+  const galleryOverlayStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, GALLERY_HEIGHT * 0.7],
+      [0, 0.6],
+      Extrapolation.CLAMP,
+    );
+    return { opacity };
+  });
+
+  // Floating button background: becomes more opaque as gallery scrolls away
+  const floatingButtonBgStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, GALLERY_HEIGHT * 0.4],
+      [0.85, 1],
+      Extrapolation.CLAMP,
+    );
+    return { opacity };
+  });
+
+  // Bottom gradient strips to fake a gradient from gallery to content
+  const gradientStrip1Style = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, GALLERY_HEIGHT * 0.3],
+      [1, 0],
+      Extrapolation.CLAMP,
+    );
+    return { opacity };
+  });
+  const gradientStrip2Style = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, GALLERY_HEIGHT * 0.3],
+      [0.7, 0],
+      Extrapolation.CLAMP,
+    );
+    return { opacity };
+  });
+
+  // --- Callbacks (unchanged) ---
   const handleSelectFabric = useCallback((fabric: Fabric) => {
     setSelectedFabric(fabric);
     if (Platform.OS !== 'web') {
@@ -141,13 +220,9 @@ export function ProductDetailScreen({
       style={[styles.root, { backgroundColor: colors.sandBase }]}
       testID={testID ?? 'product-detail-screen'}
     >
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Back button */}
-        {onBack && (
+      {/* Floating back button — above scroll */}
+      {onBack && (
+        <Animated.View style={[styles.floatingBackButton, floatingButtonBgStyle]}>
           <TouchableOpacity
             style={[styles.backButton, { backgroundColor: colors.white }]}
             onPress={onBack}
@@ -157,28 +232,67 @@ export function ProductDetailScreen({
           >
             <Text style={[styles.backButtonText, { color: colors.espresso }]}>{'‹'}</Text>
           </TouchableOpacity>
-        )}
+        </Animated.View>
+      )}
 
-        {/* Wishlist button */}
-        {catalogProduct && (
-          <View style={styles.wishlistButtonContainer}>
-            <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
+      {/* Floating wishlist button — above scroll */}
+      {catalogProduct && (
+        <Animated.View style={[styles.floatingWishlistButton, floatingButtonBgStyle]}>
+          <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
+        </Animated.View>
+      )}
+
+      <Animated.ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        {/* Parallax Image Gallery */}
+        <Animated.View style={[styles.galleryContainer, galleryParallaxStyle]}>
+          <FlatList
+            ref={galleryRef}
+            data={[...GALLERY_VIEWS]}
+            renderItem={renderGalleryItem}
+            keyExtractor={(_, i) => `gallery-${i}`}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={onGalleryScroll}
+            scrollEventThrottle={16}
+            testID="gallery-list"
+          />
+
+          {/* Scroll overlay — dims gallery as user scrolls past */}
+          <Animated.View
+            style={[
+              styles.galleryOverlay,
+              { backgroundColor: colors.sandBase },
+              galleryOverlayStyle,
+            ]}
+            pointerEvents="none"
+          />
+
+          {/* Bottom gradient transition — gallery to content */}
+          <View style={styles.galleryGradientContainer} pointerEvents="none">
+            <Animated.View
+              style={[
+                styles.gradientStrip,
+                { backgroundColor: colors.sandBase, height: 24, opacity: 0.15 },
+                gradientStrip2Style,
+              ]}
+            />
+            <Animated.View
+              style={[
+                styles.gradientStrip,
+                { backgroundColor: colors.sandBase, height: 20, opacity: 0.4 },
+                gradientStrip1Style,
+              ]}
+            />
+            <View style={[styles.gradientStrip, { backgroundColor: colors.sandBase, height: 16, opacity: 0.7 }]} />
           </View>
-        )}
-
-        {/* Image Gallery */}
-        <FlatList
-          ref={galleryRef}
-          data={[...GALLERY_VIEWS]}
-          renderItem={renderGalleryItem}
-          keyExtractor={(_, i) => `gallery-${i}`}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={onGalleryScroll}
-          scrollEventThrottle={16}
-          testID="gallery-list"
-        />
+        </Animated.View>
 
         {/* Pagination dots */}
         <View style={styles.paginationContainer} testID="gallery-pagination">
@@ -187,6 +301,7 @@ export function ProductDetailScreen({
               key={i}
               style={[
                 styles.paginationDot,
+                i === activeGalleryIndex && styles.paginationDotActive,
                 {
                   backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
                 },
@@ -519,7 +634,7 @@ export function ProductDetailScreen({
 
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
@@ -644,6 +759,7 @@ function darkenColor(hex: string, amount: number): string {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+    overflow: 'hidden',
   },
   scrollView: {
     flex: 1,
@@ -651,11 +767,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-  backButton: {
+  // Floating navigation buttons — above scroll, fixed position
+  floatingBackButton: {
     position: 'absolute',
     top: 52,
     left: 16,
-    zIndex: 10,
+    zIndex: 20,
+  },
+  floatingWishlistButton: {
+    position: 'absolute',
+    top: 52,
+    right: 16,
+    zIndex: 20,
+  },
+  backButton: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -663,20 +788,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   backButtonText: {
     fontSize: 24,
     fontWeight: '300',
     marginTop: -2,
   },
-  wishlistButtonContainer: {
-    position: 'absolute',
-    top: 52,
-    right: 16,
-    zIndex: 10,
+  // Parallax gallery
+  galleryContainer: {
+    height: GALLERY_HEIGHT,
+    overflow: 'hidden',
   },
   gallerySlide: {
     height: GALLERY_HEIGHT,
@@ -694,6 +818,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
+  galleryOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  galleryGradientContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  gradientStrip: {
+    width: '100%',
+  },
+  // Pagination
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -706,6 +843,11 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
+  paginationDotActive: {
+    width: 24,
+    borderRadius: 4,
+  },
+  // Product info
   infoSection: {
     paddingTop: 4,
     paddingBottom: 16,
