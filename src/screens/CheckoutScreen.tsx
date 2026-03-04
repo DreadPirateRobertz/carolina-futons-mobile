@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
+import { trackEvent, events } from '@/services/analytics';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -63,7 +64,7 @@ interface Props {
 }
 
 export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, subtotal } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
@@ -80,13 +81,18 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
 
   const handlePlaceOrder = useCallback(() => {
     if (!selectedMethod) return;
+    events.purchase(`order-${Date.now()}`, total, items.length);
     onPlaceOrder?.(selectedMethod);
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [selectedMethod, onPlaceOrder]);
+  }, [selectedMethod, onPlaceOrder, total, items.length]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
+
+  useEffect(() => {
+    trackEvent('begin_checkout', { item_count: items.length, total });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View
@@ -106,7 +112,10 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso }]}
+          style={[
+            styles.headerTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -122,7 +131,13 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
       >
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+            testID="checkout-items-section-title"
+          >
             Items ({items.length})
           </Text>
           {items.map((item) => (
@@ -178,7 +193,10 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[styles.grandTotalValue, { color: colors.espresso }]}
+              style={[
+                styles.grandTotalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
               testID="checkout-total"
             >
               {formatPrice(total)}
@@ -188,7 +206,14 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+          >
+            Payment Method
+          </Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -278,7 +303,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             accessibilityRole="button"
             accessibilityState={{ disabled: !selectedMethod }}
           >
-            <Text style={styles.placeOrderText}>
+            <Text style={[styles.placeOrderText, { fontFamily: typography.bodyFamilyBold }]}>
               {selectedMethod ? `Place Order — ${formatPrice(total)}` : 'Select Payment Method'}
             </Text>
           </TouchableOpacity>

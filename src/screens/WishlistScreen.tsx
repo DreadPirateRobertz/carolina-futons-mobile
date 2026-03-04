@@ -16,7 +16,9 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
+import { WishlistIllustration } from '@/components/illustrations';
 import { formatPrice } from '@/utils';
+import { events } from '@/services/analytics';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -34,6 +36,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const handleRemove = useCallback(
     (productId: string) => {
       remove(productId);
+      events.removeFromWishlist(productId);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -58,12 +61,13 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const handleShare = useCallback(async () => {
     const text = getShareText();
     if (!text) return;
+    events.shareWishlist(count);
     try {
       await Share.share({ message: text });
     } catch {
       // user cancelled or error
     }
-  }, [getShareText]);
+  }, [getShareText, count]);
 
   const handleClearAll = useCallback(() => {
     Alert.alert('Clear Wishlist', 'Remove all items from your wishlist?', [
@@ -144,7 +148,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const renderEmpty = useCallback(
     () => (
       <EmptyState
-        icon="♡"
+        illustration={<WishlistIllustration testID="wishlist-illustration" />}
         title="Your wishlist is empty"
         message="Save products you love and come back to them later."
         action={onBrowse ? { label: 'Browse Products', onPress: onBrowse } : undefined}

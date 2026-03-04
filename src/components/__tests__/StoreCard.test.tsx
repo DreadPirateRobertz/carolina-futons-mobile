@@ -109,4 +109,19 @@ describe('StoreCard', () => {
     expect(card.props.accessibilityLabel).toContain('Carolina Futons');
     expect(card.props.accessibilityRole).toBe('button');
   });
+
+  it('does not crash when tapped without onPress handler', () => {
+    const { getByTestId } = renderCard({ testID: 'card' });
+    expect(() => fireEvent.press(getByTestId('card'))).not.toThrow();
+  });
+
+  it('does not render features section when features array is empty', () => {
+    const noFeatures: Store = { ...mockStore, features: [] };
+    const { queryByText } = render(
+      <ThemeProvider>
+        <StoreCard store={noFeatures} />
+      </ThemeProvider>,
+    );
+    expect(queryByText('Full showroom')).toBeFalsy();
+  });
 });

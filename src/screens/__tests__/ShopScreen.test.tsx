@@ -1,22 +1,26 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS } from '@/data/products';
 
+jest.useFakeTimers();
+
 function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
-  return {
-    ...render(
-      <ThemeProvider>
-        <WishlistProvider>
-          <ShopScreen onProductPress={onProductPress} />
-        </WishlistProvider>
-      </ThemeProvider>,
-    ),
-    onProductPress,
-  };
+  const result = render(
+    <ThemeProvider>
+      <WishlistProvider>
+        <ShopScreen onProductPress={onProductPress} />
+      </WishlistProvider>
+    </ThemeProvider>,
+  );
+  // Advance past initial loading skeleton (600ms)
+  act(() => {
+    jest.advanceTimersByTime(700);
+  });
+  return { ...result, onProductPress };
 }
 
 describe('ShopScreen', () => {

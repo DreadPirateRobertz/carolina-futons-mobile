@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SignUpScreen } from '../SignUpScreen';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { darkPalette, typography } from '@/theme/tokens';
 
 const mockAuthService = {
   restoreSession: jest.fn().mockResolvedValue(false),
@@ -206,6 +207,55 @@ describe('SignUpScreen', () => {
       await waitFor(() => {
         expect(mockAuthService.loginWithOAuth).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('Visual polish — dark editorial', () => {
+    it('uses dark editorial background', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('signup-screen')).toBeTruthy());
+      const screen = getByTestId('signup-screen');
+      const flat = [screen.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.background);
+    });
+
+    it('wraps form in GlassCard', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('signup-glass-card')).toBeTruthy());
+    });
+
+    it('title uses heading fontFamily token', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('signup-title')).toBeTruthy());
+      const title = getByTestId('signup-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('title uses light text on dark bg', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('signup-title')).toBeTruthy());
+      const title = getByTestId('signup-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.color).toBe(darkPalette.textPrimary);
+    });
+
+    it('inputs use dark surface background', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('signup-email-input')).toBeTruthy());
+      const input = getByTestId('signup-email-input');
+      const styles = Array.isArray(input.props.style)
+        ? Object.assign({}, ...input.props.style)
+        : input.props.style;
+      expect(styles.backgroundColor).toBe(darkPalette.surfaceElevated);
     });
   });
 

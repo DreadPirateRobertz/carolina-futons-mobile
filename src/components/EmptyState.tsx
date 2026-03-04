@@ -13,17 +13,22 @@ interface Props {
   title: string;
   message: string;
   icon?: string;
+  illustration?: React.ReactElement;
   action?: { label: string; onPress: () => void };
   testID?: string;
 }
 
-export function EmptyState({ title, message, icon, action, testID }: Props) {
+export function EmptyState({ title, message, icon, illustration, action, testID }: Props) {
   return (
     <View style={styles.container} testID={testID}>
-      {icon && (
-        <Text style={styles.icon} testID={testID ? `${testID}-icon` : undefined}>
-          {ICONS[icon] ?? icon}
-        </Text>
+      {illustration ? (
+        <View style={styles.illustration}>{illustration}</View>
+      ) : (
+        icon && (
+          <Text style={styles.icon} testID={testID ? `${testID}-icon` : undefined}>
+            {ICONS[icon] ?? icon}
+          </Text>
+        )
       )}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
@@ -48,6 +53,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xxl,
+  },
+  illustration: {
+    marginBottom: spacing.lg,
+    alignItems: 'center' as const,
   },
   icon: {
     fontSize: 48,

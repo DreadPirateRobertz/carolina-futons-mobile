@@ -36,6 +36,42 @@ jest.mock('expo-file-system', () => ({
   })),
 }));
 
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const mockComponent = (name) => {
+    const component = ({ children, ...props }) =>
+      React.createElement(name, props, children);
+    component.displayName = name;
+    return component;
+  };
+  const namedExports = [
+    'Circle', 'Ellipse', 'G', 'Text', 'TSpan', 'TextPath', 'Path',
+    'Polygon', 'Polyline', 'Line', 'Rect', 'Use', 'Image', 'Symbol',
+    'Defs', 'LinearGradient', 'RadialGradient', 'Stop', 'ClipPath', 'Pattern',
+    'Mask',
+  ];
+  const mock = { __esModule: true, default: mockComponent('Svg') };
+  namedExports.forEach((el) => { mock[el] = mockComponent(el); });
+  return mock;
+});
+
+// Mock @react-native-async-storage/async-storage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
+  removeItem: jest.fn(() => Promise.resolve()),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock @react-native-community/netinfo
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
+}));
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {

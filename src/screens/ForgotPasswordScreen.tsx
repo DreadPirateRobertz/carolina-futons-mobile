@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { GlassCard } from '@/components/GlassCard';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
 
 interface Props {
@@ -19,7 +21,7 @@ interface Props {
 }
 
 export function ForgotPasswordScreen({ onBack, testID }: Props) {
-  const { colors, borderRadius, shadows } = useTheme();
+  const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { resetPassword, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -39,18 +41,26 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
   if (sent && !error) {
     return (
       <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'forgot-password-screen'}
       >
         <View style={styles.successContent}>
           <Text style={styles.successIcon}>✉</Text>
           <Text
-            style={[styles.successTitle, { color: colors.espresso }]}
+            style={[
+              styles.successTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
             testID="reset-success-title"
           >
             Check Your Email
           </Text>
-          <Text style={[styles.successMessage, { color: colors.espressoLight }]}>
+          <Text
+            style={[
+              styles.successMessage,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
+          >
             We sent a password reset link to{'\n'}
             <Text style={{ fontWeight: '600' }}>{email}</Text>
           </Text>
@@ -64,7 +74,9 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
             accessibilityLabel="Back to login"
             accessibilityRole="button"
           >
-            <Text style={styles.backButtonText}>Back to Login</Text>
+            <Text style={[styles.backButtonText, { fontFamily: typography.bodyFamilyBold }]}>
+              Back to Login
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -73,7 +85,7 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       testID={testID ?? 'forgot-password-screen'}
     >
@@ -91,93 +103,122 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
             accessibilityRole="button"
             style={styles.backLink}
           >
-            <Text style={[styles.backLinkText, { color: colors.espresso }]}>{'‹ Back'}</Text>
+            <Text style={[styles.backLinkText, { color: darkPalette.textPrimary }]}>
+              {'‹ Back'}
+            </Text>
           </TouchableOpacity>
         )}
 
         <Text
-          style={[styles.title, { color: colors.espresso }]}
+          style={[
+            styles.title,
+            {
+              color: darkPalette.textPrimary,
+              ...typography.h1,
+              fontFamily: typography.headingFamily,
+            },
+          ]}
           accessibilityRole="header"
           testID="forgot-title"
         >
           Reset Password
         </Text>
-        <Text style={[styles.subtitle, { color: colors.espressoLight }]}>
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              color: darkPalette.textMuted,
+              ...typography.body,
+              fontFamily: typography.bodyFamily,
+            },
+          ]}
+        >
           Enter your email and we'll send you a reset link
         </Text>
 
-        {error && (
-          <View
-            style={[
-              styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
-            ]}
-            testID="forgot-error"
-          >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
-          </View>
-        )}
-
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Email</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
-              },
-            ]}
-            value={email}
-            onChangeText={(t) => {
-              setEmail(t);
-              setEmailError(null);
-              clearError();
-              setSent(false);
-            }}
-            placeholder="you@example.com"
-            placeholderTextColor={colors.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-            testID="forgot-email-input"
-            accessibilityLabel="Email address"
-          />
-          {emailError && (
-            <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="forgot-email-error"
+        <GlassCard style={{ padding: spacing.lg }} testID="forgot-glass-card">
+          {error && (
+            <View
+              style={[
+                styles.errorBanner,
+                { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              ]}
+              testID="forgot-error"
             >
-              {emailError}
-            </Text>
+              <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            </View>
           )}
-        </View>
 
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            {
-              backgroundColor: loading ? colors.muted : colors.sunsetCoral,
-              borderRadius: borderRadius.button,
-            },
-            !loading && shadows.button,
-          ]}
-          onPress={handleReset}
-          disabled={loading}
-          testID="forgot-submit-button"
-          accessibilityLabel="Send reset link"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" testID="forgot-loading" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Send Reset Link</Text>
-          )}
-        </TouchableOpacity>
+          <View style={styles.fieldGroup}>
+            <Text
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
+              Email
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: emailError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={email}
+              onChangeText={(t) => {
+                setEmail(t);
+                setEmailError(null);
+                clearError();
+                setSent(false);
+              }}
+              placeholder="you@example.com"
+              placeholderTextColor={darkPalette.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
+              testID="forgot-email-input"
+              accessibilityLabel="Email address"
+            />
+            {emailError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="forgot-email-error"
+              >
+                {emailError}
+              </Text>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              {
+                backgroundColor: loading ? colors.muted : colors.sunsetCoral,
+                borderRadius: borderRadius.button,
+              },
+              !loading && shadows.button,
+            ]}
+            onPress={handleReset}
+            disabled={loading}
+            testID="forgot-submit-button"
+            accessibilityLabel="Send reset link"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" testID="forgot-loading" />
+            ) : (
+              <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
+                Send Reset Link
+              </Text>
+            )}
+          </TouchableOpacity>
+        </GlassCard>
       </ScrollView>
     </KeyboardAvoidingView>
   );

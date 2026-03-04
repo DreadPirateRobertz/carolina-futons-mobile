@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { GlassCard } from '@/components/GlassCard';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
 
 interface Props {
@@ -20,7 +22,7 @@ interface Props {
 }
 
 export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
-  const { colors, borderRadius, shadows } = useTheme();
+  const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -50,7 +52,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       testID={testID ?? 'login-screen'}
     >
@@ -60,189 +62,222 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <Text
-          style={[styles.title, { color: colors.espresso }]}
+          style={[
+            styles.title,
+            {
+              color: darkPalette.textPrimary,
+              ...typography.h1,
+              fontFamily: typography.headingFamily,
+            },
+          ]}
           accessibilityRole="header"
           testID="login-title"
         >
           Welcome Back
         </Text>
-        <Text style={[styles.subtitle, { color: colors.espressoLight }]}>
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              color: darkPalette.textMuted,
+              ...typography.body,
+              fontFamily: typography.bodyFamily,
+            },
+          ]}
+          testID="login-subtitle"
+        >
           Sign in to your Carolina Futons account
         </Text>
 
-        {/* Auth error */}
-        {error && (
-          <View
-            style={[
-              styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
-            ]}
-            testID="login-error"
-          >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+        <GlassCard style={{ padding: spacing.lg }} testID="login-glass-card">
+          {/* Auth error */}
+          {error && (
+            <View
+              style={[
+                styles.errorBanner,
+                { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              ]}
+              testID="login-error"
+            >
+              <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            </View>
+          )}
+
+          {/* Email */}
+          <View style={styles.fieldGroup}>
+            <Text
+              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              testID="login-email-label"
+            >
+              Email
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: emailError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={email}
+              onChangeText={(t) => {
+                setEmail(t);
+                setEmailError(null);
+                clearError();
+              }}
+              placeholder="you@example.com"
+              placeholderTextColor={darkPalette.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
+              testID="login-email-input"
+              accessibilityLabel="Email address"
+            />
+            {emailError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="login-email-error"
+              >
+                {emailError}
+              </Text>
+            )}
           </View>
-        )}
 
-        {/* Email */}
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Email</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
-              },
-            ]}
-            value={email}
-            onChangeText={(t) => {
-              setEmail(t);
-              setEmailError(null);
-              clearError();
-            }}
-            placeholder="you@example.com"
-            placeholderTextColor={colors.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-            testID="login-email-input"
-            accessibilityLabel="Email address"
-          />
-          {emailError && (
+          {/* Password */}
+          <View style={styles.fieldGroup}>
             <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="login-email-error"
+              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              testID="login-password-label"
             >
-              {emailError}
+              Password
             </Text>
-          )}
-        </View>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: passwordError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={password}
+              onChangeText={(t) => {
+                setPassword(t);
+                setPasswordError(null);
+                clearError();
+              }}
+              placeholder="Your password"
+              placeholderTextColor={darkPalette.textMuted}
+              secureTextEntry
+              autoComplete="password"
+              textContentType="password"
+              testID="login-password-input"
+              accessibilityLabel="Password"
+            />
+            {passwordError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="login-password-error"
+              >
+                {passwordError}
+              </Text>
+            )}
+          </View>
 
-        {/* Password */}
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Password</Text>
-          <TextInput
+          {/* Forgot password */}
+          <TouchableOpacity
+            onPress={onForgotPassword}
+            testID="forgot-password-link"
+            accessibilityRole="link"
+          >
+            <Text style={[styles.forgotText, { color: colors.mountainBlueLight }]}>
+              Forgot password?
+            </Text>
+          </TouchableOpacity>
+
+          {/* Sign in button */}
+          <TouchableOpacity
             style={[
-              styles.input,
+              styles.primaryButton,
               {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: passwordError ? colors.sunsetCoral : colors.sandDark,
+                backgroundColor: loading ? colors.muted : colors.sunsetCoral,
+                borderRadius: borderRadius.button,
               },
+              !loading && shadows.button,
             ]}
-            value={password}
-            onChangeText={(t) => {
-              setPassword(t);
-              setPasswordError(null);
-              clearError();
-            }}
-            placeholder="Your password"
-            placeholderTextColor={colors.muted}
-            secureTextEntry
-            autoComplete="password"
-            textContentType="password"
-            testID="login-password-input"
-            accessibilityLabel="Password"
-          />
-          {passwordError && (
-            <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="login-password-error"
+            onPress={handleSignIn}
+            disabled={loading}
+            testID="login-submit-button"
+            accessibilityLabel="Sign in"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" testID="login-loading" />
+            ) : (
+              <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
+                Sign In
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
+            <Text style={[styles.dividerText, { color: darkPalette.textMuted }]}>or</Text>
+            <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
+          </View>
+
+          {/* Social logins */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: '#000000', borderRadius: borderRadius.button },
+              ]}
+              onPress={handleAppleSignIn}
+              disabled={loading}
+              testID="apple-sign-in-button"
+              accessibilityLabel="Sign in with Apple"
+              accessibilityRole="button"
             >
-              {passwordError}
-            </Text>
+              <Text style={styles.socialButtonText}> Continue with Apple</Text>
+            </TouchableOpacity>
           )}
-        </View>
 
-        {/* Forgot password */}
-        <TouchableOpacity
-          onPress={onForgotPassword}
-          testID="forgot-password-link"
-          accessibilityRole="link"
-        >
-          <Text style={[styles.forgotText, { color: colors.mountainBlue }]}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        {/* Sign in button */}
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            {
-              backgroundColor: loading ? colors.muted : colors.sunsetCoral,
-              borderRadius: borderRadius.button,
-            },
-            !loading && shadows.button,
-          ]}
-          onPress={handleSignIn}
-          disabled={loading}
-          testID="login-submit-button"
-          accessibilityLabel="Sign in"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" testID="login-loading" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Sign In</Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={[styles.dividerLine, { backgroundColor: colors.sandDark }]} />
-          <Text style={[styles.dividerText, { color: colors.muted }]}>or</Text>
-          <View style={[styles.dividerLine, { backgroundColor: colors.sandDark }]} />
-        </View>
-
-        {/* Social logins */}
-        {Platform.OS === 'ios' && (
           <TouchableOpacity
             style={[
               styles.socialButton,
-              { backgroundColor: '#000000', borderRadius: borderRadius.button },
+              {
+                backgroundColor: darkPalette.surfaceElevated,
+                borderRadius: borderRadius.button,
+                borderWidth: 1,
+                borderColor: darkPalette.borderSubtle,
+              },
             ]}
-            onPress={handleAppleSignIn}
+            onPress={handleGoogleSignIn}
             disabled={loading}
-            testID="apple-sign-in-button"
-            accessibilityLabel="Sign in with Apple"
+            testID="google-sign-in-button"
+            accessibilityLabel="Sign in with Google"
             accessibilityRole="button"
           >
-            <Text style={styles.socialButtonText}> Continue with Apple</Text>
+            <Text style={[styles.socialButtonText, { color: darkPalette.textPrimary }]}>
+              G Continue with Google
+            </Text>
           </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={[
-            styles.socialButton,
-            {
-              backgroundColor: colors.sandLight,
-              borderRadius: borderRadius.button,
-              borderWidth: 1,
-              borderColor: colors.sandDark,
-            },
-          ]}
-          onPress={handleGoogleSignIn}
-          disabled={loading}
-          testID="google-sign-in-button"
-          accessibilityLabel="Sign in with Google"
-          accessibilityRole="button"
-        >
-          <Text style={[styles.socialButtonText, { color: colors.espresso }]}>
-            G Continue with Google
-          </Text>
-        </TouchableOpacity>
+        </GlassCard>
 
         {/* Sign up link */}
         <View style={styles.signUpRow}>
-          <Text style={[styles.signUpText, { color: colors.espressoLight }]}>
+          <Text style={[styles.signUpText, { color: darkPalette.textMuted }]}>
             Don't have an account?{' '}
           </Text>
           <TouchableOpacity onPress={onSignUp} testID="sign-up-link" accessibilityRole="link">
-            <Text style={[styles.signUpLink, { color: colors.mountainBlue }]}>Sign Up</Text>
+            <Text style={[styles.signUpLink, { color: colors.mountainBlueLight }]}>Sign Up</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

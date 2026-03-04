@@ -1,9 +1,10 @@
 import { linkingConfig, SUPPORTED_PATHS } from '../linking';
 import { getStateFromPath } from '@react-navigation/native';
 
-/** Helper: resolve a URL path to the deepest screen name */
+/** Helper: resolve a URL path to the deepest screen name using linkingConfig.getStateFromPath for normalization */
 function getScreen(path: string): string {
-  const state = getStateFromPath(path, linkingConfig.config!);
+  const resolver = linkingConfig.getStateFromPath ?? getStateFromPath;
+  const state = resolver(path, linkingConfig.config!);
   if (!state) return 'NO_MATCH';
   let current = state.routes[state.routes.length - 1];
   while (current.state) {
@@ -15,7 +16,8 @@ function getScreen(path: string): string {
 
 /** Helper: resolve a URL path to the deepest screen's params */
 function getParams(path: string): Record<string, any> | undefined {
-  const state = getStateFromPath(path, linkingConfig.config!);
+  const resolver = linkingConfig.getStateFromPath ?? getStateFromPath;
+  const state = resolver(path, linkingConfig.config!);
   if (!state) return undefined;
   let current = state.routes[state.routes.length - 1];
   while (current.state) {
@@ -155,6 +157,14 @@ describe('deep link route resolution (getStateFromPath)', () => {
       expect(getParams('product/carolina-classic-queen')).toEqual({
         slug: 'carolina-classic-queen',
       });
+    });
+
+    it('resolves /products/:slug (plural) to ProductDetail', () => {
+      expect(getScreen('/products/asheville-full')).toBe('ProductDetail');
+    });
+
+    it('passes slug param from /products/:slug (plural)', () => {
+      expect(getParams('/products/asheville-full')).toEqual({ slug: 'asheville-full' });
     });
   });
 

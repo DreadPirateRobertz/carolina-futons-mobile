@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { useNotifications } from '@/hooks/useNotifications';
 import {
   NOTIFICATION_TYPE_CONFIG,
@@ -21,7 +22,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
 ];
 
 export function NotificationPreferencesScreen({ onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { permissionStatus, preferences, togglePreference, requestPermission } = useNotifications();
 
   const handleToggle = useCallback(
@@ -33,7 +34,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'notification-prefs-screen'}
     >
       {/* Header */}
@@ -45,11 +46,14 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
             accessibilityLabel="Go back"
             accessibilityRole="button"
           >
-            <Text style={[styles.backText, { color: colors.espresso }]}>{'‹'}</Text>
+            <Text style={[styles.backText, { color: darkPalette.textPrimary }]}>{'‹'}</Text>
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso }]}
+          style={[
+            styles.headerTitle,
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="notif-prefs-header"
         >
@@ -64,17 +68,29 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
             style={[
               styles.permissionCard,
               {
-                backgroundColor: colors.mountainBlueLight,
+                backgroundColor: darkPalette.surface,
                 borderRadius: borderRadius.md,
                 marginHorizontal: spacing.lg,
+                borderWidth: 1,
+                borderColor: colors.mountainBlue,
               },
             ]}
             testID="permission-prompt"
           >
-            <Text style={[styles.permissionTitle, { color: colors.mountainBlueDark }]}>
+            <Text
+              style={[
+                styles.permissionTitle,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
               Enable Notifications
             </Text>
-            <Text style={[styles.permissionDesc, { color: colors.espressoLight }]}>
+            <Text
+              style={[
+                styles.permissionDesc,
+                { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+              ]}
+            >
               Stay updated on order status, exclusive deals, and restocked favorites.
             </Text>
             <TouchableOpacity
@@ -106,7 +122,14 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
 
         {/* Preference toggles */}
         <View style={{ paddingHorizontal: spacing.lg }}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Notification Types</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+          >
+            Notification Types
+          </Text>
           {NOTIFICATION_TYPES.map((type) => {
             const config = NOTIFICATION_TYPE_CONFIG[type];
             const isEnabled = preferences[config.prefKey];
@@ -117,16 +140,29 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
                 style={[
                   styles.prefRow,
                   {
-                    backgroundColor: colors.sandLight,
+                    backgroundColor: darkPalette.surface,
                     borderRadius: borderRadius.card,
+                    borderWidth: 1,
+                    borderColor: darkPalette.borderSubtle,
                   },
-                  shadows.card,
                 ]}
                 testID={`pref-row-${type}`}
               >
                 <View style={styles.prefInfo}>
-                  <Text style={[styles.prefLabel, { color: colors.espresso }]}>{config.label}</Text>
-                  <Text style={[styles.prefDesc, { color: colors.espressoLight }]}>
+                  <Text
+                    style={[
+                      styles.prefLabel,
+                      { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+                    ]}
+                  >
+                    {config.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.prefDesc,
+                      { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+                    ]}
+                  >
                     {config.description}
                   </Text>
                 </View>
@@ -134,7 +170,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
                   value={isEnabled}
                   onValueChange={() => handleToggle(config.prefKey)}
                   trackColor={{
-                    false: colors.sandDark,
+                    false: darkPalette.surfaceElevated,
                     true: colors.mountainBlue,
                   }}
                   thumbColor={colors.white}

@@ -49,9 +49,9 @@ describe('CartScreen', () => {
       expect(getByTestId('cart-empty-state')).toBeTruthy();
     });
 
-    it('shows empty state icon', () => {
+    it('shows empty state illustration', () => {
       const { getByTestId } = renderCartScreen();
-      expect(getByTestId('cart-empty-state-icon')).toBeTruthy();
+      expect(getByTestId('cart-illustration')).toBeTruthy();
     });
 
     it('shows "Start Shopping" action when onContinueShopping provided', () => {

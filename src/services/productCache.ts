@@ -4,18 +4,12 @@
  * Strategy: stale-while-revalidate
  * - On app open: serve cached data immediately, fetch fresh in background
  * - On network loss: serve cached data, show offline banner
- * - Storage: AsyncStorage for structured product data (simple, sufficient for ~50 products)
+ * - Storage: AsyncStorage for structured product data
  * - Image caching: delegated to expo-image (built-in disk cache)
- *
- * Research note on TanStack Query persistence:
- * - @tanstack/query-persist-client + asyncStoragePersister would handle cache
- *   invalidation, stale time, and garbage collection automatically
- * - Tradeoff: adds ~15KB bundle, but eliminates manual cache management
- * - Recommendation: adopt TanStack Query when we add API integration; for now,
- *   this lightweight custom cache keeps dependencies minimal
  */
 
-import type { FutonModel } from '@/data/futons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Product } from '@/data/products';
 
 export interface CacheMetadata {
   lastFetched: string; // ISO timestamp
@@ -24,7 +18,7 @@ export interface CacheMetadata {
 }
 
 export interface CachedCatalog {
-  products: FutonModel[];
+  products: Product[];
   metadata: CacheMetadata;
 }
 
@@ -70,9 +64,36 @@ export function getCacheKey(): string {
   return CACHE_KEY;
 }
 
-/** Estimate storage size in bytes */
-export function estimateStorageSize(catalog: CachedCatalog): number {
-  return new Blob([serializeCatalog(catalog)]).size;
+/** Save catalog to AsyncStorage */
+export async function saveCatalog(products: Product[]): Promise<void> {
+  try {
+    const catalog: CachedCatalog = {
+      products,
+      metadata: buildCacheMetadata(products.length),
+    };
+    await AsyncStorage.setItem(CACHE_KEY, serializeCatalog(catalog));
+  } catch {
+    // Storage write failed — silent
+  }
+}
+
+/** Load cached catalog from AsyncStorage */
+export async function loadCachedCatalog(): Promise<CachedCatalog | null> {
+  try {
+    const stored = await AsyncStorage.getItem(CACHE_KEY);
+    return deserializeCatalog(stored);
+  } catch {
+    return null;
+  }
+}
+
+/** Clear the product catalog cache */
+export async function clearCatalogCache(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(CACHE_KEY);
+  } catch {
+    // no-op
+  }
 }
 
 /** Max storage budget: 50MB as specified in requirements */
