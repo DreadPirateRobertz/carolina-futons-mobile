@@ -141,6 +141,10 @@ describe('SUPPORTED_PATHS', () => {
   it('includes stores', () => {
     expect(SUPPORTED_PATHS).toContain('stores');
   });
+
+  it('includes store-locator', () => {
+    expect(SUPPORTED_PATHS).toContain('store-locator');
+  });
 });
 
 describe('deep link route resolution (getStateFromPath)', () => {
@@ -213,6 +217,10 @@ describe('deep link route resolution (getStateFromPath)', () => {
   describe('store pages', () => {
     it('resolves /stores to StoreLocator', () => {
       expect(getScreen('stores')).toBe('StoreLocator');
+    });
+
+    it('resolves /store-locator to StoreLocator', () => {
+      expect(getScreen('store-locator')).toBe('StoreLocator');
     });
 
     it('resolves /stores/:storeId to StoreDetail', () => {

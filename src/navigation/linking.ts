@@ -15,6 +15,8 @@
  *   carolinafutons://account           → AccountScreen (via Tabs)
  *   carolinafutons://shop              → ShopScreen (via Tabs)
  *   carolinafutons://home              → HomeScreen (via Tabs)
+ *   carolinafutons://stores             → StoreLocatorScreen
+ *   carolinafutons://store-locator      → StoreLocatorScreen (alias)
  *   carolinafutons://ar                → ARScreen (modal)
  */
 
@@ -27,7 +29,8 @@ const normalizePathForLinking: NonNullable<LinkingOptions<RootStackParamList>['g
   path,
   options,
 ) => {
-  const normalized = path.replace(/^\/products\//, '/product/');
+  let normalized = path.replace(/^\/products\//, '/product/');
+  normalized = normalized.replace(/^\/?store-locator(\/|$)/, '/stores$1');
   return getStateFromPath(normalized, options);
 };
 
@@ -82,5 +85,6 @@ export const SUPPORTED_PATHS = [
   'ar',
   'wishlist',
   'stores',
+  'store-locator',
   'collections',
 ] as const;
