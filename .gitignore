@@ -16,6 +16,11 @@ web-build/
 dolt-access.lock
 dolt/
 
+# Environment variables (never commit real keys)
+.env
+.env.local
+.env.production
+
 # Pipeline secrets and generated output
 scripts/pipeline/generate.config.json
 scripts/pipeline/input/*.glb
