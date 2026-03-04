@@ -11,6 +11,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchIllustration } from '@/components/illustrations';
+import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -36,6 +37,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const scrollPerf = useScrollPerformance('ShopScreen');
 
   const handleSubmitSearch = useCallback(
     (query: string) => {
@@ -156,6 +158,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         windowSize={5}
         maxToRenderPerBatch={6}
         removeClippedSubviews
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
+        onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
         testID="product-list"
       />
     </View>

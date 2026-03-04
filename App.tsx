@@ -27,11 +27,15 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initAnalytics } from '@/services/analyticsInit';
 import { trackEvent } from '@/services/analytics';
 import { initCrashReporting } from '@/services/crashReportingInit';
+import { perf } from '@/services/performance';
 
 // Initialize crash reporting as early as possible (before component render)
 initCrashReporting({
   sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
 });
+
+// Mark JS init time as early as possible (module evaluation)
+perf.markStartup('js_init');
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,7 +48,14 @@ export default function App() {
     SourceSans3_700Bold,
   });
 
-  const { navigationRef, onStateChange, onReady } = useScreenTracking();
+  const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
+
+  const onReady = useCallback(() => {
+    onScreenTrackingReady();
+    perf.markStartup('nav_ready');
+    perf.markStartup('interactive');
+    perf.reportStartup();
+  }, [onScreenTrackingReady]);
 
   useEffect(() => {
     initAnalytics({
@@ -52,13 +63,22 @@ export default function App() {
       enableMixpanel: true,
       mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
     }).then(() => {
+      perf.markStartup('analytics_init');
       trackEvent('app_open');
     });
   }, []);
 
+  useEffect(() => {
+    if (fontsLoaded) {
+      perf.markStartup('fonts_loaded');
+    }
+  }, [fontsLoaded]);
+
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
+      perf.markStartup('first_render');
       await SplashScreen.hideAsync();
+      perf.startMemoryMonitoring();
     }
   }, [fontsLoaded]);
 
