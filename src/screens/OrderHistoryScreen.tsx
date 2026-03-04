@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { formatPrice } from '@/utils';
@@ -18,7 +19,7 @@ export function OrderHistoryScreen({
   onStartShopping,
   testID,
 }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const { orders: hookOrders } = useOrders();
 
@@ -58,11 +59,12 @@ export function OrderHistoryScreen({
           style={[
             styles.orderCard,
             {
-              backgroundColor: colors.sandLight,
+              backgroundColor: darkPalette.surface,
               borderRadius: borderRadius.card,
               marginHorizontal: spacing.lg,
+              borderWidth: 1,
+              borderColor: darkPalette.borderSubtle,
             },
-            shadows.card,
           ]}
           onPress={() => onSelectOrder?.(item.id)}
           testID={`order-card-${item.id}`}
@@ -71,7 +73,7 @@ export function OrderHistoryScreen({
         >
           <View style={styles.orderHeader}>
             <Text
-              style={[styles.orderNumber, { color: colors.espresso }]}
+              style={[styles.orderNumber, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold }]}
               testID={`order-number-${item.id}`}
             >
               {item.orderNumber}
@@ -88,7 +90,7 @@ export function OrderHistoryScreen({
           </View>
 
           <Text
-            style={[styles.orderDate, { color: colors.espressoLight }]}
+            style={[styles.orderDate, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
             testID={`order-date-${item.id}`}
           >
             {formatDate(item.createdAt)}
@@ -96,14 +98,14 @@ export function OrderHistoryScreen({
 
           <View style={styles.orderFooter}>
             <Text
-              style={[styles.orderItems, { color: colors.espressoLight }]}
+              style={[styles.orderItems, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
               testID={`order-items-${item.id}`}
               numberOfLines={1}
             >
               {itemSummary}
             </Text>
             <Text
-              style={[styles.orderTotal, { color: colors.espresso }]}
+              style={[styles.orderTotal, { color: darkPalette.textPrimary, fontFamily: typography.headingFamily }]}
               testID={`order-total-${item.id}`}
             >
               {formatPrice(item.total)}
@@ -118,7 +120,7 @@ export function OrderHistoryScreen({
   if (orders.length === 0) {
     return (
       <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'order-history-screen'}
       >
         <EmptyState
@@ -136,11 +138,18 @@ export function OrderHistoryScreen({
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'order-history-screen'}
     >
       <Text
-        style={[styles.headerTitle, { color: colors.espresso, paddingHorizontal: spacing.lg }]}
+        style={[
+          styles.headerTitle,
+          {
+            color: darkPalette.textPrimary,
+            paddingHorizontal: spacing.lg,
+            fontFamily: typography.headingFamily,
+          },
+        ]}
         accessibilityRole="header"
         testID="order-history-header"
       >
