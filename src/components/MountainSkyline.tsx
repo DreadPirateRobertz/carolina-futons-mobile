@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
-import Svg, { Defs, LinearGradient, Stop, Rect, Path } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, RadialGradient, Stop, Rect, Path, Circle } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
 
 const VIEWBOX_WIDTH = 1440;
@@ -16,10 +16,13 @@ type Variant = keyof typeof GRADIENT_PRESETS;
 interface Props {
   variant?: Variant;
   height?: number;
+  /** Show a radial sunrise glow behind the mountains */
+  showGlow?: boolean;
   style?: ViewStyle;
   testID?: string;
 }
 
+/** Foreground mountain silhouette — sharp, close peaks */
 function buildMountainPath(vbH: number): string {
   const points: [number, number][] = [
     [0, vbH],
@@ -52,15 +55,40 @@ function buildMountainPath(vbH: number): string {
   return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ') + ' Z';
 }
 
+/** Mid-ground mountain layer — softer, wider ridges for atmospheric depth */
+function buildMidGroundPath(vbH: number): string {
+  const points: [number, number][] = [
+    [0, vbH],
+    [0, vbH * 0.82],
+    [120, vbH * 0.6],
+    [240, vbH * 0.7],
+    [360, vbH * 0.5],
+    [500, vbH * 0.62],
+    [640, vbH * 0.45],
+    [780, vbH * 0.55],
+    [900, vbH * 0.4],
+    [1040, vbH * 0.58],
+    [1160, vbH * 0.48],
+    [1300, vbH * 0.6],
+    [1440, vbH * 0.52],
+    [1440, vbH],
+  ];
+
+  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ') + ' Z';
+}
+
 export function MountainSkyline({
   variant = 'sunrise',
   height = DEFAULT_HEIGHT,
+  showGlow = false,
   style,
   testID,
 }: Props) {
   const grad = GRADIENT_PRESETS[variant];
   const gradId = `cf-sky-grad-${variant}`;
-  const mountainPath = buildMountainPath(height);
+  const glowId = `cf-glow-${variant}`;
+  const foregroundPath = buildMountainPath(height);
+  const midGroundPath = buildMidGroundPath(height);
 
   return (
     <View testID={testID} style={[styles.container, style]}>
@@ -75,9 +103,21 @@ export function MountainSkyline({
             <Stop offset="0%" stopColor={grad.top} />
             <Stop offset="100%" stopColor={grad.bottom} />
           </LinearGradient>
+          {showGlow && (
+            <RadialGradient id={glowId} cx="50%" cy="85%" r="40%">
+              <Stop offset="0%" stopColor={colors.sunsetCoralLight} stopOpacity={0.6} />
+              <Stop offset="100%" stopColor={colors.sunsetCoralLight} stopOpacity={0} />
+            </RadialGradient>
+          )}
         </Defs>
         <Rect width={VIEWBOX_WIDTH} height={height} fill={`url(#${gradId})`} />
-        <Path d={mountainPath} fill={colors.espresso} />
+        {showGlow && (
+          <Circle cx={VIEWBOX_WIDTH / 2} cy={height * 0.85} r={height * 0.6} fill={`url(#${glowId})`} />
+        )}
+        {/* Mid-ground — espressoLight for atmospheric depth */}
+        <Path d={midGroundPath} fill={colors.espressoLight} opacity={0.5} />
+        {/* Foreground — sharp espresso silhouette */}
+        <Path d={foregroundPath} fill={colors.espresso} />
       </Svg>
     </View>
   );

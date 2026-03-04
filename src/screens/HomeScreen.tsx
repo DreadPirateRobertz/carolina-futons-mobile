@@ -45,7 +45,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
     >
       {/* Hero — Mountain skyline backdrop */}
       <View style={styles.heroBackdrop}>
-        <MountainSkyline variant="sunrise" height={140} testID="home-hero-skyline" />
+        <MountainSkyline variant="sunrise" height={140} showGlow testID="home-hero-skyline" />
       </View>
 
       {/* Hero Section */}
