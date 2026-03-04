@@ -1,0 +1,13 @@
+{
+  "type": "rig-settings",
+  "version": 1,
+  "merge_queue": {
+    "enabled": true,
+    "run_tests": true,
+    "test_command": "npx jest",
+    "setup_command": "npm install",
+    "typecheck_command": "npx tsc --noEmit",
+    "on_conflict": "assign_back",
+    "delete_merged_branches": true
+  }
+}
