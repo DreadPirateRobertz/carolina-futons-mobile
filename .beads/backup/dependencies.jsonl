@@ -79,6 +79,11 @@
 {"created_at":"2026-02-28T22:20:52Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cfutons_mobile-ec9","issue_id":"cfutons_mobile-ec9.8","type":"parent-child"}
 {"created_at":"2026-02-28T22:20:55Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cfutons_mobile-ec9","issue_id":"cfutons_mobile-ec9.9","type":"parent-child"}
 {"created_at":"2026-02-28T21:59:15Z","created_by":"deacon","depends_on_id":"cfutons_mobile-wisp-k0k9","issue_id":"cm-024","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-sgi","issue_id":"cm-0qn","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-0qn","issue_id":"cm-3m3","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-6dp","issue_id":"cm-3m3","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-sgi","issue_id":"cm-6dp","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-3m3","issue_id":"cm-6kb","type":"blocks"}
 {"created_at":"2026-02-23T12:47:51Z","created_by":"cfutons_mobile/witness","depends_on_id":"cm-3pc","issue_id":"cm-88d","type":"blocks"}
 {"created_at":"2026-02-23T12:47:49Z","created_by":"cfutons_mobile/witness","depends_on_id":"cm-9k2","issue_id":"cm-88d","type":"blocks"}
 {"created_at":"2026-02-23T12:47:48Z","created_by":"cfutons_mobile/witness","depends_on_id":"cm-beo","issue_id":"cm-88d","type":"blocks"}
@@ -159,6 +164,8 @@
 {"created_at":"2026-02-28T22:01:44Z","created_by":"deacon","depends_on_id":"cfutons_mobile-wisp-eys2","issue_id":"cm-qks","type":"blocks"}
 {"created_at":"2026-02-28T22:02:31Z","created_by":"deacon","depends_on_id":"cfutons_mobile-wisp-ea2t","issue_id":"cm-qtv","type":"blocks"}
 {"created_at":"2026-03-01T12:10:58Z","created_by":"Chris Deal","depends_on_id":"cfutons_mobile-wisp-s2w9","issue_id":"cm-qtv","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-dyg","issue_id":"cm-rcy","type":"blocks"}
+{"created_at":"2026-03-03T22:14:06Z","created_by":"cfutons_mobile/crew/dallas","depends_on_id":"cm-dyg","issue_id":"cm-sgi","type":"blocks"}
 {"created_at":"2026-03-01T12:11:30Z","created_by":"Chris Deal","depends_on_id":"cfutons_mobile-wisp-klh8","issue_id":"cm-wrf","type":"blocks"}
 {"created_at":"2026-02-28T22:05:54Z","created_by":"deacon","depends_on_id":"cfutons_mobile-wisp-vfxtm","issue_id":"cm-wrf","type":"blocks"}
 {"created_at":"2026-02-28T22:24:46Z","created_by":"deacon","depends_on_id":"cfutons_mobile-wisp-7lc6t","issue_id":"cm-yet","type":"blocks"}
