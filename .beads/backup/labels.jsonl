@@ -74,7 +74,6 @@
 {"issue_id":"cm-cfutons_mobile-polecat-furiosa","label":"gt:agent"}
 {"issue_id":"cm-cfutons_mobile-polecat-keeper","label":"gt:agent"}
 {"issue_id":"cm-cfutons_mobile-polecat-morsov","label":"gt:agent"}
-{"issue_id":"cm-cfutons_mobile-polecat-nux","label":"done-intent:COMPLETED:1772591544"}
 {"issue_id":"cm-cfutons_mobile-polecat-nux","label":"gt:agent"}
 {"issue_id":"cm-cfutons_mobile-polecat-rictus","label":"gt:agent"}
 {"issue_id":"cm-cfutons_mobile-polecat-slit","label":"gt:agent"}
@@ -87,9 +86,13 @@
 {"issue_id":"cm-o49","label":"desire-path"}
 {"issue_id":"cm-rig-cfutons_mobile","label":"gt:rig"}
 {"issue_id":"cm-utz","label":"desire-path"}
+{"issue_id":"cm-wisp-1gs8","label":"gt:merge-request"}
+{"issue_id":"cm-wisp-4n1x","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-9bxi","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-cyyi","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-etl1","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-j5zk","label":"gt:merge-request"}
+{"issue_id":"cm-wisp-oscc","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-qju4","label":"gt:merge-request"}
+{"issue_id":"cm-wisp-v70u","label":"gt:merge-request"}
 {"issue_id":"cm-wisp-w5rb","label":"gt:merge-request"}
