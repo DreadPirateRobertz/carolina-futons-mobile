@@ -1,5 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import type { ReactTestRendererJSON } from 'react-test-renderer';
 
 import { CartIllustration } from '../CartIllustration';
 import { SearchIllustration } from '../SearchIllustration';
@@ -30,21 +31,21 @@ describe('Blue Ridge Illustrations', () => {
 
     it('renders an Svg root element', () => {
       const { toJSON } = render(<Component />);
-      const tree = toJSON();
+      const tree = toJSON() as ReactTestRendererJSON | null;
       expect(tree).not.toBeNull();
       expect(tree!.type).toBe('Svg');
     });
 
     it('accepts width and height props', () => {
       const { toJSON } = render(<Component width={200} height={150} />);
-      const tree = toJSON();
+      const tree = toJSON() as ReactTestRendererJSON | null;
       expect(tree!.props.width).toBe(200);
       expect(tree!.props.height).toBe(150);
     });
 
     it('has default dimensions', () => {
       const { toJSON } = render(<Component />);
-      const tree = toJSON();
+      const tree = toJSON() as ReactTestRendererJSON | null;
       expect(tree!.props.width).toBeDefined();
       expect(tree!.props.height).toBeDefined();
     });
