@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import { typography } from '@/theme/tokens';
 import { useCart } from '@/hooks/useCart';
 import { usePayment } from '@/hooks/usePayment';
 import { formatPrice } from '@/utils';
@@ -134,7 +135,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso }]}
+          style={[styles.headerTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -151,7 +152,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       >
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
+          <Text
+            style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
+            testID="checkout-items-section-title"
+          >
             Items ({items.length})
           </Text>
           {items.map((item) => (
@@ -214,7 +218,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[styles.grandTotalValue, { color: colors.espresso }]}
+              style={[styles.grandTotalValue, { color: colors.espresso, fontFamily: typography.headingFamily }]}
               testID="checkout-total"
             >
               {formatPrice(totals.total)}
