@@ -2,15 +2,14 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
-import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
-import { EmptyState } from '@/components/EmptyState';
-import { SearchIllustration } from '@/components/illustrations';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export function ShopScreen({ onProductPress, testID }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();
   const {
     products,
@@ -27,7 +26,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     selectedCategory,
     sortBy,
     isLoading,
-    isInitialLoading,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
@@ -55,9 +53,22 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const renderHeader = useCallback(
     () => (
       <View>
+        {/* Mountain skyline header */}
+        <MountainSkyline variant="sunset" height={60} testID="shop-mountain-skyline" />
+
         {/* Title */}
         <View style={[styles.titleRow, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.title, { color: colors.espresso }]}>Shop</Text>
+          <Text
+            style={[
+              styles.title,
+              {
+                color: colors.espresso,
+                fontFamily: typography.headingFamily,
+              },
+            ]}
+          >
+            Shop
+          </Text>
         </View>
 
         {/* Search with autocomplete */}
@@ -104,22 +115,33 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const renderEmpty = useCallback(
-    () =>
-      isInitialLoading ? (
-        <SkeletonProductGrid count={6} />
-      ) : (
-        <EmptyState
-          illustration={<SearchIllustration testID="search-illustration" />}
-          title="No products found"
-          message={
-            searchQuery
-              ? `No results for "${searchQuery}". Try a different search.`
-              : 'No products in this category yet.'
-          }
-          testID="shop-empty"
-        />
-      ),
-    [searchQuery, colors, isInitialLoading],
+    () => (
+      <View
+        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+        testID="shop-empty"
+      >
+        <Text style={[styles.emptyIcon]}>🔍</Text>
+        <Text
+          style={[
+            styles.emptyTitle,
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+          ]}
+        >
+          No products found
+        </Text>
+        <Text
+          style={[
+            styles.emptyMessage,
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          {searchQuery
+            ? `No results for "${searchQuery}". Try a different search.`
+            : 'No products in this category yet.'}
+        </Text>
+      </View>
+    ),
+    [searchQuery, colors],
   );
 
   const renderFooter = useCallback(
@@ -171,8 +193,9 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '700',
+    letterSpacing: -0.5,
   },
   searchContainer: {
     marginBottom: 4,
@@ -182,6 +205,27 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: 10,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 64,
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyMessage: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   footer: {
     paddingVertical: 16,

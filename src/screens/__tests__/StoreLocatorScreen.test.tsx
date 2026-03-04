@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme';
 import { StoreLocatorScreen } from '../StoreLocatorScreen';
 import { STORES } from '@/data/stores';
+import { typography } from '@/theme/tokens';
 
 const renderScreen = (props?: Partial<React.ComponentProps<typeof StoreLocatorScreen>>) =>
   render(
@@ -94,6 +95,26 @@ describe('StoreLocatorScreen', () => {
       });
       const cards = getAllByTestId(/^store-card-/);
       expect(cards[0].props.testID).toBe('store-card-store-raleigh');
+    });
+  });
+
+  describe('Visual polish — warm treatment', () => {
+    it('title uses heading fontFamily', () => {
+      const { getByTestId } = renderScreen();
+      const title = getByTestId('store-locator-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('subtitle uses body fontFamily', () => {
+      const { getByTestId } = renderScreen();
+      const subtitle = getByTestId('store-locator-subtitle');
+      const styles = Array.isArray(subtitle.props.style)
+        ? Object.assign({}, ...subtitle.props.style)
+        : subtitle.props.style;
+      expect(styles.fontFamily).toBe(typography.bodyFamily);
     });
   });
 

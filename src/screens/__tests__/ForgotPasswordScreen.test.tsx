@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ForgotPasswordScreen } from '../ForgotPasswordScreen';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { darkPalette, typography } from '@/theme/tokens';
 
 const mockAuthService = {
   restoreSession: jest.fn().mockResolvedValue(false),
@@ -153,6 +154,72 @@ describe('ForgotPasswordScreen', () => {
       await waitFor(() => {
         expect(mockAuthService.sendPasswordReset).toHaveBeenCalledWith('user@test.com');
       });
+    });
+  });
+
+  describe('Visual polish — dark editorial', () => {
+    it('uses dark editorial background', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('forgot-password-screen')).toBeTruthy());
+      const screen = getByTestId('forgot-password-screen');
+      const flat = [screen.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.background);
+    });
+
+    it('wraps form in GlassCard', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('forgot-glass-card')).toBeTruthy());
+    });
+
+    it('title uses heading fontFamily token', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('forgot-title')).toBeTruthy());
+      const title = getByTestId('forgot-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('title uses light text on dark bg', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('forgot-title')).toBeTruthy());
+      const title = getByTestId('forgot-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.color).toBe(darkPalette.textPrimary);
+    });
+
+    it('inputs use dark surface background', async () => {
+      const { getByTestId } = renderScreen();
+      await waitFor(() => expect(getByTestId('forgot-email-input')).toBeTruthy());
+      const input = getByTestId('forgot-email-input');
+      const styles = Array.isArray(input.props.style)
+        ? Object.assign({}, ...input.props.style)
+        : input.props.style;
+      expect(styles.backgroundColor).toBe(darkPalette.surfaceElevated);
+    });
+
+    it('success state uses dark background', async () => {
+      const { getByTestId } = renderScreen({ onBack: jest.fn() });
+      await waitFor(() => expect(getByTestId('forgot-email-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('forgot-email-input'), 'user@example.com');
+      fireEvent.press(getByTestId('forgot-submit-button'));
+      await waitFor(() => {
+        expect(getByTestId('forgot-password-screen')).toBeTruthy();
+      });
+      const screen = getByTestId('forgot-password-screen');
+      const flat = [screen.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.background);
     });
   });
 

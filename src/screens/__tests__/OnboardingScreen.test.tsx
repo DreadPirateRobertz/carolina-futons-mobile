@@ -157,9 +157,7 @@ describe('OnboardingScreen', () => {
   });
 
   it('does not show Skip on completion step', () => {
-    const { getByTestId, queryByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     // Navigate to completion
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
@@ -171,9 +169,7 @@ describe('OnboardingScreen', () => {
   });
 
   it('shows back button after first slide', () => {
-    const { getByTestId, queryByTestId } = render(
-      <OnboardingScreen onComplete={mockOnComplete} />,
-    );
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     // No back on first slide
     expect(queryByTestId('onboarding-back-button')).toBeNull();
     // Advance and check

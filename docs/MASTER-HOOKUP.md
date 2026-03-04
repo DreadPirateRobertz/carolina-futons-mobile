@@ -1,7 +1,7 @@
 # Carolina Futons Mobile — Master Hookup Checklist
 
-> Everything the overseer needs to configure for the app to work end-to-end.
-> Generated 2026-03-01 from codebase audit of `main`.
+> Everything the overseer needs to configure and test the app end-to-end.
+> Updated 2026-03-03 — Blue Ridge Visual Identity sprint additions.
 
 ---
 
@@ -173,6 +173,78 @@ npm run e2e:build:android && npm run e2e:test:android
 
 ---
 
+## 11. Visual Identity — Blue Ridge Mountain Aesthetic
+
+The app uses a warm, editorial dark theme inspired by Blue Ridge Mountain watercolor illustrations.
+
+### Design Tokens (`src/theme/tokens.ts`)
+
+All brand colors, typography, spacing come from tokens mirroring `sharedTokens.js` (web):
+
+| Token Group | Key Values |
+|-------------|-----------|
+| Primary colors | Sand `#E8D5B7`, Espresso `#3A2518`, Mountain Blue `#5B8FA8`, Coral `#E8845C` |
+| Dark palette | Background `#1C1410`, Surface `#2A1F19`, Glass `rgba(42,31,25,0.7)` |
+| Typography | Playfair Display (headings), Source Sans 3 (body) |
+| Shadows | Espresso-tinted (warm brown, NOT gray) |
+
+### Key Visual Components
+
+| Component | File | Description |
+|-----------|------|-------------|
+| `MountainSkyline` | `src/components/MountainSkyline.tsx` | SVG mountain silhouette with sky gradient. Variants: `sunrise` (blue-gold), `sunset` (coral-gold). Used as hero backdrop and section dividers. |
+| `GlassCard` | `src/components/GlassCard.tsx` | Glassmorphism card with dark espresso tint. Intensity: `light`, `medium`, `heavy`. |
+| `EmptyState` | `src/components/EmptyState.tsx` | Empty state display with icon/illustration + action button. |
+
+### Screen Aesthetic Checklist
+
+When testing, verify each screen matches the Blue Ridge editorial feel:
+
+| Screen | Expected Treatment |
+|--------|--------------------|
+| Home | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider |
+| Shop | Dark editorial background, sand product cards, category pills |
+| Product Detail | Dark surfaces, editorial typography, warm shadows |
+| Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) |
+| Cart (items) | Dark editorial, product thumbnails, coral CTA |
+| Account | Dark editorial, Playfair Display heading, coral Sign In |
+| Onboarding | Brand story slides + style quiz (dark editorial treatment) |
+| Login/SignUp | Dark editorial with GlassCard form container |
+
+### Sandbox Testing Protocol
+
+```bash
+# Web
+npx expo start --web
+
+# iOS Simulator (needs Xcode)
+npx expo start --ios
+
+# Android Emulator (needs Android SDK)
+npx expo start --android
+
+# Run full test suite
+npm test
+```
+
+**Visual checks per platform:**
+- [ ] Mountain skyline SVG renders with correct gradient (no gray fallback)
+- [ ] Fonts load (Playfair Display headings, Source Sans 3 body)
+- [ ] GlassCard opacity looks correct (semi-transparent dark, not solid)
+- [ ] Dark palette backgrounds are warm espresso (#1C1410), not pure black
+- [ ] Coral CTAs are `#E8845C` (not green, not red)
+- [ ] Shadows use warm espresso tint (check card shadows)
+- [ ] Empty states show Blue Ridge illustrations (not just emoji)
+- [ ] No layout clipping on different screen sizes
+
+### Dependencies Added
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `react-native-svg` | ^15.15.3 | SVG rendering for MountainSkyline + illustrations |
+
+---
+
 ## Quick Status Check
 
 | Component | Status | What's Needed |
@@ -187,3 +259,9 @@ npm run e2e:build:android && npm run e2e:test:android
 | Analytics | Framework ready | Provider registration |
 | CI/CD | Running | Already configured |
 | App Store / Play Store | Not started | EAS build + signing |
+| MountainSkyline SVG | **Integrated** | Renders on Home hero + divider |
+| Dark editorial theme | **Live** | Home, Shop, Product, Cart, Account |
+| GlassCard components | **Live** | Home CTAs, form containers |
+| Empty state illustrations | **In progress** | Bishop porting 8 Blue Ridge SVGs |
+| Screen visual polish | **In progress** | Ripley applying to Login, Signup, Checkout, etc |
+| Test suite | **1961 tests passing** | 105 suites, 1 skipped |

@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { OrderHistoryScreen } from '../OrderHistoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { MOCK_ORDERS, type Order } from '@/data/orders';
+import { darkPalette, typography } from '@/theme/tokens';
 
 function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {}) {
   return render(
@@ -137,6 +138,48 @@ describe('OrderHistoryScreen', () => {
       });
       expect(getByTestId('orders-empty-state')).toBeTruthy();
       expect(queryByTestId('order-card-ord-001')).toBeNull();
+    });
+  });
+
+  describe('Visual polish — dark editorial', () => {
+    it('uses dark editorial background', () => {
+      const { getByTestId } = renderOrderHistory();
+      const screen = getByTestId('order-history-screen');
+      const flat = [screen.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.background);
+    });
+
+    it('header title uses heading fontFamily', () => {
+      const { getByTestId } = renderOrderHistory();
+      const header = getByTestId('order-history-header');
+      const styles = Array.isArray(header.props.style)
+        ? Object.assign({}, ...header.props.style)
+        : header.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('header title uses light text on dark bg', () => {
+      const { getByTestId } = renderOrderHistory();
+      const header = getByTestId('order-history-header');
+      const styles = Array.isArray(header.props.style)
+        ? Object.assign({}, ...header.props.style)
+        : header.props.style;
+      expect(styles.color).toBe(darkPalette.textPrimary);
+    });
+
+    it('order cards use dark surface background', () => {
+      const { getByTestId } = renderOrderHistory();
+      const card = getByTestId('order-card-ord-001');
+      const flat = [card.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.surface);
     });
   });
 
