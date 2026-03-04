@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react-native';
 import { AuthProvider, useAuth, validateEmail, validatePassword, validateName } from '../useAuth';
 
 // --- Mock WixAuthService ---
@@ -65,12 +65,15 @@ function AuthHarness() {
   );
 }
 
-function renderAuth() {
-  return render(
+async function renderAuth() {
+  const result = render(
     <AuthProvider>
       <AuthHarness />
     </AuthProvider>,
   );
+  // Flush useEffect's async session restore to prevent microtask leaks
+  await act(async () => {});
+  return result;
 }
 
 const mockMember = {
@@ -88,13 +91,12 @@ describe('useAuth', () => {
     mockAuthService.logout.mockResolvedValue(undefined);
   });
 
+  afterEach(cleanup);
+
   describe('Initial state', () => {
     it('starts loading then resolves to not authenticated', async () => {
-      const { getByTestId } = renderAuth();
-      // After session restore attempt completes
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
+      expect(getByTestId('loading').props.children).toBe('false');
       expect(getByTestId('is-auth').props.children).toBe('false');
       expect(getByTestId('error').props.children).toBe('');
     });
@@ -103,10 +105,8 @@ describe('useAuth', () => {
       mockAuthService.restoreSession.mockResolvedValue(true);
       mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('is-auth').props.children).toBe('true');
-      });
+      const { getByTestId } = await renderAuth();
+      expect(getByTestId('is-auth').props.children).toBe('true');
       expect(getByTestId('user-email').props.children).toBe('test@test.com');
     });
   });
@@ -116,10 +116,7 @@ describe('useAuth', () => {
       mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-in'));
       await waitFor(() => {
@@ -134,10 +131,7 @@ describe('useAuth', () => {
         error: 'Invalid email or password',
       });
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-in-bad'));
       await waitFor(() => {
@@ -153,10 +147,7 @@ describe('useAuth', () => {
       mockAuthService.register.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(newMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-up'));
       await waitFor(() => {
@@ -171,10 +162,7 @@ describe('useAuth', () => {
         error: 'An account with this email already exists',
       });
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-up-taken'));
       await waitFor(() => {
@@ -189,10 +177,7 @@ describe('useAuth', () => {
       mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(googleMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('google'));
       await waitFor(() => {
@@ -206,10 +191,7 @@ describe('useAuth', () => {
       mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(appleMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('apple'));
       await waitFor(() => {
@@ -223,10 +205,7 @@ describe('useAuth', () => {
         error: 'Login cancelled',
       });
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('google'));
       await waitFor(() => {
@@ -239,10 +218,7 @@ describe('useAuth', () => {
     it('succeeds for any email (no enumeration)', async () => {
       mockAuthService.sendPasswordReset.mockResolvedValue({ success: true });
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('reset'));
       await waitFor(() => {
@@ -257,17 +233,16 @@ describe('useAuth', () => {
       mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-in'));
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
       fireEvent.press(getByTestId('sign-out'));
-      expect(getByTestId('is-auth').props.children).toBe('false');
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('false');
+      });
       expect(getByTestId('user-email').props.children).toBe('');
     });
   });
@@ -279,17 +254,16 @@ describe('useAuth', () => {
         error: 'Invalid email or password',
       });
 
-      const { getByTestId } = renderAuth();
-      await waitFor(() => {
-        expect(getByTestId('loading').props.children).toBe('false');
-      });
+      const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('sign-in-bad'));
       await waitFor(() => {
         expect(getByTestId('error').props.children).toBeTruthy();
       });
       fireEvent.press(getByTestId('clear-error'));
-      expect(getByTestId('error').props.children).toBe('');
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('');
+      });
     });
   });
 
