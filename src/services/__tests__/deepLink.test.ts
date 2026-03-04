@@ -151,6 +151,17 @@ describe('deepLink', () => {
       expect(resolveRoute(makeLink('product'))).toEqual({ screen: 'Shop' });
     });
 
+    it('resolves products (plural) with slug to ProductDetail', () => {
+      expect(resolveRoute(makeLink('products/asheville-full'))).toEqual({
+        screen: 'ProductDetail',
+        params: { slug: 'asheville-full' },
+      });
+    });
+
+    it('resolves products (plural) without slug to shop', () => {
+      expect(resolveRoute(makeLink('products'))).toEqual({ screen: 'Shop' });
+    });
+
     it('resolves cart', () => {
       expect(resolveRoute(makeLink('cart'))).toEqual({ screen: 'Cart' });
     });

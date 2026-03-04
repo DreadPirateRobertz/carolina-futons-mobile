@@ -7,6 +7,7 @@ import { HomeScreen } from '@/screens/HomeScreen';
 import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
+import { AnimatedTabBar } from './AnimatedTabBar';
 
 export type TabParamList = {
   Home: undefined;
@@ -33,14 +34,11 @@ export function TabNavigator() {
 
   return (
     <Tab.Navigator
+      tabBar={(props) => <AnimatedTabBar {...props} />}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.sunsetCoral,
         tabBarInactiveTintColor: colors.espressoLight,
-        tabBarStyle: {
-          backgroundColor: colors.sandLight,
-          borderTopColor: colors.espressoLight + '20',
-        },
       }}
     >
       <Tab.Screen

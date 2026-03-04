@@ -96,6 +96,48 @@ describe('SearchBar', () => {
   });
 });
 
+describe('SearchBar submit', () => {
+  it('calls onSubmitSearch when submitting with non-empty text', () => {
+    const onSubmitSearch = jest.fn();
+    const { getByTestId } = renderSearchBar({
+      value: 'futon',
+      onSubmitSearch,
+    });
+    fireEvent(getByTestId('search-input'), 'submitEditing');
+    expect(onSubmitSearch).toHaveBeenCalledWith('futon');
+  });
+
+  it('does not call onSubmitSearch when submitting with empty text', () => {
+    const onSubmitSearch = jest.fn();
+    const { getByTestId } = renderSearchBar({
+      value: '',
+      onSubmitSearch,
+    });
+    fireEvent(getByTestId('search-input'), 'submitEditing');
+    expect(onSubmitSearch).not.toHaveBeenCalled();
+  });
+
+  it('does not call onSubmitSearch when submitting with whitespace-only text', () => {
+    const onSubmitSearch = jest.fn();
+    const { getByTestId } = renderSearchBar({
+      value: '   ',
+      onSubmitSearch,
+    });
+    fireEvent(getByTestId('search-input'), 'submitEditing');
+    expect(onSubmitSearch).not.toHaveBeenCalled();
+  });
+
+  it('trims whitespace before submitting', () => {
+    const onSubmitSearch = jest.fn();
+    const { getByTestId } = renderSearchBar({
+      value: '  futon  ',
+      onSubmitSearch,
+    });
+    fireEvent(getByTestId('search-input'), 'submitEditing');
+    expect(onSubmitSearch).toHaveBeenCalledWith('futon');
+  });
+});
+
 describe('SearchBar autocomplete', () => {
   it('does not show dropdown when unfocused', () => {
     const { queryByTestId } = renderSearchBar({

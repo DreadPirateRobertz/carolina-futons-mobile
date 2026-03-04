@@ -11,7 +11,9 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 describe('GlassCard', () => {
   it('renders children', () => {
     const { getByText } = render(
-      <GlassCard><Text>Hello</Text></GlassCard>,
+      <GlassCard>
+        <Text>Hello</Text>
+      </GlassCard>,
       { wrapper },
     );
     expect(getByText('Hello')).toBeTruthy();
@@ -19,7 +21,9 @@ describe('GlassCard', () => {
 
   it('accepts testID prop', () => {
     const { getByTestId } = render(
-      <GlassCard testID="glass"><Text>Content</Text></GlassCard>,
+      <GlassCard testID="glass">
+        <Text>Content</Text>
+      </GlassCard>,
       { wrapper },
     );
     expect(getByTestId('glass')).toBeTruthy();
@@ -27,7 +31,9 @@ describe('GlassCard', () => {
 
   it('accepts custom style', () => {
     const { getByTestId } = render(
-      <GlassCard testID="styled" style={{ padding: 20 }}><Text>Styled</Text></GlassCard>,
+      <GlassCard testID="styled" style={{ padding: 20 }}>
+        <Text>Styled</Text>
+      </GlassCard>,
       { wrapper },
     );
     expect(getByTestId('styled')).toBeTruthy();
@@ -35,13 +41,17 @@ describe('GlassCard', () => {
 
   it('supports intensity variants', () => {
     const { getByTestId: getLight } = render(
-      <GlassCard testID="light-glass" intensity="light"><Text>Light</Text></GlassCard>,
+      <GlassCard testID="light-glass" intensity="light">
+        <Text>Light</Text>
+      </GlassCard>,
       { wrapper },
     );
     expect(getLight('light-glass')).toBeTruthy();
 
     const { getByTestId: getHeavy } = render(
-      <GlassCard testID="heavy-glass" intensity="heavy"><Text>Heavy</Text></GlassCard>,
+      <GlassCard testID="heavy-glass" intensity="heavy">
+        <Text>Heavy</Text>
+      </GlassCard>,
       { wrapper },
     );
     expect(getHeavy('heavy-glass')).toBeTruthy();
