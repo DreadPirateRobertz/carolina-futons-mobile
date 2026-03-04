@@ -284,12 +284,20 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             <Text style={[styles.bnplTitle, { color: colors.mountainBlueDark }]}>
               {selectedMethod === 'affirm' ? 'Affirm' : 'Klarna'} Payment Plan
             </Text>
-            <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
-              4 payments of {formatPrice(totals.total / 4)}
-            </Text>
-            <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
-              No interest. No fees if paid on time.
-            </Text>
+            {selectedMethod === 'klarna' ? (
+              <>
+                <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
+                  4 payments of {formatPrice(totals.total / 4)}
+                </Text>
+                <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
+                  No interest. No fees if paid on time.
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
+                Flexible monthly payments. 0% APR available.
+              </Text>
+            )}
           </View>
         )}
 

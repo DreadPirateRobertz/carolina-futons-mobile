@@ -25,12 +25,18 @@ import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (!stripeKey) {
+    throw new Error(
+      'EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Add it to your .env file.',
+    );
+  }
+
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
@@ -56,7 +62,7 @@ export default function App() {
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
       <StripeProvider
-        publishableKey={STRIPE_PUBLISHABLE_KEY}
+        publishableKey={stripeKey}
         merchantIdentifier={STRIPE_MERCHANT_ID}
       >
         <ThemeProvider>

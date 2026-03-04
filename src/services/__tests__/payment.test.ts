@@ -103,6 +103,15 @@ describe('payment service', () => {
         'Payment service unavailable',
       );
     });
+
+    it('throws on network failure', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
+
+      const totals = calculateTotals(349);
+      await expect(createPaymentIntent([mockCartItem], totals)).rejects.toThrow(
+        'Network request failed',
+      );
+    });
   });
 
   describe('confirmOrder', () => {
@@ -142,6 +151,15 @@ describe('payment service', () => {
       await expect(confirmOrder('pi_123', [mockCartItem], totals, 'card')).rejects.toThrow(
         PaymentError,
       );
+    });
+
+    it('throws on network failure', async () => {
+      mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
+
+      const totals = calculateTotals(349);
+      await expect(
+        confirmOrder('pi_123', [mockCartItem], totals, 'card'),
+      ).rejects.toThrow('Network request failed');
     });
   });
 

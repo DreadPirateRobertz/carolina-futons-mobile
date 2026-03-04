@@ -138,6 +138,66 @@ describe('usePayment', () => {
     expect(result.current.payment.error).toBe('Card declined');
   });
 
+  it('prevents concurrent double-submit', async () => {
+    let resolvePaymentIntent: (value: any) => void;
+    mockedCreatePaymentIntent.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePaymentIntent = resolve;
+        }),
+    );
+
+    const { result } = renderHook(
+      () => {
+        const cart = useCart();
+        const payment = usePayment();
+        return { cart, payment };
+      },
+      { wrapper },
+    );
+
+    await act(async () => {
+      result.current.cart.addItem(
+        { id: 'test-model', name: 'Test', basePrice: 349 } as any,
+        { id: 'test-fabric', name: 'Test', color: '#000', price: 0 } as any,
+        1,
+      );
+    });
+
+    // Fire two concurrent payment requests
+    let order1: any;
+    let order2: any;
+    await act(async () => {
+      const p1 = result.current.payment.processPayment('card');
+      const p2 = result.current.payment.processPayment('card');
+
+      // Resolve the first payment intent
+      resolvePaymentIntent!({
+        clientSecret: 'pi_123_secret_abc',
+        paymentIntentId: 'pi_123',
+        ephemeralKey: 'ek_123',
+        customerId: 'cus_123',
+      });
+
+      mockedConfirmOrder.mockResolvedValue({
+        orderId: 'ord_123',
+        orderNumber: 'CF-001',
+        items: [],
+        totals: { subtotal: 349, shipping: 49, tax: 24.43, total: 422.43 },
+        paymentMethod: 'card',
+        createdAt: '2026-03-01T12:00:00Z',
+        estimatedDelivery: 'March 15-20, 2026',
+      });
+
+      [order1, order2] = await Promise.all([p1, p2]);
+    });
+
+    // Second call should have returned null (blocked by processingRef)
+    expect(order2).toBeNull();
+    // createPaymentIntent should only be called once
+    expect(mockedCreatePaymentIntent).toHaveBeenCalledTimes(1);
+  });
+
   it('resets payment state', async () => {
     mockedCreatePaymentIntent.mockRejectedValue(
       new PaymentError('Failed', 'INTENT_FAILED'),

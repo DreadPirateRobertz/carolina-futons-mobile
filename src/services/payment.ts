@@ -43,7 +43,7 @@ export interface OrderConfirmation {
 export function calculateTotals(subtotal: number): OrderTotals {
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-  const total = subtotal + shipping + tax;
+  const total = Math.round((subtotal + shipping + tax) * 100) / 100;
   return { subtotal, shipping, tax, total };
 }
 

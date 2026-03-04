@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import { useCart } from './useCart';
@@ -28,21 +28,21 @@ export function usePayment() {
     error: null,
     order: null,
   });
+  const processingRef = useRef(false);
 
-  const totals: OrderTotals = calculateTotals(subtotal);
+  const totals = useMemo(() => calculateTotals(subtotal), [subtotal]);
 
   const processPayment = useCallback(
     async (method: PaymentMethod): Promise<OrderConfirmation | null> => {
-      if (items.length === 0) return null;
+      if (items.length === 0 || processingRef.current) return null;
 
+      processingRef.current = true;
       setState({ status: 'processing', error: null, order: null });
 
       try {
         // 1. Create PaymentIntent on backend
-        const { clientSecret, ephemeralKey, customerId } = await createPaymentIntent(
-          items,
-          totals,
-        );
+        const { clientSecret, ephemeralKey, customerId, paymentIntentId } =
+          await createPaymentIntent(items, totals);
 
         // 2. Initialize Stripe payment sheet
         const { error: initError } = await initPaymentSheet({
@@ -75,6 +75,7 @@ export function usePayment() {
 
         if (presentError) {
           if (presentError.code === 'Canceled') {
+            processingRef.current = false;
             setState({ status: 'idle', error: null, order: null });
             return null;
           }
@@ -85,18 +86,15 @@ export function usePayment() {
         }
 
         // 4. Confirm order on backend
-        const confirmation = await confirmOrder(
-          clientSecret.split('_secret_')[0], // extract PaymentIntent ID
-          items,
-          totals,
-          method,
-        );
+        const confirmation = await confirmOrder(paymentIntentId, items, totals, method);
 
         // 5. Clear cart and set success state
         clearCart();
+        processingRef.current = false;
         setState({ status: 'success', error: null, order: confirmation });
         return confirmation;
       } catch (err) {
+        processingRef.current = false;
         const message =
           err instanceof PaymentError
             ? err.message
