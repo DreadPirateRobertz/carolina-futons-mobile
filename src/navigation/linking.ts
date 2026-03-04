@@ -52,6 +52,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
         },
       },
       Checkout: 'checkout',
+      OrderConfirmation: 'order-confirmation',
       OrderHistory: 'orders',
       OrderDetail: 'orders/:orderId',
       Login: 'login',

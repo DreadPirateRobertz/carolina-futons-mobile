@@ -1,16 +1,22 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
+import { usePayment } from '@/hooks/usePayment';
 import { formatPrice } from '@/utils';
-import { trackEvent, events } from '@/services/analytics';
+import type { PaymentMethod } from '@/services/payment';
+import type { OrderConfirmation } from '@/services/payment';
 
 const SHIPPING_THRESHOLD = 499;
-const SHIPPING_COST = 49;
-const TAX_RATE = 0.07;
-
-type PaymentMethod = 'apple-pay' | 'google-pay' | 'affirm' | 'klarna' | 'card';
 
 interface PaymentOption {
   id: PaymentMethod;
@@ -58,41 +64,49 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
 ];
 
 interface Props {
-  onPlaceOrder?: (method: PaymentMethod) => void;
+  onOrderComplete?: (order: OrderConfirmation) => void;
   onBack?: () => void;
   testID?: string;
 }
 
-export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
+  const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
+  const { status, error, totals, processPayment, resetPayment } = usePayment();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
-  const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-  const total = subtotal + shipping + tax;
+  const isProcessing = status === 'processing';
 
-  const handleSelectMethod = useCallback((method: PaymentMethod) => {
-    setSelectedMethod(method);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, []);
+  const handleSelectMethod = useCallback(
+    (method: PaymentMethod) => {
+      if (isProcessing) return;
+      setSelectedMethod(method);
+      if (error) resetPayment();
+      if (Platform.OS !== 'web') {
+        Haptics.selectionAsync();
+      }
+    },
+    [isProcessing, error, resetPayment],
+  );
 
-  const handlePlaceOrder = useCallback(() => {
-    if (!selectedMethod) return;
-    events.purchase(`order-${Date.now()}`, total, items.length);
-    onPlaceOrder?.(selectedMethod);
+  const handlePlaceOrder = useCallback(async () => {
+    if (!selectedMethod || isProcessing) return;
+
     if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
-  }, [selectedMethod, onPlaceOrder, total, items.length]);
+
+    const order = await processPayment(selectedMethod);
+
+    if (order) {
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      onOrderComplete?.(order);
+    }
+  }, [selectedMethod, isProcessing, processPayment, onOrderComplete]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
-
-  useEffect(() => {
-    trackEvent('begin_checkout', { item_count: items.length, total });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View
@@ -104,18 +118,23 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
         {onBack && (
           <TouchableOpacity
             onPress={onBack}
+            disabled={isProcessing}
             testID="checkout-back-button"
             accessibilityLabel="Go back to cart"
             accessibilityRole="button"
           >
-            <Text style={[styles.backText, { color: colors.espresso }]}>{'‹'}</Text>
+            <Text
+              style={[
+                styles.backText,
+                { color: isProcessing ? colors.muted : colors.espresso },
+              ]}
+            >
+              {'‹'}
+            </Text>
           </TouchableOpacity>
         )}
         <Text
-          style={[
-            styles.headerTitle,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
-          ]}
+          style={[styles.headerTitle, { color: colors.espresso }]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -128,16 +147,11 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!isProcessing}
       >
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
-            ]}
-            testID="checkout-items-section-title"
-          >
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
             Items ({items.length})
           </Text>
           {items.map((item) => (
@@ -171,7 +185,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Subtotal</Text>
             <Text style={[styles.totalValue, { color: colors.espresso }]}>
-              {formatPrice(subtotal)}
+              {formatPrice(totals.subtotal)}
             </Text>
           </View>
           <View style={styles.totalRow}>
@@ -179,41 +193,38 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             <Text
               style={[
                 styles.totalValue,
-                { color: shipping === 0 ? colors.success : colors.espresso },
+                { color: totals.shipping === 0 ? colors.success : colors.espresso },
               ]}
             >
-              {shipping === 0 ? 'FREE' : formatPrice(shipping)}
+              {totals.shipping === 0 ? 'FREE' : formatPrice(totals.shipping)}
             </Text>
           </View>
+          {subtotal < SHIPPING_THRESHOLD && subtotal > 0 && (
+            <Text style={[styles.shippingNote, { color: colors.mountainBlue }]}>
+              Free shipping on orders over {formatPrice(SHIPPING_THRESHOLD)}
+            </Text>
+          )}
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Tax</Text>
-            <Text style={[styles.totalValue, { color: colors.espresso }]}>{formatPrice(tax)}</Text>
+            <Text style={[styles.totalValue, { color: colors.espresso }]}>
+              {formatPrice(totals.tax)}
+            </Text>
           </View>
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[
-                styles.grandTotalValue,
-                { color: colors.espresso, fontFamily: typography.headingFamily },
-              ]}
+              style={[styles.grandTotalValue, { color: colors.espresso }]}
               testID="checkout-total"
             >
-              {formatPrice(total)}
+              {formatPrice(totals.total)}
             </Text>
           </View>
         </View>
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
-            ]}
-          >
-            Payment Method
-          </Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -226,6 +237,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
                 },
               ]}
               onPress={() => handleSelectMethod(option.id)}
+              disabled={isProcessing}
               testID={`payment-${option.id}`}
               accessibilityLabel={`${option.label}: ${option.description}`}
               accessibilityRole="radio"
@@ -272,12 +284,37 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             <Text style={[styles.bnplTitle, { color: colors.mountainBlueDark }]}>
               {selectedMethod === 'affirm' ? 'Affirm' : 'Klarna'} Payment Plan
             </Text>
-            <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
-              4 payments of {formatPrice(total / 4)}
-            </Text>
-            <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
-              No interest. No fees if paid on time.
-            </Text>
+            {selectedMethod === 'klarna' ? (
+              <>
+                <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
+                  4 payments of {formatPrice(totals.total / 4)}
+                </Text>
+                <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
+                  No interest. No fees if paid on time.
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
+                Flexible monthly payments. 0% APR available.
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Error message */}
+        {error && (
+          <View
+            style={[
+              styles.errorCard,
+              {
+                borderRadius: borderRadius.md,
+                marginHorizontal: spacing.lg,
+              },
+            ]}
+            testID="payment-error"
+            accessibilityRole="alert"
+          >
+            <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
@@ -287,25 +324,37 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             style={[
               styles.placeOrderButton,
               {
-                backgroundColor: selectedMethod ? colors.sunsetCoral : colors.muted,
+                backgroundColor:
+                  selectedMethod && !isProcessing ? colors.sunsetCoral : colors.muted,
                 borderRadius: borderRadius.button,
               },
-              selectedMethod ? shadows.button : undefined,
+              selectedMethod && !isProcessing ? shadows.button : undefined,
             ]}
             onPress={handlePlaceOrder}
-            disabled={!selectedMethod}
+            disabled={!selectedMethod || isProcessing}
             testID="place-order-button"
             accessibilityLabel={
-              selectedMethod
-                ? `Place order for ${formatPrice(total)}`
-                : 'Select a payment method to continue'
+              isProcessing
+                ? 'Processing payment'
+                : selectedMethod
+                  ? `Place order for ${formatPrice(totals.total)}`
+                  : 'Select a payment method to continue'
             }
             accessibilityRole="button"
-            accessibilityState={{ disabled: !selectedMethod }}
+            accessibilityState={{ disabled: !selectedMethod || isProcessing }}
           >
-            <Text style={[styles.placeOrderText, { fontFamily: typography.bodyFamilyBold }]}>
-              {selectedMethod ? `Place Order — ${formatPrice(total)}` : 'Select Payment Method'}
-            </Text>
+            {isProcessing ? (
+              <View style={styles.processingRow}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={[styles.placeOrderText, { marginLeft: 10 }]}>Processing...</Text>
+              </View>
+            ) : (
+              <Text style={styles.placeOrderText}>
+                {selectedMethod
+                  ? `Place Order — ${formatPrice(totals.total)}`
+                  : 'Select Payment Method'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -389,6 +438,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  shippingNote: {
+    fontSize: 12,
+    marginBottom: 8,
+    marginTop: -4,
+  },
   divider: {
     height: 1,
     marginVertical: 8,
@@ -452,9 +506,27 @@ const styles = StyleSheet.create({
   bnplNote: {
     fontSize: 12,
   },
+  // Error
+  errorCard: {
+    padding: 14,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   // Place order
   placeOrderButton: {
     paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  processingRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },

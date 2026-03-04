@@ -1,8 +1,9 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
 import {
   PlayfairDisplay_400Regular,
@@ -20,28 +21,22 @@ import { CartProvider } from '@/hooks/useCart';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
-import { useScreenTracking } from '@/hooks/useScreenTracking';
-import { useDeepLink } from '@/hooks/useDeepLink';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { initAnalytics } from '@/services/analyticsInit';
-import { trackEvent } from '@/services/analytics';
-import { initCrashReporting } from '@/services/crashReportingInit';
-import { perf } from '@/services/performance';
-import { startFunnelTracking } from '@/services/funnelTracker';
 
-// Initialize crash reporting as early as possible (before component render)
-initCrashReporting({
-  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
-});
-
-// Mark JS init time as early as possible (module evaluation)
-perf.markStartup('js_init');
+const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+  if (!stripeKey) {
+    throw new Error(
+      'EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Add it to your .env file.',
+    );
+  }
+
   const [fontsLoaded] = useFonts({
     PlayfairDisplay_400Regular,
     PlayfairDisplay_700Bold,
@@ -50,51 +45,9 @@ export default function App() {
     SourceSans3_700Bold,
   });
 
-  const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
-
-  const onReady = useCallback(() => {
-    onScreenTrackingReady();
-    perf.markStartup('nav_ready');
-    perf.markStartup('interactive');
-    perf.reportStartup();
-  }, [onScreenTrackingReady]);
-
-  useDeepLink({
-    onDeepLink: (parsed, route) => {
-      const props: Record<string, string> = {
-        screen: route.screen,
-        path: parsed.path,
-      };
-      if (parsed.utm?.source) props.utm_source = parsed.utm.source;
-      if (parsed.utm?.medium) props.utm_medium = parsed.utm.medium;
-      if (parsed.utm?.campaign) props.utm_campaign = parsed.utm.campaign;
-      trackEvent('deep_link_opened', props);
-    },
-  });
-
-  useEffect(() => {
-    initAnalytics({
-      enableFirebase: true,
-      enableMixpanel: true,
-      mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
-    }).then(() => {
-      perf.markStartup('analytics_init');
-      startFunnelTracking();
-      trackEvent('app_open');
-    });
-  }, []);
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      perf.markStartup('fonts_loaded');
-    }
-  }, [fontsLoaded]);
-
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
-      perf.markStartup('first_render');
       await SplashScreen.hideAsync();
-      perf.startMemoryMonitoring();
     }
   }, [fontsLoaded]);
 
@@ -108,29 +61,29 @@ export default function App() {
 
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
-      <ThemeProvider>
-        <ConnectivityProvider>
-          <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <NotificationProvider>
-                  <ErrorBoundary>
-                    <NavigationContainer
-                      ref={navigationRef}
-                      linking={linkingConfig}
-                      onStateChange={onStateChange}
-                      onReady={onReady}
-                    >
-                      <OfflineBanner />
-                      <AppNavigator />
-                    </NavigationContainer>
-                  </ErrorBoundary>
-                </NotificationProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </AuthProvider>
-        </ConnectivityProvider>
-      </ThemeProvider>
+      <StripeProvider
+        publishableKey={stripeKey}
+        merchantIdentifier={STRIPE_MERCHANT_ID}
+      >
+        <ThemeProvider>
+          <ConnectivityProvider>
+            <AuthProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <NotificationProvider>
+                    <ErrorBoundary>
+                      <NavigationContainer linking={linkingConfig}>
+                        <OfflineBanner />
+                        <AppNavigator />
+                      </NavigationContainer>
+                    </ErrorBoundary>
+                  </NotificationProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </AuthProvider>
+          </ConnectivityProvider>
+        </ThemeProvider>
+      </StripeProvider>
     </SafeAreaProvider>
   );
 }

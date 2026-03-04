@@ -1,3 +1,6 @@
+// Set Stripe test key before babel-preset-expo inlines EXPO_PUBLIC_ vars
+process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'pk_test_mock';
+
 module.exports = {
   preset: 'jest-expo',
   setupFiles: [
