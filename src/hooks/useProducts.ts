@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   PRODUCTS,
   CATEGORIES,
@@ -8,11 +8,11 @@ import {
   type CategoryInfo,
 } from '@/data/products';
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
+import { saveCatalog, loadCachedCatalog } from '@/services/productCache';
 
 export type { Product, ProductCategory, SortOption, CategoryInfo };
 
 const PAGE_SIZE = 8;
-const PRODUCT_NAMES = PRODUCTS.map((p) => p.name);
 
 const getSearchableText = (p: Product) => [p.name, p.shortDescription, p.category];
 
@@ -28,6 +28,8 @@ interface UseProductsReturn {
   hasMore: boolean;
   /** Autocomplete suggestions for current query */
   suggestions: string[];
+  /** Whether serving from cache (stale data) */
+  isFromCache: boolean;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: ProductCategory | null) => void;
   setSortBy: (sort: SortOption) => void;
@@ -41,7 +43,11 @@ interface UseProductsOptions {
 
 /**
  * Product browsing hook with fuzzy search, autocomplete, filter, sort, and pagination.
- * Uses local mock data; designed for drop-in Wix CMS API replacement.
+ *
+ * Implements stale-while-revalidate caching:
+ * - On mount: serves cached products immediately if available
+ * - Fetches fresh data in background (currently mock, ready for API swap-in)
+ * - Caches fresh data to AsyncStorage for offline access
  */
 export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,17 +58,44 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isFromCache, setIsFromCache] = useState(false);
+  const freshLoaded = useRef(false);
 
-  // Simulate initial network fetch (mirrors future CMS API latency)
+  // Step 1: Load cached catalog immediately (non-blocking, fire-and-forget)
   useEffect(() => {
-    const timer = setTimeout(() => setIsInitialLoading(false), 600);
+    (async () => {
+      const cached = await loadCachedCatalog();
+      // Only use cache if fresh data hasn't arrived yet
+      if (!freshLoaded.current && cached && cached.products.length > 0) {
+        setAllProducts(cached.products);
+        setIsFromCache(true);
+        setIsInitialLoading(false);
+      }
+    })();
+  }, []);
+
+  // Step 2: "Fetch" fresh data after simulated network delay
+  // (currently mock PRODUCTS; will be replaced by Wix API call)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      freshLoaded.current = true;
+      setAllProducts(PRODUCTS);
+      setIsFromCache(false);
+      setIsInitialLoading(false);
+      // Cache fresh data for offline use
+      saveCatalog(PRODUCTS);
+    }, 600);
     return () => clearTimeout(timer);
   }, []);
 
+  // Product names for autocomplete (derived from current product set)
+  const productNames = useMemo(() => allProducts.map((p) => p.name), [allProducts]);
+
   // Autocomplete suggestions from product names
   const suggestions = useMemo(
-    () => (searchQuery.trim().length >= 2 ? getSuggestions(searchQuery, PRODUCT_NAMES, 5) : []),
-    [searchQuery],
+    () => (searchQuery.trim().length >= 2 ? getSuggestions(searchQuery, productNames, 5) : []),
+    [searchQuery, productNames],
   );
 
   // Filter and sort products
@@ -71,9 +104,9 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
 
     // Fuzzy search filter
     if (searchQuery.trim()) {
-      result = fuzzySearch(PRODUCTS, searchQuery, getSearchableText).map((r) => r.item);
+      result = fuzzySearch(allProducts, searchQuery, getSearchableText).map((r) => r.item);
     } else {
-      result = [...PRODUCTS];
+      result = [...allProducts];
     }
 
     // Category filter
@@ -110,7 +143,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     }
 
     return result;
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy, allProducts]);
 
   // Paginated slice
   const products = useMemo(() => filteredSorted.slice(0, page * PAGE_SIZE), [filteredSorted, page]);
@@ -130,6 +163,11 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const refresh = useCallback(() => {
     setPage(1);
     setIsLoading(false);
+    // Re-fetch and re-cache
+    freshLoaded.current = true;
+    setAllProducts(PRODUCTS);
+    setIsFromCache(false);
+    saveCatalog(PRODUCTS);
   }, []);
 
   // Reset pagination when filters change
@@ -158,6 +196,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     isInitialLoading,
     hasMore,
     suggestions,
+    isFromCache,
     setSearchQuery: handleSearchQuery,
     setSelectedCategory: handleCategory,
     setSortBy: handleSort,

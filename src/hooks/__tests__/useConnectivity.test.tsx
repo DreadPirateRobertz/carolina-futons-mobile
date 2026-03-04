@@ -1,7 +1,11 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { ConnectivityProvider, useConnectivity } from '../useConnectivity';
+
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+}));
 
 function ConnectivityHarness() {
   const { isOnline, setOnline } = useConnectivity();
@@ -16,7 +20,7 @@ function ConnectivityHarness() {
 
 function renderConnectivity(initialOnline = true) {
   return render(
-    <ConnectivityProvider initialOnline={initialOnline}>
+    <ConnectivityProvider initialOnline={initialOnline} skipNetInfo>
       <ConnectivityHarness />
     </ConnectivityProvider>,
   );
@@ -53,5 +57,52 @@ describe('useConnectivity', () => {
     expect(() => render(<Bad />)).toThrow(
       'useConnectivity must be used within a ConnectivityProvider',
     );
+  });
+
+  describe('NetInfo integration', () => {
+    it('subscribes to NetInfo when skipNetInfo is false', () => {
+      const NetInfo = require('@react-native-community/netinfo');
+      NetInfo.addEventListener.mockClear();
+      render(
+        <ConnectivityProvider>
+          <ConnectivityHarness />
+        </ConnectivityProvider>,
+      );
+      expect(NetInfo.addEventListener).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not subscribe to NetInfo when skipNetInfo is true', () => {
+      const NetInfo = require('@react-native-community/netinfo');
+      NetInfo.addEventListener.mockClear();
+      render(
+        <ConnectivityProvider skipNetInfo>
+          <ConnectivityHarness />
+        </ConnectivityProvider>,
+      );
+      expect(NetInfo.addEventListener).not.toHaveBeenCalled();
+    });
+
+    it('updates isOnline when NetInfo reports change', () => {
+      const NetInfo = require('@react-native-community/netinfo');
+      let listener: (state: { isConnected: boolean }) => void;
+      NetInfo.addEventListener.mockImplementation((cb: typeof listener) => {
+        listener = cb;
+        return jest.fn();
+      });
+
+      const { getByTestId } = render(
+        <ConnectivityProvider>
+          <ConnectivityHarness />
+        </ConnectivityProvider>,
+      );
+
+      // Simulate going offline
+      act(() => listener!({ isConnected: false }));
+      expect(getByTestId('online').props.children).toBe('false');
+
+      // Simulate going online
+      act(() => listener!({ isConnected: true }));
+      expect(getByTestId('online').props.children).toBe('true');
+    });
   });
 });
