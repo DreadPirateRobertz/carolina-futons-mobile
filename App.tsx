@@ -26,6 +26,12 @@ import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initAnalytics } from '@/services/analyticsInit';
 import { trackEvent } from '@/services/analytics';
+import { initCrashReporting } from '@/services/crashReportingInit';
+
+// Initialize crash reporting as early as possible (before component render)
+initCrashReporting({
+  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+});
 
 SplashScreen.preventAutoHideAsync();
 

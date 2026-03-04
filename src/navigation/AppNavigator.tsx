@@ -3,59 +3,88 @@ import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommonActions } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
+import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
-const ARScreen = lazy(() => import('@/screens/ARScreen').then((m) => ({ default: m.ARScreen })));
+const ARScreen = lazy(() =>
+  import('@/screens/ARScreen').then((m) => ({ default: withScreenErrorBoundary(m.ARScreen, 'AR') })),
+);
 const ProductDetailScreen = lazy(() =>
-  import('@/screens/ProductDetailScreen').then((m) => ({ default: m.ProductDetailScreen })),
+  import('@/screens/ProductDetailScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ProductDetailScreen, 'ProductDetail'),
+  })),
 );
 const CategoryScreen = lazy(() =>
-  import('@/screens/CategoryScreen').then((m) => ({ default: m.CategoryScreen })),
+  import('@/screens/CategoryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CategoryScreen, 'Category'),
+  })),
 );
 const CheckoutScreen = lazy(() =>
-  import('@/screens/CheckoutScreen').then((m) => ({ default: m.CheckoutScreen })),
+  import('@/screens/CheckoutScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CheckoutScreen, 'Checkout'),
+  })),
 );
 const OrderHistoryScreen = lazy(() =>
-  import('@/screens/OrderHistoryScreen').then((m) => ({ default: m.OrderHistoryScreen })),
+  import('@/screens/OrderHistoryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.OrderHistoryScreen, 'OrderHistory'),
+  })),
 );
 const OrderDetailScreen = lazy(() =>
-  import('@/screens/OrderDetailScreen').then((m) => ({ default: m.OrderDetailScreen })),
+  import('@/screens/OrderDetailScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.OrderDetailScreen, 'OrderDetail'),
+  })),
 );
 const LoginScreen = lazy(() =>
-  import('@/screens/LoginScreen').then((m) => ({ default: m.LoginScreen })),
+  import('@/screens/LoginScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LoginScreen, 'Login'),
+  })),
 );
 const SignUpScreen = lazy(() =>
-  import('@/screens/SignUpScreen').then((m) => ({ default: m.SignUpScreen })),
+  import('@/screens/SignUpScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.SignUpScreen, 'SignUp'),
+  })),
 );
 const ForgotPasswordScreen = lazy(() =>
-  import('@/screens/ForgotPasswordScreen').then((m) => ({ default: m.ForgotPasswordScreen })),
+  import('@/screens/ForgotPasswordScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ForgotPasswordScreen, 'ForgotPassword'),
+  })),
 );
 const NotificationPreferencesScreen = lazy(() =>
   import('@/screens/NotificationPreferencesScreen').then((m) => ({
-    default: m.NotificationPreferencesScreen,
+    default: withScreenErrorBoundary(m.NotificationPreferencesScreen, 'NotificationPreferences'),
   })),
 );
 const WishlistScreen = lazy(() =>
-  import('@/screens/WishlistScreen').then((m) => ({ default: m.WishlistScreen })),
+  import('@/screens/WishlistScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.WishlistScreen, 'Wishlist'),
+  })),
 );
 const StoreLocatorScreen = lazy(() =>
-  import('@/screens/StoreLocatorScreen').then((m) => ({ default: m.StoreLocatorScreen })),
+  import('@/screens/StoreLocatorScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.StoreLocatorScreen, 'StoreLocator'),
+  })),
 );
 const StoreDetailScreen = lazy(() =>
-  import('@/screens/StoreDetailScreen').then((m) => ({ default: m.StoreDetailScreen })),
+  import('@/screens/StoreDetailScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.StoreDetailScreen, 'StoreDetail'),
+  })),
 );
 const ARWebScreen = lazy(() =>
-  import('@/screens/ARWebScreen').then((m) => ({ default: m.ARWebScreen })),
+  import('@/screens/ARWebScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ARWebScreen, 'ARWeb'),
+  })),
 );
 const CollectionsScreen = lazy(() =>
-  import('@/screens/CollectionsScreen').then((m) => ({ default: m.CollectionsScreen })),
+  import('@/screens/CollectionsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CollectionsScreen, 'Collections'),
+  })),
 );
 const CollectionDetailScreen = lazy(() =>
   import('@/screens/CollectionDetailScreen').then((m) => ({
-    default: m.CollectionDetailScreen,
+    default: withScreenErrorBoundary(m.CollectionDetailScreen, 'CollectionDetail'),
   })),
 );
 
