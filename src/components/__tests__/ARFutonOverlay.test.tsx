@@ -273,6 +273,46 @@ describe('ARFutonOverlay', () => {
     });
   });
 
+  describe('Shadow opacity', () => {
+    it('renders with custom shadow opacity', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          shadowOpacity={0.4}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('overlay')).toBeTruthy();
+    });
+
+    it('uses default shadow opacity when not specified', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
+    });
+
+    it('renders with zero shadow opacity', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          shadowOpacity={0}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
+    });
+  });
+
   describe('Dynamic shadow', () => {
     it('renders dynamic shadow element', () => {
       const { getByTestId } = render(
