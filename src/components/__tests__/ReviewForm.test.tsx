@@ -1,7 +1,17 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ReviewForm } from '../ReviewForm';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+
+const mockLaunchImageLibraryAsync = jest.fn();
+const mockRequestMediaLibraryPermissionsAsync = jest.fn();
+
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibraryAsync(...args),
+  requestMediaLibraryPermissionsAsync: (...args: any[]) =>
+    mockRequestMediaLibraryPermissionsAsync(...args),
+  MediaTypeOptions: { Images: 'Images' },
+}));
 
 function renderForm(props: Partial<React.ComponentProps<typeof ReviewForm>> = {}) {
   const onSubmit = props.onSubmit ?? jest.fn();
@@ -16,6 +26,15 @@ function renderForm(props: Partial<React.ComponentProps<typeof ReviewForm>> = {}
 }
 
 describe('ReviewForm', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequestMediaLibraryPermissionsAsync.mockResolvedValue({ status: 'granted' });
+    mockLaunchImageLibraryAsync.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///photo1.jpg' }],
+    });
+  });
+
   describe('rendering', () => {
     it('renders with default testID', () => {
       const { getByTestId } = renderForm();
@@ -160,6 +179,93 @@ describe('ReviewForm', () => {
     it('disables submit button when isSubmitting prop is true', () => {
       const { getByTestId } = renderForm({ isSubmitting: true });
       expect(getByTestId('submit-review-button').props.accessibilityState?.disabled).toBe(true);
+    });
+  });
+
+  describe('photos', () => {
+    it('opens image picker when add photo pressed', async () => {
+      const { getByTestId } = renderForm();
+      fireEvent.press(getByTestId('add-photo-button'));
+      await waitFor(() => {
+        expect(mockLaunchImageLibraryAsync).toHaveBeenCalled();
+      });
+    });
+
+    it('shows photo preview after picking an image', async () => {
+      const { getByTestId } = renderForm();
+      fireEvent.press(getByTestId('add-photo-button'));
+      await waitFor(() => {
+        expect(getByTestId('photo-preview-0')).toBeTruthy();
+      });
+    });
+
+    it('removes photo when remove button pressed', async () => {
+      const { getByTestId, queryByTestId } = renderForm();
+      fireEvent.press(getByTestId('add-photo-button'));
+      await waitFor(() => {
+        expect(getByTestId('photo-preview-0')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('remove-photo-0'));
+      expect(queryByTestId('photo-preview-0')).toBeNull();
+    });
+
+    it('includes photos in submission data', async () => {
+      const { getByTestId, onSubmit } = renderForm();
+
+      // Add a photo
+      fireEvent.press(getByTestId('add-photo-button'));
+      await waitFor(() => {
+        expect(getByTestId('photo-preview-0')).toBeTruthy();
+      });
+
+      // Fill form and submit
+      fireEvent.press(getByTestId('star-button-5'));
+      fireEvent.changeText(getByTestId('review-title-input'), 'Great');
+      fireEvent.changeText(getByTestId('review-body-input'), 'Love it.');
+      fireEvent.press(getByTestId('submit-review-button'));
+      expect(onSubmit).toHaveBeenCalledWith({
+        rating: 5,
+        title: 'Great',
+        body: 'Love it.',
+        photos: ['file:///photo1.jpg'],
+      });
+    });
+
+    it('limits photos to 5', async () => {
+      // Set up mock to return different photos each call
+      let callCount = 0;
+      mockLaunchImageLibraryAsync.mockImplementation(async () => {
+        callCount++;
+        return {
+          canceled: false,
+          assets: [{ uri: `file:///photo${callCount}.jpg` }],
+        };
+      });
+
+      const { getByTestId, queryByTestId } = renderForm();
+
+      // Add 5 photos
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(getByTestId('add-photo-button'));
+        await waitFor(() => {
+          expect(getByTestId(`photo-preview-${i}`)).toBeTruthy();
+        });
+      }
+
+      // 6th press should not add another photo
+      fireEvent.press(getByTestId('add-photo-button'));
+      expect(queryByTestId('photo-preview-5')).toBeNull();
+    });
+
+    it('does nothing when image picker is canceled', async () => {
+      mockLaunchImageLibraryAsync.mockResolvedValue({ canceled: true, assets: [] });
+
+      const { getByTestId, queryByTestId } = renderForm();
+      fireEvent.press(getByTestId('add-photo-button'));
+      await waitFor(() => {
+        expect(mockLaunchImageLibraryAsync).toHaveBeenCalled();
+      });
+      expect(queryByTestId('photo-preview-0')).toBeNull();
     });
   });
 
