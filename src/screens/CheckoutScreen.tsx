@@ -63,7 +63,7 @@ interface Props {
 }
 
 export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, subtotal } = useCart();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
 
@@ -106,7 +106,10 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso }]}
+          style={[
+            styles.headerTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -122,7 +125,13 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
       >
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+            testID="checkout-items-section-title"
+          >
             Items ({items.length})
           </Text>
           {items.map((item) => (
@@ -178,7 +187,10 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[styles.grandTotalValue, { color: colors.espresso }]}
+              style={[
+                styles.grandTotalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
               testID="checkout-total"
             >
               {formatPrice(total)}
@@ -188,7 +200,14 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+          >
+            Payment Method
+          </Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -278,7 +297,7 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
             accessibilityRole="button"
             accessibilityState={{ disabled: !selectedMethod }}
           >
-            <Text style={styles.placeOrderText}>
+            <Text style={[styles.placeOrderText, { fontFamily: typography.bodyFamilyBold }]}>
               {selectedMethod ? `Place Order — ${formatPrice(total)}` : 'Select Payment Method'}
             </Text>
           </TouchableOpacity>
