@@ -9,6 +9,8 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
+import { EmptyState } from '@/components/EmptyState';
+import { SearchIllustration } from '@/components/illustrations';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -106,15 +108,16 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       isInitialLoading ? (
         <SkeletonProductGrid count={6} />
       ) : (
-        <View style={styles.emptyContainer} testID="shop-empty">
-          <Text style={[styles.emptyIcon]}>🔍</Text>
-          <Text style={[styles.emptyTitle, { color: colors.espresso }]}>No products found</Text>
-          <Text style={[styles.emptyMessage, { color: colors.espressoLight }]}>
-            {searchQuery
+        <EmptyState
+          illustration={<SearchIllustration testID="search-illustration" />}
+          title="No products found"
+          message={
+            searchQuery
               ? `No results for "${searchQuery}". Try a different search.`
-              : 'No products in this category yet.'}
-          </Text>
-        </View>
+              : 'No products in this category yet.'
+          }
+          testID="shop-empty"
+        />
       ),
     [searchQuery, colors, isInitialLoading],
   );
@@ -179,27 +182,6 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: 10,
-  },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 64,
-    paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyMessage: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
   },
   footer: {
     paddingVertical: 16,

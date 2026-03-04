@@ -36,6 +36,26 @@ jest.mock('expo-file-system', () => ({
   })),
 }));
 
+// Mock react-native-svg
+jest.mock('react-native-svg', () => {
+  const React = require('react');
+  const mockComponent = (name) => {
+    const component = ({ children, ...props }) =>
+      React.createElement(name, props, children);
+    component.displayName = name;
+    return component;
+  };
+  const namedExports = [
+    'Circle', 'Ellipse', 'G', 'Text', 'TSpan', 'TextPath', 'Path',
+    'Polygon', 'Polyline', 'Line', 'Rect', 'Use', 'Image', 'Symbol',
+    'Defs', 'LinearGradient', 'RadialGradient', 'Stop', 'ClipPath', 'Pattern',
+    'Mask',
+  ];
+  const mock = { __esModule: true, default: mockComponent('Svg') };
+  namedExports.forEach((el) => { mock[el] = mockComponent(el); });
+  return mock;
+});
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {

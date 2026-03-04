@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from '
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { EmptyState } from '@/components';
+import { CartIllustration } from '@/components/illustrations';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
 
@@ -65,7 +66,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         testID={testID ?? 'cart-screen'}
       >
         <EmptyState
-          icon="cart"
+          illustration={<CartIllustration testID="cart-illustration" />}
           title="Your cart is empty"
           message="Browse our handcrafted futons and find the perfect fit for your space."
           action={
