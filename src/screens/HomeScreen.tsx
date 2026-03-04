@@ -4,8 +4,9 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { darkPalette } from '@/theme/tokens';
+import { darkPalette, colors as tokenColors } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -42,6 +43,11 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
       ]}
       testID="home-screen"
     >
+      {/* Hero — Mountain skyline backdrop */}
+      <View style={styles.heroBackdrop}>
+        <MountainSkyline variant="sunrise" height={140} testID="home-hero-skyline" />
+      </View>
+
       {/* Hero Section */}
       <View style={styles.heroSection}>
         <View
@@ -181,9 +187,9 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
         </Pressable>
       </GlassCard>
 
-      {/* Section divider — placeholder for mountain skyline SVG */}
+      {/* Mountain skyline section divider */}
       <View style={styles.dividerSection}>
-        <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
+        <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
         <Text
           style={[
             styles.dividerText,
@@ -208,6 +214,10 @@ const styles = StyleSheet.create({
   content: {
     alignItems: 'center',
     paddingHorizontal: 0,
+  },
+  heroBackdrop: {
+    width: '100%',
+    marginBottom: -40,
   },
   heroSection: {
     alignItems: 'center',
@@ -234,7 +244,9 @@ const styles = StyleSheet.create({
     maxWidth: SCREEN_WIDTH * 0.75,
   },
   ctaCard: {
-    width: SCREEN_WIDTH - 48,
+    width: '100%',
+    maxWidth: SCREEN_WIDTH - 48,
+    alignSelf: 'center',
     marginBottom: 16,
   },
   ctaInner: {
@@ -271,11 +283,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
     paddingHorizontal: 48,
-  },
-  dividerLine: {
-    width: 60,
-    height: 1,
-    marginBottom: 12,
   },
   dividerText: {
     textAlign: 'center',
