@@ -21,6 +21,7 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
+import { useDeepLink } from '@/hooks/useDeepLink';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -56,6 +57,20 @@ export default function App() {
     perf.markStartup('interactive');
     perf.reportStartup();
   }, [onScreenTrackingReady]);
+
+  useDeepLink({
+    onDeepLink: (parsed, route) => {
+      trackEvent('deep_link_opened', {
+        screen: route.screen,
+        path: parsed.path,
+        ...(parsed.utm && {
+          utm_source: parsed.utm.source,
+          utm_medium: parsed.utm.medium,
+          utm_campaign: parsed.utm.campaign,
+        }),
+      });
+    },
+  });
 
   useEffect(() => {
     initAnalytics({

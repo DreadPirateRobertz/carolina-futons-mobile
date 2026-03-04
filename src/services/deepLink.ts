@@ -106,6 +106,7 @@ export function resolveRoute(parsed: ParsedDeepLink): DeepLinkRoute {
       return { screen: 'Shop' };
 
     case 'product':
+    case 'products':
       if (second) return { screen: 'ProductDetail', params: { slug: second } };
       return { screen: 'Shop' };
 
