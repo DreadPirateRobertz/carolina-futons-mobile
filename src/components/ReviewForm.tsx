@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/theme';
 
 interface ReviewFormProps {
@@ -17,14 +18,34 @@ export function ReviewForm({
 }: ReviewFormProps) {
   const { colors, borderRadius: br } = useTheme();
 
+  const MAX_PHOTOS = 5;
+
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
   const [showRatingError, setShowRatingError] = useState(false);
 
   const handleStarPress = useCallback((star: number) => {
     setRating(star);
     setShowRatingError(false);
+  }, []);
+
+  const handleAddPhoto = useCallback(async () => {
+    if (photos.length >= MAX_PHOTOS) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets?.[0]?.uri) {
+      setPhotos((prev) => [...prev, result.assets[0].uri]);
+    }
+  }, [photos.length]);
+
+  const handleRemovePhoto = useCallback((index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -35,8 +56,8 @@ export function ReviewForm({
     if (!title.trim() || !body.trim()) {
       return;
     }
-    onSubmit({ rating, title, body, photos: [] });
-  }, [rating, title, body, onSubmit]);
+    onSubmit({ rating, title, body, photos });
+  }, [rating, title, body, photos, onSubmit]);
 
   const stars = Array.from({ length: STAR_COUNT }, (_, i) => {
     const starValue = i + 1;
@@ -113,14 +134,37 @@ export function ReviewForm({
         placeholderTextColor={colors.muted}
       />
 
+      {/* Photo previews */}
+      {photos.length > 0 && (
+        <View style={styles.photoRow}>
+          {photos.map((uri, index) => (
+            <View key={uri} style={styles.photoPreviewContainer} testID={`photo-preview-${index}`}>
+              <Image source={{ uri }} style={[styles.photoPreview, { borderRadius: br.sm }]} />
+              <TouchableOpacity
+                testID={`remove-photo-${index}`}
+                onPress={() => handleRemovePhoto(index)}
+                style={styles.removePhotoButton}
+                accessibilityLabel={`Remove photo ${index + 1}`}
+                accessibilityRole="button"
+              >
+                <Text style={styles.removePhotoText}>×</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
+
       {/* Add photo button */}
       <TouchableOpacity
         testID="add-photo-button"
         style={[styles.photoButton, { borderColor: colors.muted, borderRadius: br.md }]}
+        onPress={handleAddPhoto}
         accessibilityRole="button"
-        accessibilityLabel="Add photo"
+        accessibilityLabel={`Add photo${photos.length >= MAX_PHOTOS ? ' (limit reached)' : ''}`}
       >
-        <Text style={[styles.photoButtonText, { color: colors.espresso }]}>+ Add Photo</Text>
+        <Text style={[styles.photoButtonText, { color: colors.espresso }]}>
+          + Add Photo ({photos.length}/{MAX_PHOTOS})
+        </Text>
       </TouchableOpacity>
 
       {/* Submit button */}
@@ -178,6 +222,36 @@ const styles = StyleSheet.create({
   bodyInput: {
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  photoRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  photoPreviewContainer: {
+    position: 'relative',
+  },
+  photoPreview: {
+    width: 72,
+    height: 72,
+  },
+  removePhotoButton: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  removePhotoText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 16,
   },
   photoButton: {
     borderWidth: 1,
