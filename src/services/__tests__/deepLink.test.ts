@@ -228,6 +228,25 @@ describe('deepLink', () => {
       });
     });
 
+    it('resolves forgot-password', () => {
+      expect(resolveRoute(makeLink('forgot-password'))).toEqual({
+        screen: 'ForgotPassword',
+      });
+    });
+
+    it('resolves collections to Collections', () => {
+      expect(resolveRoute(makeLink('collections'))).toEqual({
+        screen: 'Collections',
+      });
+    });
+
+    it('resolves collections with slug to CollectionDetail', () => {
+      expect(resolveRoute(makeLink('collections/mattresses'))).toEqual({
+        screen: 'CollectionDetail',
+        params: { slug: 'mattresses' },
+      });
+    });
+
     it('resolves unknown path to NotFound', () => {
       expect(resolveRoute(makeLink('unknown/path'))).toEqual({
         screen: 'NotFound',

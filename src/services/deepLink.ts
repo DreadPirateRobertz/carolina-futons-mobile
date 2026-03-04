@@ -41,6 +41,9 @@ export type DeepLinkRoute =
   | { screen: 'NotificationPreferences' }
   | { screen: 'StoreLocator' }
   | { screen: 'StoreDetail'; params: { storeId: string } }
+  | { screen: 'ForgotPassword' }
+  | { screen: 'Collections' }
+  | { screen: 'CollectionDetail'; params: { slug: string } }
   | { screen: 'NotFound'; params: { path: string } };
 
 /** Parse a deep link URL into components */
@@ -142,6 +145,13 @@ export function resolveRoute(parsed: ParsedDeepLink): DeepLinkRoute {
     case 'stores':
       if (second) return { screen: 'StoreDetail', params: { storeId: second } };
       return { screen: 'StoreLocator' };
+
+    case 'forgot-password':
+      return { screen: 'ForgotPassword' };
+
+    case 'collections':
+      if (second) return { screen: 'CollectionDetail', params: { slug: second } };
+      return { screen: 'Collections' };
 
     default:
       return { screen: 'NotFound', params: { path: parsed.path } };

@@ -66,6 +66,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       StoreDetail: 'stores/:storeId',
       Collections: 'collections',
       CollectionDetail: 'collections/:slug',
+      ForgotPassword: 'forgot-password',
     },
   },
   getStateFromPath: normalizePathForLinking,
@@ -87,4 +88,5 @@ export const SUPPORTED_PATHS = [
   'stores',
   'store-locator',
   'collections',
+  'forgot-password',
 ] as const;

@@ -95,6 +95,10 @@ describe('linkingConfig', () => {
   it('maps AR screen', () => {
     expect(screens.AR).toBe('ar');
   });
+
+  it('maps ForgotPassword screen', () => {
+    expect(screens.ForgotPassword).toBe('forgot-password');
+  });
 });
 
 describe('SUPPORTED_PATHS', () => {
@@ -144,6 +148,14 @@ describe('SUPPORTED_PATHS', () => {
 
   it('includes store-locator', () => {
     expect(SUPPORTED_PATHS).toContain('store-locator');
+  });
+
+  it('includes forgot-password', () => {
+    expect(SUPPORTED_PATHS).toContain('forgot-password');
+  });
+
+  it('includes collections', () => {
+    expect(SUPPORTED_PATHS).toContain('collections');
   });
 });
 
@@ -255,6 +267,22 @@ describe('deep link route resolution (getStateFromPath)', () => {
 
     it('resolves /notifications', () => {
       expect(getScreen('notifications')).toBe('NotificationPreferences');
+    });
+
+    it('resolves /forgot-password', () => {
+      expect(getScreen('forgot-password')).toBe('ForgotPassword');
+    });
+
+    it('resolves /collections', () => {
+      expect(getScreen('collections')).toBe('Collections');
+    });
+
+    it('resolves /collections/:slug', () => {
+      expect(getScreen('collections/mattresses')).toBe('CollectionDetail');
+    });
+
+    it('passes slug param to CollectionDetail', () => {
+      expect(getParams('collections/mattresses')).toEqual({ slug: 'mattresses' });
     });
   });
 });
