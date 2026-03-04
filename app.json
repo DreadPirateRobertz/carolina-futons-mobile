@@ -86,7 +86,14 @@
       "expo-asset",
       "expo-secure-store",
       "expo-font",
-      "@stripe/stripe-react-native"
+      "@stripe/stripe-react-native",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#E8D5B7"
+        }
+      ]
     ]
   }
 }

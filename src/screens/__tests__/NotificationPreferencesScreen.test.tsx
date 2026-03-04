@@ -5,6 +5,22 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { darkPalette, typography } from '@/theme/tokens';
 
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'undetermined' }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: 'ExponentPushToken[test]' }),
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
+  addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  AndroidImportance: { MAX: 5 },
+  DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
+}));
+jest.mock('expo-device', () => ({ isDevice: true }));
+jest.mock('expo-constants', () => ({
+  expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },
+}));
+
 function renderNotifPrefs(
   props: Partial<React.ComponentProps<typeof NotificationPreferencesScreen>> = {},
 ) {
