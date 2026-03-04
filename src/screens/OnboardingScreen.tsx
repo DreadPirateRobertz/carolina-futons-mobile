@@ -1,6 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { MountainSkyline } from '@/components/MountainSkyline';
+import { GlassCard } from '@/components/GlassCard';
 import {
   useStyleQuiz,
   type RoomType,
@@ -112,7 +115,12 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
 
   const renderProgress = () => (
     <View style={[styles.progressContainer, { paddingHorizontal: spacing.lg }]}>
-      <View style={[styles.progressTrack, { backgroundColor: colors.sandDark, borderRadius: borderRadius.pill }]}>
+      <View
+        style={[
+          styles.progressTrack,
+          { backgroundColor: darkPalette.surfaceElevated, borderRadius: borderRadius.pill },
+        ]}
+      >
         <View
           testID="onboarding-progress-bar"
           style={[
@@ -126,7 +134,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         />
       </View>
       <Text
-        style={[styles.progressLabel, { color: colors.muted, fontFamily: typography.bodyFamily }]}
+        style={[styles.progressLabel, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
       >
         {step + 1} / {TOTAL_STEPS}
       </Text>
@@ -154,7 +162,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           style={[
             step === 0 ? styles.heroHeadline : styles.headline,
             {
-              color: colors.espresso,
+              color: darkPalette.textPrimary,
               fontFamily: typography.headingFamily,
             },
           ]}
@@ -165,7 +173,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           style={[
             styles.bodyText,
             {
-              color: colors.espressoLight,
+              color: darkPalette.textMuted,
               fontFamily: typography.bodyFamily,
             },
           ]}
@@ -213,7 +221,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         <Text
           style={[
             styles.quizTitle,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
           ]}
         >
           {q.title}
@@ -221,7 +229,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         <Text
           style={[
             styles.quizSubtitle,
-            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
           ]}
         >
           {q.subtitle}
@@ -233,34 +241,37 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
               <TouchableOpacity
                 key={option.value}
                 testID={`quiz-option-${option.value}`}
-                style={[
-                  styles.optionCard,
-                  {
-                    backgroundColor: isSelected ? colors.sunsetCoralLight : colors.white,
-                    borderRadius: borderRadius.card,
-                    borderColor: isSelected ? colors.sunsetCoral : colors.sandDark,
-                  },
-                  isSelected ? shadows.cardHover : shadows.card,
-                ]}
+                style={styles.optionTouchable}
                 onPress={() => handleQuizSelect(option.value)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 accessibilityLabel={option.label}
               >
-                <Text style={styles.optionIcon}>{option.icon}</Text>
-                <Text
+                <GlassCard
+                  intensity={isSelected ? 'heavy' : 'light'}
                   style={[
-                    styles.optionLabel,
+                    styles.optionCard,
                     {
-                      color: isSelected ? colors.espresso : colors.espressoLight,
-                      fontFamily: isSelected
-                        ? typography.bodyFamilySemiBold
-                        : typography.bodyFamily,
+                      borderRadius: borderRadius.card,
+                      borderColor: isSelected ? colors.sunsetCoral : darkPalette.glassBorder,
                     },
                   ]}
                 >
-                  {option.label}
-                </Text>
+                  <Text style={styles.optionIcon}>{option.icon}</Text>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      {
+                        color: isSelected ? colors.sunsetCoral : darkPalette.textPrimary,
+                        fontFamily: isSelected
+                          ? typography.bodyFamilySemiBold
+                          : typography.bodyFamily,
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </GlassCard>
               </TouchableOpacity>
             );
           })}
@@ -272,8 +283,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   // ── Completion ──────────────────────────────────────────────────
 
   const renderCompletion = () => {
-    const styleName =
-      STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
+    const styleName = STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
     return (
       <View style={styles.slideContainer} testID="onboarding-completion">
         <Text
@@ -287,7 +297,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         <Text
           style={[
             styles.heroHeadline,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
           ]}
         >
           Your space,{'\n'}your way
@@ -295,7 +305,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         <Text
           style={[
             styles.bodyText,
-            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
           ]}
         >
           {`We\u2019ll highlight ${styleName.toLowerCase()} picks and features that fit your lifestyle. You can always update your preferences later.`}
@@ -308,9 +318,16 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'onboarding-screen'}
     >
+      {/* Mountain skyline backdrop for brand slides */}
+      {isBrandPhase && (
+        <View style={styles.skylineBackdrop}>
+          <MountainSkyline variant="sunrise" height={100} testID="onboarding-skyline" />
+        </View>
+      )}
+
       {/* Skip button — visible except on completion */}
       {!isCompletionStep && (
         <TouchableOpacity
@@ -320,7 +337,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           accessibilityLabel="Skip onboarding"
           accessibilityRole="button"
         >
-          <Text style={[styles.skipText, { color: colors.muted }]}>Skip</Text>
+          <Text style={[styles.skipText, { color: darkPalette.textMuted }]}>Skip</Text>
         </TouchableOpacity>
       )}
 
@@ -333,14 +350,12 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
-          <Text style={[styles.backText, { color: colors.espressoLight }]}>{'\u2190'}</Text>
+          <Text style={[styles.backText, { color: darkPalette.textMuted }]}>{'\u2190'}</Text>
         </TouchableOpacity>
       )}
 
       {/* Progress */}
-      <View style={[styles.progressWrapper, { top: spacing.xxl + 40 }]}>
-        {renderProgress()}
-      </View>
+      <View style={[styles.progressWrapper, { top: spacing.xxl + 40 }]}>{renderProgress()}</View>
 
       {/* Content */}
       <ScrollView
@@ -390,6 +405,13 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
+  },
+  skylineBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 0,
   },
   skipButton: {
     position: 'absolute',
@@ -501,12 +523,15 @@ const styles = StyleSheet.create({
     gap: 12,
     width: '100%',
   },
-  optionCard: {
+  optionTouchable: {
     width: '46%',
+  },
+  optionCard: {
     paddingVertical: 20,
     paddingHorizontal: 16,
     alignItems: 'center',
     borderWidth: 1.5,
+    width: '100%',
   },
   optionIcon: {
     fontSize: 28,

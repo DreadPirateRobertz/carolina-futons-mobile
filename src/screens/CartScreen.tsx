@@ -2,11 +2,11 @@ import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components';
-import { CartIllustration } from '@/components/illustrations';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
-import { events, trackEvent } from '@/services/analytics';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows } = useTheme();
+  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
 
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
@@ -29,7 +29,6 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const handleRemove = useCallback(
     (itemId: string) => {
       removeItem(itemId);
-      events.removeFromCart(itemId);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
@@ -64,11 +63,12 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   if (items.length === 0) {
     return (
       <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'cart-screen'}
       >
+        <MountainSkyline variant="sunrise" height={80} testID="cart-empty-skyline" />
         <EmptyState
-          illustration={<CartIllustration testID="cart-illustration" />}
+          icon="cart"
           title="Your cart is empty"
           message="Browse our handcrafted futons and find the perfect fit for your space."
           action={
@@ -84,13 +84,19 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'cart-screen'}
     >
+      {/* Mountain skyline header */}
+      <MountainSkyline variant="sunset" height={50} testID="cart-skyline" />
+
       {/* Header */}
       <View style={[styles.header, { paddingHorizontal: spacing.lg }]}>
         <Text
-          style={[styles.headerTitle, { color: colors.espresso }]}
+          style={[
+            styles.headerTitle,
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="cart-header"
         >
@@ -139,7 +145,14 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           ]}
           testID="order-summary"
         >
-          <Text style={[styles.summaryTitle, { color: colors.espresso }]}>Order Summary</Text>
+          <Text
+            style={[
+              styles.summaryTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            Order Summary
+          </Text>
 
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>Subtotal</Text>
@@ -180,8 +193,21 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
 
           <View style={styles.summaryRow}>
-            <Text style={[styles.totalLabel, { color: colors.espresso }]}>Total</Text>
-            <Text style={[styles.totalValue, { color: colors.espresso }]} testID="cart-total">
+            <Text
+              style={[
+                styles.totalLabel,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
+            >
+              Total
+            </Text>
+            <Text
+              style={[
+                styles.totalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
+              testID="cart-total"
+            >
               {formatPrice(total)}
             </Text>
           </View>
@@ -216,10 +242,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               },
               shadows.button,
             ]}
-            onPress={() => {
-              trackEvent('begin_checkout', { item_count: itemCount, subtotal });
-              onCheckout?.();
-            }}
+            onPress={onCheckout}
             testID="checkout-button"
             accessibilityLabel={`Proceed to checkout, total ${formatPrice(total)}`}
             accessibilityRole="button"
