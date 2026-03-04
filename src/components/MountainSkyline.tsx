@@ -1,94 +1,64 @@
 import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
-import Svg, { Defs, LinearGradient, RadialGradient, Stop, Rect, Path, Circle } from 'react-native-svg';
+import Svg, {
+  Defs,
+  LinearGradient,
+  RadialGradient,
+  Stop,
+  Rect,
+  Path,
+  Circle,
+  Line,
+} from 'react-native-svg';
 import { colors } from '@/theme/tokens';
+import {
+  MOUNTAIN_LAYER_CONFIGS,
+  GRADIENT_PRESETS_MULTI,
+  STANDARD_OPACITIES,
+  TRANSPARENT_OPACITIES,
+  STANDARD_LAYER_COLORS,
+  TRANSPARENT_LAYER_COLORS,
+  buildCBezierMountainPath,
+  buildBirds,
+  buildPineTrees,
+  buildFlora,
+} from './illustrations/shared';
 
 const VIEWBOX_WIDTH = 1440;
 const DEFAULT_HEIGHT = 120;
 
-const GRADIENT_PRESETS = {
-  sunrise: { top: colors.skyGradientTop, bottom: colors.skyGradientBottom },
-  sunset: { top: colors.sunsetCoral, bottom: colors.skyGradientBottom },
-} as const;
-
-type Variant = keyof typeof GRADIENT_PRESETS;
+type Variant = 'sunrise' | 'sunset';
 
 interface Props {
   variant?: Variant;
   height?: number;
-  /** Show a radial sunrise glow behind the mountains */
   showGlow?: boolean;
+  /** Transparent mode for dark section dividers */
+  transparent?: boolean;
+  /** Show detail elements: birds, trees, flora (default true) */
+  showDetails?: boolean;
   style?: ViewStyle;
   testID?: string;
-}
-
-/** Foreground mountain silhouette — sharp, close peaks */
-function buildMountainPath(vbH: number): string {
-  const points: [number, number][] = [
-    [0, vbH],
-    [0, vbH * 0.7],
-    [60, vbH * 0.55],
-    [140, vbH * 0.35],
-    [200, vbH * 0.45],
-    [280, vbH * 0.25],
-    [340, vbH * 0.4],
-    [400, vbH * 0.3],
-    [480, vbH * 0.15],
-    [540, vbH * 0.35],
-    [600, vbH * 0.28],
-    [680, vbH * 0.42],
-    [740, vbH * 0.2],
-    [800, vbH * 0.38],
-    [860, vbH * 0.12],
-    [920, vbH * 0.32],
-    [980, vbH * 0.22],
-    [1060, vbH * 0.4],
-    [1120, vbH * 0.18],
-    [1200, vbH * 0.35],
-    [1260, vbH * 0.28],
-    [1340, vbH * 0.42],
-    [1400, vbH * 0.3],
-    [1440, vbH * 0.5],
-    [1440, vbH],
-  ];
-
-  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ') + ' Z';
-}
-
-/** Mid-ground mountain layer — softer, wider ridges for atmospheric depth */
-function buildMidGroundPath(vbH: number): string {
-  const points: [number, number][] = [
-    [0, vbH],
-    [0, vbH * 0.82],
-    [120, vbH * 0.6],
-    [240, vbH * 0.7],
-    [360, vbH * 0.5],
-    [500, vbH * 0.62],
-    [640, vbH * 0.45],
-    [780, vbH * 0.55],
-    [900, vbH * 0.4],
-    [1040, vbH * 0.58],
-    [1160, vbH * 0.48],
-    [1300, vbH * 0.6],
-    [1440, vbH * 0.52],
-    [1440, vbH],
-  ];
-
-  return points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ') + ' Z';
 }
 
 export function MountainSkyline({
   variant = 'sunrise',
   height = DEFAULT_HEIGHT,
   showGlow = false,
+  transparent = false,
+  showDetails = true,
   style,
   testID,
 }: Props) {
-  const grad = GRADIENT_PRESETS[variant];
   const gradId = `cf-sky-grad-${variant}`;
   const glowId = `cf-glow-${variant}`;
-  const foregroundPath = buildMountainPath(height);
-  const midGroundPath = buildMidGroundPath(height);
+  const gradientStops = GRADIENT_PRESETS_MULTI[variant];
+  const opacities = transparent ? TRANSPARENT_OPACITIES : STANDARD_OPACITIES;
+  const layerColors = transparent ? TRANSPARENT_LAYER_COLORS : STANDARD_LAYER_COLORS;
+
+  const birds = showDetails ? buildBirds(VIEWBOX_WIDTH, height) : [];
+  const trees = showDetails ? buildPineTrees(VIEWBOX_WIDTH, height) : [];
+  const flora = showDetails ? buildFlora(VIEWBOX_WIDTH, height) : [];
 
   return (
     <View testID={testID} style={[styles.container, style]}>
@@ -100,8 +70,14 @@ export function MountainSkyline({
       >
         <Defs>
           <LinearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0%" stopColor={grad.top} />
-            <Stop offset="100%" stopColor={grad.bottom} />
+            {gradientStops.map((stop, i) => (
+              <Stop
+                key={i}
+                offset={stop.offset}
+                stopColor={stop.color}
+                stopOpacity={stop.opacity}
+              />
+            ))}
           </LinearGradient>
           {showGlow && (
             <RadialGradient id={glowId} cx="50%" cy="85%" r="40%">
@@ -110,14 +86,110 @@ export function MountainSkyline({
             </RadialGradient>
           )}
         </Defs>
+
+        {/* Sky background */}
         <Rect width={VIEWBOX_WIDTH} height={height} fill={`url(#${gradId})`} />
+
+        {/* Sunrise glow */}
         {showGlow && (
-          <Circle cx={VIEWBOX_WIDTH / 2} cy={height * 0.85} r={height * 0.6} fill={`url(#${glowId})`} />
+          <Circle
+            cx={VIEWBOX_WIDTH / 2}
+            cy={height * 0.85}
+            r={height * 0.6}
+            fill={`url(#${glowId})`}
+          />
         )}
-        {/* Mid-ground — espressoLight for atmospheric depth */}
-        <Path d={midGroundPath} fill={colors.espressoLight} opacity={0.5} />
-        {/* Foreground — sharp espresso silhouette */}
-        <Path d={foregroundPath} fill={colors.espresso} />
+
+        {/* Bird silhouettes (above mountains) */}
+        {birds.map((bird, i) => (
+          <Path
+            key={`bird-${i}`}
+            d={bird.path}
+            fill="none"
+            stroke={colors.espresso}
+            strokeWidth={bird.strokeWidth}
+            opacity={0.3}
+          />
+        ))}
+
+        {/* 7 mountain layers — distant to front */}
+        {MOUNTAIN_LAYER_CONFIGS.map((layer, i) => (
+          <Path
+            key={`mountain-${layer.name}`}
+            d={buildCBezierMountainPath(height, layer.baseHeight, layer.seed)}
+            fill={layerColors[i]}
+            opacity={opacities[i]}
+          />
+        ))}
+
+        {/* Atmospheric haze bands */}
+        <Rect
+          y={height * 0.3}
+          width={VIEWBOX_WIDTH}
+          height={height * 0.08}
+          fill={colors.mountainBlueLight}
+          opacity={0.06}
+        />
+        <Rect
+          y={height * 0.5}
+          width={VIEWBOX_WIDTH}
+          height={height * 0.06}
+          fill={colors.sandLight}
+          opacity={0.04}
+        />
+        <Rect
+          y={height * 0.65}
+          width={VIEWBOX_WIDTH}
+          height={height * 0.05}
+          fill={colors.espressoLight}
+          opacity={0.03}
+        />
+
+        {/* Pine trees */}
+        {trees.map((tree, i) => (
+          <React.Fragment key={`tree-${i}`}>
+            <Rect
+              x={tree.trunk.x}
+              y={tree.trunk.y}
+              width={tree.trunk.width}
+              height={tree.trunk.height}
+              fill={colors.espresso}
+              opacity={0.4}
+            />
+            {tree.canopyLayers.map((canopy, j) => (
+              <Path
+                key={`canopy-${i}-${j}`}
+                d={canopy.path}
+                fill={colors.espresso}
+                opacity={canopy.opacity}
+              />
+            ))}
+          </React.Fragment>
+        ))}
+
+        {/* Wildflower flora */}
+        {flora.map((f, i) => (
+          <React.Fragment key={`flora-${i}`}>
+            <Line
+              x1={f.stem.x1}
+              y1={f.stem.y1}
+              x2={f.stem.x2}
+              y2={f.stem.y2}
+              stroke={colors.espresso}
+              strokeWidth={f.stem.strokeWidth}
+              opacity={0.3}
+            />
+            <Circle cx={f.bloom.cx} cy={f.bloom.cy} r={f.bloom.r} fill={f.bloom.color} opacity={0.5} />
+          </React.Fragment>
+        ))}
+
+        {/* Paper grain overlay */}
+        <Rect
+          width={VIEWBOX_WIDTH}
+          height={height}
+          fill={colors.espresso}
+          opacity={0.06}
+        />
       </Svg>
     </View>
   );

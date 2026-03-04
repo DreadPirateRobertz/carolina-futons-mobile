@@ -44,16 +44,50 @@ describe('MountainSkyline', () => {
   });
 
   it('uses brand token colors', () => {
-    // Verify the component imports and uses the correct brand tokens
     expect(colors.skyGradientTop).toBe('#B8D4E3');
     expect(colors.skyGradientBottom).toBe('#F0C87A');
     expect(colors.sunsetCoral).toBe('#E8845C');
     expect(colors.espresso).toBe('#3A2518');
   });
 
-  it('exports VIEWBOX_WIDTH constant', () => {
-    // The component should use a 1440-wide viewBox matching the web version
-    const { MountainSkyline: Component } = require('../MountainSkyline');
-    expect(Component).toBeDefined();
+  it('renders 7 mountain layers', () => {
+    const { toJSON } = render(<MountainSkyline testID="skyline-layers" />, { wrapper });
+    const json = JSON.stringify(toJSON());
+    // Count Path elements — should have 7 mountain layers
+    const paths = json.match(/"type":"Path"/g) || [];
+    expect(paths.length).toBeGreaterThanOrEqual(7);
+  });
+
+  it('renders bird detail elements by default', () => {
+    const { toJSON } = render(<MountainSkyline testID="skyline-birds" />, { wrapper });
+    const json = JSON.stringify(toJSON());
+    // Birds use stroke paths with fill="none"
+    expect(json).toContain('"fill":"none"');
+  });
+
+  it('renders transparent variant', () => {
+    const { getByTestId } = render(
+      <MountainSkyline testID="skyline-transparent" transparent />,
+      { wrapper },
+    );
+    expect(getByTestId('skyline-transparent')).toBeTruthy();
+  });
+
+  it('accepts showDetails prop', () => {
+    const { getByTestId } = render(
+      <MountainSkyline testID="skyline-details" showDetails />,
+      { wrapper },
+    );
+    expect(getByTestId('skyline-details')).toBeTruthy();
+  });
+
+  it('hides details when showDetails is false', () => {
+    const { toJSON } = render(
+      <MountainSkyline testID="skyline-no-details" showDetails={false} />,
+      { wrapper },
+    );
+    const json = JSON.stringify(toJSON());
+    // Should NOT have bird paths (fill="none" strokes)
+    expect(json).not.toContain('"fill":"none"');
   });
 });
