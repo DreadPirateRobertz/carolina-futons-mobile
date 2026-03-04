@@ -6,6 +6,7 @@ import { EmptyState } from '@/components';
 import { CartIllustration } from '@/components/illustrations';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
+import { events, trackEvent } from '@/services/analytics';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -28,6 +29,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const handleRemove = useCallback(
     (itemId: string) => {
       removeItem(itemId);
+      events.removeFromCart(itemId);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
@@ -214,7 +216,10 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               },
               shadows.button,
             ]}
-            onPress={onCheckout}
+            onPress={() => {
+              trackEvent('begin_checkout', { item_count: itemCount, subtotal });
+              onCheckout?.();
+            }}
             testID="checkout-button"
             accessibilityLabel={`Proceed to checkout, total ${formatPrice(total)}`}
             accessibilityRole="button"

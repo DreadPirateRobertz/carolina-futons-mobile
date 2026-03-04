@@ -29,6 +29,7 @@ import { initAnalytics } from '@/services/analyticsInit';
 import { trackEvent } from '@/services/analytics';
 import { initCrashReporting } from '@/services/crashReportingInit';
 import { perf } from '@/services/performance';
+import { startFunnelTracking } from '@/services/funnelTracker';
 
 // Initialize crash reporting as early as possible (before component render)
 initCrashReporting({
@@ -78,6 +79,7 @@ export default function App() {
       mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
     }).then(() => {
       perf.markStartup('analytics_init');
+      startFunnelTracking();
       trackEvent('app_open');
     });
   }, []);

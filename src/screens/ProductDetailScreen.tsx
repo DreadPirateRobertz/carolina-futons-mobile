@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -28,6 +28,7 @@ import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
+import { events } from '@/services/analytics';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -81,6 +82,11 @@ export function ProductDetailScreen({
   const previewReviews = reviews.slice(0, 3);
 
   const totalPrice = model.basePrice + selectedFabric.price;
+
+  // Track product view on mount
+  useEffect(() => {
+    events.viewProduct(model.id, 'product_detail');
+  }, [model.id]);
 
   // --- Parallax scroll tracking ---
   const scrollY = useSharedValue(0);
@@ -155,17 +161,19 @@ export function ProductDetailScreen({
   // --- Callbacks (unchanged) ---
   const handleSelectFabric = useCallback((fabric: Fabric) => {
     setSelectedFabric(fabric);
+    events.selectFabric(model.id, fabric.id);
     if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     }
-  }, []);
+  }, [model.id]);
 
   const handleAddToCart = useCallback(() => {
     onAddToCart?.(model, selectedFabric, quantity);
+    events.addToCart(model.id, totalPrice, quantity);
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [model, selectedFabric, quantity, onAddToCart]);
+  }, [model, selectedFabric, quantity, totalPrice, onAddToCart]);
 
   const handleIncrement = useCallback(() => {
     setQuantity((prev) => Math.min(10, prev + 1));
@@ -183,6 +191,7 @@ export function ProductDetailScreen({
 
   const handleOpenAR = useCallback(() => {
     onOpenAR?.(model.id);
+    events.openAR(model.id);
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {

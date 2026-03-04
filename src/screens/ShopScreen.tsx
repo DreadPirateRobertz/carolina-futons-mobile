@@ -12,6 +12,7 @@ import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { EmptyState } from '@/components/EmptyState';
 import { SearchIllustration } from '@/components/illustrations';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { events } from '@/services/analytics';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -43,8 +44,25 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     (query: string) => {
       setSearchQuery(query);
       addSearch(query);
+      events.search(query, products.length);
     },
-    [setSearchQuery, addSearch],
+    [setSearchQuery, addSearch, products.length],
+  );
+
+  const handleCategorySelect = useCallback(
+    (category: string) => {
+      setSelectedCategory(category);
+      events.filterCategory(category);
+    },
+    [setSelectedCategory],
+  );
+
+  const handleSortChange = useCallback(
+    (sort: string) => {
+      setSortBy(sort);
+      events.sortProducts(sort);
+    },
+    [setSortBy],
   );
 
   const renderProduct = useCallback(
@@ -79,11 +97,11 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         <CategoryFilter
           categories={categories}
           selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={handleCategorySelect}
         />
 
         {/* Sort + count */}
-        <SortPicker value={sortBy} onChange={setSortBy} resultCount={products.length} />
+        <SortPicker value={sortBy} onChange={handleSortChange} resultCount={products.length} />
       </View>
     ),
     [
@@ -97,8 +115,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       suggestions,
       recentSearches,
       setSearchQuery,
-      setSelectedCategory,
-      setSortBy,
+      handleCategorySelect,
+      handleSortChange,
       handleSubmitSearch,
       removeSearch,
       clearAll,

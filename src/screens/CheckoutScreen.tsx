@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
+import { trackEvent, events } from '@/services/analytics';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -80,13 +81,18 @@ export function CheckoutScreen({ onPlaceOrder, onBack, testID }: Props) {
 
   const handlePlaceOrder = useCallback(() => {
     if (!selectedMethod) return;
+    events.purchase(`order-${Date.now()}`, total, items.length);
     onPlaceOrder?.(selectedMethod);
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [selectedMethod, onPlaceOrder]);
+  }, [selectedMethod, onPlaceOrder, total, items.length]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
+
+  useEffect(() => {
+    trackEvent('begin_checkout', { item_count: items.length, total });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <View
