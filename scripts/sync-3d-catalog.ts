@@ -50,15 +50,10 @@ function parseArgs(): {
   const check = args.includes('--check');
 
   return {
-    catalogPath: catalogIdx !== -1
-      ? args[catalogIdx + 1]
-      : path.join(root, 'shared', 'catalog-3d.json'),
-    tsOut: tsOutIdx !== -1
-      ? args[tsOutIdx + 1]
-      : path.join(root, 'src', 'data', 'models3d.ts'),
-    jsOut: jsOutIdx !== -1
-      ? args[jsOutIdx + 1]
-      : path.join(root, 'shared', 'models3d.web.js'),
+    catalogPath:
+      catalogIdx !== -1 ? args[catalogIdx + 1] : path.join(root, 'shared', 'catalog-3d.json'),
+    tsOut: tsOutIdx !== -1 ? args[tsOutIdx + 1] : path.join(root, 'src', 'data', 'models3d.ts'),
+    jsOut: jsOutIdx !== -1 ? args[jsOutIdx + 1] : path.join(root, 'shared', 'models3d.web.js'),
     check,
   };
 }
@@ -136,7 +131,9 @@ function generateTypeScript(catalog: Catalog): string {
   lines.push(``);
   lines.push(`/**`);
   lines.push(` * 3D model catalog.`);
-  lines.push(` * Only products with AR-suitable geometry are included (futons, frames, murphy-beds).`);
+  lines.push(
+    ` * Only products with AR-suitable geometry are included (futons, frames, murphy-beds).`,
+  );
   lines.push(` * Covers, pillows, and small accessories are excluded from AR.`);
   lines.push(` */`);
   lines.push(`export const MODELS_3D: Model3DAsset[] = [`);
@@ -145,8 +142,8 @@ function generateTypeScript(catalog: Catalog): string {
   const categories = ['murphy-beds', 'futons', 'frames'];
   const categoryComments: Record<string, string> = {
     'murphy-beds': '// --- Murphy Cabinet Beds ---',
-    'futons': '// --- Futons & Frames ---',
-    'frames': '',
+    futons: '// --- Futons & Frames ---',
+    frames: '',
   };
 
   let first = true;
@@ -175,7 +172,9 @@ function generateTypeScript(catalog: Catalog): string {
       lines.push(`    productId: '${model.productId}',`);
       lines.push(`    glbUrl: ${glbUrl},`);
       lines.push(`    usdzUrl: ${usdzUrl},`);
-      lines.push(`    dimensions: { width: inToM(${model.dimensions.width}), depth: inToM(${model.dimensions.depth}), height: inToM(${model.dimensions.height}) },`);
+      lines.push(
+        `    dimensions: { width: inToM(${model.dimensions.width}), depth: inToM(${model.dimensions.depth}), height: inToM(${model.dimensions.height}) },`,
+      );
       lines.push(`    fileSizeBytes: ${formatSize(model.fileSizeBytes)},`);
       lines.push(`    contentHash: '${model.contentHash}',`);
       lines.push(`    hasFabricVariants: ${model.hasFabricVariants},`);
@@ -185,7 +184,9 @@ function generateTypeScript(catalog: Catalog): string {
 
   lines.push(`];`);
   lines.push(``);
-  lines.push(`/** Look up 3D model asset for a product, returns undefined if no AR model exists */`);
+  lines.push(
+    `/** Look up 3D model asset for a product, returns undefined if no AR model exists */`,
+  );
   lines.push(`export function getModel3DForProduct(productId: string): Model3DAsset | undefined {`);
   lines.push(`  return MODELS_3D.find((m) => m.productId === productId);`);
   lines.push(`}`);
@@ -241,7 +242,9 @@ function generateJavaScript(catalog: Catalog): string {
     lines.push(`    productId: '${model.productId}',`);
     lines.push(`    glbUrl: ${glbUrl},`);
     lines.push(`    usdzUrl: ${usdzUrl},`);
-    lines.push(`    dimensions: { width: inToM(${model.dimensions.width}), depth: inToM(${model.dimensions.depth}), height: inToM(${model.dimensions.height}) },`);
+    lines.push(
+      `    dimensions: { width: inToM(${model.dimensions.width}), depth: inToM(${model.dimensions.depth}), height: inToM(${model.dimensions.height}) },`,
+    );
     lines.push(`    fileSizeBytes: ${model.fileSizeBytes},`);
     lines.push(`    contentHash: '${model.contentHash}',`);
     lines.push(`    hasFabricVariants: ${model.hasFabricVariants},`);
@@ -282,11 +285,10 @@ function main(): void {
     let mismatch = false;
 
     // Format TS content through prettier to match committed output
-    const formattedTsContent = execFileSync(
-      'npx',
-      ['prettier', '--parser', 'typescript'],
-      { input: tsContent, encoding: 'utf-8' },
-    );
+    const formattedTsContent = execFileSync('npx', ['prettier', '--parser', 'typescript'], {
+      input: tsContent,
+      encoding: 'utf-8',
+    });
 
     if (fs.existsSync(tsOut)) {
       const existing = fs.readFileSync(tsOut, 'utf-8');
