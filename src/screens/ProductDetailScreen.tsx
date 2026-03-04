@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
 import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
@@ -180,6 +181,9 @@ export function ProductDetailScreen({
           scrollEventThrottle={16}
           testID="gallery-list"
         />
+
+        {/* Mountain skyline transition */}
+        <MountainSkyline variant="sunset" height={40} testID="product-detail-skyline" />
 
         {/* Pagination dots */}
         <View style={styles.paginationContainer} testID="gallery-pagination">

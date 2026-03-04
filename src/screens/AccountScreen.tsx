@@ -1,6 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { MountainSkyline } from '@/components/MountainSkyline';
+import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
@@ -16,14 +19,15 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
   if (!isAuthenticated || !user) {
     return (
       <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'account-screen'}
       >
+        <MountainSkyline variant="sunrise" height={120} testID="account-skyline" />
         <View style={styles.guestContent}>
           <Text
             style={[
               styles.guestTitle,
-              { color: colors.espresso, fontFamily: typography.headingFamily },
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
             ]}
             testID="guest-title"
           >
@@ -32,7 +36,7 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
           <Text
             style={[
               styles.guestMessage,
-              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
             ]}
           >
             Sign in to view orders, save favorites, and manage your profile.
@@ -60,10 +64,12 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'account-screen'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <MountainSkyline variant="sunrise" height={80} testID="account-auth-skyline" />
+
         {/* Profile header */}
         <View style={[styles.profileHeader, { paddingHorizontal: spacing.lg }]}>
           <View
@@ -75,13 +81,13 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
           <Text
             style={[
               styles.userName,
-              { color: colors.espresso, fontFamily: typography.headingFamily },
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
             ]}
             testID="user-display-name"
           >
             {user.displayName}
           </Text>
-          <Text style={[styles.userEmail, { color: colors.espressoLight }]} testID="user-email">
+          <Text style={[styles.userEmail, { color: darkPalette.textMuted }]} testID="user-email">
             {user.email}
           </Text>
         </View>
@@ -145,9 +151,6 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
 function MenuItem({
   label,
   onPress,
-  colors,
-  borderRadius: br,
-  shadows: sh,
   testID,
 }: {
   label: string;
@@ -158,22 +161,17 @@ function MenuItem({
   testID?: string;
 }) {
   return (
-    <TouchableOpacity
-      style={[
-        styles.menuItem,
-        {
-          backgroundColor: colors.sandLight,
-          borderRadius: br.card,
-        },
-        sh.card,
-      ]}
-      onPress={onPress}
-      testID={testID}
-      accessibilityRole="button"
-    >
-      <Text style={[styles.menuLabel, { color: colors.espresso }]}>{label}</Text>
-      <Text style={[styles.menuChevron, { color: colors.muted }]}>›</Text>
-    </TouchableOpacity>
+    <GlassCard intensity="light">
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={onPress}
+        testID={testID}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.menuLabel, { color: darkPalette.textPrimary }]}>{label}</Text>
+        <Text style={[styles.menuChevron, { color: darkPalette.textMuted }]}>›</Text>
+      </TouchableOpacity>
+    </GlassCard>
   );
 }
 

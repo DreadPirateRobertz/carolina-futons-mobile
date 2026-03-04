@@ -2,7 +2,9 @@ import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
 
@@ -61,9 +63,10 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   if (items.length === 0) {
     return (
       <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'cart-screen'}
       >
+        <MountainSkyline variant="sunrise" height={80} testID="cart-empty-skyline" />
         <EmptyState
           icon="cart"
           title="Your cart is empty"
@@ -81,15 +84,18 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
 
   return (
     <View
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'cart-screen'}
     >
+      {/* Mountain skyline header */}
+      <MountainSkyline variant="sunset" height={50} testID="cart-skyline" />
+
       {/* Header */}
       <View style={[styles.header, { paddingHorizontal: spacing.lg }]}>
         <Text
           style={[
             styles.headerTitle,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
           ]}
           accessibilityRole="header"
           testID="cart-header"
