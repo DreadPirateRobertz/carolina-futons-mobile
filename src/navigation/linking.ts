@@ -23,10 +23,13 @@ import { getStateFromPath } from '@react-navigation/native';
 import type { RootStackParamList } from './AppNavigator';
 
 /** Normalize URL paths before React Navigation processes them (e.g. /products/ → /product/) */
-function normalizePathForLinking(path: string, options: object): ReturnType<typeof getStateFromPath> {
+const normalizePathForLinking: NonNullable<LinkingOptions<RootStackParamList>['getStateFromPath']> = (
+  path,
+  options,
+) => {
   const normalized = path.replace(/^\/products\//, '/product/');
   return getStateFromPath(normalized, options);
-}
+};
 
 export const linkingConfig: LinkingOptions<RootStackParamList> = {
   prefixes: ['carolinafutons://', 'https://carolinafutons.com', 'https://www.carolinafutons.com'],

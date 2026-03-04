@@ -60,15 +60,14 @@ export default function App() {
 
   useDeepLink({
     onDeepLink: (parsed, route) => {
-      trackEvent('deep_link_opened', {
+      const props: Record<string, string> = {
         screen: route.screen,
         path: parsed.path,
-        ...(parsed.utm && {
-          utm_source: parsed.utm.source,
-          utm_medium: parsed.utm.medium,
-          utm_campaign: parsed.utm.campaign,
-        }),
-      });
+      };
+      if (parsed.utm?.source) props.utm_source = parsed.utm.source;
+      if (parsed.utm?.medium) props.utm_medium = parsed.utm.medium;
+      if (parsed.utm?.campaign) props.utm_campaign = parsed.utm.campaign;
+      trackEvent('deep_link_opened', props);
     },
   });
 
