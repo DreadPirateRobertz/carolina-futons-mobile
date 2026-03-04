@@ -53,5 +53,19 @@ describe('Blue Ridge Illustrations', () => {
       const { getByTestId } = render(<Component testID="test-illustration" />);
       expect(getByTestId('test-illustration')).toBeTruthy();
     });
+
+    it('has at least 5 Path elements for mountain depth', () => {
+      const { toJSON } = render(<Component />);
+      const json = JSON.stringify(toJSON());
+      const paths = json.match(/"type":"Path"/g) || [];
+      expect(paths.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('has at least 4 gradient stops for rich sky', () => {
+      const { toJSON } = render(<Component />);
+      const json = JSON.stringify(toJSON());
+      const stops = json.match(/"type":"Stop"/g) || [];
+      expect(stops.length).toBeGreaterThanOrEqual(4);
+    });
   });
 });
