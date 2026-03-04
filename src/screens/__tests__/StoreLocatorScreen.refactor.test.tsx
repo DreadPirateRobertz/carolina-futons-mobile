@@ -7,6 +7,7 @@ import { render } from '@testing-library/react-native';
 import { StoreLocatorScreen } from '../StoreLocatorScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { STORES } from '@/data/stores';
+import { typography } from '@/theme/tokens';
 
 const mockUseStores = jest.fn();
 jest.mock('@/hooks/useStores', () => ({
@@ -72,5 +73,25 @@ describe('StoreLocatorScreen hook integration', () => {
   it('uses hook data for store count subtitle', () => {
     const { getByText } = renderScreen();
     expect(getByText(`${STORES.length} locations across the Carolinas`)).toBeTruthy();
+  });
+
+  describe('Visual polish — warm treatment', () => {
+    it('title uses heading fontFamily', () => {
+      const { getByTestId } = renderScreen();
+      const title = getByTestId('store-locator-title');
+      const styles = Array.isArray(title.props.style)
+        ? Object.assign({}, ...title.props.style)
+        : title.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('subtitle uses body fontFamily', () => {
+      const { getByTestId } = renderScreen();
+      const subtitle = getByTestId('store-locator-subtitle');
+      const styles = Array.isArray(subtitle.props.style)
+        ? Object.assign({}, ...subtitle.props.style)
+        : subtitle.props.style;
+      expect(styles.fontFamily).toBe(typography.bodyFamily);
+    });
   });
 });
