@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { useProducts, type Product } from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductCategory, type SortOption } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -50,15 +50,15 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const handleCategorySelect = useCallback(
-    (category: string) => {
+    (category: ProductCategory | null) => {
       setSelectedCategory(category);
-      events.filterCategory(category);
+      events.filterCategory(category ?? 'all');
     },
     [setSelectedCategory],
   );
 
   const handleSortChange = useCallback(
-    (sort: string) => {
+    (sort: SortOption) => {
       setSortBy(sort);
       events.sortProducts(sort);
     },
