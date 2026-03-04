@@ -26,6 +26,9 @@ function renderConnectivity(initialOnline = true) {
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const NetInfo = require('@react-native-community/netinfo');
+
 describe('useConnectivity', () => {
   it('starts online by default', () => {
     const { getByTestId } = renderConnectivity();
@@ -61,7 +64,6 @@ describe('useConnectivity', () => {
 
   describe('NetInfo integration', () => {
     it('subscribes to NetInfo when skipNetInfo is false', () => {
-      const NetInfo = require('@react-native-community/netinfo');
       NetInfo.addEventListener.mockClear();
       render(
         <ConnectivityProvider>
@@ -72,7 +74,6 @@ describe('useConnectivity', () => {
     });
 
     it('does not subscribe to NetInfo when skipNetInfo is true', () => {
-      const NetInfo = require('@react-native-community/netinfo');
       NetInfo.addEventListener.mockClear();
       render(
         <ConnectivityProvider skipNetInfo>
@@ -83,7 +84,6 @@ describe('useConnectivity', () => {
     });
 
     it('updates isOnline when NetInfo reports change', () => {
-      const NetInfo = require('@react-native-community/netinfo');
       let listener: (state: { isConnected: boolean }) => void;
       NetInfo.addEventListener.mockImplementation((cb: typeof listener) => {
         listener = cb;
