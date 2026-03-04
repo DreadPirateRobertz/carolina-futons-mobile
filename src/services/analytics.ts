@@ -45,6 +45,8 @@ export type AnalyticsEventName =
   | 'ar_furniture_placed'
   | 'ar_lighting_warning'
   | 'ar_product_picker_open'
+  | 'heatmap_tap'
+  | 'scroll_depth'
   | 'error';
 
 export interface AnalyticsEvent {

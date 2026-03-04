@@ -3,6 +3,7 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { NotificationPreferencesScreen } from '../NotificationPreferencesScreen';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { darkPalette, typography } from '@/theme/tokens';
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn().mockResolvedValue({ status: 'undetermined' }),
@@ -122,6 +123,48 @@ describe('NotificationPreferencesScreen', () => {
       const { getByTestId } = renderNotifPrefs({ onBack });
       fireEvent.press(getByTestId('notif-prefs-back'));
       expect(onBack).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Visual polish — consistent styling', () => {
+    it('uses dark editorial background', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const screen = getByTestId('notification-prefs-screen');
+      const flat = [screen.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.background);
+    });
+
+    it('header uses heading fontFamily', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const header = getByTestId('notif-prefs-header');
+      const styles = Array.isArray(header.props.style)
+        ? Object.assign({}, ...header.props.style)
+        : header.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('header uses light text on dark bg', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const header = getByTestId('notif-prefs-header');
+      const styles = Array.isArray(header.props.style)
+        ? Object.assign({}, ...header.props.style)
+        : header.props.style;
+      expect(styles.color).toBe(darkPalette.textPrimary);
+    });
+
+    it('preference rows use dark surface background', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const row = getByTestId('pref-row-order_update');
+      const flat = [row.props.style].flat(Infinity).reduce(
+        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+          s ? { ...acc, ...s } : acc,
+        {},
+      );
+      expect(flat.backgroundColor).toBe(darkPalette.surface);
     });
   });
 

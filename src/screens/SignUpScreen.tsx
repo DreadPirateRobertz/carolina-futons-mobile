@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
+import { darkPalette } from '@/theme/tokens';
+import { GlassCard } from '@/components/GlassCard';
 import { useAuth, validateEmail, validatePassword, validateName } from '@/hooks/useAuth';
 
 interface Props {
@@ -19,7 +21,7 @@ interface Props {
 }
 
 export function SignUpScreen({ onLogin, testID }: Props) {
-  const { colors, borderRadius, shadows } = useTheme();
+  const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signUp, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
 
   const [name, setName] = useState('');
@@ -43,7 +45,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { backgroundColor: colors.sandBase }]}
+      style={[styles.root, { backgroundColor: darkPalette.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       testID={testID ?? 'signup-screen'}
     >
@@ -53,215 +55,241 @@ export function SignUpScreen({ onLogin, testID }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <Text
-          style={[styles.title, { color: colors.espresso }]}
+          style={[
+            styles.title,
+            {
+              color: darkPalette.textPrimary,
+              ...typography.h1,
+              fontFamily: typography.headingFamily,
+            },
+          ]}
           accessibilityRole="header"
           testID="signup-title"
         >
           Create Account
         </Text>
-        <Text style={[styles.subtitle, { color: colors.espressoLight }]}>
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              color: darkPalette.textMuted,
+              ...typography.body,
+              fontFamily: typography.bodyFamily,
+            },
+          ]}
+        >
           Join Carolina Futons for handcrafted comfort
         </Text>
 
-        {error && (
-          <View
-            style={[
-              styles.errorBanner,
-              { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
-            ]}
-            testID="signup-error"
-          >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+        <GlassCard style={{ padding: spacing.lg }} testID="signup-glass-card">
+          {error && (
+            <View
+              style={[
+                styles.errorBanner,
+                { backgroundColor: colors.sunsetCoralLight, borderRadius: borderRadius.md },
+              ]}
+              testID="signup-error"
+            >
+              <Text style={[styles.errorText, { color: colors.sunsetCoralDark }]}>{error}</Text>
+            </View>
+          )}
+
+          {/* Name */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+              Full Name
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: nameError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={name}
+              onChangeText={(t) => {
+                setName(t);
+                setNameError(null);
+                clearError();
+              }}
+              placeholder="Your name"
+              placeholderTextColor={darkPalette.textMuted}
+              autoComplete="name"
+              textContentType="name"
+              testID="signup-name-input"
+              accessibilityLabel="Full name"
+            />
+            {nameError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="signup-name-error"
+              >
+                {nameError}
+              </Text>
+            )}
           </View>
-        )}
 
-        {/* Name */}
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Full Name</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: nameError ? colors.sunsetCoral : colors.sandDark,
-              },
-            ]}
-            value={name}
-            onChangeText={(t) => {
-              setName(t);
-              setNameError(null);
-              clearError();
-            }}
-            placeholder="Your name"
-            placeholderTextColor={colors.muted}
-            autoComplete="name"
-            textContentType="name"
-            testID="signup-name-input"
-            accessibilityLabel="Full name"
-          />
-          {nameError && (
-            <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="signup-name-error"
-            >
-              {nameError}
+          {/* Email */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+              Email
             </Text>
-          )}
-        </View>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: emailError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={email}
+              onChangeText={(t) => {
+                setEmail(t);
+                setEmailError(null);
+                clearError();
+              }}
+              placeholder="you@example.com"
+              placeholderTextColor={darkPalette.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
+              testID="signup-email-input"
+              accessibilityLabel="Email address"
+            />
+            {emailError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="signup-email-error"
+              >
+                {emailError}
+              </Text>
+            )}
+          </View>
 
-        {/* Email */}
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Email</Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: emailError ? colors.sunsetCoral : colors.sandDark,
-              },
-            ]}
-            value={email}
-            onChangeText={(t) => {
-              setEmail(t);
-              setEmailError(null);
-              clearError();
-            }}
-            placeholder="you@example.com"
-            placeholderTextColor={colors.muted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-            testID="signup-email-input"
-            accessibilityLabel="Email address"
-          />
-          {emailError && (
-            <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="signup-email-error"
-            >
-              {emailError}
+          {/* Password */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+              Password
             </Text>
-          )}
-        </View>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: darkPalette.surfaceElevated,
+                  color: darkPalette.textPrimary,
+                  borderRadius: borderRadius.md,
+                  borderColor: passwordError ? colors.sunsetCoral : darkPalette.borderSubtle,
+                },
+              ]}
+              value={password}
+              onChangeText={(t) => {
+                setPassword(t);
+                setPasswordError(null);
+                clearError();
+              }}
+              placeholder="Min 8 chars, 1 uppercase, 1 number"
+              placeholderTextColor={darkPalette.textMuted}
+              secureTextEntry
+              autoComplete="new-password"
+              textContentType="newPassword"
+              testID="signup-password-input"
+              accessibilityLabel="Password"
+            />
+            {passwordError && (
+              <Text
+                style={[styles.fieldError, { color: colors.sunsetCoral }]}
+                testID="signup-password-error"
+              >
+                {passwordError}
+              </Text>
+            )}
+          </View>
 
-        {/* Password */}
-        <View style={styles.fieldGroup}>
-          <Text style={[styles.label, { color: colors.espresso }]}>Password</Text>
-          <TextInput
+          {/* Sign up button */}
+          <TouchableOpacity
             style={[
-              styles.input,
+              styles.primaryButton,
               {
-                backgroundColor: colors.sandLight,
-                color: colors.espresso,
-                borderRadius: borderRadius.md,
-                borderColor: passwordError ? colors.sunsetCoral : colors.sandDark,
+                backgroundColor: loading ? colors.muted : colors.sunsetCoral,
+                borderRadius: borderRadius.button,
               },
+              !loading && shadows.button,
             ]}
-            value={password}
-            onChangeText={(t) => {
-              setPassword(t);
-              setPasswordError(null);
-              clearError();
-            }}
-            placeholder="Min 8 chars, 1 uppercase, 1 number"
-            placeholderTextColor={colors.muted}
-            secureTextEntry
-            autoComplete="new-password"
-            textContentType="newPassword"
-            testID="signup-password-input"
-            accessibilityLabel="Password"
-          />
-          {passwordError && (
-            <Text
-              style={[styles.fieldError, { color: colors.sunsetCoral }]}
-              testID="signup-password-error"
+            onPress={handleSignUp}
+            disabled={loading}
+            testID="signup-submit-button"
+            accessibilityLabel="Create account"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFFFFF" testID="signup-loading" />
+            ) : (
+              <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
+                Create Account
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Divider */}
+          <View style={styles.dividerRow}>
+            <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
+            <Text style={[styles.dividerText, { color: darkPalette.textMuted }]}>or</Text>
+            <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
+          </View>
+
+          {/* Social sign up */}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: '#000000', borderRadius: borderRadius.button },
+              ]}
+              onPress={signInWithApple}
+              disabled={loading}
+              testID="apple-signup-button"
+              accessibilityLabel="Sign up with Apple"
+              accessibilityRole="button"
             >
-              {passwordError}
-            </Text>
+              <Text style={styles.socialButtonText}> Continue with Apple</Text>
+            </TouchableOpacity>
           )}
-        </View>
 
-        {/* Sign up button */}
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            {
-              backgroundColor: loading ? colors.muted : colors.sunsetCoral,
-              borderRadius: borderRadius.button,
-            },
-            !loading && shadows.button,
-          ]}
-          onPress={handleSignUp}
-          disabled={loading}
-          testID="signup-submit-button"
-          accessibilityLabel="Create account"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: loading }}
-        >
-          {loading ? (
-            <ActivityIndicator color="#FFFFFF" testID="signup-loading" />
-          ) : (
-            <Text style={styles.primaryButtonText}>Create Account</Text>
-          )}
-        </TouchableOpacity>
-
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={[styles.dividerLine, { backgroundColor: colors.sandDark }]} />
-          <Text style={[styles.dividerText, { color: colors.muted }]}>or</Text>
-          <View style={[styles.dividerLine, { backgroundColor: colors.sandDark }]} />
-        </View>
-
-        {/* Social sign up */}
-        {Platform.OS === 'ios' && (
           <TouchableOpacity
             style={[
               styles.socialButton,
-              { backgroundColor: '#000000', borderRadius: borderRadius.button },
+              {
+                backgroundColor: darkPalette.surfaceElevated,
+                borderRadius: borderRadius.button,
+                borderWidth: 1,
+                borderColor: darkPalette.borderSubtle,
+              },
             ]}
-            onPress={signInWithApple}
+            onPress={signInWithGoogle}
             disabled={loading}
-            testID="apple-signup-button"
-            accessibilityLabel="Sign up with Apple"
+            testID="google-signup-button"
+            accessibilityLabel="Sign up with Google"
             accessibilityRole="button"
           >
-            <Text style={styles.socialButtonText}> Continue with Apple</Text>
+            <Text style={[styles.socialButtonText, { color: darkPalette.textPrimary }]}>
+              G Continue with Google
+            </Text>
           </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={[
-            styles.socialButton,
-            {
-              backgroundColor: colors.sandLight,
-              borderRadius: borderRadius.button,
-              borderWidth: 1,
-              borderColor: colors.sandDark,
-            },
-          ]}
-          onPress={signInWithGoogle}
-          disabled={loading}
-          testID="google-signup-button"
-          accessibilityLabel="Sign up with Google"
-          accessibilityRole="button"
-        >
-          <Text style={[styles.socialButtonText, { color: colors.espresso }]}>
-            G Continue with Google
-          </Text>
-        </TouchableOpacity>
+        </GlassCard>
 
         {/* Login link */}
         <View style={styles.loginRow}>
-          <Text style={[styles.loginText, { color: colors.espressoLight }]}>
+          <Text style={[styles.loginText, { color: darkPalette.textMuted }]}>
             Already have an account?{' '}
           </Text>
           <TouchableOpacity onPress={onLogin} testID="login-link" accessibilityRole="link">
-            <Text style={[styles.loginLink, { color: colors.mountainBlue }]}>Sign In</Text>
+            <Text style={[styles.loginLink, { color: colors.mountainBlueLight }]}>Sign In</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

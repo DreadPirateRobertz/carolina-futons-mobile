@@ -1,0 +1,146 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      profile:
+        description: 'Build profile'
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+      submit:
+        description: 'Submit to stores after build'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npx jest --ci
+
+  build-ios:
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.platform == 'all' ||
+      github.event.inputs.platform == 'ios'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Determine build profile
+        id: profile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PROFILE: ${{ github.event.inputs.profile }}
+          GIT_REF: ${{ github.ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "profile=$INPUT_PROFILE" >> "$GITHUB_OUTPUT"
+          elif [[ "$GIT_REF" == refs/tags/v* ]]; then
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=preview" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build iOS
+        env:
+          BUILD_PROFILE: ${{ steps.profile.outputs.profile }}
+        run: eas build --platform ios --profile "$BUILD_PROFILE" --non-interactive
+
+  build-android:
+    needs: ci-gate
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.platform == 'all' ||
+      github.event.inputs.platform == 'android'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Determine build profile
+        id: profile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_PROFILE: ${{ github.event.inputs.profile }}
+          GIT_REF: ${{ github.ref }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "profile=$INPUT_PROFILE" >> "$GITHUB_OUTPUT"
+          elif [[ "$GIT_REF" == refs/tags/v* ]]; then
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=preview" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Android
+        env:
+          BUILD_PROFILE: ${{ steps.profile.outputs.profile }}
+        run: eas build --platform android --profile "$BUILD_PROFILE" --non-interactive
+
+  submit-testflight:
+    needs: build-ios
+    runs-on: ubuntu-latest
+    if: >
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.submit == 'true')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Submit to TestFlight
+        run: eas submit --platform ios --latest --non-interactive
+        env:
+          EXPO_ASC_APP_ID: ${{ secrets.EXPO_ASC_APP_ID }}
+          EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}

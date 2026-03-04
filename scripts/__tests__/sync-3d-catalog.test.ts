@@ -64,8 +64,12 @@ describe('shared/catalog-3d.json schema', () => {
   });
 
   it.each([
-    'productId', 'category', 'dimensions', 'fileSizeBytes',
-    'contentHash', 'hasFabricVariants',
+    'productId',
+    'category',
+    'dimensions',
+    'fileSizeBytes',
+    'contentHash',
+    'hasFabricVariants',
   ])('all models have required field: %s', (field) => {
     for (const model of catalog.models) {
       expect(model).toHaveProperty(field);
@@ -104,10 +108,13 @@ describe('shared/catalog-3d.json schema', () => {
   });
 
   it('has expected category distribution', () => {
-    const categories = catalog.models.reduce((acc, m) => {
-      acc[m.category] = (acc[m.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const categories = catalog.models.reduce(
+      (acc, m) => {
+        acc[m.category] = (acc[m.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
     expect(categories['murphy-beds']).toBe(6);
     expect(categories['futons']).toBe(4);
     expect(categories['frames']).toBe(1);
@@ -136,12 +143,11 @@ describe('sync-3d-catalog output', () => {
     const tsOut = path.join(tmpDir, 'models3d.ts');
     const jsOut = path.join(tmpDir, 'models3d.web.js');
 
-    execFileSync('npx', [
-      'tsx', SYNC_SCRIPT,
-      '--catalog', CATALOG_PATH,
-      '--ts-out', tsOut,
-      '--js-out', jsOut,
-    ], { cwd: path.resolve(__dirname, '../..'), timeout: 30000 });
+    execFileSync(
+      'npx',
+      ['tsx', SYNC_SCRIPT, '--catalog', CATALOG_PATH, '--ts-out', tsOut, '--js-out', jsOut],
+      { cwd: path.resolve(__dirname, '../..'), timeout: 30000 },
+    );
 
     expect(fs.existsSync(tsOut)).toBe(true);
     const tsContent = fs.readFileSync(tsOut, 'utf-8');

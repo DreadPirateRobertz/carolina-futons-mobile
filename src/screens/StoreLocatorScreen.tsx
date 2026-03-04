@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, testID }: Props) {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, typography } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Data from hook — replaces direct STORES import
@@ -86,7 +86,11 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
         testID="stores-loading"
       >
         <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
+          <Text
+            style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+          >
+            Find a Showroom
+          </Text>
         </View>
         <View style={styles.centeredMessage}>
           <Text style={[styles.messageText, { color: colors.espressoLight }]}>
@@ -102,7 +106,11 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
     return (
       <View style={[styles.container, { backgroundColor: colors.sandBase }]} testID="stores-error">
         <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
+          <Text
+            style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+          >
+            Find a Showroom
+          </Text>
         </View>
         <View style={styles.centeredMessage}>
           <Text style={[styles.messageText, { color: colors.espressoLight }]}>
@@ -120,8 +128,19 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
       testID={testID ?? 'store-locator-screen'}
     >
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
-        <Text style={[styles.title, { color: colors.espresso }]}>Find a Showroom</Text>
-        <Text style={[styles.subtitle, { color: colors.espressoLight }]}>
+        <Text
+          style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+          testID="store-locator-title"
+        >
+          Find a Showroom
+        </Text>
+        <Text
+          style={[
+            styles.subtitle,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+          testID="store-locator-subtitle"
+        >
           {stores.length} locations across the Carolinas
         </Text>
       </View>

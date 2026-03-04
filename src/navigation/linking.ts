@@ -6,6 +6,7 @@
  *
  * Supported routes:
  *   carolinafutons://product/{slug}    → ProductDetailScreen
+ *   carolinafutons://products/{slug}   → ProductDetailScreen (Wix website alias)
  *   carolinafutons://category/{slug}   → CategoryScreen
  *   carolinafutons://cart              → CartScreen (via Tabs)
  *   carolinafutons://checkout          → CheckoutScreen
@@ -18,7 +19,17 @@
  */
 
 import type { LinkingOptions } from '@react-navigation/native';
+import { getStateFromPath } from '@react-navigation/native';
 import type { RootStackParamList } from './AppNavigator';
+
+/** Normalize URL paths before React Navigation processes them (e.g. /products/ → /product/) */
+const normalizePathForLinking: NonNullable<LinkingOptions<RootStackParamList>['getStateFromPath']> = (
+  path,
+  options,
+) => {
+  const normalized = path.replace(/^\/products\//, '/product/');
+  return getStateFromPath(normalized, options);
+};
 
 export const linkingConfig: LinkingOptions<RootStackParamList> = {
   prefixes: ['carolinafutons://', 'https://carolinafutons.com', 'https://www.carolinafutons.com'],
@@ -54,6 +65,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       CollectionDetail: 'collections/:slug',
     },
   },
+  getStateFromPath: normalizePathForLinking,
 };
 
 /** All supported deep link paths */

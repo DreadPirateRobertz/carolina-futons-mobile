@@ -4,6 +4,7 @@ import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { typography } from '@/theme/tokens';
 
 // Mock @stripe/stripe-react-native
 jest.mock('@stripe/stripe-react-native', () => ({
@@ -202,6 +203,35 @@ describe('CheckoutScreen', () => {
       expect(getByTestId('bnpl-breakdown')).toBeTruthy();
       fireEvent.press(getByTestId('payment-card'));
       expect(queryByTestId('bnpl-breakdown')).toBeNull();
+    });
+  });
+
+  describe('Visual polish — warm sand + tokenized typography', () => {
+    it('header title uses heading fontFamily', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const header = getByTestId('checkout-header');
+      const styles = Array.isArray(header.props.style)
+        ? Object.assign({}, ...header.props.style)
+        : header.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
+    });
+
+    it('section titles use body semibold fontFamily', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const section = getByTestId('checkout-items-section-title');
+      const styles = Array.isArray(section.props.style)
+        ? Object.assign({}, ...section.props.style)
+        : section.props.style;
+      expect(styles.fontFamily).toBe(typography.bodyFamilySemiBold);
+    });
+
+    it('grand total uses heading fontFamily', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const total = getByTestId('checkout-total');
+      const styles = Array.isArray(total.props.style)
+        ? Object.assign({}, ...total.props.style)
+        : total.props.style;
+      expect(styles.fontFamily).toBe(typography.headingFamily);
     });
   });
 

@@ -63,22 +63,28 @@ describe('withRetry', () => {
   });
 
   it('backoff increases between retries', async () => {
-    const timestamps: number[] = [];
-    const fn = jest.fn().mockImplementation(() => {
-      timestamps.push(Date.now());
-      if (timestamps.length < 3) {
-        return Promise.reject(new Error('fail'));
-      }
-      return Promise.resolve('ok');
-    });
+    jest.useFakeTimers();
+    const mathRandomSpy = jest.spyOn(Math, 'random').mockReturnValue(0);
 
-    await withRetry(fn, { maxRetries: 3, baseDelayMs: 20 });
+    const fn = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValue('ok');
 
-    expect(timestamps.length).toBe(3);
-    // Second gap should be larger than first (exponential)
-    const gap1 = timestamps[1] - timestamps[0];
-    const gap2 = timestamps[2] - timestamps[1];
-    expect(gap2).toBeGreaterThanOrEqual(gap1);
+    const promise = withRetry(fn, { maxRetries: 3, baseDelayMs: 20 });
+
+    // attempt 0 fails → backoff = 20 * 2^0 + 0 = 20ms
+    await jest.advanceTimersByTimeAsync(20);
+    // attempt 1 fails → backoff = 20 * 2^1 + 0 = 40ms
+    await jest.advanceTimersByTimeAsync(40);
+
+    await promise;
+
+    expect(fn).toHaveBeenCalledTimes(3);
+
+    mathRandomSpy.mockRestore();
+    jest.useRealTimers();
   });
 
   it('wraps non-Error throws into Error', async () => {

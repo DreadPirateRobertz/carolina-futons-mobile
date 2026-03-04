@@ -1,24 +1,25 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { useCollections } from '@/hooks/useCollections';
-import { CollectionCard } from '@/components/CollectionCard';
+import { darkPalette, colors as tokenColors } from '@/theme/tokens';
+import { GlassCard } from '@/components/GlassCard';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-import type { EditorialCollection } from '@/data/collections';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface Props {
   onOpenAR?: () => void;
   onOpenShop?: () => void;
 }
 
-const collectionKeyExtractor = (item: EditorialCollection) => item.id;
-
 export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
-  const { colors, spacing, typography, shadows, borderRadius } = useTheme();
+  const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { featured, collections } = useCollections();
+  const insets = useSafeAreaInsets();
 
   const handleOpenAR = useCallback(() => {
     if (onOpenAR) return onOpenAR();
@@ -33,171 +34,259 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
     }
   }, [onOpenShop, navigation]);
 
-  const handleCollectionPress = useCallback(
-    (collection: EditorialCollection) => {
-      navigation.navigate('CollectionDetail', { slug: collection.slug });
-    },
-    [navigation],
-  );
-
-  const handleSeeAllCollections = useCallback(() => {
-    navigation.navigate('Collections');
-  }, [navigation]);
-
-  const renderCollectionItem = useCallback(
-    ({ item }: { item: EditorialCollection }) => (
-      <CollectionCard collection={item} onPress={handleCollectionPress} variant="compact" />
-    ),
-    [handleCollectionPress],
-  );
-
   return (
     <ScrollView
-      style={[styles.scrollContainer, { backgroundColor: colors.sandBase }]}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
+      style={[styles.container, { backgroundColor: colors.sandBase }]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingTop: insets.top + spacing.xxl, paddingBottom: insets.bottom },
+      ]}
       testID="home-screen"
     >
-      <View style={{ padding: spacing.lg, alignItems: 'center' }}>
-        <Text
+      {/* Hero — Mountain skyline backdrop */}
+      <View style={styles.heroBackdrop}>
+        <MountainSkyline variant="sunrise" height={140} showGlow testID="home-hero-skyline" />
+      </View>
+
+      {/* Hero Section */}
+      <View style={styles.heroSection}>
+        <View
           style={[
-            styles.title,
-            { color: colors.espresso, ...typography.h2, fontFamily: typography.headingFamily },
+            styles.heroBadge,
+            {
+              backgroundColor: darkPalette.surfaceElevated,
+              borderRadius: borderRadius.pill,
+            },
           ]}
         >
-          Welcome to Carolina Futons
-        </Text>
+          <Text style={[styles.heroBadgeText, { color: colors.sunsetCoral }]}>
+            Handcrafted in NC
+          </Text>
+        </View>
+
         <Text
           style={[
-            styles.subtitle,
-            { color: colors.espressoLight, ...typography.body, fontFamily: typography.bodyFamily },
+            styles.heroTitle,
+            {
+              color: colors.espresso,
+              ...typography.heroTitle,
+              fontFamily: typography.headingFamily,
+            },
+          ]}
+        >
+          Carolina{'\n'}Futons
+        </Text>
+
+        <Text
+          style={[
+            styles.heroSubtitle,
+            {
+              color: colors.espressoLight,
+              ...typography.bodyLarge,
+              fontFamily: typography.bodyFamily,
+            },
           ]}
         >
           Handcrafted comfort from the Blue Ridge Mountains
         </Text>
+      </View>
 
-        {/* AR CTA */}
-        <TouchableOpacity
-          style={[
-            styles.ctaButton,
-            shadows.cardHover,
-            { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.xl },
-          ]}
+      {/* AR CTA — Primary, glassmorphism */}
+      <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="medium">
+        <Pressable
+          style={styles.ctaInner}
           onPress={handleOpenAR}
           testID="home-ar-button"
           accessibilityLabel="Try futons in your room with AR camera"
           accessibilityRole="button"
         >
-          <Text style={styles.ctaIcon}>📷</Text>
-          <View>
-            <Text style={styles.ctaTitle}>Try in Your Room</Text>
-            <Text style={styles.ctaSubtitle}>See how our futons fit using your camera</Text>
+          <View
+            style={[
+              styles.ctaIconWrap,
+              {
+                backgroundColor: colors.sunsetCoral,
+                borderRadius: borderRadius.lg,
+              },
+            ]}
+          >
+            <Text style={styles.ctaIcon}>📷</Text>
           </View>
-        </TouchableOpacity>
+          <View style={styles.ctaText}>
+            <Text
+              style={[
+                styles.ctaTitle,
+                {
+                  color: darkPalette.textPrimary,
+                  fontFamily: typography.bodyFamilyBold,
+                },
+              ]}
+            >
+              Try in Your Room
+            </Text>
+            <Text
+              style={[
+                styles.ctaSubtitle,
+                {
+                  color: darkPalette.textMuted,
+                  fontFamily: typography.bodyFamily,
+                },
+              ]}
+            >
+              See how our futons fit using your camera
+            </Text>
+          </View>
+          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]}>›</Text>
+        </Pressable>
+      </GlassCard>
 
-        {/* Shop CTA */}
-        <TouchableOpacity
-          style={[
-            styles.ctaButton,
-            shadows.cardHover,
-            { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.xl },
-          ]}
+      {/* Shop CTA */}
+      <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="light">
+        <Pressable
+          style={styles.ctaInner}
           onPress={handleOpenShop}
           testID="home-shop-button"
           accessibilityLabel="Browse our products"
           accessibilityRole="button"
         >
-          <Text style={styles.ctaIcon}>🛋️</Text>
-          <View>
-            <Text style={styles.ctaTitle}>Browse Products</Text>
-            <Text style={styles.ctaSubtitle}>Futons, covers, mattresses & more</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* Curated Collections Carousel */}
-      <View style={{ marginTop: spacing.lg }}>
-        <View
-          style={[
-            styles.sectionHeader,
-            { paddingHorizontal: spacing.pagePadding, marginBottom: spacing.sm },
-          ]}
-        >
-          <Text
+          <View
             style={[
-              typography.h3,
-              { color: colors.espresso, fontFamily: typography.headingFamily },
+              styles.ctaIconWrap,
+              {
+                backgroundColor: colors.mountainBlue,
+                borderRadius: borderRadius.lg,
+              },
             ]}
           >
-            Shop Curated Looks
-          </Text>
-          <TouchableOpacity
-            onPress={handleSeeAllCollections}
-            testID="home-see-all-collections"
-          >
+            <Text style={styles.ctaIcon}>🛋️</Text>
+          </View>
+          <View style={styles.ctaText}>
             <Text
               style={[
-                typography.navLink,
-                { color: colors.mountainBlue },
+                styles.ctaTitle,
+                {
+                  color: darkPalette.textPrimary,
+                  fontFamily: typography.bodyFamilyBold,
+                },
               ]}
             >
-              See All
+              Browse Products
             </Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          horizontal
-          data={collections}
-          keyExtractor={collectionKeyExtractor}
-          renderItem={renderCollectionItem}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: spacing.pagePadding, gap: spacing.md }}
-          testID="home-collections-carousel"
-        />
+            <Text
+              style={[
+                styles.ctaSubtitle,
+                {
+                  color: darkPalette.textMuted,
+                  fontFamily: typography.bodyFamily,
+                },
+              ]}
+            >
+              Futons, covers, mattresses & more
+            </Text>
+          </View>
+          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]}>›</Text>
+        </Pressable>
+      </GlassCard>
+
+      {/* Mountain skyline section divider */}
+      <View style={styles.dividerSection}>
+        <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
+        <Text
+          style={[
+            styles.dividerText,
+            {
+              color: colors.espressoLight,
+              fontFamily: typography.bodyFamily,
+              ...typography.caption,
+            },
+          ]}
+        >
+          Since 1985 · Hendersonville, NC
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContainer: {
+  container: {
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  content: {
     alignItems: 'center',
+    paddingHorizontal: 0,
   },
-  title: {
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    textAlign: 'center',
-  },
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  heroBackdrop: {
     width: '100%',
-    marginTop: 16,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    gap: 14,
+    marginBottom: -40,
+  },
+  heroSection: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    marginBottom: 40,
+  },
+  heroBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    marginBottom: 24,
+  },
+  heroBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  heroTitle: {
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  heroSubtitle: {
+    textAlign: 'center',
+    maxWidth: SCREEN_WIDTH * 0.75,
+  },
+  ctaCard: {
+    width: '100%',
+    maxWidth: SCREEN_WIDTH - 48,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  ctaInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    gap: 16,
+  },
+  ctaIconWrap: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ctaIcon: {
-    fontSize: 28,
+    fontSize: 24,
+  },
+  ctaText: {
+    flex: 1,
   },
   ctaTitle: {
-    color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
+    marginBottom: 2,
   },
   ctaSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
-    marginTop: 2,
+  },
+  ctaArrow: {
+    fontSize: 28,
+    fontWeight: '300',
+  },
+  dividerSection: {
+    alignItems: 'center',
+    marginTop: 24,
+    paddingHorizontal: 48,
+  },
+  dividerText: {
+    textAlign: 'center',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
 });
