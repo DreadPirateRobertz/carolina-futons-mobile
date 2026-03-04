@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import { useProducts, type Product } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
@@ -52,6 +53,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const renderHeader = useCallback(
     () => (
       <View>
+        {/* Mountain skyline header */}
+        <MountainSkyline variant="sunset" height={60} testID="shop-mountain-skyline" />
+
         {/* Title */}
         <View style={[styles.titleRow, { paddingHorizontal: spacing.md }]}>
           <Text
@@ -120,7 +124,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         <Text
           style={[
             styles.emptyTitle,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
           ]}
         >
           No products found
@@ -128,7 +132,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         <Text
           style={[
             styles.emptyMessage,
-            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
           ]}
         >
           {searchQuery
