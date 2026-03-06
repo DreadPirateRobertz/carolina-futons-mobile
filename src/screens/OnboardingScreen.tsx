@@ -1,3 +1,14 @@
+/**
+ * @module OnboardingScreen
+ *
+ * First-launch experience combining brand storytelling (3 slides about
+ * Carolina Futons' Blue Ridge heritage) with a style-preference quiz
+ * (room type, aesthetic, primary use). Quiz answers feed the
+ * recommendation engine so the home screen can surface personalized picks.
+ *
+ * Progression: 3 brand slides -> 3 quiz steps -> completion summary.
+ * Users can skip at any point; preferences are persisted on finish.
+ */
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
@@ -77,6 +88,7 @@ interface Props {
   testID?: string;
 }
 
+/** Multi-step onboarding: brand story slides followed by a style-preference quiz. */
 export function OnboardingScreen({ onComplete, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
   const [step, setStep] = useState(0);

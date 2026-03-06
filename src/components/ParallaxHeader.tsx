@@ -1,3 +1,12 @@
+/**
+ * @module ParallaxHeader
+ *
+ * Scroll-driven parallax hero image header. The background image moves at a
+ * fraction of the scroll speed (controlled by parallaxFactor) and scales up
+ * when pulled down, creating depth. A darkening overlay fades in as the user
+ * scrolls up to maintain text readability over the image.
+ */
+
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
@@ -20,6 +29,7 @@ interface Props {
   parallaxFactor?: number;
 }
 
+/** Scroll-reactive parallax hero with pull-to-zoom and progressive darkening overlay. */
 export function ParallaxHeader({
   imageUri,
   height,

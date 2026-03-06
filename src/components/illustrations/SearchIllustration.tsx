@@ -1,3 +1,10 @@
+/**
+ * @module SearchIllustration
+ *
+ * Open-sky mountain vista with fog wisps and a distant bird, used on
+ * search screens before results load. The expansive view suggests
+ * endless possibilities waiting to be discovered.
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Ellipse } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for the search empty-state screen. */
 export function SearchIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

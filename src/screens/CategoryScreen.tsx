@@ -1,3 +1,12 @@
+/**
+ * @module CategoryScreen
+ *
+ * Displays a filtered product grid for a single product category (e.g., "Futons",
+ * "Covers", "Mattresses"). Reached from the ShopScreen category chips or deep
+ * links. Includes sort controls and an empty state when the category has no
+ * products yet.
+ */
+
 import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,16 +16,30 @@ import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
 
+/** Props for the CategoryScreen component. */
 interface Props {
+  /** Explicit category identifier. Takes precedence over slug and route params. */
   categoryId?: ProductCategory;
+  /** URL-friendly category slug; fallback when categoryId is not provided. */
   slug?: string;
+  /** React Navigation route; used as final fallback for the category slug. */
   route?: { params?: { slug?: string } };
+  /** Override for the displayed page title; defaults to capitalised category name. */
   categoryTitle?: string;
+  /** Callback when the user taps a product card. */
   onProductPress?: (product: Product) => void;
+  /** Callback for the back navigation button. */
   onBack?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
+/**
+ * Category product listing screen with sort controls and two-column grid layout.
+ *
+ * @param props - {@link Props}
+ * @returns A scrollable product grid filtered to a single category.
+ */
 export function CategoryScreen({
   categoryId,
   slug,

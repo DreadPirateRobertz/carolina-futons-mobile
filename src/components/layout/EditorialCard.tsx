@@ -1,3 +1,11 @@
+/**
+ * @module EditorialCard
+ *
+ * Lifestyle / editorial card for non-commerce content such as style
+ * guides, collections, and feature stories. Intentionally distinct
+ * from ProductCard — this component favors rich imagery and narrative
+ * text over price and CTA (Call To Action) buttons.
+ */
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';

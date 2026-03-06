@@ -1,3 +1,12 @@
+/**
+ * @module AccountScreen
+ *
+ * User account hub. When unauthenticated, shows a branded sign-in prompt with
+ * the mountain skyline backdrop. When authenticated, displays the user's profile
+ * (avatar, name, email) and menu links to Order History, Saved Addresses,
+ * Payment Methods, and Notification Preferences. Sign-out lives at the bottom.
+ */
+
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
@@ -6,12 +15,23 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
 
+/** Props for the AccountScreen component. */
 interface Props {
+  /** Callback to navigate to the login screen (guest state). */
   onLogin?: () => void;
+  /** Callback to navigate to the order history list. */
   onOrderHistory?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
+/**
+ * Account screen that adapts between guest (sign-in prompt) and authenticated
+ * (profile + settings menu) states.
+ *
+ * @param props - {@link Props}
+ * @returns The account screen view.
+ */
 export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
@@ -148,6 +168,16 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
   );
 }
 
+/**
+ * Single menu row rendered inside a GlassCard. Displays a label with a
+ * trailing chevron. Theme props (colors, borderRadius, shadows) are accepted
+ * for consistency but delegated to the GlassCard wrapper.
+ *
+ * @param props.label - Display text for the menu item.
+ * @param props.onPress - Callback when the row is tapped.
+ * @param props.testID - Test identifier for end-to-end tests.
+ * @returns A pressable menu row inside a glass card.
+ */
 function MenuItem({
   label,
   onPress,

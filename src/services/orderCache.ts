@@ -1,6 +1,13 @@
+/**
+ * @module orderCache
+ *
+ * Persists order history to AsyncStorage so users can view past orders
+ * while offline. Cached data includes a timestamp for staleness checks.
+ */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Order } from '@/data/orders';
 
+/** AsyncStorage key for the cached order history blob. */
 export const ORDER_CACHE_KEY = 'cfutons_order_history';
 
 interface CachedOrderData {

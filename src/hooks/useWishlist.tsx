@@ -1,16 +1,39 @@
+/**
+ * Wishlist hook and context provider.
+ *
+ * Lets users save products they are interested in, persists selections to
+ * AsyncStorage, and tracks the price at time of save so the UI can highlight
+ * price drops. Also provides a shareable text summary of the wishlist.
+ *
+ * @module useWishlist
+ */
+
 import React, { createContext, useContext, useCallback, useReducer, useEffect } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 
+/**
+ * A single wishlist entry, storing the product ID, timestamp, and
+ * the price when the item was saved (used for price-drop detection).
+ */
 export interface WishlistItem {
   productId: string;
   addedAt: number; // timestamp
   savedPrice: number; // price when added, for price-drop detection
 }
 
+/** Internal state managed by the wishlist reducer. */
 interface WishlistState {
   items: WishlistItem[];
 }
 
+/**
+ * Discriminated union of wishlist reducer actions.
+ *
+ * - `ADD` — adds a product (no-op if already present)
+ * - `REMOVE` — removes a product by ID
+ * - `CLEAR` — empties the entire wishlist
+ * - `LOAD` — hydrates from persisted storage on mount
+ */
 type WishlistAction =
   | { type: 'ADD'; productId: string; price: number }
   | { type: 'REMOVE'; productId: string }
@@ -41,6 +64,7 @@ function wishlistReducer(state: WishlistState, action: WishlistAction): Wishlist
 
 const STORAGE_KEY = 'cfutons_wishlist';
 
+/** Shape of the value exposed by WishlistContext to consumers. */
 interface WishlistContextValue {
   items: WishlistItem[];
   count: number;
@@ -55,12 +79,24 @@ interface WishlistContextValue {
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
 
+/** Props for the WishlistProvider component. */
 interface WishlistProviderProps {
   children: React.ReactNode;
-  /** Override storage for testing */
+  /** Override initial items for testing (bypasses AsyncStorage hydration). */
   initialItems?: WishlistItem[];
 }
 
+/**
+ * Context provider that manages wishlist state and persists it to AsyncStorage.
+ *
+ * @param props.children - Child components that may consume wishlist context.
+ * @param props.initialItems - Optional seed items, mainly for tests.
+ *
+ * @example
+ * <WishlistProvider>
+ *   <App />
+ * </WishlistProvider>
+ */
 export function WishlistProvider({ children, initialItems }: WishlistProviderProps) {
   const [state, dispatch] = useReducer(wishlistReducer, {
     items: initialItems ?? [],
@@ -162,6 +198,16 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
+/**
+ * Accesses wishlist state and actions for adding, removing, and sharing saved products.
+ *
+ * Must be called from within a `WishlistProvider`.
+ *
+ * @returns Object containing `{ items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText }`
+ *
+ * @example
+ * const { toggle, isInWishlist, count } = useWishlist();
+ */
 export function useWishlist(): WishlistContextValue {
   const ctx = useContext(WishlistContext);
   if (!ctx) {

@@ -1,3 +1,15 @@
+/**
+ * @module HomeScreen
+ *
+ * Landing screen and brand showcase for the Carolina Futons app. Features the
+ * mountain skyline hero, brand headline, and two primary Call To Action cards:
+ *   1. "Try in Your Room" - launches the AR (Augmented Reality) camera experience.
+ *   2. "Browse Products" - navigates to the Shop tab.
+ *
+ * This screen establishes the Blue Ridge Mountains brand identity and funnels
+ * users into the two main engagement paths.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -11,11 +23,21 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+/** Props for the HomeScreen component. */
 interface Props {
+  /** Override callback for the AR Call To Action; defaults to navigating to the AR screen. */
   onOpenAR?: () => void;
+  /** Override callback for the Shop Call To Action; defaults to switching to the Shop tab. */
   onOpenShop?: () => void;
 }
 
+/**
+ * App landing screen with brand hero, mountain skyline, and two glassmorphism
+ * Call To Action cards for AR and product browsing.
+ *
+ * @param props - {@link Props}
+ * @returns The home screen view.
+ */
 export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -91,7 +113,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
         </Text>
       </View>
 
-      {/* AR CTA — Primary, glassmorphism */}
+      {/* AR (Augmented Reality) Call To Action — Primary, glassmorphism */}
       <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="medium">
         <Pressable
           style={styles.ctaInner}
@@ -139,7 +161,7 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
         </Pressable>
       </GlassCard>
 
-      {/* Shop CTA */}
+      {/* Shop Call To Action */}
       <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="light">
         <Pressable
           style={styles.ctaInner}

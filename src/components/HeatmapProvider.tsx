@@ -20,6 +20,7 @@ interface Props {
 
 const TAP_THROTTLE_MS = 100;
 
+/** Captures all touch-start events and forwards them to the heatmap analytics service. */
 export function HeatmapProvider({ children, screenName = 'unknown', enabled = true }: PropsWithChildren<Props>) {
   const lastTapRef = useRef(0);
 

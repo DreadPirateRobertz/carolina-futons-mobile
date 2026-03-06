@@ -1,3 +1,12 @@
+/**
+ * @module OrderHistoryScreen
+ *
+ * Chronological list of the user's past and in-progress orders.
+ * Each card shows order number, status badge (color-coded), date,
+ * item summary, and total. Supports pull-to-refresh and navigates
+ * to OrderDetailScreen on tap. Shows an empty state with a CTA
+ * when there are no orders yet.
+ */
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
@@ -14,6 +23,7 @@ interface Props {
   testID?: string;
 }
 
+/** Scrollable list of past orders with status badges and pull-to-refresh. */
 export function OrderHistoryScreen({
   orders: ordersProp,
   onSelectOrder,

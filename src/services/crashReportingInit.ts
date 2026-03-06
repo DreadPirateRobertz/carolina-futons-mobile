@@ -14,6 +14,11 @@ export interface CrashReportingConfig {
 
 let _initialized = false;
 
+/**
+ * Bootstrap crash reporting on app launch. Idempotent — safe to call multiple times.
+ * Registers the Sentry provider (if a DSN is supplied), installs the global JS
+ * error handler, and hooks into Hermes unhandled-promise-rejection tracking.
+ */
 export function initCrashReporting(config?: CrashReportingConfig): void {
   if (_initialized) return;
   _initialized = true;

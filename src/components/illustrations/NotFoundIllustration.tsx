@@ -1,3 +1,10 @@
+/**
+ * @module NotFoundIllustration
+ *
+ * Fog-shrouded mountain landscape for 404 / "not found" screens.
+ * Heavy fog layers and a trail that fades into mist convey the idea
+ * that the requested content cannot be located.
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Ellipse } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for 404 / resource-not-found screens. */
 export function NotFoundIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

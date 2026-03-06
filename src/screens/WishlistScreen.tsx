@@ -1,3 +1,11 @@
+/**
+ * @module WishlistScreen
+ *
+ * Saved-for-later product grid with share and bulk-clear actions.
+ * Highlights price drops since the item was wishlisted so users can
+ * spot deals. Long-press triggers a removal confirmation dialog.
+ * Share exports a plain-text list via the native share sheet.
+ */
 import React, { useCallback } from 'react';
 import {
   StyleSheet,
@@ -26,6 +34,7 @@ interface Props {
   testID?: string;
 }
 
+/** Wishlist grid with price-drop badges, share, and bulk-clear actions. */
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();

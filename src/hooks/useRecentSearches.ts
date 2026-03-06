@@ -1,3 +1,10 @@
+/**
+ * @module useRecentSearches
+ *
+ * Manages a bounded list of recent search queries with optional persistent
+ * storage. Deduplicates case-insensitively, caps at MAX_RECENT entries,
+ * and gracefully degrades to in-memory-only when storage is unavailable.
+ */
 import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY = 'cfutons_recent_searches';

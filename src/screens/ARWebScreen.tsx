@@ -1,8 +1,26 @@
+/**
+ * @module ARWebScreen
+ *
+ * Web-platform counterpart to the native AR (Augmented Reality) screen.
+ * Since WebXR support is limited, this screen uses a `<model-viewer>` wrapper
+ * (via ModelViewerWeb) to let customers rotate and inspect a 3D futon model
+ * in their browser. Launched from ProductDetailScreen when the user taps
+ * "Try in Your Room" on a web build.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ModelViewerWeb } from '@/components/ModelViewerWeb';
 
+/**
+ * Navigation parameters required to render the AR (Augmented Reality) web viewer.
+ *
+ * @property glbUrl - URL to the GLB (GL Binary) 3D model file for non-Apple devices.
+ * @property usdzUrl - URL to the USDZ (Universal Scene Description Zip) model file for Apple Quick Look.
+ * @property title - Human-readable product name displayed in the header.
+ * @property productId - Catalog product identifier, used for analytics attribution.
+ */
 export interface ARWebScreenParams {
   glbUrl: string;
   usdzUrl: string;
@@ -10,15 +28,23 @@ export interface ARWebScreenParams {
   productId: string;
 }
 
+/** Props for the ARWebScreen component. */
 interface Props {
+  /** React Navigation route containing {@link ARWebScreenParams}. */
   route: { params: ARWebScreenParams };
+  /** Optional override for the close action; defaults to navigation.goBack(). */
   onClose?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
 /**
- * Full-screen modal screen wrapping ModelViewerWeb for web platform.
- * Shows a 3D model viewer with a header bar containing the product title and close button.
+ * Full-screen modal that renders an interactive 3D model viewer for web.
+ * Displays a dark header bar with the product title and a close button,
+ * with the ModelViewerWeb component filling the remaining viewport.
+ *
+ * @param props - {@link Props}
+ * @returns The AR (Augmented Reality) web viewer screen.
  */
 export function ARWebScreen({ route, onClose, testID }: Props) {
   const navigation = useNavigation();

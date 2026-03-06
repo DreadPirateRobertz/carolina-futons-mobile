@@ -1,3 +1,10 @@
+/**
+ * @module wixAuth
+ *
+ * Authentication service wrapping the Wix SDK OAuth strategy.
+ * Supports email/password login, registration, OAuth (social) login,
+ * password reset, and session restoration from secure token storage.
+ */
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { getWixSdkClient } from './wixSdkClient';
@@ -26,6 +33,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   resetPassword: 'Please reset your password to continue',
 };
 
+/**
+ * Stateless auth service — delegates all token management to the Wix SDK
+ * and persists tokens via tokenStorage for cross-session survival.
+ */
 export class WixAuthService {
   private get auth() {
     return getWixSdkClient().auth;

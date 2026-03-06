@@ -1,3 +1,10 @@
+/**
+ * @module WishlistIllustration
+ *
+ * Cozy cabin-in-the-mountains scene for the wishlist empty-state.
+ * A cabin with chimney smoke, flanked by pine trees, evokes a sense
+ * of comfort and aspiration — "save items you'd love to bring home."
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Polygon, Circle } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for the empty wishlist screen. */
 export function WishlistIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

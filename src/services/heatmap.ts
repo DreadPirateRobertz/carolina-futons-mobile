@@ -49,10 +49,12 @@ const _tapBuffer: TapEvent[] = [];
 const _scrollBuffer: ScrollDepthEvent[] = [];
 const _interactionCounts = new Map<string, InteractionCount>();
 
+/** Toggle heatmap data collection globally (e.g., honor user privacy preferences). */
 export function setHeatmapEnabled(enabled: boolean): void {
   _enabled = enabled;
 }
 
+/** Returns whether heatmap tracking is currently active. */
 export function isHeatmapEnabled(): boolean {
   return _enabled;
 }

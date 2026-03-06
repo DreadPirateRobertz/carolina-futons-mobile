@@ -1,3 +1,10 @@
+/**
+ * @module screens
+ *
+ * Barrel file re-exporting every screen component. Keeps import paths
+ * short (`@/screens` instead of `@/screens/FooScreen`) and provides a
+ * single place to see the full screen inventory at a glance.
+ */
 export { HomeScreen } from './HomeScreen';
 export { ShopScreen } from './ShopScreen';
 export { CartScreen } from './CartScreen';

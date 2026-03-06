@@ -1,3 +1,11 @@
+/**
+ * @module useNotifications
+ *
+ * Push notification provider and consumer hook. Handles Expo push token
+ * registration, OS permission prompts, foreground display, badge count,
+ * per-category preference toggles, and deep-link routing when the user
+ * taps a notification.
+ */
 import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
@@ -112,6 +120,10 @@ async function registerForPushToken(): Promise<string | null> {
   }
 }
 
+/**
+ * Wraps the app tree with notification state, permission helpers, and
+ * listeners that route tapped notifications to the correct deep link.
+ */
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(notificationReducer, {
     permissionStatus: 'undetermined',
@@ -198,6 +210,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   return <NotificationContext.Provider value={value}>{children}</NotificationContext.Provider>;
 }
 
+/** Consumes the notification context; must be rendered inside NotificationProvider. */
 export function useNotifications(): NotificationContextValue {
   const ctx = useContext(NotificationContext);
   if (!ctx) {

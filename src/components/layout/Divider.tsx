@@ -1,3 +1,10 @@
+/**
+ * @module Divider
+ *
+ * Horizontal rule component that respects the current theme. Supports
+ * three visual weights and configurable vertical spacing so content
+ * sections have consistent separation without ad-hoc margin hacks.
+ */
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme';

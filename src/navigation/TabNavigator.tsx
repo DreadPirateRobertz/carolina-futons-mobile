@@ -1,3 +1,10 @@
+/**
+ * @module TabNavigator
+ *
+ * Bottom tab navigator providing the four primary app destinations:
+ * Home, Shop, Cart (with badge), and Account. Uses the custom
+ * AnimatedTabBar for spring-press feedback.
+ */
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -28,6 +35,7 @@ function TabIcon({ label, focused, color }: { label: string; focused: boolean; c
   return <Text style={{ fontSize: focused ? 22 : 20 }}>{icons[label] ?? '•'}</Text>;
 }
 
+/** Bottom tab shell with cart badge count and the custom AnimatedTabBar. */
 export function TabNavigator() {
   const { colors } = useTheme();
   const { itemCount } = useCart();

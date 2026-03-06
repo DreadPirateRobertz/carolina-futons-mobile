@@ -1,3 +1,12 @@
+/**
+ * @module CollectionDetailScreen
+ *
+ * Editorial "Shop the Look" detail page. Each collection is a curated room
+ * setup (e.g., "The Minimalist Den") with a hero image, mood tags, editorial
+ * description, and a two-column product grid of the items in that look.
+ * A footer card shows the combined price for the entire collection.
+ */
+
 import React, { useCallback, useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
@@ -12,10 +21,18 @@ import { EmptyState } from '@/components/EmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { Product } from '@/data/products';
 
+/** Route parameters expected by this screen from React Navigation. */
 type RouteParams = RouteProp<RootStackParamList, 'CollectionDetail'>;
 
+/** FlatList key extractor using the product id. */
 const keyExtractor = (item: Product) => item.id;
 
+/**
+ * Collection detail screen with hero image, mood tags, editorial copy,
+ * product grid, and a "Complete This Look" price summary footer.
+ *
+ * @returns The collection detail view, or a "not found" empty state.
+ */
 export function CollectionDetailScreen() {
   const { colors, spacing, typography, shadows, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

@@ -12,6 +12,10 @@ type WixSdkClient = ReturnType<typeof createClient>;
 
 let client: WixSdkClient | null = null;
 
+/**
+ * Lazily create and return the Wix SDK client singleton.
+ * Warns at init time (not at import time) if the client ID env var is missing.
+ */
 export function getWixSdkClient(): WixSdkClient {
   if (!client) {
     const key = 'EXPO_PUBLIC_WIX_CLIENT_ID';
@@ -27,6 +31,7 @@ export function getWixSdkClient(): WixSdkClient {
   return client;
 }
 
+/** Destroy the cached client so the next call to getWixSdkClient() creates a fresh one. */
 export function resetWixSdkClient(): void {
   client = null;
 }

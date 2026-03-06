@@ -524,6 +524,10 @@ function resetForTesting(): void {
 // Public API
 // ---------------------------------------------------------------------------
 
+/**
+ * Unified performance API surface. All profiling methods are accessed via
+ * `perf.*` to keep the import footprint small and the namespace clear.
+ */
 export const perf = {
   // Startup
   markStartup,

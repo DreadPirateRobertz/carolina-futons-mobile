@@ -1,3 +1,10 @@
+/**
+ * @module CategoryIllustration
+ *
+ * Forest-and-mountain landscape used as the empty-state graphic on
+ * category browsing screens. Trees and a forest path invite exploration,
+ * reinforcing the "discover products" metaphor.
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Ellipse } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for empty or loading category screens. */
 export function CategoryIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

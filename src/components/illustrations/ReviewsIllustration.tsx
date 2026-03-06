@@ -1,3 +1,10 @@
+/**
+ * @module ReviewsIllustration
+ *
+ * Sunrise/golden-hour mountain scene used on review listing screens.
+ * The radiant sun and warm rays evoke positivity and trust — fitting
+ * for a section where customers share product feedback.
+ */
 import React from 'react';
 import Svg, {
   Defs,
@@ -21,6 +28,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for the reviews empty-state or header. */
 export function ReviewsIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

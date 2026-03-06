@@ -1,3 +1,10 @@
+/**
+ * @module ContentBlock
+ *
+ * Generic padded content container used across screens. When `card` is
+ * true it renders as a raised card surface with shadow — useful for
+ * grouping related information within a scroll view.
+ */
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme';

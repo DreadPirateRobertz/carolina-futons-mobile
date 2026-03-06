@@ -1,3 +1,10 @@
+/**
+ * @module tokenStorage
+ *
+ * Persists Wix OAuth tokens in expo-secure-store (Keychain on iOS,
+ * Keystore on Android) so sessions survive app restarts without
+ * forcing re-login.
+ */
 import * as SecureStore from 'expo-secure-store';
 
 const TOKEN_KEY = 'wix_auth_tokens';

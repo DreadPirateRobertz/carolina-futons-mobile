@@ -1,3 +1,13 @@
+/**
+ * @module ARFutonOverlay
+ *
+ * Interactive futon overlay for the AR (Augmented Reality) camera view.
+ * Renders a perspective-projected futon shape that the user can drag, pinch-to-scale,
+ * and rotate with two-finger gestures. Supports tap-to-place, wall-snap behavior
+ * for murphy cabinet beds, and real-time dynamic shadows driven by gesture velocity
+ * and lighting estimation.
+ */
+
 import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import Animated, {

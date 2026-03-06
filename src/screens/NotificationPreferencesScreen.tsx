@@ -1,3 +1,11 @@
+/**
+ * @module NotificationPreferencesScreen
+ *
+ * Lets users opt in/out of individual push notification categories
+ * (order updates, promotions, back-in-stock alerts, cart reminders).
+ * Also handles the OS-level permission prompt when notifications
+ * have not yet been granted or have been denied.
+ */
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useTheme } from '@/theme';
@@ -21,6 +29,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'cart_reminder',
 ];
 
+/** Per-category notification toggle screen with OS permission handling. */
 export function NotificationPreferencesScreen({ onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { permissionStatus, preferences, togglePreference, requestPermission } = useNotifications();

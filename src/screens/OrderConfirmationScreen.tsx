@@ -1,3 +1,11 @@
+/**
+ * @module OrderConfirmationScreen
+ *
+ * Post-purchase success screen shown immediately after checkout completes.
+ * Displays the order number, itemized receipt, shipping cost, tax,
+ * estimated delivery window, and CTAs (Call To Action) to continue
+ * shopping or view order history.
+ */
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
@@ -11,6 +19,7 @@ interface Props {
   testID?: string;
 }
 
+/** Displays a receipt-style confirmation after a successful purchase. */
 export function OrderConfirmationScreen({
   order,
   onContinueShopping,

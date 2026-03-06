@@ -9,6 +9,7 @@ import { PRODUCTS, type Product } from '@/data/products';
 
 const productMap = new Map(PRODUCTS.map((p) => [p.id, p]));
 
+/** Retrieves all collections and filters for featured ones (homepage carousel). */
 export function useCollections() {
   return useMemo(
     () => ({
@@ -19,6 +20,7 @@ export function useCollections() {
   );
 }
 
+/** Resolves a single collection by URL slug and hydrates its product references. */
 export function useCollection(slug: string): {
   collection: EditorialCollection | undefined;
   products: Product[];

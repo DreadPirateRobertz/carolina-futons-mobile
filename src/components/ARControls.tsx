@@ -1,3 +1,12 @@
+/**
+ * @module ARControls
+ *
+ * Bottom control panel for the AR (Augmented Reality) camera view.
+ * Provides model selection, fabric swatch picker, dimension toggle,
+ * share/save/wishlist actions, and add-to-cart CTA (Call To Action).
+ * Designed as a dark overlay anchored to the bottom of the AR screen.
+ */
+
 import React from 'react';
 import {
   StyleSheet,

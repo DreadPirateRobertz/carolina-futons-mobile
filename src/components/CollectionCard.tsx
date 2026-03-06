@@ -1,3 +1,12 @@
+/**
+ * @module CollectionCard
+ *
+ * Card for editorial/curated product collections (e.g. "Mid-Century Modern",
+ * "Cozy Studio Essentials"). Displays a hero image with mood tags, title,
+ * subtitle, and item count. Used on the Collections screen and home page
+ * to drive discovery of themed product groupings.
+ */
+
 import React, { useState, useCallback, memo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
@@ -13,6 +22,7 @@ interface Props {
   testID?: string;
 }
 
+/** Tappable editorial collection card with hero image, mood tags, and item count. */
 export const CollectionCard = memo(function CollectionCard({
   collection,
   onPress,

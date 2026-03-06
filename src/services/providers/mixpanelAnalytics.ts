@@ -29,6 +29,10 @@ export async function initMixpanel(token: string): Promise<void> {
   }
 }
 
+/**
+ * Bridges the app's vendor-neutral analytics API to Mixpanel.
+ * All methods silently no-op when the native module is missing.
+ */
 export class MixpanelAnalyticsProvider implements AnalyticsProvider {
   private enabled = true;
 

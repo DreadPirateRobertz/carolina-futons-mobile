@@ -1,3 +1,12 @@
+/**
+ * @module StoreDetailScreen
+ *
+ * Full-detail view for a single Carolina Futons showroom location. Shows the
+ * store photo, open/closed status, address, phone, operating hours, features
+ * (e.g., "AR Demo Station"), and an appointment booking flow. Action buttons
+ * launch native directions, phone, and email intents.
+ */
+
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -19,12 +28,23 @@ import {
 import { isStoreOpen, formatPhone } from '@/utils';
 import { Button } from '@/components/Button';
 
+/** Props for the StoreDetailScreen component. */
 interface Props {
+  /** Store identifier used to fetch data via the useStoreById hook. */
   storeId?: string;
+  /** Pre-loaded store object; bypasses the hook when provided (useful in tests). */
   store?: Store;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
+/**
+ * Showroom detail screen with hero photo, contact actions, hours,
+ * features, and in-store appointment booking.
+ *
+ * @param props - {@link Props}
+ * @returns The store detail view, or a loading/error/not-found fallback.
+ */
 export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
 

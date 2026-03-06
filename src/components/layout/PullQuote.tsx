@@ -1,3 +1,10 @@
+/**
+ * @module PullQuote
+ *
+ * Typographic pull-quote block with a left accent border. Used for
+ * customer testimonials, brand messaging, and editorial highlights
+ * where a quote needs to stand out from surrounding body text.
+ */
 import React from 'react';
 import { StyleSheet, View, Text, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme';

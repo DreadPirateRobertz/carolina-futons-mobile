@@ -1,3 +1,12 @@
+/**
+ * @module ViewInRoomButton
+ *
+ * CTA (Call To Action) button for launching the AR (Augmented Reality) camera
+ * to preview a product in the user's room. Only renders for AR-eligible product
+ * categories (futons, frames, murphy beds) that are in stock. Fires analytics
+ * and haptic feedback on press.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';

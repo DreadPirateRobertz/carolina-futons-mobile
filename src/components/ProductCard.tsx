@@ -1,3 +1,12 @@
+/**
+ * @module ProductCard
+ *
+ * Primary product display card used in grids and lists throughout the app.
+ * Shows product image with wishlist button overlay, badge (Sale/New/Bestseller),
+ * out-of-stock overlay, name, description, star rating, and price. Memoized
+ * to prevent unnecessary re-renders in FlatList/ScrollView contexts.
+ */
+
 import React, { memo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
@@ -13,6 +22,7 @@ interface Props {
   testID?: string;
 }
 
+/** Memoized product card with image, badge, rating, price, and wishlist toggle. */
 export const ProductCard = memo(function ProductCard({
   product,
   onPress,

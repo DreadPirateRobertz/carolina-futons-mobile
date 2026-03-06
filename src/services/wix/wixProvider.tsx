@@ -22,6 +22,7 @@ interface WixProviderProps {
   children: React.ReactNode;
 }
 
+/** Provides a memoized WixClient instance to the component tree via React context. */
 export function WixProvider({ apiKey, siteId, baseUrl, children }: WixProviderProps) {
   const client = useMemo(
     () => new WixClient({ apiKey, siteId, baseUrl }),
@@ -33,6 +34,7 @@ export function WixProvider({ apiKey, siteId, baseUrl, children }: WixProviderPr
 
 // ── Hooks ──────────────────────────────────────────────────────
 
+/** Access the WixClient from context. Throws if used outside a WixProvider. */
 export function useWixClient(): WixClient {
   const client = useContext(WixContext);
   if (!client) {
@@ -41,6 +43,7 @@ export function useWixClient(): WixClient {
   return client;
 }
 
+/** Fetch products from Wix, optionally filtered by collection. Auto-fetches on mount. */
 export function useWixProducts(collectionId?: string): {
   products: Product[];
   loading: boolean;
@@ -81,6 +84,7 @@ export function useWixProducts(collectionId?: string): {
   return { products, loading, error, refresh: fetchProducts };
 }
 
+/** Fetch all product collections from Wix. Auto-fetches on mount. */
 export function useWixCollections(): {
   collections: WixCollectionInfo[];
   loading: boolean;

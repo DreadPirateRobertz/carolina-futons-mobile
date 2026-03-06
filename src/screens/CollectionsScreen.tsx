@@ -1,3 +1,12 @@
+/**
+ * @module CollectionsScreen
+ *
+ * Lists all "Shop the Look" editorial collections as featured cards.
+ * Each card links to the {@link CollectionDetailScreen} for that collection.
+ * This gives customers curated, room-styled inspiration beyond browsing
+ * individual products.
+ */
+
 import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -10,8 +19,15 @@ import { Header } from '@/components/Header';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
 
+/** FlatList key extractor using the collection id. */
 const keyExtractor = (item: EditorialCollection) => item.id;
 
+/**
+ * "Curated Looks" listing screen. Renders a vertical list of editorial
+ * collection cards, each navigating to the collection detail on press.
+ *
+ * @returns The collections list view.
+ */
 export function CollectionsScreen() {
   const { colors, spacing, typography } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

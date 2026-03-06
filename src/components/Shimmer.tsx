@@ -1,3 +1,12 @@
+/**
+ * @module Shimmer
+ *
+ * Animated shimmer primitives for skeleton loading states. Provides a base
+ * Shimmer rectangle, ShimmerLines for multi-line text placeholders, and
+ * ShimmerCircle for avatar/icon placeholders. All pulse opacity using
+ * react-native-reanimated for smooth 60fps animation.
+ */
+
 import React, { useEffect, type ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import Animated, {

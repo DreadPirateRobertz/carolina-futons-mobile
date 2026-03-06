@@ -1,3 +1,10 @@
+/**
+ * @module ErrorIllustration
+ *
+ * Stormy mountain scene shown when an unexpected error occurs.
+ * Dark clouds, lightning bolts, and muted ridgelines communicate
+ * that something went wrong without resorting to generic error icons.
+ */
 import React from 'react';
 import Svg, {
   Defs,
@@ -21,6 +28,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for error / crash boundary screens. */
 export function ErrorIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

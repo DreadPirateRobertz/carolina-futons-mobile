@@ -17,6 +17,7 @@ function env(key: string, fallback = ''): string {
   return process.env[key] ?? fallback;
 }
 
+/** Build a WixClientConfig from EXPO_PUBLIC_* environment variables. */
 export function getWixConfig(): WixClientConfig {
   return {
     apiKey: env('EXPO_PUBLIC_WIX_API_KEY'),
@@ -25,6 +26,7 @@ export function getWixConfig(): WixClientConfig {
   };
 }
 
+/** Returns true when both the API key and site ID are present in the environment. */
 export function isWixConfigured(): boolean {
   return env('EXPO_PUBLIC_WIX_API_KEY').length > 0 && env('EXPO_PUBLIC_WIX_SITE_ID').length > 0;
 }

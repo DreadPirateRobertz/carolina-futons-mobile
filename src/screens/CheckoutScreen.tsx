@@ -1,3 +1,13 @@
+/**
+ * @module CheckoutScreen
+ *
+ * Final step before purchase. Displays the order summary, totals
+ * (with free-shipping threshold logic), and a payment method picker
+ * that includes Apple Pay / Google Pay, credit card, and BNPL
+ * (Buy Now Pay Later) options via Affirm and Klarna.
+ *
+ * Haptic feedback reinforces selection and success states on native.
+ */
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -70,6 +80,7 @@ interface Props {
   testID?: string;
 }
 
+/** Checkout flow screen with payment selection, order totals, and BNPL breakdown. */
 export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();

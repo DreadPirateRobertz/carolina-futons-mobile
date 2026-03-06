@@ -1,3 +1,12 @@
+/**
+ * @module OrderDetailScreen
+ *
+ * Displays full details for a single past order: status badge, tracking info,
+ * line items with fabric colors, totals breakdown, shipping address, and
+ * payment method. Includes a "Re-order" button that adds all original items
+ * back to the cart for easy repeat purchases.
+ */
+
 import React, { useCallback } from 'react';
 import {
   StyleSheet,
@@ -15,15 +24,28 @@ import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { formatPrice } from '@/utils';
 
+/** Props for the OrderDetailScreen component. */
 interface Props {
+  /** Explicit order identifier. Takes precedence over route params. */
   orderId?: string;
+  /** Pre-loaded orders array; when provided, the screen looks up the order locally instead of via the hook. */
   orders?: Order[];
+  /** Callback for the back navigation button. */
   onBack?: () => void;
+  /** Callback fired after all re-order items have been added to the cart. */
   onReorderSuccess?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
+  /** React Navigation route; used as fallback source for orderId. */
   route?: { params?: { orderId?: string } };
 }
 
+/**
+ * Detailed view of a single order with tracking, line items, totals, and re-order capability.
+ *
+ * @param props - {@link Props}
+ * @returns The order detail screen, or a "not found" message if the order cannot be resolved.
+ */
 export function OrderDetailScreen({
   orderId: orderIdProp,
   orders: ordersProp,

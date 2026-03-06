@@ -1,3 +1,11 @@
+/**
+ * @module SkeletonCarouselItem
+ *
+ * Skeleton loading placeholder that mirrors the RecommendationCarousel card
+ * dimensions (160x120 image, name, price, rating). Used while recommendation
+ * data is being fetched to prevent layout shift.
+ */
+
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';

@@ -1,3 +1,12 @@
+/**
+ * @module ErrorBoundary
+ *
+ * Root-level React error boundary that catches render errors from any
+ * descendant component. Reports crashes to the crash reporting service
+ * and renders a fallback UI with a retry button. Wrap at the top of
+ * the component tree to prevent full-app white-screens.
+ */
+
 import React, { Component, type ErrorInfo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import * as crashReporting from '@/services/crashReporting';
@@ -15,6 +24,15 @@ interface State {
   error: Error | null;
 }
 
+/**
+ * Root error boundary that catches unhandled render errors.
+ * Reports to crash reporting and shows a retry fallback.
+ *
+ * @param props.children - App subtree to protect
+ * @param props.fallback - Optional custom fallback UI
+ * @param props.onError - Optional callback for additional error handling
+ * @param props.testID - Test identifier for the fallback container
+ */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);

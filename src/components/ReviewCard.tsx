@@ -1,3 +1,11 @@
+/**
+ * @module ReviewCard
+ *
+ * Displays a single customer review with star rating, author info, verified
+ * purchase badge, review body, optional photo thumbnails, relative timestamp,
+ * and a "Helpful" voting button. Memoized for efficient rendering in review lists.
+ */
+
 import React, { useCallback, useMemo, memo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
@@ -33,6 +41,7 @@ function relativeDate(iso: string): string {
   return 'just now';
 }
 
+/** Memoized review card with star rating, author, body, photos, and helpful vote button. */
 export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 

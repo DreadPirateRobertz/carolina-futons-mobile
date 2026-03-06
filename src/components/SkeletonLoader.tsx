@@ -1,3 +1,12 @@
+/**
+ * @module SkeletonLoader
+ *
+ * Generic skeleton loading primitive for the dark theme. Renders an animated
+ * rectangle or circle that pulses opacity. Used as a building block for
+ * screen-specific skeleton compositions (SkeletonProductDetail, etc.).
+ * Unlike Shimmer (light theme), this uses the dark palette surface color.
+ */
+
 import React, { useEffect } from 'react';
 import { DimensionValue, ViewStyle } from 'react-native';
 import Animated, {
@@ -18,6 +27,7 @@ interface Props {
   testID?: string;
 }
 
+/** Animated dark-themed skeleton placeholder with configurable shape and size. */
 export function SkeletonLoader({
   width = '100%',
   height = 20,

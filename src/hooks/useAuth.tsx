@@ -1,3 +1,14 @@
+/**
+ * Authentication hook and context provider for Carolina Futons.
+ *
+ * Manages user sign-in, sign-up, OAuth (Google/Apple), password reset, and
+ * session restoration via the Wix Members API. Wraps all auth state in a React
+ * context so any descendant component can access the current user and auth
+ * actions through the `useAuth` hook.
+ *
+ * @module useAuth
+ */
+
 import React, {
   createContext,
   useContext,
@@ -8,6 +19,7 @@ import React, {
 } from 'react';
 import { WixAuthService } from '@/services/wix/wixAuth';
 
+/** Represents an authenticated Carolina Futons user. */
 export interface User {
   id: string;
   email: string;
@@ -15,12 +27,23 @@ export interface User {
   provider: 'email' | 'google' | 'apple' | 'wix';
 }
 
+/** Internal state managed by the auth reducer. */
 interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
 }
 
+/**
+ * Discriminated union of actions the auth reducer handles.
+ *
+ * - `AUTH_START` — sets loading state before an async auth operation
+ * - `AUTH_SUCCESS` — stores the authenticated user after login/signup
+ * - `AUTH_ERROR` — captures an error message from a failed auth attempt
+ * - `SIGN_OUT` — clears user state on logout
+ * - `CLEAR_ERROR` — dismisses the current error without changing user
+ * - `INIT_DONE` — marks session-restore check as complete (no user found)
+ */
 type AuthAction =
   | { type: 'AUTH_START' }
   | { type: 'AUTH_SUCCESS'; user: User }
@@ -48,13 +71,26 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
   }
 }
 
-/** Validation helpers */
+/**
+ * Validates an email address format.
+ *
+ * @param email - The email string to validate.
+ * @returns A human-readable error message, or `null` if valid.
+ */
 export function validateEmail(email: string): string | null {
   if (!email.trim()) return 'Email is required';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Invalid email address';
   return null;
 }
 
+/**
+ * Validates a password against minimum strength requirements.
+ *
+ * Requirements: at least 8 characters, one uppercase letter, one digit.
+ *
+ * @param password - The password string to validate.
+ * @returns A human-readable error message, or `null` if valid.
+ */
 export function validatePassword(password: string): string | null {
   if (!password) return 'Password is required';
   if (password.length < 8) return 'Password must be at least 8 characters';
@@ -63,12 +99,19 @@ export function validatePassword(password: string): string | null {
   return null;
 }
 
+/**
+ * Validates a display name (minimum 2 characters after trimming).
+ *
+ * @param name - The display name to validate.
+ * @returns A human-readable error message, or `null` if valid.
+ */
 export function validateName(name: string): string | null {
   if (!name.trim()) return 'Name is required';
   if (name.trim().length < 2) return 'Name must be at least 2 characters';
   return null;
 }
 
+/** Shape of the value exposed by AuthContext to consumers. */
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
@@ -85,6 +128,19 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/**
+ * Context provider that initializes the Wix auth service, restores any
+ * persisted session on mount, and exposes auth actions to the component tree.
+ *
+ * Wrap your app root (or the authenticated section) with this provider.
+ *
+ * @param props.children - Child components that may consume auth context.
+ *
+ * @example
+ * <AuthProvider>
+ *   <App />
+ * </AuthProvider>
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
@@ -209,6 +265,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Accesses the current authentication state and actions.
+ *
+ * Must be called from within an `AuthProvider`.
+ *
+ * @returns Object containing `{ user, loading, error, isAuthenticated, signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, clearError }`
+ *
+ * @example
+ * const { user, signIn, signOut, isAuthenticated } = useAuth();
+ */
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) {

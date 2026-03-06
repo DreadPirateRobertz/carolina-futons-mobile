@@ -1,3 +1,11 @@
+/**
+ * @module ReviewSummary
+ *
+ * Aggregate review statistics card shown at the top of product review
+ * sections. Displays the average rating, total count, star display, and
+ * a horizontal bar chart showing the 5-star distribution.
+ */
+
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
@@ -9,6 +17,13 @@ interface Props {
   testID?: string;
 }
 
+/**
+ * Renders a review statistics card with average rating and distribution bars.
+ *
+ * @param props.summary - Aggregate review data (average, total, 5-star distribution)
+ * @param props.testID - Test identifier
+ * @returns A card with average rating, stars, and distribution bar chart
+ */
 export function ReviewSummary({ summary, testID }: Props) {
   const { colors, borderRadius, shadows } = useTheme();
 

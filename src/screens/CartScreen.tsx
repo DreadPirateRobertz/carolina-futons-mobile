@@ -1,3 +1,15 @@
+/**
+ * @module CartScreen
+ *
+ * Shopping cart view displaying all items the customer has added, with quantity
+ * controls, an order summary (subtotal, shipping, tax, total), a BNPL
+ * (Buy Now, Pay Later) teaser for Klarna/Affirm, and a checkout button.
+ * Shows a branded empty state with mountain skyline when the cart is empty.
+ *
+ * Shipping is free above the SHIPPING_THRESHOLD; NC sales tax is applied at
+ * a flat 7% rate.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -8,16 +20,30 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
 
+/** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
+/** Flat shipping charge (in dollars) when below the free-shipping threshold. */
 const SHIPPING_COST = 49;
-const TAX_RATE = 0.07; // NC sales tax
+/** North Carolina sales tax rate applied to the subtotal. */
+const TAX_RATE = 0.07;
 
+/** Props for the CartScreen component. */
 interface Props {
+  /** Callback to navigate to the checkout flow. */
   onCheckout?: () => void;
+  /** Callback for the "Start Shopping" action in the empty state. */
   onContinueShopping?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
+/**
+ * Shopping cart screen with item cards, quantity stepper, order summary,
+ * BNPL (Buy Now, Pay Later) teaser, and checkout Call To Action.
+ *
+ * @param props - {@link Props}
+ * @returns The cart screen view with items or the empty-cart illustration.
+ */
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
@@ -255,6 +281,16 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   );
 }
 
+/**
+ * Individual cart line item row showing fabric color swatch, product name,
+ * fabric name, quantity stepper (capped at 10), and line total.
+ *
+ * @param props.item - The cart item to render.
+ * @param props.onIncrement - Increase quantity by one.
+ * @param props.onDecrement - Decrease quantity (removes item at qty 1).
+ * @param props.onRemove - Remove the item entirely.
+ * @returns A styled card for one cart line item.
+ */
 function CartItemRow({
   item,
   onIncrement,

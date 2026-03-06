@@ -23,6 +23,10 @@ type ProfilerOnRenderCallback = (
   commitTime: number,
 ) => void;
 
+/**
+ * Returns a React Profiler onRender callback that feeds render durations
+ * into the performance service for jank detection and reporting.
+ */
 export function useRenderTracking(componentName: string): ProfilerOnRenderCallback {
   return useCallback(
     (

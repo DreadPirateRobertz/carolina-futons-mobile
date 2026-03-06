@@ -1,3 +1,12 @@
+/**
+ * @module GlassCard
+ *
+ * Frosted-glass style card container for the dark theme UI. Simulates
+ * glassmorphism using a semi-transparent espresso-toned background with
+ * a subtle border. Intensity controls the opacity level — light for
+ * overlays, heavy for prominent panels.
+ */
+
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -11,6 +20,7 @@ interface Props {
   intensity?: 'light' | 'medium' | 'heavy';
 }
 
+/** Semi-transparent card with adjustable opacity for glassmorphism effects. */
 export function GlassCard({ children, style, testID, intensity = 'medium' }: Props) {
   const { borderRadius } = useTheme();
   const opacity = intensity === 'light' ? 0.5 : intensity === 'heavy' ? 0.85 : 0.7;

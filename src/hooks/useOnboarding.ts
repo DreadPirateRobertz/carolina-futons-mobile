@@ -1,3 +1,10 @@
+/**
+ * @module useOnboarding
+ *
+ * Tracks whether the user has completed the first-run onboarding flow.
+ * Persists completion state to AsyncStorage so returning users skip
+ * straight to the home screen.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -9,6 +16,7 @@ interface UseOnboardingReturn {
   completeOnboarding: () => Promise<void>;
 }
 
+/** Reads onboarding status on mount and exposes a callback to mark it complete. */
 export function useOnboarding(): UseOnboardingReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);

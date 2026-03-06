@@ -14,6 +14,10 @@ import { trackScrollDepth } from '@/services/heatmap';
 
 const DEPTH_REPORT_INTERVAL = 500; // ms between depth reports
 
+/**
+ * Returns a throttled onScroll handler that tracks the maximum scroll depth
+ * reached and reports it to the heatmap analytics service.
+ */
 export function useScrollDepth(screenName: string) {
   const lastReportRef = useRef(0);
   const maxDepthRef = useRef(0);

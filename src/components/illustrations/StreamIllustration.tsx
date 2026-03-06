@@ -1,3 +1,10 @@
+/**
+ * @module StreamIllustration
+ *
+ * Mountain creek scene with water ripples, rocks, and sandy banks.
+ * Used as a decorative accent on activity-feed or content-stream
+ * screens — the flowing water mirrors a stream of updates.
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Ellipse, Circle } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration for content-stream or activity-feed screens. */
 export function StreamIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

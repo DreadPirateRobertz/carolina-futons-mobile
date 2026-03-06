@@ -1,3 +1,12 @@
+/**
+ * @module ProductDetailScreen
+ *
+ * Rich product page for a single futon model. Features a parallax image
+ * gallery, fabric swatch selector, physical dimensions card, user reviews
+ * with sort/filter, an AR (Augmented Reality) CTA, and add-to-cart with
+ * quantity control. Analytics events fire for view, fabric select, AR open,
+ * and add-to-cart to power conversion tracking.
+ */
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   StyleSheet,
@@ -49,6 +58,7 @@ interface Props {
   testID?: string;
 }
 
+/** Full product detail view with parallax gallery, fabric picker, reviews, and AR launch. */
 export function ProductDetailScreen({
   productId,
   slug,

@@ -1,3 +1,10 @@
+/**
+ * @module useFutonModels
+ *
+ * Provides futon model and fabric data for AR (Augmented Reality) room preview
+ * and cart configuration. Static fallback today; the interface is shaped for a
+ * seamless swap to the Wix Stores API when the backend is ready.
+ */
 import { useState, useCallback, useMemo } from 'react';
 import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';

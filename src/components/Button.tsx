@@ -1,3 +1,11 @@
+/**
+ * @module Button
+ *
+ * Primary action button used throughout the app. Supports three visual
+ * variants (primary, secondary, ghost), three sizes, and loading/disabled
+ * states. Ghost variant renders as an outlined button for lower-emphasis actions.
+ */
+
 import React from 'react';
 import {
   StyleSheet,
@@ -8,7 +16,10 @@ import {
 } from 'react-native';
 import { colors, borderRadius, shadows, typography } from '@/theme/tokens';
 
+/** Visual style of the button: primary (coral), secondary (blue), or ghost (outlined). */
 type Variant = 'primary' | 'secondary' | 'ghost';
+
+/** Button size controlling padding. */
 type Size = 'sm' | 'md' | 'lg';
 
 interface Props {
@@ -42,6 +53,19 @@ const sizeStyles: Record<Size, { paddingVertical: number; paddingHorizontal: num
   lg: { paddingVertical: 16, paddingHorizontal: 32 },
 };
 
+/**
+ * Themed action button with loading spinner support.
+ *
+ * @param props.label - Button text
+ * @param props.onPress - Press handler
+ * @param props.variant - Visual style: 'primary' | 'secondary' | 'ghost'
+ * @param props.size - Padding size: 'sm' | 'md' | 'lg'
+ * @param props.disabled - Disables interaction and dims appearance
+ * @param props.loading - Shows a spinner and disables interaction
+ * @param props.fullWidth - Stretches to fill container width
+ * @param props.testID - Test identifier for E2E tests
+ * @returns A styled touchable button element
+ */
 export function Button({
   label,
   onPress,

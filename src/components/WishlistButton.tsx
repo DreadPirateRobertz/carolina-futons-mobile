@@ -1,3 +1,12 @@
+/**
+ * @module WishlistButton
+ *
+ * Heart-shaped toggle button that adds or removes a product from the
+ * user's wishlist. Provides haptic feedback on native platforms. Can be
+ * rendered as an overlay (absolute-positioned) on product images or
+ * inline in content areas.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -18,6 +27,15 @@ const SIZE_MAP = {
   lg: { button: 44, icon: 26 },
 } as const;
 
+/**
+ * Toggleable heart button for adding/removing products from the wishlist.
+ *
+ * @param props.product - The product to add/remove
+ * @param props.size - Button size: 'sm' | 'md' | 'lg'
+ * @param props.overlay - When true, positions absolutely over its parent (top-right)
+ * @param props.testID - Test identifier
+ * @returns A circular heart-icon button
+ */
 export function WishlistButton({ product, size = 'md', overlay = false, testID }: Props) {
   const { isInWishlist, toggle } = useWishlist();
   const active = isInWishlist(product.id);

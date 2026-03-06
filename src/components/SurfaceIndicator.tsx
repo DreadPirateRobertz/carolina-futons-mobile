@@ -1,3 +1,13 @@
+/**
+ * @module SurfaceIndicator
+ *
+ * Visual feedback overlay for AR (Augmented Reality) surface detection.
+ * Renders an animated dot grid over the camera feed that reflects the
+ * current detection phase: scanning (pulsing ripple), detected (stable grid),
+ * and ready (green glow). Includes a status pill with a human-readable
+ * message and detected plane count.
+ */
+
 import React, { useEffect } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import Animated, {

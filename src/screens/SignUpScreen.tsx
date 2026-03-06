@@ -1,3 +1,11 @@
+/**
+ * @module SignUpScreen
+ *
+ * New-account registration with name, email, and password fields plus
+ * social OAuth (Apple, Google). Validates all fields client-side before
+ * submitting. Shares the dark-palette frosted-glass card design with
+ * LoginScreen to keep the auth flow visually cohesive.
+ */
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -20,6 +28,7 @@ interface Props {
   testID?: string;
 }
 
+/** Account creation form with client-side validation and social OAuth options. */
 export function SignUpScreen({ onLogin, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signUp, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();

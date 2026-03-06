@@ -14,6 +14,11 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { trackScreenView } from '@/services/analytics';
 import { addBreadcrumb } from '@/services/crashReporting';
 
+/**
+ * Returns a navigation ref, onReady, and onStateChange handlers that
+ * automatically fire screen_view events and crash-reporting breadcrumbs
+ * on every navigation transition.
+ */
 export function useScreenTracking() {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
   const routeNameRef = useRef<string | undefined>();

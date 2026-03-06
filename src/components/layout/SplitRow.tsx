@@ -1,3 +1,10 @@
+/**
+ * @module SplitRow
+ *
+ * Two-column horizontal layout with configurable left/right flex ratio.
+ * Useful for side-by-side comparisons, image+text pairings, and any
+ * layout that needs proportional column widths without manual flex math.
+ */
 import React from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme';

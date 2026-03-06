@@ -1,3 +1,12 @@
+/**
+ * @module SkeletonProductDetail
+ *
+ * Full-page skeleton placeholder for the ProductDetailScreen. Mirrors the
+ * exact layout: gallery image, product name/tagline, price, fabric swatches,
+ * dimension card, and review section. Shown while the product detail API
+ * response is loading.
+ */
+
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import { useTheme } from '@/theme';

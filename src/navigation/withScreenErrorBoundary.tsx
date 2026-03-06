@@ -1,3 +1,10 @@
+/**
+ * @module withScreenErrorBoundary
+ *
+ * Higher-Order Component (HOC) that wraps any screen in a ScreenErrorBoundary.
+ * If the screen throws during render, the boundary catches it and offers a
+ * "Go Home" escape hatch that resets the navigation stack to Tabs.
+ */
 import React from 'react';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary';

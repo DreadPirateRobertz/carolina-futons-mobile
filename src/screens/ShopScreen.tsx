@@ -1,3 +1,12 @@
+/**
+ * @module ShopScreen
+ *
+ * Primary product browsing screen. Renders a two-column product grid
+ * with search (including autocomplete and recent-search history),
+ * category chip filters, sort control, pull-to-refresh, and infinite
+ * scroll pagination. Uses virtualized FlatList with tuned batch sizes
+ * for smooth scrolling on lower-end devices.
+ */
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +25,7 @@ interface Props {
   testID?: string;
 }
 
+/** Two-column product grid with search, category filters, sort, and infinite scroll. */
 export function ShopScreen({ onProductPress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();

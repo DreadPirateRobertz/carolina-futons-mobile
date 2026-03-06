@@ -1,3 +1,11 @@
+/**
+ * @module usePayment
+ *
+ * Orchestrates the Stripe checkout flow: creates a PaymentIntent on the
+ * backend, presents the native payment sheet (Apple Pay / Google Pay / card),
+ * confirms the order, and clears the cart on success. Guards against
+ * double-submission via a processing ref.
+ */
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
@@ -20,6 +28,10 @@ interface PaymentState {
   order: OrderConfirmation | null;
 }
 
+/**
+ * Drives the end-to-end payment lifecycle, from intent creation through
+ * Stripe sheet presentation to order confirmation. Resets cleanly on cancel.
+ */
 export function usePayment() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { items, subtotal, clearCart } = useCart();

@@ -1,3 +1,11 @@
+/**
+ * @module StoreLocatorScreen
+ *
+ * Searchable list of Carolina Futons showroom locations. When the user's
+ * coordinates are available, stores are sorted nearest-first using the
+ * Haversine distance formula. Supports filtering by city, state, or zip.
+ * Handles loading and error states from the store data hook.
+ */
 import React, { useState, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { useTheme } from '@/theme';
@@ -14,6 +22,7 @@ interface Props {
   testID?: string;
 }
 
+/** Proximity-sorted showroom finder with city/state/zip search. */
 export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');

@@ -1,3 +1,9 @@
+/**
+ * @module useOrders
+ *
+ * Order history hook with status filtering and lookup. Uses mock data now;
+ * the return shape mirrors the Wix eCommerce Orders API for future swap-in.
+ */
 import { useState, useMemo, useCallback } from 'react';
 import { MOCK_ORDERS, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/data/orders';
 

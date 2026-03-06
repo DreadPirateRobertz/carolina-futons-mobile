@@ -1,3 +1,11 @@
+/**
+ * @module Header
+ *
+ * App-wide navigation header bar. Displays the brand logo or a page title
+ * centered between optional back navigation and search/cart action buttons.
+ * The cart icon shows a badge with the current item count (capped at "99+").
+ */
+
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { colors, spacing, typography, shadows } from '@/theme/tokens';
@@ -12,6 +20,18 @@ interface Props {
   testID?: string;
 }
 
+/**
+ * Top navigation bar with logo/title, search, and cart controls.
+ *
+ * @param props.title - Override the brand logo with a page title
+ * @param props.cartCount - Number of items in cart; shows badge when > 0
+ * @param props.showBack - Renders a back arrow in the left slot
+ * @param props.onSearchPress - Handler for the search icon tap
+ * @param props.onCartPress - Handler for the cart icon tap
+ * @param props.onBackPress - Handler for the back arrow tap
+ * @param props.testID - Test identifier
+ * @returns The header bar View
+ */
 export function Header({
   title,
   cartCount,

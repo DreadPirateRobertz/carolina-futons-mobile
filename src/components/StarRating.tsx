@@ -1,3 +1,12 @@
+/**
+ * @module StarRating
+ *
+ * Reusable 5-star rating display and input component. Supports read-only
+ * display mode and interactive mode for rating submission. Stars are
+ * rendered as Unicode characters (filled star / empty star) and can
+ * optionally show a numeric value and review count.
+ */
+
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
@@ -20,6 +29,19 @@ const SIZE_MAP = {
 
 const STAR_COUNT = 5;
 
+/**
+ * Displays a row of 5 stars with optional numeric value and review count.
+ * In interactive mode, each star is tappable to submit a rating.
+ *
+ * @param props.rating - Rating value from 0 to 5 (rounded to nearest integer for display)
+ * @param props.size - Star size: 'sm' (12px), 'md' (16px), or 'lg' (20px)
+ * @param props.interactive - When true, stars become tappable for rating input
+ * @param props.onRate - Callback with the selected rating (1-5) when interactive
+ * @param props.showValue - Show the numeric rating next to the stars
+ * @param props.count - Review count displayed in parentheses
+ * @param props.testID - Test identifier
+ * @returns A row of star characters with optional value and count
+ */
 export function StarRating({
   rating,
   size = 'md',

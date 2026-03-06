@@ -25,6 +25,11 @@ try {
   // Native module not available — provider methods will no-op
 }
 
+/**
+ * Bridges the app's vendor-neutral analytics API to Firebase Analytics.
+ * All methods silently no-op when the Firebase native module is missing
+ * (e.g., during Expo Go development or on web).
+ */
 export class FirebaseAnalyticsProvider implements AnalyticsProvider {
   private enabled = true;
 

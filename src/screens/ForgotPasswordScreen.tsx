@@ -1,3 +1,12 @@
+/**
+ * @module ForgotPasswordScreen
+ *
+ * Password reset flow. Collects the user's email, validates it client-side,
+ * then calls the auth service to send a reset link. On success, shows a
+ * confirmation state with a "Back to Login" button. Part of the
+ * Login -> ForgotPassword -> Login navigation cycle.
+ */
+
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -15,11 +24,21 @@ import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
 
+/** Props for the ForgotPasswordScreen component. */
 interface Props {
+  /** Callback to navigate back to the login screen. */
   onBack?: () => void;
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
+/**
+ * Forgot-password screen with email input, validation, and a success
+ * confirmation state after the reset link is sent.
+ *
+ * @param props - {@link Props}
+ * @returns The password reset form or the "check your email" confirmation.
+ */
 export function ForgotPasswordScreen({ onBack, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { resetPassword, loading, error, clearError } = useAuth();

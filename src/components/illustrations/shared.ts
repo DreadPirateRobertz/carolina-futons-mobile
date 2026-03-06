@@ -1,8 +1,20 @@
+/**
+ * @module illustrations/shared
+ *
+ * Shared constants and path-generation utilities for SVG illustrations.
+ * All illustrations share the same deterministic mountain-ridge generator
+ * and brand color palettes so the visual language stays consistent.
+ */
 import { colors } from '@/theme/tokens';
 
 // ── 7-layer mountain configs (distant → front) ──────────────────────
 // baseHeight: fraction of viewBox height where ridge sits (0 = top, 1 = bottom)
 
+/**
+ * Preset configs for the seven parallax mountain layers.
+ * Each layer sits at a different `baseHeight` fraction and uses a
+ * unique `seed` so the pseudo-random ridge line never repeats.
+ */
 export const MOUNTAIN_LAYER_CONFIGS = [
   { name: 'distant', baseHeight: 0.32, seed: 42 },
   { name: 'far', baseHeight: 0.41, seed: 17 },
@@ -14,10 +26,12 @@ export const MOUNTAIN_LAYER_CONFIGS = [
 ] as const;
 
 // Atmospheric opacity ramp: distant (faint) → front (solid)
+/** Opacity values for opaque-background illustrations (7 layers, back to front). */
 export const STANDARD_OPACITIES = [0.12, 0.18, 0.25, 0.38, 0.5, 0.68, 0.85];
+/** Opacity values for transparent/light-background illustrations. */
 export const TRANSPARENT_OPACITIES = [0.12, 0.18, 0.28, 0.35, 0.42, 0.52, 0.6];
 
-// Standard layer colors: distant blue haze → espresso foreground
+/** Layer colors for opaque backgrounds: distant blue haze fading to espresso foreground. */
 export const STANDARD_LAYER_COLORS = [
   colors.mountainBlue,
   colors.mountainBlue,
@@ -28,6 +42,7 @@ export const STANDARD_LAYER_COLORS = [
   colors.espresso,
 ];
 
+/** Layer colors for transparent backgrounds: lighter tones that remain readable over varied backdrops. */
 export const TRANSPARENT_LAYER_COLORS = [
   colors.mountainBlueLight,
   colors.mountainBlueLight,
@@ -77,6 +92,11 @@ function seededRandom(seed: number): () => number {
 
 // ── C-curve bezier mountain path generator ───────────────────────────
 
+/**
+ * Generates a closed SVG path string for a single mountain ridge using
+ * cubic Bezier curves. A seeded PRNG (Pseudo-Random Number Generator)
+ * ensures the same seed always produces the same ridge silhouette.
+ */
 export function buildCBezierMountainPath(
   vbH: number,
   baseHeightFraction: number,
@@ -111,6 +131,10 @@ export function buildCBezierMountainPath(
 
 // ── Compact path builder for small illustrations (280×200) ───────────
 
+/**
+ * Convenience wrapper around {@link buildCBezierMountainPath} tuned for
+ * small 280x200 illustration viewboxes (fewer segments for cleaner lines).
+ */
 export function buildSmallMountainPath(
   vbW: number,
   vbH: number,
@@ -130,6 +154,7 @@ export interface BirdConfig {
   y: number;
 }
 
+/** Generates four bird silhouette paths distributed across the upper sky region. */
 export function buildBirds(vbW: number, vbH: number): BirdConfig[] {
   const spread = vbW / 5;
   return [
@@ -145,6 +170,7 @@ export interface TreeConfig {
   canopyLayers: { path: string; opacity: number }[];
 }
 
+/** Generates three pine trees with trunk rectangles and layered canopy Bezier curves. */
 export function buildPineTrees(vbW: number, vbH: number): TreeConfig[] {
   const positions = [vbW * 0.14, vbW * 0.65, vbW * 0.85];
   return positions.map((x) => {
@@ -168,6 +194,7 @@ export interface FloraConfig {
   bloom: { cx: number; cy: number; r: number; color: string };
 }
 
+/** Generates small wildflower elements (stem + bloom circle) for foreground detail. */
 export function buildFlora(vbW: number, vbH: number): FloraConfig[] {
   const positions = [
     { x: vbW * 0.1, bloomColor: colors.sunsetCoral },

@@ -1,3 +1,12 @@
+/**
+ * @module ReviewForm
+ *
+ * Form for submitting a product review. Includes a tappable star rating
+ * selector (1-5), title and body text inputs, photo attachment (up to 5
+ * images via the device image picker), and a submit button with loading state.
+ * Validates that a rating is selected before allowing submission.
+ */
+
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -11,6 +20,7 @@ interface ReviewFormProps {
 
 const STAR_COUNT = 5;
 
+/** Product review submission form with star rating, text fields, and photo uploads. */
 export function ReviewForm({
   onSubmit,
   isSubmitting = false,

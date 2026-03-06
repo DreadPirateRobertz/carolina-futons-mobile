@@ -1,3 +1,11 @@
+/**
+ * @module SkeletonProductCard
+ *
+ * Skeleton loading placeholder that mirrors the ProductCard dimensions
+ * (4:3 image, name, description, rating, price). Used in product grids
+ * while data is loading to prevent layout shift and give visual feedback.
+ */
+
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';

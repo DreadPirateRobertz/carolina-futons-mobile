@@ -1,6 +1,16 @@
+/**
+ * @module ModelViewerWeb
+ *
+ * Web-only 3D model viewer powered by Google's <model-viewer> web component.
+ * Injects the model-viewer script from CDN and creates the custom element via
+ * safe DOM APIs (no innerHTML) to prevent XSS. Renders nothing on native
+ * platforms — iOS/Android use the native AR path instead.
+ */
+
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Platform, ActivityIndicator } from 'react-native';
 
+/** CDN URL for Google's model-viewer web component (v3.5.0). */
 export const MODEL_VIEWER_CDN =
   'https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js';
 

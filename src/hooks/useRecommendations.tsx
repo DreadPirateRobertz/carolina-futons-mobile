@@ -1,13 +1,30 @@
+/**
+ * Product recommendation engine hook and context provider.
+ *
+ * Tracks user browsing and purchase history to generate four recommendation
+ * lists: recently viewed, similar items (same category as last viewed),
+ * "also bought" (same category as past purchases), and a general
+ * "recommended for you" set of unseen products.
+ *
+ * All data is in-memory for now; designed for a backend recommendation
+ * service swap-in later.
+ *
+ * @module useRecommendations
+ */
+
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { PRODUCTS, Product } from '@/data/products';
 
+/** Maximum number of recently-viewed product IDs to retain. */
 const MAX_RECENT = 20;
 
+/** Internal tracking state for view and purchase history. */
 interface RecommendationsState {
   viewedIds: string[];
   purchasedIds: string[];
 }
 
+/** Shape of the value exposed by RecommendationsContext to consumers. */
 interface RecommendationsContextValue {
   recentlyViewed: Product[];
   similarItems: Product[];
@@ -22,6 +39,17 @@ const RecommendationsContext = createContext<RecommendationsContextValue | null>
 
 const productById = new Map(PRODUCTS.map((p) => [p.id, p]));
 
+/**
+ * Context provider that tracks product views and purchases to power
+ * recommendation lists throughout the app.
+ *
+ * @param props.children - Child components that may consume recommendations context.
+ *
+ * @example
+ * <RecommendationsProvider>
+ *   <App />
+ * </RecommendationsProvider>
+ */
 export function RecommendationsProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<RecommendationsState>({
     viewedIds: [],
@@ -105,6 +133,16 @@ export function RecommendationsProvider({ children }: { children: React.ReactNod
   );
 }
 
+/**
+ * Accesses product recommendation lists and tracking actions.
+ *
+ * Must be called from within a `RecommendationsProvider`.
+ *
+ * @returns Object containing `{ recentlyViewed, similarItems, alsoBoought, recommendedForYou, trackView, trackPurchase, clearHistory }`
+ *
+ * @example
+ * const { recentlyViewed, trackView } = useRecommendations();
+ */
 export function useRecommendations() {
   const ctx = useContext(RecommendationsContext);
   if (!ctx) throw new Error('useRecommendations must be used within a RecommendationsProvider');

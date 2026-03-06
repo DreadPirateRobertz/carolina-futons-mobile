@@ -1,3 +1,11 @@
+/**
+ * @module LoginScreen
+ *
+ * Email/password sign-in screen with social login (Apple, Google).
+ * Uses the dark palette and frosted-glass card aesthetic shared
+ * across auth screens. Client-side validation runs before any
+ * network call to give instant field-level feedback.
+ */
 import React, { useState, useCallback } from 'react';
 import {
   StyleSheet,
@@ -21,6 +29,7 @@ interface Props {
   testID?: string;
 }
 
+/** Sign-in form with email/password fields and social OAuth buttons. */
 export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();

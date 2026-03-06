@@ -1,3 +1,14 @@
+/**
+ * Shopping cart hook and context provider.
+ *
+ * Manages cart state (add, remove, update quantity, clear) through a reducer,
+ * persists items to AsyncStorage for cross-session continuity, and exposes
+ * computed values like `itemCount` and `subtotal`. Quantity is capped at 10
+ * per line item to match warehouse fulfillment limits.
+ *
+ * @module useCart
+ */
+
 import React, {
   createContext,
   useContext,
@@ -8,6 +19,9 @@ import React, {
 } from 'react';
 import type { FutonModel, Fabric } from '@/data/futons';
 
+/**
+ * A single line item in the cart, keyed by `model:fabric` composite ID.
+ */
 export interface CartItem {
   id: string; // `${model.id}:${fabric.id}`
   model: FutonModel;
@@ -16,10 +30,20 @@ export interface CartItem {
   unitPrice: number; // basePrice + fabric.price
 }
 
+/** Internal state managed by the cart reducer. */
 interface CartState {
   items: CartItem[];
 }
 
+/**
+ * Discriminated union of cart reducer actions.
+ *
+ * - `ADD_ITEM` — adds a new line item or increments quantity of an existing one
+ * - `REMOVE_ITEM` — deletes a line item by composite ID
+ * - `UPDATE_QUANTITY` — sets quantity for a line item (removes if <= 0)
+ * - `CLEAR` — empties the entire cart
+ * - `LOAD` — hydrates the cart from persisted storage on mount
+ */
 type CartAction =
   | { type: 'ADD_ITEM'; model: FutonModel; fabric: Fabric; quantity: number }
   | { type: 'REMOVE_ITEM'; itemId: string }
@@ -74,6 +98,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
+/** Shape of the value exposed by CartContext to consumers. */
 interface CartContextValue {
   items: CartItem[];
   itemCount: number;
@@ -88,6 +113,18 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const CART_STORAGE_KEY = 'cfutons_cart';
 
+/**
+ * Context provider that manages cart state and persists it to AsyncStorage.
+ *
+ * Wrap the app root with this provider so all screens can access the cart.
+ *
+ * @param props.children - Child components that may consume cart context.
+ *
+ * @example
+ * <CartProvider>
+ *   <App />
+ * </CartProvider>
+ */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
 
@@ -167,6 +204,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
+/**
+ * Accesses shopping cart state and mutation actions.
+ *
+ * Must be called from within a `CartProvider`.
+ *
+ * @returns Object containing `{ items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart }`
+ *
+ * @example
+ * const { items, addItem, subtotal } = useCart();
+ */
 export function useCart(): CartContextValue {
   const ctx = useContext(CartContext);
   if (!ctx) {

@@ -1,3 +1,12 @@
+/**
+ * @module RecommendationCarousel
+ *
+ * Horizontally scrolling product carousel driven by the recommendation engine.
+ * Displays a titled row of compact product cards with image, name, price, and
+ * star rating. Used on the home screen, product detail page, and cart for
+ * cross-sell and "You May Also Like" sections.
+ */
+
 import React, { useCallback, memo } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -19,6 +28,7 @@ const Separator = memo(function Separator({ width }: { width: number }) {
 
 const keyExtractor = (item: Product) => item.id;
 
+/** Horizontal product recommendation carousel with header and optional "See All" link. */
 export function RecommendationCarousel({
   title,
   products,

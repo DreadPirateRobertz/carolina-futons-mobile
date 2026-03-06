@@ -1,3 +1,12 @@
+/**
+ * @module EditorialHero
+ *
+ * Large editorial headline block used at the top of curated sections.
+ * Renders a title, subtitle, and optional CTA (Call To Action) button
+ * inside a frosted-glass card. Designed for the dark-themed home screen
+ * and collection pages to set the editorial tone.
+ */
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
@@ -13,6 +22,7 @@ interface Props {
   testID?: string;
 }
 
+/** Editorial headline with optional glass-card CTA button. */
 export function EditorialHero({ title, subtitle, ctaLabel, onCtaPress, testID }: Props) {
   const { typography } = useTheme();
 

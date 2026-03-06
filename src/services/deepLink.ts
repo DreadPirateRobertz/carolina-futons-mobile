@@ -191,6 +191,7 @@ export function storePendingDeepLink(url: string): void {
   pendingDeepLink = url;
 }
 
+/** Consume and clear the stored pending deep link, returning it (or null if none). */
 export function consumePendingDeepLink(): string | null {
   const link = pendingDeepLink;
   pendingDeepLink = null;

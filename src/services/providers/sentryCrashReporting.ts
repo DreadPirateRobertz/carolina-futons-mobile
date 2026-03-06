@@ -44,6 +44,11 @@ export interface SentryConfig {
   enableAutoSessionTracking?: boolean;
 }
 
+/**
+ * Bridges the app's vendor-neutral crash reporting API to Sentry.
+ * All methods silently no-op when the @sentry/react-native native module
+ * is missing (e.g., Expo Go or web builds).
+ */
 export class SentryCrashReportingProvider implements CrashReportingProvider {
   private config: SentryConfig;
 

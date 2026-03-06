@@ -1,3 +1,12 @@
+/**
+ * @module AnimatedPressable
+ *
+ * Drop-in replacement for TouchableOpacity/Pressable that adds spring-based
+ * scale-down feedback and optional haptic feedback on press. Used across the
+ * app wherever tactile, polished press interactions are needed (CTA = Call To
+ * Action buttons, cards, etc.).
+ */
+
 import React, { useCallback } from 'react';
 import { Pressable, ViewStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
@@ -20,6 +29,7 @@ interface Props {
 
 const SPRING_CONFIG = { damping: 15, stiffness: 150 };
 
+/** Pressable with spring scale-down animation and configurable haptic feedback. */
 export function AnimatedPressable({
   children,
   onPress,

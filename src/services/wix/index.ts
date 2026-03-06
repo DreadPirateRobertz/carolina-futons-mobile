@@ -1,3 +1,10 @@
+/**
+ * @module wix
+ *
+ * Barrel file re-exporting the entire Wix integration surface:
+ * REST client, React provider/hooks, SDK auth client, config helpers,
+ * and secure token storage.
+ */
 export {
   WixClient,
   WixApiError,

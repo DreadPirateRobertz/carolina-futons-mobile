@@ -1,3 +1,10 @@
+/**
+ * @module useDeepLink
+ *
+ * Manages the full deep link lifecycle: cold-start URLs, foreground link events,
+ * and deferred deep links (stored when the app wasn't running). Extracts UTM
+ * (Urchin Tracking Module) params for attribution analytics.
+ */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Linking from 'expo-linking';
 import {

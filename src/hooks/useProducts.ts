@@ -1,3 +1,11 @@
+/**
+ * @module useProducts
+ *
+ * Full-featured product catalog hook powering the Shop screen. Provides fuzzy
+ * search with autocomplete suggestions, category filtering, multi-strategy sort,
+ * cursor-style pagination, and SWR (Stale-While-Revalidate) caching via
+ * AsyncStorage for offline-first browsing.
+ */
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   PRODUCTS,

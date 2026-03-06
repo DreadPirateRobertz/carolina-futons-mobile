@@ -1,3 +1,9 @@
+/**
+ * @module storeUtils
+ *
+ * Helpers for the store-locator feature: open/closed status based on
+ * today's hours, Haversine distance calculation, and phone formatting.
+ */
 import type { Store } from '@/data/stores';
 
 /**

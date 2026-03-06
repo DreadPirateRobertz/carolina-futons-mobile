@@ -123,6 +123,7 @@ export interface QueryCollectionsOptions {
 
 // ── Error class ────────────────────────────────────────────────
 
+/** Structured error thrown by WixClient on HTTP or network failures. */
 export class WixApiError extends Error {
   constructor(
     message: string,
@@ -154,14 +155,17 @@ const DEFAULT_COLLECTION_MAP: Record<string, ProductCategory> = {
 
 let collectionMap = { ...DEFAULT_COLLECTION_MAP };
 
+/** Override the default Wix-collection-slug to ProductCategory mapping. */
 export function setCollectionCategoryMap(map: Record<string, ProductCategory>): void {
   collectionMap = { ...map };
 }
 
+/** Return a copy of the current collection-slug to ProductCategory map. */
 export function getCollectionCategoryMap(): Record<string, ProductCategory> {
   return { ...collectionMap };
 }
 
+/** Map a Wix collection slug to a local ProductCategory, defaulting to 'futons'. */
 export function resolveCategory(collectionSlug: string): ProductCategory {
   return collectionMap[collectionSlug] ?? ('futons' as ProductCategory);
 }
@@ -178,6 +182,11 @@ const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
 
 // ── Client ─────────────────────────────────────────────────────
 
+/**
+ * HTTP client for the Wix Stores Catalog REST API (V1).
+ * Handles product queries, collection queries, inventory lookups,
+ * and generic Wix Data (CMS) queries with automatic retry on transient errors.
+ */
 export class WixClient {
   readonly baseUrl: string;
   private readonly apiKey: string;
@@ -453,6 +462,7 @@ function isRetryableError(err: Error): boolean {
 
 // ── Transform functions ────────────────────────────────────────
 
+/** Convert a raw Wix API product object into the app's local Product shape. */
 export function transformWixProduct(wix: WixProduct): Product {
   const isDiscounted = wix.price.discountedPrice < wix.price.price;
 
@@ -487,6 +497,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   };
 }
 
+/** Convert a raw Wix API collection object into the app's WixCollectionInfo shape. */
 export function transformWixCollection(wix: WixCollection): WixCollectionInfo {
   return {
     id: wix.id,

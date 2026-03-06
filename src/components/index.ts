@@ -1,4 +1,10 @@
-// Component barrel exports
+/**
+ * @module components/index
+ *
+ * Barrel file that re-exports all shared UI components for convenient
+ * single-path imports: `import { ProductCard, SearchBar } from '@/components'`.
+ */
+
 export { ARFutonOverlay } from './ARFutonOverlay';
 export { ARControls } from './ARControls';
 export { Button } from './Button';

@@ -1,3 +1,10 @@
+/**
+ * @module AnimatedTabBar
+ *
+ * Custom bottom tab bar with spring-animated press feedback and haptic taps.
+ * Replaces the default React Navigation tab bar to match the app's
+ * dark-glass visual language and provide tactile interaction cues.
+ */
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
@@ -79,6 +86,7 @@ function TabButton({
   );
 }
 
+/** Custom tab bar rendered by the BottomTabNavigator; safe-area aware. */
 export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 

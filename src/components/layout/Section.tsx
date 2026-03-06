@@ -1,3 +1,11 @@
+/**
+ * @module Section
+ *
+ * Top-level content section wrapper that enforces consistent vertical
+ * rhythm and horizontal padding. Every major block on editorial and
+ * home screens should be wrapped in a Section so spacing stays uniform
+ * regardless of screen size or content density.
+ */
 import React from 'react';
 import { StyleSheet, View, Text, type ViewStyle } from 'react-native';
 import { useTheme } from '@/theme';

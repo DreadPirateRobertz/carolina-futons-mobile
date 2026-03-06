@@ -1,3 +1,10 @@
+/**
+ * @module CartIllustration
+ *
+ * Blue Ridge mountain landscape shown on the empty-cart screen.
+ * Features sunset sky, layered ridgelines, trail marker posts, and a
+ * winding footpath — evoking a journey not yet taken (add items to start).
+ */
 import React from 'react';
 import Svg, { Defs, LinearGradient, Stop, Rect, Path, Circle, Line } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
@@ -12,6 +19,7 @@ interface Props {
 const VBW = 280;
 const VBH = 200;
 
+/** SVG illustration rendered when the shopping cart is empty. */
 export function CartIllustration({ width = VBW, height = VBH, testID }: Props) {
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${VBW} ${VBH}`} testID={testID}>

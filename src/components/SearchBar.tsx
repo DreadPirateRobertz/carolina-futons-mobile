@@ -1,3 +1,12 @@
+/**
+ * @module SearchBar
+ *
+ * Product search input with autocomplete suggestions and recent search history.
+ * Shows a dropdown of matching product names as the user types, and displays
+ * recent searches when the field is focused but empty. Supports clearing
+ * individual recent entries or all at once.
+ */
+
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
@@ -19,6 +28,7 @@ interface Props {
   onClearRecent?: () => void;
 }
 
+/** Search input with autocomplete dropdown and recent search history. */
 export function SearchBar({
   value,
   onChangeText,

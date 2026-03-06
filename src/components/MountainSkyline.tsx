@@ -1,3 +1,13 @@
+/**
+ * @module MountainSkyline
+ *
+ * Decorative SVG illustration of the North Carolina Blue Ridge Mountains.
+ * Renders 7 layered mountain silhouettes with atmospheric haze, optional
+ * birds, pine trees, and wildflower flora. Used as a section divider and
+ * brand element throughout the app. Supports sunrise/sunset color variants
+ * and a transparent mode for dark-themed sections.
+ */
+
 import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
 import Svg, {
@@ -41,6 +51,7 @@ interface Props {
   testID?: string;
 }
 
+/** Renders the layered mountain skyline SVG with configurable variant and detail level. */
 export function MountainSkyline({
   variant = 'sunrise',
   height = DEFAULT_HEIGHT,

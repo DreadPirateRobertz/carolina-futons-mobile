@@ -1,3 +1,11 @@
+/**
+ * @module SortPicker
+ *
+ * Sort control for the product listing screen. Shows the current sort label
+ * as a chip button; tapping it opens a modal with radio-style sort options
+ * (e.g. "Featured", "Price: Low to High"). Also displays the total result count.
+ */
+
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useTheme } from '@/theme';
@@ -10,6 +18,15 @@ interface Props {
   testID?: string;
 }
 
+/**
+ * Inline sort control with a modal picker for sort options.
+ *
+ * @param props.value - Currently active sort option
+ * @param props.onChange - Callback when user selects a new sort
+ * @param props.resultCount - Number of products matching current filters
+ * @param props.testID - Test identifier
+ * @returns A row with result count and sort button, plus the sort modal
+ */
 export function SortPicker({ value, onChange, resultCount, testID }: Props) {
   const { colors, borderRadius, shadows } = useTheme();
   const [showModal, setShowModal] = useState(false);

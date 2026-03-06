@@ -1,3 +1,9 @@
+/**
+ * @module navigation
+ *
+ * Barrel file for navigation exports: root stack navigator, tab navigator,
+ * param-list types, and deep-link configuration.
+ */
 export { AppNavigator } from './AppNavigator';
 export type { RootStackParamList } from './AppNavigator';
 export { TabNavigator } from './TabNavigator';

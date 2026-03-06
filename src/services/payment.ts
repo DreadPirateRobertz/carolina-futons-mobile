@@ -40,6 +40,10 @@ export interface OrderConfirmation {
   estimatedDelivery: string;
 }
 
+/**
+ * Derive shipping, tax, and grand total from a cart subtotal.
+ * Shipping is free above $499; tax is a flat 7% (NC rate).
+ */
 export function calculateTotals(subtotal: number): OrderTotals {
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
@@ -119,6 +123,10 @@ export async function confirmOrder(
 
 export type PaymentErrorCode = 'INTENT_FAILED' | 'CONFIRM_FAILED' | 'CANCELLED' | 'STRIPE_ERROR';
 
+/**
+ * Typed error for payment failures, carrying a machine-readable code
+ * so callers can distinguish cancellation from server errors.
+ */
 export class PaymentError extends Error {
   code: PaymentErrorCode;
 

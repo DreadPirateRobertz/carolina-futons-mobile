@@ -1,3 +1,10 @@
+/**
+ * @module useReviews
+ *
+ * Product review management: listing, sorting, local submission with optimistic
+ * UI, and "helpful" voting. Reviews are mock-backed today but the interface
+ * is designed for direct API replacement.
+ */
 import { useState, useMemo, useCallback } from 'react';
 import {
   type Review,

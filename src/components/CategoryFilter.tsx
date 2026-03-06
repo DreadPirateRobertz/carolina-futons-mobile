@@ -1,3 +1,11 @@
+/**
+ * @module CategoryFilter
+ *
+ * Horizontal scrollable chip bar for filtering products by category.
+ * Includes an "All" chip that clears the filter. Chips highlight
+ * the currently selected category with the espresso background color.
+ */
+
 import React from 'react';
 import { StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { useTheme } from '@/theme';
@@ -10,6 +18,15 @@ interface Props {
   testID?: string;
 }
 
+/**
+ * Renders a horizontal row of filter chips for product categories.
+ *
+ * @param props.categories - Available categories with labels and counts
+ * @param props.selected - Currently active category, or null for "All"
+ * @param props.onSelect - Callback when a chip is tapped; null clears the filter
+ * @param props.testID - Test identifier
+ * @returns A horizontal ScrollView of category chip buttons
+ */
 export function CategoryFilter({ categories, selected, onSelect, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 

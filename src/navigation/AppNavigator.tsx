@@ -1,3 +1,10 @@
+/**
+ * @module AppNavigator
+ *
+ * Root native-stack navigator for the app. Lazy-loads all screens beyond the
+ * tab shell to minimize initial JS parse time. Handles onboarding gating,
+ * checkout flow reset, and modal presentation of auth screens.
+ */
 import React, { useCallback, lazy, Suspense } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -133,6 +140,7 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/** Root stack navigator — gates onboarding, then renders the tab shell + push screens. */
 export function AppNavigator() {
   const { isLoading, hasSeenOnboarding, completeOnboarding } = useOnboarding();
 

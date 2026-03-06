@@ -1,3 +1,10 @@
+/**
+ * @module useStores
+ *
+ * Provides showroom/store data for the store locator and detail screens.
+ * Static data today; shaped for a drop-in replacement with the Wix CMS
+ * (Content Management System) API when the backend integration lands.
+ */
 import { useMemo, useCallback } from 'react';
 import { STORES, APPOINTMENT_TYPES, type Store, type AppointmentType } from '@/data/stores';
 

@@ -1,3 +1,12 @@
+/**
+ * @module StoreCard
+ *
+ * Card component for displaying a physical store location in the store
+ * locator. Shows the store name, open/closed status badge, address,
+ * phone number, distance (if available), and up to three feature tags
+ * (e.g. "Mattress Gallery", "Free Delivery").
+ */
+
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
@@ -10,6 +19,7 @@ interface Props {
   testID?: string;
 }
 
+/** Tappable store location card with open/closed status, address, phone, and feature tags. */
 export function StoreCard({ store, distance, onPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const open = isStoreOpen(store);

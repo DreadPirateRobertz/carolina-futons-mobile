@@ -1,3 +1,11 @@
+/**
+ * @module EmptyState
+ *
+ * Centered placeholder for screens/sections with no data to display (empty cart,
+ * no search results, error states, etc.). Supports an icon or custom illustration,
+ * a title/message, and an optional action button to guide the user forward.
+ */
+
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '@/theme/tokens';
@@ -18,6 +26,7 @@ interface Props {
   testID?: string;
 }
 
+/** Centered empty-state placeholder with icon/illustration, message, and optional CTA. */
 export function EmptyState({ title, message, icon, illustration, action, testID }: Props) {
   return (
     <View style={styles.container} testID={testID}>

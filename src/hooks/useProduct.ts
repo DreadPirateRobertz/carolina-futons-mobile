@@ -1,3 +1,10 @@
+/**
+ * @module useProduct
+ *
+ * Single-product data hook for the Product Detail Page (PDP). Performs a
+ * synchronous lookup against static data today; the loading/error states
+ * are pre-wired for an async API call later.
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 

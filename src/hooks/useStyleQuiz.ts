@@ -1,3 +1,11 @@
+/**
+ * @module useStyleQuiz
+ *
+ * Manages state for the onboarding style quiz that collects room type,
+ * aesthetic preference, and primary use-case. Persists answers to
+ * AsyncStorage so the recommendation engine can personalize results
+ * on subsequent launches.
+ */
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -19,6 +27,7 @@ const EMPTY_PREFERENCES: StylePreferences = {
   primaryUse: null,
 };
 
+/** Exposes quiz step setters and a save callback; state resets on unmount. */
 export function useStyleQuiz() {
   const [preferences, setPreferences] = useState<StylePreferences>(EMPTY_PREFERENCES);
 

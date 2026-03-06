@@ -1,3 +1,11 @@
+/**
+ * @module HeroBanner
+ *
+ * Full-bleed hero image with dark overlay and bottom-aligned text.
+ * Used at the top of Home, Collection, and promotional screens to
+ * create strong visual anchors. Supports progressive loading via
+ * blurhash placeholders.
+ */
 import React from 'react';
 import { StyleSheet, View, Text, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';

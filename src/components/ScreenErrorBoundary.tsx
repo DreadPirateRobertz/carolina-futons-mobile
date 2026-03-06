@@ -1,3 +1,12 @@
+/**
+ * @module ScreenErrorBoundary
+ *
+ * Screen-level React error boundary that catches render crashes and isolates
+ * them to individual screens rather than crashing the entire app. Reports
+ * errors to the crash reporting service with the screen name for diagnostics.
+ * Offers "Try Again" and optional "Go Home" recovery actions.
+ */
+
 import React, { Component, type ErrorInfo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import * as crashReporting from '@/services/crashReporting';

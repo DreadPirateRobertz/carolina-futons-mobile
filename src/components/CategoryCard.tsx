@@ -1,3 +1,12 @@
+/**
+ * @module CategoryCard
+ *
+ * Tappable card for browsing product categories (e.g. "Futons", "Frames").
+ * Displays a full-bleed category image with a gradient text overlay.
+ * Supports featured (tall) and compact (short) variants for different
+ * layout contexts like home screen grids and filter bars.
+ */
+
 import React, { useState, useCallback, memo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
@@ -18,6 +27,7 @@ interface Props {
   testID?: string;
 }
 
+/** Tappable category image card with title overlay. Memoized to avoid re-renders in lists. */
 export const CategoryCard = memo(function CategoryCard({
   category,
   onPress,

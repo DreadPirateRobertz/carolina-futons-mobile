@@ -1,3 +1,17 @@
+/**
+ * @module ARScreen
+ *
+ * Native AR (Augmented Reality) camera screen for the "Try in Your Room" feature.
+ * This is the primary differentiator of the Carolina Futons app: customers point
+ * their phone camera at a room, the app detects floor/wall surfaces, and they can
+ * place, resize, and rotate a virtual futon to see how it fits. Screenshots can
+ * be saved to the gallery or shared with friends.
+ *
+ * Surface detection is powered by ARKit on iOS and ARCore on Android via the
+ * {@link useSurfaceDetection} hook. Lighting estimation adjusts shadow rendering
+ * so the virtual furniture looks realistic under varying room conditions.
+ */
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -24,18 +38,28 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
 
+/** Props for the ARScreen component. */
 interface Props {
+  /** Optional override for the close action; defaults to navigation.goBack(). */
   onClose?: () => void;
+  /** Pre-select a specific futon model when the screen opens. */
   initialModelId?: string;
+  /** React Navigation route; used as fallback source for initialModelId. */
   route?: { params?: { initialModelId?: string } };
+  /** Test identifier for end-to-end tests. */
   testID?: string;
 }
 
 /**
- * AR Camera screen with surface detection and lighting estimation.
- * Opens the camera, detects floor/wall planes via ARKit (iOS) / ARCore (Android),
- * shows visual indicators where furniture can be placed, and renders realistic
- * shadows based on room lighting conditions.
+ * Full-screen AR (Augmented Reality) camera view with surface detection, furniture
+ * placement, screenshot capture, and social sharing.
+ *
+ * Handles several states: camera permission prompt, model loading, error fallback,
+ * and the main AR experience with controls for model/fabric selection, dimensions
+ * toggle, wishlist, and add-to-cart.
+ *
+ * @param props - {@link Props}
+ * @returns The native AR camera screen.
  */
 export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const navigation = useNavigation();

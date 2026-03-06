@@ -18,6 +18,11 @@
 import { useCallback, useRef } from 'react';
 import { perf, type ScrollSession } from '@/services/performance';
 
+/**
+ * Returns FlatList scroll event handlers that measure per-frame timing via
+ * requestAnimationFrame and report dropped frames / FPS (Frames Per Second)
+ * to the performance service.
+ */
 export function useScrollPerformance(screenName: string) {
   const sessionRef = useRef<ScrollSession | null>(null);
   const rafIdRef = useRef<number | null>(null);

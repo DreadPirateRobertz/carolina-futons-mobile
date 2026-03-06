@@ -1,3 +1,11 @@
+/**
+ * @module ARProductPicker
+ *
+ * Full-screen overlay for browsing and selecting AR (Augmented Reality)-eligible
+ * products during an active camera session. Displays a category-filtered thumbnail
+ * grid so users can switch products without leaving the AR view.
+ */
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
