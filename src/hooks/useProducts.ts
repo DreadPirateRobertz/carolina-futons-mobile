@@ -17,6 +17,7 @@ import {
 } from '@/data/products';
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 import { saveCatalog, loadCachedCatalog } from '@/services/productCache';
+import { getWixClientInstance } from '@/services/wix/singleton';
 
 export type { Product, ProductCategory, SortOption, CategoryInfo };
 
@@ -54,7 +55,7 @@ interface UseProductsOptions {
  *
  * Implements stale-while-revalidate caching:
  * - On mount: serves cached products immediately if available
- * - Fetches fresh data in background (currently mock, ready for API swap-in)
+ * - Fetches fresh data from Wix API (falls back to mock if unconfigured/error)
  * - Caches fresh data to AsyncStorage for offline access
  */
 export function useProducts(options?: UseProductsOptions): UseProductsReturn {
@@ -83,15 +84,45 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     })();
   }, []);
 
-  // Step 2: "Fetch" fresh data after simulated network delay
-  // (currently mock PRODUCTS; will be replaced by Wix API call)
+  // Step 2: Fetch fresh data — from Wix API or mock fallback
   useEffect(() => {
+    const client = getWixClientInstance();
+
+    if (client) {
+      // Real API fetch
+      let cancelled = false;
+      (async () => {
+        try {
+          const result = await client.queryProducts({ limit: 100 });
+          if (!cancelled) {
+            freshLoaded.current = true;
+            setAllProducts(result.products);
+            setIsFromCache(false);
+            setIsInitialLoading(false);
+            saveCatalog(result.products);
+          }
+        } catch {
+          // Fall back to mock on API error
+          if (!cancelled) {
+            freshLoaded.current = true;
+            setAllProducts(PRODUCTS);
+            setIsFromCache(false);
+            setIsInitialLoading(false);
+            saveCatalog(PRODUCTS);
+          }
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Mock fallback with simulated delay (preserves existing test behavior)
     const timer = setTimeout(() => {
       freshLoaded.current = true;
       setAllProducts(PRODUCTS);
       setIsFromCache(false);
       setIsInitialLoading(false);
-      // Cache fresh data for offline use
       saveCatalog(PRODUCTS);
     }, 600);
     return () => clearTimeout(timer);
@@ -135,12 +166,10 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
           result.sort((a, b) => b.rating - a.rating);
           break;
         case 'newest':
-          // In mock, reverse order simulates newest
           result.reverse();
           break;
         case 'featured':
         default:
-          // Default order (bestsellers first via badge, then by review count)
           result.sort((a, b) => {
             if (a.badge === 'Bestseller' && b.badge !== 'Bestseller') return -1;
             if (b.badge === 'Bestseller' && a.badge !== 'Bestseller') return 1;
@@ -161,7 +190,6 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const loadMore = useCallback(() => {
     if (!hasMore || isLoading) return;
     setIsLoading(true);
-    // Simulate network delay for realistic feel
     setTimeout(() => {
       setPage((p) => p + 1);
       setIsLoading(false);
@@ -171,11 +199,29 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const refresh = useCallback(() => {
     setPage(1);
     setIsLoading(false);
-    // Re-fetch and re-cache
-    freshLoaded.current = true;
-    setAllProducts(PRODUCTS);
-    setIsFromCache(false);
-    saveCatalog(PRODUCTS);
+
+    const client = getWixClientInstance();
+    if (client) {
+      (async () => {
+        try {
+          const result = await client.queryProducts({ limit: 100 });
+          freshLoaded.current = true;
+          setAllProducts(result.products);
+          setIsFromCache(false);
+          saveCatalog(result.products);
+        } catch {
+          freshLoaded.current = true;
+          setAllProducts(PRODUCTS);
+          setIsFromCache(false);
+          saveCatalog(PRODUCTS);
+        }
+      })();
+    } else {
+      freshLoaded.current = true;
+      setAllProducts(PRODUCTS);
+      setIsFromCache(false);
+      saveCatalog(PRODUCTS);
+    }
   }, []);
 
   // Reset pagination when filters change
