@@ -12,7 +12,13 @@
  */
 
 import type { Product, ProductImage, ProductCategory } from '@/data/products';
-import type { Order, OrderStatus, OrderLineItem, ShippingAddress, TrackingInfo } from '@/data/orders';
+import type {
+  Order,
+  OrderStatus,
+  OrderLineItem,
+  ShippingAddress,
+  TrackingInfo,
+} from '@/data/orders';
 import type { Review, ReviewSummary } from '@/data/reviews';
 import type { Store, StoreHours } from '@/data/stores';
 import { getTrackingUrl } from '@/data/orders';
@@ -683,9 +689,7 @@ function transformWixOrder(wix: WixOrder): Order {
 
   const items: OrderLineItem[] = (wix.lineItems ?? []).map((li) => {
     const descLines = li.descriptionLines ?? [];
-    const fabricLine = descLines.find(
-      (d) => d.name?.original?.toLowerCase() === 'fabric',
-    );
+    const fabricLine = descLines.find((d) => d.name?.original?.toLowerCase() === 'fabric');
 
     return {
       id: li.id,

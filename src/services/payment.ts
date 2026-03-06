@@ -112,9 +112,7 @@ export async function confirmOrder(
   });
 
   if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Failed to confirm order' }));
+    const error = await response.json().catch(() => ({ message: 'Failed to confirm order' }));
     throw new PaymentError(error.message ?? 'Order confirmation failed', 'CONFIRM_FAILED');
   }
 

@@ -19,6 +19,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn(),
 }));
 
+// eslint-disable-next-line import/first
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const mockGetItem = AsyncStorage.getItem as jest.Mock;

@@ -1,4 +1,4 @@
-import { WixClient, WixApiError } from '../wixClient';
+import { WixClient } from '../wixClient';
 
 const mockConfig = { apiKey: 'test-key', siteId: 'test-site', baseUrl: 'https://test.wixapis.com' };
 
@@ -87,9 +87,36 @@ describe('WixClient.queryReviews', () => {
 describe('WixClient.getReviewSummary', () => {
   it('computes summary from reviews', async () => {
     const reviews = [
-      { _id: 'r1', rating: 5, authorName: 'A', title: '', body: '', createdAt: '', helpful: 0, verified: true },
-      { _id: 'r2', rating: 4, authorName: 'B', title: '', body: '', createdAt: '', helpful: 0, verified: true },
-      { _id: 'r3', rating: 5, authorName: 'C', title: '', body: '', createdAt: '', helpful: 0, verified: false },
+      {
+        _id: 'r1',
+        rating: 5,
+        authorName: 'A',
+        title: '',
+        body: '',
+        createdAt: '',
+        helpful: 0,
+        verified: true,
+      },
+      {
+        _id: 'r2',
+        rating: 4,
+        authorName: 'B',
+        title: '',
+        body: '',
+        createdAt: '',
+        helpful: 0,
+        verified: true,
+      },
+      {
+        _id: 'r3',
+        rating: 5,
+        authorName: 'C',
+        title: '',
+        body: '',
+        createdAt: '',
+        helpful: 0,
+        verified: false,
+      },
     ];
 
     mockFetch.mockResolvedValueOnce({

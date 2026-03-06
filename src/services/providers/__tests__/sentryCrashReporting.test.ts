@@ -26,8 +26,6 @@ describe('SentryCrashReportingProvider', () => {
   });
 
   it('addBreadcrumb no-ops when Sentry unavailable', () => {
-    expect(() =>
-      provider.addBreadcrumb('test', 'ui', { target: 'button' }),
-    ).not.toThrow();
+    expect(() => provider.addBreadcrumb('test', 'ui', { target: 'button' })).not.toThrow();
   });
 });

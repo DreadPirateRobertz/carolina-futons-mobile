@@ -41,7 +41,12 @@ describe('WixClient.queryOrders', () => {
     shippingInfo: {
       logistics: {
         shippingDestination: {
-          address: { addressLine1: '123 Main St', city: 'Asheville', subdivision: 'NC', postalCode: '28801' },
+          address: {
+            addressLine1: '123 Main St',
+            city: 'Asheville',
+            subdivision: 'NC',
+            postalCode: '28801',
+          },
           contactDetails: { firstName: 'Jane', lastName: 'Smith' },
         },
       },
@@ -110,14 +115,16 @@ describe('WixClient.queryOrders', () => {
     const orderWithTracking = {
       ...mockWixOrder,
       status: 'FULFILLED',
-      fulfillments: [{
-        id: 'ful-1',
-        trackingInfo: {
-          trackingNumber: '1Z999AA1',
-          shippingProvider: 'UPS',
-          trackingLink: 'https://ups.com/track/1Z999AA1',
+      fulfillments: [
+        {
+          id: 'ful-1',
+          trackingInfo: {
+            trackingNumber: '1Z999AA1',
+            shippingProvider: 'UPS',
+            trackingLink: 'https://ups.com/track/1Z999AA1',
+          },
         },
-      }],
+      ],
     };
 
     mockFetch.mockResolvedValueOnce({

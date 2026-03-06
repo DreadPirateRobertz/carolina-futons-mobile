@@ -1,9 +1,4 @@
-import {
-  calculateTotals,
-  createPaymentIntent,
-  confirmOrder,
-  PaymentError,
-} from '../payment';
+import { calculateTotals, createPaymentIntent, confirmOrder, PaymentError } from '../payment';
 import type { CartItem } from '@/hooks/useCart';
 
 // Mock fetch globally
@@ -157,9 +152,9 @@ describe('payment service', () => {
       mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
 
       const totals = calculateTotals(349);
-      await expect(
-        confirmOrder('pi_123', [mockCartItem], totals, 'card'),
-      ).rejects.toThrow('Network request failed');
+      await expect(confirmOrder('pi_123', [mockCartItem], totals, 'card')).rejects.toThrow(
+        'Network request failed',
+      );
     });
   });
 

@@ -33,12 +33,18 @@ try {
 export class FirebaseAnalyticsProvider implements AnalyticsProvider {
   private enabled = true;
 
-  trackEvent(name: AnalyticsEventName, properties?: Record<string, string | number | boolean>): void {
+  trackEvent(
+    name: AnalyticsEventName,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     if (!this.enabled || !firebaseAnalytics) return;
     firebaseAnalytics.logEvent(name, properties ?? {}).catch(() => {});
   }
 
-  trackScreenView(screenName: string, properties?: Record<string, string | number | boolean>): void {
+  trackScreenView(
+    screenName: string,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     if (!this.enabled || !firebaseAnalytics) return;
     firebaseAnalytics
       .logScreenView({ screen_name: screenName, screen_class: screenName, ...properties })

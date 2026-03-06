@@ -73,4 +73,9 @@ export const wishlistFunnel: Funnel = {
 };
 
 /** All funnels for dashboard registration */
-export const allFunnels: Funnel[] = [purchaseFunnel, arToPurchaseFunnel, browseFunnel, wishlistFunnel];
+export const allFunnels: Funnel[] = [
+  purchaseFunnel,
+  arToPurchaseFunnel,
+  browseFunnel,
+  wishlistFunnel,
+];
