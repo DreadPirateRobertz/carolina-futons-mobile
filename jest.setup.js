@@ -88,6 +88,29 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
 
+// Mock shared transition tags — reanimated's native shared transition layer
+// (registerEventHandler, ProgressTransitionRegister) is not available in Jest.
+// Return undefined so the sharedTransitionTag prop is omitted in tests.
+jest.mock('./src/utils/sharedTransitionTag', () => ({
+  sharedTransitionTag: () => undefined,
+}));
+
+// Mock @react-navigation/native for components that use useNavigation
+// outside of a NavigationContainer (e.g. ShopScreen in unit tests)
+jest.mock('@react-navigation/native', () => {
+  const actual = jest.requireActual('@react-navigation/native');
+  return {
+    ...actual,
+    useNavigation: () => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      dispatch: jest.fn(),
+      setOptions: jest.fn(),
+      addListener: jest.fn(() => jest.fn()),
+    }),
+  };
+});
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {

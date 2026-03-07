@@ -40,6 +40,7 @@ import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 import { events } from '@/services/analytics';
+import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -270,8 +271,11 @@ export function ProductDetailScreen({
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* Parallax Image Gallery */}
-        <Animated.View style={[styles.galleryContainer, galleryParallaxStyle]}>
+        {/* Parallax Image Gallery — shared element matches ProductCard image */}
+        <Animated.View
+          sharedTransitionTag={sharedTransitionTag(`product-image-${model.id}`)}
+          style={[styles.galleryContainer, galleryParallaxStyle]}
+        >
           <FlatList
             ref={galleryRef}
             data={[...GALLERY_VIEWS]}

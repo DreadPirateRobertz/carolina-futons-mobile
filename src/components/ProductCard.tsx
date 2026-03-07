@@ -9,10 +9,12 @@
 
 import React, { memo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { type Product } from '@/data/products';
 import { formatPrice } from '@/utils';
+import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { WishlistButton } from './WishlistButton';
 
 interface Props {
@@ -54,8 +56,9 @@ export const ProductCard = memo(function ProductCard({
       accessibilityRole="button"
       activeOpacity={0.7}
     >
-      {/* Image */}
-      <View
+      {/* Image with shared element transition tag */}
+      <Animated.View
+        sharedTransitionTag={sharedTransitionTag(`product-image-${product.id}`)}
         style={[
           styles.imageContainer,
           { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
@@ -80,7 +83,7 @@ export const ProductCard = memo(function ProductCard({
             <Text style={styles.outOfStockText}>Out of Stock</Text>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Info */}
       <View style={[styles.info, { padding: spacing.sm }]}>
