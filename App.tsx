@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -40,15 +40,17 @@ initCrashReporting({
 
 const sentryNavigationIntegration = getSentryNavigationIntegration();
 
-// Initialize analytics providers (Firebase + Mixpanel)
-initAnalytics({
-  mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
-});
-
 SplashScreen.preventAutoHideAsync();
 
 function App() {
   const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
+
+  // Defer non-critical service init to after first render for faster cold start
+  useEffect(() => {
+    initAnalytics({
+      mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
+    });
+  }, []);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!stripeKey) {
     throw new Error(
