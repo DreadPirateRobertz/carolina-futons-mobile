@@ -17,12 +17,14 @@ import {
   ENTITLEMENT_ID,
 } from '@/services/purchases';
 
+export type PurchaseResult = 'success' | 'cancelled' | 'error';
+
 interface PremiumContextValue {
   isPremium: boolean;
   isLoading: boolean;
   offerings: PurchasesPackage[];
   error: string | null;
-  purchase: (pkg: PurchasesPackage) => Promise<boolean>;
+  purchase: (pkg: PurchasesPackage) => Promise<PurchaseResult>;
   restore: () => Promise<boolean>;
   refreshStatus: () => Promise<void>;
 }
@@ -67,17 +69,17 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const purchase = useCallback(
-    async (pkg: PurchasesPackage): Promise<boolean> => {
+    async (pkg: PurchasesPackage): Promise<PurchaseResult> => {
       setError(null);
       try {
         const info = await purchasePackage(pkg);
-        if (!info) return false;
+        if (!info) return 'cancelled';
         const active = checkEntitlement(info);
         setIsPremium(active);
-        return active;
+        return active ? 'success' : 'error';
       } catch (err: any) {
         setError(err.message ?? 'Purchase failed');
-        return false;
+        return 'error';
       }
     },
     [checkEntitlement],

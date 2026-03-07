@@ -51,10 +51,12 @@ function PremiumScreenInner({ onBack, testID }: Props) {
   const handlePurchase = async (pkg: typeof monthlyPkg, id: string) => {
     if (!pkg) return;
     setPurchasing(id);
-    const success = await purchase(pkg);
+    const result = await purchase(pkg);
     setPurchasing(null);
-    if (success) {
+    if (result === 'success') {
       Alert.alert('Welcome to CF+!', 'Your premium features are now unlocked.');
+    } else if (result === 'error') {
+      Alert.alert('Purchase Failed', 'Something went wrong. Please try again.');
     }
   };
 

@@ -73,10 +73,12 @@ describe('usePremium', () => {
     const { result } = renderHook(() => usePremium(), { wrapper });
     await flushInit();
 
+    let purchaseResult: string | undefined;
     await act(async () => {
-      await result.current.purchase(mockPkg);
+      purchaseResult = await result.current.purchase(mockPkg);
     });
 
+    expect(purchaseResult).toBe('success');
     expect(result.current.isPremium).toBe(true);
   });
 
@@ -103,12 +105,12 @@ describe('usePremium', () => {
     const { result } = renderHook(() => usePremium(), { wrapper });
     await flushInit();
 
-    let purchaseResult: boolean | undefined;
+    let purchaseResult: string | undefined;
     await act(async () => {
       purchaseResult = await result.current.purchase(mockPkg);
     });
 
-    expect(purchaseResult).toBe(false);
+    expect(purchaseResult).toBe('cancelled');
     expect(result.current.isPremium).toBe(false);
   });
 
@@ -119,10 +121,12 @@ describe('usePremium', () => {
     const { result } = renderHook(() => usePremium(), { wrapper });
     await flushInit();
 
+    let purchaseResult: string | undefined;
     await act(async () => {
-      await result.current.purchase(mockPkg);
+      purchaseResult = await result.current.purchase(mockPkg);
     });
 
+    expect(purchaseResult).toBe('error');
     expect(result.current.error).toBe('Network error');
     expect(result.current.isPremium).toBe(false);
   });

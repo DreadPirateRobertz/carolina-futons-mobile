@@ -1,8 +1,11 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { PremiumScreen } from '../PremiumScreen';
 
-const mockPurchase = jest.fn().mockResolvedValue(false);
+jest.spyOn(Alert, 'alert');
+
+const mockPurchase = jest.fn().mockResolvedValue('cancelled');
 const mockRestore = jest.fn().mockResolvedValue(false);
 
 jest.mock('@/hooks/usePremium', () => ({
@@ -121,5 +124,42 @@ describe('PremiumScreen', () => {
     const { getByTestId } = render(<PremiumScreen onBack={onBack} />);
     fireEvent.press(getByTestId('premium-back'));
     expect(onBack).toHaveBeenCalled();
+  });
+
+  it('shows success alert on successful purchase', async () => {
+    mockPurchase.mockResolvedValueOnce('success');
+    const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+    fireEvent.press(getByTestId('purchase-monthly'));
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Welcome to CF+!',
+        'Your premium features are now unlocked.',
+      );
+    });
+  });
+
+  it('shows error alert on purchase failure', async () => {
+    mockPurchase.mockResolvedValueOnce('error');
+    const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+    fireEvent.press(getByTestId('purchase-monthly'));
+
+    await waitFor(() => {
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Purchase Failed',
+        'Something went wrong. Please try again.',
+      );
+    });
+  });
+
+  it('shows no alert on purchase cancellation', async () => {
+    mockPurchase.mockResolvedValueOnce('cancelled');
+    const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+    fireEvent.press(getByTestId('purchase-monthly'));
+
+    await waitFor(() => {
+      expect(mockPurchase).toHaveBeenCalled();
+    });
+    expect(Alert.alert).not.toHaveBeenCalled();
   });
 });
