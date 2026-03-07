@@ -91,6 +91,22 @@ interface WixInventoryItem {
   variants: { variantId: string; inStock: boolean; quantity: number }[];
 }
 
+// ── Cart types ────────────────────────────────────────────────
+
+export interface WixCartLineItem {
+  _id: string;
+  catalogReference: {
+    catalogItemId: string;
+    appId: string;
+    options?: { variantId?: string };
+  };
+  quantity: number;
+}
+
+export interface WixCart {
+  lineItems: WixCartLineItem[];
+}
+
 // ── Transformed output types ───────────────────────────────────
 
 export interface WixCollectionInfo {
@@ -389,6 +405,16 @@ export class WixClient {
       totals,
       paymentMethod,
     });
+  }
+
+  // ── Cart queries (eCommerce Cart API) ──────────────────────
+
+  async getCart(): Promise<WixCart> {
+    const data = await this.post<{ cart: WixCart }>(
+      '/ecom/v1/carts/current',
+      {},
+    );
+    return data.cart ?? { lineItems: [] };
   }
 
   // ── Cart mutations (eCommerce Cart API) ──────────────────────

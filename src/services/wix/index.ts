@@ -21,6 +21,8 @@ export {
   type QueryProductsOptions,
   type QueryCollectionsOptions,
   type CouponResult,
+  type WixCart,
+  type WixCartLineItem,
 } from './wixClient';
 
 export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';

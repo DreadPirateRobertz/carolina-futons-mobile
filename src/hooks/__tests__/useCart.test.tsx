@@ -1,8 +1,27 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
-import { CartProvider, useCart } from '../useCart';
+import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
+import { CartProvider, useCart, mergeCartItems, type CartItem } from '../useCart';
+import { AuthContext } from '@/hooks/useAuth';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+
+let mockUser: { id: string; email: string; displayName: string; provider: string } | null = null;
+
+// Mock Wix config
+jest.mock('@/services/wix/config', () => ({
+  isWixConfigured: jest.fn().mockReturnValue(false),
+  getWixConfig: jest.fn().mockReturnValue({ apiKey: 'test', siteId: 'test' }),
+}));
+
+// Mock WixClient
+const mockGetCart = jest.fn().mockResolvedValue({ lineItems: [] });
+const mockAddToCart = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/services/wix/wixClient', () => ({
+  WixClient: jest.fn().mockImplementation(() => ({
+    getCart: mockGetCart,
+    addToCart: mockAddToCart,
+  })),
+}));
 
 const asheville = FUTON_MODELS[0]; // $349
 const blueRidge = FUTON_MODELS[1]; // $449
@@ -12,12 +31,13 @@ const espressoBrown = FABRICS[5]; // $49
 
 /** Test harness that exposes cart state + actions */
 function CartHarness() {
-  const { items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart } = useCart();
 
   return (
     <View>
       <Text testID="item-count">{itemCount}</Text>
       <Text testID="subtotal">{subtotal}</Text>
+      <Text testID="syncing">{syncing ? 'true' : 'false'}</Text>
       <Text testID="items-json">
         {JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity, unit: i.unitPrice })))}
       </Text>
@@ -59,13 +79,35 @@ function CartHarness() {
   );
 }
 
+const mockAuthValue = {
+  user: null as typeof mockUser,
+  loading: false,
+  error: null,
+  isAuthenticated: false,
+  signIn: jest.fn(),
+  signUp: jest.fn(),
+  signInWithGoogle: jest.fn(),
+  signInWithApple: jest.fn(),
+  resetPassword: jest.fn(),
+  signOut: jest.fn(),
+  clearError: jest.fn(),
+};
+
 function renderCart() {
   return render(
-    <CartProvider>
-      <CartHarness />
-    </CartProvider>,
+    <AuthContext.Provider value={{ ...mockAuthValue, user: mockUser as any }}>
+      <CartProvider>
+        <CartHarness />
+      </CartProvider>
+    </AuthContext.Provider>,
   );
 }
+
+beforeEach(() => {
+  mockUser = null;
+  mockGetCart.mockResolvedValue({ lineItems: [] });
+  mockAddToCart.mockResolvedValue(undefined);
+});
 
 describe('useCart', () => {
   describe('Initial state', () => {
@@ -199,5 +241,211 @@ describe('useCart', () => {
       }
       expect(() => render(<BadComponent />)).toThrow('useCart must be used within a CartProvider');
     });
+  });
+});
+
+describe('mergeCartItems', () => {
+  const makeItem = (modelIdx: number, fabricIdx: number, qty: number): CartItem => {
+    const model = FUTON_MODELS[modelIdx];
+    const fabric = FABRICS[fabricIdx];
+    return {
+      id: `${model.id}:${fabric.id}`,
+      model,
+      fabric,
+      quantity: qty,
+      unitPrice: model.basePrice + fabric.price,
+    };
+  };
+
+  it('returns local items when server is empty', () => {
+    const local = [makeItem(0, 0, 2)];
+    const result = mergeCartItems(local, []);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(2);
+  });
+
+  it('returns server items when local is empty', () => {
+    const server = [makeItem(0, 0, 3)];
+    const result = mergeCartItems([], server);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(3);
+  });
+
+  it('keeps higher quantity for duplicate items', () => {
+    const local = [makeItem(0, 0, 2)];
+    const server = [makeItem(0, 0, 5)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(5);
+  });
+
+  it('keeps local quantity when higher than server', () => {
+    const local = [makeItem(0, 0, 7)];
+    const server = [makeItem(0, 0, 3)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(7);
+  });
+
+  it('unions items unique to each side', () => {
+    const local = [makeItem(0, 0, 1)];
+    const server = [makeItem(1, 2, 2)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe(`${FUTON_MODELS[0].id}:${FABRICS[0].id}`);
+    expect(result[1].id).toBe(`${FUTON_MODELS[1].id}:${FABRICS[2].id}`);
+  });
+
+  it('caps merged quantity at 10', () => {
+    const local = [makeItem(0, 0, 8)];
+    const server = [makeItem(0, 0, 12)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(10);
+  });
+
+  it('handles complex merge with overlapping and unique items', () => {
+    const local = [makeItem(0, 0, 2), makeItem(0, 2, 1)];
+    const server = [makeItem(0, 0, 4), makeItem(1, 0, 3)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(3);
+    // Overlapping: asheville+linen — server has higher qty
+    expect(result[0].quantity).toBe(4);
+    // Local-only: asheville+mountain-blue
+    expect(result[1].quantity).toBe(1);
+    // Server-only: blue-ridge+linen
+    expect(result[2].quantity).toBe(3);
+  });
+});
+
+describe('Server cart merge on auth', () => {
+  const { isWixConfigured } = require('@/services/wix/config');
+
+  beforeEach(() => {
+    (isWixConfigured as jest.Mock).mockReturnValue(true);
+    mockGetCart.mockClear();
+    mockAddToCart.mockClear();
+  });
+
+  it('merges server cart items when user authenticates', async () => {
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-1',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[1].id,
+            appId: 'wix-stores',
+            options: { variantId: FABRICS[2].id },
+          },
+          quantity: 2,
+        },
+      ],
+    });
+
+    // Start unauthenticated
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    // Add a local item
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+
+    // Simulate auth — re-render with user
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthContext.Provider>,
+    );
+
+    // Wait for async merge to complete
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Should have local item + server item
+    expect(getByTestId('item-count').props.children).toBe(3); // 1 local + 2 server
+  });
+
+  it('pushes local-only items to server', async () => {
+    mockGetCart.mockResolvedValue({ lineItems: [] });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthContext.Provider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    expect(mockAddToCart).toHaveBeenCalledWith(
+      FUTON_MODELS[0].id,
+      1,
+      FABRICS[0].id,
+    );
+  });
+
+  it('skips merge when Wix is not configured', async () => {
+    (isWixConfigured as jest.Mock).mockReturnValue(false);
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthContext.Provider>,
+    );
+
+    // Should not call server
+    expect(mockGetCart).not.toHaveBeenCalled();
+    // Local cart unchanged
+    expect(getByTestId('item-count').props.children).toBe(1);
+  });
+
+  it('handles server errors gracefully', async () => {
+    mockGetCart.mockRejectedValue(new Error('Network error'));
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthContext.Provider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Local cart should be preserved
+    expect(getByTestId('item-count').props.children).toBe(1);
   });
 });

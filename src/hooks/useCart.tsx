@@ -2,9 +2,10 @@
  * Shopping cart hook and context provider.
  *
  * Manages cart state (add, remove, update quantity, clear) through a reducer,
- * persists items to AsyncStorage for cross-session continuity, and exposes
- * computed values like `itemCount` and `subtotal`. Quantity is capped at 10
- * per line item to match warehouse fulfillment limits.
+ * persists items to AsyncStorage for cross-session continuity, merges with
+ * the server-side Wix cart on authentication, and exposes computed values
+ * like `itemCount` and `subtotal`. Quantity is capped at 10 per line item
+ * to match warehouse fulfillment limits.
  *
  * @module useCart
  */
@@ -16,8 +17,15 @@ import React, {
   useCallback,
   useMemo,
   useEffect,
+  useRef,
+  useState,
 } from 'react';
 import type { FutonModel, Fabric } from '@/data/futons';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { AuthContext } from '@/hooks/useAuth';
+import { WixClient } from '@/services/wix/wixClient';
+import { getWixConfig, isWixConfigured } from '@/services/wix/config';
+import type { WixCartLineItem } from '@/services/wix/wixClient';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -103,6 +111,7 @@ interface CartContextValue {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
+  syncing: boolean;
   addItem: (model: FutonModel, fabric: Fabric, quantity: number) => void;
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
@@ -114,7 +123,54 @@ const CartContext = createContext<CartContextValue | null>(null);
 const CART_STORAGE_KEY = 'cfutons_cart';
 
 /**
+ * Convert a Wix server cart line item to a local CartItem, if the
+ * referenced product and variant exist in the local catalog.
+ */
+function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
+  const modelId = lineItem.catalogReference.catalogItemId;
+  const fabricId = lineItem.catalogReference.options?.variantId;
+
+  const model = FUTON_MODELS.find((m) => m.id === modelId);
+  if (!model) return null;
+
+  const fabric = fabricId
+    ? FABRICS.find((f) => f.id === fabricId)
+    : FABRICS[0];
+  if (!fabric) return null;
+
+  return {
+    id: `${model.id}:${fabric.id}`,
+    model,
+    fabric,
+    quantity: Math.min(10, Math.max(1, lineItem.quantity)),
+    unitPrice: model.basePrice + fabric.price,
+  };
+}
+
+/**
+ * Merge local cart items with server cart items.
+ * For items present in both, keeps the higher quantity (capped at 10).
+ * Items unique to either side are included in the result.
+ */
+export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[] {
+  const merged = [...local];
+  for (const serverItem of server) {
+    const existingIdx = merged.findIndex((i) => i.id === serverItem.id);
+    if (existingIdx >= 0) {
+      merged[existingIdx] = {
+        ...merged[existingIdx],
+        quantity: Math.min(10, Math.max(merged[existingIdx].quantity, serverItem.quantity)),
+      };
+    } else {
+      merged.push(serverItem);
+    }
+  }
+  return merged;
+}
+
+/**
  * Context provider that manages cart state and persists it to AsyncStorage.
+ * Merges with the server-side Wix cart when the user authenticates.
  *
  * Wrap the app root with this provider so all screens can access the cart.
  *
@@ -127,6 +183,12 @@ const CART_STORAGE_KEY = 'cfutons_cart';
  */
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
+  const [syncing, setSyncing] = useState(false);
+  const authCtx = useContext(AuthContext);
+  const user = authCtx?.user ?? null;
+  const prevUserRef = useRef<typeof user>(null);
+  const itemsRef = useRef(state.items);
+  itemsRef.current = state.items;
 
   // Load from AsyncStorage on mount
   useEffect(() => {
@@ -172,6 +234,61 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [state.items]);
 
+  // Merge with server cart when user authenticates
+  useEffect(() => {
+    if (user && !prevUserRef.current) {
+      let cancelled = false;
+      (async () => {
+        if (!isWixConfigured()) return;
+        setSyncing(true);
+        try {
+          const client = new WixClient(getWixConfig());
+          const serverCart = await client.getCart();
+
+          if (cancelled) return;
+
+          // Convert server line items to local CartItem format
+          const serverItems: CartItem[] = [];
+          for (const lineItem of serverCart.lineItems) {
+            const cartItem = serverLineItemToCartItem(lineItem);
+            if (cartItem) {
+              serverItems.push(cartItem);
+            }
+          }
+
+          // Merge local and server items
+          const localItems = itemsRef.current;
+          const merged = mergeCartItems(localItems, serverItems);
+
+          // Only dispatch if merge actually changed anything
+          if (JSON.stringify(merged) !== JSON.stringify(localItems)) {
+            dispatch({ type: 'LOAD', items: merged });
+          }
+
+          // Push local-only items to server
+          const serverItemIds = new Set(serverItems.map((i) => i.id));
+          for (const localItem of localItems) {
+            if (!serverItemIds.has(localItem.id)) {
+              await client.addToCart(
+                localItem.model.id,
+                localItem.quantity,
+                localItem.fabric.id,
+              );
+            }
+          }
+        } catch {
+          // Server sync failed — continue with local cart only
+        } finally {
+          if (!cancelled) setSyncing(false);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+    prevUserRef.current = user;
+  }, [user]);
+
   const addItem = useCallback((model: FutonModel, fabric: Fabric, quantity: number) => {
     dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
   }, []);
@@ -203,12 +320,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       items: state.items,
       itemCount,
       subtotal,
+      syncing,
       addItem,
       removeItem,
       updateQuantity,
       clearCart,
     }),
-    [state.items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart],
+    [state.items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
@@ -219,7 +337,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
  *
  * Must be called from within a `CartProvider`.
  *
- * @returns Object containing `{ items, itemCount, subtotal, addItem, removeItem, updateQuantity, clearCart }`
+ * @returns Object containing `{ items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart }`
  *
  * @example
  * const { items, addItem, subtotal } = useCart();

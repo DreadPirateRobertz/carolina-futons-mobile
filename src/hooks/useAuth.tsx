@@ -126,7 +126,7 @@ interface AuthContextValue {
   clearError: () => void;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
  * Context provider that initializes the Wix auth service, restores any
