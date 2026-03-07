@@ -47,6 +47,11 @@ jest.mock('expo-device', () => ({
   isDevice: true,
 }));
 
+// Mock expo-application
+jest.mock('expo-application', () => ({
+  nativeApplicationVersion: '1.0.0',
+}));
+
 // Mock expo-constants
 jest.mock('expo-constants', () => ({
   expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },

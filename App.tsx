@@ -1,6 +1,6 @@
 import 'react-native-url-polyfill/auto';
 import React, { useCallback, useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
@@ -15,6 +15,7 @@ import {
   SourceSans3_700Bold,
 } from '@expo-google-fonts/source-sans-3';
 import * as SplashScreen from 'expo-splash-screen';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { ThemeProvider } from '@/theme';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
@@ -32,6 +33,8 @@ import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
 import { initializePurchases } from '@/services/purchases';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
+import { useForceUpdate } from '@/hooks/useForceUpdate';
+import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 
@@ -46,6 +49,7 @@ SplashScreen.preventAutoHideAsync();
 
 function App() {
   const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
+  const forceUpdate = useForceUpdate();
 
   // Defer non-critical service init to after first render for faster cold start
   useEffect(() => {
@@ -78,7 +82,7 @@ function App() {
   if (!fontsLoaded) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#E8845C" />
+        <BrandedSpinner size="large" color="#E8845C" />
       </View>
     );
   }
@@ -112,6 +116,11 @@ function App() {
                         <DeepLinkProvider>
                           <OfflineBanner />
                           <AppNavigator />
+                          <ForceUpdateModal
+                            visible={forceUpdate.visible}
+                            required={forceUpdate.required}
+                            onDismiss={forceUpdate.dismiss}
+                          />
                         </DeepLinkProvider>
                       </NavigationContainer>
                     </ErrorBoundary>
