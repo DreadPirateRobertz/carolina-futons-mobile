@@ -21,7 +21,10 @@ import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCollections } from '@/hooks/useCollections';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
+import type { Product } from '@/data/products';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -48,6 +51,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { featured } = useCollections();
+  const { recentProducts } = useRecentlyViewed();
 
   const handleOpenAR = useCallback(() => {
     if (onOpenAR) return onOpenAR();
@@ -68,6 +72,13 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       navigation.navigate('CollectionDetail', { slug: collection.slug });
     },
     [onCollectionPress, navigation],
+  );
+
+  const handleProductPress = useCallback(
+    (product: Product) => {
+      navigation.navigate('ProductDetail', { slug: product.slug });
+    },
+    [navigation],
   );
 
   return (
@@ -260,6 +271,43 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </View>
       )}
 
+      {/* Recently Viewed Products */}
+      {recentProducts.length > 0 && (
+        <View style={styles.carouselSection} testID="recently-viewed-section">
+          <Text
+            style={[
+              styles.carouselTitle,
+              {
+                color: colors.espresso,
+                fontFamily: typography.headingFamily,
+                ...typography.h3,
+                paddingHorizontal: spacing.lg,
+              },
+            ]}
+          >
+            Recently Viewed
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.carouselContent,
+              { paddingHorizontal: spacing.lg, gap: spacing.md },
+            ]}
+            testID="recently-viewed-carousel"
+          >
+            {recentProducts.slice(0, 10).map((product) => (
+              <View key={product.id} style={styles.recentProductCard}>
+                <ProductCard
+                  product={product}
+                  onPress={() => handleProductPress(product)}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Mountain skyline section divider */}
       <View style={styles.dividerSection}>
         <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
@@ -361,6 +409,9 @@ const styles = StyleSheet.create({
   },
   carouselContent: {
     flexDirection: 'row',
+  },
+  recentProductCard: {
+    width: 160,
   },
   dividerSection: {
     alignItems: 'center',

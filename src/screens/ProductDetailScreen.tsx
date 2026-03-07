@@ -52,6 +52,7 @@ import { modelIdToProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -112,10 +113,14 @@ export function ProductDetailScreen({
 
   const totalPrice = model.basePrice + selectedFabric.price;
 
+  const { addViewed } = useRecentlyViewed();
+
   // Track product view on mount
   useEffect(() => {
     events.viewProduct(model.id, 'product_detail');
-  }, [model.id]);
+    const productId = catalogProduct?.id ?? `prod-${model.id}`;
+    addViewed(productId);
+  }, [model.id, catalogProduct?.id, addViewed]);
 
   // --- Parallax scroll tracking ---
   const scrollY = useSharedValue(0);
