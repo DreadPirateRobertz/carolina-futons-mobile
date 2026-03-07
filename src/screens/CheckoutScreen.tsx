@@ -21,7 +21,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
 } from 'react-native';
-import { CardField, type CardFieldInput } from '@stripe/stripe-react-native';
+import { CardField, type CardFieldInput, PlatformPayButton, PlatformPay } from '@stripe/stripe-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { typography } from '@/theme/tokens';
@@ -140,7 +140,7 @@ interface Props {
 export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
-  const { status, error, totals, processPayment, resetPayment } = usePayment();
+  const { status, error, totals, isApplePaySupported, processPayment, resetPayment } = usePayment();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
 
@@ -251,6 +251,28 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       onOrderComplete?.(order);
     }
   }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+
+  const handleApplePay = useCallback(async () => {
+    if (isProcessing) return;
+
+    setSubmitAttempted(true);
+    if (!validateForm()) return;
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    setSelectedMethod('apple-pay');
+    const order = await processPayment('apple-pay');
+
+    if (order) {
+      events.purchase(order.orderId, totals.total, items.length);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      onOrderComplete?.(order);
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 
@@ -539,6 +561,31 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             </Text>
           </View>
         </View>
+
+        {/* Apple Pay Quick Button */}
+        {Platform.OS === 'ios' && isApplePaySupported && (
+          <View
+            style={[styles.applePaySection, { marginHorizontal: spacing.lg }]}
+            testID="apple-pay-section"
+          >
+            <PlatformPayButton
+              type={PlatformPay.ButtonType.Pay}
+              appearance={PlatformPay.ButtonStyle.Black}
+              borderRadius={borderRadius.button}
+              onPress={handleApplePay}
+              disabled={isProcessing}
+              style={styles.applePayButton}
+              testID="apple-pay-button"
+            />
+            <View style={styles.applePayDivider}>
+              <View style={[styles.applePayDividerLine, { backgroundColor: colors.sandDark }]} />
+              <Text style={[styles.applePayDividerText, { color: colors.espressoLight }]}>
+                or pay another way
+              </Text>
+              <View style={[styles.applePayDividerLine, { backgroundColor: colors.sandDark }]} />
+            </View>
+          </View>
+        )}
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
@@ -856,6 +903,28 @@ const styles = StyleSheet.create({
   grandTotalValue: {
     fontSize: 22,
     fontWeight: '700',
+  },
+  // Apple Pay
+  applePaySection: {
+    paddingTop: 4,
+  },
+  applePayButton: {
+    width: '100%',
+    height: 50,
+  },
+  applePayDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  applePayDividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  applePayDividerText: {
+    fontSize: 13,
+    marginHorizontal: 12,
   },
   // Payment
   paymentOption: {

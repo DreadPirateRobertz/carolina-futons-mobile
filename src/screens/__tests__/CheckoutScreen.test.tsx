@@ -25,6 +25,8 @@ jest.mock('@/services/analytics', () => ({
 
 const mockInitPaymentSheet = jest.fn().mockResolvedValue({ error: null });
 const mockPresentPaymentSheet = jest.fn().mockResolvedValue({ error: null });
+const mockIsPlatformPaySupported = jest.fn().mockResolvedValue(true);
+const mockConfirmPlatformPayPayment = jest.fn().mockResolvedValue({ error: null, paymentIntent: {} });
 
 // Mock @stripe/stripe-react-native
 jest.mock('@stripe/stripe-react-native', () => ({
@@ -32,7 +34,34 @@ jest.mock('@stripe/stripe-react-native', () => ({
     initPaymentSheet: mockInitPaymentSheet,
     presentPaymentSheet: mockPresentPaymentSheet,
   }),
+  usePlatformPay: () => ({
+    isPlatformPaySupported: mockIsPlatformPaySupported,
+    confirmPlatformPayPayment: mockConfirmPlatformPayPayment,
+  }),
+  PlatformPay: {
+    PaymentType: { Immediate: 'Immediate' },
+    ButtonType: { Pay: 'Pay' },
+    ButtonStyle: { Black: 'Black' },
+  },
   StripeProvider: ({ children }: { children: React.ReactNode }) => children,
+  PlatformPayButton: ({
+    onPress,
+    disabled,
+    testID,
+    style,
+  }: {
+    onPress: () => void;
+    disabled?: boolean;
+    testID?: string;
+    style?: object;
+  }) => {
+    const { TouchableOpacity, Text } = require('react-native');
+    return (
+      <TouchableOpacity onPress={onPress} disabled={disabled} testID={testID} style={style}>
+        <Text>Apple Pay</Text>
+      </TouchableOpacity>
+    );
+  },
   CardField: ({
     onCardChange,
     testID,
