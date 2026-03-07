@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { OrderHistoryScreen } from '../OrderHistoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { MOCK_ORDERS, type Order } from '@/data/orders';
+import { futonModelId } from '@/data/productId';
 import { darkPalette, typography } from '@/theme/tokens';
 
 function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {}) {
@@ -194,7 +195,7 @@ describe('OrderHistoryScreen', () => {
         items: [
           {
             id: 'cli-1',
-            modelId: 'asheville-full',
+            modelId: futonModelId('asheville-full'),
             modelName: 'The Asheville',
             fabricId: 'natural-linen',
             fabricName: 'Natural Linen',
