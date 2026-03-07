@@ -11,7 +11,8 @@
  */
 
 import React, { useCallback, useRef } from 'react';
-import { Animated, StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { Animated as RNAnimated, StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
@@ -288,18 +289,11 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
 }
 
 /**
- * Individual cart line item row showing fabric color swatch, product name,
- * fabric name, quantity stepper (capped at 10), and line total.
- *
- * @param props.item - The cart item to render.
- * @param props.onIncrement - Increase quantity by one.
- * @param props.onDecrement - Decrease quantity (removes item at qty 1).
- * @param props.onRemove - Remove the item entirely.
- * @returns A styled card for one cart line item.
+ * Renders the red "Delete" action behind a swipeable cart item.
  */
 function renderDeleteAction(
-  _progress: Animated.AnimatedInterpolation<number>,
-  dragX: Animated.AnimatedInterpolation<number>,
+  _progress: RNAnimated.AnimatedInterpolation<number>,
+  dragX: RNAnimated.AnimatedInterpolation<number>,
   borderRadius: number,
 ) {
   const opacity = dragX.interpolate({
@@ -309,7 +303,7 @@ function renderDeleteAction(
   });
 
   return (
-    <Animated.View
+    <RNAnimated.View
       style={[
         styles.deleteAction,
         { borderRadius, opacity },
@@ -317,10 +311,15 @@ function renderDeleteAction(
       testID="swipe-delete-action"
     >
       <Text style={styles.deleteActionText}>Delete</Text>
-    </Animated.View>
+    </RNAnimated.View>
   );
 }
 
+/**
+ * Individual cart line item row showing fabric color swatch, product name,
+ * fabric name, quantity stepper (capped at 10), and line total.
+ * Wrapped in Swipeable for swipe-to-delete, with spring bounce on qty buttons.
+ */
 function CartItemRow({
   item,
   onIncrement,
@@ -350,6 +349,27 @@ function CartItemRow({
     swipeableRef.current?.close();
     onRemove();
   }, [onRemove]);
+
+  const decrementScale = useSharedValue(1);
+  const incrementScale = useSharedValue(1);
+  const decrementStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: decrementScale.value }],
+  }));
+  const incrementStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: incrementScale.value }],
+  }));
+
+  const handleDecrement = useCallback(() => {
+    decrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
+    decrementScale.value = 0.85;
+    onDecrement();
+  }, [onDecrement, decrementScale]);
+
+  const handleIncrement = useCallback(() => {
+    incrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
+    incrementScale.value = 0.85;
+    onIncrement();
+  }, [onIncrement, incrementScale]);
 
   return (
     <Swipeable
@@ -409,15 +429,17 @@ function CartItemRow({
         {/* Quantity + price */}
         <View style={styles.itemBottom}>
           <View style={styles.quantityRow}>
-            <TouchableOpacity
-              style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
-              onPress={onDecrement}
-              testID={`cart-item-decrement-${item.id}`}
-              accessibilityLabel="Decrease quantity"
-              accessibilityRole="button"
-            >
-              <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>−</Text>
-            </TouchableOpacity>
+            <Animated.View testID={`qty-btn-animated-decrement-${item.id}`} style={decrementStyle}>
+              <TouchableOpacity
+                style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
+                onPress={handleDecrement}
+                testID={`cart-item-decrement-${item.id}`}
+                accessibilityLabel="Decrease quantity"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>−</Text>
+              </TouchableOpacity>
+            </Animated.View>
             <Text
               style={[styles.qtyValue, { color: colors.espresso }]}
               testID={`cart-item-qty-${item.id}`}
@@ -425,27 +447,29 @@ function CartItemRow({
             >
               {item.quantity}
             </Text>
-            <TouchableOpacity
-              style={[
-                styles.qtyButton,
-                { backgroundColor: colors.sandDark, borderRadius: br.sm },
-                item.quantity >= 10 && styles.qtyButtonDisabled,
-              ]}
-              onPress={onIncrement}
-              disabled={item.quantity >= 10}
-              testID={`cart-item-increment-${item.id}`}
-              accessibilityLabel="Increase quantity"
-              accessibilityRole="button"
-            >
-              <Text
+            <Animated.View testID={`qty-btn-animated-increment-${item.id}`} style={incrementStyle}>
+              <TouchableOpacity
                 style={[
-                  styles.qtyButtonText,
-                  { color: item.quantity >= 10 ? colors.muted : colors.espresso },
+                  styles.qtyButton,
+                  { backgroundColor: colors.sandDark, borderRadius: br.sm },
+                  item.quantity >= 10 && styles.qtyButtonDisabled,
                 ]}
+                onPress={handleIncrement}
+                disabled={item.quantity >= 10}
+                testID={`cart-item-increment-${item.id}`}
+                accessibilityLabel="Increase quantity"
+                accessibilityRole="button"
               >
-                +
-              </Text>
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.qtyButtonText,
+                    { color: item.quantity >= 10 ? colors.muted : colors.espresso },
+                  ]}
+                >
+                  +
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           </View>
           <Text
             style={[styles.itemPrice, { color: colors.espresso }]}

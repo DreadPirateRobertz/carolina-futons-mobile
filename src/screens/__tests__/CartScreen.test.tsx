@@ -253,16 +253,24 @@ describe('CartScreen', () => {
 
     it('renders delete action behind swipeable', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      // The renderRightActions renders the delete action
       expect(getByTestId('swipe-delete-action')).toBeTruthy();
     });
 
     it('removes item when swipe completes', () => {
       const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
       const swipeable = getByTestId('cart-item-swipeable-asheville-full:natural-linen');
-      // Simulate onSwipeableOpen callback
       fireEvent(swipeable, 'swipeableOpen');
       expect(queryByTestId('cart-item-asheville-full:natural-linen')).toBeNull();
+    });
+  });
+
+  describe('Quantity button animation', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 2 }];
+
+    it('wraps quantity buttons in animated containers', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('qty-btn-animated-decrement-asheville-full:natural-linen')).toBeTruthy();
+      expect(getByTestId('qty-btn-animated-increment-asheville-full:natural-linen')).toBeTruthy();
     });
   });
 
