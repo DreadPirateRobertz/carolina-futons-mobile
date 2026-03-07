@@ -7,7 +7,7 @@
  * scroll pagination. Uses virtualized FlatList with tuned batch sizes
  * for smooth scrolling on lower-end devices.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { MountainRefreshControl, MountainRefreshIndicator } from '@/components/MountainRefreshControl';
 import { useProducts, type Product, type ProductCategory, type SortOption } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
@@ -61,6 +62,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refresh();
+    // Allow animation to play briefly since refresh() is synchronous
+    setTimeout(() => setRefreshing(false), 600);
+  }, [refresh]);
 
   const handleSubmitSearch = useCallback(
     (query: string) => {
@@ -88,6 +97,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const renderHeader = useCallback(
     () => (
       <View>
+        <MountainRefreshIndicator refreshing={refreshing} />
         {/* Mountain skyline header */}
         <MountainSkyline variant="sunset" height={60} testID="shop-mountain-skyline" />
 
@@ -137,6 +147,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       </View>
     ),
     [
+      refreshing,
       searchQuery,
       selectedCategory,
       sortBy,
@@ -211,8 +222,13 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         ListFooterComponent={renderFooter}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        onRefresh={refresh}
-        refreshing={false}
+        refreshControl={
+          <MountainRefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            testID="shop-refresh-control"
+          />
+        }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"

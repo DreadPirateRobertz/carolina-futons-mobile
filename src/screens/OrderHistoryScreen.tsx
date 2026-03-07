@@ -8,12 +8,13 @@
  * when there are no orders yet.
  */
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
+import { MountainRefreshControl, MountainRefreshIndicator } from '@/components/MountainRefreshControl';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -173,11 +174,13 @@ export function OrderHistoryScreen({
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <MountainRefreshIndicator refreshing={refreshing} />
+        }
         refreshControl={
-          <RefreshControl
+          <MountainRefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={colors.mountainBlue}
             testID="order-refresh-control"
           />
         }
