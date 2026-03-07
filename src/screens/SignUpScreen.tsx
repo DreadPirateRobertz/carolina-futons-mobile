@@ -6,7 +6,7 @@
  * submitting. Shares the dark-palette frosted-glass card design with
  * LoginScreen to keep the auth flow visually cohesive.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,6 +16,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  findNodeHandle,
+  UIManager,
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
@@ -32,6 +34,24 @@ interface Props {
 export function SignUpScreen({ onLogin, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signUp, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const handleFieldFocus = useCallback((e: any) => {
+    const target = e.nativeEvent?.target;
+    if (!scrollRef.current || !target) return;
+    setTimeout(() => {
+      const scrollNode = findNodeHandle(scrollRef.current);
+      if (!scrollNode) return;
+      UIManager.measureLayout(
+        target,
+        scrollNode,
+        () => {},
+        (_x: number, y: number) => {
+          scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
+        },
+      );
+    }, 150);
+  }, []);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -59,7 +79,9 @@ export function SignUpScreen({ onLogin, testID }: Props) {
       testID={testID ?? 'signup-screen'}
     >
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
+        onFocus={handleFieldFocus}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >

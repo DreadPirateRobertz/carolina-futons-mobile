@@ -19,6 +19,8 @@ import {
   Switch,
   Platform,
   KeyboardAvoidingView,
+  findNodeHandle,
+  UIManager,
 } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { CardField, type CardFieldInput, PlatformPayButton, PlatformPay } from '@stripe/stripe-react-native';
@@ -181,6 +183,23 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
+
+  const handleFieldFocus = useCallback((e: any) => {
+    const target = e.nativeEvent?.target;
+    if (!scrollRef.current || !target) return;
+    setTimeout(() => {
+      const scrollNode = findNodeHandle(scrollRef.current);
+      if (!scrollNode) return;
+      UIManager.measureLayout(
+        target,
+        scrollNode,
+        () => {},
+        (_x: number, y: number) => {
+          scrollRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
+        },
+      );
+    }, 150);
+  }, []);
 
   const isProcessing = status === 'processing';
 
@@ -476,6 +495,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isProcessing}
         keyboardShouldPersistTaps="handled"
+        onFocus={handleFieldFocus}
       >
         {/* Shipping Address */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>

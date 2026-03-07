@@ -24,6 +24,7 @@ import { darkPalette } from '@/theme/tokens';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
+import { KeyboardAwareScrollView } from '@/components/KeyboardAwareScrollView';
 import { useAuth } from '@/hooks/useAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePremium } from '@/hooks/usePremium';
@@ -160,7 +161,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
       style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'account-screen'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.scrollContent}>
         <MountainSkyline variant="sunrise" height={80} testID="account-auth-skyline" />
 
         {/* Profile header */}
@@ -500,7 +501,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }
