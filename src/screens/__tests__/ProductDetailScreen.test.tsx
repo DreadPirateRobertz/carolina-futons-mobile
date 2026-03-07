@@ -736,6 +736,99 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  describe('Size Guide', () => {
+    it('renders size guide toggle button below dimensions card', () => {
+      const { getByTestId } = renderDetail();
+      expect(getByTestId('size-guide-toggle')).toBeTruthy();
+    });
+
+    it('size guide is collapsed by default', () => {
+      const { queryByTestId } = renderDetail();
+      expect(queryByTestId('size-guide-content')).toBeNull();
+    });
+
+    it('expands size guide when toggle pressed', () => {
+      const { getByTestId } = renderDetail();
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      expect(getByTestId('size-guide-content')).toBeTruthy();
+    });
+
+    it('collapses size guide when toggle pressed again', () => {
+      const { getByTestId, queryByTestId } = renderDetail();
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      expect(getByTestId('size-guide-content')).toBeTruthy();
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      expect(queryByTestId('size-guide-content')).toBeNull();
+    });
+
+    it('shows visual dimension diagram with labeled width, depth, height', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      expect(getByTestId('size-diagram')).toBeTruthy();
+      expect(getByTestId('diagram-label-width')).toBeTruthy();
+      expect(getByTestId('diagram-label-depth')).toBeTruthy();
+      expect(getByTestId('diagram-label-height')).toBeTruthy();
+    });
+
+    it('displays correct dimension values in diagram for Asheville', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      const join = (c: any) => [].concat(c).join('');
+      expect(join(getByTestId('diagram-label-width').props.children)).toContain('54"');
+      expect(join(getByTestId('diagram-label-depth').props.children)).toContain('34"');
+      expect(join(getByTestId('diagram-label-height').props.children)).toContain('33"');
+    });
+
+    it('displays correct dimension values in diagram for Blue Ridge', () => {
+      const { getByTestId } = renderDetail({ productId: 'blue-ridge-queen' });
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      const join = (c: any) => [].concat(c).join('');
+      expect(join(getByTestId('diagram-label-width').props.children)).toContain('60"');
+      expect(join(getByTestId('diagram-label-depth').props.children)).toContain('36"');
+      expect(join(getByTestId('diagram-label-height').props.children)).toContain('35"');
+    });
+
+    it('shows room size comparison', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      expect(getByTestId('room-comparison')).toBeTruthy();
+    });
+
+    it('room comparison mentions 10x10 room', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('size-guide-toggle'));
+      const roomText = getByTestId('room-comparison');
+      expect(roomText).toBeTruthy();
+      // Room label shows 10' × 10'
+      expect(getByTestId('room-comparison').props.children).toBeTruthy();
+    });
+
+    it('toggle button has accessibility attributes', () => {
+      const { getByTestId } = renderDetail();
+      const toggle = getByTestId('size-guide-toggle');
+      expect(toggle.props.accessibilityRole).toBe('button');
+      expect(toggle.props.accessibilityLabel).toContain('Size Guide');
+    });
+
+    it('toggle shows expanded state in accessibility', () => {
+      const { getByTestId } = renderDetail();
+      const toggle = getByTestId('size-guide-toggle');
+      expect(toggle.props.accessibilityState).toMatchObject({ expanded: false });
+      fireEvent.press(toggle);
+      expect(getByTestId('size-guide-toggle').props.accessibilityState).toMatchObject({ expanded: true });
+    });
+
+    it('shows size guide for all products', () => {
+      for (const model of FUTON_MODELS) {
+        const { getByTestId, unmount } = renderDetail({ productId: model.id });
+        fireEvent.press(getByTestId('size-guide-toggle'));
+        expect(getByTestId('size-guide-content')).toBeTruthy();
+        expect(getByTestId('size-diagram')).toBeTruthy();
+        unmount();
+      }
+    });
+  });
+
   describe('Premium badge indicators', () => {
     afterEach(() => {
       mockPremiumValue.isPremium = false;
