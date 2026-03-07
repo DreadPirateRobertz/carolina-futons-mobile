@@ -19,6 +19,17 @@ jest.mock('@/hooks/usePremium', () => ({
   usePremium: () => mockPremiumValue,
 }));
 
+jest.mock('@/services/wix', () => ({
+  useOptionalWixClient: () => ({
+    queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
+  }),
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn().mockResolvedValue(null),
+  setItem: jest.fn().mockResolvedValue(undefined),
+}));
+
 function renderCollectionsScreen() {
   return render(
     <NavigationContainer>

@@ -22,7 +22,7 @@ export {
   type QueryCollectionsOptions,
 } from './wixClient';
 
-export { WixProvider, useWixClient, useWixProducts, useWixCollections } from './wixProvider';
+export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';
 
 export { getWixConfig, isWixConfigured } from './config';
 

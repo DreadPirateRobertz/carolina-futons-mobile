@@ -43,6 +43,11 @@ export function useWixClient(): WixClient {
   return client;
 }
 
+/** Access the WixClient if available, returns null outside WixProvider. */
+export function useOptionalWixClient(): WixClient | null {
+  return useContext(WixContext);
+}
+
 /** Fetch products from Wix, optionally filtered by collection. Auto-fetches on mount. */
 export function useWixProducts(collectionId?: string): {
   products: Product[];

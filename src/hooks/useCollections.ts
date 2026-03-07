@@ -1,22 +1,98 @@
 /**
  * Hook for accessing editorial collections.
- * Static data now; drop-in replacement for Wix CMS later.
+ * Fetches from Wix CMS Data API with SWR caching, falls back to static data.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { COLLECTIONS, type EditorialCollection } from '@/data/collections';
 import { PRODUCTS, type Product } from '@/data/products';
+import { useDataCache } from '@/hooks/useDataCache';
+import { useOptionalWixClient } from '@/services/wix';
+import type { WixClient } from '@/services/wix/wixClient';
 
 const productMap = new Map(PRODUCTS.map((p) => [p.id, p]));
+const COLLECTION_CACHE_MAX_AGE = 30 * 60 * 1000; // 30 minutes
 
-/** Retrieves all collections and filters for featured ones (homepage carousel). */
+/** CMS collection ID for editorial collections in Wix Data. */
+const CMS_COLLECTION_ID = 'EditorialCollections';
+
+interface WixEditorialItem {
+  _id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  heroImageUrl: string;
+  heroImageAlt: string;
+  heroImageBlurhash?: string;
+  mood: string[];
+  season?: string;
+  featured: boolean;
+  earlyAccess?: boolean;
+  productIds: string[];
+}
+
+function transformCmsCollection(item: WixEditorialItem): EditorialCollection {
+  return {
+    id: item._id,
+    slug: item.slug,
+    title: item.title,
+    subtitle: item.subtitle,
+    description: item.description,
+    heroImage: {
+      uri: item.heroImageUrl,
+      alt: item.heroImageAlt,
+      blurhash: item.heroImageBlurhash,
+    },
+    mood: item.mood ?? [],
+    season: item.season,
+    featured: item.featured ?? false,
+    earlyAccess: item.earlyAccess,
+    productIds: item.productIds ?? [],
+  };
+}
+
+function createFetcher(client: WixClient | null) {
+  return async (): Promise<EditorialCollection[]> => {
+    if (client) {
+      try {
+        const result = await client.queryData<WixEditorialItem>(CMS_COLLECTION_ID, {
+          limit: 50,
+          sort: [{ fieldName: 'featured', order: 'DESC' }],
+        });
+        if (result.items.length > 0) {
+          return result.items.map(transformCmsCollection);
+        }
+      } catch {
+        // CMS fetch failed — fall back to static data
+      }
+    }
+    return COLLECTIONS;
+  };
+}
+
+/** Retrieves all collections with SWR caching, filters for featured (homepage carousel). */
 export function useCollections() {
+  const client = useOptionalWixClient();
+  const fetcher = useCallback(() => createFetcher(client)(), [client]);
+
+  const { data, isLoading, isStale, refresh } = useDataCache<EditorialCollection[]>(
+    'editorial-collections',
+    fetcher,
+    { maxAge: COLLECTION_CACHE_MAX_AGE },
+  );
+
+  const collections = data ?? COLLECTIONS;
+
   return useMemo(
     () => ({
-      collections: COLLECTIONS,
-      featured: COLLECTIONS.filter((c) => c.featured),
+      collections,
+      featured: collections.filter((c) => c.featured),
+      isLoading,
+      isStale,
+      refresh,
     }),
-    [],
+    [collections, isLoading, isStale, refresh],
   );
 }
 
@@ -25,8 +101,10 @@ export function useCollection(slug: string): {
   collection: EditorialCollection | undefined;
   products: Product[];
 } {
+  const { collections } = useCollections();
+
   return useMemo(() => {
-    const collection = COLLECTIONS.find((c) => c.slug === slug);
+    const collection = collections.find((c) => c.slug === slug);
     if (!collection) return { collection: undefined, products: [] };
 
     const products = collection.productIds
@@ -34,5 +112,5 @@ export function useCollection(slug: string): {
       .filter((p): p is Product => p !== undefined);
 
     return { collection, products };
-  }, [slug]);
+  }, [slug, collections]);
 }

@@ -4,6 +4,17 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('@/services/wix', () => ({
+  useOptionalWixClient: () => ({
+    queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
+  }),
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn().mockResolvedValue(null),
+  setItem: jest.fn().mockResolvedValue(undefined),
+}));
+
 function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void; onCollectionPress?: (c: any) => void } = {}) {
   return render(
     <NavigationContainer>
