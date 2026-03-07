@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -13,6 +13,33 @@ jest.mock('@stripe/stripe-react-native', () => ({
     presentPaymentSheet: jest.fn().mockResolvedValue({ error: null }),
   }),
   StripeProvider: ({ children }: { children: React.ReactNode }) => children,
+  CardField: ({
+    onCardChange,
+    testID,
+    style,
+  }: {
+    onCardChange?: (details: { complete: boolean }) => void;
+    testID?: string;
+    style?: object;
+  }) => {
+    const { View, TouchableOpacity, Text } = require('react-native');
+    return (
+      <View testID={testID} style={style}>
+        <TouchableOpacity
+          testID="card-field-complete-trigger"
+          onPress={() => onCardChange?.({ complete: true })}
+        >
+          <Text>Complete Card</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          testID="card-field-incomplete-trigger"
+          onPress={() => onCardChange?.({ complete: false })}
+        >
+          <Text>Incomplete Card</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  },
 }));
 
 // Mock the payment service
@@ -71,6 +98,15 @@ function renderCheckout(
 
 const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
 
+function fillShippingAddress(utils: ReturnType<typeof renderCheckout>) {
+  const { getByTestId } = utils;
+  fireEvent.changeText(getByTestId('shipping-fullName'), 'John Doe');
+  fireEvent.changeText(getByTestId('shipping-line1'), '123 Main St');
+  fireEvent.changeText(getByTestId('shipping-city'), 'Asheville');
+  fireEvent.changeText(getByTestId('shipping-state'), 'NC');
+  fireEvent.changeText(getByTestId('shipping-zip'), '28801');
+}
+
 describe('CheckoutScreen', () => {
   describe('Rendering', () => {
     it('renders with default testID', () => {
@@ -105,6 +141,65 @@ describe('CheckoutScreen', () => {
       const { getByTestId } = renderCheckout({ onBack }, seed);
       fireEvent.press(getByTestId('checkout-back-button'));
       expect(onBack).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Shipping address form', () => {
+    it('renders shipping address section', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-address-title')).toBeTruthy();
+      expect(getByTestId('shipping-form')).toBeTruthy();
+    });
+
+    it('renders all shipping address fields', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-fullName')).toBeTruthy();
+      expect(getByTestId('shipping-line1')).toBeTruthy();
+      expect(getByTestId('shipping-line2')).toBeTruthy();
+      expect(getByTestId('shipping-city')).toBeTruthy();
+      expect(getByTestId('shipping-state')).toBeTruthy();
+      expect(getByTestId('shipping-zip')).toBeTruthy();
+    });
+
+    it('updates shipping address fields on input', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent.changeText(getByTestId('shipping-fullName'), 'Jane Doe');
+      expect(getByTestId('shipping-fullName').props.value).toBe('Jane Doe');
+    });
+
+    it('uppercases state input', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent.changeText(getByTestId('shipping-state'), 'nc');
+      expect(getByTestId('shipping-state').props.value).toBe('NC');
+    });
+  });
+
+  describe('Billing / shipping toggle', () => {
+    it('shows billing toggle defaulting to on', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const toggle = getByTestId('billing-same-toggle');
+      expect(toggle.props.value).toBe(true);
+    });
+
+    it('does not show billing form when toggle is on', () => {
+      const { queryByTestId } = renderCheckout({}, seed);
+      expect(queryByTestId('billing-address-title')).toBeNull();
+      expect(queryByTestId('billing-form')).toBeNull();
+    });
+
+    it('shows billing form when toggle is off', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent(getByTestId('billing-same-toggle'), 'valueChange', false);
+      expect(getByTestId('billing-address-title')).toBeTruthy();
+      expect(getByTestId('billing-form')).toBeTruthy();
+    });
+
+    it('hides billing form when toggle is turned back on', () => {
+      const { getByTestId, queryByTestId } = renderCheckout({}, seed);
+      fireEvent(getByTestId('billing-same-toggle'), 'valueChange', false);
+      expect(getByTestId('billing-form')).toBeTruthy();
+      fireEvent(getByTestId('billing-same-toggle'), 'valueChange', true);
+      expect(queryByTestId('billing-form')).toBeNull();
     });
   });
 
@@ -176,6 +271,143 @@ describe('CheckoutScreen', () => {
     it('payment options have accessibility role radio', () => {
       const { getByTestId } = renderCheckout({}, seed);
       expect(getByTestId('payment-card').props.accessibilityRole).toBe('radio');
+    });
+  });
+
+  describe('Stripe CardField', () => {
+    it('does not show card field when no method selected', () => {
+      const { queryByTestId } = renderCheckout({}, seed);
+      expect(queryByTestId('card-field-section')).toBeNull();
+    });
+
+    it('shows card field when card method selected', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent.press(getByTestId('payment-card'));
+      expect(getByTestId('card-field-section')).toBeTruthy();
+      expect(getByTestId('stripe-card-field')).toBeTruthy();
+    });
+
+    it('does not show card field when BNPL selected', () => {
+      const { getByTestId, queryByTestId } = renderCheckout({}, seed);
+      fireEvent.press(getByTestId('payment-affirm'));
+      expect(queryByTestId('card-field-section')).toBeNull();
+    });
+
+    it('hides card field when switching from card to BNPL', () => {
+      const { getByTestId, queryByTestId } = renderCheckout({}, seed);
+      fireEvent.press(getByTestId('payment-card'));
+      expect(getByTestId('card-field-section')).toBeTruthy();
+      fireEvent.press(getByTestId('payment-klarna'));
+      expect(queryByTestId('card-field-section')).toBeNull();
+    });
+  });
+
+  describe('Form validation', () => {
+    it('shows shipping validation errors when submitting empty address', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fireEvent.press(getByTestId('payment-card'));
+      fireEvent.press(getByTestId('card-field-complete-trigger'));
+      fireEvent.press(getByTestId('place-order-button'));
+
+      expect(getByTestId('shipping-fullName-error')).toBeTruthy();
+      expect(getByTestId('shipping-line1-error')).toBeTruthy();
+      expect(getByTestId('shipping-city-error')).toBeTruthy();
+      expect(getByTestId('shipping-state-error')).toBeTruthy();
+      expect(getByTestId('shipping-zip-error')).toBeTruthy();
+    });
+
+    it('validates ZIP code format', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fireEvent.press(getByTestId('payment-affirm'));
+
+      fireEvent.changeText(getByTestId('shipping-fullName'), 'John Doe');
+      fireEvent.changeText(getByTestId('shipping-line1'), '123 Main St');
+      fireEvent.changeText(getByTestId('shipping-city'), 'Asheville');
+      fireEvent.changeText(getByTestId('shipping-state'), 'NC');
+      fireEvent.changeText(getByTestId('shipping-zip'), 'abc');
+
+      fireEvent.press(getByTestId('place-order-button'));
+      expect(getByTestId('shipping-zip-error')).toBeTruthy();
+    });
+
+    it('validates state code', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fireEvent.press(getByTestId('payment-affirm'));
+
+      fireEvent.changeText(getByTestId('shipping-fullName'), 'John Doe');
+      fireEvent.changeText(getByTestId('shipping-line1'), '123 Main St');
+      fireEvent.changeText(getByTestId('shipping-city'), 'Asheville');
+      fireEvent.changeText(getByTestId('shipping-state'), 'XX');
+      fireEvent.changeText(getByTestId('shipping-zip'), '28801');
+
+      fireEvent.press(getByTestId('place-order-button'));
+      expect(getByTestId('shipping-state-error')).toBeTruthy();
+    });
+
+    it('shows card error when card method selected but incomplete', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-card'));
+      fireEvent.press(getByTestId('place-order-button'));
+
+      expect(getByTestId('card-field-error')).toBeTruthy();
+    });
+
+    it('clears card error when card becomes complete', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId, queryByTestId } = utils;
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-card'));
+      fireEvent.press(getByTestId('place-order-button'));
+      expect(getByTestId('card-field-error')).toBeTruthy();
+
+      fireEvent.press(getByTestId('card-field-complete-trigger'));
+      expect(queryByTestId('card-field-error')).toBeNull();
+    });
+
+    it('validates billing address when toggle is off', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-affirm'));
+
+      // Turn off billing same as shipping
+      fireEvent(getByTestId('billing-same-toggle'), 'valueChange', false);
+
+      fireEvent.press(getByTestId('place-order-button'));
+
+      expect(getByTestId('billing-fullName-error')).toBeTruthy();
+      expect(getByTestId('billing-line1-error')).toBeTruthy();
+      expect(getByTestId('billing-city-error')).toBeTruthy();
+      expect(getByTestId('billing-state-error')).toBeTruthy();
+      expect(getByTestId('billing-zip-error')).toBeTruthy();
+    });
+
+    it('does not validate billing address when toggle is on', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId, queryByTestId } = utils;
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-affirm'));
+
+      fireEvent.press(getByTestId('place-order-button'));
+
+      expect(queryByTestId('billing-fullName-error')).toBeNull();
+    });
+
+    it('clears field error when user types in that field', () => {
+      const utils = renderCheckout({}, seed);
+      const { getByTestId, queryByTestId } = utils;
+      fireEvent.press(getByTestId('payment-affirm'));
+      fireEvent.press(getByTestId('place-order-button'));
+
+      expect(getByTestId('shipping-fullName-error')).toBeTruthy();
+
+      fireEvent.changeText(getByTestId('shipping-fullName'), 'J');
+      expect(queryByTestId('shipping-fullName-error')).toBeNull();
     });
   });
 
