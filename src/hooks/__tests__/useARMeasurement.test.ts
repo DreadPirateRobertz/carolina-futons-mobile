@@ -201,5 +201,24 @@ describe('useARMeasurement', () => {
       // 2.54m = 100 inches = 8'4"
       expect(result.current.distanceDisplay).toBe("8' 4\"");
     });
+
+    it('never displays 12 inches (rolls over to next foot)', () => {
+      const { result } = renderHook(() => useARMeasurement());
+      act(() => result.current.activate());
+      act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
+      // 0.293m ≈ 11.54 inches — remainder rounds to 12, must roll over to 1' 0"
+      act(() => result.current.placePoint({ x: 0.293, y: 0, z: 0 }));
+      expect(result.current.distanceDisplay).toBe("1' 0\"");
+    });
+
+    it('handles rounding at foot boundary (23.7 inches)', () => {
+      const { result } = renderHook(() => useARMeasurement());
+      act(() => result.current.activate());
+      act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
+      // 23.7 inches = 1' 11.7" → rounds to 2' 0"
+      const meters = 23.7 / 39.3701;
+      act(() => result.current.placePoint({ x: meters, y: 0, z: 0 }));
+      expect(result.current.distanceDisplay).toBe("2' 0\"");
+    });
   });
 });
