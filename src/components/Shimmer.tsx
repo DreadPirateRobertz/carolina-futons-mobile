@@ -97,4 +97,3 @@ export function ShimmerLines({
 export function ShimmerCircle({ size = 40, style }: { size?: number; style?: ViewStyle }) {
   return <Shimmer width={size} height={size} borderRadius={size / 2} style={style} />;
 }
-

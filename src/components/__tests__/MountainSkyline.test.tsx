@@ -20,18 +20,16 @@ describe('MountainSkyline', () => {
   });
 
   it('renders sunset variant', () => {
-    const { getByTestId } = render(
-      <MountainSkyline testID="skyline-sunset" variant="sunset" />,
-      { wrapper },
-    );
+    const { getByTestId } = render(<MountainSkyline testID="skyline-sunset" variant="sunset" />, {
+      wrapper,
+    });
     expect(getByTestId('skyline-sunset')).toBeTruthy();
   });
 
   it('accepts custom height', () => {
-    const { getByTestId } = render(
-      <MountainSkyline testID="skyline-tall" height={200} />,
-      { wrapper },
-    );
+    const { getByTestId } = render(<MountainSkyline testID="skyline-tall" height={200} />, {
+      wrapper,
+    });
     expect(getByTestId('skyline-tall')).toBeTruthy();
   });
 
@@ -66,26 +64,23 @@ describe('MountainSkyline', () => {
   });
 
   it('renders transparent variant', () => {
-    const { getByTestId } = render(
-      <MountainSkyline testID="skyline-transparent" transparent />,
-      { wrapper },
-    );
+    const { getByTestId } = render(<MountainSkyline testID="skyline-transparent" transparent />, {
+      wrapper,
+    });
     expect(getByTestId('skyline-transparent')).toBeTruthy();
   });
 
   it('accepts showDetails prop', () => {
-    const { getByTestId } = render(
-      <MountainSkyline testID="skyline-details" showDetails />,
-      { wrapper },
-    );
+    const { getByTestId } = render(<MountainSkyline testID="skyline-details" showDetails />, {
+      wrapper,
+    });
     expect(getByTestId('skyline-details')).toBeTruthy();
   });
 
   it('hides details when showDetails is false', () => {
-    const { toJSON } = render(
-      <MountainSkyline testID="skyline-no-details" showDetails={false} />,
-      { wrapper },
-    );
+    const { toJSON } = render(<MountainSkyline testID="skyline-no-details" showDetails={false} />, {
+      wrapper,
+    });
     const json = JSON.stringify(toJSON());
     // Should NOT have bird paths (fill="none" strokes)
     expect(json).not.toContain('"fill":"none"');

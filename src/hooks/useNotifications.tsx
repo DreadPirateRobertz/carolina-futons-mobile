@@ -1,12 +1,11 @@
-/**
- * @module useNotifications
- *
- * Push notification provider and consumer hook. Handles Expo push token
- * registration, OS permission prompts, foreground display, badge count,
- * per-category preference toggles, and deep-link routing when the user
- * taps a notification.
- */
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
 import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';

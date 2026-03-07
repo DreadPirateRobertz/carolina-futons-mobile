@@ -12,6 +12,16 @@
  */
 
 import type { Product, ProductImage, ProductCategory } from '@/data/products';
+import type {
+  Order,
+  OrderStatus,
+  OrderLineItem,
+  ShippingAddress,
+  TrackingInfo,
+} from '@/data/orders';
+import type { Review, ReviewSummary } from '@/data/reviews';
+import type { Store, StoreHours } from '@/data/stores';
+import { getTrackingUrl } from '@/data/orders';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -369,6 +379,104 @@ export class WixClient {
     };
   }
 
+  // ── Orders (eCommerce) ─────────────────────────────────────
+
+  async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{
+    orders: Order[];
+    totalResults: number;
+  }> {
+    const { limit = 50, offset = 0 } = options;
+
+    const body = {
+      query: {
+        paging: {
+          limit: Math.min(Math.max(1, limit), 100),
+          offset: Math.max(0, offset),
+        },
+        sort: [{ fieldName: 'createdDate', order: 'DESC' }],
+      },
+    };
+
+    const data = await this.post<{
+      orders: WixOrder[];
+      pagingMetadata: { total: number };
+    }>('/ecom/v1/orders/query', body);
+
+    return {
+      orders: (data.orders ?? []).map(transformWixOrder),
+      totalResults: data.pagingMetadata?.total ?? 0,
+    };
+  }
+
+  async getOrder(orderId: string): Promise<Order | null> {
+    if (!orderId) throw new WixApiError('Order ID is required');
+
+    const data = await this.get<{ order: WixOrder }>(
+      `/ecom/v1/orders/${encodeURIComponent(orderId)}`,
+    );
+
+    return data.order ? transformWixOrder(data.order) : null;
+  }
+
+  // ── Reviews (CMS) ────────────────────────────────────────
+
+  async queryReviews(
+    productId: string,
+    options: { limit?: number; offset?: number } = {},
+  ): Promise<{ reviews: Review[]; totalResults: number }> {
+    if (!productId) throw new WixApiError('Product ID is required');
+
+    const { limit = 50, offset = 0 } = options;
+
+    const result = await this.queryData<WixCmsReview>('Reviews', {
+      filter: { productId: { $eq: productId } },
+      sort: [{ fieldName: 'createdAt', order: 'DESC' }],
+      limit,
+      offset,
+    });
+
+    return {
+      reviews: result.items.map((item) => transformWixCmsReview(item, productId)),
+      totalResults: result.totalResults,
+    };
+  }
+
+  async getReviewSummary(productId: string): Promise<ReviewSummary> {
+    const result = await this.queryReviews(productId, { limit: 100 });
+    const reviews = result.reviews;
+    const distribution: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+
+    for (const review of reviews) {
+      if (review.rating >= 1 && review.rating <= 5) {
+        distribution[review.rating - 1] += 1;
+      }
+    }
+
+    const totalReviews = reviews.length;
+    const averageRating =
+      totalReviews > 0
+        ? Math.round((reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews) * 10) / 10
+        : 0;
+
+    return { averageRating, totalReviews, distribution };
+  }
+
+  // ── Stores (CMS) ─────────────────────────────────────────
+
+  async queryStores(options: { limit?: number; offset?: number } = {}): Promise<{
+    stores: Store[];
+    totalResults: number;
+  }> {
+    const { limit = 50, offset = 0 } = options;
+
+    const result = await this.queryData<WixCmsStore>('Stores', { limit, offset });
+
+    return {
+      stores: result.items.map(transformWixCmsStore),
+      totalResults: result.totalResults,
+    };
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {
@@ -505,5 +613,204 @@ export function transformWixCollection(wix: WixCollection): WixCollectionInfo {
     slug: wix.slug,
     productCount: wix.numberOfProducts ?? 0,
     ...(wix.media?.mainMedia?.image?.url ? { imageUrl: wix.media.mainMedia.image.url } : {}),
+  };
+}
+
+// ── Wix eCommerce Order types ─────────────────────────────────
+
+interface WixOrder {
+  id: string;
+  number: string;
+  status: string;
+  lineItems: WixOrderLineItem[];
+  priceSummary: {
+    subtotal: { amount: string };
+    shipping: { amount: string };
+    tax: { amount: string };
+    total: { amount: string };
+  };
+  shippingInfo?: {
+    logistics?: {
+      shippingDestination?: {
+        address?: {
+          addressLine1?: string;
+          city?: string;
+          subdivision?: string;
+          postalCode?: string;
+        };
+        contactDetails?: { firstName?: string; lastName?: string };
+      };
+    };
+    carrierId?: string;
+    code?: string;
+  };
+  fulfillments?: WixFulfillment[];
+  createdDate: string;
+  updatedDate: string;
+  paymentStatus?: string;
+}
+
+interface WixOrderLineItem {
+  id: string;
+  productName?: { original?: string };
+  catalogReference?: { catalogItemId?: string };
+  quantity: number;
+  price?: { amount: string };
+  totalPrice?: { amount: string };
+  image?: { url: string };
+  descriptionLines?: { name?: { original?: string }; plainText?: { original?: string } }[];
+}
+
+interface WixFulfillment {
+  id: string;
+  trackingInfo?: {
+    trackingNumber?: string;
+    shippingProvider?: string;
+    trackingLink?: string;
+  };
+}
+
+function mapWixOrderStatus(status: string): OrderStatus {
+  switch (status.toUpperCase()) {
+    case 'APPROVED':
+    case 'CREATED':
+      return 'processing';
+    case 'FULFILLED':
+      return 'delivered';
+    case 'CANCELED':
+      return 'cancelled';
+    default:
+      return 'processing';
+  }
+}
+
+function transformWixOrder(wix: WixOrder): Order {
+  const status = mapWixOrderStatus(wix.status);
+
+  const items: OrderLineItem[] = (wix.lineItems ?? []).map((li) => {
+    const descLines = li.descriptionLines ?? [];
+    const fabricLine = descLines.find((d) => d.name?.original?.toLowerCase() === 'fabric');
+
+    return {
+      id: li.id,
+      modelId: li.catalogReference?.catalogItemId ?? li.id,
+      modelName: li.productName?.original ?? 'Product',
+      fabricId: fabricLine?.plainText?.original ?? '',
+      fabricName: fabricLine?.plainText?.original ?? '',
+      fabricColor: '',
+      quantity: li.quantity ?? 1,
+      unitPrice: parseFloat(li.price?.amount ?? '0'),
+      lineTotal: parseFloat(li.totalPrice?.amount ?? '0'),
+    };
+  });
+
+  const dest = wix.shippingInfo?.logistics?.shippingDestination;
+  const contact = dest?.contactDetails;
+  const addr = dest?.address;
+  const shippingAddress: ShippingAddress = {
+    name: [contact?.firstName, contact?.lastName].filter(Boolean).join(' ') || 'N/A',
+    street: addr?.addressLine1 ?? '',
+    city: addr?.city ?? '',
+    state: addr?.subdivision ?? '',
+    zip: addr?.postalCode ?? '',
+  };
+
+  let tracking: TrackingInfo | undefined;
+  const fulfillment = wix.fulfillments?.[0];
+  if (fulfillment?.trackingInfo) {
+    const ti = fulfillment.trackingInfo;
+    const carrier = ti.shippingProvider ?? '';
+    const trackingNumber = ti.trackingNumber ?? '';
+    tracking = {
+      carrier,
+      trackingNumber,
+      url: ti.trackingLink ?? getTrackingUrl(carrier, trackingNumber),
+    };
+  }
+
+  const ps = wix.priceSummary;
+
+  return {
+    id: wix.id,
+    orderNumber: `CF-${wix.number}`,
+    status,
+    createdAt: wix.createdDate,
+    updatedAt: wix.updatedDate,
+    items,
+    subtotal: parseFloat(ps?.subtotal?.amount ?? '0'),
+    shipping: parseFloat(ps?.shipping?.amount ?? '0'),
+    tax: parseFloat(ps?.tax?.amount ?? '0'),
+    total: parseFloat(ps?.total?.amount ?? '0'),
+    shippingAddress,
+    paymentMethod: wix.paymentStatus === 'PAID' ? 'Paid' : 'Pending',
+    ...(tracking ? { tracking } : {}),
+  };
+}
+
+// ── Wix CMS Review types ──────────────────────────────────────
+
+interface WixCmsReview {
+  _id: string;
+  productId: string;
+  authorName: string;
+  rating: number;
+  title: string;
+  body: string;
+  createdAt: string;
+  helpful: number;
+  verified: boolean;
+  photos?: string[];
+}
+
+function transformWixCmsReview(item: WixCmsReview, productId: string): Review {
+  return {
+    id: item._id,
+    productId,
+    authorName: item.authorName ?? 'Anonymous',
+    rating: item.rating ?? 5,
+    title: item.title ?? '',
+    body: item.body ?? '',
+    createdAt: item.createdAt ?? new Date().toISOString(),
+    helpful: item.helpful ?? 0,
+    verified: item.verified ?? false,
+    ...(item.photos?.length ? { photos: item.photos } : {}),
+  };
+}
+
+// ── Wix CMS Store types ───────────────────────────────────────
+
+interface WixCmsStore {
+  _id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  email: string;
+  latitude: number;
+  longitude: number;
+  hours: StoreHours[];
+  photos: string[];
+  features: string[];
+  description: string;
+}
+
+function transformWixCmsStore(item: WixCmsStore): Store {
+  return {
+    id: item._id,
+    name: item.name ?? '',
+    address: item.address ?? '',
+    city: item.city ?? '',
+    state: item.state ?? '',
+    zip: item.zip ?? '',
+    phone: item.phone ?? '',
+    email: item.email ?? '',
+    latitude: item.latitude ?? 0,
+    longitude: item.longitude ?? 0,
+    hours: item.hours ?? [],
+    photos: item.photos ?? [],
+    features: item.features ?? [],
+    description: item.description ?? '',
   };
 }

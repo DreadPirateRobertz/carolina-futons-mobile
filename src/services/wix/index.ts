@@ -26,6 +26,8 @@ export { WixProvider, useWixClient, useWixProducts, useWixCollections } from './
 
 export { getWixConfig, isWixConfigured } from './config';
 
+export { getWixClientInstance, resetWixClientInstance } from './singleton';
+
 export { getWixSdkClient, resetWixSdkClient } from './wixSdkClient';
 
 export { WixAuthService, type AuthResult, type AuthUser } from './wixAuth';

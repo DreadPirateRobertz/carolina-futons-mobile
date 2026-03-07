@@ -133,8 +133,17 @@ describe('OrderConfirmationScreen', () => {
           ...mockOrder.items,
           {
             id: 'blue-ridge-queen:mountain-blue',
-            model: { id: 'blue-ridge-queen', name: 'Blue Ridge Queen', basePrice: 449 } as OrderConfirmation['items'][0]['model'],
-            fabric: { id: 'mountain-blue', name: 'Mountain Blue', color: '#5B8FA8', price: 29 } as OrderConfirmation['items'][0]['fabric'],
+            model: {
+              id: 'blue-ridge-queen',
+              name: 'Blue Ridge Queen',
+              basePrice: 449,
+            } as OrderConfirmation['items'][0]['model'],
+            fabric: {
+              id: 'mountain-blue',
+              name: 'Mountain Blue',
+              color: '#5B8FA8',
+              price: 29,
+            } as OrderConfirmation['items'][0]['fabric'],
             quantity: 2,
             unitPrice: 478,
           },

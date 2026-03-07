@@ -124,8 +124,7 @@ function markStartup(phase: StartupPhase): void {
   startupMarks[phase] = Date.now();
 
   if (__DEV__) {
-    const elapsed =
-      startupMarks.js_init != null ? Date.now() - startupMarks.js_init : 0;
+    const elapsed = startupMarks.js_init != null ? Date.now() - startupMarks.js_init : 0;
     // eslint-disable-next-line no-console
     console.log(`[Perf] startup:${phase} +${elapsed}ms`);
   }
@@ -228,8 +227,7 @@ function recordFrame(session: ScrollSession, frameDurationMs: number): void {
   // Update rolling average FPS
   if (session.totalFrames > 0) {
     const elapsed = Date.now() - session.startTime;
-    session.avgFps =
-      elapsed > 0 ? Math.round((session.totalFrames / elapsed) * 1000) : 60;
+    session.avgFps = elapsed > 0 ? Math.round((session.totalFrames / elapsed) * 1000) : 60;
   }
 
   if (session.samples.length < MAX_SAMPLES_PER_SESSION) {
@@ -245,8 +243,7 @@ function endScrollSession(session: ScrollSession): void {
   session.endTime = Date.now();
 
   // Report if there was significant jank
-  const jankRatio =
-    session.totalFrames > 0 ? session.droppedFrames / session.totalFrames : 0;
+  const jankRatio = session.totalFrames > 0 ? session.droppedFrames / session.totalFrames : 0;
 
   if (session.droppedFrames > 0) {
     const props: Record<string, string | number | boolean> = {
@@ -297,8 +294,9 @@ function sampleMemory(): MemorySample {
 
   // Fallback: standard Performance API (V8 / JSC with experimental support)
   if (jsHeapUsed == null && typeof performance !== 'undefined') {
-    const perfMemory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } })
-      .memory;
+    const perfMemory = (
+      performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }
+    ).memory;
     if (perfMemory) {
       jsHeapUsed = perfMemory.usedJSHeapSize;
       jsHeapTotal = perfMemory.totalJSHeapSize;
@@ -333,9 +331,7 @@ function startMemoryMonitoring(): void {
     if (sample.jsHeapUsed != null && sample.jsHeapUsed > 150 * 1024 * 1024) {
       trackEvent(PERF_MEMORY, {
         js_heap_used_mb: Math.round(sample.jsHeapUsed / (1024 * 1024)),
-        js_heap_total_mb: sample.jsHeapTotal
-          ? Math.round(sample.jsHeapTotal / (1024 * 1024))
-          : 0,
+        js_heap_total_mb: sample.jsHeapTotal ? Math.round(sample.jsHeapTotal / (1024 * 1024)) : 0,
         platform: Platform.OS,
         warning: 'high_memory',
       });
@@ -395,9 +391,7 @@ function recordRender(componentName: string, durationMs: number): void {
 
     if (__DEV__) {
       // eslint-disable-next-line no-console
-      console.warn(
-        `[Perf] Slow render: ${componentName} took ${durationMs.toFixed(1)}ms`,
-      );
+      console.warn(`[Perf] Slow render: ${componentName} took ${durationMs.toFixed(1)}ms`);
     }
   }
 }
@@ -458,9 +452,7 @@ function printReport(): void {
     console.log('\n--- Scroll Sessions ---');
     for (const s of report.scrollSessions) {
       const jankPct =
-        s.totalFrames > 0
-          ? ((s.droppedFrames / s.totalFrames) * 100).toFixed(1)
-          : '0';
+        s.totalFrames > 0 ? ((s.droppedFrames / s.totalFrames) * 100).toFixed(1) : '0';
       // eslint-disable-next-line no-console
       console.log(
         `  ${s.screenName}: ${s.droppedFrames}/${s.totalFrames} dropped (${jankPct}%) worst=${s.worstFrameMs.toFixed(1)}ms avg=${s.avgFps}fps`,
@@ -509,9 +501,7 @@ function printReport(): void {
 // ---------------------------------------------------------------------------
 
 function resetForTesting(): void {
-  Object.keys(startupMarks).forEach(
-    (k) => delete startupMarks[k as StartupPhase],
-  );
+  Object.keys(startupMarks).forEach((k) => delete startupMarks[k as StartupPhase]);
   startupReported = false;
   scrollSessions.length = 0;
   memorySamples.length = 0;

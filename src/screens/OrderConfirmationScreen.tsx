@@ -88,15 +88,9 @@ export function OrderConfirmationScreen({
 
           {/* Items */}
           {order.items.map((item) => (
-            <View
-              key={item.id}
-              style={styles.itemRow}
-              testID={`confirmation-item-${item.id}`}
-            >
+            <View key={item.id} style={styles.itemRow} testID={`confirmation-item-${item.id}`}>
               <View style={styles.itemInfo}>
-                <Text style={[styles.itemName, { color: colors.espresso }]}>
-                  {item.model.name}
-                </Text>
+                <Text style={[styles.itemName, { color: colors.espresso }]}>{item.model.name}</Text>
                 <Text style={[styles.itemDetail, { color: colors.espressoLight }]}>
                   {item.fabric.name} x{item.quantity}
                 </Text>

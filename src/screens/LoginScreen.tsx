@@ -115,7 +115,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           {/* Email */}
           <View style={styles.fieldGroup}>
             <Text
-              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
               testID="login-email-label"
             >
               Email
@@ -158,7 +161,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
           {/* Password */}
           <View style={styles.fieldGroup}>
             <Text
-              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
               testID="login-password-label"
             >
               Password

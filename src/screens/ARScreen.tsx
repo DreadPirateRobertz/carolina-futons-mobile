@@ -235,7 +235,14 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasFloor, detectionState, performHitTest, selectedModel?.id, measurement.state, measurement.placePoint],
+    [
+      hasFloor,
+      detectionState,
+      performHitTest,
+      selectedModel?.id,
+      measurement.state,
+      measurement.placePoint,
+    ],
   );
 
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -332,13 +339,10 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [compareModel, showComparePicker]);
 
-  const handleSelectCompareModel = useCallback(
-    (model: FutonModel) => {
-      setCompareModel(model);
-      setShowComparePicker(false);
-    },
-    [],
-  );
+  const handleSelectCompareModel = useCallback((model: FutonModel) => {
+    setCompareModel(model);
+    setShowComparePicker(false);
+  }, []);
 
   /** Open the product picker overlay */
   const handleOpenProductPicker = useCallback(() => {
@@ -497,11 +501,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             points={measurement.points}
             state={measurement.state}
             distanceDisplay={measurement.distanceDisplay}
-            fits={selectedModel ? measurement.checkFit({
-              width: selectedModel.dimensions.width / 39.3701,
-              depth: selectedModel.dimensions.depth / 39.3701,
-              height: selectedModel.dimensions.height / 39.3701,
-            }) : null}
+            fits={
+              selectedModel
+                ? measurement.checkFit({
+                    width: selectedModel.dimensions.width / 39.3701,
+                    depth: selectedModel.dimensions.depth / 39.3701,
+                    height: selectedModel.dimensions.height / 39.3701,
+                  })
+                : null
+            }
             testID="ar-measurement-overlay"
           />
 
@@ -605,7 +613,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
                 >
                   <Text style={styles.comparePickerItemName}>{model.name}</Text>
                   <Text style={styles.comparePickerItemDims}>
-                    {model.dimensions.width}" W × {model.dimensions.depth}" D × {model.dimensions.height}" H
+                    {model.dimensions.width}" W × {model.dimensions.depth}" D ×{' '}
+                    {model.dimensions.height}" H
                   </Text>
                 </TouchableOpacity>
               ))}

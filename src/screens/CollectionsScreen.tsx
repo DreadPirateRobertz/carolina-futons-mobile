@@ -55,10 +55,7 @@ export function CollectionsScreen() {
     [handleCollectionPress, spacing.pagePadding],
   );
 
-  const renderSeparator = useCallback(
-    () => <View style={{ height: spacing.md }} />,
-    [spacing.md],
-  );
+  const renderSeparator = useCallback(() => <View style={{ height: spacing.md }} />, [spacing.md]);
 
   const renderHeader = useCallback(
     () => (

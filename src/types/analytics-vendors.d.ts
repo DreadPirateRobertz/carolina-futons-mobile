@@ -19,17 +19,11 @@ declare module '@react-native-firebase/analytics' {
      * @param params - Optional key-value payload attached to the event.
      */
     logEvent(name: string, params?: Record<string, unknown>): Promise<void>;
-
-    /**
-     * Log a screen view event for automatic screen tracking.
-     * @param params - Must include `screen_name` and `screen_class`; extra keys are forwarded.
-     */
-    logScreenView(params: { screen_name: string; screen_class: string; [key: string]: unknown }): Promise<void>;
-
-    /**
-     * Associate future events with a user ID (or `null` to clear).
-     * @param id - Unique user identifier or `null` to de-identify.
-     */
+    logScreenView(params: {
+      screen_name: string;
+      screen_class: string;
+      [key: string]: unknown;
+    }): Promise<void>;
     setUserId(id: string | null): Promise<void>;
 
     /**

@@ -125,7 +125,12 @@ export function getAllFunnelReports(): FunnelReport[] {
 
 function buildReport(
   funnel: Funnel,
-  state: { stepCounts: number[]; stepFirstReached: (number | undefined)[]; completions: number; entries: number },
+  state: {
+    stepCounts: number[];
+    stepFirstReached: (number | undefined)[];
+    completions: number;
+    entries: number;
+  },
 ): FunnelReport {
   const steps: FunnelStepReport[] = funnel.steps.map((step, i) => ({
     name: step.name,

@@ -21,9 +21,7 @@ describe('registerPushToken', () => {
   });
 
   it('retries on network failure', async () => {
-    mockFetch
-      .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce({ ok: true });
+    mockFetch.mockRejectedValueOnce(new Error('Network error')).mockResolvedValueOnce({ ok: true });
     await registerPushToken('ExponentPushToken[abc123]');
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });

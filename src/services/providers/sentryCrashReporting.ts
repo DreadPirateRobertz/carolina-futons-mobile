@@ -4,7 +4,12 @@
  * Wraps @sentry/react-native for production crash reporting.
  * Gracefully degrades to no-ops if the native module is unavailable.
  */
-import type { CrashReportingProvider, ErrorSeverity, CrashContext, CrashUser } from '../crashReporting';
+import type {
+  CrashReportingProvider,
+  ErrorSeverity,
+  CrashContext,
+  CrashUser,
+} from '../crashReporting';
 
 interface SentryModule {
   init(options: Record<string, unknown>): void;
@@ -95,11 +100,7 @@ export class SentryCrashReportingProvider implements CrashReportingProvider {
 
   setUser(user: CrashUser | null): void {
     if (!Sentry) return;
-    Sentry.setUser(
-      user
-        ? { id: user.id, email: user.email, username: user.name }
-        : null,
-    );
+    Sentry.setUser(user ? { id: user.id, email: user.email, username: user.name } : null);
   }
 
   addBreadcrumb(message: string, category?: string, data?: Record<string, string>): void {

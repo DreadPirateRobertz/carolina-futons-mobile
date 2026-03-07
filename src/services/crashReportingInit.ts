@@ -55,14 +55,16 @@ function setupPromiseRejectionHandler(): void {
       tracking.enablePromiseRejectionTracker({
         allRejections: true,
         onUnhandled: (id: number, rejection: unknown) => {
-          const error =
-            rejection instanceof Error
-              ? rejection
-              : new Error(String(rejection));
+          const error = rejection instanceof Error ? rejection : new Error(String(rejection));
 
           // Import dynamically to avoid circular dependency
           const { captureException } = require('./crashReporting');
-          captureException(error, 'error', { action: 'unhandled_promise_rejection', rejectionId: String(id) }, false);
+          captureException(
+            error,
+            'error',
+            { action: 'unhandled_promise_rejection', rejectionId: String(id) },
+            false,
+          );
         },
       });
     }

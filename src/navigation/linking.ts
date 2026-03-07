@@ -25,10 +25,9 @@ import { getStateFromPath } from '@react-navigation/native';
 import type { RootStackParamList } from './AppNavigator';
 
 /** Normalize URL paths before React Navigation processes them (e.g. /products/ → /product/) */
-const normalizePathForLinking: NonNullable<LinkingOptions<RootStackParamList>['getStateFromPath']> = (
-  path,
-  options,
-) => {
+const normalizePathForLinking: NonNullable<
+  LinkingOptions<RootStackParamList>['getStateFromPath']
+> = (path, options) => {
   let normalized = path.replace(/^\/products\//, '/product/');
   normalized = normalized.replace(/^\/?store-locator(\/|$)/, '/stores$1');
   return getStateFromPath(normalized, options);

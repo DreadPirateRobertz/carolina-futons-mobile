@@ -136,17 +136,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             accessibilityRole="button"
           >
             <Text
-              style={[
-                styles.backText,
-                { color: isProcessing ? colors.muted : colors.espresso },
-              ]}
+              style={[styles.backText, { color: isProcessing ? colors.muted : colors.espresso }]}
             >
               {'‹'}
             </Text>
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+          style={[
+            styles.headerTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -164,7 +164,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
           <Text
-            style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
             testID="checkout-items-section-title"
           >
             Items ({items.length})
@@ -229,7 +232,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[styles.grandTotalValue, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+              style={[
+                styles.grandTotalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
               testID="checkout-total"
             >
               {formatPrice(totals.total)}

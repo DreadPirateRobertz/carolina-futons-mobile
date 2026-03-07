@@ -49,11 +49,7 @@ export function HeroBanner({
 
   return (
     <View
-      style={[
-        styles.root,
-        { height, backgroundColor: backgroundColor ?? colors.sandDark },
-        style,
-      ]}
+      style={[styles.root, { height, backgroundColor: backgroundColor ?? colors.sandDark }, style]}
       testID={testID}
     >
       {imageUri && (
@@ -65,7 +61,9 @@ export function HeroBanner({
           transition={300}
         />
       )}
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${overlayOpacity})` }]} />
+      <View
+        style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${overlayOpacity})` }]}
+      />
       <View style={[styles.content, { padding: spacing.pagePadding }]}>
         {title && (
           <Text

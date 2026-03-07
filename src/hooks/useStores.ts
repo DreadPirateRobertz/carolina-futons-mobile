@@ -1,14 +1,8 @@
-/**
- * @module useStores
- *
- * Provides showroom/store data for the store locator and detail screens.
- * Static data today; shaped for a drop-in replacement with the Wix CMS
- * (Content Management System) API when the backend integration lands.
- */
-import { useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { STORES, APPOINTMENT_TYPES, type Store, type AppointmentType } from '@/data/stores';
+import { getWixClientInstance } from '@/services/wix/singleton';
 
-// Re-export for screens — avoids direct src/data imports
+// Re-export for screens
 export { APPOINTMENT_TYPES };
 export type { Store, AppointmentType };
 
@@ -21,14 +15,45 @@ interface UseStoresReturn {
 
 /**
  * Provides store/showroom data for locator and detail screens.
- * Uses static data now; designed for drop-in Wix CMS API replacement.
+ * Tries Wix CMS API, falls back to static data.
  */
 export function useStores(): UseStoresReturn {
-  const stores = useMemo(() => STORES, []);
+  const [storeData, setStoreData] = useState<Store[]>(STORES);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const mounted = useRef(true);
 
-  const getStoreById = useCallback((id: string) => stores.find((s) => s.id === id), [stores]);
+  useEffect(() => {
+    mounted.current = true;
 
-  return { stores, isLoading: false, error: null, getStoreById };
+    const client = getWixClientInstance();
+    if (client) {
+      (async () => {
+        try {
+          const result = await client.queryStores({ limit: 100 });
+          if (mounted.current && result.stores.length > 0) {
+            setStoreData(result.stores);
+          }
+        } catch (err) {
+          if (mounted.current) {
+            setError(err instanceof Error ? err : new Error(String(err)));
+          }
+        } finally {
+          if (mounted.current) setIsLoading(false);
+        }
+      })();
+    } else {
+      setIsLoading(false);
+    }
+
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const getStoreById = useCallback((id: string) => storeData.find((s) => s.id === id), [storeData]);
+
+  return { stores: storeData, isLoading, error, getStoreById };
 }
 
 interface UseStoreByIdReturn {
@@ -41,10 +66,12 @@ interface UseStoreByIdReturn {
  * Looks up a single store by ID.
  */
 export function useStoreById(storeId: string | undefined): UseStoreByIdReturn {
+  const { stores, isLoading, error } = useStores();
+
   const store = useMemo(() => {
     if (!storeId) return null;
-    return STORES.find((s) => s.id === storeId) ?? null;
-  }, [storeId]);
+    return stores.find((s) => s.id === storeId) ?? null;
+  }, [storeId, stores]);
 
-  return { store, isLoading: false, error: null };
+  return { store, isLoading, error };
 }

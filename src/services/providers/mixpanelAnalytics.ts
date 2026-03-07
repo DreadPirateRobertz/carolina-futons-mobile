@@ -36,12 +36,18 @@ export async function initMixpanel(token: string): Promise<void> {
 export class MixpanelAnalyticsProvider implements AnalyticsProvider {
   private enabled = true;
 
-  trackEvent(name: AnalyticsEventName, properties?: Record<string, string | number | boolean>): void {
+  trackEvent(
+    name: AnalyticsEventName,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     if (!this.enabled || !mixpanelInstance) return;
     mixpanelInstance.track(name, properties);
   }
 
-  trackScreenView(screenName: string, properties?: Record<string, string | number | boolean>): void {
+  trackScreenView(
+    screenName: string,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     if (!this.enabled || !mixpanelInstance) return;
     mixpanelInstance.track('screen_view', { screen_name: screenName, ...properties });
   }

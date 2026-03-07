@@ -171,13 +171,16 @@ export function ProductDetailScreen({
   });
 
   // --- Callbacks (unchanged) ---
-  const handleSelectFabric = useCallback((fabric: Fabric) => {
-    setSelectedFabric(fabric);
-    events.selectFabric(model.id, fabric.id);
-    if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
-    }
-  }, [model.id]);
+  const handleSelectFabric = useCallback(
+    (fabric: Fabric) => {
+      setSelectedFabric(fabric);
+      events.selectFabric(model.id, fabric.id);
+      if (Platform.OS !== 'web') {
+        Haptics.selectionAsync();
+      }
+    },
+    [model.id],
+  );
 
   const handleAddToCart = useCallback(() => {
     onAddToCart?.(model, selectedFabric, quantity);
@@ -311,7 +314,12 @@ export function ProductDetailScreen({
                 gradientStrip1Style,
               ]}
             />
-            <View style={[styles.gradientStrip, { backgroundColor: colors.sandBase, height: 16, opacity: 0.7 }]} />
+            <View
+              style={[
+                styles.gradientStrip,
+                { backgroundColor: colors.sandBase, height: 16, opacity: 0.7 },
+              ]}
+            />
           </View>
         </Animated.View>
 

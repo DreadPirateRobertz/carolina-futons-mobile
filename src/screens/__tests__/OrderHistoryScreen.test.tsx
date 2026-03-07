@@ -145,11 +145,13 @@ describe('OrderHistoryScreen', () => {
     it('uses dark editorial background', () => {
       const { getByTestId } = renderOrderHistory();
       const screen = getByTestId('order-history-screen');
-      const flat = [screen.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [screen.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
 
@@ -174,11 +176,13 @@ describe('OrderHistoryScreen', () => {
     it('order cards use dark surface background', () => {
       const { getByTestId } = renderOrderHistory();
       const card = getByTestId('order-card-ord-001');
-      const flat = [card.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [card.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.surface);
     });
   });

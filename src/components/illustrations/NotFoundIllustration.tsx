@@ -40,16 +40,32 @@ export function NotFoundIllustration({ width = VBW, height = VBH, testID }: Prop
       </Defs>
       <Rect width={VBW} height={VBH} fill="url(#nf-sky)" />
       {/* 5 mountain layers */}
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.45, 36)} fill={colors.mountainBlue} opacity={0.15} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.53, 58)} fill={colors.mountainBlue} opacity={0.2} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.45, 36)}
+        fill={colors.mountainBlue}
+        opacity={0.15}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.53, 58)}
+        fill={colors.mountainBlue}
+        opacity={0.2}
+      />
       {/* Deep fog layers */}
       <Rect y={95} width={VBW} height={35} fill="url(#nf-fog)" />
       <Ellipse cx={100} cy={115} rx={65} ry={14} fill={colors.offWhite} opacity={0.6} />
       <Ellipse cx={210} cy={120} rx={55} ry={12} fill={colors.offWhite} opacity={0.5} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.62, 81)} fill={colors.mountainBlueDark} opacity={0.25} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.62, 81)}
+        fill={colors.mountainBlueDark}
+        opacity={0.25}
+      />
       <Rect y={130} width={VBW} height={25} fill="url(#nf-fog)" />
       <Ellipse cx={160} cy={140} rx={50} ry={10} fill={colors.offWhite} opacity={0.45} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.72, 19)} fill={colors.espressoLight} opacity={0.3} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.72, 19)}
+        fill={colors.espressoLight}
+        opacity={0.3}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.82, 47)} fill={colors.sandLight} opacity={0.4} />
       {/* Faint trail disappearing into fog */}
       <Path

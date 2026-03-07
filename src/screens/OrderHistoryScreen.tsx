@@ -84,7 +84,10 @@ export function OrderHistoryScreen({
         >
           <View style={styles.orderHeader}>
             <Text
-              style={[styles.orderNumber, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold }]}
+              style={[
+                styles.orderNumber,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold },
+              ]}
               testID={`order-number-${item.id}`}
             >
               {item.orderNumber}
@@ -101,7 +104,10 @@ export function OrderHistoryScreen({
           </View>
 
           <Text
-            style={[styles.orderDate, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.orderDate,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
             testID={`order-date-${item.id}`}
           >
             {formatDate(item.createdAt)}
@@ -109,14 +115,20 @@ export function OrderHistoryScreen({
 
           <View style={styles.orderFooter}>
             <Text
-              style={[styles.orderItems, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.orderItems,
+                { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+              ]}
               testID={`order-items-${item.id}`}
               numberOfLines={1}
             >
               {itemSummary}
             </Text>
             <Text
-              style={[styles.orderTotal, { color: darkPalette.textPrimary, fontFamily: typography.headingFamily }]}
+              style={[
+                styles.orderTotal,
+                { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+              ]}
               testID={`order-total-${item.id}`}
             >
               {formatPrice(item.total)}

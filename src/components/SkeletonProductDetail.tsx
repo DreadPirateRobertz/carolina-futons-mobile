@@ -97,7 +97,13 @@ export function SkeletonProductDetail({ testID }: { testID?: string }) {
                 <Shimmer width="30%" height={12} style={{ marginTop: 4 }} />
               </View>
             </View>
-            <ShimmerLines lines={3} lineHeight={12} gap={6} lastLineWidth="45%" style={{ marginTop: 10 }} />
+            <ShimmerLines
+              lines={3}
+              lineHeight={12}
+              gap={6}
+              lastLineWidth="45%"
+              style={{ marginTop: 10 }}
+            />
           </View>
         ))}
       </View>

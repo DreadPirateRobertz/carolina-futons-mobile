@@ -57,7 +57,9 @@ describe('useDataCache', () => {
     mockGetItem.mockResolvedValue(cached);
     const fetcher = jest.fn().mockResolvedValue({ items: [1, 2] });
 
-    const { result } = renderHook(() => useDataCache('products', fetcher, { maxAge: 30 * 60 * 1000 }));
+    const { result } = renderHook(() =>
+      useDataCache('products', fetcher, { maxAge: 30 * 60 * 1000 }),
+    );
     await act(async () => {});
 
     // Should still return cached data
@@ -87,9 +89,7 @@ describe('useDataCache', () => {
   });
 
   it('allows manual refresh', async () => {
-    const fetcher = jest.fn()
-      .mockResolvedValueOnce({ v: 1 })
-      .mockResolvedValueOnce({ v: 2 });
+    const fetcher = jest.fn().mockResolvedValueOnce({ v: 1 }).mockResolvedValueOnce({ v: 2 });
 
     const { result } = renderHook(() => useDataCache('products', fetcher));
     await act(async () => {});

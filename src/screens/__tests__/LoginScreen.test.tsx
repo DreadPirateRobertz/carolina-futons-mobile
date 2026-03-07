@@ -157,11 +157,13 @@ describe('LoginScreen', () => {
       const screen = getByTestId('login-screen');
       const styles = screen.props.style;
       // Flatten potentially nested style arrays
-      const flat = [styles].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [styles]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
 
