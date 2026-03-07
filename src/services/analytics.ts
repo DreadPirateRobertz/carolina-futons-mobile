@@ -311,6 +311,9 @@ export const events = {
   shareProduct(productId: string) {
     trackEvent('share_product', { product_id: productId });
   },
+  rateApp(trigger: string) {
+    trackEvent('rate_app', { trigger });
+  },
   shareWishlist(itemCount: number) {
     trackEvent('share_wishlist', { item_count: itemCount });
   },
