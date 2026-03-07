@@ -221,5 +221,35 @@ describe('AR Flow', () => {
         .toBeVisible()
         .withTimeout(15000);
     });
+
+    it('should return to product detail when closing AR', async () => {
+      await element(by.id('ar-close')).tap();
+
+      // Product detail should reappear (not home screen)
+      await waitAndExpectVisible('product-detail-screen');
+
+      // Product content should still be rendered
+      await expect(element(by.id('add-to-cart-button'))).toBeVisible();
+    });
+
+    it('should preserve product state after AR round-trip', async () => {
+      // Re-open AR from the same product detail
+      await element(by.id('detail-ar-button')).tap();
+      await waitFor(element(by.id('ar-screen')))
+        .toBeVisible()
+        .withTimeout(15000);
+
+      // AR controls should be visible
+      await expect(element(by.id('ar-controls'))).toBeVisible();
+
+      // Close AR again
+      await element(by.id('ar-close')).tap();
+      await waitAndExpectVisible('product-detail-screen');
+    });
+
+    it('should navigate back to shop from product detail after AR', async () => {
+      await device.pressBack();
+      await waitAndExpectVisible('shop-screen');
+    });
   });
 });
