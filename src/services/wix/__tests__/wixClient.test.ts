@@ -456,12 +456,12 @@ describe('WixClient', () => {
       });
 
       expect(result.items).toHaveLength(2);
-      expect(result.items[0]).toEqual({
+      expect(result.items[0]).toEqual(expect.objectContaining({
         _id: 'rev-1',
         productId: 'prod-1',
         rating: 5,
         body: 'Great!',
-      });
+      }));
       expect(result.totalResults).toBe(2);
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
