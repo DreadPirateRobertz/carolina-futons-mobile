@@ -107,6 +107,11 @@
     "updates": {
       "url": "https://u.expo.dev/YOUR_PROJECT_ID"
     },
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_PROJECT_ID"
+      }
+    },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
@@ -116,6 +121,14 @@
       "expo-asset",
       "expo-secure-store",
       "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#E8D5B7",
+          "resizeMode": "contain"
+        }
+      ],
       [
         "@stripe/stripe-react-native",
         {
@@ -128,6 +141,32 @@
         {
           "icon": "./assets/icon.png",
           "color": "#E8D5B7"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Carolina Futons to access your photos for profile and reviews.",
+          "cameraPermission": "Allow Carolina Futons to take photos for reviews."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Carolina Futons to use the camera for AR furniture preview."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Carolina Futons to save AR screenshots to your photo library.",
+          "savePhotosPermission": "Allow Carolina Futons to save AR screenshots to your photo library."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Carolina Futons to use Face ID for secure checkout."
         }
       ],
       [
