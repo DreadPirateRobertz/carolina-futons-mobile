@@ -47,6 +47,7 @@ import { useCameraPermission } from '@/hooks/useCameraPermission';
 import { useAROnboarding } from '@/hooks/useAROnboarding';
 import { useModelLoader } from '@/hooks/useModelLoader';
 import { ModelLoadingOverlay } from '@/components/ModelLoadingOverlay';
+import { useStagedItems, type StagedItem } from '@/hooks/useStagedItems';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -118,6 +119,9 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
   const cart = useCart();
+
+  // Multi-product staging for room planning
+  const staged = useStagedItems();
 
   // 3D model download with progress tracking
   const modelLoader = useModelLoader();
@@ -248,9 +252,12 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         return;
       }
 
-      // Normal furniture placement
+      // Normal furniture placement — adds to staged items for multi-product scenes
       setIsPlaced(true);
       setHasPlacement(true);
+      if (selectedModel && selectedFabric) {
+        staged.addItem(selectedModel, selectedFabric);
+      }
       if (selectedModel) events.arFurniturePlaced(selectedModel.id, anchor.planeId);
       if (Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -631,7 +638,20 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             />
           )}
 
-          {/* Futon overlay — shown after placement */}
+          {/* Staged items — previously placed furniture in the scene */}
+          {staged.items.slice(0, -1).map((item) => (
+            <View key={item.id} style={styles.overlayContainer}>
+              <ARFutonOverlay
+                model={item.model}
+                fabric={item.fabric}
+                showDimensions={false}
+                isPlaced={true}
+                testID={`ar-staged-${item.id}`}
+              />
+            </View>
+          ))}
+
+          {/* Active futon overlay — the currently selected piece */}
           <View style={styles.overlayContainer}>
             <ARFutonOverlay
               model={selectedModel}
@@ -707,6 +727,46 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         onResetMeasure={measurement.reset}
         testID="ar-controls"
       />
+
+      {/* Multi-product staging controls */}
+      {hasPlacement && staged.canAdd && (
+        <TouchableOpacity
+          style={styles.addAnotherButton}
+          onPress={() => {
+            // Reset placement for next item, keep staged items visible
+            setIsPlaced(false);
+            setHasPlacement(false);
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+          }}
+          testID="ar-add-another"
+          accessibilityLabel={`Add another piece (${staged.items.length} of ${staged.maxItems})`}
+          accessibilityRole="button"
+        >
+          <Text style={styles.addAnotherText}>
+            + Add Another ({staged.items.length}/{staged.maxItems})
+          </Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Staged items count badge */}
+      {staged.items.length > 1 && (
+        <View style={styles.stagedBadge} testID="ar-staged-count">
+          <Text style={styles.stagedBadgeText}>{staged.items.length} pieces</Text>
+          <TouchableOpacity
+            onPress={() => {
+              staged.clearAll();
+              setIsPlaced(false);
+              setHasPlacement(false);
+            }}
+            testID="ar-clear-scene"
+            accessibilityLabel="Clear all placed items"
+          >
+            <Text style={styles.stagedClearText}>Clear</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Compare model picker */}
       {showComparePicker && (
@@ -954,5 +1014,46 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
     marginTop: 1,
+  },
+  addAnotherButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 180,
+    backgroundColor: 'rgba(91,143,168,0.9)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  addAnotherText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  stagedBadge: {
+    position: 'absolute',
+    left: 16,
+    bottom: 180,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  stagedBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  stagedClearText: {
+    color: '#E8845C',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
