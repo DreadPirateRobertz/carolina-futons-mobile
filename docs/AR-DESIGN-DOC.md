@@ -1,6 +1,6 @@
 # AR Feature Design Document — Carolina Futons Mobile
 
-**Owner**: dallas (PM) | **Last Updated**: 2026-02-27 | **Parent Bead**: cm-88d
+**Owner**: dallas (PM) | **Last Updated**: 2026-03-07 | **Parent Bead**: cm-88d
 
 ---
 
@@ -187,21 +187,30 @@ Currently 8 fabric options × 4 futon models = 32 potential USDZ variants. For P
 
 ### Phase 1 — Quick Look / Scene Viewer (Current)
 
-**Status**: Code complete, needs real 3D models
+**Status**: Feature-complete. Needs real 3D models on CDN.
 
 User taps "View in Room" → phone's native AR viewer opens with the 3D model. No custom AR code. Works in Expo managed workflow.
 
 **What's implemented**:
-- `openARViewer.ts` — Launches Quick Look (iOS) or Scene Viewer (Android)
+- `openARViewer.ts` — Launches Quick Look (iOS) or Scene Viewer (Android) with fallbacks
 - `ModelViewerWeb.tsx` — `<model-viewer>` web component for browser 3D viewing
 - `ARWebScreen.tsx` — Full-screen web 3D viewer modal
+- `ARScreen.tsx` — Full AR session with controls, measurement, comparison, multi-product staging
 - `arSupport.ts` — Platform capability detection
 - `models3d.ts` — Catalog of 11 products with GLB/USDZ URLs (placeholder CDN)
 - `modelLoader.ts` — Download/cache with LRU eviction (200MB budget)
+- `useModelLoader.ts` — React hook with download progress tracking
+- `ModelLoadingOverlay.tsx` — Branded progress bar during model download
+- `useARMeasurement.ts` — Room measurement tool with fit/no-fit comparison
+- `ARMeasurementOverlay.tsx` — Measurement UI (endpoint markers, distance labels)
+- `useStagedItems.ts` — Multi-product staging (up to 5 items in one scene)
+- `ARComparisonOverlay.tsx` — Side-by-side size comparison between models
+- `ARControls.tsx` — Full toolbar (fabric picker, share, measure, compare, add another)
+- `AROnboarding.tsx` — First-time AR tutorial overlay
 
 **What's missing**:
 - Real 3D model files on CDN (all URLs are placeholders)
-- Web routing (ProductDetailScreen → ARWebScreen on web)
+- Fabric texture images for AR preview
 
 ### Phase 2 — ViroReact Custom AR (Future, if metrics justify)
 
@@ -251,15 +260,19 @@ RealityKit integration for LiDAR-equipped iPhones:
 ```
 src/
 ├── components/
-│   ├── ARControls.tsx          ← AR session UI (model picker, fabrics, share)
-│   ├── ARFutonOverlay.tsx      ← 2D futon overlay (Phase 0, camera+overlay)
+│   ├── ARControls.tsx          ← AR toolbar (share, measure, compare, fabric, add)
+│   ├── ARComparisonOverlay.tsx ← Side-by-side model size comparison
+│   ├── ARFutonOverlay.tsx      ← 3D model overlay positioning
+│   ├── ARMaterialSelector.tsx  ← Fabric/material picker in AR
+│   ├── ARMeasurementOverlay.tsx ← Room measurement UI (points, line, distance)
+│   ├── AROnboarding.tsx        ← First-time AR tutorial overlay
 │   ├── ARProductPicker.tsx     ← Product catalog picker for AR session
+│   ├── ModelLoadingOverlay.tsx ← Branded download progress bar
 │   ├── ModelViewerWeb.tsx      ← Web 3D viewer (<model-viewer> web component)
 │   ├── PlaneIndicator.tsx      ← AR surface plane visualization
-│   ├── SurfaceIndicator.tsx    ← Surface detection feedback UI
-│   └── ViewInRoomButton.tsx    ← "View in Your Room" CTA button
+│   └── BrandedSpinner.tsx      ← Pulsing dot loading animation (used in AR overlays)
 ├── screens/
-│   ├── ARScreen.tsx            ← Native AR camera screen
+│   ├── ARScreen.tsx            ← Full AR session (measurement, staging, comparison)
 │   └── ARWebScreen.tsx         ← Web 3D viewer full-screen modal
 ├── services/
 │   ├── arSupport.ts            ← Device AR capability detection
@@ -267,11 +280,14 @@ src/
 │   ├── modelLoader.ts          ← 3D model download/cache (LRU, 200MB)
 │   └── surfaceDetection.ts     ← Floor/surface plane detection service
 ├── hooks/
+│   ├── useModelLoader.ts       ← React hook with download progress state
+│   ├── useStagedItems.ts       ← Multi-product staging (max 5 items)
+│   ├── useARMeasurement.ts     ← Room measurement with fit comparison
 │   └── useSurfaceDetection.ts  ← React hook for surface detection state
 ├── data/
 │   └── models3d.ts             ← 3D model catalog (AUTO-GENERATED from shared/catalog-3d.json)
 ├── utils/
-│   └── openARViewer.ts         ← Platform AR launcher (Quick Look/Scene Viewer)
+│   └── openARViewer.ts         ← Platform AR launcher (Quick Look/Scene Viewer/web)
 shared/
 ├── catalog-3d.json             ← CANONICAL 3D model source of truth
 └── models3d.web.js             ← Web module (AUTO-GENERATED from catalog-3d.json)
@@ -286,8 +302,8 @@ scripts/
 
 ### Test Coverage
 
-27 AR-related test suites covering:
-- AR controls and overlay rendering (32 model×fabric combos)
+30+ AR-related test suites covering:
+- AR controls and overlay rendering (32 model x fabric combos)
 - Camera permission flows
 - AR viewer launching (iOS Quick Look, Android Scene Viewer, web callback)
 - Device capability detection
@@ -295,28 +311,23 @@ scripts/
 - Model catalog data integrity
 - Product picker filtering
 - Web 3D viewer
-- Integration tests (product-to-model mapping, session lifecycle)
+- Model loader hook (download progress, abort, prefetch)
+- Model loading overlay (progress bar, error states)
+- Staged items hook (add/remove/select/clear, max limit)
+- AR measurement (distance calculation, fit check)
+- Integration tests (product-to-model mapping, session lifecycle, navigation)
+- E2E Detox tests (AR navigation, round-trip state preservation)
 
 ---
 
 ## Open Work Items
 
-| Bead | Title | Priority | Status |
-|------|-------|----------|--------|
-| cm-88d | AR Camera Feature (parent) | P0 | In Progress |
-| cm-88d.1 | Source/generate real 3D furniture model | P1 | Open |
-| cm-88d.2 | Upgrade ModelViewerWeb to full web component | P2 | Done |
-| cm-88d.3 | E2E integration test — View in Room all platforms | P1 | Open |
-| cm-88d.4 | Wire web platform routing | P2 | Open |
-
-### Open PRs Needing Review
-
-| PR | Title | Status |
-|----|-------|--------|
-| #7 | AR product catalog picker overlay | Awaiting review |
-| #6 | Fuzzy search + autocomplete | Awaiting review |
-| #5 | Deep link routing + tests | Awaiting review |
-| #4 | Offline cart persistence + sync | Awaiting review |
+| Item | Priority | Status |
+|------|----------|--------|
+| Source/generate real 3D furniture models (min 5 products) | P1 | Blocked — needs model production |
+| Fabric texture images for AR preview | P2 | Open |
+| E2E Detox tests for AR navigation flows | P2 | Tests written, need device runner |
+| Save AR room layouts for later/sharing | P3 | Proposed (see feature roadmap) |
 
 ---
 

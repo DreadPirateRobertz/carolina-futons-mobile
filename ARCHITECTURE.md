@@ -1,178 +1,218 @@
 # Carolina Futons Mobile - Architecture
 
+> Updated 2026-03-07 — Sprint 2 (Beta Launch)
+
 ## Overview
 
 React Native mobile app for Carolina Futons (Hendersonville, NC) built with
-Expo managed workflow and TypeScript. Blue Ridge Mountain illustrative aesthetic
-ported from the web design system.
+Expo managed workflow and TypeScript strict. Blue Ridge Mountain editorial
+dark theme ported from the web design system. 23 screens, 30+ components,
+2699 tests passing.
 
 ## Tech Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Framework | Expo (managed workflow) | SDK 52+ |
+| Framework | Expo (managed workflow) | SDK 52 |
 | Language | TypeScript | strict mode |
-| Navigation | React Navigation v6 | @react-navigation/native |
+| Navigation | React Navigation v6 | @react-navigation/native-stack |
 | Animations | react-native-reanimated | v3 |
 | Gestures | react-native-gesture-handler | v2 |
-| State | React Context + useReducer | (upgrade to Zustand if needed) |
-| API | REST / fetch | Wix Stores API |
-| Testing | Jest + React Native Testing Library | |
+| State | React Context + useReducer + SWR | |
+| API | REST / fetch | Wix CMS Data API |
+| Payments | Stripe React Native | PaymentSheet |
+| Crash Reporting | Sentry | @sentry/react-native |
+| Analytics | Firebase + Mixpanel | Multi-provider |
+| Push | expo-notifications | APNs/FCM via Expo |
+| AR | Platform-native (ARKit/ARCore/model-viewer) | |
+| Testing | Jest + React Native Testing Library | RNTL v13 |
+| E2E | Detox | |
+| Build | EAS Build | dev/preview/production profiles |
 | Linting | ESLint + Prettier | Expo config |
 
 ## Directory Structure
 
 ```
 src/
-├── components/          # Reusable UI components (cm-wi5)
-│   ├── ProductCard.tsx
-│   ├── CategoryCard.tsx
-│   ├── Header.tsx
-│   ├── Button.tsx
-│   ├── LoadingSpinner.tsx
-│   ├── EmptyState.tsx
-│   └── index.ts
-├── screens/             # Screen components
+├── components/          # 30+ reusable UI components
+│   ├── AnimatedPressable.tsx    # Spring scale + haptic feedback button
+│   ├── BrandedSpinner.tsx       # Pulsing dot spinner (replaces ActivityIndicator)
+│   ├── ARControls.tsx           # AR toolbar (share, measure, compare, fabric)
+│   ├── ARComparisonOverlay.tsx  # Side-by-side size comparison
+│   ├── ARFutonOverlay.tsx       # 3D model overlay positioning
+│   ├── ARMeasurementOverlay.tsx # Room measurement UI
+│   ├── AROnboarding.tsx         # First-time AR tutorial
+│   ├── ARProductPicker.tsx      # Model selector in AR view
+│   ├── ModelLoadingOverlay.tsx  # Download progress for 3D models
+│   ├── GlassCard.tsx            # Glassmorphism card (espresso tint)
+│   ├── MountainSkyline.tsx      # SVG hero backdrop (sunrise/sunset)
+│   ├── MountainRefreshControl.tsx # Pull-to-refresh with mountain animation
+│   ├── EditorialHero.tsx        # Full-bleed editorial hero section
+│   ├── ParallaxHeader.tsx       # Scroll-driven parallax effect
+│   ├── PremiumBadge.tsx         # CF+ premium indicator
+│   ├── OfflineBanner.tsx        # Network status indicator
+│   ├── ProductCard.tsx          # Grid item, image aspect 4:3
+│   ├── CategoryCard.tsx         # Large card with overlay text
+│   ├── CollectionCard.tsx       # Collection grid card
+│   ├── RecommendationCarousel.tsx # Horizontal product carousel
+│   ├── Button.tsx               # Coral primary, Blue secondary
+│   ├── EmptyState.tsx           # Empty state with illustration
+│   ├── ErrorBoundary.tsx        # React error boundary
+│   └── Header.tsx               # Logo centered, search + cart icons
+├── screens/             # 23 screens
 │   ├── HomeScreen.tsx
 │   ├── ShopScreen.tsx
 │   ├── ProductDetailScreen.tsx
 │   ├── CategoryScreen.tsx
+│   ├── CollectionsScreen.tsx
+│   ├── CollectionDetailScreen.tsx
 │   ├── CartScreen.tsx
-│   └── AccountScreen.tsx
-├── navigation/          # React Navigation setup (cm-5wg)
-│   ├── RootNavigator.tsx
-│   ├── TabNavigator.tsx
-│   ├── HomeStack.tsx
-│   ├── ShopStack.tsx
-│   ├── CartStack.tsx
-│   ├── AccountStack.tsx
-│   ├── linking.ts       # Deep linking config
+│   ├── CheckoutScreen.tsx
+│   ├── OrderConfirmationScreen.tsx
+│   ├── OrderHistoryScreen.tsx
+│   ├── OrderDetailScreen.tsx
+│   ├── AccountScreen.tsx
+│   ├── LoginScreen.tsx
+│   ├── SignUpScreen.tsx
+│   ├── ForgotPasswordScreen.tsx
+│   ├── WishlistScreen.tsx
+│   ├── ARScreen.tsx
+│   ├── ARWebScreen.tsx
+│   ├── OnboardingScreen.tsx
+│   ├── NotificationPreferencesScreen.tsx
+│   ├── PremiumScreen.tsx
+│   ├── StoreLocatorScreen.tsx
+│   └── StoreDetailScreen.tsx
+├── navigation/          # React Navigation setup
+│   ├── AppNavigator.tsx # Root navigator with lazy loading
+│   ├── linking.ts       # Deep linking config (20+ routes)
 │   └── types.ts         # Navigation type definitions
-├── theme/               # Design tokens & theme (cm-330)
+├── theme/               # Design tokens & theme
 │   ├── tokens.ts        # Color, spacing, typography, shadow values
 │   ├── typography.ts    # Font loading + text style presets
-│   ├── ThemeProvider.tsx # Context provider, light/dark mode
+│   ├── ThemeProvider.tsx # Context provider
 │   └── useTheme.ts      # Hook for consuming theme
 ├── hooks/               # Custom hooks
-│   ├── useProducts.ts
-│   ├── useCart.ts
-│   └── useCategories.ts
-├── services/            # API layer
-│   ├── api.ts           # Base fetch wrapper
-│   ├── products.ts
-│   └── cart.ts
+│   ├── useProducts.ts        # Product data with SWR
+│   ├── useCollections.ts     # Wix CMS collections with SWR
+│   ├── useCart.ts             # Cart state management
+│   ├── usePayment.ts          # Stripe PaymentSheet flow
+│   ├── useNotifications.tsx   # Push registration + token refresh
+│   ├── useModelLoader.ts      # 3D model download with progress
+│   ├── useStagedItems.ts      # Multi-product AR staging (max 5)
+│   ├── useARMeasurement.ts    # Room measurement with fit check
+│   ├── useOfflineSync.tsx     # Offline queue + replay
+│   ├── useDataCache.ts        # SWR caching layer
+│   └── useAnimatedCart.ts     # Cart bounce animation
+├── services/            # API + business logic layer
+│   ├── wix/             # Wix API client (products, collections, auth, orders)
+│   ├── providers/       # Analytics + crash reporting providers
+│   ├── payment.ts       # Stripe payment intent creation
+│   ├── notifications.ts # Push token registration with retry
+│   ├── offlineQueue.ts  # Mutation queue with exponential backoff
+│   ├── modelLoader.ts   # 3D model download + LRU cache (200MB)
+│   ├── analytics.ts     # Multi-provider analytics (48+ events)
+│   └── crashReporting.ts # Sentry integration
+├── data/                # Static data + type definitions
+│   ├── futons.ts        # FutonModel + Fabric types
+│   ├── models3d.ts      # 3D model catalog (GLB/USDZ URLs)
+│   ├── productId.ts     # Branded types (FutonModelId, ProductId)
+│   └── premium.ts       # CF+ feature gate definitions
 └── utils/               # Helpers
+    ├── openARViewer.ts   # Platform-specific AR launcher
     ├── formatPrice.ts
     └── images.ts
 ```
 
 ## Design Tokens (Blue Ridge Mountain Palette)
 
-Ported from `cfutons/mayor/rig/src/public/designTokens.js`:
+Source of truth: `src/public/sharedTokens.js` (cross-platform with web).
 
 ### Colors
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `sandBase` | #E8D5B7 | Screen backgrounds |
-| `sandLight` | #F2E8D5 | Card backgrounds, alternating sections |
-| `sandDark` | #D4BC96 | Borders, dividers |
+| `sandBase` | #E8D5B7 | Light backgrounds, splash |
 | `espresso` | #3A2518 | Primary text, headings |
-| `espressoLight` | #5C4033 | Secondary text, captions |
 | `mountainBlue` | #5B8FA8 | Links, accents, secondary CTA |
-| `mountainBlueDark` | #3D6B80 | Pressed/hover states |
-| `mountainBlueLight` | #A8CCD8 | Tag backgrounds, subtle accents |
-| `sunsetCoral` | #E8845C | Primary CTA, sale badges |
-| `sunsetCoralDark` | #C96B44 | Pressed CTA state |
-| `sunsetCoralLight` | #F2A882 | Subtle warm accents |
-| `mauve` | #C9A0A0 | Tertiary accent |
-| `success` | #4A7C59 | In stock, success states |
-| `error` | #E8845C | Low stock, errors (reuses coral) |
-| `muted` | #999999 | Disabled, inactive |
+| `sunsetCoral` | #E8845C | **Primary CTA (ALWAYS)**, sale badges |
+| Dark BG | #1C1410 | App background (warm espresso, NOT black) |
+| Dark Surface | #2A1F19 | Card/surface backgrounds |
+| Glass | rgba(42,31,25,0.7) | Glassmorphism overlay |
 
 ### Typography
 
-- **Headings**: Playfair Display (warm serif, handcrafted feel)
-- **Body**: Source Sans 3 (clean sans-serif for readability)
-- Mobile scale adapted from web tokens (px to RN units, scaled down for mobile density)
+- **Headings**: Playfair Display (warm serif)
+- **Body**: Source Sans 3 (clean sans-serif)
 
 ### Spacing (4px grid)
 
 xs=4, sm=8, md=16, lg=24, xl=32, xxl=48, xxxl=64
 
-### Border Radii
-
-sm=4, md=8, lg=12, xl=16, card=12, button=8, image=8
-
 ### Shadows
 
-Espresso-tinted shadows (rgba(58,37,24,opacity)) matching the warm palette.
+Espresso-tinted shadows (rgba(58,37,24,opacity)) — warm brown, NOT gray.
 
-## Navigation Architecture (cm-5wg)
-
-```
-RootNavigator
-└── TabNavigator (bottom tabs)
-    ├── HomeStack
-    │   ├── HomeScreen
-    │   └── ProductDetailScreen
-    ├── ShopStack
-    │   ├── ShopScreen (categories)
-    │   ├── CategoryScreen (product grid)
-    │   └── ProductDetailScreen
-    ├── CartStack
-    │   ├── CartScreen
-    │   └── CheckoutScreen (future)
-    └── AccountStack
-        └── AccountScreen
-```
-
-**Tab bar**: 4 tabs - Home, Shop, Cart (with badge count), Account.
-
-**Deep linking**: `carolinafutons://product/{slug}`, `carolinafutons://category/{slug}`
-
-**Native stack** (`@react-navigation/native-stack`) for iOS-native transitions
-and gesture-based back navigation.
-
-## Component Library (cm-wi5)
-
-| Component | Props | Notes |
-|-----------|-------|-------|
-| `ProductCard` | image, name, price, badge?, onPress | Grid item, image aspect 4:3 |
-| `CategoryCard` | heroImage, title, onPress | Large card with overlay text |
-| `Header` | showSearch?, cartCount? | Logo centered, search + cart icons |
-| `Button` | variant: primary/secondary/ghost, size, loading? | Coral primary, Blue secondary |
-| `LoadingSpinner` | size?, color? | Animated, uses mountainBlue |
-| `EmptyState` | icon, title, message, action? | For empty cart/search results |
-
-All components consume theme via `useTheme()` hook. No hardcoded colors.
-
-## Story Dependency Chain
+## Navigation Architecture
 
 ```
-cm-vx9 (Expo scaffold) ← furiosa working now
-  ↓
-cm-330 (Design tokens) + cm-5wg (Navigation) ← can parallelize
-  ↓
-cm-wi5 (Component library) ← needs tokens
-  ↓
-cm-w04 (Product grid) + cm-8u2 (Product detail) + cm-rsl (Category nav) + cm-t3b (Cart)
-  ↓
-cm-hv9 (EPIC: Core Shopping) → cm-821 (EPIC: Scaffold & Design)
+AppNavigator (lazy-loaded screens)
+├── Onboarding (first launch only)
+├── TabNavigator (bottom tabs, glassmorphism blur)
+│   ├── HomeStack
+│   │   ├── HomeScreen (mountain hero + editorial CTAs)
+│   │   └── ProductDetailScreen
+│   ├── ShopStack
+│   │   ├── ShopScreen (categories)
+│   │   ├── CategoryScreen (product grid)
+│   │   ├── CollectionsScreen
+│   │   ├── CollectionDetailScreen
+│   │   └── ProductDetailScreen
+│   ├── CartStack
+│   │   ├── CartScreen
+│   │   ├── CheckoutScreen (Stripe PaymentSheet)
+│   │   ├── OrderConfirmationScreen
+│   │   ├── OrderHistoryScreen
+│   │   └── OrderDetailScreen
+│   └── AccountStack
+│       ├── AccountScreen
+│       ├── LoginScreen
+│       ├── SignUpScreen
+│       ├── ForgotPasswordScreen
+│       ├── WishlistScreen
+│       ├── PremiumScreen (CF+ membership)
+│       ├── NotificationPreferencesScreen
+│       ├── StoreLocatorScreen
+│       └── StoreDetailScreen
+├── ARScreen (full-screen AR view)
+└── ARWebScreen (web 3D model viewer)
 ```
+
+**Tab bar**: 4 tabs — Home, Shop, Cart (badge count), Account. Glassmorphism blur effect.
+
+**Deep linking**: 20+ routes via `carolinafutons://` scheme + iOS universal links + Android app links.
+
+## AR Architecture
+
+Platform-native AR (no custom engine):
+
+| Platform | Engine | Model Format |
+|----------|--------|-------------|
+| iOS | AR Quick Look (ARKit) | .usdz |
+| Android | Scene Viewer (ARCore) | .glb |
+| Web | model-viewer (Google) | .glb |
+
+Features: room measurement with fit check, multi-product staging (up to 5), side-by-side comparison, fabric texture preview, model download progress with branded UI, share screenshot.
+
+Models cached locally (200 MB LRU). Catalog: `src/data/models3d.ts` synced from `shared/catalog-3d.json`.
 
 ## Key Decisions
 
-1. **Expo managed** (not bare): Faster iteration, OTA updates, no native build config.
+1. **Expo managed** (not bare): Faster iteration, OTA updates, EAS Build pipeline.
 2. **React Navigation v6 native-stack**: iOS-native transitions, gesture handler integration.
-3. **Context over Redux**: App state is modest (cart, auth). Zustand if it grows.
-4. **No Storybook RN**: Component showcase is a dev-only screen with all variants rendered.
-5. **Font loading**: Expo Google Fonts for Playfair Display + Source Sans 3.
-6. **Image handling**: Expo Image (blurhash placeholders, caching).
-
-## Immediate Next Steps
-
-Once cm-vx9 lands (furiosa):
-1. **cm-330**: Port design tokens to `src/theme/tokens.ts`, build ThemeProvider
-2. **cm-5wg**: Wire up TabNavigator + 4 stack navigators with placeholder screens
-3. **cm-wi5**: Build core components using theme tokens
+3. **Context + SWR over Redux**: Stale-while-revalidate caching, offline-first reads.
+4. **Branded types**: `FutonModelId` and `ProductId` use nominal typing (`__brand` field) for type safety.
+5. **BrandedSpinner over ActivityIndicator**: All loading states use custom pulsing dot animation.
+6. **AnimatedPressable**: All interactive elements use spring animation + configurable haptic feedback.
+7. **Multi-provider analytics**: Single `analytics.track()` call fans out to Firebase + Mixpanel.
+8. **Platform-native AR**: No custom AR engine — delegates to ARKit/ARCore/model-viewer per platform.

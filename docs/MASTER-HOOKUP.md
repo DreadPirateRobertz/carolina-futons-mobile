@@ -1,7 +1,7 @@
 # Carolina Futons Mobile — Master Hookup Checklist
 
 > Everything the overseer needs to configure and test the app end-to-end.
-> Updated 2026-03-03 — Blue Ridge Visual Identity sprint additions.
+> Updated 2026-03-07 — Sprint 2 (Beta Launch) progress.
 
 ---
 
@@ -87,11 +87,11 @@ Uses Expo Push Notifications (routes through APNs/FCM automatically).
 
 ---
 
-## 6. Analytics (Optional)
+## 6. Analytics
 
-Framework is in place but currently logs to console in dev mode.
+Firebase + Mixpanel analytics providers are wired and active. 48+ event types instrumented (screen views, commerce, AR, deep links).
 
-To activate: call `registerProvider()` in `App.tsx` with your Amplitude/Firebase/Mixpanel implementation. 48 event types are already instrumented (screen views, commerce, AR, deep links).
+To configure: set `EXPO_PUBLIC_MIXPANEL_TOKEN` in `.env`. Firebase is enabled by default via `@react-native-firebase/analytics`.
 
 ---
 
@@ -122,7 +122,7 @@ Already configured in `app.json`:
 |-------|-------|
 | Name | Carolina Futons |
 | Slug | carolina-futons-mobile |
-| Version | 0.1.0 |
+| Version | 1.0.0-beta.1 |
 | iOS Bundle ID | com.carolinafutons.mobile |
 | Android Package | com.carolinafutons.mobile |
 | Scheme | carolinafutons |
@@ -161,7 +161,7 @@ npx expo start --android # Android emulator (needs Android SDK)
 npx expo start --web    # Web browser
 
 # 4. Test
-npm test                # Jest (1934 tests)
+npm test                # Jest (2699+ tests)
 npm run lint            # ESLint
 npm run typecheck       # TypeScript
 
@@ -249,19 +249,28 @@ npm test
 
 | Component | Status | What's Needed |
 |-----------|--------|---------------|
-| Wix integration | Code complete | API keys in `.env` |
-| Auth (login/register/OAuth) | Code complete | Wix OAuth app configured |
-| Product catalog | Code complete | Wix Stores API enabled |
-| AR / 3D models | Code complete | CDN hosting + real models |
-| Deep linking (custom scheme) | Working | Nothing |
-| Universal links (HTTPS) | Framework ready | Server-side AASA/assetlinks |
-| Push notifications | Framework ready | Backend integration |
-| Analytics | Framework ready | Provider registration |
-| CI/CD | Running | Already configured |
-| App Store / Play Store | Not started | EAS build + signing |
-| MountainSkyline SVG | **Integrated** | Renders on Home hero + divider |
-| Dark editorial theme | **Live** | Home, Shop, Product, Cart, Account |
+| Wix integration | **Live** | API keys in `.env` |
+| Auth (login/register/OAuth) | **Live** | Wix OAuth app configured |
+| Product catalog + collections | **Live** | Wix Stores API enabled |
+| AR / 3D models | **Live** | CDN hosting + real models |
+| AR measurement tool | **Live** | Nothing |
+| AR comparison mode | **Live** | Nothing |
+| AR multi-product staging | **Live** (up to 5) | Nothing |
+| Model download progress | **Live** | Nothing |
+| Deep linking (custom scheme) | **Live** | Nothing |
+| Universal links (HTTPS) | **Configured** | Server-side AASA/assetlinks hosting |
+| Push notifications | **Live** | Backend token storage endpoint |
+| Push token refresh | **Live** | Nothing |
+| Analytics (Firebase + Mixpanel) | **Live** | Mixpanel token in `.env` |
+| Sentry crash reporting | **Live** | Real DSN in `.env` |
+| Offline queue + SWR caching | **Live** | Nothing |
+| CI/CD (GitHub Actions) | **Running** | Billing limit currently blocking PRs |
+| EAS Build pipeline | **Configured** | `eas build` ready (dev/preview/production) |
+| OTA Updates | **Configured** | `runtimeVersion` appVersion policy |
+| CF+ Premium features | **Live** | AR unlock, free shipping, early access gates |
+| BrandedSpinner | **Live** | Replaces all ActivityIndicator usage |
+| AnimatedPressable | **Live** | Haptic feedback + spring animation |
+| MountainSkyline SVG | **Live** | Renders on Home hero + divider |
+| Dark editorial theme | **Live** | All 23 screens |
 | GlassCard components | **Live** | Home CTAs, form containers |
-| Empty state illustrations | **In progress** | Bishop porting 8 Blue Ridge SVGs |
-| Screen visual polish | **In progress** | Ripley applying to Login, Signup, Checkout, etc |
-| Test suite | **1961 tests passing** | 105 suites, 1 skipped |
+| Test suite | **2699 tests passing** | 176 suites |
