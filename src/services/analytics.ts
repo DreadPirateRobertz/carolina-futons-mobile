@@ -59,6 +59,7 @@ export type AnalyticsEventName =
   | 'ar_surface_tracking'
   | 'ar_furniture_placed'
   | 'ar_lighting_warning'
+  | 'ar_material_swap'
   | 'ar_product_picker_open'
   | 'heatmap_tap'
   | 'scroll_depth'
@@ -354,6 +355,9 @@ export const events = {
   },
   arAddToCart(modelId: string, fabricId: string, price: number) {
     trackEvent('ar_add_to_cart', { model_id: modelId, fabric_id: fabricId, price });
+  },
+  arMaterialSwap(modelId: string, fabricId: string) {
+    trackEvent('ar_material_swap', { model_id: modelId, fabric_id: fabricId });
   },
   submitReview(productId: string, rating: number) {
     trackEvent('submit_review', { product_id: productId, rating });

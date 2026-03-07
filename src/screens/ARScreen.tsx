@@ -41,6 +41,7 @@ import { useARMeasurement } from '@/hooks/useARMeasurement';
 import { ARMeasurementOverlay } from '@/components/ARMeasurementOverlay';
 import { ARComparisonOverlay } from '@/components/ARComparisonOverlay';
 import { AROnboarding } from '@/components/AROnboarding';
+import { ARMaterialSelector } from '@/components/ARMaterialSelector';
 import { useCameraPermission } from '@/hooks/useCameraPermission';
 import { useAROnboarding } from '@/hooks/useAROnboarding';
 
@@ -109,6 +110,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [lightingWarningDismissed, setLightingWarningDismissed] = useState(false);
   const [compareModel, setCompareModel] = useState<FutonModel | null>(null);
   const [showComparePicker, setShowComparePicker] = useState(false);
+  const [showMaterialSelector, setShowMaterialSelector] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
@@ -342,6 +344,30 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       setShowComparePicker(false);
     },
     [],
+  );
+
+  /** Toggle material/fabric selector overlay */
+  const handleToggleMaterialSelector = useCallback(() => {
+    setShowMaterialSelector((prev) => !prev);
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, []);
+
+  /** Handle fabric selection from the material selector overlay */
+  const handleMaterialSelectorFabric = useCallback(
+    (fabric: Fabric) => {
+      setSelectedFabric(fabric);
+      if (selectedModel) {
+        events.selectFabric(`prod-${selectedModel.id}`, fabric.id);
+        events.arMaterialSwap(selectedModel.id, fabric.id);
+      }
+      if (Platform.OS !== 'web') {
+        Haptics.selectionAsync();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedModel?.id],
   );
 
   /** Open the product picker overlay */
@@ -650,6 +676,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         isCapturing={isCapturing}
         isComparing={compareModel !== null || showComparePicker}
         onToggleCompare={handleToggleCompare}
+        onToggleMaterialSelector={handleToggleMaterialSelector}
         isMeasuring={measurement.state !== 'idle'}
         onToggleMeasure={() => {
           if (measurement.state === 'idle') {
@@ -684,6 +711,17 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
               ))}
           </View>
         </View>
+      )}
+
+      {/* Material/fabric selector overlay */}
+      {showMaterialSelector && selectedModel && selectedFabric && (
+        <ARMaterialSelector
+          model={selectedModel}
+          selectedFabric={selectedFabric}
+          onSelectFabric={handleMaterialSelectorFabric}
+          onClose={() => setShowMaterialSelector(false)}
+          testID="ar-material-selector"
+        />
       )}
 
       {/* Product picker overlay */}

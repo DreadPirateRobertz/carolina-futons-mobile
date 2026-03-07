@@ -41,6 +41,7 @@ interface Props {
   onResetMeasure?: () => void;
   isComparing?: boolean;
   onToggleCompare?: () => void;
+  onToggleMaterialSelector?: () => void;
   testID?: string;
 }
 
@@ -70,6 +71,7 @@ export function ARControls({
   onResetMeasure,
   isComparing,
   onToggleCompare,
+  onToggleMaterialSelector,
   testID,
 }: Props) {
   const totalPrice = selectedModel.basePrice + selectedFabric.price;
@@ -216,6 +218,18 @@ export function ARControls({
           >
             <Text style={styles.browseButtonIcon}>▦</Text>
             <Text style={styles.browseButtonText}>Browse</Text>
+          </TouchableOpacity>
+        )}
+        {onToggleMaterialSelector && (
+          <TouchableOpacity
+            style={styles.browseButton}
+            onPress={onToggleMaterialSelector}
+            testID="ar-material-selector-toggle"
+            accessibilityLabel="Open fabric selector"
+            accessibilityRole="button"
+          >
+            <Text style={styles.browseButtonIcon}>{'\u{1F3A8}'}</Text>
+            <Text style={styles.browseButtonText}>Fabrics</Text>
           </TouchableOpacity>
         )}
         {onShare && (
