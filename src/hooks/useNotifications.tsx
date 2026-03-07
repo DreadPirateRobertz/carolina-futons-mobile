@@ -6,11 +6,12 @@
  * per-category preference toggles, and deep-link routing when the user
  * taps a notification.
  */
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   type NotificationPreferences,
   type NotificationType,
@@ -18,6 +19,8 @@ import {
   getDeepLinkForNotification,
   registerPushToken,
 } from '@/services/notifications';
+
+const PREFS_STORAGE_KEY = '@notification_preferences';
 
 // Show notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -133,6 +136,36 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     badgeCount: 0,
   });
 
+  // Check existing permission status and restore preferences on mount
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (mounted.current) return;
+    mounted.current = true;
+
+    (async () => {
+      // Restore saved preferences
+      try {
+        const saved = await AsyncStorage.getItem(PREFS_STORAGE_KEY);
+        if (saved) {
+          dispatch({ type: 'SET_PREFERENCES', prefs: JSON.parse(saved) });
+        }
+      } catch {}
+
+      // Sync permission status with OS
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted') {
+        dispatch({ type: 'SET_PERMISSION', status: 'granted' });
+        const token = await registerForPushToken();
+        if (token) {
+          dispatch({ type: 'SET_TOKEN', token });
+          registerPushToken(token).catch(() => {});
+        }
+      } else if (status === 'denied') {
+        dispatch({ type: 'SET_PERMISSION', status: 'denied' });
+      }
+    })();
+  }, []);
+
   const requestPermission = useCallback(async () => {
     // Check existing permission first
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -186,6 +219,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
     dispatch({ type: 'TOGGLE_PREF', key });
   }, []);
+
+  // Persist preferences to AsyncStorage whenever they change
+  const prefsRef = useRef(state.preferences);
+  useEffect(() => {
+    // Skip the initial render (defaults or restored values)
+    if (prefsRef.current === state.preferences) return;
+    prefsRef.current = state.preferences;
+    AsyncStorage.setItem(PREFS_STORAGE_KEY, JSON.stringify(state.preferences)).catch(() => {});
+  }, [state.preferences]);
 
   const setPreferences = useCallback((prefs: NotificationPreferences) => {
     dispatch({ type: 'SET_PREFERENCES', prefs });

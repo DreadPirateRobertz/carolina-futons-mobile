@@ -1,6 +1,7 @@
 import React from 'react';
 import { Linking, Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationProvider, useNotifications } from '../useNotifications';
 
 // --- Mock expo-notifications ---
@@ -37,6 +38,15 @@ jest.mock('expo-device', () => ({
 
 jest.mock('expo-constants', () => ({
   expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },
+}));
+
+const mockAsyncStorage: Record<string, string> = {};
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn((key: string) => Promise.resolve(mockAsyncStorage[key] ?? null)),
+  setItem: jest.fn((key: string, value: string) => {
+    mockAsyncStorage[key] = value;
+    return Promise.resolve();
+  }),
 }));
 
 jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
@@ -83,6 +93,8 @@ function renderNotif() {
 describe('useNotifications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Clear stored preferences
+    Object.keys(mockAsyncStorage).forEach((k) => delete mockAsyncStorage[k]);
     mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
     mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[test-token-abc]' });
@@ -251,6 +263,68 @@ describe('useNotifications', () => {
       fireEvent.press(getByTestId('set-badge-5'));
       fireEvent.press(getByTestId('clear-badge'));
       expect(getByTestId('badge').props.children).toBe(0);
+    });
+  });
+
+  describe('Mount-time permission sync', () => {
+    it('syncs granted permission status on mount', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      const { getByTestId } = renderNotif();
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('granted');
+      });
+      expect(getByTestId('token').props.children).toBe('ExponentPushToken[test-token-abc]');
+    });
+
+    it('syncs denied permission status on mount', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'denied' });
+
+      const { getByTestId } = renderNotif();
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('denied');
+      });
+    });
+
+    it('stays undetermined when permission is undetermined', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'undetermined' });
+
+      const { getByTestId } = renderNotif();
+      // Give the mount effect time to run
+      await act(async () => {});
+      expect(getByTestId('permission').props.children).toBe('undetermined');
+    });
+  });
+
+  describe('Preference persistence', () => {
+    it('saves preferences to AsyncStorage on toggle', async () => {
+      const { getByTestId } = renderNotif();
+      await act(async () => {});
+
+      fireEvent.press(getByTestId('toggle-orders'));
+
+      await waitFor(() => {
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+          '@notification_preferences',
+          expect.stringContaining('"orderUpdates":false'),
+        );
+      });
+    });
+
+    it('restores saved preferences on mount', async () => {
+      mockAsyncStorage['@notification_preferences'] = JSON.stringify({
+        orderUpdates: false,
+        promotions: true,
+        backInStock: false,
+        cartReminders: true,
+      });
+
+      const { getByTestId } = renderNotif();
+      await waitFor(() => {
+        expect(getByTestId('pref-orders').props.children).toBe('false');
+      });
+      expect(getByTestId('pref-cart').props.children).toBe('true');
+      expect(getByTestId('pref-stock').props.children).toBe('false');
     });
   });
 
