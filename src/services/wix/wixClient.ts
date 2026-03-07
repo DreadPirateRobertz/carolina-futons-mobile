@@ -359,14 +359,85 @@ export class WixClient {
     };
 
     const data = await this.post<{
-      dataItems: { data: T }[];
+      dataItems: { id: string; data: T; _updatedDate?: string }[];
       pagingMetadata: { total: number };
     }>('/wix-data/v2/items/query', body);
 
     return {
-      items: (data.dataItems ?? []).map((item) => item.data),
+      items: (data.dataItems ?? []).map((item) => ({
+        ...item.data,
+        _serverUpdatedAt: item._updatedDate
+          ? new Date(item._updatedDate).getTime()
+          : undefined,
+      })),
       totalResults: data.pagingMetadata?.total ?? 0,
     };
+  }
+
+  // ── Wix Data Mutations ──────────────────────────────────────
+
+  async insertDataItem(
+    collectionId: string,
+    data: Record<string, unknown>,
+  ): Promise<{ id: string; data: Record<string, unknown>; _updatedDate?: string }> {
+    if (!collectionId) throw new WixApiError('Collection ID is required');
+
+    const result = await this.post<{
+      dataItem: { id: string; data: Record<string, unknown>; _updatedDate?: string };
+    }>('/wix-data/v2/items', {
+      dataCollectionId: collectionId,
+      dataItem: { data },
+    });
+
+    return result.dataItem;
+  }
+
+  async updateDataItem(
+    collectionId: string,
+    itemId: string,
+    data: Record<string, unknown>,
+  ): Promise<{ id: string; data: Record<string, unknown>; _updatedDate?: string }> {
+    if (!collectionId) throw new WixApiError('Collection ID is required');
+    if (!itemId) throw new WixApiError('Item ID is required');
+
+    const result = await this.put<{
+      dataItem: { id: string; data: Record<string, unknown>; _updatedDate?: string };
+    }>(`/wix-data/v2/items/${encodeURIComponent(itemId)}`, {
+      dataCollectionId: collectionId,
+      dataItem: { id: itemId, data },
+    });
+
+    return result.dataItem;
+  }
+
+  async deleteDataItem(collectionId: string, itemId: string): Promise<void> {
+    if (!collectionId) throw new WixApiError('Collection ID is required');
+    if (!itemId) throw new WixApiError('Item ID is required');
+
+    await this.del(`/wix-data/v2/items/${encodeURIComponent(itemId)}`, {
+      dataCollectionId: collectionId,
+    });
+  }
+
+  async upsertDataItem(
+    collectionId: string,
+    filter: Record<string, unknown>,
+    data: Record<string, unknown>,
+  ): Promise<{ id: string; data: Record<string, unknown>; _updatedDate?: string }> {
+    const rawData = await this.post<{
+      dataItems: { id: string; data: Record<string, unknown> }[];
+      pagingMetadata: { total: number };
+    }>('/wix-data/v2/items/query', {
+      dataCollectionId: collectionId,
+      query: { filter, paging: { limit: 1 } },
+    });
+
+    if (rawData.dataItems?.length > 0) {
+      const docId = rawData.dataItems[0].id;
+      return this.updateDataItem(collectionId, docId, data);
+    }
+
+    return this.insertDataItem(collectionId, data);
   }
 
   // ── HTTP helpers ───────────────────────────────────────────
@@ -380,49 +451,39 @@ export class WixClient {
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {
-    return withRetry(() => this.rawPost<T>(path, body), { shouldRetry: isRetryableError });
+    return withRetry(() => this.rawRequest<T>(path, 'POST', body), {
+      shouldRetry: isRetryableError,
+    });
   }
 
   private async get<T>(path: string): Promise<T> {
-    return withRetry(() => this.rawGet<T>(path), { shouldRetry: isRetryableError });
+    return withRetry(() => this.rawRequest<T>(path, 'GET'), { shouldRetry: isRetryableError });
   }
 
-  private async rawPost<T>(path: string, body: unknown): Promise<T> {
+  private async put<T>(path: string, body: unknown): Promise<T> {
+    return withRetry(() => this.rawRequest<T>(path, 'PUT', body), {
+      shouldRetry: isRetryableError,
+    });
+  }
+
+  private async del(path: string, body?: unknown): Promise<void> {
+    await withRetry(() => this.rawRequest<unknown>(path, 'DELETE', body), {
+      shouldRetry: isRetryableError,
+    });
+  }
+
+  private async rawRequest<T>(
+    path: string,
+    method: string,
+    body?: unknown,
+  ): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     let response: Response;
     try {
       response = await fetch(url, {
-        method: 'POST',
+        method,
         headers: this.headers(),
-        body: JSON.stringify(body),
-      });
-    } catch (err) {
-      throw new WixApiError(
-        `Network error: ${err instanceof Error ? err.message : String(err)}`,
-        undefined,
-        path,
-      );
-    }
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      throw new WixApiError(
-        (errorBody as Record<string, string>).message ?? `HTTP ${response.status}`,
-        response.status,
-        path,
-      );
-    }
-
-    return response.json() as Promise<T>;
-  }
-
-  private async rawGet<T>(path: string): Promise<T> {
-    const url = `${this.baseUrl}${path}`;
-    let response: Response;
-    try {
-      response = await fetch(url, {
-        method: 'GET',
-        headers: this.headers(),
+        ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       });
     } catch (err) {
       throw new WixApiError(
