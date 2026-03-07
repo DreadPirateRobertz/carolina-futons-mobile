@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -7,7 +7,7 @@ import { PRODUCTS } from '@/data/products';
 
 jest.useFakeTimers();
 
-function renderShop(props: { onProductPress?: jest.Mock } = {}) {
+async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const result = render(
     <ThemeProvider>
@@ -16,8 +16,8 @@ function renderShop(props: { onProductPress?: jest.Mock } = {}) {
       </WishlistProvider>
     </ThemeProvider>,
   );
-  // Advance past initial loading skeleton (600ms)
-  act(() => {
+  // Advance past initial loading skeleton (600ms) and flush async SWR cache
+  await act(async () => {
     jest.advanceTimersByTime(700);
   });
   return { ...result, onProductPress };
@@ -25,54 +25,54 @@ function renderShop(props: { onProductPress?: jest.Mock } = {}) {
 
 describe('ShopScreen', () => {
   describe('layout', () => {
-    it('renders with testID', () => {
-      const { getByTestId } = renderShop();
+    it('renders with testID', async () => {
+      const { getByTestId } = await renderShop();
       expect(getByTestId('shop-screen')).toBeTruthy();
     });
 
-    it('renders Shop title', () => {
-      const { getByText } = renderShop();
+    it('renders Shop title', async () => {
+      const { getByText } = await renderShop();
       expect(getByText('Shop')).toBeTruthy();
     });
 
-    it('renders product list', () => {
-      const { getByTestId } = renderShop();
+    it('renders product list', async () => {
+      const { getByTestId } = await renderShop();
       expect(getByTestId('product-list')).toBeTruthy();
     });
 
-    it('renders search bar', () => {
-      const { getByTestId } = renderShop();
+    it('renders search bar', async () => {
+      const { getByTestId } = await renderShop();
       expect(getByTestId('search-bar')).toBeTruthy();
     });
 
-    it('renders category filter', () => {
-      const { getByTestId } = renderShop();
+    it('renders category filter', async () => {
+      const { getByTestId } = await renderShop();
       expect(getByTestId('category-filter')).toBeTruthy();
     });
 
-    it('renders sort picker', () => {
-      const { getByTestId } = renderShop();
+    it('renders sort picker', async () => {
+      const { getByTestId } = await renderShop();
       expect(getByTestId('sort-picker')).toBeTruthy();
     });
   });
 
   describe('product rendering', () => {
-    it('renders product cards', () => {
-      const { getByTestId } = renderShop();
+    it('renders product cards', async () => {
+      const { getByTestId } = await renderShop();
       // First page should show products (PAGE_SIZE = 8)
       expect(getByTestId(`product-card-${PRODUCTS[0].id}`)).toBeTruthy();
     });
 
-    it('shows product count in sort picker', () => {
-      const { getByText } = renderShop();
+    it('shows product count in sort picker', async () => {
+      const { getByText } = await renderShop();
       // Should show count of visible products
       expect(getByText(/\d+ products?/)).toBeTruthy();
     });
   });
 
   describe('search', () => {
-    it('filters products when searching', () => {
-      const { getByTestId, queryByTestId } = renderShop();
+    it('filters products when searching', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'memory foam');
       // Memory foam mattress should be visible
       expect(getByTestId('product-card-prod-memory-foam')).toBeTruthy();
@@ -80,30 +80,30 @@ describe('ShopScreen', () => {
       expect(queryByTestId('product-card-prod-grip-strips')).toBeNull();
     });
 
-    it('shows empty state for no results', () => {
-      const { getByTestId, getByText } = renderShop();
+    it('shows empty state for no results', async () => {
+      const { getByTestId, getByText } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
       expect(getByTestId('shop-empty')).toBeTruthy();
       expect(getByText('No products found')).toBeTruthy();
     });
 
-    it('shows search-specific empty message', () => {
-      const { getByTestId, getByText } = renderShop();
+    it('shows search-specific empty message', async () => {
+      const { getByTestId, getByText } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
       expect(getByText(/No results for "xyznonexistent"/)).toBeTruthy();
     });
   });
 
   describe('category filter', () => {
-    it('renders All chip and category chips', () => {
-      const { getByTestId, getByText } = renderShop();
+    it('renders All chip and category chips', async () => {
+      const { getByTestId, getByText } = await renderShop();
       expect(getByTestId('category-all')).toBeTruthy();
       expect(getByText('Futons')).toBeTruthy();
       expect(getByText('Covers')).toBeTruthy();
     });
 
-    it('filters by category when chip pressed', () => {
-      const { getByTestId, queryByTestId } = renderShop();
+    it('filters by category when chip pressed', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
       fireEvent.press(getByTestId('category-pillows'));
       // Arm pillows should be visible
       expect(getByTestId('product-card-prod-arm-pillows')).toBeTruthy();
@@ -111,8 +111,8 @@ describe('ShopScreen', () => {
       expect(queryByTestId('product-card-prod-asheville-full')).toBeNull();
     });
 
-    it('shows all when All chip pressed after filtering', () => {
-      const { getByTestId } = renderShop();
+    it('shows all when All chip pressed after filtering', async () => {
+      const { getByTestId } = await renderShop();
       // Filter to pillows
       fireEvent.press(getByTestId('category-pillows'));
       // Back to all
@@ -123,14 +123,14 @@ describe('ShopScreen', () => {
   });
 
   describe('sort', () => {
-    it('opens sort modal', () => {
-      const { getByTestId, getByText } = renderShop();
+    it('opens sort modal', async () => {
+      const { getByTestId, getByText } = await renderShop();
       fireEvent.press(getByTestId('sort-button'));
       expect(getByText('Sort By')).toBeTruthy();
     });
 
-    it('sorts by price low to high', () => {
-      const { getByTestId, getAllByTestId } = renderShop();
+    it('sorts by price low to high', async () => {
+      const { getByTestId, getAllByTestId } = await renderShop();
       fireEvent.press(getByTestId('sort-button'));
       fireEvent.press(getByTestId('sort-option-price-asc'));
       // After sorting, the cheapest product should appear
@@ -140,9 +140,9 @@ describe('ShopScreen', () => {
   });
 
   describe('interaction', () => {
-    it('calls onProductPress when product card tapped', () => {
+    it('calls onProductPress when product card tapped', async () => {
       const onProductPress = jest.fn();
-      const { getByTestId } = renderShop({ onProductPress });
+      const { getByTestId } = await renderShop({ onProductPress });
       fireEvent.press(getByTestId(`product-card-${PRODUCTS[0].id}`));
       expect(onProductPress).toHaveBeenCalledTimes(1);
     });

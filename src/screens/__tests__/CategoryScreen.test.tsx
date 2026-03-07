@@ -10,7 +10,7 @@ jest.useFakeTimers();
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
 const coverProducts = PRODUCTS.filter((p) => p.category === 'covers');
 
-function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScreen>> = {}) {
+async function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScreen>> = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const onBack = props.onBack ?? jest.fn();
   const result = render(
@@ -20,8 +20,8 @@ function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScree
       </WishlistProvider>
     </ThemeProvider>,
   );
-  // Advance past initial loading skeleton (600ms)
-  act(() => {
+  // Advance past initial loading skeleton (600ms) and flush async SWR cache
+  await act(async () => {
     jest.advanceTimersByTime(700);
   });
   return { ...result, onProductPress, onBack };
@@ -29,43 +29,43 @@ function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScree
 
 describe('CategoryScreen', () => {
   describe('rendering', () => {
-    it('renders with default testID', () => {
-      const { getByTestId } = renderCategory();
+    it('renders with default testID', async () => {
+      const { getByTestId } = await renderCategory();
       expect(getByTestId('category-screen')).toBeTruthy();
     });
 
-    it('accepts custom testID', () => {
-      const { getByTestId } = renderCategory({ testID: 'custom-cat' });
+    it('accepts custom testID', async () => {
+      const { getByTestId } = await renderCategory({ testID: 'custom-cat' });
       expect(getByTestId('custom-cat')).toBeTruthy();
     });
 
-    it('renders category title from categoryId', () => {
-      const { getByTestId } = renderCategory({ categoryId: 'futons' });
+    it('renders category title from categoryId', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
       expect(getByTestId('category-title').props.children).toBe('Futons');
     });
 
-    it('renders custom categoryTitle when provided', () => {
-      const { getByTestId } = renderCategory({
+    it('renders custom categoryTitle when provided', async () => {
+      const { getByTestId } = await renderCategory({
         categoryId: 'futons',
         categoryTitle: 'All Futons',
       });
       expect(getByTestId('category-title').props.children).toBe('All Futons');
     });
 
-    it('title has header accessibility role', () => {
-      const { getByTestId } = renderCategory();
+    it('title has header accessibility role', async () => {
+      const { getByTestId } = await renderCategory();
       expect(getByTestId('category-title').props.accessibilityRole).toBe('header');
     });
   });
 
   describe('product grid', () => {
-    it('shows futon products for futons category', () => {
-      const { getByTestId } = renderCategory({ categoryId: 'futons' });
+    it('shows futon products for futons category', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
       expect(getByTestId('category-product-list')).toBeTruthy();
     });
 
-    it('shows product count', () => {
-      const { getByTestId } = renderCategory({ categoryId: 'futons' });
+    it('shows product count', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
       expect(getByTestId('category-count').props.children).toEqual([
         futonProducts.length,
         ' ',
@@ -73,10 +73,10 @@ describe('CategoryScreen', () => {
       ]);
     });
 
-    it('shows singular for 1 product categories', () => {
+    it('shows singular for 1 product categories', async () => {
       // accessories with only grip strips and polish = 2 products
       // Let's use pillows which has 1 product
-      const { getByTestId } = renderCategory({ categoryId: 'pillows' });
+      const { getByTestId } = await renderCategory({ categoryId: 'pillows' });
       const pillowCount = PRODUCTS.filter((p) => p.category === 'pillows').length;
       expect(getByTestId('category-count').props.children).toEqual([
         pillowCount,
@@ -85,8 +85,8 @@ describe('CategoryScreen', () => {
       ]);
     });
 
-    it('shows cover products for covers category', () => {
-      const { getByTestId } = renderCategory({ categoryId: 'covers' });
+    it('shows cover products for covers category', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'covers' });
       // Verify at least one cover product card renders
       const firstCover = coverProducts[0];
       expect(getByTestId(`product-card-${firstCover.id}`)).toBeTruthy();
@@ -94,16 +94,16 @@ describe('CategoryScreen', () => {
   });
 
   describe('empty state', () => {
-    it('shows empty state for unknown category with no products', () => {
-      const { getByTestId } = renderCategory({
+    it('shows empty state for unknown category with no products', async () => {
+      const { getByTestId } = await renderCategory({
         categoryId: 'nonexistent-category' as any,
         categoryTitle: 'Empty Category',
       });
       expect(getByTestId('category-empty')).toBeTruthy();
     });
 
-    it('empty state shows go back action when onBack provided', () => {
-      const { getByTestId } = renderCategory({
+    it('empty state shows go back action when onBack provided', async () => {
+      const { getByTestId } = await renderCategory({
         categoryId: 'nonexistent-category' as any,
         onBack: jest.fn(),
       });
@@ -112,34 +112,34 @@ describe('CategoryScreen', () => {
   });
 
   describe('back button', () => {
-    it('renders back button when onBack provided', () => {
-      const { getByTestId } = renderCategory({ onBack: jest.fn() });
+    it('renders back button when onBack provided', async () => {
+      const { getByTestId } = await renderCategory({ onBack: jest.fn() });
       expect(getByTestId('category-back')).toBeTruthy();
     });
 
-    it('calls onBack when pressed', () => {
+    it('calls onBack when pressed', async () => {
       const onBack = jest.fn();
-      const { getByTestId } = renderCategory({ onBack });
+      const { getByTestId } = await renderCategory({ onBack });
       fireEvent.press(getByTestId('category-back'));
       expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('back button has accessibility attributes', () => {
-      const { getByTestId } = renderCategory({ onBack: jest.fn() });
+    it('back button has accessibility attributes', async () => {
+      const { getByTestId } = await renderCategory({ onBack: jest.fn() });
       const btn = getByTestId('category-back');
       expect(btn.props.accessibilityLabel).toBe('Go back');
       expect(btn.props.accessibilityRole).toBe('button');
     });
 
-    it('does not render back button when onBack not provided', () => {
-      const { queryByTestId } = renderCategory({ onBack: undefined });
+    it('does not render back button when onBack not provided', async () => {
+      const { queryByTestId } = await renderCategory({ onBack: undefined });
       expect(queryByTestId('category-back')).toBeNull();
     });
   });
 
   describe('sorting', () => {
-    it('defaults to featured sort', () => {
-      const { getByTestId } = renderCategory({ categoryId: 'futons' });
+    it('defaults to featured sort', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
       // Featured sort puts Bestseller products first
       const firstCard = futonProducts.find((p) => p.badge === 'Bestseller');
       if (firstCard) {
@@ -149,9 +149,9 @@ describe('CategoryScreen', () => {
   });
 
   describe('product interaction', () => {
-    it('calls onProductPress when product tapped', () => {
+    it('calls onProductPress when product tapped', async () => {
       const onProductPress = jest.fn();
-      const { getByTestId } = renderCategory({
+      const { getByTestId } = await renderCategory({
         categoryId: 'futons',
         onProductPress,
       });
