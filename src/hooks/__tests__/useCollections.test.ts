@@ -3,9 +3,10 @@ import { useCollections, useCollection } from '../useCollections';
 import { COLLECTIONS } from '@/data/collections';
 
 const mockQueryData = jest.fn();
+const mockQueryProducts = jest.fn();
 
 jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => ({ queryData: mockQueryData }),
+  useOptionalWixClient: () => ({ queryData: mockQueryData, queryProducts: mockQueryProducts }),
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -16,6 +17,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 describe('useCollections', () => {
   beforeEach(() => {
     mockQueryData.mockReset();
+    mockQueryProducts.mockReset();
   });
 
   it('falls back to static collections when CMS returns empty', async () => {
@@ -70,6 +72,7 @@ describe('useCollections', () => {
 describe('useCollection', () => {
   beforeEach(() => {
     mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+    mockQueryProducts.mockResolvedValue({ products: [], totalResults: 0 });
   });
 
   it('returns collection and resolved products for valid slug', async () => {
@@ -95,5 +98,26 @@ describe('useCollection', () => {
       expect(product.name).toBeTruthy();
       expect(product.price).toBeGreaterThan(0);
     }
+  });
+
+  it('fetches products from Wix API when available', async () => {
+    mockQueryProducts.mockResolvedValue({
+      products: [
+        { id: 'wix-prod-1', name: 'Wix Product', slug: 'wix-product', price: 299, category: 'futons', description: '', shortDescription: '', images: [], rating: 4.5, reviewCount: 10, inStock: true, badge: null },
+      ],
+      totalResults: 1,
+    });
+    const { result } = renderHook(() => useCollection('mountain-lodge-living'));
+    await act(async () => {});
+    expect(mockQueryProducts).toHaveBeenCalled();
+    expect(result.current.products[0].name).toBe('Wix Product');
+  });
+
+  it('falls back to static products when Wix fetch fails', async () => {
+    mockQueryProducts.mockRejectedValue(new Error('API error'));
+    const { result } = renderHook(() => useCollection('mountain-lodge-living'));
+    await act(async () => {});
+    expect(result.current.products.length).toBeGreaterThan(0);
+    expect(result.current.products[0].id).toContain('prod-');
   });
 });

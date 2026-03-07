@@ -114,6 +114,7 @@ export interface QueryProductsOptions {
   offset?: number;
   sort?: 'price-asc' | 'price-desc' | 'newest' | 'rating' | 'featured';
   collectionId?: string;
+  productIds?: string[];
   search?: string;
 }
 
@@ -204,11 +205,14 @@ export class WixClient {
   async queryProducts(
     options: QueryProductsOptions = {},
   ): Promise<{ products: Product[]; totalResults: number }> {
-    const { limit = 50, offset = 0, sort, collectionId, search } = options;
+    const { limit = 50, offset = 0, sort, collectionId, productIds, search } = options;
 
     const filter: Record<string, unknown> = {};
     if (collectionId) {
       filter.collectionIds = { $hasSome: [collectionId] };
+    }
+    if (productIds?.length) {
+      filter.id = { $in: productIds };
     }
     if (search) {
       filter.name = { $contains: search };

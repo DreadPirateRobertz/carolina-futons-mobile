@@ -96,21 +96,56 @@ export function useCollections() {
   );
 }
 
-/** Resolves a single collection by URL slug and hydrates its product references. */
+/** Resolves a single collection by URL slug and hydrates its product references via Wix API. */
 export function useCollection(slug: string): {
   collection: EditorialCollection | undefined;
   products: Product[];
+  isLoading: boolean;
 } {
   const { collections } = useCollections();
+  const client = useOptionalWixClient();
 
-  return useMemo(() => {
-    const collection = collections.find((c) => c.slug === slug);
-    if (!collection) return { collection: undefined, products: [] };
+  const collection = useMemo(
+    () => collections.find((c) => c.slug === slug),
+    [slug, collections],
+  );
 
-    const products = collection.productIds
+  const productFetcher = useCallback(async (): Promise<Product[]> => {
+    if (!collection) return [];
+
+    // Try Wix API first
+    if (client && collection.productIds.length > 0) {
+      try {
+        const result = await client.queryProducts({
+          productIds: collection.productIds,
+          limit: collection.productIds.length,
+        });
+        if (result.products.length > 0) {
+          return result.products;
+        }
+      } catch {
+        // Wix fetch failed — fall through to static fallback
+      }
+    }
+
+    // Static fallback
+    return collection.productIds
       .map((id) => productMap.get(id))
       .filter((p): p is Product => p !== undefined);
+  }, [collection, client]);
 
-    return { collection, products };
-  }, [slug, collections]);
+  const { data, isLoading } = useDataCache<Product[]>(
+    `collection-products-${slug}`,
+    productFetcher,
+    { maxAge: COLLECTION_CACHE_MAX_AGE },
+  );
+
+  return useMemo(
+    () => ({
+      collection,
+      products: data ?? [],
+      isLoading,
+    }),
+    [collection, data, isLoading],
+  );
 }
