@@ -15,15 +15,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
-import { useProducts, type Product } from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductCategory, type SortOption } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
-import type { ProductCategory } from '@/data/products';
-import type { SortOption } from '@/data/products';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 interface Props {
