@@ -20,6 +20,8 @@ interface Props {
   usdzUrl: string;
   title: string;
   dimensions?: { width: number; depth: number; height: number };
+  /** Shadow intensity from lighting estimation (0-1). Defaults to 1. */
+  shadowIntensity?: number;
   testID?: string;
 }
 
@@ -73,6 +75,7 @@ function createModelViewerElement(props: {
   glbUrl: string;
   usdzUrl: string;
   title: string;
+  shadowIntensity?: number;
 }): HTMLElement {
   const el = document.createElement('model-viewer');
   el.setAttribute('src', props.glbUrl);
@@ -82,7 +85,7 @@ function createModelViewerElement(props: {
   el.setAttribute('ar-modes', 'webxr scene-viewer quick-look');
   el.setAttribute('camera-controls', '');
   el.setAttribute('auto-rotate', '');
-  el.setAttribute('shadow-intensity', '1');
+  el.setAttribute('shadow-intensity', String(props.shadowIntensity ?? 1));
   el.style.width = '100%';
   el.style.height = '100%';
   el.style.backgroundColor = '#2A2018';
@@ -117,7 +120,7 @@ function injectModelViewerScript(): void {
  * On web, injects a real <model-viewer> custom element into the DOM via safe DOM APIs.
  * Renders null on native platforms (iOS/Android).
  */
-export function ModelViewerWeb({ glbUrl, usdzUrl, title, dimensions, testID }: Props) {
+export function ModelViewerWeb({ glbUrl, usdzUrl, title, dimensions, shadowIntensity, testID }: Props) {
   const viewerRef = useRef<View>(null);
 
   useEffect(() => {
@@ -135,10 +138,10 @@ export function ModelViewerWeb({ glbUrl, usdzUrl, title, dimensions, testID }: P
       const existing = node.querySelector('model-viewer');
       if (existing) existing.remove();
 
-      const mvElement = createModelViewerElement({ glbUrl, usdzUrl, title });
+      const mvElement = createModelViewerElement({ glbUrl, usdzUrl, title, shadowIntensity });
       node.appendChild(mvElement);
     }
-  }, [glbUrl, usdzUrl, title]);
+  }, [glbUrl, usdzUrl, title, shadowIntensity]);
 
   if (Platform.OS !== 'web') {
     return null;

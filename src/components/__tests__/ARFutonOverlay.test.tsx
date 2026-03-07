@@ -3,6 +3,7 @@ import { render } from '@testing-library/react-native';
 
 import { ARFutonOverlay } from '../ARFutonOverlay';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import type { ShadowParams, ModelShadingParams } from '@/services/lightingEstimation';
 
 // Mock gesture handler
 jest.mock('react-native-gesture-handler', () => {
@@ -310,6 +311,83 @@ describe('ARFutonOverlay', () => {
         />,
       );
       expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
+    });
+  });
+
+  describe('Lighting-driven shading', () => {
+    const brightShadow: ShadowParams = {
+      opacity: 0.12,
+      blur: 12,
+      offsetX: -2.4,
+      offsetY: 6.4,
+      color: 'rgba(0, 0, 10, 0.12)',
+    };
+
+    const brightShading: ModelShadingParams = {
+      brightness: 1.0,
+      tintColor: 'rgba(0, 0, 0, 0)',
+      tintOpacity: 0,
+      shadowIntensity: 1.0,
+    };
+
+    const dimShading: ModelShadingParams = {
+      brightness: 0.6,
+      tintColor: 'rgba(255, 180, 80, 0.08)',
+      tintOpacity: 0.08,
+      shadowIntensity: 0.4,
+    };
+
+    it('renders with full shadowParams and modelShading', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          shadowParams={brightShadow}
+          modelShading={brightShading}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('overlay')).toBeTruthy();
+      expect(getByTestId('ar-dynamic-shadow')).toBeTruthy();
+    });
+
+    it('shows lighting tint overlay when tintOpacity > 0', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          modelShading={dimShading}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('ar-lighting-tint')).toBeTruthy();
+    });
+
+    it('hides lighting tint when tintOpacity is 0', () => {
+      const { queryByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          modelShading={brightShading}
+          testID="overlay"
+        />,
+      );
+      expect(queryByTestId('ar-lighting-tint')).toBeNull();
+    });
+
+    it('renders without modelShading (backwards compatible)', () => {
+      const { getByTestId } = render(
+        <ARFutonOverlay
+          model={asheville}
+          fabric={naturalLinen}
+          showDimensions={false}
+          testID="overlay"
+        />,
+      );
+      expect(getByTestId('overlay')).toBeTruthy();
     });
   });
 

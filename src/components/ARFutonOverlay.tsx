@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { type FutonModel, type Fabric, inchesToFeetDisplay } from '@/data/futons';
+import type { ShadowParams, ModelShadingParams } from '@/services/lightingEstimation';
 
 interface Props {
   model: FutonModel;
@@ -30,6 +31,10 @@ interface Props {
   category?: string;
   /** Shadow opacity from lighting estimation (0-1). Defaults to 0.15. */
   shadowOpacity?: number;
+  /** Full shadow params from lighting estimation */
+  shadowParams?: ShadowParams;
+  /** Model shading params from lighting estimation (brightness, tint) */
+  modelShading?: ModelShadingParams;
   testID?: string;
 }
 
@@ -65,6 +70,8 @@ export function ARFutonOverlay({
   isPlaced = true,
   category,
   shadowOpacity = 0.15,
+  shadowParams,
+  modelShading,
   testID,
 }: Props) {
   const isMurphyBed = category === 'murphy-beds';
@@ -191,7 +198,16 @@ export function ARFutonOverlay({
   const armWidth = 14;
   const seatCushionDepth = baseDepth - backHeight;
 
-  const darkerFabric = darkenColor(fabric.color, 0.15);
+  // Apply lighting-based brightness adjustment to fabric colors
+  const brightness = modelShading?.brightness ?? 1;
+  const litFabricColor = adjustBrightness(fabric.color, brightness);
+  const darkerFabric = darkenColor(litFabricColor, 0.15);
+
+  // Resolve shadow opacity: prefer full shadowParams, fall back to prop
+  const resolvedShadowOpacity = shadowParams?.opacity ?? shadowOpacity;
+  const resolvedShadowColor = shadowParams?.color ?? `rgba(0,0,0,${resolvedShadowOpacity})`;
+  const resolvedShadowOffsetX = shadowParams?.offsetX ?? 0;
+  const resolvedShadowOffsetY = shadowParams?.offsetY ?? 4;
 
   // Wall snap indicator visibility
   const wallSnapBadge = useMemo(() => {
@@ -223,8 +239,8 @@ export function ARFutonOverlay({
             ]}
           >
             {/* Back cushion detail lines */}
-            <View style={[styles.cushionLine, { backgroundColor: fabric.color, top: '30%' }]} />
-            <View style={[styles.cushionLine, { backgroundColor: fabric.color, top: '60%' }]} />
+            <View style={[styles.cushionLine, { backgroundColor: litFabricColor, top: '30%' }]} />
+            <View style={[styles.cushionLine, { backgroundColor: litFabricColor, top: '60%' }]} />
           </View>
 
           {/* Seat cushion */}
@@ -234,7 +250,7 @@ export function ARFutonOverlay({
               {
                 width: baseWidth - armWidth * 2,
                 height: seatCushionDepth,
-                backgroundColor: fabric.color,
+                backgroundColor: litFabricColor,
                 marginHorizontal: armWidth,
               },
             ]}
@@ -273,14 +289,14 @@ export function ARFutonOverlay({
             ]}
           />
 
-          {/* Real-time dynamic shadow beneath — base opacity from lighting estimation */}
+          {/* Real-time dynamic shadow beneath — driven by lighting estimation */}
           <Animated.View
             style={[
               styles.futonShadow,
               {
                 width: baseWidth * 0.9,
                 top: baseDepth + backHeight * 0.25,
-                backgroundColor: `rgba(0,0,0,${shadowOpacity})`,
+                backgroundColor: resolvedShadowColor,
               },
               shadowAnimatedStyle,
             ]}
@@ -294,6 +310,22 @@ export function ARFutonOverlay({
               { width: baseWidth * 0.7, top: baseDepth + backHeight * 0.3 },
             ]}
           />
+
+          {/* Color temperature tint overlay — simulates ambient light color */}
+          {modelShading && modelShading.tintOpacity > 0 && (
+            <View
+              style={[
+                styles.lightingTint,
+                {
+                  width: baseWidth,
+                  height: baseDepth + backHeight * 0.3,
+                  backgroundColor: modelShading.tintColor,
+                },
+              ]}
+              testID="ar-lighting-tint"
+              pointerEvents="none"
+            />
+          )}
 
           {/* Legs (visible peeking under) */}
           <View style={[styles.leg, { left: armWidth + 8, top: baseDepth + backHeight * 0.15 }]} />
@@ -355,11 +387,22 @@ export function ARFutonOverlay({
 }
 
 function darkenColor(hex: string, amount: number): string {
+  const { r, g, b } = parseHexColor(hex);
+  return `rgb(${Math.round(r * (1 - amount))}, ${Math.round(g * (1 - amount))}, ${Math.round(b * (1 - amount))})`;
+}
+
+function adjustBrightness(hex: string, brightness: number): string {
+  const { r, g, b } = parseHexColor(hex);
+  return `rgb(${Math.round(Math.min(255, r * brightness))}, ${Math.round(Math.min(255, g * brightness))}, ${Math.round(Math.min(255, b * brightness))})`;
+}
+
+function parseHexColor(hex: string): { r: number; g: number; b: number } {
   const num = parseInt(hex.replace('#', ''), 16);
-  const r = Math.max(0, ((num >> 16) & 0xff) * (1 - amount));
-  const g = Math.max(0, ((num >> 8) & 0xff) * (1 - amount));
-  const b = Math.max(0, (num & 0xff) * (1 - amount));
-  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+  return {
+    r: Math.max(0, (num >> 16) & 0xff),
+    g: Math.max(0, (num >> 8) & 0xff),
+    b: Math.max(0, num & 0xff),
+  };
 }
 
 const styles = StyleSheet.create({
@@ -431,6 +474,12 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     alignSelf: 'center',
     left: '15%',
+  },
+  lightingTint: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    borderRadius: 8,
   },
   leg: {
     position: 'absolute',

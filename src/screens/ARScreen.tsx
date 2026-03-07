@@ -145,6 +145,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     planes,
     hasFloor,
     shadowParams,
+    modelShading,
     lightingCondition,
     lightingWarning,
     performHitTest,
@@ -655,6 +656,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
               showDimensions={showDimensions}
               isPlaced={isPlaced}
               category={productCategory}
+              shadowParams={shadowParams}
+              modelShading={modelShading}
               testID="ar-futon-overlay"
             />
           </View>

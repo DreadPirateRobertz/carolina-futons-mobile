@@ -23,11 +23,13 @@ import {
   stopLightingEstimation,
   getCurrentLightEstimate,
   computeShadowParams,
+  computeModelShading,
   classifyLighting,
   getLightingWarning,
   type LightEstimate,
   type ShadowParams,
   type LightingCondition,
+  type ModelShadingParams,
 } from '@/services/lightingEstimation';
 
 export interface UseSurfaceDetectionResult {
@@ -43,6 +45,8 @@ export interface UseSurfaceDetectionResult {
   lightEstimate: LightEstimate;
   /** Computed shadow parameters for furniture rendering */
   shadowParams: ShadowParams;
+  /** Computed model shading parameters (brightness, tint) for furniture appearance */
+  modelShading: ModelShadingParams;
   /** Current lighting condition classification */
   lightingCondition: LightingCondition;
   /** User-facing lighting warning, or null if adequate */
@@ -112,6 +116,7 @@ export function useSurfaceDetection(
   const hasFloor = planes.some((p) => p.type === 'floor');
   const hasWall = planes.some((p) => p.type === 'wall');
   const shadowParams = computeShadowParams(lightEstimate);
+  const modelShading = computeModelShading(lightEstimate);
   const lightingCondition = classifyLighting(lightEstimate);
   const lightingWarning = getLightingWarning(lightEstimate);
 
@@ -122,6 +127,7 @@ export function useSurfaceDetection(
     hasWall,
     lightEstimate,
     shadowParams,
+    modelShading,
     lightingCondition,
     lightingWarning,
     performHitTest,

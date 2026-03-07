@@ -4,6 +4,7 @@ import {
   getCurrentLightEstimate,
   classifyLighting,
   computeShadowParams,
+  computeModelShading,
   getLightingWarning,
   resetLightingEstimation,
   type LightEstimate,
@@ -163,6 +164,99 @@ describe('lightingEstimation', () => {
     it('limits blur on standard tier', () => {
       const params = computeShadowParams(brightEstimate, 'standard');
       expect(params.blur).toBeLessThanOrEqual(8);
+    });
+  });
+
+  describe('computeModelShading', () => {
+    const brightEstimate: LightEstimate = {
+      ambientIntensity: 600,
+      ambientColorTemperature: 5500,
+      primaryLightDirection: { x: 0.3, y: -0.8, z: 0.5 },
+      primaryLightIntensity: 0.8,
+      timestamp: Date.now(),
+    };
+
+    const dimEstimate: LightEstimate = {
+      ambientIntensity: 80,
+      ambientColorTemperature: 3000,
+      primaryLightDirection: { x: -0.2, y: -0.9, z: 0.3 },
+      primaryLightIntensity: 0.3,
+      timestamp: Date.now(),
+    };
+
+    const darkEstimate: LightEstimate = {
+      ambientIntensity: 20,
+      ambientColorTemperature: 4500,
+      primaryLightDirection: { x: 0, y: -1, z: 0 },
+      primaryLightIntensity: 0.1,
+      timestamp: Date.now(),
+    };
+
+    it('returns full brightness in bright conditions', () => {
+      const shading = computeModelShading(brightEstimate);
+      expect(shading.brightness).toBe(1.0);
+    });
+
+    it('returns reduced brightness in dim conditions', () => {
+      const shading = computeModelShading(dimEstimate);
+      expect(shading.brightness).toBe(0.6);
+    });
+
+    it('returns low brightness in dark conditions', () => {
+      const shading = computeModelShading(darkEstimate);
+      expect(shading.brightness).toBe(0.4);
+    });
+
+    it('returns warm tint for low color temperature', () => {
+      const warmEstimate: LightEstimate = {
+        ...brightEstimate,
+        ambientColorTemperature: 3000,
+      };
+      const shading = computeModelShading(warmEstimate);
+      expect(shading.tintOpacity).toBeGreaterThan(0);
+      expect(shading.tintColor).toMatch(/rgba\(255/);
+    });
+
+    it('returns cool tint for high color temperature', () => {
+      const coolEstimate: LightEstimate = {
+        ...brightEstimate,
+        ambientColorTemperature: 6500,
+      };
+      const shading = computeModelShading(coolEstimate);
+      expect(shading.tintOpacity).toBeGreaterThan(0);
+      expect(shading.tintColor).toMatch(/rgba\(160/);
+    });
+
+    it('returns no tint for neutral color temperature', () => {
+      const neutralEstimate: LightEstimate = {
+        ...brightEstimate,
+        ambientColorTemperature: 5000,
+      };
+      const shading = computeModelShading(neutralEstimate);
+      expect(shading.tintOpacity).toBe(0);
+    });
+
+    it('returns high shadow intensity in bright conditions', () => {
+      const shading = computeModelShading(brightEstimate);
+      expect(shading.shadowIntensity).toBe(1.0);
+    });
+
+    it('returns low shadow intensity in dark conditions', () => {
+      const shading = computeModelShading(darkEstimate);
+      expect(shading.shadowIntensity).toBe(0.15);
+    });
+
+    it('returns fixed neutral shading for fallback tier', () => {
+      const shading = computeModelShading(brightEstimate, 'fallback');
+      expect(shading.brightness).toBe(0.85);
+      expect(shading.tintOpacity).toBe(0);
+      expect(shading.shadowIntensity).toBe(0.6);
+    });
+
+    it('uses current estimate when no argument given', () => {
+      // Default estimate is 350 lux, 4500K → normal brightness, warm-ish
+      const shading = computeModelShading();
+      expect(shading.brightness).toBe(0.85);
     });
   });
 

@@ -209,6 +209,112 @@ export function computeShadowParams(
   };
 }
 
+// ---------------------------------------------------------------------------
+// Model shading
+// ---------------------------------------------------------------------------
+
+/** Parameters for adjusting 3D model appearance based on ambient lighting */
+export interface ModelShadingParams {
+  /** Brightness multiplier (0-1). Apply to model surface colors. */
+  brightness: number;
+  /** Color temperature tint — rgba overlay to simulate warm/cool ambient light */
+  tintColor: string;
+  /** Tint opacity (0-1) for the color temperature overlay */
+  tintOpacity: number;
+  /** Shadow intensity for model-viewer (0-1) */
+  shadowIntensity: number;
+}
+
+/**
+ * Compute model shading parameters from the current light estimate.
+ * Used by AR overlay components to adjust furniture appearance so it
+ * matches the real-world lighting captured by the camera.
+ */
+export function computeModelShading(
+  estimate?: LightEstimate,
+  deviceTier?: DeviceTier,
+): ModelShadingParams {
+  const est = estimate ?? _currentEstimate;
+  const tier = deviceTier ?? 'standard';
+  const condition = classifyLighting(est);
+
+  // Fallback devices get fixed neutral shading
+  if (tier === 'fallback') {
+    return { brightness: 0.85, tintColor: 'rgba(0,0,0,0)', tintOpacity: 0, shadowIntensity: 0.6 };
+  }
+
+  // Brightness: map ambient intensity to a 0.4–1.0 range
+  // 500+ lux → 1.0, 200 lux → 0.85, 50 lux → 0.6, <50 → 0.4
+  let brightness: number;
+  switch (condition) {
+    case 'bright':
+      brightness = 1.0;
+      break;
+    case 'normal':
+      brightness = 0.85;
+      break;
+    case 'dim':
+      brightness = 0.6;
+      break;
+    case 'dark':
+      brightness = 0.4;
+      break;
+  }
+
+  // Color temperature tint: warm (<4000K) → amber overlay, cool (>5500K) → blue overlay
+  const temp = est.ambientColorTemperature;
+  let tintR: number, tintG: number, tintB: number;
+  let tintOpacity: number;
+
+  if (temp < 3500) {
+    // Very warm (incandescent) — amber tint
+    tintR = 255; tintG = 180; tintB = 80;
+    tintOpacity = 0.08;
+  } else if (temp < 4500) {
+    // Warm white — subtle warm tint
+    tintR = 255; tintG = 220; tintB = 160;
+    tintOpacity = 0.04;
+  } else if (temp > 6000) {
+    // Cool daylight — blue tint
+    tintR = 160; tintG = 200; tintB = 255;
+    tintOpacity = 0.06;
+  } else if (temp > 5500) {
+    // Slightly cool — subtle blue
+    tintR = 180; tintG = 210; tintB = 255;
+    tintOpacity = 0.03;
+  } else {
+    // Neutral (4500-5500K) — no tint
+    tintR = 0; tintG = 0; tintB = 0;
+    tintOpacity = 0;
+  }
+
+  const tintColor = `rgba(${tintR}, ${tintG}, ${tintB}, ${tintOpacity})`;
+
+  // Shadow intensity for model-viewer: brighter rooms = stronger shadows
+  let shadowIntensity: number;
+  switch (condition) {
+    case 'bright':
+      shadowIntensity = 1.0;
+      break;
+    case 'normal':
+      shadowIntensity = 0.7;
+      break;
+    case 'dim':
+      shadowIntensity = 0.4;
+      break;
+    case 'dark':
+      shadowIntensity = 0.15;
+      break;
+  }
+
+  return {
+    brightness: Math.round(brightness * 100) / 100,
+    tintColor,
+    tintOpacity: Math.round(tintOpacity * 100) / 100,
+    shadowIntensity: Math.round(shadowIntensity * 100) / 100,
+  };
+}
+
 /**
  * Check if current lighting is adequate for AR furniture placement.
  * Returns a user-friendly message if lighting is poor.
