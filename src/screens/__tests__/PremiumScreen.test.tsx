@@ -6,6 +6,7 @@ const mockPurchase = jest.fn().mockResolvedValue(false);
 const mockRestore = jest.fn().mockResolvedValue(false);
 
 jest.mock('@/hooks/usePremium', () => ({
+  PremiumProvider: ({ children }: { children: React.ReactNode }) => children,
   usePremium: () => ({
     isPremium: false,
     isLoading: false,

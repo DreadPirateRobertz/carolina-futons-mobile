@@ -24,7 +24,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
-import { WishlistIllustration } from '@/components/illustrations';
+import { WishlistIllustration } from '@/components/illustrations/WishlistIllustration';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
 

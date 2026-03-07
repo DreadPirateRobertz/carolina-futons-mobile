@@ -15,7 +15,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from '
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
-import { EmptyState } from '@/components';
+import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';

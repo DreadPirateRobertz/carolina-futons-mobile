@@ -11,8 +11,8 @@ import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
-import { EmptyState } from '@/components';
-import { CategoryIllustration } from '@/components/illustrations';
+import { EmptyState } from '@/components/EmptyState';
+import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { formatPrice } from '@/utils';
 

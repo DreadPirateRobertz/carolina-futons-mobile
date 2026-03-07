@@ -14,7 +14,7 @@ import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/Button';
-import { usePremium } from '@/hooks/usePremium';
+import { PremiumProvider, usePremium } from '@/hooks/usePremium';
 
 interface Props {
   onBack: () => void;
@@ -36,7 +36,7 @@ const FEATURES = [
   },
 ];
 
-export function PremiumScreen({ onBack, testID }: Props) {
+function PremiumScreenInner({ onBack, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const { isPremium, offerings, error, purchase, restore } = usePremium();
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -223,6 +223,14 @@ export function PremiumScreen({ onBack, testID }: Props) {
         </View>
       </ScrollView>
     </View>
+  );
+}
+
+export function PremiumScreen(props: Props) {
+  return (
+    <PremiumProvider>
+      <PremiumScreenInner {...props} />
+    </PremiumProvider>
   );
 }
 

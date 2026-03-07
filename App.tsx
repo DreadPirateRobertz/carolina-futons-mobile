@@ -22,7 +22,7 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
-import { PremiumProvider } from '@/hooks/usePremium';
+
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -92,7 +92,6 @@ function App() {
               <CartProvider>
                 <WishlistProvider>
                   <NotificationProvider>
-                    <PremiumProvider>
                     <ErrorBoundary>
                       <NavigationContainer
                         ref={navigationRef}
@@ -112,7 +111,6 @@ function App() {
                         </DeepLinkProvider>
                       </NavigationContainer>
                     </ErrorBoundary>
-                    </PremiumProvider>
                   </NotificationProvider>
                 </WishlistProvider>
               </CartProvider>
