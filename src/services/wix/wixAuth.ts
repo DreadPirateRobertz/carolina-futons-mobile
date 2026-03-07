@@ -9,6 +9,20 @@ import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import { getWixSdkClient } from './wixSdkClient';
 import { saveTokens, loadTokens, clearTokens } from './tokenStorage';
+import { captureException } from '../crashReporting';
+
+/** Returns true if the error is likely a transient network issue (not an auth rejection). */
+function isNetworkError(err: unknown): boolean {
+  if (err instanceof TypeError && /fetch|network/i.test(err.message)) return true;
+  if (err && typeof err === 'object' && 'statusCode' in err) {
+    const code = (err as { statusCode: number }).statusCode;
+    // 401/403 are auth rejections — NOT transient
+    return code >= 500 || code === 0;
+  }
+  // Unknown errors default to "might be network" to avoid premature logout
+  const msg = err instanceof Error ? err.message : String(err);
+  return /network|timeout|abort|ECONNREFUSED|ENOTFOUND|fetch failed/i.test(msg);
+}
 
 const OAUTH_CALLBACK_PATH = 'oauth/wix/callback';
 const RESET_REDIRECT = 'carolinafutons://reset-password';
@@ -155,7 +169,15 @@ export class WixAuthService {
       if (!tokens) return false;
       this.auth.setTokens(tokens);
       return this.auth.loggedIn();
-    } catch {
+    } catch (err) {
+      if (isNetworkError(err)) {
+        captureException(
+          err instanceof Error ? err : new Error('Network error during session restore'),
+          'warning',
+          { action: 'restoreSession' },
+        );
+        return false;
+      }
       await clearTokens();
       return false;
     }
@@ -187,7 +209,16 @@ export class WixAuthService {
       this.auth.setTokens(newTokens);
       await saveTokens(newTokens);
       return true;
-    } catch {
+    } catch (err) {
+      if (isNetworkError(err)) {
+        captureException(
+          err instanceof Error ? err : new Error('Network error during token refresh'),
+          'warning',
+          { action: 'refreshSession' },
+        );
+        return false;
+      }
+      // Auth rejection (401/403) — token is truly invalid
       await clearTokens();
       return false;
     }
