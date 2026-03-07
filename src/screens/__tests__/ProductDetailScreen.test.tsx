@@ -150,6 +150,21 @@ describe('ProductDetailScreen', () => {
       expect(getByText('Flat Position')).toBeTruthy();
       expect(getByText('Detail')).toBeTruthy();
     });
+
+    it('opens fullscreen modal when gallery slide tapped', () => {
+      const { getByTestId, queryByTestId } = renderDetail();
+      // Modal starts hidden (not visible)
+      expect(queryByTestId('gallery-modal-close')).toBeNull();
+      fireEvent.press(getByTestId('gallery-slide-0'));
+      // Modal becomes visible after press — close button appears
+      expect(getByTestId('gallery-modal-close')).toBeTruthy();
+    });
+
+    it('gallery slides have tap-to-fullscreen accessibility label', () => {
+      const { getByTestId } = renderDetail();
+      const slide = getByTestId('gallery-slide-0');
+      expect(slide.props.accessibilityLabel).toContain('Tap to view fullscreen');
+    });
   });
 
   describe('Fabric Selector', () => {

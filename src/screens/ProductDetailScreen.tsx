@@ -50,6 +50,7 @@ import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
+import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { usePremium } from '@/hooks/usePremium';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -91,6 +92,7 @@ export function ProductDetailScreen({
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+  const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { isAuthenticated } = useAuth();
@@ -243,19 +245,31 @@ export function ProductDetailScreen({
     setActiveGalleryIndex(index);
   }, []);
 
+  const handleOpenFullscreen = useCallback(() => {
+    setFullscreenVisible(true);
+  }, []);
+
+  const handleCloseFullscreen = useCallback(() => {
+    setFullscreenVisible(false);
+  }, []);
+
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
-      <View
+      <TouchableOpacity
+        activeOpacity={0.9}
+        onPress={handleOpenFullscreen}
         style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
         testID={`gallery-slide-${index}`}
+        accessibilityLabel={`${item} of ${model.name}. Tap to view fullscreen`}
+        accessibilityRole="imagebutton"
       >
         <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={item} index={index} />
         <View style={styles.galleryLabel}>
           <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>{item}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     ),
-    [model, selectedFabric, colors],
+    [model, selectedFabric, colors, handleOpenFullscreen],
   );
 
   return (
@@ -746,6 +760,19 @@ export function ProductDetailScreen({
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />
       </Animated.ScrollView>
+
+      {/* Fullscreen image gallery modal with pinch-to-zoom */}
+      <ImageGalleryModal
+        visible={fullscreenVisible}
+        images={GALLERY_VIEWS.map((label) => ({ label }))}
+        initialIndex={activeGalleryIndex}
+        onClose={handleCloseFullscreen}
+        onIndexChange={setActiveGalleryIndex}
+        renderImage={(image, index) => (
+          <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={image.label} index={index} />
+        )}
+        testID="fullscreen-gallery-modal"
+      />
     </View>
   );
 }
