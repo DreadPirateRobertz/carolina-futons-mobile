@@ -74,7 +74,10 @@
               "pathPrefix": "/collections"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -99,6 +102,14 @@
         {
           "icon": "./assets/icon.png",
           "color": "#E8D5B7"
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "carolina-futons-mobile",
+          "organization": "carolina-futons"
         }
       ]
     ]

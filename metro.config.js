@@ -1,7 +1,7 @@
 const path = require('path');
-const { getDefaultConfig } = require('expo/metro-config');
+const { getSentryExpoConfig } = require('@sentry/react-native/metro');
 
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // @wix/sdk ships ESM entry (build/index.mjs) that doesn't exist in the package.
 // Force Metro to use the CJS entry (cjs/build/index.js) instead.

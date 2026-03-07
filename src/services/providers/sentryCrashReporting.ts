@@ -6,6 +6,12 @@
  */
 import type { CrashReportingProvider, ErrorSeverity, CrashContext, CrashUser } from '../crashReporting';
 
+interface SentryScope {
+  setLevel(level: string): void;
+  setExtras(extras: Record<string, unknown>): void;
+  setTag(key: string, value: string): void;
+}
+
 interface SentryModule {
   init(options: Record<string, unknown>): void;
   captureException(error: Error, context?: Record<string, unknown>): void;
@@ -13,12 +19,9 @@ interface SentryModule {
   setUser(user: Record<string, string | undefined> | null): void;
   addBreadcrumb(breadcrumb: Record<string, unknown>): void;
   withScope(callback: (scope: SentryScope) => void): void;
-}
-
-interface SentryScope {
-  setLevel(level: string): void;
-  setExtras(extras: Record<string, unknown>): void;
-  setTag(key: string, value: string): void;
+  wrap<T>(component: T): T;
+  reactNavigationIntegration(options?: Record<string, unknown>): unknown;
+  mobileReplayIntegration(options?: Record<string, unknown>): unknown;
 }
 
 let Sentry: SentryModule | null = null;
@@ -51,6 +54,7 @@ export interface SentryConfig {
  */
 export class SentryCrashReportingProvider implements CrashReportingProvider {
   private config: SentryConfig;
+  private navigationIntegration: unknown | null = null;
 
   constructor(config: SentryConfig) {
     this.config = config;
@@ -59,13 +63,28 @@ export class SentryCrashReportingProvider implements CrashReportingProvider {
   init(): void {
     if (!Sentry) return;
 
+    this.navigationIntegration = Sentry.reactNavigationIntegration({
+      enableTimeToInitialDisplay: true,
+    });
+
     Sentry.init({
       dsn: this.config.dsn,
       environment: this.config.environment ?? (__DEV__ ? 'development' : 'production'),
       tracesSampleRate: this.config.tracesSampleRate ?? (__DEV__ ? 1.0 : 0.2),
       enableAutoSessionTracking: this.config.enableAutoSessionTracking ?? true,
       debug: __DEV__,
+      integrations: [
+        this.navigationIntegration,
+        Sentry.mobileReplayIntegration(),
+      ],
+      replaysOnErrorSampleRate: 1.0,
+      replaysSessionSampleRate: __DEV__ ? 1.0 : 0.1,
     });
+  }
+
+  /** Returns the navigation integration for registering the navigation container ref. */
+  getNavigationIntegration(): unknown | null {
+    return this.navigationIntegration;
   }
 
   captureException(error: Error, severity?: ErrorSeverity, context?: CrashContext): void {
@@ -111,4 +130,13 @@ export class SentryCrashReportingProvider implements CrashReportingProvider {
       level: 'info',
     });
   }
+}
+
+/**
+ * Wraps a React component with Sentry's error boundary and performance monitoring.
+ * No-ops when the native module is unavailable.
+ */
+export function wrapWithSentry<T>(component: T): T {
+  if (!Sentry) return component;
+  return Sentry.wrap(component);
 }

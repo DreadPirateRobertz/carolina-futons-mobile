@@ -19,6 +19,10 @@ const mockWithScope = jest.fn((cb: (scope: unknown) => void) => {
     setTag: mockSetTag,
   });
 });
+const mockWrap = jest.fn((component: unknown) => component);
+const mockNavigationIntegration = { registerNavigationContainer: jest.fn() };
+const mockReactNavigationIntegration = jest.fn(() => mockNavigationIntegration);
+const mockMobileReplayIntegration = jest.fn(() => ({ name: 'MobileReplay' }));
 
 jest.mock('@sentry/react-native', () => ({
   init: mockInit,
@@ -27,11 +31,14 @@ jest.mock('@sentry/react-native', () => ({
   setUser: mockSetUser,
   addBreadcrumb: mockAddBreadcrumb,
   withScope: mockWithScope,
+  wrap: mockWrap,
+  reactNavigationIntegration: mockReactNavigationIntegration,
+  mobileReplayIntegration: mockMobileReplayIntegration,
 }), { virtual: true });
 
 // Re-require the provider so the module-level try/catch picks up our mock
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { SentryCrashReportingProvider } = require('../sentryCrashReporting');
+const { SentryCrashReportingProvider, wrapWithSentry } = require('../sentryCrashReporting');
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -47,8 +54,34 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
       expect.objectContaining({
         dsn: 'https://key@sentry.io/123',
         enableAutoSessionTracking: true,
+        replaysOnErrorSampleRate: 1.0,
       }),
     );
+  });
+
+  it('sets up navigation integration and mobile replay', () => {
+    const provider = new SentryCrashReportingProvider({
+      dsn: 'https://key@sentry.io/123',
+    });
+    provider.init();
+    expect(mockReactNavigationIntegration).toHaveBeenCalled();
+    expect(mockMobileReplayIntegration).toHaveBeenCalled();
+    expect(mockInit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        integrations: expect.arrayContaining([
+          mockNavigationIntegration,
+        ]),
+      }),
+    );
+  });
+
+  it('getNavigationIntegration returns the integration after init', () => {
+    const provider = new SentryCrashReportingProvider({
+      dsn: 'https://key@sentry.io/123',
+    });
+    expect(provider.getNavigationIntegration()).toBeNull();
+    provider.init();
+    expect(provider.getNavigationIntegration()).toBe(mockNavigationIntegration);
   });
 
   it('passes custom environment to Sentry.init', () => {
@@ -158,5 +191,12 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
     expect(mockAddBreadcrumb).toHaveBeenCalledWith(
       expect.objectContaining({ category: 'app' }),
     );
+  });
+
+  it('wrapWithSentry delegates to Sentry.wrap', () => {
+    const FakeComponent = () => null;
+    const result = wrapWithSentry(FakeComponent);
+    expect(mockWrap).toHaveBeenCalledWith(FakeComponent);
+    expect(result).toBe(FakeComponent);
   });
 });

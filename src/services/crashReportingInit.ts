@@ -7,6 +7,8 @@
 import { registerProvider, init, addBreadcrumb } from './crashReporting';
 import { SentryCrashReportingProvider } from './providers/sentryCrashReporting';
 
+let _sentryProvider: SentryCrashReportingProvider | null = null;
+
 export interface CrashReportingConfig {
   sentryDsn?: string;
   environment?: string;
@@ -26,11 +28,11 @@ export function initCrashReporting(config?: CrashReportingConfig): void {
   // Register Sentry provider if DSN is available
   const dsn = config?.sentryDsn;
   if (dsn) {
-    const sentryProvider = new SentryCrashReportingProvider({
+    _sentryProvider = new SentryCrashReportingProvider({
       dsn,
       environment: config?.environment,
     });
-    registerProvider(sentryProvider);
+    registerProvider(_sentryProvider);
   }
 
   // Initialize crash reporting (sets up global JS error handler)
@@ -69,7 +71,13 @@ function setupPromiseRejectionHandler(): void {
   }
 }
 
+/** Returns the Sentry navigation integration (if Sentry is active) for registering the nav container. */
+export function getSentryNavigationIntegration(): unknown | null {
+  return _sentryProvider?.getNavigationIntegration() ?? null;
+}
+
 /** Reset state for testing */
 export function resetCrashReportingInitForTesting(): void {
   _initialized = false;
+  _sentryProvider = null;
 }

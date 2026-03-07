@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
@@ -24,7 +24,8 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { initCrashReporting } from '@/services/crashReportingInit';
+import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
+import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
@@ -34,6 +35,8 @@ initCrashReporting({
   sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
 });
 
+const sentryNavigationIntegration = getSentryNavigationIntegration();
+
 // Initialize analytics providers (Firebase + Mixpanel)
 initAnalytics({
   mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
@@ -41,7 +44,8 @@ initAnalytics({
 
 SplashScreen.preventAutoHideAsync();
 
-export default function App() {
+function App() {
+  const navigationRef = useRef<NavigationContainerRef<Record<string, unknown>>>(null);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!stripeKey) {
     throw new Error(
@@ -84,7 +88,16 @@ export default function App() {
                 <WishlistProvider>
                   <NotificationProvider>
                     <ErrorBoundary>
-                      <NavigationContainer linking={linkingConfig}>
+                      <NavigationContainer
+                        ref={navigationRef}
+                        linking={linkingConfig}
+                        onReady={() => {
+                          if (sentryNavigationIntegration && navigationRef.current) {
+                            (sentryNavigationIntegration as { registerNavigationContainer: (ref: unknown) => void })
+                              .registerNavigationContainer(navigationRef);
+                          }
+                        }}
+                      >
                         <OfflineBanner />
                         <AppNavigator />
                       </NavigationContainer>
@@ -99,6 +112,8 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
+export default wrapWithSentry(App);
 
 const styles = StyleSheet.create({
   loading: {
