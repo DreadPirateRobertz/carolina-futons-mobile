@@ -2,13 +2,19 @@
  * @module WishlistButton
  *
  * Heart-shaped toggle button that adds or removes a product from the
- * user's wishlist. Provides haptic feedback on native platforms. Can be
- * rendered as an overlay (absolute-positioned) on product images or
- * inline in content areas.
+ * user's wishlist. Provides spring-bounce animation and haptic feedback
+ * on tap. Can be rendered as an overlay (absolute-positioned) on product
+ * images or inline in content areas.
  */
 
 import React, { useCallback } from 'react';
-import { StyleSheet, TouchableOpacity, Text, Platform } from 'react-native';
+import { StyleSheet, Pressable, Text, Platform } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withSequence,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { type Product } from '@/data/products';
 import { useWishlist } from '@/hooks/useWishlist';
@@ -27,6 +33,8 @@ const SIZE_MAP = {
   lg: { button: 44, icon: 26 },
 } as const;
 
+const SPRING_CONFIG = { damping: 10, stiffness: 400 };
+
 /**
  * Toggleable heart button for adding/removing products from the wishlist.
  *
@@ -40,17 +48,35 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
   const { isInWishlist, toggle } = useWishlist();
   const active = isInWishlist(product.id);
 
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   const dims = SIZE_MAP[size];
 
   const handlePress = useCallback(() => {
+    const wasActive = isInWishlist(product.id);
     toggle(product);
+
+    // Spring bounce: quick overshoot then settle
+    scale.value = withSequence(
+      withSpring(1.3, SPRING_CONFIG),
+      withSpring(1, SPRING_CONFIG),
+    );
+
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (wasActive) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } else {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     }
-  }, [toggle, product]);
+  }, [toggle, product, isInWishlist, scale]);
 
   return (
-    <TouchableOpacity
+    <Pressable
       style={[
         styles.button,
         {
@@ -70,8 +96,10 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
       accessibilityState={{ selected: active }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <Text style={[styles.icon, { fontSize: dims.icon }]}>{active ? '♥' : '♡'}</Text>
-    </TouchableOpacity>
+      <Animated.View style={animatedStyle}>
+        <Text style={[styles.icon, { fontSize: dims.icon }]}>{active ? '♥' : '♡'}</Text>
+      </Animated.View>
+    </Pressable>
   );
 }
 
