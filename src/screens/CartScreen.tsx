@@ -10,8 +10,9 @@
  * a flat 7% rate.
  */
 
-import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { Animated, StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
@@ -296,6 +297,30 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
  * @param props.onRemove - Remove the item entirely.
  * @returns A styled card for one cart line item.
  */
+function renderDeleteAction(
+  _progress: Animated.AnimatedInterpolation<number>,
+  dragX: Animated.AnimatedInterpolation<number>,
+  borderRadius: number,
+) {
+  const opacity = dragX.interpolate({
+    inputRange: [-80, -40, 0],
+    outputRange: [1, 0.6, 0],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <Animated.View
+      style={[
+        styles.deleteAction,
+        { borderRadius, opacity },
+      ]}
+      testID="swipe-delete-action"
+    >
+      <Text style={styles.deleteActionText}>Delete</Text>
+    </Animated.View>
+  );
+}
+
 function CartItemRow({
   item,
   onIncrement,
@@ -316,101 +341,121 @@ function CartItemRow({
   shadows: any;
 }) {
   const lineTotal = item.unitPrice * item.quantity;
+  const swipeableRef = useRef<Swipeable>(null);
+
+  const handleSwipeOpen = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+    swipeableRef.current?.close();
+    onRemove();
+  }, [onRemove]);
 
   return (
-    <View
-      style={[
-        styles.itemCard,
-        {
-          backgroundColor: colors.sandLight,
-          borderRadius: br.card,
-          marginHorizontal: spacing.lg,
-        },
-        sh.card,
-      ]}
-      testID={`cart-item-${item.id}`}
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={(progress, dragX) =>
+        renderDeleteAction(progress, dragX, br.card)
+      }
+      onSwipeableOpen={handleSwipeOpen}
+      rightThreshold={80}
+      overshootRight={false}
+      testID={`cart-item-swipeable-${item.id}`}
     >
-      {/* Fabric color indicator + product info */}
-      <View style={styles.itemTop}>
-        <View
-          style={[styles.fabricDot, { backgroundColor: item.fabric.color }]}
-          testID={`cart-item-fabric-${item.id}`}
-        />
-        <View style={styles.itemInfo}>
-          <Text
-            style={[styles.itemName, { color: colors.espresso }]}
-            testID={`cart-item-name-${item.id}`}
-          >
-            {item.model.name}
-          </Text>
-          <Text
-            style={[styles.itemFabric, { color: colors.espressoLight }]}
-            testID={`cart-item-fabric-name-${item.id}`}
-          >
-            {item.fabric.name}
-            {item.fabric.price > 0 && ` (+${formatPrice(item.fabric.price)})`}
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={onRemove}
-          testID={`cart-item-remove-${item.id}`}
-          accessibilityLabel={`Remove ${item.model.name} from cart`}
-          accessibilityRole="button"
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Text style={[styles.removeText, { color: colors.muted }]}>✕</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Quantity + price */}
-      <View style={styles.itemBottom}>
-        <View style={styles.quantityRow}>
-          <TouchableOpacity
-            style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
-            onPress={onDecrement}
-            testID={`cart-item-decrement-${item.id}`}
-            accessibilityLabel="Decrease quantity"
-            accessibilityRole="button"
-          >
-            <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>−</Text>
-          </TouchableOpacity>
-          <Text
-            style={[styles.qtyValue, { color: colors.espresso }]}
-            testID={`cart-item-qty-${item.id}`}
-            accessibilityLabel={`Quantity: ${item.quantity}`}
-          >
-            {item.quantity}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.qtyButton,
-              { backgroundColor: colors.sandDark, borderRadius: br.sm },
-              item.quantity >= 10 && styles.qtyButtonDisabled,
-            ]}
-            onPress={onIncrement}
-            disabled={item.quantity >= 10}
-            testID={`cart-item-increment-${item.id}`}
-            accessibilityLabel="Increase quantity"
-            accessibilityRole="button"
-          >
+      <View
+        style={[
+          styles.itemCard,
+          {
+            backgroundColor: colors.sandLight,
+            borderRadius: br.card,
+            marginHorizontal: spacing.lg,
+          },
+          sh.card,
+        ]}
+        testID={`cart-item-${item.id}`}
+      >
+        {/* Fabric color indicator + product info */}
+        <View style={styles.itemTop}>
+          <View
+            style={[styles.fabricDot, { backgroundColor: item.fabric.color }]}
+            testID={`cart-item-fabric-${item.id}`}
+          />
+          <View style={styles.itemInfo}>
             <Text
-              style={[
-                styles.qtyButtonText,
-                { color: item.quantity >= 10 ? colors.muted : colors.espresso },
-              ]}
+              style={[styles.itemName, { color: colors.espresso }]}
+              testID={`cart-item-name-${item.id}`}
             >
-              +
+              {item.model.name}
             </Text>
+            <Text
+              style={[styles.itemFabric, { color: colors.espressoLight }]}
+              testID={`cart-item-fabric-name-${item.id}`}
+            >
+              {item.fabric.name}
+              {item.fabric.price > 0 && ` (+${formatPrice(item.fabric.price)})`}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={onRemove}
+            testID={`cart-item-remove-${item.id}`}
+            accessibilityLabel={`Remove ${item.model.name} from cart`}
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={[styles.removeText, { color: colors.muted }]}>✕</Text>
           </TouchableOpacity>
         </View>
-        <Text
-          style={[styles.itemPrice, { color: colors.espresso }]}
-          testID={`cart-item-price-${item.id}`}
-        >
-          {formatPrice(lineTotal)}
-        </Text>
+
+        {/* Quantity + price */}
+        <View style={styles.itemBottom}>
+          <View style={styles.quantityRow}>
+            <TouchableOpacity
+              style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
+              onPress={onDecrement}
+              testID={`cart-item-decrement-${item.id}`}
+              accessibilityLabel="Decrease quantity"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.qtyButtonText, { color: colors.espresso }]}>−</Text>
+            </TouchableOpacity>
+            <Text
+              style={[styles.qtyValue, { color: colors.espresso }]}
+              testID={`cart-item-qty-${item.id}`}
+              accessibilityLabel={`Quantity: ${item.quantity}`}
+            >
+              {item.quantity}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.qtyButton,
+                { backgroundColor: colors.sandDark, borderRadius: br.sm },
+                item.quantity >= 10 && styles.qtyButtonDisabled,
+              ]}
+              onPress={onIncrement}
+              disabled={item.quantity >= 10}
+              testID={`cart-item-increment-${item.id}`}
+              accessibilityLabel="Increase quantity"
+              accessibilityRole="button"
+            >
+              <Text
+                style={[
+                  styles.qtyButtonText,
+                  { color: item.quantity >= 10 ? colors.muted : colors.espresso },
+                ]}
+              >
+                +
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Text
+            style={[styles.itemPrice, { color: colors.espresso }]}
+            testID={`cart-item-price-${item.id}`}
+          >
+            {formatPrice(lineTotal)}
+          </Text>
+        </View>
       </View>
-    </View>
+    </Swipeable>
   );
 }
 
@@ -439,6 +484,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 32,
     gap: 12,
+  },
+  // Swipe delete action
+  deleteAction: {
+    backgroundColor: '#DC2626',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 24,
+    flex: 1,
+    marginHorizontal: 16,
+  },
+  deleteActionText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
   // Cart item
   itemCard: {

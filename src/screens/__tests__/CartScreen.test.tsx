@@ -243,6 +243,29 @@ describe('CartScreen', () => {
     });
   });
 
+  describe('Swipe to remove', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('wraps cart item in Swipeable component', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('cart-item-swipeable-asheville-full:natural-linen')).toBeTruthy();
+    });
+
+    it('renders delete action behind swipeable', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      // The renderRightActions renders the delete action
+      expect(getByTestId('swipe-delete-action')).toBeTruthy();
+    });
+
+    it('removes item when swipe completes', () => {
+      const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
+      const swipeable = getByTestId('cart-item-swipeable-asheville-full:natural-linen');
+      // Simulate onSwipeableOpen callback
+      fireEvent(swipeable, 'swipeableOpen');
+      expect(queryByTestId('cart-item-asheville-full:natural-linen')).toBeNull();
+    });
+  });
+
   describe('Custom testID', () => {
     it('accepts custom testID', () => {
       const { getByTestId } = renderCartScreen({ testID: 'my-cart' });
