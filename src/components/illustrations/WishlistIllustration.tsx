@@ -34,10 +34,22 @@ export function WishlistIllustration({ width = VBW, height = VBH, testID }: Prop
       </Defs>
       <Rect width={VBW} height={VBH} fill="url(#wish-sky)" />
       {/* 5 mountain layers */}
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.52, 44)} fill={colors.mountainBlueDark} opacity={0.2} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.60, 18)} fill={colors.mountainBlue} opacity={0.3} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.52, 44)}
+        fill={colors.mountainBlueDark}
+        opacity={0.2}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.6, 18)}
+        fill={colors.mountainBlue}
+        opacity={0.3}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.68, 75)} fill={colors.espresso} opacity={0.35} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.76, 31)} fill={colors.espressoLight} opacity={0.4} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.76, 31)}
+        fill={colors.espressoLight}
+        opacity={0.4}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.84, 63)} fill={colors.sandDark} opacity={0.45} />
       {/* Cabin */}
       <Polygon points="140,100 118,130 162,130" fill={colors.espresso} opacity={0.8} />
@@ -59,10 +71,18 @@ export function WishlistIllustration({ width = VBW, height = VBH, testID }: Prop
         opacity={0.2}
       />
       {/* Trees with more detail */}
-      <Path d="M60 160 L60 130 Q65 110 70 130 L70 160" fill={colors.mountainBlueDark} opacity={0.5} />
+      <Path
+        d="M60 160 L60 130 Q65 110 70 130 L70 160"
+        fill={colors.mountainBlueDark}
+        opacity={0.5}
+      />
       <Path d="M55 140 Q65 122 75 140" fill={colors.mountainBlue} opacity={0.35} />
       <Path d="M53 148 Q65 130 77 148" fill={colors.mountainBlue} opacity={0.25} />
-      <Path d="M200 158 L200 125 Q205 105 210 125 L210 158" fill={colors.mountainBlueDark} opacity={0.5} />
+      <Path
+        d="M200 158 L200 125 Q205 105 210 125 L210 158"
+        fill={colors.mountainBlueDark}
+        opacity={0.5}
+      />
       <Path d="M195 138 Q205 118 215 138" fill={colors.mountainBlue} opacity={0.35} />
       <Path d="M193 146 Q205 128 217 146" fill={colors.mountainBlue} opacity={0.25} />
       <Circle cx={155} cy={120} r={3} fill={colors.sunsetCoral} opacity={0.6} />

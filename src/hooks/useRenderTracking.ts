@@ -29,11 +29,7 @@ type ProfilerOnRenderCallback = (
  */
 export function useRenderTracking(componentName: string): ProfilerOnRenderCallback {
   return useCallback(
-    (
-      _id: string,
-      _phase: string,
-      actualDuration: number,
-    ) => {
+    (_id: string, _phase: string, actualDuration: number) => {
       perf.recordRender(componentName, actualDuration);
     },
     [componentName],

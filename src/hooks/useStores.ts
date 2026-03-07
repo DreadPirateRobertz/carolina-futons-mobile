@@ -51,10 +51,7 @@ export function useStores(): UseStoresReturn {
     };
   }, []);
 
-  const getStoreById = useCallback(
-    (id: string) => storeData.find((s) => s.id === id),
-    [storeData],
-  );
+  const getStoreById = useCallback((id: string) => storeData.find((s) => s.id === id), [storeData]);
 
   return { stores: storeData, isLoading, error, getStoreById };
 }

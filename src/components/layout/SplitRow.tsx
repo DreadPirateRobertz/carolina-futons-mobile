@@ -39,26 +39,14 @@ const ALIGN_MAP = {
 /**
  * Two-column side-by-side layout with configurable ratio.
  */
-export function SplitRow({
-  left,
-  right,
-  ratio = '1:1',
-  gap,
-  align = 'top',
-  style,
-  testID,
-}: Props) {
+export function SplitRow({ left, right, ratio = '1:1', gap, align = 'top', style, testID }: Props) {
   const { spacing } = useTheme();
   const [leftFlex, rightFlex] = RATIOS[ratio];
   const columnGap = gap ?? spacing.md;
 
   return (
     <View
-      style={[
-        styles.root,
-        { gap: columnGap, alignItems: ALIGN_MAP[align] },
-        style,
-      ]}
+      style={[styles.root, { gap: columnGap, alignItems: ALIGN_MAP[align] }, style]}
       testID={testID}
     >
       <View style={{ flex: leftFlex }}>{left}</View>

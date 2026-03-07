@@ -20,8 +20,11 @@ interface Props {
 
 const TAP_THROTTLE_MS = 100;
 
-/** Captures all touch-start events and forwards them to the heatmap analytics service. */
-export function HeatmapProvider({ children, screenName = 'unknown', enabled = true }: PropsWithChildren<Props>) {
+export function HeatmapProvider({
+  children,
+  screenName = 'unknown',
+  enabled = true,
+}: PropsWithChildren<Props>) {
   const lastTapRef = useRef(0);
 
   const handleTouchStart = useCallback(
@@ -43,7 +46,11 @@ export function HeatmapProvider({ children, screenName = 'unknown', enabled = tr
   );
 
   return (
-    <View style={{ flex: 1 }} onStartShouldSetResponderCapture={() => false} onTouchStart={handleTouchStart}>
+    <View
+      style={{ flex: 1 }}
+      onStartShouldSetResponderCapture={() => false}
+      onTouchStart={handleTouchStart}
+    >
       {children}
     </View>
   );

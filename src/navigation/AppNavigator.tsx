@@ -18,7 +18,9 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
 const ARScreen = lazy(() =>
-  import('@/screens/ARScreen').then((m) => ({ default: withScreenErrorBoundary(m.ARScreen, 'AR') })),
+  import('@/screens/ARScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ARScreen, 'AR'),
+  })),
 );
 const ProductDetailScreen = lazy(() =>
   import('@/screens/ProductDetailScreen').then((m) => ({
@@ -208,9 +210,7 @@ export function AppNavigator() {
             <OrderConfirmationScreen
               order={(route.params as { order: OrderConfirmation }).order}
               onContinueShopping={() => {
-                nav.dispatch(
-                  CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
-                );
+                nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
               }}
               onViewOrders={() => {
                 nav.dispatch(

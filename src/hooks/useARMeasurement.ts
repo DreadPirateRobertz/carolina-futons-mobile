@@ -17,9 +17,7 @@ export interface ModelDimensions {
 }
 
 function distance3D(a: Point3D, b: Point3D): number {
-  return Math.sqrt(
-    Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2),
-  );
+  return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2) + Math.pow(b.z - a.z, 2));
 }
 
 function metersToFeetInches(meters: number): string {

@@ -49,10 +49,9 @@ export function useCollections() {
     if (client) {
       (async () => {
         try {
-          const result = await client.queryData<WixCmsEditorialCollection>(
-            'EditorialCollections',
-            { limit: 100 },
-          );
+          const result = await client.queryData<WixCmsEditorialCollection>('EditorialCollections', {
+            limit: 100,
+          });
           if (mounted.current && result.items.length > 0) {
             setCollections(result.items.map(transformCmsCollection));
           }

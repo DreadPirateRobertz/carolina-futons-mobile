@@ -215,11 +215,13 @@ describe('SignUpScreen', () => {
       const { getByTestId } = renderScreen();
       await waitFor(() => expect(getByTestId('signup-screen')).toBeTruthy());
       const screen = getByTestId('signup-screen');
-      const flat = [screen.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [screen.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
 

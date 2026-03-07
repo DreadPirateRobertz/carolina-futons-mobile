@@ -21,9 +21,7 @@ export function withScreenErrorBoundary<P extends object>(
     const navigation = useNavigation();
 
     const handleNavigateHome = () => {
-      navigation.dispatch(
-        CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
-      );
+      navigation.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
     };
 
     return (

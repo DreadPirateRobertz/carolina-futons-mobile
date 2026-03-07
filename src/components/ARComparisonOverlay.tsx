@@ -20,14 +20,11 @@ interface Props {
   testID?: string;
 }
 
-function dimensionDiff(
-  aVal: number,
-  bVal: number,
-  label: string,
-): string {
+function dimensionDiff(aVal: number, bVal: number, label: string): string {
   const diff = aVal - bVal;
   if (diff === 0) return `Same ${label}`;
-  if (diff > 0) return `+${diff}" ${label === 'height' ? 'taller' : label === 'width' ? 'wider' : 'deeper'}`;
+  if (diff > 0)
+    return `+${diff}" ${label === 'height' ? 'taller' : label === 'width' ? 'wider' : 'deeper'}`;
   return `${diff}" ${label === 'height' ? 'shorter' : label === 'width' ? 'narrower' : 'shallower'}`;
 }
 
@@ -46,7 +43,8 @@ export function ARComparisonOverlay({ modelA, modelB, testID }: Props) {
           <View style={[styles.modelPreview, styles.modelPreviewA]} />
           <Text style={styles.modelName}>{modelA.name}</Text>
           <Text style={styles.modelDims}>
-            {modelA.dimensions.width}" W × {modelA.dimensions.depth}" D × {modelA.dimensions.height}" H
+            {modelA.dimensions.width}" W × {modelA.dimensions.depth}" D × {modelA.dimensions.height}
+            " H
           </Text>
         </View>
 
@@ -60,7 +58,8 @@ export function ARComparisonOverlay({ modelA, modelB, testID }: Props) {
           <View style={[styles.modelPreview, styles.modelPreviewB]} />
           <Text style={styles.modelName}>{modelB.name}</Text>
           <Text style={styles.modelDims}>
-            {modelB.dimensions.width}" W × {modelB.dimensions.depth}" D × {modelB.dimensions.height}" H
+            {modelB.dimensions.width}" W × {modelB.dimensions.depth}" D × {modelB.dimensions.height}
+            " H
           </Text>
         </View>
       </View>

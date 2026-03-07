@@ -45,7 +45,9 @@ export function EditorialCard({
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
 
   const Wrapper = onPress ? TouchableOpacity : View;
-  const wrapperProps = onPress ? { onPress, activeOpacity: 0.8, accessibilityRole: 'button' as const } : {};
+  const wrapperProps = onPress
+    ? { onPress, activeOpacity: 0.8, accessibilityRole: 'button' as const }
+    : {};
 
   const content = (
     <>

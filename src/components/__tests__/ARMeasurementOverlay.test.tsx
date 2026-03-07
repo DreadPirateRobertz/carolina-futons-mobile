@@ -40,7 +40,7 @@ describe('ARMeasurementOverlay', () => {
         distanceDisplay={'6\' 2"'}
       />,
     );
-    expect(getByText("6' 2\"")).toBeTruthy();
+    expect(getByText('6\' 2"')).toBeTruthy();
   });
 
   it('renders Fits! indicator when fits is true', () => {

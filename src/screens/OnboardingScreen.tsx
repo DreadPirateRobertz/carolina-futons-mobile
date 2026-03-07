@@ -146,7 +146,10 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         />
       </View>
       <Text
-        style={[styles.progressLabel, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+        style={[
+          styles.progressLabel,
+          { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+        ]}
       >
         {step + 1} / {TOTAL_STEPS}
       </Text>

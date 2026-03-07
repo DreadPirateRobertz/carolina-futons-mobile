@@ -107,9 +107,7 @@ describe('usePayment', () => {
   });
 
   it('handles payment intent failure', async () => {
-    mockedCreatePaymentIntent.mockRejectedValue(
-      new PaymentError('Card declined', 'INTENT_FAILED'),
-    );
+    mockedCreatePaymentIntent.mockRejectedValue(new PaymentError('Card declined', 'INTENT_FAILED'));
 
     const { result } = renderHook(
       () => {
@@ -199,9 +197,7 @@ describe('usePayment', () => {
   });
 
   it('resets payment state', async () => {
-    mockedCreatePaymentIntent.mockRejectedValue(
-      new PaymentError('Failed', 'INTENT_FAILED'),
-    );
+    mockedCreatePaymentIntent.mockRejectedValue(new PaymentError('Failed', 'INTENT_FAILED'));
 
     const { result } = renderHook(
       () => {

@@ -50,7 +50,9 @@ export function PullQuote({ quote, attribution, accentColor, style, testID }: Pr
           },
         ]}
       >
-        {'\u201C'}{quote}{'\u201D'}
+        {'\u201C'}
+        {quote}
+        {'\u201D'}
       </Text>
       {attribution && (
         <Text

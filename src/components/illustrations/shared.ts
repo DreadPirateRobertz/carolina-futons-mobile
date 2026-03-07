@@ -158,10 +158,30 @@ export interface BirdConfig {
 export function buildBirds(vbW: number, vbH: number): BirdConfig[] {
   const spread = vbW / 5;
   return [
-    { path: `M${spread},${vbH * 0.18} C${spread + 5},${vbH * 0.15} ${spread + 10},${vbH * 0.14} ${spread + 15},${vbH * 0.16} C${spread + 20},${vbH * 0.14} ${spread + 25},${vbH * 0.15} ${spread + 30},${vbH * 0.18}`, strokeWidth: 1.2, x: spread, y: vbH * 0.18 },
-    { path: `M${spread * 2.5},${vbH * 0.13} C${spread * 2.5 + 4},${vbH * 0.1} ${spread * 2.5 + 7},${vbH * 0.09} ${spread * 2.5 + 10},${vbH * 0.11} C${spread * 2.5 + 13},${vbH * 0.09} ${spread * 2.5 + 16},${vbH * 0.1} ${spread * 2.5 + 20},${vbH * 0.13}`, strokeWidth: 1.0, x: spread * 2.5, y: vbH * 0.13 },
-    { path: `M${spread * 3.5},${vbH * 0.2} C${spread * 3.5 + 3},${vbH * 0.18} ${spread * 3.5 + 5},${vbH * 0.17} ${spread * 3.5 + 8},${vbH * 0.19} C${spread * 3.5 + 11},${vbH * 0.17} ${spread * 3.5 + 13},${vbH * 0.18} ${spread * 3.5 + 16},${vbH * 0.2}`, strokeWidth: 0.8, x: spread * 3.5, y: vbH * 0.2 },
-    { path: `M${spread * 4},${vbH * 0.15} C${spread * 4 + 3},${vbH * 0.13} ${spread * 4 + 6},${vbH * 0.12} ${spread * 4 + 8},${vbH * 0.14} C${spread * 4 + 10},${vbH * 0.12} ${spread * 4 + 13},${vbH * 0.13} ${spread * 4 + 16},${vbH * 0.15}`, strokeWidth: 0.9, x: spread * 4, y: vbH * 0.15 },
+    {
+      path: `M${spread},${vbH * 0.18} C${spread + 5},${vbH * 0.15} ${spread + 10},${vbH * 0.14} ${spread + 15},${vbH * 0.16} C${spread + 20},${vbH * 0.14} ${spread + 25},${vbH * 0.15} ${spread + 30},${vbH * 0.18}`,
+      strokeWidth: 1.2,
+      x: spread,
+      y: vbH * 0.18,
+    },
+    {
+      path: `M${spread * 2.5},${vbH * 0.13} C${spread * 2.5 + 4},${vbH * 0.1} ${spread * 2.5 + 7},${vbH * 0.09} ${spread * 2.5 + 10},${vbH * 0.11} C${spread * 2.5 + 13},${vbH * 0.09} ${spread * 2.5 + 16},${vbH * 0.1} ${spread * 2.5 + 20},${vbH * 0.13}`,
+      strokeWidth: 1.0,
+      x: spread * 2.5,
+      y: vbH * 0.13,
+    },
+    {
+      path: `M${spread * 3.5},${vbH * 0.2} C${spread * 3.5 + 3},${vbH * 0.18} ${spread * 3.5 + 5},${vbH * 0.17} ${spread * 3.5 + 8},${vbH * 0.19} C${spread * 3.5 + 11},${vbH * 0.17} ${spread * 3.5 + 13},${vbH * 0.18} ${spread * 3.5 + 16},${vbH * 0.2}`,
+      strokeWidth: 0.8,
+      x: spread * 3.5,
+      y: vbH * 0.2,
+    },
+    {
+      path: `M${spread * 4},${vbH * 0.15} C${spread * 4 + 3},${vbH * 0.13} ${spread * 4 + 6},${vbH * 0.12} ${spread * 4 + 8},${vbH * 0.14} C${spread * 4 + 10},${vbH * 0.12} ${spread * 4 + 13},${vbH * 0.13} ${spread * 4 + 16},${vbH * 0.15}`,
+      strokeWidth: 0.9,
+      x: spread * 4,
+      y: vbH * 0.15,
+    },
   ];
 }
 
@@ -181,9 +201,18 @@ export function buildPineTrees(vbW: number, vbH: number): TreeConfig[] {
     return {
       trunk: { x, y: trunkY, width: trunkW, height: trunkH },
       canopyLayers: [
-        { path: `M${x - spread},${trunkY + trunkH * 0.35} C${x - spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread},${trunkY + trunkH * 0.35}`, opacity: 0.45 },
-        { path: `M${x - spread * 0.8},${trunkY + trunkH * 0.2} C${x - spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.8},${trunkY + trunkH * 0.2}`, opacity: 0.55 },
-        { path: `M${x - spread * 0.6},${trunkY + trunkH * 0.05} C${x - spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.6},${trunkY + trunkH * 0.05}`, opacity: 0.65 },
+        {
+          path: `M${x - spread},${trunkY + trunkH * 0.35} C${x - spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread},${trunkY + trunkH * 0.35}`,
+          opacity: 0.45,
+        },
+        {
+          path: `M${x - spread * 0.8},${trunkY + trunkH * 0.2} C${x - spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.8},${trunkY + trunkH * 0.2}`,
+          opacity: 0.55,
+        },
+        {
+          path: `M${x - spread * 0.6},${trunkY + trunkH * 0.05} C${x - spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.6},${trunkY + trunkH * 0.05}`,
+          opacity: 0.65,
+        },
       ],
     };
   });

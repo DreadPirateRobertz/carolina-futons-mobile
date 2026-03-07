@@ -91,10 +91,7 @@ export function usePayment() {
             setState({ status: 'idle', error: null, order: null });
             return null;
           }
-          throw new PaymentError(
-            presentError.message ?? 'Payment failed',
-            'STRIPE_ERROR',
-          );
+          throw new PaymentError(presentError.message ?? 'Payment failed', 'STRIPE_ERROR');
         }
 
         // 4. Confirm order on backend
