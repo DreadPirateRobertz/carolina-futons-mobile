@@ -7,6 +7,21 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { typography } from '@/theme/tokens';
 
+const mockPremiumValue = {
+  isPremium: false,
+  isLoading: false,
+  offerings: [],
+  error: null,
+  purchase: jest.fn(),
+  restore: jest.fn(),
+  refreshStatus: jest.fn(),
+};
+
+jest.mock('@/hooks/usePremium', () => ({
+  PremiumProvider: ({ children }: any) => children,
+  usePremium: () => mockPremiumValue,
+}));
+
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
   selectionAsync: jest.fn(),
@@ -769,6 +784,28 @@ describe('CheckoutScreen', () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       expect(utils.queryByTestId('google-pay-section')).toBeNull();
+    });
+  });
+
+  describe('Premium badge indicators', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    afterEach(() => {
+      mockPremiumValue.isPremium = false;
+    });
+
+    it('shows CF+ badge on shipping line when user is premium', async () => {
+      mockPremiumValue.isPremium = true;
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('shipping-premium-badge')).toBeTruthy();
+    });
+
+    it('does not show CF+ badge on shipping line when user is not premium', async () => {
+      mockPremiumValue.isPremium = false;
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('shipping-premium-badge')).toBeNull();
     });
   });
 });

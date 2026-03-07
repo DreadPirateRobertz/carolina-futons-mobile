@@ -31,6 +31,8 @@ import { formatPrice } from '@/utils';
 import type { PaymentMethod } from '@/services/payment';
 import type { OrderConfirmation } from '@/services/payment';
 import { events } from '@/services/analytics';
+import { PremiumBadge } from '@/components/PremiumBadge';
+import { usePremium } from '@/hooks/usePremium';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -141,6 +143,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
   const { status, error, totals, isApplePaySupported, isGooglePaySupported, processPayment, resetPayment } = usePayment();
+  const { isPremium } = usePremium();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
 
@@ -551,7 +554,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             </Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Shipping</Text>
+            <View style={styles.shippingLabelRow}>
+              <Text style={[styles.totalLabel, { color: colors.espressoLight }]}>Shipping</Text>
+              {isPremium && <PremiumBadge size="sm" testID="shipping-premium-badge" />}
+            </View>
             <Text
               style={[
                 styles.totalValue,
@@ -561,7 +567,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               {totals.shipping === 0 ? 'FREE' : formatPrice(totals.shipping)}
             </Text>
           </View>
-          {subtotal < SHIPPING_THRESHOLD && subtotal > 0 && (
+          {!isPremium && subtotal < SHIPPING_THRESHOLD && subtotal > 0 && (
             <Text style={[styles.shippingNote, { color: colors.mountainBlue }]}>
               Free shipping on orders over {formatPrice(SHIPPING_THRESHOLD)}
             </Text>
@@ -933,6 +939,11 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 15,
     fontWeight: '600',
+  },
+  shippingLabelRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
   },
   shippingNote: {
     fontSize: 12,

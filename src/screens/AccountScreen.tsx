@@ -165,6 +165,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-premium"
+            trailing={isPremium ? <PremiumBadge size="sm" testID="menu-premium-badge" /> : undefined}
           />
           <MenuItem
             label="Notification Preferences"
@@ -229,6 +230,7 @@ function MenuItem({
   label,
   onPress,
   testID,
+  trailing,
 }: {
   label: string;
   onPress?: () => void;
@@ -236,6 +238,7 @@ function MenuItem({
   borderRadius: any;
   shadows: any;
   testID?: string;
+  trailing?: React.ReactNode;
 }) {
   return (
     <GlassCard intensity="light">
@@ -246,7 +249,10 @@ function MenuItem({
         accessibilityRole="button"
       >
         <Text style={[styles.menuLabel, { color: darkPalette.textPrimary }]}>{label}</Text>
-        <Text style={[styles.menuChevron, { color: darkPalette.textMuted }]}>›</Text>
+        <View style={styles.menuTrailing}>
+          {trailing}
+          <Text style={[styles.menuChevron, { color: darkPalette.textMuted }]}>›</Text>
+        </View>
       </TouchableOpacity>
     </GlassCard>
   );
@@ -328,6 +334,11 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  menuTrailing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   menuChevron: {
     fontSize: 20,

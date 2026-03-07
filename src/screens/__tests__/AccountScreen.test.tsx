@@ -179,6 +179,24 @@ describe('AccountScreen', () => {
       expect(queryByTestId('premium-badge')).toBeNull();
     });
 
+    it('shows CF+ badge on Premium menu item when user is premium', async () => {
+      mockPremiumValue.isPremium = true;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('menu-premium-badge')).toBeTruthy();
+      });
+      mockPremiumValue.isPremium = false;
+    });
+
+    it('does not show CF+ badge on Premium menu item when not premium', async () => {
+      mockPremiumValue.isPremium = false;
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('menu-premium-badge')).toBeNull();
+    });
+
     it('calls onOrderHistory when pressed', async () => {
       const onOrderHistory = jest.fn();
       const { getByTestId } = renderAccount({ onOrderHistory }, true);

@@ -12,6 +12,21 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
 }));
 
+const mockPremiumValue = {
+  isPremium: false,
+  isLoading: false,
+  offerings: [],
+  error: null,
+  purchase: jest.fn(),
+  restore: jest.fn(),
+  refreshStatus: jest.fn(),
+};
+
+jest.mock('@/hooks/usePremium', () => ({
+  PremiumProvider: ({ children }: any) => children,
+  usePremium: () => mockPremiumValue,
+}));
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
@@ -641,6 +656,24 @@ describe('ProductDetailScreen', () => {
       fireEvent.press(getByTestId('detail-ar-button'));
       const navParams = mockNavigate.mock.calls[0][1];
       expect(navParams.productId).toBe('prod-blue-ridge-queen');
+    });
+  });
+
+  describe('Premium badge indicators', () => {
+    afterEach(() => {
+      mockPremiumValue.isPremium = false;
+    });
+
+    it('shows CF+ badge on AR button when user is premium', () => {
+      mockPremiumValue.isPremium = true;
+      const { getByTestId } = renderDetail();
+      expect(getByTestId('ar-premium-badge')).toBeTruthy();
+    });
+
+    it('does not show CF+ badge on AR button when user is not premium', () => {
+      mockPremiumValue.isPremium = false;
+      const { queryByTestId } = renderDetail();
+      expect(queryByTestId('ar-premium-badge')).toBeNull();
     });
   });
 });

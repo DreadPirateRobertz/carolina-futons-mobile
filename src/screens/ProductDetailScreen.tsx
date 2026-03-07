@@ -44,6 +44,8 @@ import { useReviews } from '@/hooks/useReviews';
 import { events } from '@/services/analytics';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId } from '@/utils';
+import { PremiumBadge } from '@/components/PremiumBadge';
+import { usePremium } from '@/hooks/usePremium';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -74,6 +76,7 @@ export function ProductDetailScreen({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const { isPremium } = usePremium();
 
   const resolvedId = productId ?? slug ?? route?.params?.slug ?? '';
   const { models, getModel } = useFutonModels();
@@ -620,6 +623,7 @@ export function ProductDetailScreen({
           >
             <Text style={styles.arCtaIcon}>📷</Text>
             <Text style={styles.arCtaText}>Try in Your Room</Text>
+            {isPremium && <PremiumBadge size="sm" testID="ar-premium-badge" />}
           </TouchableOpacity>
         </View>
 
