@@ -103,6 +103,7 @@ export function ProductDetailScreen({
     height: sizeGuideHeight.value,
     overflow: 'hidden' as const,
     opacity: interpolate(sizeGuideHeight.value, [0, 50], [0, 1]),
+    pointerEvents: sizeGuideHeight.value === 0 ? 'none' as const : 'auto' as const,
   }));
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -588,15 +589,13 @@ export function ProductDetailScreen({
             </Text>
           </TouchableOpacity>
 
-          {/* Size Guide Content */}
-          {sizeGuideExpanded && (
-            <Animated.View
-              style={[sizeGuideAnimStyle]}
-              testID="size-guide-content"
-            >
-              <SizeGuideDiagram dimensions={model.dimensions} colors={colors} />
-            </Animated.View>
-          )}
+          {/* Size Guide Content — always mounted so collapse animation plays */}
+          <Animated.View
+            style={[sizeGuideAnimStyle]}
+            testID={sizeGuideExpanded ? 'size-guide-content' : undefined}
+          >
+            <SizeGuideDiagram dimensions={model.dimensions} colors={colors} />
+          </Animated.View>
         </View>
 
         {/* Reviews Section */}
