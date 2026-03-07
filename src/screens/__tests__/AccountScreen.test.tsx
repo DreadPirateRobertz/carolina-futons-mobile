@@ -4,6 +4,20 @@ import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+const mockPromptBiometric = jest.fn().mockResolvedValue(true);
+let mockBiometricEnabled = false;
+jest.mock('@/hooks/useBiometricAuth', () => ({
+  useBiometricAuth: () => ({
+    status: { isAvailable: true, isEnrolled: true, biometricType: 'facial' as const },
+    isEnabled: mockBiometricEnabled,
+    loading: false,
+    authenticating: false,
+    enableBiometric: jest.fn().mockResolvedValue(true),
+    disableBiometric: jest.fn().mockResolvedValue(undefined),
+    promptBiometric: mockPromptBiometric,
+  }),
+}));
+
 const mockMember = {
   id: 'member-1',
   email: 'test@test.com',
@@ -62,6 +76,7 @@ function AutoSignIn() {
 describe('AccountScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockBiometricEnabled = false;
     mockAuthService.restoreSession.mockResolvedValue(false);
     mockAuthService.getCurrentMember.mockResolvedValue(null);
     mockAuthService.logout.mockResolvedValue(undefined);
@@ -153,6 +168,66 @@ describe('AccountScreen', () => {
       });
       fireEvent.press(getByTestId('account-order-history'));
       expect(onOrderHistory).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Biometric gate for sensitive actions', () => {
+    it('navigates to payment methods without prompt when biometric disabled', async () => {
+      const onPaymentMethods = jest.fn();
+      const { getByTestId } = renderAccount({ onPaymentMethods }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-payment')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-payment'));
+      await waitFor(() => {
+        expect(mockPromptBiometric).not.toHaveBeenCalled();
+        expect(onPaymentMethods).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('prompts biometric before navigating to payment methods when enabled', async () => {
+      mockBiometricEnabled = true;
+      mockPromptBiometric.mockResolvedValue(true);
+      const onPaymentMethods = jest.fn();
+      const { getByTestId } = renderAccount({ onPaymentMethods }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-payment')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-payment'));
+      await waitFor(() => {
+        expect(mockPromptBiometric).toHaveBeenCalledWith('Verify identity to access sensitive settings');
+        expect(onPaymentMethods).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('blocks navigation when biometric prompt fails', async () => {
+      mockBiometricEnabled = true;
+      mockPromptBiometric.mockResolvedValue(false);
+      const onPaymentMethods = jest.fn();
+      const { getByTestId } = renderAccount({ onPaymentMethods }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-payment')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-payment'));
+      await waitFor(() => {
+        expect(mockPromptBiometric).toHaveBeenCalled();
+        expect(onPaymentMethods).not.toHaveBeenCalled();
+      });
+    });
+
+    it('gates saved addresses with biometric when enabled', async () => {
+      mockBiometricEnabled = true;
+      mockPromptBiometric.mockResolvedValue(true);
+      const onAddresses = jest.fn();
+      const { getByTestId } = renderAccount({ onAddresses }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-addresses')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-addresses'));
+      await waitFor(() => {
+        expect(mockPromptBiometric).toHaveBeenCalled();
+        expect(onAddresses).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

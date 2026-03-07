@@ -6,6 +6,20 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { typography } from '@/theme/tokens';
 
+// Mock biometric auth
+const mockPromptBiometric = jest.fn().mockResolvedValue(true);
+jest.mock('@/hooks/useBiometricAuth', () => ({
+  useBiometricAuth: () => ({
+    isEnabled: false,
+    promptBiometric: mockPromptBiometric,
+    status: { isAvailable: true, isEnrolled: true, biometricType: 'facial' as const },
+    loading: false,
+    authenticating: false,
+    enableBiometric: jest.fn(),
+    disableBiometric: jest.fn(),
+  }),
+}));
+
 // Mock @stripe/stripe-react-native
 jest.mock('@stripe/stripe-react-native', () => ({
   useStripe: () => ({

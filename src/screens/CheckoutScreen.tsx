@@ -23,6 +23,7 @@ import { useTheme } from '@/theme';
 import { typography } from '@/theme/tokens';
 import { useCart } from '@/hooks/useCart';
 import { usePayment } from '@/hooks/usePayment';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { formatPrice } from '@/utils';
 import type { PaymentMethod } from '@/services/payment';
 import type { OrderConfirmation } from '@/services/payment';
@@ -86,6 +87,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
   const { status, error, totals, processPayment, resetPayment } = usePayment();
+  const { isEnabled: biometricEnabled, promptBiometric } = useBiometricAuth();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
 
@@ -111,6 +113,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const handlePlaceOrder = useCallback(async () => {
     if (!selectedMethod || isProcessing) return;
 
+    if (biometricEnabled) {
+      const passed = await promptBiometric('Confirm purchase with biometrics');
+      if (!passed) return;
+    }
+
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
@@ -124,7 +131,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       }
       onOrderComplete?.(order);
     }
-  }, [selectedMethod, isProcessing, processPayment, onOrderComplete, totals.total, items.length]);
+  }, [selectedMethod, isProcessing, biometricEnabled, promptBiometric, processPayment, onOrderComplete, totals.total, items.length]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 

@@ -7,7 +7,7 @@
  * Payment Methods, and Notification Preferences. Sign-out lives at the bottom.
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
@@ -22,6 +22,10 @@ interface Props {
   onLogin?: () => void;
   /** Callback to navigate to the order history list. */
   onOrderHistory?: () => void;
+  /** Callback to navigate to the saved addresses screen. */
+  onAddresses?: () => void;
+  /** Callback to navigate to the payment methods screen. */
+  onPaymentMethods?: () => void;
   /** Callback to navigate to the premium subscription screen. */
   onPremium?: () => void;
   /** Test identifier for end-to-end tests. */
@@ -35,13 +39,25 @@ interface Props {
  * @param props - {@link Props}
  * @returns The account screen view.
  */
-export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
+export function AccountScreen({ onLogin, onOrderHistory, onAddresses, onPaymentMethods, onPremium, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
-  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
+  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric, promptBiometric } = useBiometricAuth();
 
   const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
   const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
+
+  const withBiometricGate = useCallback(
+    async (action?: () => void) => {
+      if (!action) return;
+      if (biometricEnabled) {
+        const passed = await promptBiometric('Verify identity to access sensitive settings');
+        if (!passed) return;
+      }
+      action();
+    },
+    [biometricEnabled, promptBiometric],
+  );
 
   const handleBiometricToggle = async (value: boolean) => {
     if (value) {
@@ -139,6 +155,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           />
           <MenuItem
             label="Saved Addresses"
+            onPress={() => withBiometricGate(onAddresses)}
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}
@@ -146,6 +163,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           />
           <MenuItem
             label="Payment Methods"
+            onPress={() => withBiometricGate(onPaymentMethods)}
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}
