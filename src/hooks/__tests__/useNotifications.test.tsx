@@ -110,6 +110,10 @@ function renderNotif() {
   );
 }
 
+// Capture the notification handler registered at module scope (before clearAllMocks wipes call history)
+const Notifications = require('expo-notifications');
+const registeredHandler = (Notifications.setNotificationHandler as jest.Mock).mock.calls[0]?.[0];
+
 describe('useNotifications', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -533,6 +537,74 @@ describe('useNotifications', () => {
       });
 
       expect(mockRegisterPushToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Foreground notification handler', () => {
+    function makeNotification(type: string) {
+      return { request: { content: { data: { type } } } };
+    }
+
+    function getHandler() {
+      expect(registeredHandler).toBeDefined();
+      return registeredHandler;
+    }
+
+    it('shows notification when preference is enabled', async () => {
+      renderNotif();
+      await act(async () => {});
+
+      const handler = getHandler();
+      const result = await handler.handleNotification(makeNotification('order_update'));
+      expect(result.shouldShowAlert).toBe(true);
+      expect(result.shouldPlaySound).toBe(true);
+      expect(result.shouldShowBanner).toBe(true);
+    });
+
+    it('suppresses notification when preference is disabled', async () => {
+      renderNotif();
+      await act(async () => {});
+
+      const handler = getHandler();
+      // cart_reminder defaults to false
+      const result = await handler.handleNotification(makeNotification('cart_reminder'));
+      expect(result.shouldShowAlert).toBe(false);
+      expect(result.shouldPlaySound).toBe(false);
+      expect(result.shouldShowBanner).toBe(false);
+      expect(result.shouldSetBadge).toBe(false);
+      expect(result.shouldShowList).toBe(false);
+    });
+
+    it('suppresses after user toggles preference off', async () => {
+      const { getByTestId } = renderNotif();
+      await act(async () => {});
+
+      // orderUpdates defaults to true — toggle it off
+      fireEvent.press(getByTestId('toggle-orders'));
+
+      const handler = getHandler();
+      const result = await handler.handleNotification(makeNotification('order_update'));
+      expect(result.shouldShowAlert).toBe(false);
+    });
+
+    it('shows notification with unknown type', async () => {
+      renderNotif();
+      await act(async () => {});
+
+      const handler = getHandler();
+      const result = await handler.handleNotification(makeNotification('unknown_type'));
+      expect(result.shouldShowAlert).toBe(true);
+    });
+
+    it('shows notification with no type data', async () => {
+      renderNotif();
+      await act(async () => {});
+
+      const handler = getHandler();
+      const result = await handler.handleNotification({
+        request: { content: { data: {} } },
+      });
+      expect(result.shouldShowAlert).toBe(true);
     });
   });
 

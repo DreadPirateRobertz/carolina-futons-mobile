@@ -15,9 +15,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   type NotificationPreferences,
   type NotificationType,
+  NOTIFICATION_TYPE_CONFIG,
   DEFAULT_PREFERENCES,
   ANDROID_CHANNEL_CONFIG,
   getDeepLinkForNotification,
+  shouldShowNotification,
   registerPushToken,
 } from '@/services/notifications';
 import { captureException } from '@/services/crashReporting';
@@ -25,15 +27,35 @@ import { captureException } from '@/services/crashReporting';
 const PREFS_STORAGE_KEY = '@notification_preferences';
 const BADGE_STORAGE_KEY = '@notification_badge_count';
 
-// Show notifications when app is in foreground
+// Module-level preferences holder — synced by NotificationProvider so the
+// handler (which runs outside React) can read current user preferences.
+let _currentPreferences: NotificationPreferences = DEFAULT_PREFERENCES;
+
+// Show/suppress foreground notifications based on user preference toggles
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+  handleNotification: async (notification) => {
+    const data = notification.request.content.data as Record<string, string> | undefined;
+    const type = data?.type as NotificationType | undefined;
+
+    // If the notification has a known type, check user preferences
+    if (type && type in NOTIFICATION_TYPE_CONFIG && !shouldShowNotification(type, _currentPreferences)) {
+      return {
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowAlert: false,
+        shouldShowBanner: false,
+        shouldShowList: false,
+      };
+    }
+
+    return {
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    };
+  },
 });
 
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
@@ -279,6 +301,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
     dispatch({ type: 'TOGGLE_PREF', key });
   }, []);
+
+  // Sync module-level preferences holder so setNotificationHandler can read them
+  useEffect(() => {
+    _currentPreferences = state.preferences;
+  }, [state.preferences]);
 
   // Persist preferences to AsyncStorage whenever they change
   const prefsRef = useRef(state.preferences);
