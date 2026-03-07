@@ -39,6 +39,10 @@ export function getDeepLinkForNotification(
   type: NotificationType,
   data?: Record<string, string>,
 ): string {
+  // Try direct payload keys first (snake_case from push payload)
+  const payloadLink = getDeepLinkFromPayload(data);
+  if (payloadLink) return payloadLink;
+
   switch (type) {
     case 'order_update':
       return data?.orderId ? `carolinafutons://orders/${data.orderId}` : 'carolinafutons://orders';
@@ -55,6 +59,24 @@ export function getDeepLinkForNotification(
     default:
       return 'carolinafutons://home';
   }
+}
+
+/**
+ * Resolve a deep link directly from notification data payload keys.
+ * Supports: product_id, order_id, collection_slug, promo.
+ * Returns null if no recognized key is found.
+ */
+export function getDeepLinkFromPayload(
+  data?: Record<string, string>,
+): string | null {
+  if (!data) return null;
+
+  if (data.product_id) return `carolinafutons://product/${data.product_id}`;
+  if (data.order_id) return `carolinafutons://orders/${data.order_id}`;
+  if (data.collection_slug) return `carolinafutons://collections/${data.collection_slug}`;
+  if (data.promo) return `carolinafutons://home?promo=${data.promo}`;
+
+  return null;
 }
 
 /** Notification type label for preferences UI */

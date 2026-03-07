@@ -10,6 +10,7 @@
 
 import {
   getDeepLinkForNotification,
+  getDeepLinkFromPayload,
   shouldShowNotification,
   DEFAULT_PREFERENCES,
   type NotificationType,
@@ -253,6 +254,46 @@ describe('Notification preferences gate deep link generation', () => {
 
     expect(enabledByDefault).toEqual(['order_update', 'promotion', 'back_in_stock']);
     expect(disabledByDefault).toEqual(['cart_reminder']);
+  });
+});
+
+// =============================================================================
+// Direct payload key routing (product_id, order_id, collection_slug, promo)
+// =============================================================================
+describe('Direct payload key → deep link → route (end-to-end)', () => {
+  it('product_id routes to ProductDetail', () => {
+    const url = getDeepLinkFromPayload({ product_id: 'asheville-full' })!;
+    const route = resolveRoute(parseDeepLink(url));
+    expect(route).toEqual({ screen: 'ProductDetail', params: { slug: 'asheville-full' } });
+  });
+
+  it('order_id routes to OrderDetail', () => {
+    const url = getDeepLinkFromPayload({ order_id: 'ord-789' })!;
+    const route = resolveRoute(parseDeepLink(url));
+    expect(route).toEqual({ screen: 'OrderDetail', params: { orderId: 'ord-789' } });
+  });
+
+  it('collection_slug routes to CollectionDetail', () => {
+    const url = getDeepLinkFromPayload({ collection_slug: 'summer-sale' })!;
+    const route = resolveRoute(parseDeepLink(url));
+    expect(route).toEqual({ screen: 'CollectionDetail', params: { slug: 'summer-sale' } });
+  });
+
+  it('promo routes to Home', () => {
+    const url = getDeepLinkFromPayload({ promo: 'spring20' })!;
+    const route = resolveRoute(parseDeepLink(url));
+    expect(route).toEqual({ screen: 'Home' });
+  });
+
+  it('notification with type + payload key prefers payload key', () => {
+    const url = getDeepLinkForNotification('promotion', { product_id: 'blue-ridge' });
+    const route = resolveRoute(parseDeepLink(url));
+    expect(route).toEqual({ screen: 'ProductDetail', params: { slug: 'blue-ridge' } });
+  });
+
+  it('notification without type field uses payload keys', () => {
+    const url = getDeepLinkFromPayload({ collection_slug: 'clearance' });
+    expect(url).toBe('carolinafutons://collections/clearance');
   });
 });
 

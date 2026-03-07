@@ -1,5 +1,6 @@
 import {
   getDeepLinkForNotification,
+  getDeepLinkFromPayload,
   shouldShowNotification,
   formatBadgeCount,
   getChannelId,
@@ -43,6 +44,74 @@ describe('Notification service', () => {
 
     it('returns cart link for cart_reminder', () => {
       expect(getDeepLinkForNotification('cart_reminder')).toBe('carolinafutons://cart');
+    });
+
+    it('prefers snake_case payload keys over type-based routing', () => {
+      expect(getDeepLinkForNotification('promotion', { product_id: 'asheville-full' })).toBe(
+        'carolinafutons://product/asheville-full',
+      );
+    });
+
+    it('routes order_id payload to OrderDetail', () => {
+      expect(getDeepLinkForNotification('order_update', { order_id: 'ord-999' })).toBe(
+        'carolinafutons://orders/ord-999',
+      );
+    });
+
+    it('routes collection_slug payload to CollectionDetail', () => {
+      expect(getDeepLinkForNotification('promotion', { collection_slug: 'summer-sale' })).toBe(
+        'carolinafutons://collections/summer-sale',
+      );
+    });
+
+    it('routes promo payload to Home with promo param', () => {
+      expect(getDeepLinkForNotification('promotion', { promo: 'spring20' })).toBe(
+        'carolinafutons://home?promo=spring20',
+      );
+    });
+  });
+
+  describe('getDeepLinkFromPayload', () => {
+    it('returns null for undefined data', () => {
+      expect(getDeepLinkFromPayload()).toBeNull();
+    });
+
+    it('returns null for empty data', () => {
+      expect(getDeepLinkFromPayload({})).toBeNull();
+    });
+
+    it('returns null for unrecognized keys', () => {
+      expect(getDeepLinkFromPayload({ foo: 'bar' })).toBeNull();
+    });
+
+    it('maps product_id to product deep link', () => {
+      expect(getDeepLinkFromPayload({ product_id: 'pisgah-twin' })).toBe(
+        'carolinafutons://product/pisgah-twin',
+      );
+    });
+
+    it('maps order_id to orders deep link', () => {
+      expect(getDeepLinkFromPayload({ order_id: 'ord-456' })).toBe(
+        'carolinafutons://orders/ord-456',
+      );
+    });
+
+    it('maps collection_slug to collections deep link', () => {
+      expect(getDeepLinkFromPayload({ collection_slug: 'bedroom-sets' })).toBe(
+        'carolinafutons://collections/bedroom-sets',
+      );
+    });
+
+    it('maps promo to home with promo query param', () => {
+      expect(getDeepLinkFromPayload({ promo: 'welcome10' })).toBe(
+        'carolinafutons://home?promo=welcome10',
+      );
+    });
+
+    it('prioritizes product_id over other keys', () => {
+      expect(getDeepLinkFromPayload({ product_id: 'x', order_id: 'y', promo: 'z' })).toBe(
+        'carolinafutons://product/x',
+      );
     });
   });
 

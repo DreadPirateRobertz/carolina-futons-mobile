@@ -19,6 +19,7 @@ import {
   DEFAULT_PREFERENCES,
   ANDROID_CHANNEL_CONFIG,
   getDeepLinkForNotification,
+  getDeepLinkFromPayload,
   shouldShowNotification,
   registerPushToken,
 } from '@/services/notifications';
@@ -245,10 +246,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (response.actionIdentifier !== Notifications.DEFAULT_ACTION_IDENTIFIER) return;
 
       const data = response.notification.request.content.data as Record<string, string> | undefined;
-      if (!data?.type) return;
+      if (!data) return;
 
-      const deepLink = getDeepLinkForNotification(data.type as NotificationType, data);
-      Linking.openURL(deepLink).catch(() => {});
+      // If notification has a type field, use type-based routing
+      // Otherwise, try direct payload keys (product_id, order_id, collection_slug, promo)
+      const deepLink = data.type
+        ? getDeepLinkForNotification(data.type as NotificationType, data)
+        : getDeepLinkFromPayload(data);
+
+      if (deepLink) {
+        Linking.openURL(deepLink).catch(() => {});
+      }
     });
 
     return () => {
