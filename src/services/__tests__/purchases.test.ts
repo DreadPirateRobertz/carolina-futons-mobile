@@ -26,7 +26,7 @@ describe('purchases service', () => {
   beforeEach(() => jest.clearAllMocks());
 
   describe('initializePurchases', () => {
-    it('configures RevenueCat with API key', async () => {
+    it('configures RevenueCat with env-based API key', async () => {
       await initializePurchases();
       expect(Purchases.configure).toHaveBeenCalledWith(
         expect.objectContaining({ apiKey: expect.any(String) }),

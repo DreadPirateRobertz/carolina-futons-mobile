@@ -11,10 +11,6 @@ import Purchases from 'react-native-purchases';
 import type { PurchasesPackage, CustomerInfo } from 'react-native-purchases';
 import { Platform } from 'react-native';
 
-// RevenueCat API keys — in production these come from env config
-const REVENUECAT_IOS_KEY = 'appl_cfutons_rc_key';
-const REVENUECAT_ANDROID_KEY = 'goog_cfutons_rc_key';
-
 export const ENTITLEMENT_ID = 'cf_plus';
 
 export class PurchaseError extends Error {
@@ -28,7 +24,13 @@ export async function initializePurchases(): Promise<void> {
   if (__DEV__) {
     Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
   }
-  const apiKey = Platform.OS === 'ios' ? REVENUECAT_IOS_KEY : REVENUECAT_ANDROID_KEY;
+  const apiKey = Platform.OS === 'ios'
+    ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+    : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  if (!apiKey) {
+    console.warn('RevenueCat API key not set — skipping purchases init');
+    return;
+  }
   Purchases.configure({ apiKey });
 }
 

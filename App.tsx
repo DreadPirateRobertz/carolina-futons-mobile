@@ -29,6 +29,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
 import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
+import { initializePurchases } from '@/services/purchases';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
@@ -50,6 +51,7 @@ function App() {
     initAnalytics({
       mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
     });
+    initializePurchases();
   }, []);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!stripeKey) {
