@@ -91,6 +91,54 @@ interface WixInventoryItem {
   variants: { variantId: string; inStock: boolean; quantity: number }[];
 }
 
+// ── Order types ───────────────────────────────────────────────
+
+export interface WixOrderResponse {
+  _id: string;
+  number: string;
+  status: string; // INITIALIZED | APPROVED | FULFILLED | CANCELED
+  _createdDate: string;
+  _updatedDate: string;
+  lineItems: {
+    _id: string;
+    catalogReference: { catalogItemId: string; appId: string };
+    productName: { translated: string };
+    quantity: number;
+    price: { amount: string };
+    totalPrice: { amount: string };
+    mediaItem?: { url: string };
+  }[];
+  priceSummary: {
+    subtotal: { amount: string };
+    shipping: { amount: string };
+    tax: { amount: string };
+    total: { amount: string };
+  };
+  shippingInfo?: {
+    logistics?: {
+      shippingDestination?: {
+        contactDetails?: { firstName: string; lastName: string };
+        address?: {
+          addressLine1: string;
+          city: string;
+          subdivision: string;
+          postalCode: string;
+        };
+      };
+      trackingInfo?: {
+        trackingNumber: string;
+        shippingProvider: string;
+        trackingLink: string;
+      };
+      deliveryTime?: string;
+    };
+  };
+  paymentStatus: string;
+  billingInfo?: {
+    paymentMethod?: string;
+  };
+}
+
 // ── Cart types ────────────────────────────────────────────────
 
 export interface WixCartLineItem {
@@ -450,6 +498,36 @@ export class WixClient {
       totals,
       paymentMethod,
     });
+  }
+
+  // ── Orders (eCommerce Orders API) ──────────────────────────
+
+  async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{
+    orders: WixOrderResponse[];
+    totalResults: number;
+  }> {
+    const { limit = 50, offset = 0 } = options;
+    const data = await this.post<{ orders: WixOrderResponse[]; totalResults: number }>(
+      '/ecom/v1/orders/query',
+      {
+        query: {
+          paging: { limit: Math.min(Math.max(1, limit), 100), offset: Math.max(0, offset) },
+          sort: [{ fieldName: '_createdDate', order: 'DESC' }],
+        },
+      },
+    );
+    return {
+      orders: data.orders ?? [],
+      totalResults: data.totalResults ?? 0,
+    };
+  }
+
+  async getOrder(orderId: string): Promise<WixOrderResponse> {
+    if (!orderId) throw new WixApiError('Order ID is required');
+    const data = await this.get<{ order: WixOrderResponse }>(
+      `/ecom/v1/orders/${encodeURIComponent(orderId)}`,
+    );
+    return data.order;
   }
 
   // ── Cart queries (eCommerce Cart API) ──────────────────────

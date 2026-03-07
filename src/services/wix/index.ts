@@ -26,6 +26,7 @@ export {
   type WixReview,
   type CreateReviewInput,
   transformWixReview,
+  type WixOrderResponse,
 } from './wixClient';
 
 export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';

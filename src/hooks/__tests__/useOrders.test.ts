@@ -221,7 +221,9 @@ describe('useOrders', () => {
     act(() => {
       result.current.refresh();
     });
-    // refresh triggers cacheOrders again
-    expect(mockSetItem).toHaveBeenCalledWith(ORDER_CACHE_KEY, expect.any(String));
+    // refresh is async — wait for cacheOrders to be called
+    await waitFor(() => {
+      expect(mockSetItem).toHaveBeenCalledWith(ORDER_CACHE_KEY, expect.any(String));
+    });
   });
 });

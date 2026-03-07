@@ -245,6 +245,47 @@ describe('OrderDetailScreen', () => {
     });
   });
 
+  describe('Status Timeline', () => {
+    it('renders status timeline', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
+      expect(getByTestId('order-status-timeline')).toBeTruthy();
+    });
+
+    it('shows all four timeline dots for delivered order', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
+      expect(getByTestId('timeline-dot-placed')).toBeTruthy();
+      expect(getByTestId('timeline-dot-processing')).toBeTruthy();
+      expect(getByTestId('timeline-dot-shipped')).toBeTruthy();
+      expect(getByTestId('timeline-dot-delivered')).toBeTruthy();
+    });
+
+    it('shows timeline dots for shipped order', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-002' });
+      expect(getByTestId('timeline-dot-placed')).toBeTruthy();
+      expect(getByTestId('timeline-dot-shipped')).toBeTruthy();
+    });
+
+    it('shows cancelled state for cancelled order', () => {
+      const { getByText } = renderOrderDetail({ orderId: 'ord-004' });
+      expect(getByText('Order Cancelled')).toBeTruthy();
+    });
+
+    it('shows timeline for processing order', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-003' });
+      expect(getByTestId('timeline-dot-placed')).toBeTruthy();
+      expect(getByTestId('timeline-dot-processing')).toBeTruthy();
+    });
+  });
+
+  describe('Pull to refresh', () => {
+    it('renders scroll view with refresh capability', () => {
+      const { UNSAFE_queryAllByType } = renderOrderDetail({ orderId: 'ord-001' });
+      const scrollViews = UNSAFE_queryAllByType(require('react-native').ScrollView);
+      // At least one ScrollView should exist for the order detail content
+      expect(scrollViews.length).toBeGreaterThan(0);
+    });
+  });
+
   describe('Hook Integration (useOrders / useFutonModels)', () => {
     it('finds order via hook when no orders prop given', () => {
       const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });

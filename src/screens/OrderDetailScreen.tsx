@@ -7,7 +7,7 @@
  * back to the cart for easy repeat purchases.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -20,9 +20,160 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
-import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
+import { useOrders, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { formatPrice } from '@/utils';
+import { MountainRefreshControl } from '@/components/MountainRefreshControl';
+
+// ── Status Timeline ──────────────────────────────────────────
+
+const TIMELINE_STEPS = ['placed', 'processing', 'shipped', 'delivered'] as const;
+type TimelineStep = (typeof TIMELINE_STEPS)[number];
+
+const TIMELINE_LABELS: Record<TimelineStep, string> = {
+  placed: 'Placed',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+};
+
+function getCompletedSteps(status: OrderStatus): number {
+  switch (status) {
+    case 'processing':
+      return 1; // placed done, processing active
+    case 'shipped':
+      return 2; // placed + processing done, shipped active
+    case 'delivered':
+      return 4; // all done
+    case 'cancelled':
+      return 0;
+    default:
+      return 0;
+  }
+}
+
+function StatusTimeline({
+  status,
+  colors,
+  testID,
+}: {
+  status: OrderStatus;
+  colors: ReturnType<typeof useTheme>['colors'];
+  testID?: string;
+}) {
+  if (status === 'cancelled') {
+    return (
+      <View style={timelineStyles.container} testID={testID}>
+        <View style={timelineStyles.cancelledRow}>
+          <View style={[timelineStyles.dot, { backgroundColor: colors.muted }]} />
+          <Text style={[timelineStyles.cancelledText, { color: colors.muted }]}>
+            Order Cancelled
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const completed = getCompletedSteps(status);
+
+  return (
+    <View style={timelineStyles.container} testID={testID} accessibilityLabel={`Order status: ${ORDER_STATUS_CONFIG[status].label}`}>
+      {TIMELINE_STEPS.map((step, index) => {
+        const isCompleted = index < completed;
+        const isActive = index === completed && completed < 4;
+        const dotColor = isCompleted
+          ? colors.success
+          : isActive
+            ? colors.mountainBlue
+            : colors.sandDark;
+        const labelColor = isCompleted || isActive ? colors.espresso : colors.espressoLight;
+
+        return (
+          <View key={step} style={timelineStyles.stepRow}>
+            <View style={timelineStyles.stepIndicator}>
+              <View
+                style={[
+                  timelineStyles.dot,
+                  isActive && timelineStyles.activeDot,
+                  { backgroundColor: dotColor },
+                ]}
+                testID={`timeline-dot-${step}`}
+              />
+              {index < TIMELINE_STEPS.length - 1 && (
+                <View
+                  style={[
+                    timelineStyles.line,
+                    { backgroundColor: isCompleted ? colors.success : colors.sandDark },
+                  ]}
+                />
+              )}
+            </View>
+            <Text
+              style={[
+                timelineStyles.stepLabel,
+                (isCompleted || isActive) && timelineStyles.stepLabelActive,
+                { color: labelColor },
+              ]}
+            >
+              {TIMELINE_LABELS[step]}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+const timelineStyles = StyleSheet.create({
+  container: {
+    paddingVertical: 8,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  stepIndicator: {
+    alignItems: 'center',
+    width: 24,
+    marginRight: 12,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  activeDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginLeft: -2,
+    marginRight: -2,
+  },
+  line: {
+    width: 2,
+    height: 28,
+    marginVertical: 2,
+  },
+  stepLabel: {
+    fontSize: 14,
+    paddingTop: 0,
+    paddingBottom: 28,
+  },
+  stepLabelActive: {
+    fontWeight: '600',
+  },
+  cancelledRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cancelledText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+});
+
+// ── Props ────────────────────────────────────────────────────
 
 /** Props for the OrderDetailScreen component. */
 interface Props {
@@ -57,10 +208,18 @@ export function OrderDetailScreen({
   const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
-  const { getOrder } = useOrders();
+  const { getOrder, refresh } = useOrders();
   const { getModel, getFabric } = useFutonModels();
+  const [refreshing, setRefreshing] = useState(false);
 
   const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refresh();
+    // Allow time for the API response before hiding the indicator
+    setTimeout(() => setRefreshing(false), 800);
+  }, [refresh]);
 
   const formatDate = useCallback((iso: string) => {
     const d = new Date(iso);
@@ -152,6 +311,13 @@ export function OrderDetailScreen({
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <MountainRefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            testID="order-detail-refresh"
+          />
+        }
       >
         {/* Order date */}
         <Text
@@ -160,6 +326,15 @@ export function OrderDetailScreen({
         >
           Placed {formatDate(order.createdAt)}
         </Text>
+
+        {/* Status timeline */}
+        <View style={{ paddingHorizontal: spacing.lg }}>
+          <StatusTimeline
+            status={order.status}
+            colors={colors}
+            testID="order-status-timeline"
+          />
+        </View>
 
         {/* Tracking */}
         {order.tracking && (
