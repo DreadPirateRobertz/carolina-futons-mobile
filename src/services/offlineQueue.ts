@@ -120,8 +120,103 @@ async function persistQueue(): Promise<void> {
   }
 }
 
+// ── Executor registry ───────────────────────────────────────
+
+export type ActionExecutor = (payload: Record<string, unknown>) => Promise<void>;
+
+const executors: Map<string, ActionExecutor> = new Map();
+
+/** Register an executor function for a given action type (e.g. 'ADD_ITEM'). */
+export function registerExecutor(actionType: string, executor: ActionExecutor): void {
+  executors.set(actionType, executor);
+}
+
+/** Get a registered executor by action type. */
+export function getExecutor(actionType: string): ActionExecutor | undefined {
+  return executors.get(actionType);
+}
+
+/** Remove all registered executors. */
+export function clearExecutors(): void {
+  executors.clear();
+}
+
+// ── Replay with exponential backoff ─────────────────────────
+
+export interface ReplayOptions {
+  maxRetries?: number;
+  baseDelayMs?: number;
+}
+
+export interface ReplayResult {
+  succeeded: number;
+  failed: number;
+  errors: { actionId: string; error: Error }[];
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Replay all queued actions by calling their registered executors.
+ *
+ * Each action is retried with exponential backoff on failure.
+ * Successfully replayed actions are removed from the queue.
+ * Failed actions (after all retries exhausted) remain in the queue
+ * for the next replay cycle.
+ */
+export async function replay(options: ReplayOptions = {}): Promise<ReplayResult> {
+  const { maxRetries = 3, baseDelayMs = 1000 } = options;
+  const actions = [...queue];
+  const result: ReplayResult = { succeeded: 0, failed: 0, errors: [] };
+
+  for (const action of actions) {
+    const executor = executors.get(action.action);
+    if (!executor) {
+      // No executor registered — skip, leave in queue
+      result.failed++;
+      result.errors.push({
+        actionId: action.id,
+        error: new Error(`No executor registered for action: ${action.action}`),
+      });
+      continue;
+    }
+
+    let success = false;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        await executor(action.payload);
+        success = true;
+        break;
+      } catch (err) {
+        if (attempt < maxRetries) {
+          const jitter = Math.random() * baseDelayMs * 0.5;
+          const backoff = baseDelayMs * Math.pow(2, attempt) + jitter;
+          await delay(backoff);
+        } else {
+          result.errors.push({
+            actionId: action.id,
+            error: err instanceof Error ? err : new Error(String(err)),
+          });
+        }
+      }
+    }
+
+    if (success) {
+      dequeue(action.id);
+      result.succeeded++;
+    } else {
+      result.failed++;
+    }
+  }
+
+  return result;
+}
+
 /** Reset internal state (for testing) */
 export function _resetForTesting(): void {
   queue = [];
   nextId = 1;
+  executors.clear();
 }

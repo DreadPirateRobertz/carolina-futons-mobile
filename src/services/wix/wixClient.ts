@@ -332,6 +332,94 @@ export class WixClient {
     };
   }
 
+  // ── Cart mutations (eCommerce Cart API) ──────────────────────
+
+  async addToCart(productId: string, quantity: number, variantId?: string): Promise<void> {
+    const lineItem: Record<string, unknown> = {
+      catalogReference: {
+        catalogItemId: productId,
+        appId: '1380b703-ce81-ff05-f115-39571d94dfcd', // Wix Stores app ID
+        ...(variantId ? { options: { variantId } } : {}),
+      },
+      quantity,
+    };
+
+    await this.post('/ecom/v1/carts/current/add-to-cart', {
+      lineItems: [lineItem],
+    });
+  }
+
+  async removeFromCart(productId: string): Promise<void> {
+    // First query the current cart to find the line item ID for this product
+    const cart = await this.post<{ cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] } }>(
+      '/ecom/v1/carts/current',
+      {},
+    );
+
+    const lineItem = cart.cart?.lineItems?.find(
+      (li) => li.catalogReference?.catalogItemId === productId,
+    );
+
+    if (lineItem) {
+      await this.post('/ecom/v1/carts/current/remove-line-items', {
+        lineItemIds: [lineItem._id],
+      });
+    }
+  }
+
+  async updateCartItemQuantity(productId: string, quantity: number): Promise<void> {
+    const cart = await this.post<{ cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] } }>(
+      '/ecom/v1/carts/current',
+      {},
+    );
+
+    const lineItem = cart.cart?.lineItems?.find(
+      (li) => li.catalogReference?.catalogItemId === productId,
+    );
+
+    if (lineItem) {
+      await this.post('/ecom/v1/carts/current/update-line-items-quantity', {
+        lineItems: [{ _id: lineItem._id, quantity }],
+      });
+    }
+  }
+
+  // ── Wishlist mutations (Wix Data CMS) ───────────────────────
+
+  async addToWishlist(productId: string, savedPrice: number): Promise<void> {
+    await this.post('/wix-data/v2/items', {
+      dataCollectionId: 'Wishlist',
+      dataItem: {
+        data: {
+          productId,
+          savedPrice,
+          addedAt: new Date().toISOString(),
+        },
+      },
+    });
+  }
+
+  async removeFromWishlist(productId: string): Promise<void> {
+    // Find the wishlist item first
+    const result = await this.post<{
+      dataItems: { _id: string; data: { productId: string } }[];
+    }>('/wix-data/v2/items/query', {
+      dataCollectionId: 'Wishlist',
+      query: {
+        filter: { productId: { $eq: productId } },
+        paging: { limit: 1 },
+      },
+    });
+
+    const item = result.dataItems?.[0];
+    if (item) {
+      await this.post('/wix-data/v2/items/remove', {
+        dataCollectionId: 'Wishlist',
+        dataItemId: item._id,
+      });
+    }
+  }
+
   // ── Wix Data (Custom CMS Collections) ───────────────────────
 
   async queryData<T = Record<string, unknown>>(

@@ -3,8 +3,8 @@
  *
  * When the device goes offline, components can enqueue mutation actions (e.g.,
  * "add to cart", "submit review") via `queueAction`. When connectivity is
- * restored, the hook automatically drains the queue and invokes the caller's
- * `onSync` handler to replay those actions against the backend.
+ * restored, the hook automatically replays queued actions against the
+ * appropriate Wix REST endpoints with exponential backoff.
  *
  * Actions are persisted to AsyncStorage through the offlineQueue service so
  * they survive app restarts.
@@ -14,13 +14,25 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useConnectivity } from './useConnectivity';
-import { drain, loadQueue, getQueueLength, enqueue, reEnqueue } from '@/services/offlineQueue';
-import type { QueuedAction } from '@/services/offlineQueue';
+import {
+  drain,
+  loadQueue,
+  getQueue,
+  getQueueLength,
+  enqueue,
+  reEnqueue,
+  replay,
+  registerExecutor,
+  clearExecutors,
+} from '@/services/offlineQueue';
+import type { QueuedAction, ReplayResult } from '@/services/offlineQueue';
 
 /**
  * Callback invoked with the batch of queued actions when connectivity is restored.
  *
  * @param actions - Array of actions accumulated while offline.
+ * @deprecated Use the executor-based replay system instead. This callback is
+ * still invoked after replay completes for backwards compatibility.
  */
 export interface SyncHandler {
   (actions: QueuedAction[]): Promise<void> | void;
@@ -28,10 +40,16 @@ export interface SyncHandler {
 
 /** Configuration options for the `useOfflineSync` hook. */
 interface UseOfflineSyncOptions {
-  /** Handler called with queued actions when coming back online. */
+  /** Handler called with queued actions when coming back online (legacy). */
   onSync?: SyncHandler;
   /** Whether to auto-load the persisted queue on mount (default: true). */
   autoLoad?: boolean;
+  /** Custom executors to register on mount. Keys are action types. */
+  executors?: Record<string, (payload: Record<string, unknown>) => Promise<void>>;
+  /** Max retries per action during replay (default: 3). */
+  maxRetries?: number;
+  /** Base delay in ms for exponential backoff (default: 1000). */
+  baseDelayMs?: number;
 }
 
 /** Return value of the `useOfflineSync` hook. */
@@ -46,34 +64,53 @@ interface UseOfflineSyncResult {
     action: string,
     payload: Record<string, unknown>,
   ) => void;
-  /** Manually trigger a sync drain, independent of connectivity transitions. */
-  syncNow: () => Promise<void>;
+  /** Manually trigger a replay, independent of connectivity transitions. */
+  syncNow: () => Promise<ReplayResult | void>;
+  /** Result from the last replay attempt. */
+  lastReplayResult: ReplayResult | null;
 }
 
 /**
- * Hook that manages offline action queueing and sync-on-reconnect.
+ * Hook that manages offline action queueing and replay-on-reconnect.
  *
  * - Loads the persisted queue on mount (unless `autoLoad` is false)
- * - Watches connectivity; when transitioning offline to online, drains queue
- *   and calls `onSync`
+ * - Registers provided executors for action types
+ * - Watches connectivity; when transitioning offline→online, replays queue
+ *   via registered executors with exponential backoff
  * - Provides `queueAction` for components to enqueue mutations while offline
  *
- * @param options - Optional configuration (sync handler, autoLoad toggle).
- * @returns Object containing `{ pendingCount, isSyncing, queueAction, syncNow }`
+ * @param options - Optional configuration (executors, retry settings, etc).
+ * @returns Object containing `{ pendingCount, isSyncing, queueAction, syncNow, lastReplayResult }`
  *
  * @example
  * const { pendingCount, queueAction, syncNow } = useOfflineSync({
- *   onSync: async (actions) => { await replayActions(actions); },
+ *   executors: {
+ *     ADD_ITEM: async (payload) => { await wixClient.addToCart(payload.productId, payload.quantity); },
+ *     REMOVE_ITEM: async (payload) => { await wixClient.removeFromCart(payload.productId); },
+ *   },
  * });
  */
 export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineSyncResult {
-  const { onSync, autoLoad = true } = options;
+  const { onSync, autoLoad = true, executors: executorMap, maxRetries, baseDelayMs } = options;
   const { isOnline } = useConnectivity();
   const wasOnline = useRef(isOnline);
   const [pendingCount, setPendingCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [lastReplayResult, setLastReplayResult] = useState<ReplayResult | null>(null);
   const onSyncRef = useRef(onSync);
   onSyncRef.current = onSync;
+
+  // Register executors on mount, clean up on unmount
+  useEffect(() => {
+    if (executorMap) {
+      for (const [actionType, executor] of Object.entries(executorMap)) {
+        registerExecutor(actionType, executor);
+      }
+    }
+    return () => {
+      clearExecutors();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load queue on mount
   useEffect(() => {
@@ -83,22 +120,34 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   }, [autoLoad]);
 
   const syncNow = useCallback(async () => {
-    const actions = drain();
-    if (actions.length === 0) return;
+    if (getQueueLength() === 0) return;
+
     setIsSyncing(true);
     try {
-      if (onSyncRef.current) {
-        await onSyncRef.current(actions);
+      // Replay via executor registry with exponential backoff.
+      // replay() dequeues successful actions internally; failed actions stay in queue.
+      const result = await replay({ maxRetries, baseDelayMs });
+      setLastReplayResult(result);
+
+      // Legacy fallback: drain remaining items and pass to onSync callback.
+      // This covers the case where no executors are registered (old-style usage).
+      if (onSyncRef.current && getQueueLength() > 0) {
+        const remaining = drain();
+        try {
+          await onSyncRef.current(remaining);
+        } catch {
+          // Re-enqueue actions so they survive for the next sync attempt
+          reEnqueue(remaining);
+          throw new Error('Legacy onSync handler failed');
+        }
       }
-    } catch (err) {
-      // Re-enqueue actions so they survive for the next sync attempt
-      reEnqueue(actions);
-      throw err;
+
+      return result;
     } finally {
       setIsSyncing(false);
       setPendingCount(getQueueLength());
     }
-  }, []);
+  }, [maxRetries, baseDelayMs]);
 
   // Watch for offline→online transition
   useEffect(() => {
@@ -118,5 +167,5 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
     [],
   );
 
-  return { pendingCount, isSyncing, queueAction, syncNow };
+  return { pendingCount, isSyncing, queueAction, syncNow, lastReplayResult };
 }
