@@ -106,7 +106,9 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'cart-screen'}
       >
-        <MountainSkyline variant="sunrise" height={80} testID="cart-empty-skyline" />
+        <View accessible={false} importantForAccessibility="no-hide-descendants">
+          <MountainSkyline variant="sunrise" height={80} testID="cart-empty-skyline" />
+        </View>
         <EmptyState
           icon="cart"
           title="Your cart is empty"
@@ -127,8 +129,10 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
       style={[styles.root, { backgroundColor: darkPalette.background }]}
       testID={testID ?? 'cart-screen'}
     >
-      {/* Mountain skyline header */}
-      <MountainSkyline variant="sunset" height={50} testID="cart-skyline" />
+      {/* Mountain skyline header (decorative) */}
+      <View accessible={false} importantForAccessibility="no-hide-descendants">
+        <MountainSkyline variant="sunset" height={50} testID="cart-skyline" />
+      </View>
 
       {/* Header */}
       <View style={[styles.header, { paddingHorizontal: spacing.lg }]}>
@@ -251,7 +255,12 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
                 </TouchableOpacity>
               </View>
               {promo.status === 'error' && promo.error && (
-                <Text style={[styles.promoError, { color: colors.sunsetCoral }]} testID="promo-error">
+                <Text
+                  style={[styles.promoError, { color: colors.sunsetCoral }]}
+                  testID="promo-error"
+                  accessibilityRole="alert"
+                  accessibilityLiveRegion="assertive"
+                >
                   {promo.error}
                 </Text>
               )}
@@ -277,6 +286,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               styles.summaryTitle,
               { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
             ]}
+            accessibilityRole="header"
           >
             Order Summary
           </Text>
@@ -501,12 +511,16 @@ function CartItemRow({
           sh.card,
         ]}
         testID={`cart-item-${item.id}`}
+        accessibilityLabel={`${item.model.name}, ${item.fabric.name}, quantity ${item.quantity}, ${formatPrice(lineTotal)}`}
+        accessibilityHint="Swipe left to delete"
       >
         {/* Fabric color indicator + product info */}
         <View style={styles.itemTop}>
           <View
             style={[styles.fabricDot, { backgroundColor: item.fabric.color }]}
             testID={`cart-item-fabric-${item.id}`}
+            accessible={false}
+            importantForAccessibility="no"
           />
           <View style={styles.itemInfo}>
             <Text

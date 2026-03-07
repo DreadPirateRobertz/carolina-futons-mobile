@@ -389,6 +389,8 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         <Text
           style={[styles.fieldError, { color: colors.error }]}
           testID={`${options.testIDPrefix}-${options.fieldName}-error`}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
         >
           {fieldError}
         </Text>
@@ -502,6 +504,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <Text
             style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
             testID="shipping-address-title"
+            accessibilityRole="header"
           >
             Shipping Address
           </Text>
@@ -615,6 +618,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             <Text
               style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
               testID="billing-address-title"
+              accessibilityRole="header"
             >
               Billing Address
             </Text>
@@ -627,6 +631,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <Text
             style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
             testID="checkout-items-section-title"
+            accessibilityRole="header"
           >
             Items ({items.length})
           </Text>
@@ -753,7 +758,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Payment Method</Text>
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]} accessibilityRole="header">Payment Method</Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -831,6 +836,8 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               <Text
                 style={[styles.fieldError, { color: colors.error }]}
                 testID="card-field-error"
+                accessibilityRole="alert"
+                accessibilityLiveRegion="assertive"
               >
                 {cardError}
               </Text>

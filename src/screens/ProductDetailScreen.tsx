@@ -388,11 +388,19 @@ export function ProductDetailScreen({
           </View>
         </Animated.View>
 
-        {/* Mountain skyline transition */}
-        <MountainSkyline variant="sunset" height={40} testID="product-detail-skyline" />
+        {/* Mountain skyline transition (decorative) */}
+        <View accessible={false} importantForAccessibility="no-hide-descendants">
+          <MountainSkyline variant="sunset" height={40} testID="product-detail-skyline" />
+        </View>
 
         {/* Pagination dots */}
-        <View style={styles.paginationContainer} testID="gallery-pagination">
+        <View
+          style={styles.paginationContainer}
+          testID="gallery-pagination"
+          accessible={true}
+          accessibilityRole="text"
+          accessibilityLabel={`Image ${activeGalleryIndex + 1} of ${GALLERY_VIEWS.length}`}
+        >
           {GALLERY_VIEWS.map((_, i) => (
             <View
               key={i}
@@ -459,6 +467,7 @@ export function ProductDetailScreen({
               styles.sectionTitle,
               { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
             ]}
+            accessibilityRole="header"
           >
             Fabric
           </Text>
@@ -505,6 +514,7 @@ export function ProductDetailScreen({
               styles.sectionTitle,
               { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
             ]}
+            accessibilityRole="header"
           >
             Dimensions
           </Text>
@@ -560,6 +570,7 @@ export function ProductDetailScreen({
               styles.sectionTitle,
               { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
             ]}
+            accessibilityRole="header"
           >
             Reviews
           </Text>
@@ -912,10 +923,15 @@ function DimensionItem({
   mutedColor: string;
 }) {
   return (
-    <View style={styles.dimItem} testID={`dimension-${label.toLowerCase()}`}>
-      <Text style={[styles.dimValue, { color }]}>{value}</Text>
-      <Text style={[styles.dimLabel, { color: mutedColor }]}>{label}</Text>
-      <Text style={[styles.dimInches, { color: mutedColor }]}>{inches}"</Text>
+    <View
+      style={styles.dimItem}
+      testID={`dimension-${label.toLowerCase()}`}
+      accessible={true}
+      accessibilityLabel={`${label}: ${value}, ${inches} inches`}
+    >
+      <Text style={[styles.dimValue, { color }]} importantForAccessibility="no">{value}</Text>
+      <Text style={[styles.dimLabel, { color: mutedColor }]} importantForAccessibility="no">{label}</Text>
+      <Text style={[styles.dimInches, { color: mutedColor }]} importantForAccessibility="no">{inches}"</Text>
     </View>
   );
 }

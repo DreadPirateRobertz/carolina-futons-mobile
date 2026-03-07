@@ -90,8 +90,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       ]}
       testID="home-screen"
     >
-      {/* Hero — Mountain skyline backdrop */}
-      <View style={styles.heroBackdrop}>
+      {/* Hero — Mountain skyline backdrop (decorative) */}
+      <View style={styles.heroBackdrop} accessible={false} importantForAccessibility="no-hide-descendants">
         <MountainSkyline variant="sunrise" height={140} showGlow testID="home-hero-skyline" />
       </View>
 
@@ -120,6 +120,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               fontFamily: typography.headingFamily,
             },
           ]}
+          accessibilityRole="header"
         >
           Carolina{'\n'}Futons
         </Text>
@@ -182,7 +183,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               See how our futons fit using your camera
             </Text>
           </View>
-          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]}>›</Text>
+          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]} importantForAccessibility="no">›</Text>
         </Pressable>
       </GlassCard>
 
@@ -230,7 +231,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               Futons, covers, mattresses & more
             </Text>
           </View>
-          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]}>›</Text>
+          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]} importantForAccessibility="no">›</Text>
         </Pressable>
       </GlassCard>
 
@@ -247,6 +248,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
                 paddingHorizontal: spacing.lg,
               },
             ]}
+            accessibilityRole="header"
           >
             Shop the Look
           </Text>
@@ -258,6 +260,9 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               { paddingHorizontal: spacing.lg, gap: spacing.md },
             ]}
             testID="collection-carousel"
+            accessibilityRole="adjustable"
+            accessibilityLabel="Shop the Look collections"
+            accessibilityHint="Swipe left or right to browse collections"
           >
             {featured.map((collection) => (
               <CollectionCard
@@ -284,6 +289,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
                 paddingHorizontal: spacing.lg,
               },
             ]}
+            accessibilityRole="header"
           >
             Recently Viewed
           </Text>
@@ -295,6 +301,9 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               { paddingHorizontal: spacing.lg, gap: spacing.md },
             ]}
             testID="recently-viewed-carousel"
+            accessibilityRole="adjustable"
+            accessibilityLabel="Recently viewed products"
+            accessibilityHint="Swipe left or right to browse recently viewed products"
           >
             {recentProducts.slice(0, 10).map((product) => (
               <View key={product.id} style={styles.recentProductCard}>
@@ -308,8 +317,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </View>
       )}
 
-      {/* Mountain skyline section divider */}
-      <View style={styles.dividerSection}>
+      {/* Mountain skyline section divider (decorative) */}
+      <View style={styles.dividerSection} accessible={false} importantForAccessibility="no-hide-descendants">
         <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
         <Text
           style={[
