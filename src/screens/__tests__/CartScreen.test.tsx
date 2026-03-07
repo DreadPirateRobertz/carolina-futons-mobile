@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { CartScreen } from '../CartScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
@@ -24,12 +25,14 @@ function renderCartScreen(
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <ThemeProvider>
-        <CartProvider>
-          {seedItems && <CartSeeder items={seedItems} />}
-          {children}
-        </CartProvider>
-      </ThemeProvider>
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <ThemeProvider>
+          <CartProvider>
+            {seedItems && <CartSeeder items={seedItems} />}
+            {children}
+          </CartProvider>
+        </ThemeProvider>
+      </ConnectivityProvider>
     );
   }
 

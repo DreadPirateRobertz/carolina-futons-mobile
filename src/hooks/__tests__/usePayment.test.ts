@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react-native';
 import React from 'react';
 import { usePayment } from '../usePayment';
 import { CartProvider, useCart } from '../useCart';
+import { ConnectivityProvider } from '../useConnectivity';
 import { createPaymentIntent, confirmOrder, PaymentError } from '@/services/payment';
 
 // Mock Stripe
@@ -50,7 +51,11 @@ const mockedCreatePaymentIntent = createPaymentIntent as jest.MockedFunction<
 const mockedConfirmOrder = confirmOrder as jest.MockedFunction<typeof confirmOrder>;
 
 function wrapper({ children }: { children: React.ReactNode }) {
-  return React.createElement(CartProvider, null, children);
+  return React.createElement(
+    ConnectivityProvider,
+    { initialOnline: true, skipNetInfo: true },
+    React.createElement(CartProvider, null, children),
+  );
 }
 
 const INTENT_RESPONSE = {

@@ -26,6 +26,9 @@ import { AuthContext } from '@/hooks/useAuth';
 import { WixClient } from '@/services/wix/wixClient';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 import type { WixCartLineItem } from '@/services/wix/wixClient';
+import { useConnectivity } from './useConnectivity';
+import { useOfflineSync } from './useOfflineSync';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -116,6 +119,10 @@ interface CartContextValue {
   removeItem: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   clearCart: () => void;
+  /** Number of cart mutations pending offline sync to the server. */
+  pendingSync: number;
+  /** Whether offline cart mutations are currently being replayed. */
+  isSyncing: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -189,6 +196,48 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const prevUserRef = useRef<typeof user>(null);
   const itemsRef = useRef(state.items);
   itemsRef.current = state.items;
+
+  // ── Offline sync integration ──────────────────────────────────
+  const wixClient = useOptionalWixClient();
+  const { isOnline } = useConnectivity();
+  const isOnlineRef = useRef(isOnline);
+  isOnlineRef.current = isOnline;
+
+  const wixClientRef = useRef(wixClient);
+  wixClientRef.current = wixClient;
+
+  const cartExecutors = useMemo(
+    () => ({
+      CART_ADD_ITEM: async (payload: Record<string, unknown>) => {
+        const client = wixClientRef.current;
+        if (!client) return;
+        await client.addToCart(
+          payload.productId as string,
+          payload.quantity as number,
+        );
+      },
+      CART_REMOVE_ITEM: async (payload: Record<string, unknown>) => {
+        const client = wixClientRef.current;
+        if (!client) return;
+        await client.removeFromCart(payload.productId as string);
+      },
+      CART_UPDATE_QUANTITY: async (payload: Record<string, unknown>) => {
+        const client = wixClientRef.current;
+        if (!client) return;
+        await client.updateCartItemQuantity(
+          payload.productId as string,
+          payload.quantity as number,
+        );
+      },
+    }),
+    [],
+  );
+
+  const { queueAction, pendingCount, isSyncing } = useOfflineSync({
+    executors: cartExecutors,
+  });
+
+  // ── AsyncStorage persistence ──────────────────────────────────
 
   // Load from AsyncStorage on mount
   useEffect(() => {
@@ -289,17 +338,44 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     prevUserRef.current = user;
   }, [user]);
 
-  const addItem = useCallback((model: FutonModel, fabric: Fabric, quantity: number) => {
-    dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
-  }, []);
+  // ── Cart mutation actions ─────────────────────────────────────
 
-  const removeItem = useCallback((itemId: string) => {
-    dispatch({ type: 'REMOVE_ITEM', itemId });
-  }, []);
+  const addItem = useCallback(
+    (model: FutonModel, fabric: Fabric, quantity: number) => {
+      dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
+      if (!isOnlineRef.current) {
+        queueAction('cart', 'CART_ADD_ITEM', {
+          productId: model.id,
+          quantity,
+          fabricId: fabric.id,
+        });
+      }
+    },
+    [queueAction],
+  );
 
-  const updateQuantity = useCallback((itemId: string, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', itemId, quantity });
-  }, []);
+  const removeItem = useCallback(
+    (itemId: string) => {
+      dispatch({ type: 'REMOVE_ITEM', itemId });
+      if (!isOnlineRef.current) {
+        queueAction('cart', 'CART_REMOVE_ITEM', { productId: itemId });
+      }
+    },
+    [queueAction],
+  );
+
+  const updateQuantity = useCallback(
+    (itemId: string, quantity: number) => {
+      dispatch({ type: 'UPDATE_QUANTITY', itemId, quantity });
+      if (!isOnlineRef.current) {
+        queueAction('cart', 'CART_UPDATE_QUANTITY', {
+          productId: itemId,
+          quantity,
+        });
+      }
+    },
+    [queueAction],
+  );
 
   const clearCart = useCallback(() => {
     dispatch({ type: 'CLEAR' });
@@ -325,8 +401,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeItem,
       updateQuantity,
       clearCart,
+      pendingSync: pendingCount,
+      isSyncing,
     }),
-    [state.items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart],
+    [state.items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart, pendingCount, isSyncing],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

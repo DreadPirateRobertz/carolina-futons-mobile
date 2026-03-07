@@ -10,6 +10,7 @@ import { ShopScreen } from '../ShopScreen';
 import { OrderHistoryScreen } from '../OrderHistoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { CartProvider } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { WishlistProvider } from '@/hooks/useWishlist';
 
 jest.useFakeTimers();
@@ -19,22 +20,26 @@ describe.skip('Empty state illustrations', () => {
   describe('CartScreen', () => {
     it('renders cart illustration in empty state', () => {
       const { getByTestId } = render(
-        <ThemeProvider>
-          <CartProvider>
+        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+          <ThemeProvider>
+            <CartProvider>
             <CartScreen />
-          </CartProvider>
-        </ThemeProvider>,
+            </CartProvider>
+          </ThemeProvider>
+        </ConnectivityProvider>,
       );
       expect(getByTestId('cart-illustration')).toBeTruthy();
     });
 
     it('does not render emoji icon when illustration present', () => {
       const { queryByTestId } = render(
-        <ThemeProvider>
-          <CartProvider>
+        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+          <ThemeProvider>
+            <CartProvider>
             <CartScreen />
-          </CartProvider>
-        </ThemeProvider>,
+            </CartProvider>
+          </ThemeProvider>
+        </ConnectivityProvider>,
       );
       expect(queryByTestId('cart-empty-state-icon')).toBeNull();
     });

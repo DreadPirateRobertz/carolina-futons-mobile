@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider, useCart } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -175,13 +176,15 @@ jest.mock('@/hooks/useAROnboarding', () => ({
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <NavigationContainer>
-      <CartProvider>
-        <WishlistProvider>
-          <ARScreen {...props} />
-        </WishlistProvider>
-      </CartProvider>
-    </NavigationContainer>,
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <NavigationContainer>
+        <CartProvider>
+          <WishlistProvider>
+            <ARScreen {...props} />
+          </WishlistProvider>
+        </CartProvider>
+      </NavigationContainer>
+    </ConnectivityProvider>,
   );
 }
 
@@ -579,14 +582,16 @@ describe('ARScreen', () => {
         return null;
       }
       const { getByTestId } = render(
-        <NavigationContainer>
-          <CartProvider>
-            <WishlistProvider>
-              <CartSpy />
-              <ARScreen />
-            </WishlistProvider>
-          </CartProvider>
-        </NavigationContainer>,
+        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+          <NavigationContainer>
+            <CartProvider>
+              <WishlistProvider>
+                <CartSpy />
+                <ARScreen />
+              </WishlistProvider>
+            </CartProvider>
+          </NavigationContainer>
+        </ConnectivityProvider>,
       );
       fireEvent.press(getByTestId('ar-add-to-cart'));
       expect(cartItems).toHaveLength(1);
@@ -603,14 +608,16 @@ describe('ARScreen', () => {
         return null;
       }
       const { getByTestId } = render(
-        <NavigationContainer>
-          <CartProvider>
-            <WishlistProvider>
-              <CartSpy />
-              <ARScreen />
-            </WishlistProvider>
-          </CartProvider>
-        </NavigationContainer>,
+        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+          <NavigationContainer>
+            <CartProvider>
+              <WishlistProvider>
+                <CartSpy />
+                <ARScreen />
+              </WishlistProvider>
+            </CartProvider>
+          </NavigationContainer>
+        </ConnectivityProvider>,
       );
       fireEvent.press(getByTestId('ar-model-blue-ridge-queen'));
       fireEvent.press(getByTestId('ar-fabric-mountain-blue'));

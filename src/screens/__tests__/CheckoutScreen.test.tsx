@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { typography } from '@/theme/tokens';
@@ -165,12 +166,14 @@ function renderCheckout(
 ) {
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <ThemeProvider>
-        <CartProvider>
-          {seedItems && <CartSeeder items={seedItems} />}
-          {children}
-        </CartProvider>
-      </ThemeProvider>
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <ThemeProvider>
+          <CartProvider>
+            {seedItems && <CartSeeder items={seedItems} />}
+            {children}
+          </CartProvider>
+        </ThemeProvider>
+      </ConnectivityProvider>
     );
   }
 

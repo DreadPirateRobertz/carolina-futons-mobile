@@ -10,6 +10,7 @@ import { useCameraPermissions } from 'expo-camera';
 import { FUTON_MODELS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -149,13 +150,15 @@ jest.mock('@/hooks/useFutonModels', () => ({
 
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <NavigationContainer>
-      <CartProvider>
-        <WishlistProvider>
-          <ARScreen {...props} />
-        </WishlistProvider>
-      </CartProvider>
-    </NavigationContainer>,
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <NavigationContainer>
+        <CartProvider>
+          <WishlistProvider>
+            <ARScreen {...props} />
+          </WishlistProvider>
+        </CartProvider>
+      </NavigationContainer>
+    </ConnectivityProvider>,
   );
 }
 

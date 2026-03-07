@@ -3,6 +3,7 @@ import { Linking } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { OrderDetailScreen } from '../OrderDetailScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { MOCK_ORDERS } from '@/data/orders';
 import { Text, View } from 'react-native';
@@ -13,11 +14,13 @@ function renderOrderDetail(
   props: Partial<React.ComponentProps<typeof OrderDetailScreen>> & { orderId: string },
 ) {
   return render(
-    <ThemeProvider>
-      <CartProvider>
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <ThemeProvider>
+        <CartProvider>
         <OrderDetailScreen {...props} />
-      </CartProvider>
-    </ThemeProvider>,
+        </CartProvider>
+      </ThemeProvider>
+    </ConnectivityProvider>,
   );
 }
 
@@ -36,12 +39,14 @@ function renderWithCartReader(
   props: Partial<React.ComponentProps<typeof OrderDetailScreen>> & { orderId: string },
 ) {
   return render(
-    <ThemeProvider>
-      <CartProvider>
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <ThemeProvider>
+        <CartProvider>
         <OrderDetailScreen {...props} />
         <CartReader testID="cart-reader" />
-      </CartProvider>
-    </ThemeProvider>,
+        </CartProvider>
+      </ThemeProvider>
+    </ConnectivityProvider>,
   );
 }
 

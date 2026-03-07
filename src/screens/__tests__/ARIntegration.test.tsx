@@ -7,6 +7,7 @@ import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider } from '@/hooks/useCart';
+import { ConnectivityProvider } from '@/hooks/useConnectivity';
 
 // ============================================================================
 // AR Camera Feature — Integration Test Scaffolding (cm-88d)
@@ -154,13 +155,15 @@ try {
 // Helper: wrap ARScreen in required providers
 const renderAR = (props: any = {}) =>
   render(
-    <NavigationContainer>
-      <CartProvider>
-        <WishlistProvider>
-          <ARScreen {...props} />
-        </WishlistProvider>
-      </CartProvider>
-    </NavigationContainer>,
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <NavigationContainer>
+        <CartProvider>
+          <WishlistProvider>
+            <ARScreen {...props} />
+          </WishlistProvider>
+        </CartProvider>
+      </NavigationContainer>
+    </ConnectivityProvider>,
   );
 
 // ============================================================================

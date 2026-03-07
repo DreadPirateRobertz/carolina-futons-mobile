@@ -3,7 +3,9 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { CartProvider, useCart, mergeCartItems, type CartItem } from '../useCart';
 import { AuthContext } from '@/hooks/useAuth';
+import { ConnectivityProvider } from '../useConnectivity';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { _resetForTesting } from '@/services/offlineQueue';
 
 let mockUser: { id: string; email: string; displayName: string; provider: string } | null = null;
 
@@ -93,13 +95,19 @@ const mockAuthValue = {
   clearError: jest.fn(),
 };
 
+beforeEach(() => {
+  _resetForTesting();
+});
+
 function renderCart() {
   return render(
-    <AuthContext.Provider value={{ ...mockAuthValue, user: mockUser as any }}>
-      <CartProvider>
-        <CartHarness />
-      </CartProvider>
-    </AuthContext.Provider>,
+    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+      <AuthContext.Provider value={{ ...mockAuthValue, user: mockUser as any }}>
+        <CartProvider>
+          <CartHarness />
+        </CartProvider>
+      </AuthContext.Provider>
+    </ConnectivityProvider>,
   );
 }
 
@@ -239,7 +247,13 @@ describe('useCart', () => {
         useCart();
         return null;
       }
-      expect(() => render(<BadComponent />)).toThrow('useCart must be used within a CartProvider');
+      expect(() =>
+        render(
+          <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+            <BadComponent />
+          </ConnectivityProvider>,
+        ),
+      ).toThrow('useCart must be used within a CartProvider');
     });
   });
 });
