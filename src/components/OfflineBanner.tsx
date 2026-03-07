@@ -7,7 +7,8 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
+import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useConnectivity } from '@/hooks/useConnectivity';
 
@@ -17,10 +18,10 @@ interface Props {
 
 /**
  * Displays an offline notification banner when the device loses connectivity.
- * Returns null when online, so it can be placed unconditionally in layouts.
+ * Slides in from the top when offline and slides out when connectivity is restored.
  *
  * @param props.testID - Test identifier
- * @returns The banner View when offline, or null when online
+ * @returns The banner View with slide animation when offline, or null when online
  */
 export function OfflineBanner({ testID }: Props) {
   const { colors } = useTheme();
@@ -29,14 +30,16 @@ export function OfflineBanner({ testID }: Props) {
   if (isOnline) return null;
 
   return (
-    <View
+    <Animated.View
+      entering={SlideInUp.duration(300)}
+      exiting={SlideOutUp.duration(300)}
       style={[styles.banner, { backgroundColor: colors.espresso }]}
       testID={testID ?? 'offline-banner'}
       accessibilityRole="alert"
       accessibilityLabel="You are offline. Browsing cached products."
     >
       <Text style={styles.bannerText}>You're offline — browsing cached products</Text>
-    </View>
+    </Animated.View>
   );
 }
 
