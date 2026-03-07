@@ -199,6 +199,31 @@ describe('usePayment', () => {
     expect(order).toEqual(mockConfirmation);
   });
 
+  it('handles initPaymentSheet failure with STRIPE_ERROR', async () => {
+    mockInitPaymentSheet.mockResolvedValue({
+      error: { code: 'Failed', message: 'Unable to initialize payment sheet' },
+    });
+    mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+
+    const { result } = renderHook(
+      () => ({ cart: useCart(), payment: usePayment() }),
+      { wrapper },
+    );
+
+    await addCartItem(result);
+
+    let order: any;
+    await act(async () => {
+      order = await result.current.payment.processPayment('card');
+    });
+
+    expect(order).toBeNull();
+    expect(result.current.payment.status).toBe('error');
+    expect(result.current.payment.error).toBe('Unable to initialize payment sheet');
+    expect(mockPresentPaymentSheet).not.toHaveBeenCalled();
+    expect(mockedConfirmOrder).not.toHaveBeenCalled();
+  });
+
   it('handles payment cancellation gracefully', async () => {
     mockPresentPaymentSheet.mockResolvedValue({
       error: { code: 'Canceled', message: 'User cancelled' },
