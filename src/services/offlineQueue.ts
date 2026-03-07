@@ -232,6 +232,38 @@ export async function replay(options: ReplayOptions = {}): Promise<ReplayResult>
   return result;
 }
 
+// ── LWW conflict resolution ─────────────────────────────────
+
+/**
+ * Compact queued actions for a domain using Last-Write-Wins.
+ *
+ * Groups actions by a key extracted from their payload (default: `productId`),
+ * then keeps only the most recent action per key. Other domains are untouched.
+ * This prevents contradictory add/remove pairs from being replayed.
+ */
+export function compactByLWW(
+  domain: QueuedAction['domain'],
+  keyField: string = 'productId',
+): number {
+  const domainActions = queue.filter((a) => a.domain === domain);
+  const otherActions = queue.filter((a) => a.domain !== domain);
+
+  const latest = new Map<string, QueuedAction>();
+  for (const action of domainActions) {
+    const key = String(action.payload[keyField] ?? '');
+    const existing = latest.get(key);
+    if (!existing || action.timestamp >= existing.timestamp) {
+      latest.set(key, action);
+    }
+  }
+
+  const compacted = Array.from(latest.values());
+  const removed = domainActions.length - compacted.length;
+  queue = [...otherActions, ...compacted].sort((a, b) => a.timestamp - b.timestamp);
+  if (removed > 0) persistQueue();
+  return removed;
+}
+
 /** Reset internal state (for testing) */
 export function _resetForTesting(): void {
   queue = [];

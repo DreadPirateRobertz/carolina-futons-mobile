@@ -79,3 +79,11 @@ export function useConnectivity(): ConnectivityContextValue {
   }
   return ctx;
 }
+
+/**
+ * Like useConnectivity but returns null when outside a ConnectivityProvider.
+ * Useful for components that optionally integrate with connectivity.
+ */
+export function useOptionalConnectivity(): ConnectivityContextValue | null {
+  return useContext(ConnectivityContext);
+}

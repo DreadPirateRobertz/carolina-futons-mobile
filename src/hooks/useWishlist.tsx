@@ -5,11 +5,28 @@
  * AsyncStorage, and tracks the price at time of save so the UI can highlight
  * price drops. Also provides a shareable text summary of the wishlist.
  *
+ * When wrapped in a ConnectivityProvider, add/remove mutations are
+ * automatically queued when offline and replayed on reconnect with LWW
+ * (Last-Write-Wins) conflict resolution.
+ *
  * @module useWishlist
  */
 
-import React, { createContext, useContext, useCallback, useMemo, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, useReducer, useEffect, useRef, useState } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
+import { useOptionalConnectivity } from './useConnectivity';
+import {
+  enqueue,
+  loadQueue,
+  getQueue,
+  getQueueLength,
+  replay,
+  registerExecutor,
+  clearExecutors,
+  compactByLWW,
+} from '@/services/offlineQueue';
+import type { ReplayResult } from '@/services/offlineQueue';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 /**
  * A single wishlist entry, storing the product ID, timestamp, and
@@ -75,6 +92,10 @@ interface WishlistContextValue {
   clear: () => void;
   getProducts: () => (Product & { savedPrice: number; priceDrop: number })[];
   getShareText: () => string;
+  /** Number of wishlist actions pending in the offline queue. */
+  pendingSync: number;
+  /** Whether a sync replay is currently in progress. */
+  isSyncing: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
@@ -89,18 +110,95 @@ interface WishlistProviderProps {
 /**
  * Context provider that manages wishlist state and persists it to AsyncStorage.
  *
+ * When a ConnectivityProvider is present as an ancestor, add/remove operations
+ * are synced to the Wix CMS when online and queued for replay when offline.
+ * Queued actions are compacted via LWW before replay to resolve conflicts.
+ *
  * @param props.children - Child components that may consume wishlist context.
  * @param props.initialItems - Optional seed items, mainly for tests.
  *
  * @example
- * <WishlistProvider>
- *   <App />
- * </WishlistProvider>
+ * <ConnectivityProvider>
+ *   <WishlistProvider>
+ *     <App />
+ *   </WishlistProvider>
+ * </ConnectivityProvider>
  */
 export function WishlistProvider({ children, initialItems }: WishlistProviderProps) {
   const [state, dispatch] = useReducer(wishlistReducer, {
     items: initialItems ?? [],
   });
+
+  const connectivity = useOptionalConnectivity();
+  const isOnline = connectivity?.isOnline ?? true;
+  const wixClient = useOptionalWixClient();
+  const wixClientRef = useRef(wixClient);
+  wixClientRef.current = wixClient;
+
+  const wasOnline = useRef(isOnline);
+  const [pendingSync, setPendingSync] = useState(0);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Register Wix executors for offline queue replay
+  useEffect(() => {
+    if (!connectivity) return; // No connectivity context — skip sync setup
+
+    registerExecutor('WISHLIST_ADD', async (payload) => {
+      const client = wixClientRef.current;
+      if (!client) return;
+      await client.addToWishlist(
+        payload.productId as string,
+        payload.savedPrice as number,
+      );
+    });
+
+    registerExecutor('WISHLIST_REMOVE', async (payload) => {
+      const client = wixClientRef.current;
+      if (!client) return;
+      await client.removeFromWishlist(payload.productId as string);
+    });
+
+    // Load persisted queue on mount
+    loadQueue().then((q) => {
+      const wishlistPending = q.filter((a) => a.domain === 'wishlist').length;
+      setPendingSync(wishlistPending);
+    });
+
+    return () => {
+      clearExecutors();
+    };
+  }, [connectivity]);
+
+  // Replay on offline→online transition with LWW compaction
+  const replayWishlistQueue = useCallback(async (): Promise<ReplayResult | void> => {
+    const wishlistActions = getQueue('wishlist');
+    if (wishlistActions.length === 0) return;
+
+    setIsSyncing(true);
+    try {
+      // Compact contradictory actions (e.g. ADD then REMOVE same product → keep REMOVE)
+      compactByLWW('wishlist', 'productId');
+
+      const result = await replay({ maxRetries: 3, baseDelayMs: 1000 });
+      setPendingSync(getQueue('wishlist').length);
+      return result;
+    } finally {
+      setIsSyncing(false);
+      setPendingSync(getQueue('wishlist').length);
+    }
+  }, []);
+
+  // Watch for offline→online transition
+  useEffect(() => {
+    if (!connectivity) return;
+
+    if (!wasOnline.current && isOnline) {
+      replayWishlistQueue().catch(() => {
+        // Replay failed — actions remain in queue for next attempt
+      });
+    }
+    wasOnline.current = isOnline;
+  }, [isOnline, connectivity, replayWishlistQueue]);
 
   // Persist to AsyncStorage when available
   useEffect(() => {
@@ -146,18 +244,64 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
     })();
   }, [state.items]);
 
+  /** Sync a wishlist add to Wix or queue it for later. */
+  const syncAdd = useCallback(
+    (productId: string, savedPrice: number) => {
+      if (!connectivity) return; // No connectivity context — local-only mode
+
+      if (isOnline && wixClientRef.current) {
+        // Fire-and-forget: optimistic local update already applied
+        wixClientRef.current.addToWishlist(productId, savedPrice).catch(() => {
+          // Remote sync failed — enqueue for retry
+          enqueue('wishlist', 'WISHLIST_ADD', { productId, savedPrice });
+          setPendingSync(getQueue('wishlist').length);
+        });
+      } else {
+        enqueue('wishlist', 'WISHLIST_ADD', { productId, savedPrice });
+        setPendingSync(getQueue('wishlist').length);
+      }
+    },
+    [connectivity, isOnline],
+  );
+
+  /** Sync a wishlist remove to Wix or queue it for later. */
+  const syncRemove = useCallback(
+    (productId: string) => {
+      if (!connectivity) return;
+
+      if (isOnline && wixClientRef.current) {
+        wixClientRef.current.removeFromWishlist(productId).catch(() => {
+          enqueue('wishlist', 'WISHLIST_REMOVE', { productId });
+          setPendingSync(getQueue('wishlist').length);
+        });
+      } else {
+        enqueue('wishlist', 'WISHLIST_REMOVE', { productId });
+        setPendingSync(getQueue('wishlist').length);
+      }
+    },
+    [connectivity, isOnline],
+  );
+
   const isInWishlist = useCallback(
     (productId: string) => state.items.some((i) => i.productId === productId),
     [state.items],
   );
 
-  const add = useCallback((product: Product) => {
-    dispatch({ type: 'ADD', productId: product.id, price: product.price });
-  }, []);
+  const add = useCallback(
+    (product: Product) => {
+      dispatch({ type: 'ADD', productId: product.id, price: product.price });
+      syncAdd(product.id, product.price);
+    },
+    [syncAdd],
+  );
 
-  const remove = useCallback((productId: string) => {
-    dispatch({ type: 'REMOVE', productId });
-  }, []);
+  const remove = useCallback(
+    (productId: string) => {
+      dispatch({ type: 'REMOVE', productId });
+      syncRemove(productId);
+    },
+    [syncRemove],
+  );
 
   const toggle = useCallback(
     (product: Product) => {
@@ -171,8 +315,12 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
   );
 
   const clear = useCallback(() => {
+    // Queue removes for all current items before clearing
+    for (const item of state.items) {
+      syncRemove(item.productId);
+    }
     dispatch({ type: 'CLEAR' });
-  }, []);
+  }, [state.items, syncRemove]);
 
   const getProducts = useCallback(() => {
     return state.items
@@ -194,8 +342,11 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
 
   const count = state.items.length;
   const value = useMemo<WishlistContextValue>(
-    () => ({ items: state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText }),
-    [state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText],
+    () => ({
+      items: state.items, count, isInWishlist, toggle, add, remove, clear,
+      getProducts, getShareText, pendingSync, isSyncing,
+    }),
+    [state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText, pendingSync, isSyncing],
   );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
@@ -206,10 +357,10 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
  *
  * Must be called from within a `WishlistProvider`.
  *
- * @returns Object containing `{ items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText }`
+ * @returns Object containing `{ items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText, pendingSync, isSyncing }`
  *
  * @example
- * const { toggle, isInWishlist, count } = useWishlist();
+ * const { toggle, isInWishlist, count, pendingSync } = useWishlist();
  */
 export function useWishlist(): WishlistContextValue {
   const ctx = useContext(WishlistContext);
