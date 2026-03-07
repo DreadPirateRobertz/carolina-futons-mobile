@@ -12,6 +12,7 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
+  sku: string;
   category: ProductCategory;
   price: number;
   originalPrice?: number;
@@ -73,6 +74,7 @@ export const PRODUCTS: Product[] = [
     id: 'prod-asheville-full',
     name: 'The Asheville Full Futon',
     slug: 'asheville-full-futon',
+    sku: 'CF-FUT-ASH-001',
     category: 'futons',
     price: 349,
     description:
@@ -95,6 +97,7 @@ export const PRODUCTS: Product[] = [
     id: 'prod-blue-ridge-queen',
     name: 'The Blue Ridge Queen Futon',
     slug: 'blue-ridge-queen-futon',
+    sku: 'CF-FUT-BRQ-002',
     category: 'futons',
     price: 449,
     description:
