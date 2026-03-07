@@ -27,6 +27,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -81,7 +83,7 @@ export function ProductDetailScreen({
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
     reviews,
     summary: reviewSummary,

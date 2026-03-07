@@ -8,7 +8,7 @@
  * @module useWishlist
  */
 
-import React, { createContext, useContext, useCallback, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useMemo, useReducer, useEffect } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 
 /**
@@ -183,17 +183,11 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
     return `Check out my Carolina Futons wishlist!\n\n${lines.join('\n')}\n\nShop at carolinafutons.com`;
   }, [getProducts]);
 
-  const value: WishlistContextValue = {
-    items: state.items,
-    count: state.items.length,
-    isInWishlist,
-    toggle,
-    add,
-    remove,
-    clear,
-    getProducts,
-    getShareText,
-  };
+  const count = state.items.length;
+  const value = useMemo<WishlistContextValue>(
+    () => ({ items: state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText }),
+    [state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText],
+  );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
