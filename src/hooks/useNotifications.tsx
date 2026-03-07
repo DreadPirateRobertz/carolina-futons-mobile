@@ -16,6 +16,7 @@ import {
   type NotificationType,
   DEFAULT_PREFERENCES,
   getDeepLinkForNotification,
+  registerPushToken,
 } from '@/services/notifications';
 
 // Show notifications when app is in foreground
@@ -139,7 +140,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (existingStatus === 'granted') {
       dispatch({ type: 'SET_PERMISSION', status: 'granted' });
       const token = await registerForPushToken();
-      if (token) dispatch({ type: 'SET_TOKEN', token });
+      if (token) {
+        dispatch({ type: 'SET_TOKEN', token });
+        registerPushToken(token).catch(() => {});
+      }
       return;
     }
 
@@ -150,7 +154,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     if (status === 'granted') {
       const token = await registerForPushToken();
-      if (token) dispatch({ type: 'SET_TOKEN', token });
+      if (token) {
+        dispatch({ type: 'SET_TOKEN', token });
+        registerPushToken(token).catch(() => {});
+      }
     }
   }, []);
 

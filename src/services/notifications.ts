@@ -9,6 +9,7 @@
  * For production: register push token with backend, backend sends via
  * Expo push API (https://expo.dev/push). This module handles client-side.
  */
+import { Platform } from 'react-native';
 
 export type NotificationType = 'order_update' | 'promotion' | 'back_in_stock' | 'cart_reminder';
 
@@ -90,6 +91,49 @@ export function shouldShowNotification(
 ): boolean {
   const config = NOTIFICATION_TYPE_CONFIG[type];
   return prefs[config.prefKey];
+}
+
+const PUSH_TOKEN_ENDPOINT = 'https://www.wixapis.com/v1/push-tokens';
+const MAX_RETRIES = 3;
+
+/**
+ * Register an Expo push token with the backend for push notification delivery.
+ * Retries on network errors with exponential backoff. Does not retry 4xx client errors.
+ */
+export async function registerPushToken(token: string): Promise<void> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(PUSH_TOKEN_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, platform: Platform.OS }),
+      });
+
+      if (response.ok) return;
+
+      // Don't retry client errors (4xx)
+      if (response.status >= 400 && response.status < 500) {
+        throw new Error(`Push token registration failed: ${response.status}`);
+      }
+
+      lastError = new Error(`Push token registration failed: ${response.status}`);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      // Client errors thrown above should not be retried
+      if (lastError.message.includes('registration failed')) {
+        throw lastError;
+      }
+    }
+
+    // Exponential backoff before retry
+    if (attempt < MAX_RETRIES - 1) {
+      await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+
+  throw lastError ?? new Error('Push token registration failed after retries');
 }
 
 /** Format badge count — returns undefined if 0 */
