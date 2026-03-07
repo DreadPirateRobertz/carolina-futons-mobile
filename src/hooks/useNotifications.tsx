@@ -217,6 +217,26 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
+  // Re-register push token when it changes (e.g. after app update, OS token rotation)
+  const lastTokenRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (state.pushToken) {
+      lastTokenRef.current = state.pushToken;
+    }
+
+    const tokenSub = Notifications.addPushTokenListener(({ data: newToken }) => {
+      if (newToken && newToken !== lastTokenRef.current) {
+        lastTokenRef.current = newToken;
+        dispatch({ type: 'SET_TOKEN', token: newToken });
+        registerPushToken(newToken).catch(captureException);
+      }
+    });
+
+    return () => {
+      tokenSub.remove();
+    };
+  }, [state.pushToken]);
+
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
     dispatch({ type: 'TOGGLE_PREF', key });
   }, []);

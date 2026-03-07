@@ -10,9 +10,11 @@ const mockRequestPermissionsAsync = jest.fn();
 const mockGetExpoPushTokenAsync = jest.fn();
 const mockAddNotificationReceivedListener = jest.fn();
 const mockAddNotificationResponseReceivedListener = jest.fn();
+const mockAddPushTokenListener = jest.fn();
 const mockSetNotificationChannelAsync = jest.fn();
 const mockRemoveReceived = jest.fn();
 const mockRemoveResponse = jest.fn();
+const mockRemoveTokenListener = jest.fn();
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: (...args: any[]) => mockGetPermissionsAsync(...args),
@@ -27,6 +29,10 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: (...args: any[]) => {
     mockAddNotificationResponseReceivedListener(...args);
     return { remove: mockRemoveResponse };
+  },
+  addPushTokenListener: (...args: any[]) => {
+    mockAddPushTokenListener(...args);
+    return { remove: mockRemoveTokenListener };
   },
   AndroidImportance: { MAX: 5 },
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
@@ -337,6 +343,61 @@ describe('useNotifications', () => {
       });
       expect(getByTestId('pref-cart').props.children).toBe('true');
       expect(getByTestId('pref-stock').props.children).toBe('false');
+    });
+  });
+
+  describe('Token refresh', () => {
+    it('sets up push token listener on mount', () => {
+      renderNotif();
+      expect(mockAddPushTokenListener).toHaveBeenCalledTimes(1);
+    });
+
+    it('removes push token listener on unmount', () => {
+      const { unmount } = renderNotif();
+      unmount();
+      expect(mockRemoveTokenListener).toHaveBeenCalled();
+    });
+
+    it('re-registers when push token changes', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+      const { getByTestId } = renderNotif();
+
+      await waitFor(() => {
+        expect(getByTestId('token').props.children).toBe('ExponentPushToken[test-token-abc]');
+      });
+
+      // Clear the initial registration call
+      mockRegisterPushToken.mockClear();
+
+      // Simulate token refresh from OS
+      const tokenCallback = mockAddPushTokenListener.mock.calls[0][0];
+      await act(async () => {
+        tokenCallback({ data: 'ExponentPushToken[new-refreshed-token]' });
+      });
+
+      await waitFor(() => {
+        expect(getByTestId('token').props.children).toBe('ExponentPushToken[new-refreshed-token]');
+      });
+      expect(mockRegisterPushToken).toHaveBeenCalledWith('ExponentPushToken[new-refreshed-token]');
+    });
+
+    it('does not re-register when token is unchanged', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+      const { getByTestId } = renderNotif();
+
+      await waitFor(() => {
+        expect(getByTestId('token').props.children).toBe('ExponentPushToken[test-token-abc]');
+      });
+
+      mockRegisterPushToken.mockClear();
+
+      // Simulate token event with same token
+      const tokenCallback = mockAddPushTokenListener.mock.calls[0][0];
+      await act(async () => {
+        tokenCallback({ data: 'ExponentPushToken[test-token-abc]' });
+      });
+
+      expect(mockRegisterPushToken).not.toHaveBeenCalled();
     });
   });
 
