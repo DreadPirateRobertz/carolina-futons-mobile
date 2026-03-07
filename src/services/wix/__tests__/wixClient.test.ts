@@ -499,6 +499,250 @@ describe('WixClient', () => {
 });
 
 // ============================================================
+// queryReviews
+// ============================================================
+
+describe('queryReviews', () => {
+  const WIX_REVIEW_FIXTURE = {
+    _id: 'rev-wix-001',
+    data: {
+      productId: 'asheville-full',
+      authorName: 'Sarah M.',
+      rating: 5,
+      title: 'Best futon ever',
+      body: 'Love this futon.',
+      _createdDate: '2026-02-10T14:22:00Z',
+      helpful: 18,
+      verified: true,
+      photos: ['https://example.com/photo1.jpg'],
+    },
+  };
+
+  it('queries the Reviews CMS collection with product filter', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [WIX_REVIEW_FIXTURE],
+        pagingMetadata: { total: 1 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.queryReviews('asheville-full');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://www.wixapis.com/wix-data/v2/items/query',
+      expect.objectContaining({
+        method: 'POST',
+        body: expect.stringContaining('"Reviews"'),
+      }),
+    );
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.dataCollectionId).toBe('Reviews');
+    expect(body.query.filter.productId.$eq).toBe('asheville-full');
+  });
+
+  it('returns transformed review objects', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [WIX_REVIEW_FIXTURE],
+        pagingMetadata: { total: 1 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    const result = await client.queryReviews('asheville-full');
+
+    expect(result.reviews).toHaveLength(1);
+    expect(result.reviews[0]).toEqual({
+      id: 'rev-wix-001',
+      productId: 'asheville-full',
+      authorName: 'Sarah M.',
+      rating: 5,
+      title: 'Best futon ever',
+      body: 'Love this futon.',
+      createdAt: '2026-02-10T14:22:00Z',
+      helpful: 18,
+      verified: true,
+      photos: ['https://example.com/photo1.jpg'],
+    });
+    expect(result.totalResults).toBe(1);
+  });
+
+  it('sorts by most recent by default', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [],
+        pagingMetadata: { total: 0 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.queryReviews('asheville-full');
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.query.sort).toEqual([{ fieldName: '_createdDate', order: 'DESC' }]);
+  });
+
+  it('accepts custom sort and limit options', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [],
+        pagingMetadata: { total: 0 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.queryReviews('asheville-full', { limit: 10, sort: 'helpful' });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.query.paging.limit).toBe(10);
+    expect(body.query.sort).toEqual([{ fieldName: 'helpful', order: 'DESC' }]);
+  });
+
+  it('returns empty array when no reviews exist', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [],
+        pagingMetadata: { total: 0 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    const result = await client.queryReviews('nonexistent-product');
+
+    expect(result.reviews).toEqual([]);
+    expect(result.totalResults).toBe(0);
+  });
+
+  it('handles reviews without optional photos', async () => {
+    const noPhotos = {
+      ...WIX_REVIEW_FIXTURE,
+      data: { ...WIX_REVIEW_FIXTURE.data, photos: undefined },
+    };
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItems: [noPhotos],
+        pagingMetadata: { total: 1 },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    const result = await client.queryReviews('asheville-full');
+
+    expect(result.reviews[0].photos).toBeUndefined();
+  });
+
+  it('throws WixApiError on API failure', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({ message: 'Collection not found' }, 404),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await expect(client.queryReviews('asheville-full')).rejects.toThrow(WixApiError);
+  });
+});
+
+// ============================================================
+// createReview
+// ============================================================
+
+describe('createReview', () => {
+  it('posts to the Reviews CMS collection', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItem: {
+          _id: 'rev-new-001',
+          data: {
+            productId: 'asheville-full',
+            authorName: 'Test User',
+            rating: 5,
+            title: 'Great',
+            body: 'Loved it.',
+            helpful: 0,
+            verified: false,
+          },
+        },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    const result = await client.createReview({
+      productId: 'asheville-full',
+      authorName: 'Test User',
+      rating: 5,
+      title: 'Great',
+      body: 'Loved it.',
+      photos: [],
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://www.wixapis.com/wix-data/v2/items',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.dataCollectionId).toBe('Reviews');
+    expect(body.dataItem.data.productId).toBe('asheville-full');
+    expect(body.dataItem.data.rating).toBe(5);
+
+    expect(result.id).toBe('rev-new-001');
+    expect(result.productId).toBe('asheville-full');
+    expect(result.rating).toBe(5);
+  });
+
+  it('includes photos when provided', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({
+        dataItem: {
+          _id: 'rev-new-002',
+          data: {
+            productId: 'asheville-full',
+            authorName: 'Test',
+            rating: 4,
+            title: 'Nice',
+            body: 'Good.',
+            photos: ['https://example.com/photo.jpg'],
+            helpful: 0,
+            verified: false,
+          },
+        },
+      }),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.createReview({
+      productId: 'asheville-full',
+      authorName: 'Test',
+      rating: 4,
+      title: 'Nice',
+      body: 'Good.',
+      photos: ['https://example.com/photo.jpg'],
+    });
+
+    const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+    expect(body.dataItem.data.photos).toEqual(['https://example.com/photo.jpg']);
+  });
+
+  it('throws WixApiError on failure', async () => {
+    mockFetch.mockReturnValue(
+      mockJsonResponse({ message: 'Unauthorized' }, 401),
+    );
+
+    const client = new WixClient(TEST_CONFIG);
+    await expect(
+      client.createReview({
+        productId: 'asheville-full',
+        authorName: 'Test',
+        rating: 5,
+        title: 'Great',
+        body: 'Test',
+        photos: [],
+      }),
+    ).rejects.toThrow(WixApiError);
+  });
+});
+
+// ============================================================
 // Transform functions (unit tests)
 // ============================================================
 

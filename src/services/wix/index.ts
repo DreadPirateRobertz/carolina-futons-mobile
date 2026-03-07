@@ -23,6 +23,9 @@ export {
   type CouponResult,
   type WixCart,
   type WixCartLineItem,
+  type WixReview,
+  type CreateReviewInput,
+  transformWixReview,
 } from './wixClient';
 
 export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';

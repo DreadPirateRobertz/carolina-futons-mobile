@@ -134,6 +134,42 @@ export interface CouponResult {
   minimumSubtotal?: number;
 }
 
+// ── Review types ──────────────────────────────────────────────
+
+export interface WixReview {
+  id: string;
+  productId: string;
+  authorName: string;
+  rating: number;
+  title: string;
+  body: string;
+  createdAt: string;
+  helpful: number;
+  verified: boolean;
+  photos?: string[];
+}
+
+interface WixReviewData {
+  productId: string;
+  authorName: string;
+  rating: number;
+  title: string;
+  body: string;
+  _createdDate?: string;
+  helpful: number;
+  verified: boolean;
+  photos?: string[];
+}
+
+export interface CreateReviewInput {
+  productId: string;
+  authorName: string;
+  rating: number;
+  title: string;
+  body: string;
+  photos: string[];
+}
+
 // ── Query options ──────────────────────────────────────────────
 
 export interface QueryProductsOptions {
@@ -207,6 +243,15 @@ const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
   newest: [{ fieldName: 'lastUpdated', order: 'DESC' }],
   rating: [{ fieldName: 'numericId', order: 'DESC' }],
   featured: [],
+};
+
+// ── Review sort mapping ─────────────────────────────────────────
+
+const REVIEW_SORT_MAP: Record<string, { fieldName: string; order: string }> = {
+  recent: { fieldName: '_createdDate', order: 'DESC' },
+  helpful: { fieldName: 'helpful', order: 'DESC' },
+  highest: { fieldName: 'rating', order: 'DESC' },
+  lowest: { fieldName: 'rating', order: 'ASC' },
 };
 
 // ── Client ─────────────────────────────────────────────────────
@@ -542,6 +587,61 @@ export class WixClient {
     }
   }
 
+  // ── Reviews (Wix Data CMS) ────────────────────────────────
+
+  async queryReviews(
+    productId: string,
+    options: { limit?: number; offset?: number; sort?: 'recent' | 'helpful' | 'highest' | 'lowest' } = {},
+  ): Promise<{ reviews: WixReview[]; totalResults: number }> {
+    if (!productId) throw new WixApiError('Product ID is required');
+
+    const { limit = 50, offset = 0, sort = 'recent' } = options;
+
+    const sortField = REVIEW_SORT_MAP[sort] ?? REVIEW_SORT_MAP.recent;
+
+    const data = await this.post<{
+      dataItems: { _id: string; data: WixReviewData }[];
+      pagingMetadata: { total: number };
+    }>('/wix-data/v2/items/query', {
+      dataCollectionId: 'Reviews',
+      query: {
+        filter: { productId: { $eq: productId } },
+        sort: [sortField],
+        paging: {
+          limit: Math.min(Math.max(1, limit), 100),
+          offset: Math.max(0, offset),
+        },
+      },
+    });
+
+    return {
+      reviews: (data.dataItems ?? []).map(transformWixReview),
+      totalResults: data.pagingMetadata?.total ?? 0,
+    };
+  }
+
+  async createReview(input: CreateReviewInput): Promise<WixReview> {
+    const data = await this.post<{
+      dataItem: { _id: string; data: WixReviewData };
+    }>('/wix-data/v2/items', {
+      dataCollectionId: 'Reviews',
+      dataItem: {
+        data: {
+          productId: input.productId,
+          authorName: input.authorName,
+          rating: input.rating,
+          title: input.title,
+          body: input.body,
+          helpful: 0,
+          verified: false,
+          ...(input.photos.length > 0 ? { photos: input.photos } : {}),
+        },
+      },
+    });
+
+    return transformWixReview(data.dataItem);
+  }
+
   // ── Wix Data (Custom CMS Collections) ───────────────────────
 
   async queryData<T = Record<string, unknown>>(
@@ -706,6 +806,23 @@ export function transformWixProduct(wix: WixProduct): Product {
     inStock: wix.stock?.inStock ?? false,
     fabricOptions,
     dimensions: { width: 0, depth: 0, height: 0 }, // From additionalInfoSections or custom fields
+  };
+}
+
+/** Convert a raw Wix CMS review data item into the app's WixReview shape. */
+export function transformWixReview(item: { _id: string; data: WixReviewData }): WixReview {
+  const d = item.data;
+  return {
+    id: item._id,
+    productId: d.productId,
+    authorName: d.authorName,
+    rating: d.rating,
+    title: d.title,
+    body: d.body,
+    createdAt: d._createdDate ?? new Date().toISOString(),
+    helpful: d.helpful ?? 0,
+    verified: d.verified ?? false,
+    ...(d.photos?.length ? { photos: d.photos } : {}),
   };
 }
 

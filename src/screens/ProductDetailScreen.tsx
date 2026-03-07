@@ -42,6 +42,9 @@ import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
+import { useAuth } from '@/hooks/useAuth';
+import { EmptyState } from '@/components/EmptyState';
+import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId } from '@/utils';
@@ -90,6 +93,7 @@ export function ProductDetailScreen({
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { isAuthenticated } = useAuth();
   const {
     reviews,
     summary: reviewSummary,
@@ -99,6 +103,7 @@ export function ProductDetailScreen({
     submitReview,
     showForm: showReviewForm,
     setShowForm: setShowReviewForm,
+    hasReviews,
   } = useReviews(model.id);
   const previewReviews = reviews.slice(0, 3);
 
@@ -510,109 +515,125 @@ export function ProductDetailScreen({
           >
             Reviews
           </Text>
-          <ReviewSummary summary={reviewSummary} testID="review-summary" />
 
-          {/* Sort pills */}
-          <View style={styles.sortRow} testID="review-sort-options">
-            {(['helpful', 'recent', 'highest', 'lowest'] as const).map((sort) => (
-              <TouchableOpacity
-                key={sort}
-                style={[
-                  styles.sortPill,
-                  {
-                    backgroundColor: reviewSort === sort ? colors.espresso : colors.sandLight,
-                    borderRadius: borderRadius.pill,
-                  },
-                ]}
-                onPress={() => setReviewSort(sort)}
-                testID={`sort-${sort}`}
-                accessibilityLabel={`Sort reviews by ${sort === 'helpful' ? 'most helpful' : sort === 'recent' ? 'most recent' : sort}`}
-                accessibilityRole="button"
-                accessibilityState={{ selected: reviewSort === sort }}
-              >
-                <Text
+          {!hasReviews ? (
+            <EmptyState
+              title="No Reviews Yet"
+              message="Be the first to share your experience with this product."
+              illustration={<ReviewsIllustration width={200} height={140} testID="reviews-illustration" />}
+              testID="reviews-empty-state"
+            />
+          ) : (
+            <>
+              <ReviewSummary summary={reviewSummary} testID="review-summary" />
+
+              {/* Sort pills */}
+              <View style={styles.sortRow} testID="review-sort-options">
+                {(['helpful', 'recent', 'highest', 'lowest'] as const).map((sort) => (
+                  <TouchableOpacity
+                    key={sort}
+                    style={[
+                      styles.sortPill,
+                      {
+                        backgroundColor: reviewSort === sort ? colors.espresso : colors.sandLight,
+                        borderRadius: borderRadius.pill,
+                      },
+                    ]}
+                    onPress={() => setReviewSort(sort)}
+                    testID={`sort-${sort}`}
+                    accessibilityLabel={`Sort reviews by ${sort === 'helpful' ? 'most helpful' : sort === 'recent' ? 'most recent' : sort}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: reviewSort === sort }}
+                  >
+                    <Text
+                      style={[
+                        styles.sortPillText,
+                        { color: reviewSort === sort ? colors.white : colors.espressoLight },
+                      ]}
+                    >
+                      {sort === 'helpful'
+                        ? 'Most Helpful'
+                        : sort === 'recent'
+                          ? 'Most Recent'
+                          : sort === 'highest'
+                            ? 'Highest'
+                            : 'Lowest'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Preview reviews */}
+              {previewReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} testID={`review-card-${review.id}`} />
+              ))}
+
+              {/* View all reviews link */}
+              {reviews.length > 3 && (
+                <TouchableOpacity
                   style={[
-                    styles.sortPillText,
-                    { color: reviewSort === sort ? colors.white : colors.espressoLight },
+                    styles.viewAllButton,
+                    { borderColor: colors.espresso, borderRadius: borderRadius.button },
                   ]}
+                  onPress={() => onViewAllReviews?.(model.id)}
+                  testID="view-all-reviews"
+                  accessibilityLabel={`View all ${reviewSummary.totalReviews} reviews`}
+                  accessibilityRole="button"
                 >
-                  {sort === 'helpful'
-                    ? 'Most Helpful'
-                    : sort === 'recent'
-                      ? 'Most Recent'
-                      : sort === 'highest'
-                        ? 'Highest'
-                        : 'Lowest'}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Preview reviews */}
-          {previewReviews.map((review) => (
-            <ReviewCard key={review.id} review={review} testID={`review-card-${review.id}`} />
-          ))}
-
-          {/* View all reviews link */}
-          {reviews.length > 3 && (
-            <TouchableOpacity
-              style={[
-                styles.viewAllButton,
-                { borderColor: colors.espresso, borderRadius: borderRadius.button },
-              ]}
-              onPress={() => onViewAllReviews?.(model.id)}
-              testID="view-all-reviews"
-              accessibilityLabel={`View all ${reviewSummary.totalReviews} reviews`}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.viewAllText, { color: colors.espresso }]}>
-                View All {reviewSummary.totalReviews} Reviews
-              </Text>
-            </TouchableOpacity>
+                  <Text style={[styles.viewAllText, { color: colors.espresso }]}>
+                    View All {reviewSummary.totalReviews} Reviews
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </>
           )}
 
-          {/* Write a Review */}
-          {!showReviewForm ? (
-            <TouchableOpacity
-              style={[
-                styles.writeReviewButton,
-                {
-                  backgroundColor: colors.sunsetCoral,
-                  borderRadius: borderRadius.button,
-                },
-              ]}
-              onPress={() => setShowReviewForm(true)}
-              testID="write-review-button"
-              accessibilityLabel="Write a review"
-              accessibilityRole="button"
-            >
-              <Text style={styles.writeReviewText}>Write a Review</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.reviewFormContainer} testID="review-form-container">
-              <View style={styles.reviewFormHeader}>
-                <Text
-                  style={[
-                    styles.sectionTitle,
-                    { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
-                  ]}
-                >
-                  Write Your Review
-                </Text>
+          {/* Write a Review — authenticated users only */}
+          {isAuthenticated && (
+            <>
+              {!showReviewForm ? (
                 <TouchableOpacity
-                  onPress={() => setShowReviewForm(false)}
-                  testID="cancel-review"
-                  accessibilityLabel="Cancel review"
+                  style={[
+                    styles.writeReviewButton,
+                    {
+                      backgroundColor: colors.sunsetCoral,
+                      borderRadius: borderRadius.button,
+                    },
+                  ]}
+                  onPress={() => setShowReviewForm(true)}
+                  testID="write-review-button"
+                  accessibilityLabel="Write a review"
+                  accessibilityRole="button"
                 >
-                  <Text style={[styles.cancelText, { color: colors.muted }]}>Cancel</Text>
+                  <Text style={styles.writeReviewText}>Write a Review</Text>
                 </TouchableOpacity>
-              </View>
-              <ReviewForm
-                onSubmit={submitReview}
-                isSubmitting={isReviewSubmitting}
-                testID="review-form"
-              />
-            </View>
+              ) : (
+                <View style={styles.reviewFormContainer} testID="review-form-container">
+                  <View style={styles.reviewFormHeader}>
+                    <Text
+                      style={[
+                        styles.sectionTitle,
+                        { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                      ]}
+                    >
+                      Write Your Review
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setShowReviewForm(false)}
+                      testID="cancel-review"
+                      accessibilityLabel="Cancel review"
+                    >
+                      <Text style={[styles.cancelText, { color: colors.muted }]}>Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <ReviewForm
+                    onSubmit={submitReview}
+                    isSubmitting={isReviewSubmitting}
+                    testID="review-form"
+                  />
+                </View>
+              )}
+            </>
           )}
         </View>
 

@@ -27,6 +27,25 @@ jest.mock('@/hooks/usePremium', () => ({
   usePremium: () => mockPremiumValue,
 }));
 
+const mockAuthValue = {
+  isAuthenticated: true,
+  user: { id: 'user-1', email: 'test@example.com', displayName: 'Test User' },
+  loading: false,
+  error: null,
+  signIn: jest.fn(),
+  signUp: jest.fn(),
+  signInWithGoogle: jest.fn(),
+  signInWithApple: jest.fn(),
+  resetPassword: jest.fn(),
+  signOut: jest.fn(),
+  clearError: jest.fn(),
+};
+
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => mockAuthValue,
+  AuthProvider: ({ children }: any) => children,
+}));
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
@@ -538,6 +557,27 @@ describe('ProductDetailScreen', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('sort-recent'));
       expect(getByTestId('sort-recent').props.accessibilityState.selected).toBe(true);
+    });
+
+    it('shows empty state when product has no reviews', () => {
+      // pisgah-twin has no mock reviews
+      const { getByTestId, queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
+      expect(getByTestId('reviews-empty-state')).toBeTruthy();
+      expect(queryByTestId('review-sort-options')).toBeNull();
+      expect(queryByTestId('view-all-reviews')).toBeNull();
+    });
+
+    it('hides write review button when not authenticated', () => {
+      mockAuthValue.isAuthenticated = false;
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('write-review-button')).toBeNull();
+      mockAuthValue.isAuthenticated = true;
+    });
+
+    it('shows write review button when authenticated', () => {
+      mockAuthValue.isAuthenticated = true;
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('write-review-button')).toBeTruthy();
     });
   });
 

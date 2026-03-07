@@ -214,5 +214,15 @@ describe('useReviews', () => {
       expect(result.current.summary.totalReviews).toBe(0);
       expect(result.current.summary.averageRating).toBe(0);
     });
+
+    it('returns hasReviews=false when no reviews', () => {
+      const { result } = renderHook(() => useReviews('nonexistent-product'));
+      expect(result.current.hasReviews).toBe(false);
+    });
+
+    it('returns hasReviews=true when reviews exist', () => {
+      const { result } = renderHook(() => useReviews(productId));
+      expect(result.current.hasReviews).toBe(true);
+    });
   });
 });

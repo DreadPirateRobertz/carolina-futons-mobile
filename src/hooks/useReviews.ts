@@ -35,6 +35,7 @@ interface UseReviewsReturn {
   markHelpful: (reviewId: string) => void;
   showForm: boolean;
   setShowForm: (show: boolean) => void;
+  hasReviews: boolean;
 }
 
 /**
@@ -126,5 +127,6 @@ export function useReviews(productId: string): UseReviewsReturn {
     markHelpful,
     showForm,
     setShowForm,
+    hasReviews: reviews.length > 0,
   };
 }
