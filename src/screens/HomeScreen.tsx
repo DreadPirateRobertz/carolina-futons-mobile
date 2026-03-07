@@ -18,7 +18,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { darkPalette, colors as tokenColors } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { CollectionCard } from '@/components/CollectionCard';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { useCollections } from '@/hooks/useCollections';
+import type { EditorialCollection } from '@/data/collections';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -29,6 +32,8 @@ interface Props {
   onOpenAR?: () => void;
   /** Override callback for the Shop Call To Action; defaults to switching to the Shop tab. */
   onOpenShop?: () => void;
+  /** Override callback when a collection card is tapped; defaults to navigating to CollectionDetail. */
+  onCollectionPress?: (collection: EditorialCollection) => void;
 }
 
 /**
@@ -38,10 +43,11 @@ interface Props {
  * @param props - {@link Props}
  * @returns The home screen view.
  */
-export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
+export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const { featured } = useCollections();
 
   const handleOpenAR = useCallback(() => {
     if (onOpenAR) return onOpenAR();
@@ -55,6 +61,14 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
       parent.navigate('Shop' as never);
     }
   }, [onOpenShop, navigation]);
+
+  const handleCollectionPress = useCallback(
+    (collection: EditorialCollection) => {
+      if (onCollectionPress) return onCollectionPress(collection);
+      navigation.navigate('CollectionDetail', { slug: collection.slug });
+    },
+    [onCollectionPress, navigation],
+  );
 
   return (
     <ScrollView
@@ -209,6 +223,43 @@ export function HomeScreen({ onOpenAR, onOpenShop }: Props) {
         </Pressable>
       </GlassCard>
 
+      {/* Collection Carousel */}
+      {featured.length > 0 && (
+        <View style={styles.carouselSection}>
+          <Text
+            style={[
+              styles.carouselTitle,
+              {
+                color: colors.espresso,
+                fontFamily: typography.headingFamily,
+                ...typography.h3,
+                paddingHorizontal: spacing.lg,
+              },
+            ]}
+          >
+            Shop the Look
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.carouselContent,
+              { paddingHorizontal: spacing.lg, gap: spacing.md },
+            ]}
+            testID="collection-carousel"
+          >
+            {featured.map((collection) => (
+              <CollectionCard
+                key={collection.id}
+                collection={collection}
+                onPress={handleCollectionPress}
+                variant="compact"
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       {/* Mountain skyline section divider */}
       <View style={styles.dividerSection}>
         <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
@@ -300,6 +351,16 @@ const styles = StyleSheet.create({
   ctaArrow: {
     fontSize: 28,
     fontWeight: '300',
+  },
+  carouselSection: {
+    width: '100%',
+    marginTop: 24,
+  },
+  carouselTitle: {
+    marginBottom: 12,
+  },
+  carouselContent: {
+    flexDirection: 'row',
   },
   dividerSection: {
     alignItems: 'center',

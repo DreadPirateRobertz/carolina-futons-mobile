@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void } = {}) {
+function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void; onCollectionPress?: (c: any) => void } = {}) {
   return render(
     <NavigationContainer>
       <ThemeProvider>
@@ -78,5 +78,27 @@ describe('HomeScreen', () => {
     const btn = getByTestId('home-shop-button');
     expect(btn.props.accessibilityLabel).toBe('Browse our products');
     expect(btn.props.accessibilityRole).toBe('button');
+  });
+
+  it('renders collection carousel section with header', () => {
+    const { getByText, getByTestId } = renderHomeScreen();
+    expect(getByText('Shop the Look')).toBeTruthy();
+    expect(getByTestId('collection-carousel')).toBeTruthy();
+  });
+
+  it('renders featured collection cards in carousel', () => {
+    const { getByText } = renderHomeScreen();
+    expect(getByText('Mountain Lodge Living')).toBeTruthy();
+    expect(getByText('Guest Room Ready')).toBeTruthy();
+  });
+
+  it('calls onCollectionPress when collection card tapped', () => {
+    const onCollectionPress = jest.fn();
+    const { getByText } = renderHomeScreen({ onCollectionPress });
+    fireEvent.press(getByText('Mountain Lodge Living'));
+    expect(onCollectionPress).toHaveBeenCalledTimes(1);
+    expect(onCollectionPress).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: 'mountain-lodge-living' }),
+    );
   });
 });
