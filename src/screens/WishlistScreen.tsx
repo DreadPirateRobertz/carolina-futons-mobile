@@ -47,7 +47,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
       remove(productId);
       events.removeFromWishlist(productId);
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
     },
     [remove],
@@ -68,6 +68,9 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   );
 
   const handleShare = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     const text = getShareText();
     if (!text) return;
     events.shareWishlist(count);
@@ -79,6 +82,9 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   }, [getShareText, count]);
 
   const handleClearAll = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
     Alert.alert('Clear Wishlist', 'Remove all items from your wishlist?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Clear All', style: 'destructive', onPress: clear },

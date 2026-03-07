@@ -11,7 +11,8 @@
  */
 
 import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -54,11 +55,17 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { recentProducts } = useRecentlyViewed();
 
   const handleOpenAR = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     if (onOpenAR) return onOpenAR();
     navigation.navigate('AR');
   }, [onOpenAR, navigation]);
 
   const handleOpenShop = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     if (onOpenShop) return onOpenShop();
     const parent = navigation.getParent?.();
     if (parent) {

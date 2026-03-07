@@ -18,7 +18,9 @@ import {
   ScrollView,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
@@ -91,6 +93,9 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
 
   const handleBiometricToggle = async (value: boolean) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
     if (value) {
       await enableBiometric();
     } else {
@@ -144,7 +149,12 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
               },
               shadows.button,
             ]}
-            onPress={onLogin}
+            onPress={() => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              }
+              onLogin?.();
+            }}
             testID="account-sign-in-button"
             accessibilityLabel="Sign in to your account"
             accessibilityRole="button"
@@ -478,7 +488,12 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                 borderRadius: borderRadius.button,
               },
             ]}
-            onPress={signOut}
+            onPress={() => {
+              if (Platform.OS !== 'web') {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+              }
+              signOut();
+            }}
             testID="sign-out-button"
             accessibilityLabel="Sign out"
             accessibilityRole="button"
@@ -534,7 +549,12 @@ function MenuItem({
     <GlassCard intensity="light">
       <TouchableOpacity
         style={styles.menuItem}
-        onPress={onPress}
+        onPress={() => {
+          if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+          onPress?.();
+        }}
         testID={testID}
         accessibilityRole="button"
       >

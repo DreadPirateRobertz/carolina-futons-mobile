@@ -197,7 +197,7 @@ export function ProductDetailScreen({
     setSelectedFabric(fabric);
     events.selectFabric(model.id, fabric.id);
     if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   }, [model.id]);
 
@@ -209,18 +209,21 @@ export function ProductDetailScreen({
   const handleIncrement = useCallback(() => {
     setQuantity((prev) => Math.min(10, prev + 1));
     if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   }, []);
 
   const handleDecrement = useCallback(() => {
     setQuantity((prev) => Math.max(1, prev - 1));
     if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   }, []);
 
   const handleOpenAR = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
     if (!isPremium) {
       Alert.alert(
         'CF+ Feature',
@@ -260,6 +263,9 @@ export function ProductDetailScreen({
   }, []);
 
   const handleShare = useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     const deepLink = `carolinafutons://product/${model.id}`;
     const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}`;
     try {

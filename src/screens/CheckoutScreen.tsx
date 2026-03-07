@@ -603,6 +603,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <Switch
             value={billingSameAsShipping}
             onValueChange={(val) => {
+              if (Platform.OS !== 'web') {
+                Haptics.selectionAsync();
+              }
               setBillingSameAsShipping(val);
               if (val) setBillingErrors({});
             }}

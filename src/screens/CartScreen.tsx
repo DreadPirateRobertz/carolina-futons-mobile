@@ -62,6 +62,9 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const total = taxableAmount + shipping + tax;
 
   const handleApplyPromo = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     promo.applyCode(promoInput);
   }, [promo, promoInput]);
 
@@ -80,7 +83,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
     (itemId: string, currentQty: number) => {
       updateQuantity(itemId, currentQty + 1);
       if (Platform.OS !== 'web') {
-        Haptics.selectionAsync();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     },
     [updateQuantity],
@@ -93,7 +96,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
       } else {
         updateQuantity(itemId, currentQty - 1);
         if (Platform.OS !== 'web') {
-          Haptics.selectionAsync();
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
       }
     },
@@ -147,7 +150,12 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           Cart ({itemCount})
         </Text>
         <TouchableOpacity
-          onPress={clearCart}
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            }
+            clearCart();
+          }}
           testID="cart-clear-button"
           accessibilityLabel="Clear all items from cart"
           accessibilityRole="button"
@@ -391,6 +399,9 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               shadows.button,
             ]}
             onPress={() => {
+              if (Platform.OS !== 'web') {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              }
               events.beginCheckout(itemCount, total);
               onCheckout?.();
             }}
