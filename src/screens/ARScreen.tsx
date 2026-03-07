@@ -584,18 +584,14 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             testID="ar-touch-area"
           />
 
-          {/* Instruction hint — context-aware */}
-          <View style={styles.hintContainer}>
-            <Text style={styles.hintText}>
-              {detectionState === 'scanning'
-                ? 'Point camera at floor to detect surface'
-                : detectionState === 'detected' || detectionState === 'tracking'
-                  ? hasPlacement
-                    ? 'Drag to position · Pinch to resize · Two-finger rotate'
-                    : 'Tap on the floor to place furniture'
-                  : 'Initializing AR...'}
-            </Text>
-          </View>
+          {/* Interaction hint — shown after furniture placement */}
+          {hasPlacement && (
+            <View style={styles.hintContainer}>
+              <Text style={styles.hintText}>
+                Drag to position · Pinch to resize · Two-finger rotate
+              </Text>
+            </View>
+          )}
 
           {/* Lighting warning banner */}
           {lightingWarning && !lightingWarningDismissed && (

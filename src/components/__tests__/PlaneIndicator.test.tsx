@@ -79,7 +79,7 @@ describe('PlaneIndicator', () => {
       />,
     );
 
-    expect(getByText('Move your device slowly to scan the room')).toBeTruthy();
+    expect(getByText('Point at the floor and move slowly to detect surfaces')).toBeTruthy();
   });
 
   it('renders floor plane overlay when detected', () => {
@@ -120,6 +120,20 @@ describe('PlaneIndicator', () => {
     );
 
     expect(getByTestId('placement-reticle')).toBeTruthy();
+  });
+
+  it('shows placement reticle when surface detected without placement', () => {
+    const { getByTestId, getByText } = render(
+      <PlaneIndicator
+        planes={[floorPlane]}
+        detectionState="detected"
+        shadowParams={defaultShadow}
+        hasPlacement={false}
+      />,
+    );
+
+    expect(getByTestId('placement-reticle')).toBeTruthy();
+    expect(getByText(/Surface found/)).toBeTruthy();
   });
 
   it('hides placement reticle after furniture placed', () => {

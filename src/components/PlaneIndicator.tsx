@@ -68,9 +68,9 @@ export function PlaneIndicator({
     }
   }, [detectionState, planeOpacity]);
 
-  // Pulse reticle in tracking state
+  // Pulse reticle in detected/tracking state
   useEffect(() => {
-    if (detectionState === 'tracking' && !hasPlacement) {
+    if ((detectionState === 'detected' || detectionState === 'tracking') && !hasPlacement) {
       reticleScale.value = withRepeat(
         withSequence(
           withTiming(1.15, { duration: 800, easing: Easing.inOut(Easing.ease) }),
@@ -106,7 +106,9 @@ export function PlaneIndicator({
         <View style={styles.scanOverlay} testID="plane-scanning">
           <Animated.View style={[styles.scanLine, scanLineStyle]} />
           <View style={styles.scanHintContainer}>
-            <Text style={styles.scanHintText}>Move your device slowly to scan the room</Text>
+            <Text style={styles.scanHintText}>
+              Point at the floor and move slowly to detect surfaces
+            </Text>
           </View>
         </View>
       )}
@@ -126,8 +128,8 @@ export function PlaneIndicator({
         ))}
       </Animated.View>
 
-      {/* Placement reticle — shown when tracking and no furniture placed yet */}
-      {detectionState === 'tracking' && !hasPlacement && floorPlanes.length > 0 && (
+      {/* Placement reticle — shown when surface detected/tracking and no furniture placed */}
+      {(detectionState === 'detected' || detectionState === 'tracking') && !hasPlacement && floorPlanes.length > 0 && (
         <View style={styles.reticleContainer} testID="placement-reticle">
           <Animated.View style={[styles.reticle, reticleStyle]}>
             <View style={styles.reticleRing} />
@@ -135,7 +137,9 @@ export function PlaneIndicator({
             <View style={[styles.reticleLine, styles.reticleLineH]} />
             <View style={[styles.reticleLine, styles.reticleLineV]} />
           </Animated.View>
-          <Text style={styles.reticleHint}>Tap to place furniture</Text>
+          <Text style={styles.reticleHint}>
+            {detectionState === 'detected' ? 'Surface found — tap to place furniture' : 'Tap on the floor to place furniture'}
+          </Text>
         </View>
       )}
 
