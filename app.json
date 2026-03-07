@@ -81,6 +81,12 @@
         }
       ]
     },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
+    },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
