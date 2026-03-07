@@ -269,7 +269,7 @@ export function AppNavigator() {
                 nav.dispatch(
                   CommonActions.reset({
                     index: 0,
-                    routes: [{ name: 'Tabs', state: { index: 2 } }],
+                    routes: [{ name: 'Tabs', state: { index: 2 } } as any],
                   }),
                 );
               }}
