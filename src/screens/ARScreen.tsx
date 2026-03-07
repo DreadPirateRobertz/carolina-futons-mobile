@@ -45,6 +45,8 @@ import { AROnboarding } from '@/components/AROnboarding';
 import { ARMaterialSelector } from '@/components/ARMaterialSelector';
 import { useCameraPermission } from '@/hooks/useCameraPermission';
 import { useAROnboarding } from '@/hooks/useAROnboarding';
+import { useModelLoader } from '@/hooks/useModelLoader';
+import { ModelLoadingOverlay } from '@/components/ModelLoadingOverlay';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -116,6 +118,19 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
   const cart = useCart();
+
+  // 3D model download with progress tracking
+  const modelLoader = useModelLoader();
+
+  // Trigger model download when selected model changes
+  useEffect(() => {
+    if (selectedModel) {
+      const productId = modelIdToProductId(selectedModel.id);
+      if (productId) {
+        modelLoader.load(productId);
+      }
+    }
+  }, [selectedModel?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // AR measurement tool
   const measurement = useARMeasurement();
@@ -538,8 +553,11 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   }
 
   // Camera granted — show AR view with surface detection
+  const showModelLoading = modelLoader.status.state === 'downloading' || modelLoader.status.state === 'checking-cache';
+
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
+      {showModelLoading && <ModelLoadingOverlay status={modelLoader.status} />}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
         <CameraView style={styles.camera} facing="back" testID="ar-camera">
           {/* Surface plane indicators */}
