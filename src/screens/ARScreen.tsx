@@ -37,6 +37,8 @@ import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
 import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
+import { useARMeasurement } from '@/hooks/useARMeasurement';
+import { ARMeasurementOverlay } from '@/components/ARMeasurementOverlay';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -104,6 +106,9 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
   const cart = useCart();
+
+  // AR measurement tool
+  const measurement = useARMeasurement();
 
   // Surface detection + lighting estimation
   const {
@@ -195,7 +200,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [cart, selectedModel, selectedFabric]);
 
-  /** Handle tap on camera view to place furniture on detected surface */
+  /** Handle tap on camera view — routes to measurement or furniture placement */
   const handleCameraPress = useCallback(
     (event: { nativeEvent: { locationX: number; locationY: number } }) => {
       if (!hasFloor || detectionState !== 'tracking') return;
@@ -207,17 +212,27 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       const normalizedY = locationY / screenHeight;
 
       const anchor = performHitTest(normalizedX, normalizedY);
-      if (anchor?.isValid) {
-        setIsPlaced(true);
-        setHasPlacement(true);
-        if (selectedModel) events.arFurniturePlaced(selectedModel.id, anchor.planeId);
+      if (!anchor?.isValid) return;
+
+      // If measurement mode is active, route tap to measurement tool
+      if (measurement.state === 'placing-first' || measurement.state === 'placing-second') {
+        measurement.placePoint(anchor.worldPosition);
         if (Platform.OS !== 'web') {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }
+        return;
+      }
+
+      // Normal furniture placement
+      setIsPlaced(true);
+      setHasPlacement(true);
+      if (selectedModel) events.arFurniturePlaced(selectedModel.id, anchor.planeId);
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasFloor, detectionState, performHitTest, selectedModel?.id],
+    [hasFloor, detectionState, performHitTest, selectedModel?.id, measurement.state, measurement.placePoint],
   );
 
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -457,6 +472,19 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             </TouchableOpacity>
           )}
 
+          {/* AR measurement overlay */}
+          <ARMeasurementOverlay
+            points={measurement.points}
+            state={measurement.state}
+            distanceDisplay={measurement.distanceDisplay}
+            fits={selectedModel ? measurement.checkFit({
+              width: selectedModel.dimensions.width / 39.3701,
+              depth: selectedModel.dimensions.depth / 39.3701,
+              height: selectedModel.dimensions.height / 39.3701,
+            }) : null}
+            testID="ar-measurement-overlay"
+          />
+
           {/* Futon overlay — shown after placement */}
           <View style={styles.overlayContainer}>
             <ARFutonOverlay
@@ -511,6 +539,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}
         isCapturing={isCapturing}
+        isMeasuring={measurement.state !== 'idle'}
+        onToggleMeasure={() => {
+          if (measurement.state === 'idle') {
+            measurement.activate();
+          } else {
+            measurement.deactivate();
+          }
+        }}
+        onResetMeasure={measurement.reset}
         testID="ar-controls"
       />
 

@@ -36,6 +36,9 @@ interface Props {
   isInWishlist?: boolean;
   wishlistSaved?: boolean;
   isCapturing?: boolean;
+  isMeasuring?: boolean;
+  onToggleMeasure?: () => void;
+  onResetMeasure?: () => void;
   testID?: string;
 }
 
@@ -60,6 +63,9 @@ export function ARControls({
   isInWishlist,
   wishlistSaved,
   isCapturing,
+  isMeasuring,
+  onToggleMeasure,
+  onResetMeasure,
   testID,
 }: Props) {
   const totalPrice = selectedModel.basePrice + selectedFabric.price;
@@ -156,6 +162,32 @@ export function ARControls({
 
       {/* Share / Save toolbar */}
       <View style={styles.shareToolbar}>
+        {onToggleMeasure && (
+          <TouchableOpacity
+            style={[styles.shareButton, isMeasuring && styles.measureButtonActive]}
+            onPress={onToggleMeasure}
+            testID="ar-measure-toggle"
+            accessibilityLabel={isMeasuring ? 'Exit measurement mode' : 'Measure room'}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.shareButtonIcon, isMeasuring && styles.measureIconActive]}>📏</Text>
+            <Text style={[styles.shareButtonText, isMeasuring && styles.measureTextActive]}>
+              {isMeasuring ? 'Exit' : 'Measure'}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {isMeasuring && onResetMeasure && (
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={onResetMeasure}
+            testID="ar-measure-reset"
+            accessibilityLabel="Reset measurement"
+            accessibilityRole="button"
+          >
+            <Text style={styles.shareButtonIcon}>↺</Text>
+            <Text style={styles.shareButtonText}>Reset</Text>
+          </TouchableOpacity>
+        )}
         {onBrowseProducts && (
           <TouchableOpacity
             style={styles.browseButton}
@@ -418,6 +450,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
+  },
+  measureButtonActive: {
+    backgroundColor: 'rgba(91, 143, 168, 0.3)',
+    borderColor: '#5B8FA8',
+  },
+  measureIconActive: {
+    color: '#5B8FA8',
+  },
+  measureTextActive: {
+    color: '#5B8FA8',
   },
   wishlistButtonActive: {
     backgroundColor: 'rgba(232, 132, 92, 0.2)',
