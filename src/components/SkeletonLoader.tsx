@@ -14,6 +14,7 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
+  Easing,
   interpolate,
 } from 'react-native-reanimated';
 import { darkPalette } from '@/theme/tokens';
@@ -39,11 +40,15 @@ export function SkeletonLoader({
   const shimmer = useSharedValue(0);
 
   useEffect(() => {
-    shimmer.value = withRepeat(withTiming(1, { duration: 1200 }), -1, false);
+    shimmer.value = withRepeat(
+      withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
   }, [shimmer]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(shimmer.value, [0, 0.5, 1], [0.3, 0.6, 0.3]),
+    opacity: interpolate(shimmer.value, [0, 1], [0.4, 0.9]),
   }));
 
   const radius =
@@ -57,7 +62,7 @@ export function SkeletonLoader({
           width,
           height: variant === 'circle' ? width : height,
           borderRadius: radius,
-          backgroundColor: darkPalette.surfaceElevated,
+          backgroundColor: darkPalette.surface,
         },
         animatedStyle,
         style,

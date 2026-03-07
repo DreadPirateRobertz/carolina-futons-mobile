@@ -4,6 +4,9 @@ import { render } from '@testing-library/react-native';
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
+  const easingFn = (v: any) => v;
+  easingFn.inOut = () => easingFn;
+  easingFn.ease = easingFn;
   return {
     __esModule: true,
     default: {
@@ -15,6 +18,7 @@ jest.mock('react-native-reanimated', () => {
     withRepeat: (val: any) => val,
     withTiming: (val: any) => val,
     interpolate: (_val: any, _input: any, output: any) => output[1],
+    Easing: { inOut: () => easingFn, ease: easingFn },
   };
 });
 
