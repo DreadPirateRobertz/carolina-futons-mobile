@@ -98,6 +98,11 @@ const CollectionDetailScreen = lazy(() =>
     default: withScreenErrorBoundary(m.CollectionDetailScreen, 'CollectionDetail'),
   })),
 );
+const PremiumScreen = lazy(() =>
+  import('@/screens/PremiumScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.PremiumScreen, 'Premium'),
+  })),
+);
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
     default: m.OrderConfirmationScreen,
@@ -139,6 +144,7 @@ export type RootStackParamList = {
   ARWeb: ARWebScreenParams;
   Collections: undefined;
   CollectionDetail: { slug: string };
+  Premium: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -258,6 +264,11 @@ export function AppNavigator() {
         />
         <Stack.Screen name="Collections" component={CollectionsScreen} options={fadeTransition} />
         <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} options={fadeTransition} />
+        <Stack.Screen name="Premium">
+          {({ navigation: nav }) => (
+            <PremiumScreen onBack={() => nav.goBack()} />
+          )}
+        </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
   );

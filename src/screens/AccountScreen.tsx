@@ -22,6 +22,8 @@ interface Props {
   onLogin?: () => void;
   /** Callback to navigate to the order history list. */
   onOrderHistory?: () => void;
+  /** Callback to navigate to the premium subscription screen. */
+  onPremium?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -33,7 +35,7 @@ interface Props {
  * @param props - {@link Props}
  * @returns The account screen view.
  */
-export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
+export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
@@ -148,6 +150,14 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-payment"
+          />
+          <MenuItem
+            label="CF+ Premium"
+            onPress={onPremium}
+            colors={colors}
+            borderRadius={borderRadius}
+            shadows={shadows}
+            testID="account-premium"
           />
           <MenuItem
             label="Notification Preferences"

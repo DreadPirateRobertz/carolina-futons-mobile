@@ -66,6 +66,22 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   clear: jest.fn(() => Promise.resolve()),
 }));
 
+// Mock react-native-purchases (RevenueCat)
+jest.mock('react-native-purchases', () => ({
+  __esModule: true,
+  default: {
+    configure: jest.fn(),
+    getOfferings: jest.fn(() => Promise.resolve({ current: null })),
+    purchasePackage: jest.fn(),
+    restorePurchases: jest.fn(),
+    getCustomerInfo: jest.fn(() =>
+      Promise.resolve({ entitlements: { active: {} } }),
+    ),
+    setLogLevel: jest.fn(),
+    LOG_LEVEL: { DEBUG: 'DEBUG' },
+  },
+}));
+
 // Mock @react-native-community/netinfo
 jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => jest.fn()),
