@@ -244,7 +244,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    const order = await processPayment(selectedMethod);
+    const order = await processPayment(selectedMethod, shippingAddress);
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
@@ -253,7 +253,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       }
       onOrderComplete?.(order);
     }
-  }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+  }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length, shippingAddress]);
 
   const handleApplePay = useCallback(async () => {
     if (isProcessing) return;
@@ -266,7 +266,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     }
 
     setSelectedMethod('apple-pay');
-    const order = await processPayment('apple-pay');
+    const order = await processPayment('apple-pay', shippingAddress);
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
@@ -275,7 +275,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       }
       onOrderComplete?.(order);
     }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length, shippingAddress]);
 
   const handleGooglePay = useCallback(async () => {
     if (isProcessing) return;
@@ -288,7 +288,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     }
 
     setSelectedMethod('google-pay');
-    const order = await processPayment('google-pay');
+    const order = await processPayment('google-pay', shippingAddress);
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
@@ -297,9 +297,33 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       }
       onOrderComplete?.(order);
     }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length, shippingAddress]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
+
+  // Proactive form completeness check for button state
+  const isAddressComplete =
+    shippingAddress.fullName.trim() !== '' &&
+    shippingAddress.line1.trim() !== '' &&
+    shippingAddress.city.trim() !== '' &&
+    shippingAddress.state.trim() !== '' &&
+    shippingAddress.zip.trim() !== '';
+
+  const isBillingComplete = billingSameAsShipping || (
+    billingAddress.fullName.trim() !== '' &&
+    billingAddress.line1.trim() !== '' &&
+    billingAddress.city.trim() !== '' &&
+    billingAddress.state.trim() !== '' &&
+    billingAddress.zip.trim() !== ''
+  );
+
+  const isCardReady = selectedMethod !== 'card' || cardComplete;
+
+  const isFormComplete =
+    !!selectedMethod &&
+    isAddressComplete &&
+    isBillingComplete &&
+    isCardReady;
 
   const renderAddressField = (
     label: string,
@@ -784,23 +808,25 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               styles.placeOrderButton,
               {
                 backgroundColor:
-                  selectedMethod && !isProcessing ? colors.sunsetCoral : colors.muted,
+                  isFormComplete && !isProcessing ? colors.sunsetCoral : colors.muted,
                 borderRadius: borderRadius.button,
               },
-              selectedMethod && !isProcessing ? shadows.button : undefined,
+              isFormComplete && !isProcessing ? shadows.button : undefined,
             ]}
             onPress={handlePlaceOrder}
-            disabled={!selectedMethod || isProcessing}
+            disabled={!isFormComplete || isProcessing}
             testID="place-order-button"
             accessibilityLabel={
               isProcessing
                 ? 'Processing payment'
-                : selectedMethod
+                : isFormComplete
                   ? `Place order for ${formatPrice(totals.total)}`
-                  : 'Select a payment method to continue'
+                  : !selectedMethod
+                    ? 'Select a payment method to continue'
+                    : 'Complete all required fields to continue'
             }
             accessibilityRole="button"
-            accessibilityState={{ disabled: !selectedMethod || isProcessing }}
+            accessibilityState={{ disabled: !isFormComplete || isProcessing }}
           >
             {isProcessing ? (
               <View style={styles.processingRow}>
@@ -809,9 +835,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               </View>
             ) : (
               <Text style={styles.placeOrderText}>
-                {selectedMethod
-                  ? `Place Order — ${formatPrice(totals.total)}`
-                  : 'Select Payment Method'}
+                {!selectedMethod
+                  ? 'Select Payment Method'
+                  : isFormComplete
+                    ? `Place Order — ${formatPrice(totals.total)}`
+                    : 'Complete Required Fields'}
               </Text>
             )}
           </TouchableOpacity>

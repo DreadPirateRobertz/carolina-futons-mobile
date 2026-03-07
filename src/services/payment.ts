@@ -21,6 +21,15 @@ export interface OrderTotals {
   total: number;
 }
 
+export interface ShippingAddress {
+  fullName: string;
+  line1: string;
+  line2: string;
+  city: string;
+  state: string;
+  zip: string;
+}
+
 export interface PaymentIntentResponse {
   clientSecret: string;
   paymentIntentId: string;
@@ -87,6 +96,7 @@ export async function confirmOrder(
   items: CartItem[],
   totals: OrderTotals,
   paymentMethod: PaymentMethod,
+  shippingAddress?: ShippingAddress,
 ): Promise<OrderConfirmation> {
   try {
     const result = await client.confirmOrder(
@@ -102,6 +112,7 @@ export async function confirmOrder(
       })),
       totals,
       paymentMethod,
+      shippingAddress,
     );
     return result as unknown as OrderConfirmation;
   } catch (err) {

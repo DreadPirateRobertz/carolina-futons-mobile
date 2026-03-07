@@ -144,6 +144,7 @@ describe('usePayment', () => {
       expect.any(Array),
       expect.any(Object),
       'card',
+      undefined,
     );
   });
 
@@ -403,6 +404,7 @@ describe('usePayment', () => {
         expect.any(Array),
         expect.any(Object),
         'apple-pay',
+        undefined,
       );
 
       expect(order).toBeTruthy();
@@ -508,6 +510,7 @@ describe('usePayment', () => {
         expect.any(Array),
         expect.any(Object),
         'google-pay',
+        undefined,
       );
 
       expect(order).toBeTruthy();

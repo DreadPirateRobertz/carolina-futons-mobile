@@ -435,6 +435,14 @@ export class WixClient {
     }[],
     totals: { subtotal: number; shipping: number; tax: number; total: number },
     paymentMethod: string,
+    shippingAddress?: {
+      fullName: string;
+      line1: string;
+      line2: string;
+      city: string;
+      state: string;
+      zip: string;
+    },
   ): Promise<{
     orderId: string;
     orderNumber: string;
@@ -449,6 +457,7 @@ export class WixClient {
       lineItems,
       totals,
       paymentMethod,
+      ...(shippingAddress ? { shippingAddress } : {}),
     });
   }
 

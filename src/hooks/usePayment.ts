@@ -22,6 +22,7 @@ import {
   type PaymentMethod,
   type OrderConfirmation,
   type OrderTotals,
+  type ShippingAddress,
 } from '@/services/payment';
 
 export type PaymentStatus = 'idle' | 'processing' | 'success' | 'error';
@@ -113,7 +114,7 @@ export function usePayment() {
   }, [isPlatformPaySupported]);
 
   const processPayment = useCallback(
-    async (method: PaymentMethod): Promise<OrderConfirmation | null> => {
+    async (method: PaymentMethod, shippingAddress?: ShippingAddress): Promise<OrderConfirmation | null> => {
       if (items.length === 0 || processingRef.current) return null;
 
       processingRef.current = true;
@@ -214,8 +215,8 @@ export function usePayment() {
           }
         }
 
-        // 3. Confirm order via Wix eCommerce API
-        const confirmation = await confirmOrder(wixClient, paymentIntentId, items, totals, method);
+        // 3. Confirm order via Wix eCommerce API (includes shipping address)
+        const confirmation = await confirmOrder(wixClient, paymentIntentId, items, totals, method, shippingAddress);
 
         // 4. Clear cart and set success state
         clearCart();
