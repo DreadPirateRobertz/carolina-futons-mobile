@@ -659,3 +659,102 @@ describe('collection-category mapping', () => {
     expect(map1).not.toBe(map2); // Different object references
   });
 });
+
+// ── eCommerce Cart methods ────────────────────────────────────
+
+describe('WixClient eCommerce Cart', () => {
+  let client: WixClient;
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+    client = new WixClient(TEST_CONFIG);
+  });
+
+  describe('addToCart', () => {
+    it('POSTs line items to the cart add endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ cart: { id: 'cart-1' } }),
+      });
+
+      const result = await client.addToCart('cart-1', [
+        {
+          catalogReference: {
+            catalogItemId: 'prod-1',
+            appId: '215238eb-22a5-4c36-9e7b-e7c08025e04e',
+          },
+          quantity: 2,
+        },
+      ]);
+
+      expect(result.cart.id).toBe('cart-1');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/carts/cart-1/add-to-cart',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            lineItems: [
+              {
+                catalogReference: {
+                  catalogItemId: 'prod-1',
+                  appId: '215238eb-22a5-4c36-9e7b-e7c08025e04e',
+                },
+                quantity: 2,
+              },
+            ],
+          }),
+        }),
+      );
+    });
+
+    it('throws WixApiError on HTTP failure', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ message: 'Cart not found' }),
+      });
+
+      await expect(client.addToCart('bad-cart', [])).rejects.toThrow(WixApiError);
+    });
+  });
+
+  describe('removeCartLineItems', () => {
+    it('POSTs line item IDs to the remove endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ cart: { id: 'cart-1' } }),
+      });
+
+      await client.removeCartLineItems('cart-1', ['li-1', 'li-2']);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/carts/cart-1/remove-line-items',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ lineItemIds: ['li-1', 'li-2'] }),
+        }),
+      );
+    });
+  });
+
+  describe('updateCartLineItems', () => {
+    it('POSTs updated line items to the update endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ cart: { id: 'cart-1' } }),
+      });
+
+      await client.updateCartLineItems('cart-1', [{ id: 'li-1', quantity: 5 }]);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/carts/cart-1/update-line-items',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            lineItems: [{ id: 'li-1', quantity: 5 }],
+          }),
+        }),
+      );
+    });
+  });
+});
