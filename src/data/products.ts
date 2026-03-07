@@ -2,6 +2,7 @@
  * Product catalog data and types.
  * Mock data now; designed for Wix CMS API integration later.
  */
+import { type ProductId, productId } from './productId';
 
 export interface ProductImage {
   uri: string;
@@ -9,7 +10,7 @@ export interface ProductImage {
 }
 
 export interface Product {
-  id: string;
+  id: ProductId;
   name: string;
   slug: string;
   sku?: string;
@@ -71,7 +72,7 @@ export const CATEGORIES: CategoryInfo[] = [
  */
 export const PRODUCTS: Product[] = [
   {
-    id: 'prod-asheville-full',
+    id: productId('prod-asheville-full'),
     name: 'The Asheville Full Futon',
     slug: 'asheville-full-futon',
     sku: 'CF-FUT-ASH-001',
@@ -94,7 +95,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 34, height: 33 },
   },
   {
-    id: 'prod-blue-ridge-queen',
+    id: productId('prod-blue-ridge-queen'),
     name: 'The Blue Ridge Queen Futon',
     slug: 'blue-ridge-queen-futon',
     sku: 'CF-FUT-BRQ-002',
@@ -117,7 +118,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 60, depth: 36, height: 35 },
   },
   {
-    id: 'prod-pisgah-twin',
+    id: productId('prod-pisgah-twin'),
     name: 'The Pisgah Twin Futon',
     slug: 'pisgah-twin-futon',
     category: 'futons',
@@ -138,7 +139,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 39, depth: 32, height: 31 },
   },
   {
-    id: 'prod-biltmore-loveseat',
+    id: productId('prod-biltmore-loveseat'),
     name: 'The Biltmore Loveseat',
     slug: 'biltmore-loveseat',
     category: 'futons',
@@ -162,7 +163,7 @@ export const PRODUCTS: Product[] = [
   },
   // --- Murphy Cabinet Beds ---
   {
-    id: 'prod-murphy-queen-vertical',
+    id: productId('prod-murphy-queen-vertical'),
     name: 'The Hendersonville Queen Murphy Cabinet Bed',
     slug: 'hendersonville-queen-murphy-cabinet-bed',
     category: 'murphy-beds',
@@ -184,7 +185,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 64, depth: 24, height: 42 },
   },
   {
-    id: 'prod-murphy-full-horizontal',
+    id: productId('prod-murphy-full-horizontal'),
     name: 'The Appalachian Full Horizontal Murphy Cabinet',
     slug: 'appalachian-full-horizontal-murphy-cabinet',
     category: 'murphy-beds',
@@ -205,7 +206,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 78, depth: 20, height: 44 },
   },
   {
-    id: 'prod-murphy-queen-bookcase',
+    id: productId('prod-murphy-queen-bookcase'),
     name: 'The Smoky Mountain Queen Bookcase Murphy',
     slug: 'smoky-mountain-queen-bookcase-murphy',
     category: 'murphy-beds',
@@ -227,7 +228,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 100, depth: 24, height: 84 },
   },
   {
-    id: 'prod-murphy-twin-cabinet',
+    id: productId('prod-murphy-twin-cabinet'),
     name: 'The Brevard Twin Cabinet Bed',
     slug: 'brevard-twin-cabinet-bed',
     category: 'murphy-beds',
@@ -248,7 +249,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 44, depth: 24, height: 38 },
   },
   {
-    id: 'prod-murphy-queen-desk',
+    id: productId('prod-murphy-queen-desk'),
     name: 'The Chimney Rock Queen Desk Murphy',
     slug: 'chimney-rock-queen-desk-murphy',
     category: 'murphy-beds',
@@ -271,7 +272,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 66, depth: 26, height: 84 },
   },
   {
-    id: 'prod-murphy-full-storage',
+    id: productId('prod-murphy-full-storage'),
     name: 'The Nantahala Full Storage Murphy',
     slug: 'nantahala-full-storage-murphy',
     category: 'murphy-beds',
@@ -292,7 +293,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 60, depth: 24, height: 82 },
   },
   {
-    id: 'prod-mountain-cover-full',
+    id: productId('prod-mountain-cover-full'),
     name: 'Mountain Weave Futon Cover',
     slug: 'mountain-weave-cover',
     category: 'covers',
@@ -313,7 +314,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 34, height: 0 },
   },
   {
-    id: 'prod-sunset-cover-queen',
+    id: productId('prod-sunset-cover-queen'),
     name: 'Sunset Cotton Cover - Queen',
     slug: 'sunset-cotton-cover-queen',
     category: 'covers',
@@ -336,7 +337,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 60, depth: 36, height: 0 },
   },
   {
-    id: 'prod-premium-innerspring',
+    id: productId('prod-premium-innerspring'),
     name: 'Premium Innerspring Mattress',
     slug: 'premium-innerspring-mattress',
     category: 'mattresses',
@@ -357,7 +358,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 75, height: 8 },
   },
   {
-    id: 'prod-memory-foam',
+    id: productId('prod-memory-foam'),
     name: 'Memory Foam Futon Mattress',
     slug: 'memory-foam-mattress',
     category: 'mattresses',
@@ -379,7 +380,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 75, height: 6 },
   },
   {
-    id: 'prod-hardwood-frame',
+    id: productId('prod-hardwood-frame'),
     name: 'Solid Hardwood Frame',
     slug: 'solid-hardwood-frame',
     category: 'frames',
@@ -400,7 +401,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 38, height: 33 },
   },
   {
-    id: 'prod-arm-pillows',
+    id: productId('prod-arm-pillows'),
     name: 'Futon Arm Pillow Set',
     slug: 'arm-pillow-set',
     category: 'pillows',
@@ -417,7 +418,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 24, depth: 8, height: 8 },
   },
   {
-    id: 'prod-grip-strips',
+    id: productId('prod-grip-strips'),
     name: 'Non-Slip Grip Strips',
     slug: 'non-slip-grip-strips',
     category: 'accessories',
@@ -438,7 +439,7 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 12, depth: 2, height: 0 },
   },
   {
-    id: 'prod-furniture-polish',
+    id: productId('prod-furniture-polish'),
     name: 'Natural Wood Polish',
     slug: 'natural-wood-polish',
     category: 'accessories',

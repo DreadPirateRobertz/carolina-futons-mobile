@@ -2,12 +2,13 @@
  * Order data model and mock data for order history/tracking.
  * Real API integration will replace MOCK_ORDERS later.
  */
+import { type FutonModelId, futonModelId } from './productId';
 
 export type OrderStatus = 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
 export interface OrderLineItem {
   id: string;
-  modelId: string;
+  modelId: FutonModelId;
   modelName: string;
   fabricId: string;
   fabricName: string;
@@ -83,7 +84,7 @@ export const MOCK_ORDERS: Order[] = [
     items: [
       {
         id: 'li-001',
-        modelId: 'asheville-full',
+        modelId: futonModelId('asheville-full'),
         modelName: 'The Asheville',
         fabricId: 'mountain-blue',
         fabricName: 'Mountain Blue',
@@ -121,7 +122,7 @@ export const MOCK_ORDERS: Order[] = [
     items: [
       {
         id: 'li-002',
-        modelId: 'blue-ridge-queen',
+        modelId: futonModelId('blue-ridge-queen'),
         modelName: 'The Blue Ridge',
         fabricId: 'espresso-brown',
         fabricName: 'Espresso Brown',
@@ -132,7 +133,7 @@ export const MOCK_ORDERS: Order[] = [
       },
       {
         id: 'li-003',
-        modelId: 'pisgah-twin',
+        modelId: futonModelId('pisgah-twin'),
         modelName: 'The Pisgah',
         fabricId: 'natural-linen',
         fabricName: 'Natural Linen',
@@ -170,7 +171,7 @@ export const MOCK_ORDERS: Order[] = [
     items: [
       {
         id: 'li-004',
-        modelId: 'biltmore-loveseat',
+        modelId: futonModelId('biltmore-loveseat'),
         modelName: 'The Biltmore',
         fabricId: 'sunset-coral',
         fabricName: 'Sunset Coral',
@@ -202,7 +203,7 @@ export const MOCK_ORDERS: Order[] = [
     items: [
       {
         id: 'li-005',
-        modelId: 'asheville-full',
+        modelId: futonModelId('asheville-full'),
         modelName: 'The Asheville',
         fabricId: 'charcoal',
         fabricName: 'Charcoal',

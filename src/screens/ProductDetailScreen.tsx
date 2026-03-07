@@ -43,6 +43,7 @@ import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 import { events } from '@/services/analytics';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
+import { modelIdToProductId } from '@/utils';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -213,7 +214,7 @@ export function ProductDetailScreen({
           glbUrl: params.glbUrl,
           usdzUrl: params.usdzUrl,
           title: params.modelName,
-          productId: catalogProduct?.id ?? `prod-${model.id}`,
+          productId: catalogProduct?.id ?? modelIdToProductId(model.id),
         });
       },
     });

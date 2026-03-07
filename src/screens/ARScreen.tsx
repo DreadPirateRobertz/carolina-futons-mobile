@@ -28,6 +28,7 @@ import {
   type Fabric,
 } from '@/hooks/useFutonModels';
 import type { Product } from '@/hooks/useProducts';
+import { modelIdToProductId, productIdToModelId } from '@/utils';
 import { ARFutonOverlay } from '@/components/ARFutonOverlay';
 import { ARControls } from '@/components/ARControls';
 import { ARProductPicker } from '@/components/ARProductPicker';
@@ -164,7 +165,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       }
       setIsPlaced(false);
       setHasPlacement(false);
-      events.arModelSelected(model.id, `prod-${model.id}`);
+      events.arModelSelected(model.id, modelIdToProductId(model.id));
       if (Platform.OS !== 'web') {
         Haptics.selectionAsync();
       }
@@ -381,7 +382,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   /** Handle product selection from picker — switch model, keep placement */
   const handlePickProduct = useCallback(
     (product: Product) => {
-      const modelId = product.id.replace(/^prod-/, '');
+      const modelId = productIdToModelId(product.id);
       const futonModel = getModelById(modelId);
       if (futonModel) {
         setSelectedModel(futonModel);

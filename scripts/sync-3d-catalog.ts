@@ -100,12 +100,14 @@ function generateTypeScript(catalog: Catalog): string {
   lines.push(` * Dimensions in meters (required by ARKit/ARCore for real-world scale).`);
   lines.push(` */`);
   lines.push(``);
+  lines.push(`import { type ProductId, productId } from './productId';`);
+  lines.push(``);
   lines.push(`/** CDN base URL for 3D model assets */`);
   lines.push(`export const MODEL_CDN_BASE = '${catalog.cdnBase}';`);
   lines.push(``);
   lines.push(`export interface Model3DAsset {`);
   lines.push(`  /** Product ID — matches Product.id from products.ts */`);
-  lines.push(`  productId: string;`);
+  lines.push(`  productId: ProductId;`);
   lines.push(`  /** GLB model URL (Android / cross-platform) */`);
   lines.push(`  glbUrl: string;`);
   lines.push(`  /** USDZ model URL (iOS AR Quick Look) */`);
@@ -169,7 +171,7 @@ function generateTypeScript(catalog: Catalog): string {
         lines.push(`    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)`);
       }
 
-      lines.push(`    productId: '${model.productId}',`);
+      lines.push(`    productId: productId('${model.productId}'),`);
       lines.push(`    glbUrl: ${glbUrl},`);
       lines.push(`    usdzUrl: ${usdzUrl},`);
       lines.push(
@@ -187,13 +189,13 @@ function generateTypeScript(catalog: Catalog): string {
   lines.push(
     `/** Look up 3D model asset for a product, returns undefined if no AR model exists */`,
   );
-  lines.push(`export function getModel3DForProduct(productId: string): Model3DAsset | undefined {`);
-  lines.push(`  return MODELS_3D.find((m) => m.productId === productId);`);
+  lines.push(`export function getModel3DForProduct(pid: ProductId): Model3DAsset | undefined {`);
+  lines.push(`  return MODELS_3D.find((m) => m.productId === pid);`);
   lines.push(`}`);
   lines.push(``);
   lines.push(`/** Check whether a product has an AR model available */`);
-  lines.push(`export function hasARModel(productId: string): boolean {`);
-  lines.push(`  return MODELS_3D.some((m) => m.productId === productId);`);
+  lines.push(`export function hasARModel(pid: ProductId): boolean {`);
+  lines.push(`  return MODELS_3D.some((m) => m.productId === pid);`);
   lines.push(`}`);
   lines.push(``);
 

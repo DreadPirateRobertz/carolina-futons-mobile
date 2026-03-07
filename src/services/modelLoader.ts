@@ -16,6 +16,7 @@ import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 
 import { getModel3DForProduct, type Model3DAsset } from '@/data/models3d';
+import type { ProductId } from '@/data/productId';
 
 /** Maximum disk cache budget for 3D models (200 MB) */
 export const MODEL_CACHE_BUDGET_BYTES = 200 * 1024 * 1024;
@@ -161,7 +162,7 @@ export async function evictIfNeeded(
  * @returns Local file URI for the model, or null if no AR model exists
  */
 export async function loadModelForProduct(
-  productId: string,
+  productId: ProductId,
   onProgress?: ProgressCallback,
 ): Promise<string | null> {
   const notify = onProgress ?? (() => {});
@@ -236,7 +237,7 @@ export async function loadModelForProduct(
  * Prefetch a model in the background (no progress reporting).
  * Call this when the user views a product detail page.
  */
-export async function prefetchModel(productId: string): Promise<void> {
+export async function prefetchModel(productId: ProductId): Promise<void> {
   try {
     await loadModelForProduct(productId);
   } catch {

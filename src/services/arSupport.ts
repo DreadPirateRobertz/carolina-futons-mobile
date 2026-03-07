@@ -12,6 +12,7 @@ import { Platform } from 'react-native';
 import type { ProductCategory } from '@/data/products';
 import * as self from '@/services/arSupport';
 import { hasARModel } from '@/data/models3d';
+import { type ProductId, type FutonModelId, productIdToModelId } from '@/data/productId';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -140,9 +141,9 @@ export function isProductAREnabled(product: ProductLike & { id?: string }): bool
  * Uses the 3D model catalog for dynamic lookup.
  * Returns undefined for products without AR models.
  */
-export function getARModelId(productId: string): string | undefined {
-  if (!hasARModel(productId)) return undefined;
-  return productId.replace(/^prod-/, '');
+export function getARModelId(pid: ProductId): FutonModelId | undefined {
+  if (!hasARModel(pid)) return undefined;
+  return productIdToModelId(pid);
 }
 
 // ---------------------------------------------------------------------------

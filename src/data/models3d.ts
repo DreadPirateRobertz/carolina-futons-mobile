@@ -11,12 +11,14 @@
  * Dimensions in meters (required by ARKit/ARCore for real-world scale).
  */
 
+import { type ProductId, productId } from './productId';
+
 /** CDN base URL for 3D model assets */
 export const MODEL_CDN_BASE = 'https://cdn.carolinafutons.com/models';
 
 export interface Model3DAsset {
   /** Product ID — matches Product.id from products.ts */
-  productId: string;
+  productId: ProductId;
   /** GLB model URL (Android / cross-platform) */
   glbUrl: string;
   /** USDZ model URL (iOS AR Quick Look) */
@@ -48,7 +50,7 @@ function inToM(inches: number): number {
 export const MODELS_3D: Model3DAsset[] = [
   // --- Murphy Cabinet Beds ---
   {
-    productId: 'prod-murphy-queen-vertical',
+    productId: productId('prod-murphy-queen-vertical'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-vertical-q1r2s3.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-vertical-q1r2s3.usdz`,
     dimensions: { width: inToM(64), depth: inToM(24), height: inToM(42) },
@@ -57,7 +59,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: false,
   },
   {
-    productId: 'prod-murphy-full-horizontal',
+    productId: productId('prod-murphy-full-horizontal'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-horizontal-t4u5v6.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-horizontal-t4u5v6.usdz`,
     dimensions: { width: inToM(78), depth: inToM(20), height: inToM(44) },
@@ -66,7 +68,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: false,
   },
   {
-    productId: 'prod-murphy-queen-bookcase',
+    productId: productId('prod-murphy-queen-bookcase'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-bookcase-w7x8y9.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-bookcase-w7x8y9.usdz`,
     dimensions: { width: inToM(100), depth: inToM(24), height: inToM(84) },
@@ -75,7 +77,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: false,
   },
   {
-    productId: 'prod-murphy-twin-cabinet',
+    productId: productId('prod-murphy-twin-cabinet'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-twin-cabinet-z0a1b2.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-twin-cabinet-z0a1b2.usdz`,
     dimensions: { width: inToM(44), depth: inToM(24), height: inToM(38) },
@@ -84,7 +86,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: false,
   },
   {
-    productId: 'prod-murphy-queen-desk',
+    productId: productId('prod-murphy-queen-desk'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-desk-c3d4e5.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-desk-c3d4e5.usdz`,
     dimensions: { width: inToM(66), depth: inToM(26), height: inToM(84) },
@@ -93,7 +95,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: false,
   },
   {
-    productId: 'prod-murphy-full-storage',
+    productId: productId('prod-murphy-full-storage'),
     glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-storage-f6g7h8.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-storage-f6g7h8.usdz`,
     dimensions: { width: inToM(60), depth: inToM(24), height: inToM(82) },
@@ -105,7 +107,7 @@ export const MODELS_3D: Model3DAsset[] = [
   // --- Futons & Frames ---
   {
     // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
-    productId: 'prod-asheville-full',
+    productId: productId('prod-asheville-full'),
     glbUrl:
       'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb',
     usdzUrl: `${MODEL_CDN_BASE}/usdz/asheville-full-14c9a033.usdz`,
@@ -115,7 +117,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: true,
   },
   {
-    productId: 'prod-blue-ridge-queen',
+    productId: productId('prod-blue-ridge-queen'),
     glbUrl: `${MODEL_CDN_BASE}/glb/blue-ridge-queen-d4e5f6.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/blue-ridge-queen-d4e5f6.usdz`,
     dimensions: { width: inToM(60), depth: inToM(36), height: inToM(35) },
@@ -124,7 +126,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: true,
   },
   {
-    productId: 'prod-pisgah-twin',
+    productId: productId('prod-pisgah-twin'),
     glbUrl: `${MODEL_CDN_BASE}/glb/pisgah-twin-g7h8i9.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/pisgah-twin-g7h8i9.usdz`,
     dimensions: { width: inToM(39), depth: inToM(32), height: inToM(31) },
@@ -133,7 +135,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: true,
   },
   {
-    productId: 'prod-biltmore-loveseat',
+    productId: productId('prod-biltmore-loveseat'),
     glbUrl: `${MODEL_CDN_BASE}/glb/biltmore-loveseat-j0k1l2.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/biltmore-loveseat-j0k1l2.usdz`,
     dimensions: { width: inToM(48), depth: inToM(33), height: inToM(32) },
@@ -142,7 +144,7 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: true,
   },
   {
-    productId: 'prod-hardwood-frame',
+    productId: productId('prod-hardwood-frame'),
     glbUrl: `${MODEL_CDN_BASE}/glb/hardwood-frame-m3n4o5.glb`,
     usdzUrl: `${MODEL_CDN_BASE}/usdz/hardwood-frame-m3n4o5.usdz`,
     dimensions: { width: inToM(54), depth: inToM(38), height: inToM(33) },
@@ -153,11 +155,11 @@ export const MODELS_3D: Model3DAsset[] = [
 ];
 
 /** Look up 3D model asset for a product, returns undefined if no AR model exists */
-export function getModel3DForProduct(productId: string): Model3DAsset | undefined {
-  return MODELS_3D.find((m) => m.productId === productId);
+export function getModel3DForProduct(pid: ProductId): Model3DAsset | undefined {
+  return MODELS_3D.find((m) => m.productId === pid);
 }
 
 /** Check whether a product has an AR model available */
-export function hasARModel(productId: string): boolean {
-  return MODELS_3D.some((m) => m.productId === productId);
+export function hasARModel(pid: ProductId): boolean {
+  return MODELS_3D.some((m) => m.productId === pid);
 }

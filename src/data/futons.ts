@@ -2,6 +2,7 @@
  * Futon product catalog for AR overlay feature.
  * Dimensions in inches (real-world), used for dimension overlay labels.
  */
+import { type FutonModelId, futonModelId } from './productId';
 
 export interface Fabric {
   id: string;
@@ -12,7 +13,7 @@ export interface Fabric {
 }
 
 export interface FutonModel {
-  id: string;
+  id: FutonModelId;
   name: string;
   tagline: string;
   dimensions: {
@@ -38,7 +39,7 @@ export const FABRICS: Fabric[] = [
 
 export const FUTON_MODELS: FutonModel[] = [
   {
-    id: 'asheville-full',
+    id: futonModelId('asheville-full'),
     name: 'The Asheville',
     tagline: 'Our bestselling full-size futon',
     dimensions: { width: 54, depth: 34, height: 33, seatHeight: 18 },
@@ -46,7 +47,7 @@ export const FUTON_MODELS: FutonModel[] = [
     fabrics: FABRICS,
   },
   {
-    id: 'blue-ridge-queen',
+    id: futonModelId('blue-ridge-queen'),
     name: 'The Blue Ridge',
     tagline: 'Queen-size luxury comfort',
     dimensions: { width: 60, depth: 36, height: 35, seatHeight: 19 },
@@ -54,7 +55,7 @@ export const FUTON_MODELS: FutonModel[] = [
     fabrics: FABRICS,
   },
   {
-    id: 'pisgah-twin',
+    id: futonModelId('pisgah-twin'),
     name: 'The Pisgah',
     tagline: 'Perfect for smaller spaces',
     dimensions: { width: 39, depth: 32, height: 31, seatHeight: 17 },
@@ -62,7 +63,7 @@ export const FUTON_MODELS: FutonModel[] = [
     fabrics: FABRICS,
   },
   {
-    id: 'biltmore-loveseat',
+    id: futonModelId('biltmore-loveseat'),
     name: 'The Biltmore',
     tagline: 'Compact loveseat futon',
     dimensions: { width: 48, depth: 33, height: 32, seatHeight: 18 },

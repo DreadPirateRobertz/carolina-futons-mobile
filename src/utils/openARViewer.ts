@@ -10,6 +10,7 @@
 import { Alert, Linking, Platform } from 'react-native';
 
 import { getModel3DForProduct, MODEL_CDN_BASE } from '@/data/models3d';
+import { type FutonModelId, modelIdToProductId } from '@/data/productId';
 
 export interface ARModelAssets {
   usdzUrl: string; // iOS Quick Look
@@ -32,9 +33,9 @@ export interface OpenARViewerOptions {
  * Looks up the 3D model catalog first for pipeline-generated URLs;
  * falls back to CDN convention if the product isn't in the catalog.
  */
-export function getARModelAssets(modelId: string): ARModelAssets {
-  const productId = `prod-${modelId}`;
-  const asset = getModel3DForProduct(productId);
+export function getARModelAssets(modelId: FutonModelId): ARModelAssets {
+  const pid = modelIdToProductId(modelId);
+  const asset = getModel3DForProduct(pid);
   if (asset) {
     return { usdzUrl: asset.usdzUrl, glbUrl: asset.glbUrl };
   }
@@ -65,7 +66,7 @@ export function buildSceneViewerUrl(glbUrl: string, title: string): string {
  * - Android: Opens Scene Viewer intent with .glb model
  */
 export async function openARViewer(
-  modelId: string,
+  modelId: FutonModelId,
   modelName: string,
   options?: OpenARViewerOptions,
 ): Promise<void> {
