@@ -7,13 +7,15 @@
  * products yet.
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
+import { FilterButton } from '@/components/FilterButton';
+import { FilterModal } from '@/components/FilterModal';
 import { EmptyState } from '@/components/EmptyState';
 
 /** Props for the CategoryScreen component. */
@@ -56,9 +58,20 @@ export function CategoryScreen({
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
+  const {
+    products,
+    sortBy,
+    filters,
+    activeFilterCount,
+    availableFabrics,
+    priceExtent,
+    setSortBy,
+    setFilters,
+    setSelectedCategory,
+  } = useProducts({
     initialCategory: resolvedCategory,
   });
+  const [showFilters, setShowFilters] = useState(false);
 
   // Sync hook state when category changes
   useEffect(() => {
@@ -101,10 +114,20 @@ export function CategoryScreen({
             {products.length} {products.length === 1 ? 'product' : 'products'}
           </Text>
         </View>
-        <SortPicker value={sortBy} onChange={setSortBy} resultCount={products.length} />
+        <SortPicker
+          value={sortBy}
+          onChange={setSortBy}
+          resultCount={products.length}
+          leftContent={
+            <FilterButton
+              activeCount={activeFilterCount}
+              onPress={() => setShowFilters(true)}
+            />
+          }
+        />
       </View>
     ),
-    [title, products.length, sortBy, colors, spacing, onBack, setSortBy],
+    [title, products.length, sortBy, activeFilterCount, colors, spacing, onBack, setSortBy],
   );
 
   const renderEmpty = useCallback(
@@ -136,6 +159,14 @@ export function CategoryScreen({
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         testID="category-product-list"
+      />
+      <FilterModal
+        visible={showFilters}
+        filters={filters}
+        availableFabrics={availableFabrics}
+        priceExtent={priceExtent}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
       />
     </View>
   );

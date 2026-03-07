@@ -15,6 +15,7 @@ interface Props {
   value: SortOption;
   onChange: (sort: SortOption) => void;
   resultCount: number;
+  leftContent?: React.ReactNode;
   testID?: string;
 }
 
@@ -27,7 +28,7 @@ interface Props {
  * @param props.testID - Test identifier
  * @returns A row with result count and sort button, plus the sort modal
  */
-export function SortPicker({ value, onChange, resultCount, testID }: Props) {
+export function SortPicker({ value, onChange, resultCount, leftContent, testID }: Props) {
   const { colors, borderRadius, shadows } = useTheme();
   const [showModal, setShowModal] = useState(false);
 
@@ -35,9 +36,12 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
 
   return (
     <View style={styles.container} testID={testID ?? 'sort-picker'}>
-      <Text style={[styles.resultCount, { color: colors.espressoLight }]}>
-        {resultCount} {resultCount === 1 ? 'product' : 'products'}
-      </Text>
+      <View style={styles.leftSection}>
+        {leftContent}
+        <Text style={[styles.resultCount, { color: colors.espressoLight }]}>
+          {resultCount} {resultCount === 1 ? 'product' : 'products'}
+        </Text>
+      </View>
       <TouchableOpacity
         style={[
           styles.sortButton,
@@ -115,6 +119,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 8,
+  },
+  leftSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   resultCount: {
     fontSize: 13,

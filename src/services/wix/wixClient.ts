@@ -11,7 +11,7 @@
  * - POST /stores/v1/inventoryItems/query (inventory status)
  */
 
-import type { Product, ProductImage, ProductCategory } from '@/data/products';
+import type { Product, ProductImage, ProductCategory, ProductSize } from '@/data/products';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export interface CreateReviewInput {
 export interface QueryProductsOptions {
   limit?: number;
   offset?: number;
-  sort?: 'price-asc' | 'price-desc' | 'newest' | 'rating' | 'featured';
+  sort?: 'price-asc' | 'price-desc' | 'newest' | 'rating' | 'featured' | 'popular';
   collectionId?: string;
   productIds?: string[];
   search?: string;
@@ -290,6 +290,7 @@ const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
   'price-desc': [{ fieldName: 'price', order: 'DESC' }],
   newest: [{ fieldName: 'lastUpdated', order: 'DESC' }],
   rating: [{ fieldName: 'numericId', order: 'DESC' }],
+  popular: [{ fieldName: 'numericId', order: 'DESC' }],
   featured: [],
 };
 
@@ -867,12 +868,24 @@ export function transformWixProduct(wix: WixProduct): Product {
   );
   const fabricOptions = fabricOption ? fabricOption.choices.map((c) => c.value) : [];
 
+  // Infer size from product name — more reliable than Wix product options
+  // which list all variant choices rather than a single product size
+  const nameLower = wix.name.toLowerCase();
+  const size: ProductSize | undefined = nameLower.includes('queen')
+    ? 'queen'
+    : nameLower.includes('twin')
+      ? 'twin'
+      : nameLower.includes('full')
+        ? 'full'
+        : undefined;
+
   return {
     id: wix.id,
     name: wix.name,
     slug: wix.slug,
     sku: wix.sku ?? '',
     category: 'futons' as ProductCategory, // Resolved via collection mapping
+    ...(size ? { size } : {}),
     price: isDiscounted ? wix.price.discountedPrice : wix.price.price,
     ...(isDiscounted ? { originalPrice: wix.price.price } : {}),
     description: wix.description ?? '',

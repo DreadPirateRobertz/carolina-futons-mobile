@@ -23,6 +23,8 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
+import { FilterButton } from '@/components/FilterButton';
+import { FilterModal } from '@/components/FilterModal';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -54,16 +56,22 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     searchQuery,
     selectedCategory,
     sortBy,
+    filters,
+    activeFilterCount,
+    availableFabrics,
+    priceExtent,
     isLoading,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
+    setFilters,
     loadMore,
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const [refreshing, setRefreshing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -140,11 +148,21 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
         />
 
-        {/* Sort + count */}
-        <SortPicker value={sortBy} onChange={(sort: SortOption) => {
-          setSortBy(sort);
-          events.sortProducts(sort);
-        }} resultCount={products.length} />
+        {/* Filter + Sort row */}
+        <SortPicker
+          value={sortBy}
+          onChange={(sort: SortOption) => {
+            setSortBy(sort);
+            events.sortProducts(sort);
+          }}
+          resultCount={products.length}
+          leftContent={
+            <FilterButton
+              activeCount={activeFilterCount}
+              onPress={() => setShowFilters(true)}
+            />
+          }
+        />
       </View>
     ),
     [
@@ -152,6 +170,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       searchQuery,
       selectedCategory,
       sortBy,
+      activeFilterCount,
       products.length,
       categories,
       colors,
@@ -237,6 +256,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         maxToRenderPerBatch={6}
         removeClippedSubviews
         testID="product-list"
+      />
+      <FilterModal
+        visible={showFilters}
+        filters={filters}
+        availableFabrics={availableFabrics}
+        priceExtent={priceExtent}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
       />
     </View>
   );

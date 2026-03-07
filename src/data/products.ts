@@ -13,12 +13,15 @@ export interface ProductImage {
 /** Warm-toned fallback blurhash for product images pending server-generated hashes. */
 export const DEFAULT_PRODUCT_BLURHASH = 'LEHV6nWB2yk8pyo0adR*.7kCMdnj';
 
+export type ProductSize = 'twin' | 'full' | 'queen';
+
 export interface Product {
   id: ProductId;
   name: string;
   slug: string;
   sku?: string;
   category: ProductCategory;
+  size?: ProductSize;
   price: number;
   originalPrice?: number;
   description: string;
@@ -51,10 +54,11 @@ export interface CategoryInfo {
   count: number;
 }
 
-export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating';
+export type SortOption = 'featured' | 'popular' | 'price-asc' | 'price-desc' | 'newest' | 'rating';
 
 export const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'featured', label: 'Featured' },
+  { value: 'popular', label: 'Popular' },
   { value: 'price-asc', label: 'Price: Low to High' },
   { value: 'price-desc', label: 'Price: High to Low' },
   { value: 'newest', label: 'Newest' },
@@ -81,6 +85,7 @@ export const PRODUCTS: Product[] = [
     slug: 'asheville-full-futon',
     sku: 'CF-FUT-ASH-001',
     category: 'futons',
+    size: 'full',
     price: 349,
     description:
       'Our bestselling full-size futon. Handcrafted solid hardwood frame with a premium innerspring mattress. Converts from sofa to bed in seconds.',
@@ -104,6 +109,7 @@ export const PRODUCTS: Product[] = [
     slug: 'blue-ridge-queen-futon',
     sku: 'CF-FUT-BRQ-002',
     category: 'futons',
+    size: 'queen',
     price: 449,
     description:
       'Queen-size luxury comfort with solid ash frame and 8-inch pocket coil mattress. The ultimate guest room solution.',
@@ -126,6 +132,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Pisgah Twin Futon',
     slug: 'pisgah-twin-futon',
     category: 'futons',
+    size: 'twin',
     price: 279,
     description:
       'Perfect for dorm rooms, studios, and small spaces. Compact design without compromising comfort.',
@@ -147,6 +154,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Biltmore Loveseat',
     slug: 'biltmore-loveseat',
     category: 'futons',
+    size: 'full',
     price: 319,
     originalPrice: 379,
     description:
@@ -171,6 +179,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Hendersonville Queen Murphy Cabinet Bed',
     slug: 'hendersonville-queen-murphy-cabinet-bed',
     category: 'murphy-beds',
+    size: 'queen',
     price: 1299,
     description:
       'Queen-size vertical Murphy cabinet bed in solid oak. Folds into a stylish 42" tall cabinet when closed. Gas-piston mechanism for effortless operation.',
@@ -193,6 +202,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Appalachian Full Horizontal Murphy Cabinet',
     slug: 'appalachian-full-horizontal-murphy-cabinet',
     category: 'murphy-beds',
+    size: 'full',
     price: 1149,
     description:
       'Full-size horizontal Murphy cabinet in solid maple. Perfect for rooms with low ceilings. Includes built-in USB charging ports.',
@@ -214,6 +224,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Smoky Mountain Queen Bookcase Murphy',
     slug: 'smoky-mountain-queen-bookcase-murphy',
     category: 'murphy-beds',
+    size: 'queen',
     price: 1699,
     description:
       'Queen Murphy bed flanked by two full-height bookcases. 84" tall wall unit provides ample storage and display space. LED shelf lighting included.',
@@ -236,6 +247,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Brevard Twin Cabinet Bed',
     slug: 'brevard-twin-cabinet-bed',
     category: 'murphy-beds',
+    size: 'twin',
     price: 899,
     description:
       'Compact twin-size cabinet bed in solid birch. Just 38" tall closed — doubles as a console table or TV stand. Ideal for guest rooms and studios.',
@@ -257,6 +269,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Chimney Rock Queen Desk Murphy',
     slug: 'chimney-rock-queen-desk-murphy',
     category: 'murphy-beds',
+    size: 'queen',
     price: 1899,
     originalPrice: 2099,
     description:
@@ -280,6 +293,7 @@ export const PRODUCTS: Product[] = [
     name: 'The Nantahala Full Storage Murphy',
     slug: 'nantahala-full-storage-murphy',
     category: 'murphy-beds',
+    size: 'full',
     price: 1449,
     description:
       'Full-size Murphy bed with top storage cabinet and side shelving. Solid oak construction with soft-close hinges throughout.',
@@ -301,6 +315,7 @@ export const PRODUCTS: Product[] = [
     name: 'Mountain Weave Futon Cover',
     slug: 'mountain-weave-cover',
     category: 'covers',
+    size: 'full',
     price: 59,
     description:
       'Durable cotton-poly blend cover in our signature Mountain Weave pattern. Machine washable.',
@@ -322,6 +337,7 @@ export const PRODUCTS: Product[] = [
     name: 'Sunset Cotton Cover - Queen',
     slug: 'sunset-cotton-cover-queen',
     category: 'covers',
+    size: 'queen',
     price: 69,
     originalPrice: 89,
     description:
@@ -345,6 +361,7 @@ export const PRODUCTS: Product[] = [
     name: 'Premium Innerspring Mattress',
     slug: 'premium-innerspring-mattress',
     category: 'mattresses',
+    size: 'full',
     price: 189,
     description:
       '8-inch innerspring futon mattress with quilted cotton top. 312-coil count for superior support.',
@@ -366,6 +383,7 @@ export const PRODUCTS: Product[] = [
     name: 'Memory Foam Futon Mattress',
     slug: 'memory-foam-mattress',
     category: 'mattresses',
+    size: 'full',
     price: 249,
     description:
       '6-inch memory foam with cooling gel layer. CertiPUR-US certified. Ultimate comfort for daily sleeping.',
@@ -388,6 +406,7 @@ export const PRODUCTS: Product[] = [
     name: 'Solid Hardwood Frame',
     slug: 'solid-hardwood-frame',
     category: 'frames',
+    size: 'full',
     price: 199,
     description:
       'Kiln-dried solid hardwood frame with a honey oak finish. Supports up to 600 lbs. Easy assembly.',
