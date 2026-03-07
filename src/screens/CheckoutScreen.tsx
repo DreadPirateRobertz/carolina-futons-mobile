@@ -19,6 +19,7 @@ import {
   Switch,
   Platform,
   KeyboardAvoidingView,
+  LayoutAnimation,
   findNodeHandle,
   UIManager,
 } from 'react-native';
@@ -27,7 +28,7 @@ import { CardField, type CardFieldInput, PlatformPayButton, PlatformPay } from '
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { typography } from '@/theme/tokens';
-import { useCart } from '@/hooks/useCart';
+import { useCart, type CartItem } from '@/hooks/useCart';
 import { usePayment } from '@/hooks/usePayment';
 import { formatPrice } from '@/utils';
 import type { PaymentMethod } from '@/services/payment';
@@ -151,6 +152,8 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
+  const [itemsExpandedOverride, setItemsExpandedOverride] = useState<boolean | null>(null);
+  const itemsExpanded = itemsExpandedOverride ?? items.length < 3;
 
   // Address state — pre-fill from default saved address
   const [shippingAddress, setShippingAddress] = useState<Address>(EMPTY_ADDRESS);
@@ -628,16 +631,63 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
         {/* Order items summary */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text
-            style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
-            testID="checkout-items-section-title"
-            accessibilityRole="header"
+          <TouchableOpacity
+            style={styles.itemsSectionHeader}
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setItemsExpandedOverride((prev) => !(prev ?? items.length < 3));
+            }}
+            activeOpacity={items.length < 3 ? 1 : 0.7}
+            disabled={items.length < 3}
+            testID="checkout-items-toggle"
+            accessibilityLabel={`Items (${items.length})${items.length >= 3 ? `, tap to ${itemsExpanded ? 'collapse' : 'expand'}` : ''}`}
+            accessibilityRole={items.length >= 3 ? 'button' : 'header'}
           >
-            Items ({items.length})
-          </Text>
-          {items.map((item) => (
+            <Text
+              style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold, marginBottom: 0 }]}
+              testID="checkout-items-section-title"
+            >
+              Items ({items.length})
+            </Text>
+            {items.length >= 3 && (
+              <Text
+                style={[styles.expandToggle, { color: colors.mountainBlue }]}
+                testID="items-expand-toggle"
+              >
+                {itemsExpanded ? 'Hide' : 'Show'}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          {/* Collapsed preview: stacked thumbnails + count */}
+          {!itemsExpanded && items.length >= 3 && (
+            <View style={styles.collapsedPreview} testID="items-collapsed-preview">
+              <View style={styles.thumbnailStack}>
+                {items.slice(0, 3).map((item, i) => (
+                  <View
+                    key={item.id}
+                    style={[
+                      styles.stackedThumb,
+                      { left: i * 20, zIndex: 3 - i },
+                    ]}
+                  >
+                    <ItemThumbnail item={item} size={36} />
+                  </View>
+                ))}
+              </View>
+              <Text
+                style={[styles.collapsedText, { color: colors.espressoLight, marginLeft: items.slice(0, 3).length * 20 + 24 }]}
+              >
+                {items.length} items · {formatPrice(subtotal)}
+              </Text>
+            </View>
+          )}
+
+          {/* Expanded item list with thumbnails */}
+          {itemsExpanded && items.map((item) => (
             <View key={item.id} style={styles.itemRow} testID={`checkout-item-${item.id}`}>
-              <View style={styles.itemInfo}>
+              <ItemThumbnail item={item} size={48} />
+              <View style={[styles.itemInfo, { marginLeft: 12 }]}>
                 <Text style={[styles.itemName, { color: colors.espresso }]}>{item.model.name}</Text>
                 <Text style={[styles.itemDetail, { color: colors.espressoLight }]}>
                   {item.fabric.name} x{item.quantity}
@@ -939,6 +989,86 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   );
 }
 
+function darkenColor(hex: string, amount: number): string {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, ((num >> 16) & 0xff) * (1 - amount));
+  const g = Math.max(0, ((num >> 8) & 0xff) * (1 - amount));
+  const b = Math.max(0, (num & 0xff) * (1 - amount));
+  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+}
+
+/** Mini futon shape thumbnail showing fabric color for checkout item rows. */
+function ItemThumbnail({ item, size }: { item: CartItem; size: number }) {
+  const darker = darkenColor(item.fabric.color, 0.15);
+  const cushionH = size * 0.45;
+  const backH = size * 0.3;
+  const armW = size * 0.12;
+
+  return (
+    <View
+      style={[thumbStyles.container, { width: size, height: size, borderRadius: size * 0.18 }]}
+      accessible={false}
+      importantForAccessibility="no"
+      testID={`checkout-thumb-${item.id}`}
+    >
+      {/* Back cushion */}
+      <View
+        style={{
+          width: size * 0.7,
+          height: backH,
+          backgroundColor: darker,
+          borderTopLeftRadius: 3,
+          borderTopRightRadius: 3,
+          alignSelf: 'center',
+        }}
+      />
+      {/* Seat cushion */}
+      <View
+        style={{
+          width: size * 0.7,
+          height: cushionH,
+          backgroundColor: item.fabric.color,
+          borderRadius: 2,
+          marginTop: 1,
+          alignSelf: 'center',
+        }}
+      />
+      {/* Arms */}
+      <View
+        style={{
+          position: 'absolute',
+          left: size * 0.08,
+          top: size * 0.15,
+          width: armW,
+          height: size * 0.6,
+          backgroundColor: darker,
+          borderRadius: 2,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          right: size * 0.08,
+          top: size * 0.15,
+          width: armW,
+          height: size * 0.6,
+          backgroundColor: darker,
+          borderRadius: 2,
+        }}
+      />
+    </View>
+  );
+}
+
+const thumbStyles = StyleSheet.create({
+  container: {
+    backgroundColor: '#F5F0EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+});
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
@@ -1021,9 +1151,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   // Items
-  itemRow: {
+  itemsSectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  expandToggle: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  collapsedPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  thumbnailStack: {
+    flexDirection: 'row',
+    height: 36,
+    position: 'relative',
+  },
+  stackedThumb: {
+    position: 'absolute',
+    top: 0,
+  },
+  collapsedText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  itemRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
   },

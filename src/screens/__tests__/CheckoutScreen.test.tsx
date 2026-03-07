@@ -825,4 +825,49 @@ describe('CheckoutScreen', () => {
       expect(utils.queryByTestId('shipping-premium-badge')).toBeNull();
     });
   });
+
+  describe('Order items with thumbnails', () => {
+    it('shows item thumbnail next to each checkout item', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId(`checkout-thumb-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
+      expect(utils.getByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
+    });
+
+    it('shows items expanded by default when fewer than 3 items', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
+      expect(utils.queryByTestId('items-collapsed-preview')).toBeNull();
+    });
+
+    it('shows collapsed preview with stacked thumbnails when 3+ items', async () => {
+      const threeItems = [
+        { model: asheville, fabric: naturalLinen, qty: 1 },
+        { model: blueRidge, fabric: naturalLinen, qty: 1 },
+        { model: asheville, fabric: mountainBlue, qty: 2 },
+      ];
+      const utils = renderCheckout({}, threeItems);
+      await act(async () => {});
+      expect(utils.getByTestId('items-collapsed-preview')).toBeTruthy();
+      expect(utils.queryByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeNull();
+    });
+
+    it('expands items when toggle is pressed', async () => {
+      const threeItems = [
+        { model: asheville, fabric: naturalLinen, qty: 1 },
+        { model: blueRidge, fabric: naturalLinen, qty: 1 },
+        { model: asheville, fabric: mountainBlue, qty: 2 },
+      ];
+      const utils = renderCheckout({}, threeItems);
+      await act(async () => {});
+      expect(utils.getByTestId('items-collapsed-preview')).toBeTruthy();
+
+      fireEvent.press(utils.getByTestId('checkout-items-toggle'));
+      await act(async () => {});
+
+      expect(utils.queryByTestId('items-collapsed-preview')).toBeNull();
+      expect(utils.getByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
+    });
+  });
 });
