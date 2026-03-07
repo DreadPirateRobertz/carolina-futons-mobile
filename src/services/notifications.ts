@@ -136,6 +136,51 @@ export async function registerPushToken(token: string): Promise<void> {
   throw lastError ?? new Error('Push token registration failed after retries');
 }
 
+/**
+ * Android notification channel configuration.
+ * Each notification type maps to a dedicated channel with appropriate importance.
+ */
+export interface AndroidChannelConfig {
+  id: string;
+  name: string;
+  description: string;
+  importance: number; // Maps to Notifications.AndroidImportance at runtime
+}
+
+// Importance values match expo-notifications AndroidImportance enum:
+// MAX=5, HIGH=4, DEFAULT=3, LOW=2, MIN=1
+export const ANDROID_CHANNEL_CONFIG: Record<NotificationType, AndroidChannelConfig> = {
+  order_update: {
+    id: 'orders',
+    name: 'Order Updates',
+    description: 'Shipping confirmations, delivery updates, and order status changes',
+    importance: 4, // HIGH — order updates are time-sensitive
+  },
+  promotion: {
+    id: 'promotions',
+    name: 'Promotions',
+    description: 'Sales, new arrivals, and exclusive offers',
+    importance: 3, // DEFAULT — marketing notifications
+  },
+  back_in_stock: {
+    id: 'back-in-stock',
+    name: 'Back in Stock',
+    description: 'Alerts when wishlisted items are available again',
+    importance: 3, // DEFAULT — useful but not urgent
+  },
+  cart_reminder: {
+    id: 'cart-reminders',
+    name: 'Cart Reminders',
+    description: 'Reminders about items waiting in your cart',
+    importance: 2, // LOW — gentle nudges should not be intrusive
+  },
+};
+
+/** Get the Android channel ID for a given notification type */
+export function getChannelId(type: NotificationType): string {
+  return ANDROID_CHANNEL_CONFIG[type].id;
+}
+
 /** Format badge count — returns undefined if 0 */
 export function formatBadgeCount(count: number): number | undefined {
   return count > 0 ? Math.min(count, 99) : undefined;

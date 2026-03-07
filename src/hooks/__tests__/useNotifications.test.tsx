@@ -1,8 +1,9 @@
 import React from 'react';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationProvider, useNotifications } from '../useNotifications';
+import { ANDROID_CHANNEL_CONFIG } from '@/services/notifications';
 
 // --- Mock expo-notifications ---
 const mockGetPermissionsAsync = jest.fn();
@@ -34,7 +35,7 @@ jest.mock('expo-notifications', () => ({
     mockAddPushTokenListener(...args);
     return { remove: mockRemoveTokenListener };
   },
-  AndroidImportance: { MAX: 5 },
+  AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3, LOW: 2, MIN: 1 },
   DEFAULT_ACTION_IDENTIFIER: 'expo.modules.notifications.actions.DEFAULT',
 }));
 
@@ -182,6 +183,67 @@ describe('useNotifications', () => {
       // Should not re-prompt if already granted
       expect(mockRequestPermissionsAsync).not.toHaveBeenCalled();
       expect(mockGetExpoPushTokenAsync).toHaveBeenCalled();
+    });
+  });
+
+  describe('Android notification channels', () => {
+    const originalOS = Platform.OS;
+
+    afterEach(() => {
+      (Platform as any).OS = originalOS;
+    });
+
+    it('creates all notification channels on Android when requesting permission', async () => {
+      (Platform as any).OS = 'android';
+
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('request'));
+
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('granted');
+      });
+
+      // Should create one channel per notification type
+      const channelConfigs = Object.values(ANDROID_CHANNEL_CONFIG);
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledTimes(channelConfigs.length);
+
+      for (const channel of channelConfigs) {
+        expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith(channel.id, {
+          name: channel.name,
+          description: channel.description,
+          importance: channel.importance,
+        });
+      }
+    });
+
+    it('creates channels with correct importance levels', async () => {
+      (Platform as any).OS = 'android';
+
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('request'));
+
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('granted');
+      });
+
+      // orders = HIGH (4), promotions = DEFAULT (3), back-in-stock = DEFAULT (3), cart-reminders = LOW (2)
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('orders', expect.objectContaining({ importance: 4 }));
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('promotions', expect.objectContaining({ importance: 3 }));
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('back-in-stock', expect.objectContaining({ importance: 3 }));
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('cart-reminders', expect.objectContaining({ importance: 2 }));
+    });
+
+    it('does not create channels on iOS', async () => {
+      (Platform as any).OS = 'ios';
+
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('request'));
+
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('granted');
+      });
+
+      expect(mockSetNotificationChannelAsync).not.toHaveBeenCalled();
     });
   });
 

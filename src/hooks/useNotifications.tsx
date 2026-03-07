@@ -16,6 +16,7 @@ import {
   type NotificationPreferences,
   type NotificationType,
   DEFAULT_PREFERENCES,
+  ANDROID_CHANNEL_CONFIG,
   getDeepLinkForNotification,
   registerPushToken,
 } from '@/services/notifications';
@@ -108,10 +109,15 @@ async function registerForPushToken(): Promise<string | null> {
   if (!Device.isDevice) return null;
 
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'Default',
-      importance: Notifications.AndroidImportance.MAX,
-    });
+    await Promise.all(
+      Object.values(ANDROID_CHANNEL_CONFIG).map((channel) =>
+        Notifications.setNotificationChannelAsync(channel.id, {
+          name: channel.name,
+          description: channel.description,
+          importance: channel.importance,
+        }),
+      ),
+    );
   }
 
   const projectId = await getProjectId();

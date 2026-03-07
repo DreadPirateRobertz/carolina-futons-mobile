@@ -2,8 +2,10 @@ import {
   getDeepLinkForNotification,
   shouldShowNotification,
   formatBadgeCount,
+  getChannelId,
   DEFAULT_PREFERENCES,
   NOTIFICATION_TYPE_CONFIG,
+  ANDROID_CHANNEL_CONFIG,
   type NotificationType,
 } from '../notifications';
 
@@ -91,6 +93,48 @@ describe('Notification service', () => {
       expect(DEFAULT_PREFERENCES.promotions).toBe(true);
       expect(DEFAULT_PREFERENCES.backInStock).toBe(true);
       expect(DEFAULT_PREFERENCES.cartReminders).toBe(false);
+    });
+  });
+
+  describe('ANDROID_CHANNEL_CONFIG', () => {
+    const allTypes: NotificationType[] = [
+      'order_update',
+      'promotion',
+      'back_in_stock',
+      'cart_reminder',
+    ];
+
+    it('has a channel config for every notification type', () => {
+      for (const t of allTypes) {
+        const channel = ANDROID_CHANNEL_CONFIG[t];
+        expect(channel.id).toBeTruthy();
+        expect(channel.name).toBeTruthy();
+        expect(channel.description).toBeTruthy();
+        expect(channel.importance).toBeGreaterThanOrEqual(1);
+        expect(channel.importance).toBeLessThanOrEqual(5);
+      }
+    });
+
+    it('uses unique channel IDs', () => {
+      const ids = allTypes.map((t) => ANDROID_CHANNEL_CONFIG[t].id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('order_update has HIGH importance', () => {
+      expect(ANDROID_CHANNEL_CONFIG.order_update.importance).toBe(4);
+    });
+
+    it('cart_reminder has LOW importance', () => {
+      expect(ANDROID_CHANNEL_CONFIG.cart_reminder.importance).toBe(2);
+    });
+  });
+
+  describe('getChannelId', () => {
+    it('returns correct channel ID for each type', () => {
+      expect(getChannelId('order_update')).toBe('orders');
+      expect(getChannelId('promotion')).toBe('promotions');
+      expect(getChannelId('back_in_stock')).toBe('back-in-stock');
+      expect(getChannelId('cart_reminder')).toBe('cart-reminders');
     });
   });
 
