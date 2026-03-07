@@ -9,6 +9,7 @@
  */
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -71,7 +72,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const renderProduct = useCallback(
-    ({ item }: { item: Product }) => <ProductCard product={item} onPress={handleProductPress} />,
+    ({ item, index }: { item: Product; index: number }) => (
+      <Animated.View
+        testID={`product-card-animated-${item.id}`}
+        entering={FadeInDown.delay(index * 80).duration(400)}
+      >
+        <ProductCard product={item} onPress={handleProductPress} />
+      </Animated.View>
+    ),
     [handleProductPress],
   );
 

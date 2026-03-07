@@ -147,4 +147,12 @@ describe('ShopScreen', () => {
       expect(onProductPress).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('entrance animation', () => {
+    it('wraps product cards in animated containers', async () => {
+      const { getAllByTestId } = await renderShop();
+      const wrappers = getAllByTestId(/^product-card-animated-/);
+      expect(wrappers.length).toBeGreaterThan(0);
+    });
+  });
 });
