@@ -248,8 +248,34 @@ export function AppNavigator() {
             />
           )}
         </Stack.Screen>
-        <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
-        <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+        <Stack.Screen name="OrderHistory">
+          {({ navigation: nav }) => (
+            <OrderHistoryScreen
+              onSelectOrder={(orderId) => nav.navigate('OrderDetail', { orderId })}
+              onStartShopping={() => {
+                nav.dispatch(
+                  CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
+                );
+              }}
+            />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="OrderDetail">
+          {({ route, navigation: nav }) => (
+            <OrderDetailScreen
+              orderId={(route.params as { orderId: string }).orderId}
+              onBack={() => nav.goBack()}
+              onReorderSuccess={() => {
+                nav.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'Tabs', state: { index: 2 } }],
+                  }),
+                );
+              }}
+            />
+          )}
+        </Stack.Screen>
         <Stack.Screen name="Login" component={LoginScreen} options={modalTransition} />
         <Stack.Screen name="SignUp" component={SignUpScreen} options={modalTransition} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />

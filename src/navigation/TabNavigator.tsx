@@ -8,6 +8,8 @@
 import React from 'react';
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
 import { HomeScreen } from '@/screens/HomeScreen';
@@ -15,6 +17,7 @@ import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
 import { AnimatedTabBar } from './AnimatedTabBar';
+import type { RootStackParamList } from './AppNavigator';
 
 export type TabParamList = {
   Home: undefined;
@@ -33,6 +36,17 @@ function TabIcon({ label, focused, color }: { label: string; focused: boolean; c
     Account: '👤',
   };
   return <Text style={{ fontSize: focused ? 22 : 20 }}>{icons[label] ?? '•'}</Text>;
+}
+
+function AccountScreenWithNav() {
+  const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  return (
+    <AccountScreen
+      onOrderHistory={() => nav.navigate('OrderHistory')}
+      onLogin={() => nav.navigate('Login')}
+      onPremium={() => nav.navigate('Premium')}
+    />
+  );
 }
 
 /** Bottom tab shell with cart badge count and the custom AnimatedTabBar. */
@@ -80,13 +94,14 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Account"
-        component={AccountScreen}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon label="Account" focused={focused} color={color} />
           ),
         }}
-      />
+      >
+        {() => <AccountScreenWithNav />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
