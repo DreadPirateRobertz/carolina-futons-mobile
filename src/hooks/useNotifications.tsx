@@ -19,6 +19,7 @@ import {
   getDeepLinkForNotification,
   registerPushToken,
 } from '@/services/notifications';
+import { captureException } from '@/services/crashReporting';
 
 const PREFS_STORAGE_KEY = '@notification_preferences';
 
@@ -158,7 +159,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         const token = await registerForPushToken();
         if (token) {
           dispatch({ type: 'SET_TOKEN', token });
-          registerPushToken(token).catch(() => {});
+          registerPushToken(token).catch(captureException);
         }
       } else if (status === 'denied') {
         dispatch({ type: 'SET_PERMISSION', status: 'denied' });
@@ -175,7 +176,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(() => {});
+        registerPushToken(token).catch(captureException);
       }
       return;
     }
@@ -189,7 +190,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(() => {});
+        registerPushToken(token).catch(captureException);
       }
     }
   }, []);

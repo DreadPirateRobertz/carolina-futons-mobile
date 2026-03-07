@@ -49,6 +49,17 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   }),
 }));
 
+const mockRegisterPushToken = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/services/notifications', () => ({
+  ...jest.requireActual('@/services/notifications'),
+  registerPushToken: (...args: any[]) => mockRegisterPushToken(...args),
+}));
+
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: any[]) => mockCaptureException(...args),
+}));
+
 jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
 
 function NotifHarness() {
@@ -99,6 +110,7 @@ describe('useNotifications', () => {
     mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[test-token-abc]' });
     mockSetNotificationChannelAsync.mockResolvedValue(undefined);
+    mockRegisterPushToken.mockResolvedValue(undefined);
   });
 
   describe('Initial state', () => {
@@ -337,6 +349,48 @@ describe('useNotifications', () => {
       expect(() => render(<Bad />)).toThrow(
         'useNotifications must be used within a NotificationProvider',
       );
+    });
+
+    it('reports to crash reporting when mount-time token registration fails', async () => {
+      const registrationError = new Error('Push token registration failed: 500');
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+      mockRegisterPushToken.mockRejectedValue(registrationError);
+
+      renderNotif();
+      await waitFor(() => {
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+      });
+    });
+
+    it('reports to crash reporting when requestPermission token registration fails', async () => {
+      const registrationError = new Error('Push token registration failed: 500');
+      mockRegisterPushToken.mockRejectedValue(registrationError);
+
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('request'));
+
+      await waitFor(() => {
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+      });
+    });
+
+    it('reports to crash reporting when already-granted requestPermission token registration fails', async () => {
+      const registrationError = new Error('Push token registration failed: 500');
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+      mockRegisterPushToken.mockRejectedValue(registrationError);
+
+      const { getByTestId } = renderNotif();
+      // Wait for mount-time registration to fail first
+      await waitFor(() => {
+        expect(mockCaptureException).toHaveBeenCalledTimes(1);
+      });
+
+      mockCaptureException.mockClear();
+      fireEvent.press(getByTestId('request'));
+
+      await waitFor(() => {
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+      });
     });
   });
 });
