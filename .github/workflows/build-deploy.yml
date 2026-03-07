@@ -86,6 +86,7 @@ jobs:
       - name: Build iOS
         env:
           BUILD_PROFILE: ${{ steps.profile.outputs.profile }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: eas build --platform ios --profile "$BUILD_PROFILE" --non-interactive
 
   build-android:
@@ -122,6 +123,7 @@ jobs:
       - name: Build Android
         env:
           BUILD_PROFILE: ${{ steps.profile.outputs.profile }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
         run: eas build --platform android --profile "$BUILD_PROFILE" --non-interactive
 
   submit-testflight:
