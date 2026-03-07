@@ -8,6 +8,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { darkPalette } from '@/theme/tokens';
@@ -91,29 +92,38 @@ export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarP
   const insets = useSafeAreaInsets();
 
   return (
-    <View
-      testID="animated-tab-bar"
-      style={[styles.container, { paddingBottom: insets.bottom || 8 }]}
+    <BlurView
+      testID="tab-bar-blur"
+      intensity={40}
+      tint="dark"
+      style={[styles.blurContainer, { paddingBottom: insets.bottom || 8 }]}
     >
-      {state.routes.map((route, index) => (
-        <TabButton
-          key={route.key}
-          route={route}
-          descriptor={descriptors[route.key]}
-          isFocused={state.index === index}
-          navigation={navigation}
-        />
-      ))}
-    </View>
+      <View
+        testID="animated-tab-bar"
+        style={styles.container}
+      >
+        {state.routes.map((route, index) => (
+          <TabButton
+            key={route.key}
+            route={route}
+            descriptor={descriptors[route.key]}
+            isFocused={state.index === index}
+            navigation={navigation}
+          />
+        ))}
+      </View>
+    </BlurView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: darkPalette.glass,
+  blurContainer: {
     borderTopWidth: 1,
     borderTopColor: darkPalette.glassBorder,
+    backgroundColor: darkPalette.glass,
+  },
+  container: {
+    flexDirection: 'row',
     paddingTop: 8,
   },
   tabButton: {

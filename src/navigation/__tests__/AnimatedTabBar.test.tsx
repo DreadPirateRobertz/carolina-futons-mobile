@@ -28,6 +28,15 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ bottom: 0, top: 0, left: 0, right: 0 }),
 }));
 
+// Mock expo-blur
+jest.mock('expo-blur', () => {
+  const { View } = require('react-native');
+  const { createElement } = require('react');
+  return {
+    BlurView: ({ children, ...props }: any) => createElement(View, props, children),
+  };
+});
+
 import { AnimatedTabBar } from '../AnimatedTabBar';
 import * as Haptics from 'expo-haptics';
 
@@ -107,5 +116,11 @@ describe('AnimatedTabBar', () => {
     const props = createMockProps(0);
     const { getByTestId } = render(<AnimatedTabBar {...props} />);
     expect(getByTestId('animated-tab-bar')).toBeTruthy();
+  });
+
+  it('renders blur backdrop for glassmorphism', () => {
+    const props = createMockProps(0);
+    const { getByTestId } = render(<AnimatedTabBar {...props} />);
+    expect(getByTestId('tab-bar-blur')).toBeTruthy();
   });
 });
