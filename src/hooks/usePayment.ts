@@ -25,11 +25,11 @@ import {
 
 export type PaymentStatus = 'idle' | 'processing' | 'success' | 'error';
 
-interface PaymentState {
-  status: PaymentStatus;
-  error: string | null;
-  order: OrderConfirmation | null;
-}
+type PaymentState =
+  | { status: 'idle'; error: null; order: null }
+  | { status: 'processing'; error: null; order: null }
+  | { status: 'success'; error: null; order: OrderConfirmation }
+  | { status: 'error'; error: string; order: null };
 
 /**
  * Build Apple Pay cart summary items from order totals.
