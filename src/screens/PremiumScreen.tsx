@@ -14,7 +14,7 @@ import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { Button } from '@/components/Button';
-import { PremiumProvider, usePremium } from '@/hooks/usePremium';
+import { usePremium } from '@/hooks/usePremium';
 
 interface Props {
   onBack: () => void;
@@ -227,11 +227,7 @@ function PremiumScreenInner({ onBack, testID }: Props) {
 }
 
 export function PremiumScreen(props: Props) {
-  return (
-    <PremiumProvider>
-      <PremiumScreenInner {...props} />
-    </PremiumProvider>
-  );
+  return <PremiumScreenInner {...props} />;
 }
 
 const styles = StyleSheet.create({

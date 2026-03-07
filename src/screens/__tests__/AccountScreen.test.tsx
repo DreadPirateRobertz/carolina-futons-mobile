@@ -197,6 +197,23 @@ describe('AccountScreen', () => {
       expect(queryByTestId('menu-premium-badge')).toBeNull();
     });
 
+    it('renders restore purchases button', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('restore-purchases')).toBeTruthy();
+      });
+    });
+
+    it('calls restore when restore purchases is pressed', async () => {
+      mockPremiumValue.restore.mockResolvedValue(false);
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('restore-purchases')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('restore-purchases'));
+      expect(mockPremiumValue.restore).toHaveBeenCalledTimes(1);
+    });
+
     it('calls onOrderHistory when pressed', async () => {
       const onOrderHistory = jest.fn();
       const { getByTestId } = renderAccount({ onOrderHistory }, true);

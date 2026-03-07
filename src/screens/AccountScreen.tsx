@@ -8,8 +8,8 @@
  * Preferences (not yet wired). Sign-out lives at the bottom.
  */
 
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -41,7 +41,8 @@ interface Props {
 export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
-  const { isPremium } = usePremium();
+  const { isPremium, restore } = usePremium();
+  const [restoring, setRestoring] = useState(false);
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
 
   const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
@@ -53,6 +54,18 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
     } else {
       await disableBiometric();
     }
+  };
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    const success = await restore();
+    setRestoring(false);
+    Alert.alert(
+      success ? 'Restored!' : 'No Purchases Found',
+      success
+        ? 'Your CF+ subscription has been restored.'
+        : 'We could not find any previous purchases for this account.',
+    );
   };
 
   if (!isAuthenticated || !user) {
@@ -211,6 +224,21 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             <Text style={[styles.signOutText, { color: colors.sunsetCoral }]}>Sign Out</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Restore purchases */}
+        <View style={{ alignItems: 'center', marginTop: spacing.lg, paddingBottom: spacing.xxl }}>
+          <TouchableOpacity
+            onPress={handleRestore}
+            disabled={restoring}
+            testID="restore-purchases"
+            accessibilityRole="button"
+            accessibilityLabel="Restore previous purchases"
+          >
+            <Text style={[styles.restoreText, { color: colors.mountainBlue }]}>
+              Restore Purchases
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -353,5 +381,9 @@ const styles = StyleSheet.create({
   signOutText: {
     fontSize: 16,
     fontWeight: '700',
+  },
+  restoreText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });
