@@ -1,9 +1,16 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { CartScreen } from '../CartScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+
+const mockApplyCoupon = jest.fn();
+jest.mock('@/services/wix/wixProvider', () => ({
+  useWixClient: () => ({
+    applyCoupon: mockApplyCoupon,
+  }),
+}));
 
 const asheville = FUTON_MODELS[0]; // $349
 const blueRidge = FUTON_MODELS[1]; // $449
@@ -278,6 +285,118 @@ describe('CartScreen', () => {
     it('accepts custom testID', () => {
       const { getByTestId } = renderCartScreen({ testID: 'my-cart' });
       expect(getByTestId('my-cart')).toBeTruthy();
+    });
+  });
+
+  describe('Promo code', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    beforeEach(() => {
+      mockApplyCoupon.mockReset();
+    });
+
+    it('renders promo code section', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('promo-code-section')).toBeTruthy();
+    });
+
+    it('renders promo input and apply button', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('promo-input')).toBeTruthy();
+      expect(getByTestId('promo-apply-button')).toBeTruthy();
+    });
+
+    it('shows applied coupon after successful validation', async () => {
+      mockApplyCoupon.mockResolvedValue({
+        id: 'c1',
+        code: 'SAVE20',
+        name: '20% Off',
+        discountType: 'percentage',
+        discountValue: 20,
+      });
+
+      const { getByTestId } = renderCartScreen({}, seed);
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('promo-applied')).toBeTruthy();
+      });
+    });
+
+    it('shows discount row in order summary when coupon applied', async () => {
+      mockApplyCoupon.mockResolvedValue({
+        id: 'c1',
+        code: 'SAVE20',
+        name: '20% Off',
+        discountType: 'percentage',
+        discountValue: 20,
+      });
+
+      const { getByTestId } = renderCartScreen({}, seed);
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('cart-discount-row')).toBeTruthy();
+        // $349 * 20% = $69.80
+        expect(getByTestId('cart-discount').props.children).toEqual(['−', '$69.80']);
+      });
+    });
+
+    it('shows error for invalid promo code', async () => {
+      mockApplyCoupon.mockRejectedValue({ statusCode: 404, message: 'Not found' });
+
+      const { getByTestId } = renderCartScreen({}, seed);
+      fireEvent.changeText(getByTestId('promo-input'), 'BADCODE');
+      fireEvent.press(getByTestId('promo-apply-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('promo-error')).toBeTruthy();
+      });
+    });
+
+    it('removes applied coupon when remove pressed', async () => {
+      mockApplyCoupon.mockResolvedValue({
+        id: 'c1',
+        code: 'SAVE20',
+        name: '20% Off',
+        discountType: 'percentage',
+        discountValue: 20,
+      });
+
+      const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('promo-applied')).toBeTruthy();
+      });
+
+      fireEvent.press(getByTestId('promo-remove-button'));
+      expect(queryByTestId('promo-applied')).toBeNull();
+      expect(queryByTestId('cart-discount-row')).toBeNull();
+    });
+
+    it('updates total with discount applied', async () => {
+      mockApplyCoupon.mockResolvedValue({
+        id: 'c1',
+        code: 'SAVE20',
+        name: '20% Off',
+        discountType: 'percentage',
+        discountValue: 20,
+      });
+
+      const { getByTestId } = renderCartScreen({}, seed);
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-button'));
+
+      await waitFor(() => {
+        // Subtotal: $349, Discount: $69.80, Taxable: $279.20
+        // Tax: $279.20 * 0.07 = $19.54, Shipping: $49
+        // Total: $279.20 + $49 + $19.54 = $347.74
+        expect(getByTestId('cart-total').props.children).toBe('$347.74');
+      });
     });
   });
 });

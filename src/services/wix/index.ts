@@ -20,6 +20,7 @@ export {
   type InventoryStatus,
   type QueryProductsOptions,
   type QueryCollectionsOptions,
+  type CouponResult,
 } from './wixClient';
 
 export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';

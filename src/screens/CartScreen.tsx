@@ -10,8 +10,8 @@
  * a flat 7% rate.
  */
 
-import React, { useCallback, useRef } from 'react';
-import { Animated as RNAnimated, StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { Animated as RNAnimated, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
@@ -20,6 +20,7 @@ import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
+import { usePromoCode } from '@/hooks/usePromoCode';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
 
@@ -50,10 +51,18 @@ interface Props {
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
+  const promo = usePromoCode();
+  const [promoInput, setPromoInput] = useState('');
 
+  const discount = promo.getDiscount(subtotal);
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
-  const total = subtotal + shipping + tax;
+  const taxableAmount = subtotal - discount;
+  const tax = Math.round(taxableAmount * TAX_RATE * 100) / 100;
+  const total = taxableAmount + shipping + tax;
+
+  const handleApplyPromo = useCallback(() => {
+    promo.applyCode(promoInput);
+  }, [promo, promoInput]);
 
   const handleRemove = useCallback(
     (itemId: string) => {
@@ -162,6 +171,93 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           />
         ))}
 
+        {/* Promo Code */}
+        <View
+          style={[
+            styles.promoCard,
+            {
+              backgroundColor: colors.sandLight,
+              borderRadius: borderRadius.card,
+              marginHorizontal: spacing.lg,
+            },
+            shadows.card,
+          ]}
+          testID="promo-code-section"
+        >
+          {promo.status === 'applied' && promo.coupon ? (
+            <View style={styles.promoApplied} testID="promo-applied">
+              <View style={styles.promoAppliedInfo}>
+                <Text style={[styles.promoAppliedCode, { color: colors.success }]}>
+                  {promo.coupon.code}
+                </Text>
+                <Text style={[styles.promoAppliedName, { color: colors.espressoLight }]}>
+                  {promo.coupon.discountType === 'percentage'
+                    ? `${promo.coupon.discountValue}% off`
+                    : `${formatPrice(promo.coupon.discountValue)} off`}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={promo.removeCode}
+                testID="promo-remove-button"
+                accessibilityLabel="Remove promo code"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.promoRemoveText, { color: colors.sunsetCoral }]}>Remove</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <View style={styles.promoInputRow}>
+                <TextInput
+                  style={[
+                    styles.promoInput,
+                    {
+                      backgroundColor: colors.sandDark,
+                      borderRadius: borderRadius.sm,
+                      color: colors.espresso,
+                    },
+                  ]}
+                  placeholder="Promo code"
+                  placeholderTextColor={colors.muted}
+                  value={promoInput}
+                  onChangeText={setPromoInput}
+                  autoCapitalize="characters"
+                  returnKeyType="done"
+                  onSubmitEditing={handleApplyPromo}
+                  editable={promo.status !== 'validating'}
+                  testID="promo-input"
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.promoApplyButton,
+                    {
+                      backgroundColor: colors.mountainBlue,
+                      borderRadius: borderRadius.sm,
+                    },
+                    promo.status === 'validating' && styles.promoApplyDisabled,
+                  ]}
+                  onPress={handleApplyPromo}
+                  disabled={promo.status === 'validating'}
+                  testID="promo-apply-button"
+                  accessibilityLabel="Apply promo code"
+                  accessibilityRole="button"
+                >
+                  {promo.status === 'validating' ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" testID="promo-loading" />
+                  ) : (
+                    <Text style={styles.promoApplyText}>Apply</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+              {promo.status === 'error' && promo.error && (
+                <Text style={[styles.promoError, { color: colors.sunsetCoral }]} testID="promo-error">
+                  {promo.error}
+                </Text>
+              )}
+            </>
+          )}
+        </View>
+
         {/* Order Summary */}
         <View
           style={[
@@ -190,6 +286,17 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               {formatPrice(subtotal)}
             </Text>
           </View>
+
+          {discount > 0 && (
+            <View style={styles.summaryRow} testID="cart-discount-row">
+              <Text style={[styles.summaryLabel, { color: colors.success }]}>
+                Discount ({promo.coupon?.code})
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.success }]} testID="cart-discount">
+                −{formatPrice(discount)}
+              </Text>
+            </View>
+          )}
 
           <View style={styles.summaryRow}>
             <Text style={[styles.summaryLabel, { color: colors.espressoLight }]}>Shipping</Text>
@@ -586,6 +693,60 @@ const styles = StyleSheet.create({
   itemPrice: {
     fontSize: 18,
     fontWeight: '700',
+  },
+  // Promo code
+  promoCard: {
+    padding: 16,
+    marginTop: 8,
+  },
+  promoInputRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  promoInput: {
+    flex: 1,
+    height: 44,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  promoApplyButton: {
+    height: 44,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promoApplyDisabled: {
+    opacity: 0.7,
+  },
+  promoApplyText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  promoError: {
+    fontSize: 13,
+    marginTop: 8,
+  },
+  promoApplied: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  promoAppliedInfo: {
+    flex: 1,
+  },
+  promoAppliedCode: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  promoAppliedName: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  promoRemoveText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   // Summary
   summaryCard: {

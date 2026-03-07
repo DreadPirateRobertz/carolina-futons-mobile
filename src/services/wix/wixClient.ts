@@ -107,6 +107,17 @@ export interface InventoryStatus {
   variants: { variantId: string; inStock: boolean; quantity: number }[];
 }
 
+// ── Coupon types ──────────────────────────────────────────────
+
+export interface CouponResult {
+  id: string;
+  code: string;
+  name: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minimumSubtotal?: number;
+}
+
 // ── Query options ──────────────────────────────────────────────
 
 export interface QueryProductsOptions {
@@ -430,6 +441,43 @@ export class WixClient {
         lineItems: [{ _id: lineItem._id, quantity }],
       });
     }
+  }
+
+  // ── Coupons (eCommerce Coupons API) ────────────────────────
+
+  async applyCoupon(couponCode: string): Promise<CouponResult> {
+    if (!couponCode.trim()) {
+      throw new WixApiError('Coupon code is required');
+    }
+
+    const data = await this.post<{
+      coupon: {
+        id: string;
+        code: string;
+        name: string;
+        discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+        discountValue: number;
+        active: boolean;
+        expired: boolean;
+        usageLimit?: number;
+        numberOfUsages?: number;
+        minimumSubtotal?: number;
+      };
+    }>('/ecom/v1/coupons/validate', { code: couponCode.trim().toUpperCase() });
+
+    const c = data.coupon;
+    if (!c || !c.active || c.expired) {
+      throw new WixApiError('Coupon is expired or inactive', 400);
+    }
+
+    return {
+      id: c.id,
+      code: c.code,
+      name: c.name,
+      discountType: c.discountType === 'PERCENTAGE' ? 'percentage' : 'fixed',
+      discountValue: c.discountValue,
+      minimumSubtotal: c.minimumSubtotal,
+    };
   }
 
   // ── Wishlist mutations (Wix Data CMS) ───────────────────────
