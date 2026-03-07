@@ -43,6 +43,12 @@ module.exports = {
         type: 'iPhone 15',
       },
     },
+    'simulator.iphone15': {
+      type: 'ios.simulator',
+      device: {
+        type: 'iPhone 15 Pro Max',
+      },
+    },
     emulator: {
       type: 'android.emulator',
       device: {
@@ -59,11 +65,19 @@ module.exports = {
       device: 'simulator',
       app: 'ios.release',
     },
+    'ios.screenshot.iphone15': {
+      device: 'simulator.iphone15',
+      app: 'ios.release',
+    },
     'android.emu.debug': {
       device: 'emulator',
       app: 'android.debug',
     },
     'android.emu.release': {
+      device: 'emulator',
+      app: 'android.release',
+    },
+    'android.screenshot.pixel6': {
       device: 'emulator',
       app: 'android.release',
     },

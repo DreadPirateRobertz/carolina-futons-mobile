@@ -25,3 +25,6 @@ dolt/
 scripts/pipeline/generate.config.json
 scripts/pipeline/input/*.glb
 scripts/pipeline/output/
+
+# Screenshot automation output
+screenshots/
