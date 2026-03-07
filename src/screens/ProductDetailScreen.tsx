@@ -18,6 +18,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  Share,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -253,6 +254,21 @@ export function ProductDetailScreen({
     setFullscreenVisible(false);
   }, []);
 
+  const handleShare = useCallback(async () => {
+    const deepLink = `carolinafutons://product/${model.id}`;
+    const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}`;
+    try {
+      await Share.share(
+        Platform.OS === 'ios'
+          ? { message, url: deepLink }
+          : { message: `${message}\n${deepLink}` },
+      );
+      events.shareProduct(model.id);
+    } catch {
+      // User cancelled share sheet
+    }
+  }, [model.id, model.name, totalPrice]);
+
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
       <TouchableOpacity
@@ -291,6 +307,19 @@ export function ProductDetailScreen({
           </TouchableOpacity>
         </Animated.View>
       )}
+
+      {/* Floating share button — above scroll */}
+      <Animated.View style={[styles.floatingShareButton, floatingButtonBgStyle]}>
+        <TouchableOpacity
+          style={[styles.shareButton, { backgroundColor: colors.white }]}
+          onPress={handleShare}
+          testID="detail-share-button"
+          accessibilityLabel={`Share ${model.name}`}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.shareButtonText, { color: colors.espresso }]}>{'↗'}</Text>
+        </TouchableOpacity>
+      </Animated.View>
 
       {/* Floating wishlist button — above scroll */}
       {catalogProduct && (
@@ -911,6 +940,28 @@ const styles = StyleSheet.create({
     top: 52,
     left: 16,
     zIndex: 20,
+  },
+  floatingShareButton: {
+    position: 'absolute',
+    top: 52,
+    right: 56,
+    zIndex: 20,
+  },
+  shareButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  shareButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   floatingWishlistButton: {
     position: 'absolute',

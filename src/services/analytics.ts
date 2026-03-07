@@ -308,6 +308,9 @@ export const events = {
   removeFromWishlist(productId: string) {
     trackEvent('remove_from_wishlist', { product_id: productId });
   },
+  shareProduct(productId: string) {
+    trackEvent('share_product', { product_id: productId });
+  },
   shareWishlist(itemCount: number) {
     trackEvent('share_wishlist', { item_count: itemCount });
   },

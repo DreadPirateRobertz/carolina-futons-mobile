@@ -167,6 +167,19 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  describe('Share Button', () => {
+    it('renders share button', () => {
+      const { getByTestId } = renderDetail();
+      expect(getByTestId('detail-share-button')).toBeTruthy();
+    });
+
+    it('share button has accessibility label with product name', () => {
+      const { getByTestId } = renderDetail();
+      const shareBtn = getByTestId('detail-share-button');
+      expect(shareBtn.props.accessibilityLabel).toContain('Share');
+    });
+  });
+
   describe('Fabric Selector', () => {
     it('renders fabric selector', () => {
       const { getByTestId } = renderDetail();
