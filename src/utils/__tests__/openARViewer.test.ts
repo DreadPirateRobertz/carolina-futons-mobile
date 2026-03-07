@@ -1,6 +1,9 @@
 import { Alert, Linking, Platform } from 'react-native';
 import { openARViewer, getARModelAssets, buildSceneViewerUrl } from '../openARViewer';
 import { getModel3DForProduct, MODEL_CDN_BASE } from '@/data/models3d';
+import { futonModelId, productId } from '@/data/productId';
+
+const TEST_MODEL_ID = futonModelId('asheville-full');
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
 jest.spyOn(Linking, 'canOpenURL').mockImplementation(() => Promise.resolve(true));
@@ -12,21 +15,21 @@ beforeEach(() => {
 
 describe('getARModelAssets', () => {
   it('returns URLs from models3d catalog for known products', () => {
-    const asset = getModel3DForProduct('prod-asheville-full')!;
-    const assets = getARModelAssets('asheville-full');
+    const asset = getModel3DForProduct(productId('prod-asheville-full'))!;
+    const assets = getARModelAssets(TEST_MODEL_ID);
     expect(assets.usdzUrl).toBe(asset.usdzUrl);
     expect(assets.glbUrl).toBe(asset.glbUrl);
   });
 
   it('returns URLs for murphy bed products', () => {
-    const asset = getModel3DForProduct('prod-murphy-queen-vertical')!;
-    const assets = getARModelAssets('murphy-queen-vertical');
+    const asset = getModel3DForProduct(productId('prod-murphy-queen-vertical'))!;
+    const assets = getARModelAssets(futonModelId('murphy-queen-vertical'));
     expect(assets.usdzUrl).toBe(asset.usdzUrl);
     expect(assets.glbUrl).toBe(asset.glbUrl);
   });
 
   it('falls back to CDN convention for unknown models', () => {
-    const assets = getARModelAssets('unknown-product');
+    const assets = getARModelAssets(futonModelId('unknown-product'));
     expect(assets.usdzUrl).toBe(`${MODEL_CDN_BASE}/usdz/unknown-product.usdz`);
     expect(assets.glbUrl).toBe(`${MODEL_CDN_BASE}/glb/unknown-product.glb`);
   });
@@ -50,15 +53,15 @@ describe('openARViewer', () => {
     });
 
     it('opens USDZ URL via Linking on iOS', async () => {
-      const asset = getModel3DForProduct('prod-asheville-full')!;
-      await openARViewer('asheville-full', 'The Asheville');
+      const asset = getModel3DForProduct(productId('prod-asheville-full'))!;
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Linking.canOpenURL).toHaveBeenCalledWith(asset.usdzUrl);
       expect(Linking.openURL).toHaveBeenCalledWith(asset.usdzUrl);
     });
 
     it('shows alert when iOS device cannot open AR', async () => {
       (Linking.canOpenURL as jest.Mock).mockResolvedValueOnce(false);
-      await openARViewer('asheville-full', 'The Asheville');
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Linking.openURL).not.toHaveBeenCalled();
       expect(Alert.alert).toHaveBeenCalledWith(
         'AR Not Available',
@@ -73,7 +76,7 @@ describe('openARViewer', () => {
     });
 
     it('opens Scene Viewer intent URL on Android', async () => {
-      await openARViewer('asheville-full', 'The Asheville');
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Linking.openURL).toHaveBeenCalledTimes(1);
       const url = (Linking.openURL as jest.Mock).mock.calls[0][0] as string;
       expect(url).toContain('intent://arvr.google.com/scene-viewer');
@@ -88,7 +91,7 @@ describe('openARViewer', () => {
         .mockResolvedValueOnce(true);
       (Linking.canOpenURL as jest.Mock).mockResolvedValueOnce(true);
 
-      await openARViewer('asheville-full', 'The Asheville');
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Linking.openURL).toHaveBeenCalledTimes(2);
       const fallbackUrl = (Linking.openURL as jest.Mock).mock.calls[1][0] as string;
       expect(fallbackUrl).toContain('https://arvr.google.com/scene-viewer');
@@ -98,7 +101,7 @@ describe('openARViewer', () => {
       (Linking.openURL as jest.Mock).mockRejectedValueOnce(new Error('fail'));
       (Linking.canOpenURL as jest.Mock).mockResolvedValueOnce(false);
 
-      await openARViewer('asheville-full', 'The Asheville');
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Alert.alert).toHaveBeenCalledWith(
         'AR Not Available',
         expect.stringContaining('Google Play Services'),
@@ -113,7 +116,7 @@ describe('openARViewer', () => {
 
     it('calls onWebModelView callback on web platform', async () => {
       const onWebModelView = jest.fn();
-      await openARViewer('asheville-full', 'The Asheville', { onWebModelView });
+      await openARViewer(TEST_MODEL_ID, 'The Asheville', { onWebModelView });
       expect(Linking.openURL).not.toHaveBeenCalled();
       expect(Alert.alert).not.toHaveBeenCalled();
       expect(onWebModelView).toHaveBeenCalledTimes(1);
@@ -128,7 +131,7 @@ describe('openARViewer', () => {
     });
 
     it('shows alert on web when no onWebModelView callback provided', async () => {
-      await openARViewer('asheville-full', 'The Asheville');
+      await openARViewer(TEST_MODEL_ID, 'The Asheville');
       expect(Linking.openURL).not.toHaveBeenCalled();
       expect(Alert.alert).toHaveBeenCalledWith(
         'AR Not Available',

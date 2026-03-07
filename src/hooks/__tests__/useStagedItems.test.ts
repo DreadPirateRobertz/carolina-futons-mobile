@@ -1,39 +1,31 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useStagedItems } from '../useStagedItems';
 import type { FutonModel, Fabric } from '@/data/futons';
+import { futonModelId } from '@/data/productId';
 
-const mockModel: FutonModel = {
-  id: 'asheville-full',
+const mockModel = {
+  id: futonModelId('asheville-full'),
   name: 'Asheville Full',
-  slug: 'asheville-full',
+  tagline: 'Test',
   basePrice: 599,
-  category: 'futons',
-  dimensions: { width: 54, depth: 38, height: 33 },
+  dimensions: { width: 54, depth: 38, height: 33, seatHeight: 18 },
   fabrics: [],
-  images: [],
-  description: 'Test',
-  features: [],
-};
+} as FutonModel;
 
-const mockModel2: FutonModel = {
-  id: 'blue-ridge-queen',
+const mockModel2 = {
+  id: futonModelId('blue-ridge-queen'),
   name: 'Blue Ridge Queen',
-  slug: 'blue-ridge-queen',
+  tagline: 'Test 2',
   basePrice: 799,
-  category: 'futons',
-  dimensions: { width: 60, depth: 40, height: 35 },
+  dimensions: { width: 60, depth: 40, height: 35, seatHeight: 18 },
   fabrics: [],
-  images: [],
-  description: 'Test 2',
-  features: [],
-};
+} as FutonModel;
 
 const mockFabric: Fabric = {
   id: 'natural-linen',
   name: 'Natural Linen',
   color: '#E8D5B7',
   price: 0,
-  swatch: '#E8D5B7',
 };
 
 describe('useStagedItems', () => {
