@@ -112,9 +112,18 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
         );
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored) as WishlistItem[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            dispatch({ type: 'LOAD', items: parsed });
+          const parsed: unknown = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const valid = parsed.filter(
+              (item): item is WishlistItem =>
+                item != null &&
+                typeof item === 'object' &&
+                typeof (item as WishlistItem).productId === 'string' &&
+                typeof (item as WishlistItem).addedAt === 'number',
+            );
+            if (valid.length > 0) {
+              dispatch({ type: 'LOAD', items: valid });
+            }
           }
         }
       } catch {

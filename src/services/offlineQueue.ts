@@ -99,9 +99,17 @@ export async function loadQueue(): Promise<QueuedAction[]> {
     );
     const stored = await AsyncStorage.getItem(QUEUE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
+      const parsed: unknown = JSON.parse(stored);
       if (Array.isArray(parsed)) {
-        queue = parsed;
+        queue = parsed.filter(
+          (item): item is QueuedAction =>
+            item != null &&
+            typeof item === 'object' &&
+            typeof (item as QueuedAction).id === 'string' &&
+            typeof (item as QueuedAction).timestamp === 'number' &&
+            typeof (item as QueuedAction).domain === 'string' &&
+            typeof (item as QueuedAction).action === 'string',
+        );
       }
     }
   } catch (err) {

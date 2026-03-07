@@ -137,9 +137,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
         const stored = await AsyncStorage.getItem(CART_STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored) as CartItem[];
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            dispatch({ type: 'LOAD', items: parsed });
+          const parsed: unknown = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            const valid = parsed.filter(
+              (item): item is CartItem =>
+                item != null &&
+                typeof item === 'object' &&
+                typeof (item as CartItem).id === 'string' &&
+                typeof (item as CartItem).quantity === 'number' &&
+                typeof (item as CartItem).unitPrice === 'number',
+            );
+            if (valid.length > 0) {
+              dispatch({ type: 'LOAD', items: valid });
+            }
           }
         }
       } catch {
