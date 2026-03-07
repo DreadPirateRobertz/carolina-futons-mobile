@@ -12,6 +12,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import type { EditorialCollection } from '@/data/collections';
+import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
 
 type Variant = 'featured' | 'compact';
 
@@ -64,6 +65,8 @@ export const CollectionCard = memo(function CollectionCard({
           recyclingKey={collection.id}
           accessibilityLabel={collection.heroImage.alt}
           onError={() => setImageError(true)}
+          cachePolicy="memory-disk"
+          placeholder={{ blurhash: collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH }}
         />
       )}
       <View style={[styles.overlay, { backgroundColor: colors.overlay, padding: spacing.md }]}>

@@ -22,6 +22,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollection } from '@/hooks/useCollections';
+import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
 import { ProductCard } from '@/components/ProductCard';
 import { Header } from '@/components/Header';
 import { EmptyState } from '@/components/EmptyState';
@@ -113,6 +114,8 @@ export function CollectionDetailScreen() {
           contentFit="cover"
           transition={300}
           accessibilityLabel={collection.heroImage.alt}
+          cachePolicy="memory-disk"
+          placeholder={{ blurhash: collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH }}
         />
         <View style={[styles.heroOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.moodRow, { marginBottom: spacing.sm }]}>

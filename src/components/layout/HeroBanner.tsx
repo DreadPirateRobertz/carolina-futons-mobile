@@ -63,6 +63,7 @@ export function HeroBanner({
           style={StyleSheet.absoluteFill}
           contentFit="cover"
           transition={300}
+          cachePolicy="memory-disk"
         />
       )}
       <View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(0,0,0,${overlayOpacity})` }]} />

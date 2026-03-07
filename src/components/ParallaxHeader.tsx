@@ -60,6 +60,7 @@ export function ParallaxHeader({
         source={{ uri: imageUri }}
         style={[styles.image, { height: height * 1.3 }, imageStyle]}
         contentFit="cover"
+        cachePolicy="memory-disk"
       />
       <Animated.View style={[styles.darkenOverlay, overlayStyle]} />
       <View style={styles.overlay}>{children}</View>

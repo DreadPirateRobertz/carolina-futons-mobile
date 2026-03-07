@@ -12,7 +12,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
-import { type Product } from '@/data/products';
+import { type Product, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { WishlistButton } from './WishlistButton';
@@ -71,6 +71,8 @@ export const ProductCard = memo(function ProductCard({
           transition={200}
           recyclingKey={product.id}
           accessibilityLabel={product.images[0]?.alt}
+          cachePolicy="memory-disk"
+          placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
         />
         <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
         {product.badge && (

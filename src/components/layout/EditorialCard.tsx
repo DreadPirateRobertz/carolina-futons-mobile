@@ -62,6 +62,7 @@ export function EditorialCard({
             style={StyleSheet.absoluteFill}
             contentFit="cover"
             transition={200}
+            cachePolicy="memory-disk"
           />
         </View>
       )}

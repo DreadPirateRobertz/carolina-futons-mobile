@@ -7,7 +7,11 @@ import { type ProductId, productId } from './productId';
 export interface ProductImage {
   uri: string;
   alt: string;
+  blurhash?: string;
 }
+
+/** Warm-toned fallback blurhash for product images pending server-generated hashes. */
+export const DEFAULT_PRODUCT_BLURHASH = 'LEHV6nWB2yk8pyo0adR*.7kCMdnj';
 
 export interface Product {
   id: ProductId;

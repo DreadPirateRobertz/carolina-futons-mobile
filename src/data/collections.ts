@@ -10,12 +10,15 @@ export interface EditorialCollection {
   title: string;
   subtitle: string;
   description: string;
-  heroImage: { uri: string; alt: string };
+  heroImage: { uri: string; alt: string; blurhash?: string };
   mood: string[];
   season?: string;
   featured: boolean;
   productIds: string[];
 }
+
+/** Warm-toned fallback blurhash for collection hero images. */
+export const DEFAULT_COLLECTION_BLURHASH = 'LKO2:N%2Tw=w]~RBVZRi};RPxuwH';
 
 export const COLLECTIONS: EditorialCollection[] = [
   {

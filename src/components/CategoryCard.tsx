@@ -11,6 +11,7 @@ import React, { useState, useCallback, memo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { colors, spacing, borderRadius, shadows, typography } from '@/theme/tokens';
+import { DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
 
 interface Category {
   id: string;
@@ -69,6 +70,8 @@ export const CategoryCard = memo(function CategoryCard({
           onError={handleImageError}
           contentFit="cover"
           transition={200}
+          cachePolicy="memory-disk"
+          placeholder={{ blurhash: DEFAULT_PRODUCT_BLURHASH }}
         />
       )}
       <View style={styles.overlay} testID={testID ? `${testID}-overlay` : undefined}>

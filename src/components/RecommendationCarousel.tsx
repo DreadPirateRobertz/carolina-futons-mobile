@@ -12,7 +12,7 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { StarRating } from './StarRating';
-import { Product } from '@/data/products';
+import { Product, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
 
 interface RecommendationCarouselProps {
   title: string;
@@ -65,6 +65,8 @@ export function RecommendationCarousel({
             transition={200}
             recyclingKey={item.id}
             accessibilityLabel={item.images[0].alt}
+            cachePolicy="memory-disk"
+            placeholder={{ blurhash: item.images[0].blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
           />
         )}
         <View style={[styles.cardBody, { padding: spacing.sm }]}>

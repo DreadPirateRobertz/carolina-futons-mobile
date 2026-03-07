@@ -123,6 +123,7 @@ export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }
                 contentFit="cover"
                 transition={200}
                 accessibilityLabel={`Review photo ${index + 1}`}
+                cachePolicy="memory-disk"
               />
             </View>
           ))}
