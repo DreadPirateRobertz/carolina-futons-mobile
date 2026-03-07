@@ -26,6 +26,7 @@ import Animated, {
   useAnimatedScrollHandler,
   interpolate,
   Extrapolation,
+  withTiming,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
@@ -95,6 +96,14 @@ export function ProductDetailScreen({
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
+  const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
+  const sizeGuideHeight = useSharedValue(0);
+
+  const sizeGuideAnimStyle = useAnimatedStyle(() => ({
+    height: sizeGuideHeight.value,
+    overflow: 'hidden' as const,
+    opacity: interpolate(sizeGuideHeight.value, [0, 50], [0, 1]),
+  }));
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { isAuthenticated } = useAuth();
@@ -551,6 +560,43 @@ export function ProductDetailScreen({
               mutedColor={colors.espressoLight}
             />
           </View>
+
+          {/* Size Guide Toggle */}
+          <TouchableOpacity
+            style={[
+              styles.sizeGuideToggle,
+              {
+                backgroundColor: darkPalette.surfaceElevated,
+                borderRadius: borderRadius.md,
+              },
+            ]}
+            onPress={() => {
+              const next = !sizeGuideExpanded;
+              setSizeGuideExpanded(next);
+              sizeGuideHeight.value = withTiming(next ? 280 : 0, { duration: 300 });
+            }}
+            testID="size-guide-toggle"
+            accessibilityRole="button"
+            accessibilityLabel="Size Guide"
+            accessibilityState={{ expanded: sizeGuideExpanded }}
+          >
+            <Text style={[styles.sizeGuideToggleText, { color: colors.espresso }]}>
+              Size Guide
+            </Text>
+            <Text style={[styles.sizeGuideChevron, { color: colors.espressoLight }]}>
+              {sizeGuideExpanded ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Size Guide Content */}
+          {sizeGuideExpanded && (
+            <Animated.View
+              style={[sizeGuideAnimStyle]}
+              testID="size-guide-content"
+            >
+              <SizeGuideDiagram dimensions={model.dimensions} colors={colors} />
+            </Animated.View>
+          )}
         </View>
 
         {/* Reviews Section */}
@@ -920,6 +966,100 @@ function DimensionItem({
   );
 }
 
+function SizeGuideDiagram({
+  dimensions,
+  colors,
+}: {
+  dimensions: { width: number; depth: number; height: number; seatHeight: number };
+  colors: { espresso: string; espressoLight: string; mountainBlue: string; sandDark: string; sandLight: string };
+}) {
+  const DIAGRAM_W = 200;
+  const DIAGRAM_H = 140;
+  const scale = DIAGRAM_W / Math.max(dimensions.width, dimensions.depth, dimensions.height);
+  const scaledW = dimensions.width * scale * 0.7;
+  const scaledD = dimensions.depth * scale * 0.4;
+  const scaledH = dimensions.height * scale * 0.6;
+
+  return (
+    <View style={styles.sizeGuideInner} testID="size-diagram">
+      {/* Visual diagram */}
+      <View style={[styles.diagramContainer, { width: DIAGRAM_W, height: DIAGRAM_H }]}>
+        {/* Futon shape — isometric box */}
+        <View
+          style={[
+            styles.diagramBox,
+            {
+              width: scaledW,
+              height: scaledH,
+              backgroundColor: colors.sandDark,
+              borderColor: colors.espressoLight,
+              bottom: 0,
+              left: (DIAGRAM_W - scaledW) / 2,
+            },
+          ]}
+        />
+        {/* Width label — bottom */}
+        <View style={[styles.diagramLabelRow, { bottom: -20, left: 0, right: 0 }]}>
+          <View style={[styles.diagramLine, { backgroundColor: colors.mountainBlue, width: scaledW, alignSelf: 'center' }]} />
+          <Text
+            style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
+            testID="diagram-label-width"
+          >
+            {dimensions.width}" W
+          </Text>
+        </View>
+        {/* Height label — right side */}
+        <View style={[styles.diagramLabelCol, { right: -40, bottom: 0, height: scaledH }]}>
+          <View style={[styles.diagramLineV, { backgroundColor: colors.mountainBlue, height: scaledH }]} />
+          <Text
+            style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
+            testID="diagram-label-height"
+          >
+            {dimensions.height}" H
+          </Text>
+        </View>
+        {/* Depth label — top */}
+        <View style={[styles.diagramLabelRow, { top: -20, left: 0, right: 0 }]}>
+          <View style={[styles.diagramLine, { backgroundColor: colors.mountainBlue, width: scaledD, alignSelf: 'center' }]} />
+          <Text
+            style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
+            testID="diagram-label-depth"
+          >
+            {dimensions.depth}" D
+          </Text>
+        </View>
+      </View>
+
+      {/* Room comparison */}
+      <View style={styles.roomComparison} testID="room-comparison">
+        <Text style={[styles.roomComparisonText, { color: colors.espressoLight }]}>
+          Fits comfortably in a 10' × 10' room with space for walking around.
+        </Text>
+        <View style={styles.roomDiagramRow}>
+          <View
+            style={[
+              styles.roomSquare,
+              { borderColor: colors.sandDark },
+            ]}
+          >
+            <View
+              style={[
+                styles.futonInRoom,
+                {
+                  backgroundColor: colors.mountainBlue,
+                  width: (dimensions.width / 120) * 50,
+                  height: (dimensions.depth / 120) * 50,
+                },
+              ]}
+            />
+          </View>
+          <Text style={[styles.roomLabel, { color: colors.espressoLight }]}>10' × 10'</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function darkenColor(hex: string, amount: number): string {
   const num = parseInt(hex.replace('#', ''), 16);
   const r = Math.max(0, ((num >> 16) & 0xff) * (1 - amount));
@@ -1243,6 +1383,86 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     fontSize: 14,
+    fontWeight: '500',
+  },
+  // Size Guide
+  sizeGuideToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  sizeGuideToggleText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  sizeGuideChevron: {
+    fontSize: 12,
+  },
+  sizeGuideInner: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    gap: 20,
+  },
+  diagramContainer: {
+    alignSelf: 'center',
+    position: 'relative',
+  },
+  diagramBox: {
+    position: 'absolute',
+    borderWidth: 1,
+    borderRadius: 4,
+  },
+  diagramLabelRow: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  diagramLabelCol: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diagramLine: {
+    height: 1,
+  },
+  diagramLineV: {
+    width: 1,
+  },
+  diagramLabelText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  roomComparison: {
+    gap: 8,
+  },
+  roomComparisonText: {
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+  roomDiagramRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  roomSquare: {
+    width: 60,
+    height: 60,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  futonInRoom: {
+    borderRadius: 2,
+  },
+  roomLabel: {
+    fontSize: 12,
     fontWeight: '500',
   },
 });
