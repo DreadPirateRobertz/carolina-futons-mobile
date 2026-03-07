@@ -16,8 +16,10 @@ import {
   type NotificationType,
   DEFAULT_PREFERENCES,
   getDeepLinkForNotification,
+  shouldShowNotification,
   registerPushToken,
 } from '@/services/notifications';
+import { useNotificationStorage } from './useNotificationStorage';
 
 // Show notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -133,6 +135,31 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     badgeCount: 0,
   });
 
+  // Gap 1: Wire useNotificationStorage into provider
+  const { preferences: storedPrefs, isLoading: storageLoading, savePreferences } = useNotificationStorage();
+  const hasLoadedFromStorage = React.useRef(false);
+
+  // Load saved preferences from storage on mount (once)
+  useEffect(() => {
+    if (!storageLoading && !hasLoadedFromStorage.current) {
+      hasLoadedFromStorage.current = true;
+      dispatch({ type: 'SET_PREFERENCES', prefs: storedPrefs });
+    }
+  }, [storageLoading, storedPrefs]);
+
+  // Gap 3: Mount-time permission check
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Notifications.getPermissionsAsync();
+        const permStatus: PermissionStatus = status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined';
+        dispatch({ type: 'SET_PERMISSION', status: permStatus });
+      } catch {
+        // Permission check failed — leave as undetermined
+      }
+    })();
+  }, []);
+
   const requestPermission = useCallback(async () => {
     // Check existing permission first
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -162,8 +189,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, []);
 
   // Set up notification listeners
+  // Gap 2: Apply shouldShowNotification in received listener
+  const prefsRef = React.useRef(state.preferences);
+  prefsRef.current = state.preferences;
+
   useEffect(() => {
-    const receivedSub = Notifications.addNotificationReceivedListener(() => {
+    const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
+      const data = notification.request.content.data as Record<string, string> | undefined;
+      const type = data?.type as NotificationType | undefined;
+
+      // Filter: only increment badge if user has this notification type enabled
+      if (type && !shouldShowNotification(type, prefsRef.current)) {
+        return;
+      }
+
       dispatch({ type: 'INCREMENT_BADGE' });
     });
 
@@ -184,8 +223,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
+    userHasToggledRef.current = true;
     dispatch({ type: 'TOGGLE_PREF', key });
   }, []);
+
+  // Gap 1 (cont): Persist preferences to storage when toggled (skip initial load)
+  const userHasToggledRef = React.useRef(false);
+  useEffect(() => {
+    if (userHasToggledRef.current) {
+      savePreferences(state.preferences);
+    }
+  }, [state.preferences, savePreferences]);
 
   const setPreferences = useCallback((prefs: NotificationPreferences) => {
     dispatch({ type: 'SET_PREFERENCES', prefs });
@@ -198,6 +246,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const clearBadge = useCallback(() => {
     dispatch({ type: 'CLEAR_BADGE' });
   }, []);
+
+  // Gap 4: Sync badge count to OS whenever it changes
+  useEffect(() => {
+    Notifications.setBadgeCountAsync(state.badgeCount).catch(() => {});
+  }, [state.badgeCount]);
 
   const value = useMemo<NotificationContextValue>(
     () => ({

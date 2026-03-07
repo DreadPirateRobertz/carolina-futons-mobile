@@ -13,12 +13,15 @@ const mockSetNotificationChannelAsync = jest.fn();
 const mockRemoveReceived = jest.fn();
 const mockRemoveResponse = jest.fn();
 
+const mockSetBadgeCountAsync = jest.fn().mockResolvedValue(true);
+
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: (...args: any[]) => mockGetPermissionsAsync(...args),
   requestPermissionsAsync: (...args: any[]) => mockRequestPermissionsAsync(...args),
   getExpoPushTokenAsync: (...args: any[]) => mockGetExpoPushTokenAsync(...args),
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: (...args: any[]) => mockSetNotificationChannelAsync(...args),
+  setBadgeCountAsync: (...args: any[]) => mockSetBadgeCountAsync(...args),
   addNotificationReceivedListener: (...args: any[]) => {
     mockAddNotificationReceivedListener(...args);
     return { remove: mockRemoveReceived };
@@ -37,6 +40,20 @@ jest.mock('expo-device', () => ({
 
 jest.mock('expo-constants', () => ({
   expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },
+}));
+
+const mockSavePreferences = jest.fn().mockResolvedValue(undefined);
+jest.mock('../useNotificationStorage', () => ({
+  useNotificationStorage: () => ({
+    preferences: {
+      orderUpdates: true,
+      promotions: true,
+      backInStock: true,
+      cartReminders: false,
+    },
+    isLoading: false,
+    savePreferences: mockSavePreferences,
+  }),
 }));
 
 jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
@@ -251,6 +268,154 @@ describe('useNotifications', () => {
       fireEvent.press(getByTestId('set-badge-5'));
       fireEvent.press(getByTestId('clear-badge'));
       expect(getByTestId('badge').props.children).toBe(0);
+    });
+  });
+
+  // ================================================================
+  // Gap 1: useNotificationStorage wired into NotificationProvider
+  // ================================================================
+  describe('Notification storage integration', () => {
+    it('loads saved preferences from storage on mount', () => {
+      const { getByTestId } = renderNotif();
+      // Should reflect the values from useNotificationStorage mock
+      expect(getByTestId('pref-orders').props.children).toBe('true');
+      expect(getByTestId('pref-cart').props.children).toBe('false');
+    });
+
+    it('persists preferences to storage when toggled', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('toggle-orders'));
+      await waitFor(() => {
+        expect(mockSavePreferences).toHaveBeenCalledWith(
+          expect.objectContaining({ orderUpdates: false }),
+        );
+      });
+    });
+  });
+
+  // ================================================================
+  // Gap 2: shouldShowNotification applied in received listener
+  // ================================================================
+  describe('Preference-based notification filtering', () => {
+    it('does not increment badge for notifications the user disabled', async () => {
+      const { getByTestId } = renderNotif();
+
+      // cartReminders is false by default
+      const receivedCallback = mockAddNotificationReceivedListener.mock.calls[0][0];
+
+      await waitFor(() => {
+        receivedCallback({
+          request: {
+            content: {
+              data: { type: 'cart_reminder' },
+            },
+          },
+        });
+      });
+
+      // Badge should NOT have incremented because cartReminders pref is off
+      expect(getByTestId('badge').props.children).toBe(0);
+    });
+
+    it('increments badge for notifications the user enabled', async () => {
+      const { getByTestId } = renderNotif();
+
+      const receivedCallback = mockAddNotificationReceivedListener.mock.calls[0][0];
+
+      await waitFor(() => {
+        receivedCallback({
+          request: {
+            content: {
+              data: { type: 'order_update', orderId: 'ord-99' },
+            },
+          },
+        });
+      });
+
+      // orderUpdates is true, so badge should increment
+      await waitFor(() => {
+        expect(getByTestId('badge').props.children).toBe(1);
+      });
+    });
+  });
+
+  // ================================================================
+  // Gap 3: Mount-time permission check
+  // ================================================================
+  describe('Mount-time permission check', () => {
+    it('checks OS permission status on mount', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+
+      await waitFor(() => {
+        expect(mockGetPermissionsAsync).toHaveBeenCalled();
+      });
+    });
+
+    it('reflects granted permission from OS on mount without user interaction', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      const { getByTestId } = renderNotif();
+
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('granted');
+      });
+    });
+
+    it('reflects denied permission from OS on mount', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'denied' });
+
+      const { getByTestId } = renderNotif();
+
+      await waitFor(() => {
+        expect(getByTestId('permission').props.children).toBe('denied');
+      });
+    });
+  });
+
+  // ================================================================
+  // Gap 4: OS badge sync
+  // ================================================================
+  describe('OS badge sync', () => {
+    it('syncs badge count to OS when badge increments', async () => {
+      const { getByTestId } = renderNotif();
+
+      const receivedCallback = mockAddNotificationReceivedListener.mock.calls[0][0];
+      await waitFor(() => {
+        receivedCallback({
+          request: {
+            content: {
+              data: { type: 'order_update', orderId: 'ord-1' },
+            },
+          },
+        });
+      });
+
+      await waitFor(() => {
+        expect(getByTestId('badge').props.children).toBe(1);
+      });
+
+      expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(1);
+    });
+
+    it('syncs badge count to OS when explicitly set', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('set-badge-5'));
+
+      await waitFor(() => {
+        expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(5);
+      });
+    });
+
+    it('syncs badge count to OS when cleared', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('set-badge-5'));
+      fireEvent.press(getByTestId('clear-badge'));
+
+      await waitFor(() => {
+        expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(0);
+      });
     });
   });
 
