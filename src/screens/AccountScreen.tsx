@@ -8,12 +8,13 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -35,6 +36,18 @@ interface Props {
 export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
+  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
+
+  const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
+  const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
+
+  const handleBiometricToggle = async (value: boolean) => {
+    if (value) {
+      await enableBiometric();
+    } else {
+      await disableBiometric();
+    }
+  };
 
   if (!isAuthenticated || !user) {
     return (
@@ -143,6 +156,23 @@ export function AccountScreen({ onLogin, onOrderHistory, testID }: Props) {
             shadows={shadows}
             testID="account-notifications"
           />
+          {showBiometricToggle && (
+            <GlassCard intensity="light">
+              <View style={styles.menuItem} testID="account-biometric-toggle">
+                <Text style={[styles.menuLabel, { color: darkPalette.textPrimary }]}>
+                  {biometricLabel} Sign-In
+                </Text>
+                <Switch
+                  value={biometricEnabled}
+                  onValueChange={handleBiometricToggle}
+                  trackColor={{ false: darkPalette.borderSubtle, true: colors.mountainBlue }}
+                  thumbColor="#FFFFFF"
+                  testID="biometric-switch"
+                  accessibilityLabel={`Enable ${biometricLabel} sign-in`}
+                />
+              </View>
+            </GlassCard>
+          )}
         </View>
 
         {/* Sign out */}

@@ -22,17 +22,20 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 
 interface Props {
   onSignUp?: () => void;
   onForgotPassword?: () => void;
+  onBiometricSuccess?: () => void;
   testID?: string;
 }
 
-/** Sign-in form with email/password fields and social OAuth buttons. */
-export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
+/** Sign-in form with email/password fields, biometric, and social OAuth buttons. */
+export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
+  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, authenticating, promptBiometric } = useBiometricAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,6 +61,17 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
     clearError();
     await signInWithApple();
   }, [signInWithApple, clearError]);
+
+  const handleBiometricSignIn = useCallback(async () => {
+    clearError();
+    const success = await promptBiometric();
+    if (success) {
+      onBiometricSuccess?.();
+    }
+  }, [promptBiometric, clearError, onBiometricSuccess]);
+
+  const showBiometric = biometricEnabled && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
+  const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
 
   return (
     <KeyboardAvoidingView
@@ -240,6 +254,32 @@ export function LoginScreen({ onSignUp, onForgotPassword, testID }: Props) {
             <Text style={[styles.dividerText, { color: darkPalette.textMuted }]}>or</Text>
             <View style={[styles.dividerLine, { backgroundColor: darkPalette.borderSubtle }]} />
           </View>
+
+          {/* Biometric sign-in */}
+          {showBiometric && (
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                {
+                  backgroundColor: colors.mountainBlue,
+                  borderRadius: borderRadius.button,
+                },
+              ]}
+              onPress={handleBiometricSignIn}
+              disabled={loading || authenticating}
+              testID="biometric-sign-in-button"
+              accessibilityLabel={`Sign in with ${biometricLabel}`}
+              accessibilityRole="button"
+            >
+              {authenticating ? (
+                <ActivityIndicator color="#FFFFFF" testID="biometric-loading" />
+              ) : (
+                <Text style={styles.socialButtonText}>
+                  Sign in with {biometricLabel}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
 
           {/* Social logins */}
           {Platform.OS === 'ios' && (
