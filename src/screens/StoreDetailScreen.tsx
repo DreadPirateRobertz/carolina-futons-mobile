@@ -128,6 +128,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
           contentFit="cover"
           transition={300}
           testID="store-detail-photo"
+          accessibilityLabel={`Photo of ${store.name} store`}
           cachePolicy="memory-disk"
         />
       )}

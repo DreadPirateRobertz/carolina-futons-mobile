@@ -11,12 +11,13 @@
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { Animated as RNAnimated, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator } from 'react-native';
+import { Animated as RNAnimated, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
@@ -243,7 +244,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
                   accessibilityRole="button"
                 >
                   {promo.status === 'validating' ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" testID="promo-loading" />
+                    <BrandedSpinner size="small" color="#FFFFFF" testID="promo-loading" />
                   ) : (
                     <Text style={styles.promoApplyText}>Apply</Text>
                   )}

@@ -18,10 +18,10 @@ import {
   ScrollView,
   Switch,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
@@ -293,7 +293,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                   accessibilityRole="button"
                 >
                   {loading ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" testID="edit-save-loading" />
+                    <BrandedSpinner size="small" color="#FFFFFF" testID="edit-save-loading" />
                   ) : (
                     <Text style={styles.editSaveText}>Save</Text>
                   )}
