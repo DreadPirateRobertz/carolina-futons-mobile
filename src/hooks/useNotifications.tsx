@@ -162,7 +162,8 @@ async function registerForPushToken(): Promise<string | null> {
   try {
     const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
     return data;
-  } catch {
+  } catch (err) {
+    captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getExpoPushToken' });
     return null;
   }
 }
@@ -192,7 +193,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (saved) {
           dispatch({ type: 'SET_PREFERENCES', prefs: JSON.parse(saved) });
         }
-      } catch {}
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'restorePreferences' });
+      }
 
       // Restore persisted badge count
       try {
@@ -203,19 +206,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             dispatch({ type: 'SET_BADGE', count });
           }
         }
-      } catch {}
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'restoreBadgeCount' });
+      }
 
       // Sync permission status with OS
-      const { status } = await Notifications.getPermissionsAsync();
-      if (status === 'granted') {
-        dispatch({ type: 'SET_PERMISSION', status: 'granted' });
-        const token = await registerForPushToken();
-        if (token) {
-          dispatch({ type: 'SET_TOKEN', token });
-          registerPushToken(token).catch(captureException);
+      try {
+        const { status } = await Notifications.getPermissionsAsync();
+        if (status === 'granted') {
+          dispatch({ type: 'SET_PERMISSION', status: 'granted' });
+          const token = await registerForPushToken();
+          if (token) {
+            dispatch({ type: 'SET_TOKEN', token });
+            registerPushToken(token).catch((e) => {
+              captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'registerPushToken' });
+            });
+          }
+        } else if (status === 'denied') {
+          dispatch({ type: 'SET_PERMISSION', status: 'denied' });
         }
-      } else if (status === 'denied') {
-        dispatch({ type: 'SET_PERMISSION', status: 'denied' });
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getPermissionsAsync' });
       }
     })();
   }, []);
@@ -229,7 +240,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(captureException);
+        registerPushToken(token).catch((err) => {
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+        });
       }
       return;
     }
@@ -243,7 +256,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(captureException);
+        registerPushToken(token).catch((err) => {
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+        });
       }
     }
   }, []);
