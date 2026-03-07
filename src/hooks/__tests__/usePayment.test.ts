@@ -138,6 +138,67 @@ describe('usePayment', () => {
     );
   });
 
+  it('completes full success path: intent → sheet → confirm → cart cleared → success', async () => {
+    const mockConfirmation = {
+      orderId: 'ord_success',
+      orderNumber: 'CF-042',
+      items: [],
+      totals: { subtotal: 349, shipping: 49, tax: 24.43, total: 422.43 },
+      paymentMethod: 'card' as const,
+      createdAt: '2026-03-07T12:00:00Z',
+      estimatedDelivery: 'March 20-25, 2026',
+    };
+
+    mockedCreatePaymentIntent.mockResolvedValue({
+      clientSecret: 'pi_success_secret',
+      paymentIntentId: 'pi_success',
+      ephemeralKey: 'ek_success',
+      customerId: 'cus_success',
+    });
+    mockedConfirmOrder.mockResolvedValue(mockConfirmation);
+
+    const { result } = renderHook(
+      () => {
+        const cart = useCart();
+        const payment = usePayment();
+        return { cart, payment };
+      },
+      { wrapper },
+    );
+
+    // Add item to cart
+    await act(async () => {
+      result.current.cart.addItem(
+        { id: 'test-model', name: 'Test', basePrice: 349 } as any,
+        { id: 'test-fabric', name: 'Test', color: '#000', price: 0 } as any,
+        1,
+      );
+    });
+
+    expect(result.current.cart.items).toHaveLength(1);
+
+    // Process payment
+    let order: any;
+    await act(async () => {
+      order = await result.current.payment.processPayment('card');
+    });
+
+    // 1. Intent created
+    expect(mockedCreatePaymentIntent).toHaveBeenCalledTimes(1);
+    // 2. Sheet initialized and presented
+    expect(mockInitPaymentSheet).toHaveBeenCalledTimes(1);
+    expect(mockPresentPaymentSheet).toHaveBeenCalledTimes(1);
+    // 3. Order confirmed
+    expect(mockedConfirmOrder).toHaveBeenCalledTimes(1);
+    // 4. Cart cleared
+    expect(result.current.cart.items).toHaveLength(0);
+    // 5. Status = success, order returned and stored
+    expect(result.current.payment.status).toBe('success');
+    expect(result.current.payment.error).toBeNull();
+    expect(result.current.payment.order).toEqual(mockConfirmation);
+    expect(order).toEqual(mockConfirmation);
+  });
+
   it('handles payment cancellation gracefully', async () => {
     mockPresentPaymentSheet.mockResolvedValue({
       error: { code: 'Canceled', message: 'User cancelled' },
