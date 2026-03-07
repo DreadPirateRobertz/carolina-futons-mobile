@@ -8,8 +8,18 @@
  * Preferences (not yet wired). Sign-out lives at the bottom.
  */
 
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Switch,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -40,10 +50,35 @@ interface Props {
  */
 export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, loading, error, signOut, updateProfile, clearError } = useAuth();
   const { isPremium, restore } = usePremium();
   const [restoring, setRestoring] = useState(false);
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
+
+  const [editing, setEditing] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const startEditing = useCallback(() => {
+    if (!user) return;
+    const parts = user.displayName.split(' ');
+    setFirstName(parts[0] ?? '');
+    setLastName(parts.slice(1).join(' '));
+    setPhone(user.phone ?? '');
+    clearError();
+    setEditing(true);
+  }, [user, clearError]);
+
+  const cancelEditing = useCallback(() => {
+    setEditing(false);
+    clearError();
+  }, [clearError]);
+
+  const saveProfile = useCallback(async () => {
+    await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim() });
+    setEditing(false);
+  }, [updateProfile, firstName, lastName, phone]);
 
   const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
   const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
@@ -130,21 +165,142 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           >
             <Text style={styles.avatarText}>{user.displayName.charAt(0).toUpperCase()}</Text>
           </View>
-          <View style={styles.nameRow}>
-            <Text
-              style={[
-                styles.userName,
-                { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-              ]}
-              testID="user-display-name"
-            >
-              {user.displayName}
-            </Text>
-            {isPremium && <PremiumBadge />}
-          </View>
-          <Text style={[styles.userEmail, { color: darkPalette.textMuted }]} testID="user-email">
-            {user.email}
-          </Text>
+          {!editing ? (
+            <>
+              <View style={styles.nameRow}>
+                <Text
+                  style={[
+                    styles.userName,
+                    { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+                  ]}
+                  testID="user-display-name"
+                >
+                  {user.displayName}
+                </Text>
+                {isPremium && <PremiumBadge />}
+              </View>
+              <Text style={[styles.userEmail, { color: darkPalette.textMuted }]} testID="user-email">
+                {user.email}
+              </Text>
+              {user.phone ? (
+                <Text style={[styles.userPhone, { color: darkPalette.textMuted }]} testID="user-phone">
+                  {user.phone}
+                </Text>
+              ) : null}
+              <TouchableOpacity
+                onPress={startEditing}
+                testID="edit-profile-button"
+                accessibilityLabel="Edit profile"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.editLink, { color: colors.mountainBlue }]}>Edit Profile</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.editForm} testID="edit-profile-form">
+              {error && (
+                <Text style={[styles.editError, { color: colors.sunsetCoral }]} testID="edit-profile-error">
+                  {error}
+                </Text>
+              )}
+              <View style={styles.fieldGroup}>
+                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                  First Name
+                </Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    {
+                      backgroundColor: darkPalette.surfaceElevated,
+                      color: darkPalette.textPrimary,
+                      borderRadius: borderRadius.md,
+                      borderColor: darkPalette.borderSubtle,
+                    },
+                  ]}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="First name"
+                  placeholderTextColor={darkPalette.textMuted}
+                  autoCapitalize="words"
+                  testID="edit-first-name-input"
+                  accessibilityLabel="First name"
+                />
+              </View>
+              <View style={styles.fieldGroup}>
+                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                  Last Name
+                </Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    {
+                      backgroundColor: darkPalette.surfaceElevated,
+                      color: darkPalette.textPrimary,
+                      borderRadius: borderRadius.md,
+                      borderColor: darkPalette.borderSubtle,
+                    },
+                  ]}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Last name"
+                  placeholderTextColor={darkPalette.textMuted}
+                  autoCapitalize="words"
+                  testID="edit-last-name-input"
+                  accessibilityLabel="Last name"
+                />
+              </View>
+              <View style={styles.fieldGroup}>
+                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                  Phone
+                </Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    {
+                      backgroundColor: darkPalette.surfaceElevated,
+                      color: darkPalette.textPrimary,
+                      borderRadius: borderRadius.md,
+                      borderColor: darkPalette.borderSubtle,
+                    },
+                  ]}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="(555) 123-4567"
+                  placeholderTextColor={darkPalette.textMuted}
+                  keyboardType="phone-pad"
+                  autoComplete="tel"
+                  textContentType="telephoneNumber"
+                  testID="edit-phone-input"
+                  accessibilityLabel="Phone number"
+                />
+              </View>
+              <View style={styles.editActions}>
+                <TouchableOpacity
+                  style={[styles.editCancelButton, { borderColor: darkPalette.borderSubtle, borderRadius: borderRadius.button }]}
+                  onPress={cancelEditing}
+                  testID="edit-cancel-button"
+                  accessibilityLabel="Cancel editing"
+                  accessibilityRole="button"
+                >
+                  <Text style={[styles.editCancelText, { color: darkPalette.textMuted }]}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.editSaveButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+                  onPress={saveProfile}
+                  disabled={loading}
+                  testID="edit-save-button"
+                  accessibilityLabel="Save profile"
+                  accessibilityRole="button"
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" testID="edit-save-loading" />
+                  ) : (
+                    <Text style={styles.editSaveText}>Save</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Menu items */}
@@ -351,6 +507,63 @@ const styles = StyleSheet.create({
   },
   userEmail: {
     fontSize: 14,
+  },
+  userPhone: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  editLink: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  editForm: {
+    width: '100%',
+    marginTop: 8,
+  },
+  editError: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  fieldGroup: {
+    marginBottom: 12,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  editInput: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    borderWidth: 1,
+  },
+  editActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  editCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  editCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  editSaveButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  editSaveText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
   // Menu
   menuItem: {

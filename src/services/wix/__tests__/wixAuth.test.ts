@@ -26,6 +26,7 @@ const mockAuth = {
 
 const mockMembers = {
   getCurrentMember: jest.fn(),
+  updateMember: jest.fn(),
 };
 
 const mockClient = { auth: mockAuth, members: mockMembers };
@@ -62,6 +63,7 @@ describe('WixAuthService', () => {
   beforeEach(() => {
     Object.values(mockAuth).forEach((fn) => (fn as jest.Mock).mockReset());
     mockMembers.getCurrentMember.mockReset();
+    mockMembers.updateMember.mockReset();
     mockAuth.getTokens.mockReturnValue(mockTokens);
     mockAuth.loggedIn.mockReturnValue(false);
     mockAuth.logout.mockReturnValue({ logoutUrl: 'https://wix.com/logout' });
@@ -380,6 +382,9 @@ describe('WixAuthService', () => {
           profile: {
             nickname: 'Real User',
           },
+          contact: {
+            phones: ['555-9999'],
+          },
         },
       });
 
@@ -389,6 +394,7 @@ describe('WixAuthService', () => {
         id: 'member-123',
         email: 'real@user.com',
         displayName: 'Real User',
+        phone: '555-9999',
         provider: 'wix',
       });
     });
@@ -416,8 +422,48 @@ describe('WixAuthService', () => {
         id: 'member-456',
         email: 'minimal@user.com',
         displayName: 'minimal@user.com',
+        phone: '',
         provider: 'wix',
       });
+    });
+  });
+
+  // --- updateMember ---
+
+  describe('updateMember', () => {
+    it('calls members.updateMember with contact and profile', async () => {
+      mockMembers.updateMember.mockResolvedValue({});
+
+      const result = await service.updateMember('member-123', {
+        firstName: 'Jane',
+        lastName: 'Doe',
+        phone: '555-0000',
+      });
+
+      expect(mockMembers.updateMember).toHaveBeenCalledWith('member-123', {
+        contact: { firstName: 'Jane', lastName: 'Doe', phones: ['555-0000'] },
+        profile: { nickname: 'Jane Doe' },
+      });
+      expect(result).toEqual({ success: true });
+    });
+
+    it('clears phones when phone is empty string', async () => {
+      mockMembers.updateMember.mockResolvedValue({});
+
+      await service.updateMember('member-123', { phone: '' });
+
+      expect(mockMembers.updateMember).toHaveBeenCalledWith('member-123', {
+        contact: { phones: [] },
+        profile: {},
+      });
+    });
+
+    it('returns error on failure', async () => {
+      mockMembers.updateMember.mockRejectedValue(new Error('Forbidden'));
+
+      const result = await service.updateMember('member-123', { firstName: 'Jane' });
+
+      expect(result).toEqual({ success: false, error: 'Forbidden' });
     });
   });
 

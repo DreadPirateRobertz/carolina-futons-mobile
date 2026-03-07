@@ -15,6 +15,7 @@ const mockAuthService = {
   logout: jest.fn().mockResolvedValue(undefined),
   isLoggedIn: jest.fn().mockReturnValue(false),
   refreshSession: jest.fn(),
+  updateMember: jest.fn().mockResolvedValue({ success: true }),
 };
 
 jest.mock('@/services/wix/wixAuth', () => ({
@@ -80,6 +81,7 @@ const mockMember = {
   id: 'member-1',
   email: 'test@test.com',
   displayName: 'Test User',
+  phone: '555-1234',
   provider: 'wix' as const,
 };
 

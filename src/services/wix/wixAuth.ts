@@ -35,7 +35,14 @@ export interface AuthUser {
   id: string;
   email: string;
   displayName: string;
+  phone: string;
   provider: 'wix';
+}
+
+export interface UpdateProfileData {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -189,10 +196,34 @@ export class WixAuthService {
         id: member._id,
         email: member.loginEmail,
         displayName: member.profile?.nickname || member.loginEmail,
+        phone: member.contact?.phones?.[0] ?? '',
         provider: 'wix',
       };
     } catch {
       return null;
+    }
+  }
+
+  async updateMember(memberId: string, data: UpdateProfileData): Promise<AuthResult> {
+    try {
+      const client = getWixSdkClient();
+      const contact: Record<string, unknown> = {};
+      if (data.firstName !== undefined || data.lastName !== undefined) {
+        if (data.firstName !== undefined) contact.firstName = data.firstName;
+        if (data.lastName !== undefined) contact.lastName = data.lastName;
+      }
+      if (data.phone !== undefined) {
+        contact.phones = data.phone ? [data.phone] : [];
+      }
+      const profile: Record<string, unknown> = {};
+      if (data.firstName !== undefined || data.lastName !== undefined) {
+        const parts = [data.firstName, data.lastName].filter(Boolean);
+        if (parts.length) profile.nickname = parts.join(' ');
+      }
+      await client.members.updateMember(memberId, { contact, profile });
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
     }
   }
 

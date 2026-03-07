@@ -9,6 +9,7 @@ const mockMember = {
   id: 'member-1',
   email: 'test@test.com',
   displayName: 'Test User',
+  phone: '555-1234',
   provider: 'wix' as const,
 };
 
@@ -22,6 +23,7 @@ const mockAuthService = {
   logout: jest.fn().mockResolvedValue(undefined),
   isLoggedIn: jest.fn().mockReturnValue(false),
   refreshSession: jest.fn(),
+  updateMember: jest.fn().mockResolvedValue({ success: true }),
 };
 
 jest.mock('@/services/wix/wixAuth', () => ({
@@ -222,6 +224,62 @@ describe('AccountScreen', () => {
       });
       fireEvent.press(getByTestId('account-order-history'));
       expect(onOrderHistory).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows edit profile button', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+    });
+
+    it('shows edit form when edit profile pressed', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      expect(getByTestId('edit-profile-form')).toBeTruthy();
+      expect(getByTestId('edit-first-name-input')).toBeTruthy();
+      expect(getByTestId('edit-last-name-input')).toBeTruthy();
+      expect(getByTestId('edit-phone-input')).toBeTruthy();
+    });
+
+    it('cancels editing and returns to profile view', async () => {
+      const { getByTestId, queryByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      expect(getByTestId('edit-profile-form')).toBeTruthy();
+      fireEvent.press(getByTestId('edit-cancel-button'));
+      expect(queryByTestId('edit-profile-form')).toBeNull();
+      expect(getByTestId('user-display-name')).toBeTruthy();
+    });
+
+    it('calls updateMember on save', async () => {
+      const updatedMember = { ...mockMember, displayName: 'Jane Doe', phone: '555-0000' };
+      mockAuthService.updateMember.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember
+        .mockResolvedValueOnce(mockMember) // initial sign-in
+        .mockResolvedValueOnce(updatedMember); // after update
+
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      fireEvent.changeText(getByTestId('edit-first-name-input'), 'Jane');
+      fireEvent.changeText(getByTestId('edit-last-name-input'), 'Doe');
+      fireEvent.changeText(getByTestId('edit-phone-input'), '555-0000');
+      fireEvent.press(getByTestId('edit-save-button'));
+
+      await waitFor(() => {
+        expect(mockAuthService.updateMember).toHaveBeenCalledWith(
+          'member-1',
+          { firstName: 'Jane', lastName: 'Doe', phone: '555-0000' },
+        );
+      });
     });
   });
 });

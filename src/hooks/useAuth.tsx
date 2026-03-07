@@ -17,13 +17,14 @@ import React, {
   useMemo,
   useEffect,
 } from 'react';
-import { WixAuthService } from '@/services/wix/wixAuth';
+import { WixAuthService, type UpdateProfileData } from '@/services/wix/wixAuth';
 
 /** Represents an authenticated Carolina Futons user. */
 export interface User {
   id: string;
   email: string;
   displayName: string;
+  phone: string;
   provider: 'email' | 'google' | 'apple' | 'wix';
 }
 
@@ -50,7 +51,8 @@ type AuthAction =
   | { type: 'AUTH_ERROR'; error: string }
   | { type: 'SIGN_OUT' }
   | { type: 'CLEAR_ERROR' }
-  | { type: 'INIT_DONE' };
+  | { type: 'INIT_DONE' }
+  | { type: 'UPDATE_USER'; user: User };
 
 function authReducer(state: AuthState, action: AuthAction): AuthState {
   switch (action.type) {
@@ -66,6 +68,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
       return { ...state, error: null, loading: false };
     case 'INIT_DONE':
       return { ...state, loading: false };
+    case 'UPDATE_USER':
+      return { ...state, user: action.user };
     default:
       return state;
   }
@@ -122,6 +126,7 @@ interface AuthContextValue {
   signInWithGoogle: () => Promise<void>;
   signInWithApple: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
   signOut: () => void;
   clearError: () => void;
 }
@@ -244,6 +249,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [authService],
   );
 
+  const updateProfile = useCallback(
+    async (data: UpdateProfileData) => {
+      if (!state.user) return;
+      dispatch({ type: 'AUTH_START' });
+      const result = await authService.updateMember(state.user.id, data);
+      if (!result.success) {
+        dispatch({ type: 'AUTH_ERROR', error: result.error });
+        return;
+      }
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'UPDATE_USER', user: member });
+      } else {
+        dispatch({ type: 'CLEAR_ERROR' });
+      }
+    },
+    [authService, state.user],
+  );
+
   const signOut = useCallback(() => {
     authService.logout();
     dispatch({ type: 'SIGN_OUT' });
@@ -263,11 +287,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signInWithGoogle,
       signInWithApple,
+      updateProfile,
       resetPassword,
       signOut,
       clearError,
     }),
-    [state, signIn, signUp, signInWithGoogle, signInWithApple, resetPassword, signOut, clearError],
+    [state, signIn, signUp, signInWithGoogle, signInWithApple, updateProfile, resetPassword, signOut, clearError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
