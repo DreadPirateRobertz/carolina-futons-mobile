@@ -46,6 +46,7 @@ import { events } from '@/services/analytics';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
+import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { usePremium } from '@/hooks/usePremium';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -190,9 +191,6 @@ export function ProductDetailScreen({
   const handleAddToCart = useCallback(() => {
     onAddToCart?.(model, selectedFabric, quantity);
     events.addToCart(model.id, totalPrice, quantity);
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
   }, [model, selectedFabric, quantity, totalPrice, onAddToCart]);
 
   const handleIncrement = useCallback(() => {
@@ -702,7 +700,7 @@ export function ProductDetailScreen({
           </View>
 
           {/* Add to Cart */}
-          <TouchableOpacity
+          <AnimatedPressable
             style={[
               styles.addToCartButton,
               {
@@ -712,6 +710,8 @@ export function ProductDetailScreen({
               shadows.button,
             ]}
             onPress={handleAddToCart}
+            haptic="medium"
+            scaleDown={0.97}
             testID="add-to-cart-button"
             accessibilityLabel={`Add ${quantity} ${model.name} to cart for ${formatPrice(totalPrice * quantity)}`}
             accessibilityRole="button"
@@ -719,7 +719,7 @@ export function ProductDetailScreen({
             <Text style={styles.addToCartText}>
               Add to Cart — {formatPrice(totalPrice * quantity)}
             </Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
 
         {/* Bottom spacer */}

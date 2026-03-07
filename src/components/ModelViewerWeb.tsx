@@ -8,7 +8,8 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, View, Text, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, Platform } from 'react-native';
+import { BrandedSpinner } from './BrandedSpinner';
 
 /** CDN URL for Google's model-viewer web component (v3.5.0). */
 export const MODEL_VIEWER_CDN =
@@ -166,7 +167,7 @@ export function ModelViewerWeb({ glbUrl, usdzUrl, title, dimensions, testID }: P
       <View style={styles.viewerWrapper}>
         <View ref={viewerRef} style={styles.viewerContainer} testID="model-viewer-element" />
         <View style={styles.loadingOverlay} testID="model-viewer-loading">
-          <ActivityIndicator size="large" color="#5B8FA8" />
+          <BrandedSpinner size="large" color="#5B8FA8" />
           <Text style={styles.loadingText}>Loading 3D model...</Text>
         </View>
       </View>

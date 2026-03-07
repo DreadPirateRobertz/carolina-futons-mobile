@@ -14,9 +14,9 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { type FutonModel, type Fabric } from '@/data/futons';
+import { BrandedSpinner } from './BrandedSpinner';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -242,7 +242,7 @@ export function ARControls({
             accessibilityRole="button"
           >
             {isCapturing ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <BrandedSpinner size="small" color="#FFFFFF" />
             ) : (
               <>
                 <Text style={styles.shareButtonIcon}>↗</Text>

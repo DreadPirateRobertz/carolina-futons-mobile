@@ -6,7 +6,8 @@
  * checkout flow reset, and modal presentation of auth screens.
  */
 import React, { useCallback, lazy, Suspense } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { View } from 'react-native';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
@@ -119,7 +120,7 @@ function LazyFallback() {
         backgroundColor: '#E8D5B7',
       }}
     >
-      <ActivityIndicator size="large" color="#E8845C" />
+      <BrandedSpinner size="large" color="#E8845C" />
     </View>
   );
 }
@@ -184,7 +185,7 @@ export function AppNavigator() {
         }}
         testID="onboarding-loading"
       >
-        <ActivityIndicator size="large" color="#E8845C" />
+        <BrandedSpinner size="large" color="#E8845C" />
       </View>
     );
   }

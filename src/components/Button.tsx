@@ -11,10 +11,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   type ViewStyle,
 } from 'react-native';
 import { colors, borderRadius, shadows, typography } from '@/theme/tokens';
+import { BrandedSpinner } from './BrandedSpinner';
 
 /** Visual style of the button: primary (coral), secondary (blue), or ghost (outlined). */
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -96,7 +96,7 @@ export function Button({
       accessibilityState={{ disabled: isDisabled }}
     >
       {loading ? (
-        <ActivityIndicator
+        <BrandedSpinner
           size="small"
           color={variant === 'ghost' ? colors.espresso : '#FFFFFF'}
           testID={testID ? `${testID}-spinner` : undefined}
