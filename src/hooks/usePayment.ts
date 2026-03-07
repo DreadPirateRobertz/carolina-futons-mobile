@@ -89,13 +89,25 @@ export function usePayment() {
     order: null,
   });
   const [applePaySupported, setApplePaySupported] = useState(false);
+  const [googlePaySupported, setGooglePaySupported] = useState(false);
   const processingRef = useRef(false);
 
   const totals = useMemo(() => calculateTotals(subtotal), [subtotal]);
 
-  // Check Apple Pay support on mount
+  // Check Apple Pay support on mount (iOS)
   useEffect(() => {
-    isPlatformPaySupported().then(setApplePaySupported).catch(() => setApplePaySupported(false));
+    if (Platform.OS === 'ios') {
+      isPlatformPaySupported().then(setApplePaySupported).catch(() => setApplePaySupported(false));
+    }
+  }, [isPlatformPaySupported]);
+
+  // Check Google Pay support on mount (Android)
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      isPlatformPaySupported({ googlePay: { testEnv: __DEV__ } })
+        .then(setGooglePaySupported)
+        .catch(() => setGooglePaySupported(false));
+    }
   }, [isPlatformPaySupported]);
 
   const processPayment = useCallback(
@@ -134,6 +146,30 @@ export function usePayment() {
               'STRIPE_ERROR',
             );
           }
+        } else if (method === 'google-pay') {
+          // 2b. Google Pay flow via confirmPlatformPayPayment
+          const { error: googlePayError } = await confirmPlatformPayPayment(
+            clientSecret,
+            {
+              googlePay: {
+                merchantCountryCode: 'US',
+                currencyCode: 'USD',
+                testEnv: __DEV__,
+              },
+            },
+          );
+
+          if (googlePayError) {
+            if (googlePayError.code === 'Canceled') {
+              processingRef.current = false;
+              setState({ status: 'idle', error: null, order: null });
+              return null;
+            }
+            throw new PaymentError(
+              googlePayError.message ?? 'Google Pay failed',
+              'STRIPE_ERROR',
+            );
+          }
         } else {
           // 2b. Standard Stripe Payment Sheet flow (card, BNPL, Google Pay)
           const { error: initError } = await initPaymentSheet({
@@ -146,7 +182,7 @@ export function usePayment() {
                 ? { merchantCountryCode: 'US' }
                 : undefined,
             googlePay:
-              Platform.OS === 'android' && (method === 'google-pay' || method === 'card')
+              Platform.OS === 'android' && method === 'card'
                 ? { merchantCountryCode: 'US', testEnv: __DEV__ }
                 : undefined,
             defaultBillingDetails: {
@@ -210,6 +246,7 @@ export function usePayment() {
     ...state,
     totals,
     isApplePaySupported: applePaySupported,
+    isGooglePaySupported: googlePaySupported,
     processPayment,
     resetPayment,
   };

@@ -418,6 +418,111 @@ describe('usePayment', () => {
       expect(result.current.payment.error).toBe('Apple Pay authorization failed');
     });
 
+    it('handles Apple Pay support check failure gracefully', async () => {
+      mockIsPlatformPaySupported.mockRejectedValue(new Error('Not available'));
+
+      const { result } = renderHook(() => usePayment(), { wrapper });
+      await act(async () => {});
+
+      expect(result.current.isApplePaySupported).toBe(false);
+    });
+  });
+
+  describe('Google Pay via usePlatformPay', () => {
+    it('uses confirmPlatformPayPayment for google-pay method', async () => {
+      mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+      mockedConfirmOrder.mockResolvedValue({
+        ...ORDER_CONFIRMATION,
+        paymentMethod: 'google-pay' as const,
+      });
+      mockConfirmPlatformPayPayment.mockResolvedValue({
+        error: null,
+        paymentIntent: { id: 'pi_123' },
+      });
+
+      const { result } = renderHook(
+        () => ({ cart: useCart(), payment: usePayment() }),
+        { wrapper },
+      );
+
+      await addCartItem(result);
+
+      let order: any;
+      await act(async () => {
+        order = await result.current.payment.processPayment('google-pay');
+      });
+
+      // Should NOT use initPaymentSheet/presentPaymentSheet
+      expect(mockInitPaymentSheet).not.toHaveBeenCalled();
+      expect(mockPresentPaymentSheet).not.toHaveBeenCalled();
+
+      // Should use confirmPlatformPayPayment with googlePay config
+      expect(mockConfirmPlatformPayPayment).toHaveBeenCalledWith(
+        'pi_123_secret_abc',
+        expect.objectContaining({
+          googlePay: expect.objectContaining({
+            merchantCountryCode: 'US',
+            currencyCode: 'USD',
+          }),
+        }),
+      );
+
+      // Should confirm order
+      expect(mockedConfirmOrder).toHaveBeenCalledWith(
+        mockWixClient,
+        'pi_123',
+        expect.any(Array),
+        expect.any(Object),
+        'google-pay',
+      );
+
+      expect(order).toBeTruthy();
+      expect(order.orderId).toBe('ord_123');
+    });
+
+    it('handles Google Pay cancellation', async () => {
+      mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+      mockConfirmPlatformPayPayment.mockResolvedValue({
+        error: { code: 'Canceled', message: 'User cancelled' },
+      });
+
+      const { result } = renderHook(
+        () => ({ cart: useCart(), payment: usePayment() }),
+        { wrapper },
+      );
+
+      await addCartItem(result);
+
+      let order: any;
+      await act(async () => {
+        order = await result.current.payment.processPayment('google-pay');
+      });
+
+      expect(order).toBeNull();
+      expect(result.current.payment.status).toBe('idle');
+    });
+
+    it('handles Google Pay failure', async () => {
+      mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+      mockConfirmPlatformPayPayment.mockResolvedValue({
+        error: { code: 'Failed', message: 'Google Pay authorization failed' },
+      });
+
+      const { result } = renderHook(
+        () => ({ cart: useCart(), payment: usePayment() }),
+        { wrapper },
+      );
+
+      await addCartItem(result);
+
+      await act(async () => {
+        await result.current.payment.processPayment('google-pay');
+      });
+
+      expect(result.current.payment.status).toBe('error');
+      expect(result.current.payment.error).toBe('Google Pay authorization failed');
+    });
+
     it('still uses payment sheet for card method', async () => {
       mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
       mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);

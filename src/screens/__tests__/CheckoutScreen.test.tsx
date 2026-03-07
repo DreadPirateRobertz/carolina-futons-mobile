@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
@@ -722,6 +723,52 @@ describe('CheckoutScreen', () => {
         expect.any(Object),
         'affirm',
       );
+    });
+  });
+
+  describe('Google Pay button (Android)', () => {
+    const originalPlatform = Platform.OS;
+
+    beforeEach(() => {
+      (Platform as any).OS = 'android';
+    });
+
+    afterEach(() => {
+      (Platform as any).OS = originalPlatform;
+    });
+
+    it('renders Google Pay button on Android when supported', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('google-pay-section')).toBeTruthy();
+      expect(utils.getByTestId('google-pay-button')).toBeTruthy();
+    });
+
+    it('does not render Apple Pay button on Android', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('apple-pay-section')).toBeNull();
+    });
+
+    it('calls processPayment with google-pay when Google Pay button pressed', async () => {
+      const onOrderComplete = jest.fn();
+      const utils = renderCheckout({ onOrderComplete }, seed);
+      fillShippingAddress(utils);
+      await act(async () => {});
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('google-pay-button'));
+      });
+
+      expect(mockCreatePaymentIntent).toHaveBeenCalledTimes(1);
+      expect(mockConfirmPlatformPayPayment).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render Google Pay when not supported', async () => {
+      mockIsPlatformPaySupported.mockResolvedValue(false);
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('google-pay-section')).toBeNull();
     });
   });
 });

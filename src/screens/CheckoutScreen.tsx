@@ -140,7 +140,7 @@ interface Props {
 export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
-  const { status, error, totals, isApplePaySupported, processPayment, resetPayment } = usePayment();
+  const { status, error, totals, isApplePaySupported, isGooglePaySupported, processPayment, resetPayment } = usePayment();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
 
@@ -264,6 +264,28 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
     setSelectedMethod('apple-pay');
     const order = await processPayment('apple-pay');
+
+    if (order) {
+      events.purchase(order.orderId, totals.total, items.length);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      onOrderComplete?.(order);
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+
+  const handleGooglePay = useCallback(async () => {
+    if (isProcessing) return;
+
+    setSubmitAttempted(true);
+    if (!validateForm()) return;
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    setSelectedMethod('google-pay');
+    const order = await processPayment('google-pay');
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
@@ -583,6 +605,31 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                 or pay another way
               </Text>
               <View style={[styles.applePayDividerLine, { backgroundColor: colors.sandDark }]} />
+            </View>
+          </View>
+        )}
+
+        {/* Google Pay Quick Button */}
+        {Platform.OS === 'android' && isGooglePaySupported && (
+          <View
+            style={[styles.googlePaySection, { marginHorizontal: spacing.lg }]}
+            testID="google-pay-section"
+          >
+            <PlatformPayButton
+              type={PlatformPay.ButtonType.Pay}
+              appearance={PlatformPay.ButtonStyle.Black}
+              borderRadius={borderRadius.button}
+              onPress={handleGooglePay}
+              disabled={isProcessing}
+              style={styles.googlePayButton}
+              testID="google-pay-button"
+            />
+            <View style={styles.googlePayDivider}>
+              <View style={[styles.googlePayDividerLine, { backgroundColor: colors.sandDark }]} />
+              <Text style={[styles.googlePayDividerText, { color: colors.espressoLight }]}>
+                or pay another way
+              </Text>
+              <View style={[styles.googlePayDividerLine, { backgroundColor: colors.sandDark }]} />
             </View>
           </View>
         )}
@@ -923,6 +970,28 @@ const styles = StyleSheet.create({
     height: 1,
   },
   applePayDividerText: {
+    fontSize: 13,
+    marginHorizontal: 12,
+  },
+  // Google Pay
+  googlePaySection: {
+    paddingTop: 4,
+  },
+  googlePayButton: {
+    width: '100%',
+    height: 50,
+  },
+  googlePayDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  googlePayDividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  googlePayDividerText: {
     fontSize: 13,
     marginHorizontal: 12,
   },
