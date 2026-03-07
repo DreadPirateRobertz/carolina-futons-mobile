@@ -20,6 +20,8 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
+import type { ProductCategory } from '@/data/products';
+import type { SortOption } from '@/data/products';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -100,14 +102,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         <CategoryFilter
           categories={categories}
           selected={selectedCategory}
-          onSelect={(category: string) => {
+          onSelect={(category: ProductCategory | null) => {
             setSelectedCategory(category);
-            events.filterCategory(category);
+            if (category) events.filterCategory(category);
           }}
         />
 
         {/* Sort + count */}
-        <SortPicker value={sortBy} onChange={(sort: string) => {
+        <SortPicker value={sortBy} onChange={(sort: SortOption) => {
           setSortBy(sort);
           events.sortProducts(sort);
         }} resultCount={products.length} />
