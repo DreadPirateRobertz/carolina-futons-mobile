@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { PremiumProvider } from '@/hooks/usePremium';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 const mockMember = {
@@ -25,6 +26,21 @@ const mockAuthService = {
 
 jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn(() => mockAuthService),
+}));
+
+const mockPremiumValue = {
+  isPremium: false,
+  isLoading: false,
+  offerings: [],
+  error: null,
+  purchase: jest.fn(),
+  restore: jest.fn(),
+  refreshStatus: jest.fn(),
+};
+
+jest.mock('@/hooks/usePremium', () => ({
+  PremiumProvider: ({ children }: any) => children,
+  usePremium: () => mockPremiumValue,
 }));
 
 function renderAccount(
@@ -143,6 +159,24 @@ describe('AccountScreen', () => {
       expect(getByTestId('account-addresses')).toBeTruthy();
       expect(getByTestId('account-payment')).toBeTruthy();
       expect(getByTestId('account-notifications')).toBeTruthy();
+    });
+
+    it('shows CF+ badge when user is premium', async () => {
+      mockPremiumValue.isPremium = true;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('premium-badge')).toBeTruthy();
+      });
+      mockPremiumValue.isPremium = false;
+    });
+
+    it('does not show CF+ badge when user is not premium', async () => {
+      mockPremiumValue.isPremium = false;
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('premium-badge')).toBeNull();
     });
 
     it('calls onOrderHistory when pressed', async () => {

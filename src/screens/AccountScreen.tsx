@@ -16,6 +16,8 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { usePremium } from '@/hooks/usePremium';
+import { PremiumBadge } from '@/components/PremiumBadge';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -39,6 +41,7 @@ interface Props {
 export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, signOut } = useAuth();
+  const { isPremium } = usePremium();
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
 
   const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
@@ -114,15 +117,18 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           >
             <Text style={styles.avatarText}>{user.displayName.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text
-            style={[
-              styles.userName,
-              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-            ]}
-            testID="user-display-name"
-          >
-            {user.displayName}
-          </Text>
+          <View style={styles.nameRow}>
+            <Text
+              style={[
+                styles.userName,
+                { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+              ]}
+              testID="user-display-name"
+            >
+              {user.displayName}
+            </Text>
+            {isPremium && <PremiumBadge />}
+          </View>
           <Text style={[styles.userEmail, { color: darkPalette.textMuted }]} testID="user-email">
             {user.email}
           </Text>
@@ -299,10 +305,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '700',
   },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
   userName: {
     fontSize: 22,
     fontWeight: '700',
-    marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
