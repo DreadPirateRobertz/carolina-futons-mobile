@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { AppState, Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NotificationProvider, useNotifications } from '../useNotifications';
@@ -13,6 +13,7 @@ const mockAddNotificationReceivedListener = jest.fn();
 const mockAddNotificationResponseReceivedListener = jest.fn();
 const mockAddPushTokenListener = jest.fn();
 const mockSetNotificationChannelAsync = jest.fn();
+const mockSetBadgeCountAsync = jest.fn();
 const mockRemoveReceived = jest.fn();
 const mockRemoveResponse = jest.fn();
 const mockRemoveTokenListener = jest.fn();
@@ -23,6 +24,7 @@ jest.mock('expo-notifications', () => ({
   getExpoPushTokenAsync: (...args: any[]) => mockGetExpoPushTokenAsync(...args),
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: (...args: any[]) => mockSetNotificationChannelAsync(...args),
+  setBadgeCountAsync: (...args: any[]) => mockSetBadgeCountAsync(...args),
   addNotificationReceivedListener: (...args: any[]) => {
     mockAddNotificationReceivedListener(...args);
     return { remove: mockRemoveReceived };
@@ -117,6 +119,7 @@ describe('useNotifications', () => {
     mockRequestPermissionsAsync.mockResolvedValue({ status: 'granted' });
     mockGetExpoPushTokenAsync.mockResolvedValue({ data: 'ExponentPushToken[test-token-abc]' });
     mockSetNotificationChannelAsync.mockResolvedValue(undefined);
+    mockSetBadgeCountAsync.mockResolvedValue(undefined);
     mockRegisterPushToken.mockResolvedValue(undefined);
   });
 
@@ -343,6 +346,76 @@ describe('useNotifications', () => {
       fireEvent.press(getByTestId('set-badge-5'));
       fireEvent.press(getByTestId('clear-badge'));
       expect(getByTestId('badge').props.children).toBe(0);
+    });
+  });
+
+  describe('Badge persistence', () => {
+    it('persists badge count to AsyncStorage on increment', async () => {
+      const { getByTestId } = renderNotif();
+      const receivedCallback = mockAddNotificationReceivedListener.mock.calls[0][0];
+
+      await act(async () => {
+        receivedCallback({ request: { content: { data: { type: 'order_update' } } } });
+      });
+
+      await waitFor(() => {
+        expect(getByTestId('badge').props.children).toBe(1);
+      });
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('@notification_badge_count', '1');
+    });
+
+    it('restores badge count from AsyncStorage on mount', async () => {
+      mockAsyncStorage['@notification_badge_count'] = '7';
+
+      const { getByTestId } = renderNotif();
+      await waitFor(() => {
+        expect(getByTestId('badge').props.children).toBe(7);
+      });
+    });
+
+    it('syncs badge count with OS via setBadgeCountAsync', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('set-badge-5'));
+
+      await waitFor(() => {
+        expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(5);
+      });
+    });
+  });
+
+  describe('Clear badge on app foreground', () => {
+    let appStateCallback: (state: string) => void;
+
+    beforeEach(() => {
+      jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+        appStateCallback = handler as (state: string) => void;
+        return { remove: jest.fn() } as any;
+      });
+    });
+
+    it('clears badge when app becomes active', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('set-badge-5'));
+      expect(getByTestId('badge').props.children).toBe(5);
+
+      await act(async () => {
+        appStateCallback('active');
+      });
+
+      expect(getByTestId('badge').props.children).toBe(0);
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith('@notification_badge_count', '0');
+      expect(mockSetBadgeCountAsync).toHaveBeenCalledWith(0);
+    });
+
+    it('does not clear badge on background transition', async () => {
+      const { getByTestId } = renderNotif();
+      fireEvent.press(getByTestId('set-badge-5'));
+
+      await act(async () => {
+        appStateCallback('background');
+      });
+
+      expect(getByTestId('badge').props.children).toBe(5);
     });
   });
 

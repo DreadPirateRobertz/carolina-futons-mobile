@@ -7,7 +7,7 @@
  * taps a notification.
  */
 import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Linking, Platform } from 'react-native';
+import { AppState, Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
@@ -23,6 +23,7 @@ import {
 import { captureException } from '@/services/crashReporting';
 
 const PREFS_STORAGE_KEY = '@notification_preferences';
+const BADGE_STORAGE_KEY = '@notification_badge_count';
 
 // Show notifications when app is in foreground
 Notifications.setNotificationHandler({
@@ -158,6 +159,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         }
       } catch {}
 
+      // Restore persisted badge count
+      try {
+        const savedBadge = await AsyncStorage.getItem(BADGE_STORAGE_KEY);
+        if (savedBadge) {
+          const count = parseInt(savedBadge, 10);
+          if (!isNaN(count) && count > 0) {
+            dispatch({ type: 'SET_BADGE', count });
+          }
+        }
+      } catch {}
+
       // Sync permission status with OS
       const { status } = await Notifications.getPermissionsAsync();
       if (status === 'granted') {
@@ -242,6 +254,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       tokenSub.remove();
     };
   }, [state.pushToken]);
+
+  // Persist badge count and sync with OS whenever it changes
+  const badgeRef = useRef(state.badgeCount);
+  useEffect(() => {
+    if (badgeRef.current === state.badgeCount) return;
+    badgeRef.current = state.badgeCount;
+    AsyncStorage.setItem(BADGE_STORAGE_KEY, String(state.badgeCount)).catch(() => {});
+    Notifications.setBadgeCountAsync(state.badgeCount).catch(() => {});
+  }, [state.badgeCount]);
+
+  // Clear badge when app returns to foreground
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        dispatch({ type: 'CLEAR_BADGE' });
+        AsyncStorage.setItem(BADGE_STORAGE_KEY, '0').catch(() => {});
+        Notifications.setBadgeCountAsync(0).catch(() => {});
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
     dispatch({ type: 'TOGGLE_PREF', key });
