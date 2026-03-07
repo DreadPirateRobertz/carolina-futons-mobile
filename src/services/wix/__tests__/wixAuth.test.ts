@@ -57,6 +57,17 @@ jest.mock('expo-web-browser', () => ({
   openAuthSessionAsync: jest.fn(),
 }));
 
+const mockAppleCredential = {
+  identityToken: 'apple-id-token-123',
+  authorizationCode: 'apple-auth-code-456',
+  email: 'apple@test.com',
+  fullName: 'Apple User',
+};
+
+jest.mock('../../appleAuth', () => ({
+  signInWithApple: jest.fn(),
+}));
+
 describe('WixAuthService', () => {
   let service: WixAuthService;
 
@@ -300,6 +311,81 @@ describe('WixAuthService', () => {
       const result = await service.loginWithOAuth();
 
       expect(result).toEqual({ success: false, error: 'Network error' });
+    });
+  });
+
+  // --- loginWithApple ---
+
+  describe('loginWithApple', () => {
+    const oauthData = {
+      state: 'state-123',
+      codeVerifier: 'verifier',
+      codeChallenge: 'challenge',
+      redirectUri: 'carolinafutons://oauth/wix/callback',
+      originalUrl: '',
+    };
+
+    it('uses native Apple sign-in then completes OAuth flow', async () => {
+      const { signInWithApple } = require('../../appleAuth');
+      const { openAuthSessionAsync } = require('expo-web-browser');
+
+      signInWithApple.mockResolvedValue(mockAppleCredential);
+      mockAuth.generateOAuthData.mockReturnValue(oauthData);
+      mockAuth.getAuthUrl.mockResolvedValue({ authUrl: 'https://wix.com/auth?flow=1' });
+      openAuthSessionAsync.mockResolvedValue({
+        type: 'success',
+        url: 'carolinafutons://oauth/wix/callback?code=auth-code-123&state=state-123',
+      });
+      mockAuth.getMemberTokens.mockResolvedValue(mockTokens);
+
+      const result = await service.loginWithApple();
+
+      expect(signInWithApple).toHaveBeenCalled();
+      expect(openAuthSessionAsync).toHaveBeenCalledWith(
+        expect.stringContaining('id_token_hint=apple-id-token-123'),
+        'carolinafutons://oauth/wix/callback',
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('returns cancelled when user cancels Apple sign-in', async () => {
+      const { signInWithApple } = require('../../appleAuth');
+      signInWithApple.mockRejectedValue(new Error('The operation was canceled'));
+
+      const result = await service.loginWithApple();
+
+      expect(result).toEqual({ success: false, error: 'Apple sign-in cancelled' });
+    });
+
+    it('returns cancelled when user dismisses browser', async () => {
+      const { signInWithApple } = require('../../appleAuth');
+      const { openAuthSessionAsync } = require('expo-web-browser');
+
+      signInWithApple.mockResolvedValue(mockAppleCredential);
+      mockAuth.generateOAuthData.mockReturnValue(oauthData);
+      mockAuth.getAuthUrl.mockResolvedValue({ authUrl: 'https://wix.com/auth' });
+      openAuthSessionAsync.mockResolvedValue({ type: 'cancel' });
+
+      const result = await service.loginWithApple();
+
+      expect(result).toEqual({ success: false, error: 'Apple sign-in cancelled' });
+    });
+
+    it('returns error when OAuth callback has error params', async () => {
+      const { signInWithApple } = require('../../appleAuth');
+      const { openAuthSessionAsync } = require('expo-web-browser');
+
+      signInWithApple.mockResolvedValue(mockAppleCredential);
+      mockAuth.generateOAuthData.mockReturnValue(oauthData);
+      mockAuth.getAuthUrl.mockResolvedValue({ authUrl: 'https://wix.com/auth' });
+      openAuthSessionAsync.mockResolvedValue({
+        type: 'success',
+        url: 'carolinafutons://oauth/wix/callback?error=access_denied&error_description=User+denied',
+      });
+
+      const result = await service.loginWithApple();
+
+      expect(result).toEqual({ success: false, error: 'User denied' });
     });
   });
 

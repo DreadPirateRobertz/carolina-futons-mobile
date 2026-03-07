@@ -10,6 +10,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { getWixSdkClient } from './wixSdkClient';
 import { saveTokens, loadTokens, clearTokens } from './tokenStorage';
 import { captureException } from '../crashReporting';
+import { signInWithApple as nativeAppleSignIn } from '../appleAuth';
 
 /** Returns true if the error is likely a transient network issue (not an auth rejection). */
 function isNetworkError(err: unknown): boolean {
@@ -152,6 +153,47 @@ export class WixAuthService {
       return { success: true };
     } catch (err) {
       return { success: false, error: (err as Error).message };
+    }
+  }
+
+  async loginWithApple(): Promise<AuthResult> {
+    try {
+      const credential = await nativeAppleSignIn();
+
+      const redirectUri = Linking.createURL(OAUTH_CALLBACK_PATH);
+      const oauthData = this.auth.generateOAuthData(redirectUri);
+      const { authUrl } = await this.auth.getAuthUrl(oauthData);
+
+      // Append the Apple identity token so Wix can skip the provider login page.
+      const url = new URL(authUrl);
+      url.searchParams.set('prompt', 'none');
+      url.searchParams.set('id_token_hint', credential.identityToken);
+
+      const result = await WebBrowser.openAuthSessionAsync(url.toString(), redirectUri);
+
+      if (result.type !== 'success') {
+        return { success: false, error: 'Apple sign-in cancelled' };
+      }
+
+      const callbackUrl = new URL(result.url);
+      const error = callbackUrl.searchParams.get('error');
+      if (error) {
+        const desc = callbackUrl.searchParams.get('error_description') ?? 'Apple sign-in failed';
+        return { success: false, error: desc };
+      }
+
+      const code = callbackUrl.searchParams.get('code') ?? '';
+      const state = callbackUrl.searchParams.get('state') ?? '';
+      const tokens = await this.auth.getMemberTokens(code, state, oauthData);
+      this.auth.setTokens(tokens);
+      await saveTokens(tokens);
+      return { success: true };
+    } catch (err) {
+      const msg = (err as Error).message;
+      if (/cancel/i.test(msg)) {
+        return { success: false, error: 'Apple sign-in cancelled' };
+      }
+      return { success: false, error: msg };
     }
   }
 

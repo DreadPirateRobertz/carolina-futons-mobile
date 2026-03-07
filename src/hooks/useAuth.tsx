@@ -227,7 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithApple = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
-    const result = await authService.loginWithOAuth();
+    const result = await authService.loginWithApple();
     if (!result.success) {
       dispatch({ type: 'AUTH_ERROR', error: result.error });
       return;

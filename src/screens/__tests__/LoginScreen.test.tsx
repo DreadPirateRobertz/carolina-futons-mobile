@@ -11,6 +11,7 @@ const mockAuthService = {
   loginWithEmail: jest.fn(),
   register: jest.fn(),
   loginWithOAuth: jest.fn(),
+  loginWithApple: jest.fn(),
   sendPasswordReset: jest.fn(),
   logout: jest.fn().mockResolvedValue(undefined),
   isLoggedIn: jest.fn().mockReturnValue(false),

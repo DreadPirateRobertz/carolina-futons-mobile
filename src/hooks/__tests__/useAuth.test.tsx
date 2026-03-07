@@ -11,6 +11,7 @@ const mockAuthService = {
   loginWithEmail: jest.fn(),
   register: jest.fn(),
   loginWithOAuth: jest.fn(),
+  loginWithApple: jest.fn(),
   sendPasswordReset: jest.fn(),
   logout: jest.fn().mockResolvedValue(undefined),
   isLoggedIn: jest.fn().mockReturnValue(false),
@@ -188,9 +189,9 @@ describe('useAuth', () => {
       expect(getByTestId('user-provider').props.children).toBe('wix');
     });
 
-    it('signs in with Apple (OAuth)', async () => {
+    it('signs in with Apple (native)', async () => {
       const appleMember = { ...mockMember, displayName: 'Apple User' };
-      mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
+      mockAuthService.loginWithApple.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(appleMember);
 
       const { getByTestId } = await renderAuth();
@@ -198,6 +199,21 @@ describe('useAuth', () => {
       fireEvent.press(getByTestId('apple'));
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+      expect(mockAuthService.loginWithApple).toHaveBeenCalled();
+    });
+
+    it('shows error when Apple sign-in fails', async () => {
+      mockAuthService.loginWithApple.mockResolvedValue({
+        success: false,
+        error: 'Apple sign-in cancelled',
+      });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('apple'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Apple sign-in cancelled');
       });
     });
 

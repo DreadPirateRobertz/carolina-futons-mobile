@@ -17,6 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.carolinafutons.mobile",
+      "usesAppleSignIn": true,
       "associatedDomains": [
         "applinks:carolinafutons.com",
         "applinks:www.carolinafutons.com"
@@ -118,6 +119,7 @@
     },
     "scheme": "carolinafutons",
     "plugins": [
+      "expo-apple-authentication",
       "expo-asset",
       "expo-secure-store",
       "expo-font",
