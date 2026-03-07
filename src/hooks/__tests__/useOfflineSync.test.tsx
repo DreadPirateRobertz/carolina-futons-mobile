@@ -27,7 +27,7 @@ function SyncHarness({ onSync }: { onSync?: SyncHandler }) {
         testID="queue-wishlist-action"
         onPress={() => queueAction('wishlist', 'ADD', { productId: 'p-1' })}
       />
-      <TouchableOpacity testID="sync-now" onPress={() => syncNow()} />
+      <TouchableOpacity testID="sync-now" onPress={() => syncNow().catch(() => {})} />
       <TouchableOpacity testID="go-offline" onPress={() => setOnline(false)} />
       <TouchableOpacity testID="go-online" onPress={() => setOnline(true)} />
     </View>
@@ -121,6 +121,41 @@ describe('useOfflineSync', () => {
     });
     // Stay offline — no sync
     expect(onSync).not.toHaveBeenCalled();
+  });
+
+  it('resets isSyncing to false when onSync throws during syncNow', async () => {
+    const onSync = jest.fn().mockRejectedValue(new Error('sync boom'));
+    const { getByTestId } = renderSync(true, onSync);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('queue-cart-action'));
+    });
+
+    await act(async () => {
+      fireEvent.press(getByTestId('sync-now'));
+    });
+
+    expect(onSync).toHaveBeenCalledTimes(1);
+    expect(getByTestId('syncing').props.children).toBe('false');
+  });
+
+  it('resets isSyncing to false when onSync throws during auto-reconnect', async () => {
+    const onSync = jest.fn().mockRejectedValue(new Error('sync boom'));
+    const { getByTestId } = renderSync(false, onSync);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('queue-cart-action'));
+    });
+
+    // Go online → triggers auto-sync → onSync throws
+    await act(async () => {
+      fireEvent.press(getByTestId('go-online'));
+    });
+
+    await waitFor(() => {
+      expect(onSync).toHaveBeenCalledTimes(1);
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
   });
 
   it('does not call onSync when queue is empty on reconnect', async () => {
