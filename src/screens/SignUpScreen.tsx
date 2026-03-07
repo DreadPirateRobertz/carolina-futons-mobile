@@ -16,11 +16,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { useAuth, validateEmail, validatePassword, validateName } from '@/hooks/useAuth';
 
 interface Props {
@@ -238,7 +238,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
             accessibilityState={{ disabled: loading }}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" testID="signup-loading" />
+              <BrandedSpinner color="#FFFFFF" testID="signup-loading" />
             ) : (
               <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
                 Create Account

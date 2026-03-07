@@ -16,11 +16,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 
@@ -240,7 +240,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
             accessibilityState={{ disabled: loading }}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" testID="login-loading" />
+              <BrandedSpinner color="#FFFFFF" testID="login-loading" />
             ) : (
               <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
                 Sign In
@@ -272,7 +272,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
               accessibilityRole="button"
             >
               {authenticating ? (
-                <ActivityIndicator color="#FFFFFF" testID="biometric-loading" />
+                <BrandedSpinner color="#FFFFFF" testID="biometric-loading" />
               ) : (
                 <Text style={styles.socialButtonText}>
                   Sign in with {biometricLabel}

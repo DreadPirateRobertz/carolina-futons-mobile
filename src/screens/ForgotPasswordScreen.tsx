@@ -17,11 +17,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { useAuth, validateEmail } from '@/hooks/useAuth';
 
 /** Props for the ForgotPasswordScreen component. */
@@ -230,7 +230,7 @@ export function ForgotPasswordScreen({ onBack, testID }: Props) {
             accessibilityState={{ disabled: loading }}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" testID="forgot-loading" />
+              <BrandedSpinner color="#FFFFFF" testID="forgot-loading" />
             ) : (
               <Text style={[styles.primaryButtonText, { fontFamily: typography.bodyFamilyBold }]}>
                 Send Reset Link

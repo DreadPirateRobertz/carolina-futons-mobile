@@ -8,7 +8,8 @@
  * for smooth scrolling on lower-end devices.
  */
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -200,7 +201,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     () =>
       isLoading ? (
         <View style={styles.footer} testID="shop-loading-more">
-          <ActivityIndicator color={colors.mountainBlue} />
+          <BrandedSpinner color={colors.mountainBlue} />
         </View>
       ) : null,
     [isLoading, colors],

@@ -1,12 +1,13 @@
 /**
  * @module LoadingSpinner
  *
- * Centered loading indicator for async states. Wraps React Native's
- * ActivityIndicator in a padded container with a progressbar accessibility role.
+ * Centered loading indicator for async states. Wraps the BrandedSpinner
+ * (pulsing dots) in a padded container with a progressbar accessibility role.
  */
 
 import React from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { BrandedSpinner } from './BrandedSpinner';
 import { colors } from '@/theme/tokens';
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 }
 
 /**
- * Renders a centered ActivityIndicator spinner.
+ * Renders a centered branded spinner.
  *
  * @param props.size - Spinner size: 'small' or 'large'
  * @param props.color - Spinner color (defaults to mountainBlue brand color)
@@ -26,7 +27,7 @@ interface Props {
 export function LoadingSpinner({ size = 'small', color = colors.mountainBlue, testID }: Props) {
   return (
     <View style={styles.container} testID={testID} accessibilityRole="progressbar">
-      <ActivityIndicator size={size} color={color} />
+      <BrandedSpinner size={size} color={color} />
     </View>
   );
 }

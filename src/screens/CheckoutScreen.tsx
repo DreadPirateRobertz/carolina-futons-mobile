@@ -18,9 +18,9 @@ import {
   TouchableOpacity,
   Switch,
   Platform,
-  ActivityIndicator,
   KeyboardAvoidingView,
 } from 'react-native';
+import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { CardField, type CardFieldInput, PlatformPayButton, PlatformPay } from '@stripe/stripe-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
@@ -804,7 +804,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           >
             {isProcessing ? (
               <View style={styles.processingRow}>
-                <ActivityIndicator size="small" color="#FFFFFF" />
+                <BrandedSpinner size="small" color="#FFFFFF" />
                 <Text style={[styles.placeOrderText, { marginLeft: 10 }]}>Processing...</Text>
               </View>
             ) : (
