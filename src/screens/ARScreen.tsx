@@ -39,6 +39,7 @@ import { useCart } from '@/hooks/useCart';
 import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
 import { useARMeasurement } from '@/hooks/useARMeasurement';
 import { ARMeasurementOverlay } from '@/components/ARMeasurementOverlay';
+import { ARComparisonOverlay } from '@/components/ARComparisonOverlay';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -102,6 +103,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [isPlaced, setIsPlaced] = useState(false);
   const [hasPlacement, setHasPlacement] = useState(false);
   const [lightingWarningDismissed, setLightingWarningDismissed] = useState(false);
+  const [compareModel, setCompareModel] = useState<FutonModel | null>(null);
+  const [showComparePicker, setShowComparePicker] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
@@ -320,6 +323,23 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProduct, wishlist, isInWishlist, selectedModel?.id, selectedFabric?.id]);
 
+  const handleToggleCompare = useCallback(() => {
+    if (compareModel || showComparePicker) {
+      setCompareModel(null);
+      setShowComparePicker(false);
+    } else {
+      setShowComparePicker(true);
+    }
+  }, [compareModel, showComparePicker]);
+
+  const handleSelectCompareModel = useCallback(
+    (model: FutonModel) => {
+      setCompareModel(model);
+      setShowComparePicker(false);
+    },
+    [],
+  );
+
   /** Open the product picker overlay */
   const handleOpenProductPicker = useCallback(() => {
     setShowProductPicker(true);
@@ -485,6 +505,22 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             testID="ar-measurement-overlay"
           />
 
+          {/* AR comparison overlay */}
+          {compareModel && selectedModel && (
+            <ARComparisonOverlay
+              modelA={{
+                id: selectedModel.id,
+                name: selectedModel.name,
+                dimensions: selectedModel.dimensions,
+              }}
+              modelB={{
+                id: compareModel.id,
+                name: compareModel.name,
+                dimensions: compareModel.dimensions,
+              }}
+            />
+          )}
+
           {/* Futon overlay — shown after placement */}
           <View style={styles.overlayContainer}>
             <ARFutonOverlay
@@ -539,6 +575,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}
         isCapturing={isCapturing}
+        isComparing={compareModel !== null || showComparePicker}
+        onToggleCompare={handleToggleCompare}
         isMeasuring={measurement.state !== 'idle'}
         onToggleMeasure={() => {
           if (measurement.state === 'idle') {
@@ -550,6 +588,30 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         onResetMeasure={measurement.reset}
         testID="ar-controls"
       />
+
+      {/* Compare model picker */}
+      {showComparePicker && (
+        <View style={styles.comparePickerOverlay} testID="ar-compare-picker">
+          <Text style={styles.comparePickerTitle}>Compare with...</Text>
+          <View style={styles.comparePickerList}>
+            {futonModels
+              .filter((m) => m.id !== selectedModel?.id)
+              .map((model) => (
+                <TouchableOpacity
+                  key={model.id}
+                  style={styles.comparePickerItem}
+                  onPress={() => handleSelectCompareModel(model)}
+                  testID={`ar-compare-model-${model.id}`}
+                >
+                  <Text style={styles.comparePickerItemName}>{model.name}</Text>
+                  <Text style={styles.comparePickerItemDims}>
+                    {model.dimensions.width}" W × {model.dimensions.depth}" D × {model.dimensions.height}" H
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </View>
+        </View>
+      )}
 
       {/* Product picker overlay */}
       {showProductPicker && (
@@ -695,6 +757,40 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 100,
     elevation: 8,
+  },
+  comparePickerOverlay: {
+    position: 'absolute',
+    top: 100,
+    left: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderRadius: 16,
+    padding: 16,
+    zIndex: 25,
+  },
+  comparePickerTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  comparePickerList: {
+    gap: 8,
+  },
+  comparePickerItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    padding: 14,
+  },
+  comparePickerItemName: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  comparePickerItemDims: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: 12,
+    marginTop: 4,
   },
   watermarkContainer: {
     position: 'absolute',

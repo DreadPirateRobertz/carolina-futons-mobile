@@ -717,4 +717,49 @@ describe('ARScreen', () => {
       expect(getByTestId('ar-screen')).toBeTruthy();
     });
   });
+
+  // =========================================================================
+  // AR Comparison Mode
+  // =========================================================================
+  describe('AR Comparison Mode', () => {
+    it('renders compare button', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-compare-toggle')).toBeTruthy();
+    });
+
+    it('comparison overlay is hidden by default', () => {
+      const { queryByTestId } = renderARScreen();
+      expect(queryByTestId('comparison-overlay')).toBeNull();
+    });
+
+    it('shows comparison overlay after selecting compare model', () => {
+      const { getByTestId } = renderARScreen();
+      // Enter compare mode
+      fireEvent.press(getByTestId('ar-compare-toggle'));
+      // Pick a second model to compare
+      fireEvent.press(getByTestId('ar-compare-model-blue-ridge-queen'));
+      // Comparison overlay should appear
+      expect(getByTestId('comparison-overlay')).toBeTruthy();
+    });
+
+    it('comparison overlay shows both model names', () => {
+      const { getByTestId, getAllByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-compare-toggle'));
+      fireEvent.press(getByTestId('ar-compare-model-blue-ridge-queen'));
+      // Default model is Asheville, compare with Blue Ridge
+      // Names appear in both model chips and comparison overlay
+      expect(getAllByText('The Asheville').length).toBeGreaterThanOrEqual(2);
+      expect(getAllByText('The Blue Ridge').length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('dismisses comparison when toggle pressed again', () => {
+      const { getByTestId, queryByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-compare-toggle'));
+      fireEvent.press(getByTestId('ar-compare-model-blue-ridge-queen'));
+      expect(getByTestId('comparison-overlay')).toBeTruthy();
+      // Press compare toggle again to dismiss
+      fireEvent.press(getByTestId('ar-compare-toggle'));
+      expect(queryByTestId('comparison-overlay')).toBeNull();
+    });
+  });
 });

@@ -39,6 +39,8 @@ interface Props {
   isMeasuring?: boolean;
   onToggleMeasure?: () => void;
   onResetMeasure?: () => void;
+  isComparing?: boolean;
+  onToggleCompare?: () => void;
   testID?: string;
 }
 
@@ -66,6 +68,8 @@ export function ARControls({
   isMeasuring,
   onToggleMeasure,
   onResetMeasure,
+  isComparing,
+  onToggleCompare,
   testID,
 }: Props) {
   const totalPrice = selectedModel.basePrice + selectedFabric.price;
@@ -173,6 +177,20 @@ export function ARControls({
             <Text style={[styles.shareButtonIcon, isMeasuring && styles.measureIconActive]}>📏</Text>
             <Text style={[styles.shareButtonText, isMeasuring && styles.measureTextActive]}>
               {isMeasuring ? 'Exit' : 'Measure'}
+            </Text>
+          </TouchableOpacity>
+        )}
+        {onToggleCompare && (
+          <TouchableOpacity
+            style={[styles.shareButton, isComparing && styles.compareButtonActive]}
+            onPress={onToggleCompare}
+            testID="ar-compare-toggle"
+            accessibilityLabel={isComparing ? 'Exit comparison mode' : 'Compare models'}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.shareButtonIcon, isComparing && styles.compareIconActive]}>⇔</Text>
+            <Text style={[styles.shareButtonText, isComparing && styles.compareTextActive]}>
+              {isComparing ? 'Exit' : 'Compare'}
             </Text>
           </TouchableOpacity>
         )}
@@ -459,6 +477,16 @@ const styles = StyleSheet.create({
     color: '#5B8FA8',
   },
   measureTextActive: {
+    color: '#5B8FA8',
+  },
+  compareButtonActive: {
+    backgroundColor: 'rgba(91, 143, 168, 0.3)',
+    borderColor: '#5B8FA8',
+  },
+  compareIconActive: {
+    color: '#5B8FA8',
+  },
+  compareTextActive: {
     color: '#5B8FA8',
   },
   wishlistButtonActive: {
