@@ -816,4 +816,123 @@ describe('ARScreen', () => {
       expect(queryByTestId('comparison-overlay')).toBeNull();
     });
   });
+
+  // =========================================================================
+  // Screenshot Capture, Save to Gallery, and Share
+  // =========================================================================
+  describe('Screenshot Capture and Share', () => {
+    const { captureRef } = require('react-native-view-shot');
+    const MediaLibrary = require('expo-media-library');
+    const Sharing = require('expo-sharing');
+
+    it('captures AR view and shares via expo-sharing on share press', async () => {
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-share'));
+      });
+      expect(captureRef).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: 'png', quality: 1 }),
+      );
+      expect(Sharing.isAvailableAsync).toHaveBeenCalled();
+      expect(Sharing.shareAsync).toHaveBeenCalledWith(
+        '/tmp/screenshot.png',
+        expect.objectContaining({ mimeType: 'image/png' }),
+      );
+    });
+
+    it('falls back to Share.share when expo-sharing unavailable', async () => {
+      Sharing.isAvailableAsync.mockResolvedValueOnce(false);
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-share'));
+      });
+      expect(captureRef).toHaveBeenCalled();
+      // Falls back to RN Share.share — Sharing.shareAsync should NOT be called
+      expect(Sharing.shareAsync).not.toHaveBeenCalled();
+    });
+
+    it('captures AR view and saves to gallery on save press', async () => {
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-save-gallery'));
+      });
+      expect(captureRef).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ format: 'png', quality: 1 }),
+      );
+      expect(MediaLibrary.requestPermissionsAsync).toHaveBeenCalled();
+      expect(MediaLibrary.saveToLibraryAsync).toHaveBeenCalledWith('/tmp/screenshot.png');
+    });
+
+    it('shows alert when media library permission denied on save', async () => {
+      MediaLibrary.requestPermissionsAsync.mockResolvedValueOnce({ status: 'denied' });
+      const alertSpy = jest.spyOn(require('react-native').Alert, 'alert');
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-save-gallery'));
+      });
+      expect(MediaLibrary.saveToLibraryAsync).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith('Permission Required', expect.any(String));
+      alertSpy.mockRestore();
+    });
+
+    it('shows error alert when capture fails', async () => {
+      captureRef.mockRejectedValueOnce(new Error('Capture error'));
+      const alertSpy = jest.spyOn(require('react-native').Alert, 'alert');
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-save-gallery'));
+      });
+      expect(alertSpy).toHaveBeenCalledWith('Capture Failed', expect.any(String));
+      expect(MediaLibrary.saveToLibraryAsync).not.toHaveBeenCalled();
+      alertSpy.mockRestore();
+    });
+
+    it('shows success alert after saving to gallery', async () => {
+      const alertSpy = jest.spyOn(require('react-native').Alert, 'alert');
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-save-gallery'));
+      });
+      expect(alertSpy).toHaveBeenCalledWith('Saved', expect.any(String));
+      alertSpy.mockRestore();
+    });
+
+    it('fires haptic feedback on successful capture', async () => {
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-save-gallery'));
+      });
+      expect(Haptics.notificationAsync).toHaveBeenCalledWith(
+        Haptics.NotificationFeedbackType.Success,
+      );
+    });
+
+    it('watermark is inside ViewShot capture area', () => {
+      const { getByTestId } = renderARScreen();
+      const watermark = getByTestId('ar-watermark');
+      // Traverse up to find ViewShot — watermark must be a descendant
+      let node = watermark;
+      let foundViewShot = false;
+      while (node.parent) {
+        node = node.parent;
+        // ViewShot mock renders as a View; check we pass through the camera testID
+        if (node.props?.testID === 'ar-camera') {
+          foundViewShot = true;
+          break;
+        }
+      }
+      expect(foundViewShot).toBe(true);
+    });
+
+    it('does not call share when capture returns null', async () => {
+      captureRef.mockRejectedValueOnce(new Error('fail'));
+      const { getByTestId } = renderARScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('ar-share'));
+      });
+      expect(Sharing.shareAsync).not.toHaveBeenCalled();
+    });
+  });
 });
