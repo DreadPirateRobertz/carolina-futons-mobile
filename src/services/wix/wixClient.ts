@@ -758,6 +758,18 @@ export class WixClient {
     };
   }
 
+  // ── Members ──────────────────────────────────────────────
+
+  async deleteMember(memberId: string): Promise<void> {
+    await this.post('/members/v1/members/' + encodeURIComponent(memberId) + '/delete', {});
+  }
+
+  async getMemberProfile(memberId: string): Promise<Record<string, unknown>> {
+    return this.get<Record<string, unknown>>(
+      '/members/v1/members/' + encodeURIComponent(memberId),
+    );
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {

@@ -46,6 +46,26 @@ jest.mock('@/hooks/usePremium', () => ({
   usePremium: () => mockPremiumValue,
 }));
 
+const mockDeletion = {
+  status: 'idle' as const,
+  error: null,
+  requestDeletion: jest.fn(),
+  confirmDeletion: jest.fn(),
+  cancel: jest.fn(),
+};
+jest.mock('@/hooks/useAccountDeletion', () => ({
+  useAccountDeletion: () => mockDeletion,
+}));
+
+const mockDataExport = {
+  status: 'idle' as const,
+  error: null,
+  exportData: jest.fn(),
+};
+jest.mock('@/hooks/useDataExport', () => ({
+  useDataExport: () => mockDataExport,
+}));
+
 function renderAccount(
   props: Partial<React.ComponentProps<typeof AccountScreen>> = {},
   authenticated = false,
@@ -280,6 +300,31 @@ describe('AccountScreen', () => {
           'member-1',
           { firstName: 'Jane', lastName: 'Doe', phone: '555-0000' },
         );
+      });
+    });
+
+    it('shows privacy section with Export and Delete options', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('privacy-section-title')).toBeTruthy();
+      });
+      expect(getByTestId('account-export-data')).toBeTruthy();
+      expect(getByTestId('account-delete-account')).toBeTruthy();
+    });
+
+    it('calls exportData when Export My Data pressed', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-export-data')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-export-data'));
+      expect(mockDataExport.exportData).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show privacy section for guests', async () => {
+      const { queryByTestId } = renderAccount();
+      await waitFor(() => {
+        expect(queryByTestId('privacy-section-title')).toBeNull();
       });
     });
   });

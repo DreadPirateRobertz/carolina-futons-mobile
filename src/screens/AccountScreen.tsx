@@ -27,6 +27,8 @@ import { GlassCard } from '@/components/GlassCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePremium } from '@/hooks/usePremium';
+import { useAccountDeletion } from '@/hooks/useAccountDeletion';
+import { useDataExport } from '@/hooks/useDataExport';
 import { PremiumBadge } from '@/components/PremiumBadge';
 
 /** Props for the AccountScreen component. */
@@ -52,6 +54,8 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, loading, error, signOut, updateProfile, clearError } = useAuth();
   const { isPremium, restore } = usePremium();
+  const deletion = useAccountDeletion();
+  const dataExport = useDataExport();
   const [restoring, setRestoring] = useState(false);
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
 
@@ -362,6 +366,48 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           )}
         </View>
 
+        {/* Privacy section */}
+        <View style={{ paddingHorizontal: spacing.lg, marginTop: 24 }}>
+          <Text
+            style={[styles.sectionTitle, { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold }]}
+            testID="privacy-section-title"
+          >
+            Privacy
+          </Text>
+          <View style={{ gap: 8 }}>
+            <MenuItem
+              label="Export My Data"
+              onPress={dataExport.exportData}
+              colors={colors}
+              borderRadius={borderRadius}
+              shadows={shadows}
+              testID="account-export-data"
+            />
+            <MenuItem
+              label="Delete Account"
+              onPress={() => {
+                deletion.requestDeletion();
+                Alert.alert(
+                  'Delete Account',
+                  'This will permanently delete your account and all associated data. This action cannot be undone.',
+                  [
+                    { text: 'Cancel', style: 'cancel', onPress: deletion.cancel },
+                    {
+                      text: 'Delete',
+                      style: 'destructive',
+                      onPress: deletion.confirmDeletion,
+                    },
+                  ],
+                );
+              }}
+              colors={colors}
+              borderRadius={borderRadius}
+              shadows={shadows}
+              testID="account-delete-account"
+            />
+          </View>
+        </View>
+
         {/* Sign out */}
         <View style={{ paddingHorizontal: spacing.lg, marginTop: 32 }}>
           <TouchableOpacity
@@ -564,6 +610,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
   },
   // Menu
   menuItem: {
