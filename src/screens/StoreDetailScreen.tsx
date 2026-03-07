@@ -57,7 +57,7 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
 
   const handleCall = useCallback(() => {
     if (!store) return;
-    Linking.openURL(`tel:${store.phone}`);
+    Linking.openURL(`tel:${store.phone}`).catch(() => {});
   }, [store]);
 
   const handleDirections = useCallback(() => {
@@ -66,12 +66,12 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
       `${store.address}, ${store.city}, ${store.state} ${store.zip}`,
     );
     const url = Platform.OS === 'ios' ? `maps:?daddr=${address}` : `geo:0,0?q=${address}`;
-    Linking.openURL(url);
+    Linking.openURL(url).catch(() => {});
   }, [store]);
 
   const handleEmail = useCallback(() => {
     if (!store) return;
-    Linking.openURL(`mailto:${store.email}`);
+    Linking.openURL(`mailto:${store.email}`).catch(() => {});
   }, [store]);
 
   const handleBookAppointment = useCallback(() => {

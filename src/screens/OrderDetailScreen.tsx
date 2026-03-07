@@ -74,7 +74,7 @@ export function OrderDetailScreen({
 
   const handleTrackingPress = useCallback(() => {
     if (order?.tracking?.url) {
-      Linking.openURL(order.tracking.url);
+      Linking.openURL(order.tracking.url).catch(() => {});
     }
   }, [order]);
 

@@ -207,7 +207,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (!data?.type) return;
 
       const deepLink = getDeepLinkForNotification(data.type as NotificationType, data);
-      Linking.openURL(deepLink);
+      Linking.openURL(deepLink).catch(() => {});
     });
 
     return () => {
