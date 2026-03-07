@@ -27,11 +27,9 @@ function isNetworkError(err: unknown): boolean {
 const OAUTH_CALLBACK_PATH = 'oauth/wix/callback';
 const RESET_REDIRECT = 'carolinafutons://reset-password';
 
-export interface AuthResult {
-  success: boolean;
-  error?: string;
-  requiresVerification?: boolean;
-}
+export type AuthResult =
+  | { success: true }
+  | { success: false; error: string; requiresVerification?: boolean };
 
 export interface AuthUser {
   id: string;

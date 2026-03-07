@@ -173,14 +173,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string) => {
       dispatch({ type: 'AUTH_START' });
       const result = await authService.loginWithEmail(email, password);
-      if (result.success) {
-        const member = await authService.getCurrentMember();
-        if (member) {
-          dispatch({ type: 'AUTH_SUCCESS', user: member });
-          return;
-        }
+      if (!result.success) {
+        dispatch({ type: 'AUTH_ERROR', error: result.error });
+        return;
       }
-      dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Login failed' });
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+      } else {
+        dispatch({ type: 'AUTH_ERROR', error: 'Login failed' });
+      }
     },
     [authService],
   );
@@ -189,14 +191,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string, displayName: string) => {
       dispatch({ type: 'AUTH_START' });
       const result = await authService.register(email, password, displayName);
-      if (result.success) {
-        const member = await authService.getCurrentMember();
-        if (member) {
-          dispatch({ type: 'AUTH_SUCCESS', user: member });
-          return;
-        }
+      if (!result.success) {
+        dispatch({ type: 'AUTH_ERROR', error: result.error });
+        return;
       }
-      dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Registration failed' });
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+      } else {
+        dispatch({ type: 'AUTH_ERROR', error: 'Registration failed' });
+      }
     },
     [authService],
   );
@@ -204,27 +208,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
     const result = await authService.loginWithOAuth();
-    if (result.success) {
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-        return;
-      }
+    if (!result.success) {
+      dispatch({ type: 'AUTH_ERROR', error: result.error });
+      return;
     }
-    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Google login failed' });
+    const member = await authService.getCurrentMember();
+    if (member) {
+      dispatch({ type: 'AUTH_SUCCESS', user: member });
+    } else {
+      dispatch({ type: 'AUTH_ERROR', error: 'Google login failed' });
+    }
   }, [authService]);
 
   const signInWithApple = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
     const result = await authService.loginWithOAuth();
-    if (result.success) {
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-        return;
-      }
+    if (!result.success) {
+      dispatch({ type: 'AUTH_ERROR', error: result.error });
+      return;
     }
-    dispatch({ type: 'AUTH_ERROR', error: result.error ?? 'Apple login failed' });
+    const member = await authService.getCurrentMember();
+    if (member) {
+      dispatch({ type: 'AUTH_SUCCESS', user: member });
+    } else {
+      dispatch({ type: 'AUTH_ERROR', error: 'Apple login failed' });
+    }
   }, [authService]);
 
   const resetPassword = useCallback(
