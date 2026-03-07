@@ -77,6 +77,12 @@ export function drain(domain?: QueuedAction['domain']): QueuedAction[] {
   return drained;
 }
 
+/** Re-enqueue actions that failed to sync, preserving original order */
+export function reEnqueue(actions: QueuedAction[]): void {
+  queue = [...actions, ...queue];
+  persistQueue();
+}
+
 /** Clear the entire queue */
 export function clearQueue(): void {
   queue = [];

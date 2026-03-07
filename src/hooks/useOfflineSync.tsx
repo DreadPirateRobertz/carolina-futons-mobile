@@ -14,7 +14,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useConnectivity } from './useConnectivity';
-import { drain, loadQueue, getQueueLength, enqueue } from '@/services/offlineQueue';
+import { drain, loadQueue, getQueueLength, enqueue, reEnqueue } from '@/services/offlineQueue';
 import type { QueuedAction } from '@/services/offlineQueue';
 
 /**
@@ -90,6 +90,10 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
       if (onSyncRef.current) {
         await onSyncRef.current(actions);
       }
+    } catch (err) {
+      // Re-enqueue actions so they survive for the next sync attempt
+      reEnqueue(actions);
+      throw err;
     } finally {
       setIsSyncing(false);
       setPendingCount(getQueueLength());
@@ -99,7 +103,9 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   // Watch for offline→online transition
   useEffect(() => {
     if (!wasOnline.current && isOnline) {
-      syncNow();
+      syncNow().catch(() => {
+        // Sync failed — actions have been re-enqueued for next attempt
+      });
     }
     wasOnline.current = isOnline;
   }, [isOnline, syncNow]);
