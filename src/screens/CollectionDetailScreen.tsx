@@ -8,8 +8,15 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +27,12 @@ import { Header } from '@/components/Header';
 import { EmptyState } from '@/components/EmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { Product } from '@/data/products';
+
+const HERO_HEIGHT = 320;
+const PARALLAX_RATE = 0.5;
+const AnimatedFlatList = Animated.createAnimatedComponent(
+  require('react-native').FlatList,
+) as typeof import('react-native').FlatList;
 
 /** Route parameters expected by this screen from React Navigation. */
 type RouteParams = RouteProp<RootStackParamList, 'CollectionDetail'>;
@@ -39,6 +52,26 @@ export function CollectionDetailScreen() {
   const route = useRoute<RouteParams>();
   const insets = useSafeAreaInsets();
   const { collection, products } = useCollection(route.params.slug);
+
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const heroAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: interpolate(
+          scrollY.value,
+          [0, HERO_HEIGHT],
+          [0, HERO_HEIGHT * PARALLAX_RATE],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
 
   const totalValue = useMemo(
     () => products.reduce((sum, p) => sum + p.price, 0),
@@ -73,7 +106,7 @@ export function CollectionDetailScreen() {
   const renderHeader = () => (
     <View>
       {/* Hero Image */}
-      <View style={styles.heroContainer}>
+      <Animated.View testID="parallax-hero" style={[styles.heroContainer, heroAnimatedStyle]}>
         <Image
           source={{ uri: collection.heroImage.uri }}
           style={styles.heroImage}
@@ -121,7 +154,7 @@ export function CollectionDetailScreen() {
             {collection.subtitle}
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Editorial Description */}
       <View style={[styles.editorialSection, { padding: spacing.pagePadding }]}>
@@ -214,7 +247,7 @@ export function CollectionDetailScreen() {
       testID="collection-detail-screen"
     >
       <Header title={collection.title} showBack />
-      <FlatList
+      <AnimatedFlatList
         data={products}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
@@ -224,6 +257,8 @@ export function CollectionDetailScreen() {
         ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       />
     </View>
   );

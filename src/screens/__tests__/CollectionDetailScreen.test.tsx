@@ -47,4 +47,9 @@ describe('CollectionDetailScreen', () => {
     const { getByText } = renderCollectionDetail('nonexistent');
     expect(getByText('Collection not found')).toBeTruthy();
   });
+
+  it('renders hero image with parallax container', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    expect(getByTestId('parallax-hero')).toBeTruthy();
+  });
 });
