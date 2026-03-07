@@ -10,11 +10,6 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  FadeIn,
-  FadeOut,
   SlideInDown,
   SlideOutDown,
 } from 'react-native-reanimated';
