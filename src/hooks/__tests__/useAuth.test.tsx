@@ -244,6 +244,69 @@ describe('useAuth', () => {
         expect(getByTestId('is-auth').props.children).toBe('false');
       });
       expect(getByTestId('user-email').props.children).toBe('');
+      expect(mockAuthService.logout).toHaveBeenCalled();
+    });
+  });
+
+  describe('Unexpected errors (try/catch in hook)', () => {
+    it('catches unexpected error during signIn', async () => {
+      mockAuthService.loginWithEmail.mockRejectedValue(new Error('Network failure'));
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Network failure');
+      });
+      expect(getByTestId('loading').props.children).toBe('false');
+    });
+
+    it('catches unexpected error during signUp', async () => {
+      mockAuthService.register.mockRejectedValue(new Error('Timeout'));
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-up'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Timeout');
+      });
+      expect(getByTestId('loading').props.children).toBe('false');
+    });
+
+    it('catches unexpected error during Google OAuth', async () => {
+      mockAuthService.loginWithOAuth.mockRejectedValue(new Error('OAuth crash'));
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('google'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('OAuth crash');
+      });
+      expect(getByTestId('loading').props.children).toBe('false');
+    });
+
+    it('catches unexpected error during Apple OAuth', async () => {
+      mockAuthService.loginWithOAuth.mockRejectedValue(new Error('Apple crash'));
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('apple'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Apple crash');
+      });
+      expect(getByTestId('loading').props.children).toBe('false');
+    });
+
+    it('catches unexpected error during resetPassword', async () => {
+      mockAuthService.sendPasswordReset.mockRejectedValue(new Error('Reset crash'));
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('reset'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Reset crash');
+      });
+      expect(getByTestId('loading').props.children).toBe('false');
     });
   });
 

@@ -132,7 +132,9 @@ describe('AccountScreen', () => {
         expect(getByTestId('sign-out-button')).toBeTruthy();
       });
       fireEvent.press(getByTestId('sign-out-button'));
-      expect(getByTestId('guest-title')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByTestId('guest-title')).toBeTruthy();
+      });
     });
 
     it('shows menu items', async () => {
