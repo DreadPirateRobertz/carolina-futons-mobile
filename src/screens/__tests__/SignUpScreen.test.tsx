@@ -22,6 +22,32 @@ jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn(() => mockAuthService),
 }));
 
+const mockGooglePromptAsync = jest.fn().mockResolvedValue({
+  type: 'success',
+  params: { id_token: 'mock.google.idtoken' },
+});
+
+jest.mock('expo-auth-session/providers/google', () => ({
+  useIdTokenAuthRequest: jest.fn(() => [null, null, mockGooglePromptAsync]),
+}));
+
+jest.mock('@/services/googleAuth', () => ({
+  googleAuthConfig: {
+    iosClientId: '',
+    androidClientId: '',
+    webClientId: 'test-google-web-client-id',
+  },
+  isGoogleAuthConfigured: jest.fn(() => true),
+  decodeGoogleIdToken: jest.fn(() => ({
+    sub: 'google-sub-123',
+    email: 'google@test.com',
+    name: 'Google User',
+  })),
+  saveGoogleSession: jest.fn(),
+  loadGoogleSession: jest.fn().mockResolvedValue(null),
+  clearGoogleSession: jest.fn(),
+}));
+
 function renderScreen(props: Partial<React.ComponentProps<typeof SignUpScreen>> = {}) {
   return render(
     <ThemeProvider>
@@ -200,13 +226,12 @@ describe('SignUpScreen', () => {
   });
 
   describe('Social sign up', () => {
-    it('calls signInWithGoogle when Google button pressed', async () => {
-      mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
+    it('triggers Google sign-in via expo-auth-session when Google button pressed', async () => {
       const { getByTestId } = renderScreen();
       await waitFor(() => expect(getByTestId('google-signup-button')).toBeTruthy());
       fireEvent.press(getByTestId('google-signup-button'));
       await waitFor(() => {
-        expect(mockAuthService.loginWithOAuth).toHaveBeenCalled();
+        expect(mockGooglePromptAsync).toHaveBeenCalled();
       });
     });
   });

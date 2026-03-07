@@ -23,6 +23,30 @@ jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn(() => mockAuthService),
 }));
 
+// --- Mock Google auth ---
+
+const mockGooglePromptAsync = jest.fn();
+const mockUseIdTokenAuthRequest = jest.requireMock(
+  'expo-auth-session/providers/google',
+).useIdTokenAuthRequest as jest.Mock;
+
+jest.mock('@/services/googleAuth', () => ({
+  googleAuthConfig: {
+    iosClientId: '',
+    androidClientId: '',
+    webClientId: 'test-google-web-client-id',
+  },
+  isGoogleAuthConfigured: jest.fn(() => true),
+  decodeGoogleIdToken: jest.fn((idToken: string) => ({
+    sub: 'google-sub-123',
+    email: 'google@test.com',
+    name: 'Google User',
+  })),
+  saveGoogleSession: jest.fn(),
+  loadGoogleSession: jest.fn().mockResolvedValue(null),
+  clearGoogleSession: jest.fn(),
+}));
+
 /** Test harness exposing auth state + actions */
 function AuthHarness() {
   const {
@@ -92,6 +116,10 @@ describe('useAuth', () => {
     mockAuthService.restoreSession.mockResolvedValue(false);
     mockAuthService.getCurrentMember.mockResolvedValue(null);
     mockAuthService.logout.mockResolvedValue(undefined);
+    mockUseIdTokenAuthRequest.mockReturnValue([null, null, mockGooglePromptAsync]);
+    const { loadGoogleSession, isGoogleAuthConfigured } = require('@/services/googleAuth');
+    (loadGoogleSession as jest.Mock).mockResolvedValue(null);
+    (isGoogleAuthConfigured as jest.Mock).mockReturnValue(true);
   });
 
   afterEach(cleanup);
@@ -175,7 +203,54 @@ describe('useAuth', () => {
   });
 
   describe('Social sign in', () => {
-    it('signs in with Google (OAuth)', async () => {
+    it('signs in with Google via expo-auth-session', async () => {
+      mockGooglePromptAsync.mockResolvedValue({
+        type: 'success',
+        params: { id_token: 'mock.google.idtoken' },
+      });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('google'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+      expect(getByTestId('user-provider').props.children).toBe('google');
+      expect(getByTestId('user-email').props.children).toBe('google@test.com');
+      expect(getByTestId('user-name').props.children).toBe('Google User');
+    });
+
+    it('handles Google sign-in cancellation', async () => {
+      mockGooglePromptAsync.mockResolvedValue({ type: 'dismiss' });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('google'));
+      await waitFor(() => {
+        expect(getByTestId('loading').props.children).toBe('false');
+      });
+      expect(getByTestId('is-auth').props.children).toBe('false');
+      expect(getByTestId('error').props.children).toBe('');
+    });
+
+    it('shows error when Google sign-in fails', async () => {
+      mockGooglePromptAsync.mockResolvedValue({
+        type: 'error',
+        error: { message: 'Google auth error' },
+      });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('google'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBe('Google auth error');
+      });
+    });
+
+    it('falls back to Wix OAuth when Google is not configured', async () => {
+      const { isGoogleAuthConfigured } = require('@/services/googleAuth');
+      (isGoogleAuthConfigured as jest.Mock).mockReturnValue(false);
+
       const googleMember = { ...mockMember, displayName: 'Google User' };
       mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
       mockAuthService.getCurrentMember.mockResolvedValue(googleMember);
@@ -186,7 +261,7 @@ describe('useAuth', () => {
       await waitFor(() => {
         expect(getByTestId('is-auth').props.children).toBe('true');
       });
-      expect(getByTestId('user-provider').props.children).toBe('wix');
+      expect(mockAuthService.loginWithOAuth).toHaveBeenCalled();
     });
 
     it('signs in with Apple (native)', async () => {
@@ -217,18 +292,20 @@ describe('useAuth', () => {
       });
     });
 
-    it('shows error when OAuth fails', async () => {
-      mockAuthService.loginWithOAuth.mockResolvedValue({
-        success: false,
-        error: 'Login cancelled',
+    it('saves Google session on successful sign-in', async () => {
+      const { saveGoogleSession } = require('@/services/googleAuth');
+      mockGooglePromptAsync.mockResolvedValue({
+        type: 'success',
+        params: { id_token: 'mock.google.idtoken' },
       });
 
       const { getByTestId } = await renderAuth();
 
       fireEvent.press(getByTestId('google'));
       await waitFor(() => {
-        expect(getByTestId('error').props.children).toBe('Login cancelled');
+        expect(getByTestId('is-auth').props.children).toBe('true');
       });
+      expect(saveGoogleSession).toHaveBeenCalledWith('mock.google.idtoken');
     });
   });
 

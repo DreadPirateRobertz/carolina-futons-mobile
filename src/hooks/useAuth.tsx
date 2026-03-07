@@ -17,7 +17,19 @@ import React, {
   useMemo,
   useEffect,
 } from 'react';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
 import { WixAuthService, type UpdateProfileData } from '@/services/wix/wixAuth';
+import {
+  googleAuthConfig,
+  isGoogleAuthConfigured,
+  decodeGoogleIdToken,
+  saveGoogleSession,
+  loadGoogleSession,
+  clearGoogleSession,
+} from '@/services/googleAuth';
+
+WebBrowser.maybeCompleteAuthSession();
 
 /** Represents an authenticated Carolina Futons user. */
 export interface User {
@@ -155,9 +167,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const authService = useMemo(() => new WixAuthService(), []);
 
+  const googleConfigured = isGoogleAuthConfigured();
+  const [, , googlePromptAsync] = Google.useIdTokenAuthRequest(
+    googleConfigured
+      ? {
+          iosClientId: googleAuthConfig.iosClientId || undefined,
+          androidClientId: googleAuthConfig.androidClientId || undefined,
+          clientId: googleAuthConfig.webClientId,
+        }
+      : { clientId: '__disabled__' },
+  );
+
   useEffect(() => {
     let mounted = true;
     (async () => {
+      // Try Wix session first
       const restored = await authService.restoreSession();
       if (!mounted) return;
       if (restored) {
@@ -165,6 +189,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted && member) {
           dispatch({ type: 'AUTH_SUCCESS', user: member });
           return;
+        }
+      }
+      // Try persisted Google session
+      const googleToken = await loadGoogleSession();
+      if (mounted && googleToken) {
+        try {
+          const claims = decodeGoogleIdToken(googleToken);
+          dispatch({
+            type: 'AUTH_SUCCESS',
+            user: {
+              id: claims.sub,
+              email: claims.email,
+              displayName: claims.name,
+              provider: 'google',
+            },
+          });
+          return;
+        } catch {
+          await clearGoogleSession();
         }
       }
       if (mounted) dispatch({ type: 'INIT_DONE' });
@@ -212,6 +255,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
+
+    // Use native Google sign-in when configured
+    if (googleConfigured && googlePromptAsync) {
+      try {
+        const result = await googlePromptAsync();
+        if (result.type === 'success') {
+          const idToken = result.params.id_token;
+          const claims = decodeGoogleIdToken(idToken);
+          await saveGoogleSession(idToken);
+          dispatch({
+            type: 'AUTH_SUCCESS',
+            user: {
+              id: claims.sub,
+              email: claims.email,
+              displayName: claims.name,
+              provider: 'google',
+            },
+          });
+        } else if (result.type === 'error') {
+          dispatch({
+            type: 'AUTH_ERROR',
+            error: result.error?.message ?? 'Google sign-in failed',
+          });
+        } else {
+          // User cancelled
+          dispatch({ type: 'CLEAR_ERROR' });
+        }
+      } catch (err) {
+        dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
+      }
+      return;
+    }
+
+    // Fallback to Wix OAuth when Google client IDs are not configured
     const result = await authService.loginWithOAuth();
     if (!result.success) {
       dispatch({ type: 'AUTH_ERROR', error: result.error });
@@ -223,7 +300,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       dispatch({ type: 'AUTH_ERROR', error: 'Google login failed' });
     }
-  }, [authService]);
+  }, [googleConfigured, googlePromptAsync, authService]);
 
   const signInWithApple = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
@@ -270,6 +347,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     authService.logout();
+    clearGoogleSession();
     dispatch({ type: 'SIGN_OUT' });
   }, [authService]);
 

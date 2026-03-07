@@ -2,6 +2,8 @@
 process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY = 'pk_test_mock';
 process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY = 'appl_test_mock';
 process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY = 'goog_test_mock';
+// Set Google OAuth web client ID for expo-auth-session Google provider tests
+process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = 'test-google-web-client-id';
 
 module.exports = {
   preset: 'jest-expo',

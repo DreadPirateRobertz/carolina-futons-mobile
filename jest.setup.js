@@ -111,6 +111,24 @@ jest.mock('@react-navigation/native', () => {
   };
 });
 
+// Mock expo-auth-session Google provider
+jest.mock('expo-auth-session/providers/google', () => ({
+  useIdTokenAuthRequest: jest.fn(() => [null, null, jest.fn()]),
+}));
+
+// Mock expo-web-browser maybeCompleteAuthSession (called at module level in useAuth)
+jest.mock('expo-web-browser', () => ({
+  openAuthSessionAsync: jest.fn(),
+  maybeCompleteAuthSession: jest.fn(),
+}));
+
+// Mock expo-crypto (required by expo-auth-session)
+jest.mock('expo-crypto', () => ({
+  digestStringAsync: jest.fn(),
+  CryptoDigestAlgorithm: { SHA256: 'SHA-256' },
+  getRandomBytes: jest.fn(() => new Uint8Array(32)),
+}));
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {
