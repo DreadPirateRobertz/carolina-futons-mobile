@@ -11,6 +11,7 @@ import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
 import { useWixClient } from '@/services/wix';
+import { captureException } from '@/services/crashReporting';
 import { useCart } from './useCart';
 import {
   createPaymentIntent,
@@ -190,6 +191,11 @@ export function usePayment() {
             ? err.message
             : 'An unexpected error occurred. Please try again.';
         setState({ status: 'error', error: message, order: null });
+        captureException(
+          err instanceof Error ? err : new Error(message),
+          'error',
+          { action: 'processPayment', method },
+        );
         return null;
       }
     },
