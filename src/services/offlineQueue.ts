@@ -5,6 +5,8 @@
  * and replays them when connectivity is restored.
  */
 
+import { captureException } from './crashReporting';
+
 export interface QueuedAction {
   id: string;
   timestamp: number;
@@ -102,8 +104,12 @@ export async function loadQueue(): Promise<QueuedAction[]> {
         queue = parsed;
       }
     }
-  } catch {
-    // AsyncStorage not available — operate in-memory only
+  } catch (err) {
+    captureException(
+      err instanceof Error ? err : new Error('Failed to load offline queue from AsyncStorage'),
+      'warning',
+      { action: 'offlineQueue.loadQueue' },
+    );
   }
   return [...queue];
 }
@@ -115,8 +121,12 @@ async function persistQueue(): Promise<void> {
       (m) => m.default,
     );
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  } catch {
-    // no-op
+  } catch (err) {
+    captureException(
+      err instanceof Error ? err : new Error('Failed to persist offline queue to AsyncStorage'),
+      'error',
+      { action: 'offlineQueue.persistQueue', queueLength: queue.length },
+    );
   }
 }
 
