@@ -1,47 +1,63 @@
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook, act, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOrders } from '../useOrders';
 import { MOCK_ORDERS } from '@/data/orders';
+import { ORDER_CACHE_KEY } from '@/services/orderCache';
+
+const mockGetItem = AsyncStorage.getItem as jest.Mock;
+const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 describe('useOrders', () => {
-  // --- List all orders ---
-
   const sortedOrders = [...MOCK_ORDERS].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-  it('returns all mock orders sorted by date descending', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetItem.mockResolvedValue(null);
+    mockSetItem.mockResolvedValue(undefined);
+  });
+
+  // --- List all orders ---
+
+  it('returns all mock orders sorted by date descending', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.orders).toEqual(sortedOrders);
   });
 
-  it('returns isLoading=false when using static fallback', () => {
+  it('returns isLoading=false after hydration', async () => {
     const { result } = renderHook(() => useOrders());
-    expect(result.current.isLoading).toBe(false);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
   });
 
-  it('returns error=null on success', () => {
+  it('returns error=null on success', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBeNull();
   });
 
   // --- Single order by ID ---
 
-  it('getOrder returns an order by ID', () => {
+  it('getOrder returns an order by ID', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     const order = result.current.getOrder(MOCK_ORDERS[0].id);
     expect(order).toEqual(MOCK_ORDERS[0]);
   });
 
-  it('getOrder returns undefined for unknown ID', () => {
+  it('getOrder returns undefined for unknown ID', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     const order = result.current.getOrder('nonexistent-order');
     expect(order).toBeUndefined();
   });
 
   // --- Filter by status ---
 
-  it('filters orders by status', () => {
+  it('filters orders by status', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => {
       result.current.setStatusFilter('delivered');
     });
@@ -49,8 +65,9 @@ describe('useOrders', () => {
     expect(result.current.orders.length).toBeGreaterThan(0);
   });
 
-  it('returns all orders when status filter is null', () => {
+  it('returns all orders when status filter is null', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => {
       result.current.setStatusFilter('delivered');
     });
@@ -60,10 +77,9 @@ describe('useOrders', () => {
     expect(result.current.orders).toEqual(sortedOrders);
   });
 
-  it('returns empty array when no orders match filter', () => {
+  it('returns empty array when no orders match filter', async () => {
     const { result } = renderHook(() => useOrders());
-    // All mock orders are one of: delivered, shipped, processing, cancelled
-    // There should be at least one of each, but let's use a combo that yields known results
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => {
       result.current.setStatusFilter('cancelled');
     });
@@ -73,28 +89,32 @@ describe('useOrders', () => {
 
   // --- Refresh ---
 
-  it('returns a refresh function', () => {
+  it('returns a refresh function', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(typeof result.current.refresh).toBe('function');
   });
 
-  it('refresh does not throw', () => {
+  it('refresh does not throw', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(() => result.current.refresh()).not.toThrow();
   });
 
   // --- Edge cases ---
 
-  it('orders are sorted by createdAt descending (most recent first)', () => {
+  it('orders are sorted by createdAt descending (most recent first)', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     const dates = result.current.orders.map((o) => new Date(o.createdAt).getTime());
     for (let i = 1; i < dates.length; i++) {
       expect(dates[i - 1]).toBeGreaterThanOrEqual(dates[i]);
     }
   });
 
-  it('getOrder works after setting a status filter', () => {
+  it('getOrder works after setting a status filter', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     act(() => {
       result.current.setStatusFilter('delivered');
     });
@@ -105,8 +125,9 @@ describe('useOrders', () => {
 
   // --- Boundary conditions ---
 
-  it('every order has required fields', () => {
+  it('every order has required fields', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     for (const order of result.current.orders) {
       expect(order.id).toBeDefined();
       expect(order.orderNumber).toBeDefined();
@@ -119,8 +140,9 @@ describe('useOrders', () => {
     }
   });
 
-  it('cycles through all status filters without error', () => {
+  it('cycles through all status filters without error', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     const statuses: ('processing' | 'shipped' | 'delivered' | 'cancelled')[] = [
       'processing',
       'shipped',
@@ -135,18 +157,21 @@ describe('useOrders', () => {
     }
   });
 
-  it('getOrder with empty string returns undefined', () => {
+  it('getOrder with empty string returns undefined', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.getOrder('')).toBeUndefined();
   });
 
-  it('statusFilter state is null initially', () => {
+  it('statusFilter state is null initially', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.statusFilter).toBeNull();
   });
 
-  it('order line items have valid price data', () => {
+  it('order line items have valid price data', async () => {
     const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     for (const order of result.current.orders) {
       for (const item of order.items) {
         expect(item.unitPrice).toBeGreaterThan(0);
@@ -154,5 +179,49 @@ describe('useOrders', () => {
         expect(item.lineTotal).toBe(item.unitPrice * item.quantity);
       }
     }
+  });
+
+  // --- Cache integration ---
+
+  it('caches orders to AsyncStorage after hydration', async () => {
+    const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(mockSetItem).toHaveBeenCalledWith(ORDER_CACHE_KEY, expect.any(String));
+    const stored = JSON.parse(mockSetItem.mock.calls[0][1]);
+    expect(stored.orders).toHaveLength(MOCK_ORDERS.length);
+  });
+
+  it('loads cached orders when cache exists', async () => {
+    const cachedOrders = [MOCK_ORDERS[0]];
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ orders: cachedOrders, cachedAt: new Date().toISOString() }),
+    );
+    const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    // After hydration completes, fresh data replaces cached
+    expect(result.current.orders).toEqual(sortedOrders);
+  });
+
+  it('serves cached orders when cache is available before fresh load', async () => {
+    const cachedOrders = [MOCK_ORDERS[0]];
+    // Simulate slow fresh load by checking intermediate state
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ orders: cachedOrders, cachedAt: new Date().toISOString() }),
+    );
+    const { result } = renderHook(() => useOrders());
+    // Eventually resolves to full set
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.orders.length).toBe(MOCK_ORDERS.length);
+  });
+
+  it('refresh re-caches orders', async () => {
+    const { result } = renderHook(() => useOrders());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    mockSetItem.mockClear();
+    act(() => {
+      result.current.refresh();
+    });
+    // refresh triggers cacheOrders again
+    expect(mockSetItem).toHaveBeenCalledWith(ORDER_CACHE_KEY, expect.any(String));
   });
 });
