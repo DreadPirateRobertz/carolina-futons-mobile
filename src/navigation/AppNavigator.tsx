@@ -7,7 +7,10 @@
  */
 import React, { useCallback, lazy, Suspense } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import {
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack';
 import { CommonActions } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
@@ -140,6 +143,22 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const fadeTransition: NativeStackNavigationOptions = {
+  animation: 'fade',
+  animationDuration: 250,
+};
+
+const slideUpTransition: NativeStackNavigationOptions = {
+  animation: 'slide_from_bottom',
+  animationDuration: 300,
+};
+
+const modalTransition: NativeStackNavigationOptions = {
+  presentation: 'modal',
+  animation: 'slide_from_bottom',
+  animationDuration: 300,
+};
+
 /** Root stack navigator — gates onboarding, then renders the tab shell + push screens. */
 export function AppNavigator() {
   const { isLoading, hasSeenOnboarding, completeOnboarding } = useOnboarding();
@@ -186,8 +205,8 @@ export function AppNavigator() {
           component={ARScreen}
           options={{ presentation: 'fullScreenModal', animation: 'fade' }}
         />
-        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-        <Stack.Screen name="Category" component={CategoryScreen} />
+        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={fadeTransition} />
+        <Stack.Screen name="Category" component={CategoryScreen} options={fadeTransition} />
         <Stack.Screen name="Checkout">
           {({ navigation: nav }) => (
             <CheckoutScreen
@@ -225,8 +244,8 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
         <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} options={{ presentation: 'modal' }} />
-        <Stack.Screen name="SignUp" component={SignUpScreen} options={{ presentation: 'modal' }} />
+        <Stack.Screen name="Login" component={LoginScreen} options={modalTransition} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} options={modalTransition} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
         <Stack.Screen name="Wishlist" component={WishlistScreen} />
@@ -237,8 +256,8 @@ export function AppNavigator() {
           component={ARWebScreen}
           options={{ presentation: 'fullScreenModal', animation: 'fade' }}
         />
-        <Stack.Screen name="Collections" component={CollectionsScreen} />
-        <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} />
+        <Stack.Screen name="Collections" component={CollectionsScreen} options={fadeTransition} />
+        <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} options={fadeTransition} />
       </Stack.Navigator>
     </Suspense>
   );
