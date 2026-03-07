@@ -1,0 +1,37 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.carolinafutons.mobile",
+        "paths": [
+          "/product/*",
+          "/products/*",
+          "/category/*",
+          "/collections/*",
+          "/cart",
+          "/checkout",
+          "/orders",
+          "/orders/*",
+          "/account",
+          "/login",
+          "/signup",
+          "/wishlist",
+          "/ar",
+          "/notifications",
+          "/stores",
+          "/stores/*",
+          "/store-locator",
+          "/forgot-password",
+          "/shop",
+          "/home"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.com.carolinafutons.mobile"
+    ]
+  }
+}

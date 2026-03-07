@@ -72,6 +72,26 @@
               "scheme": "https",
               "host": "www.carolinafutons.com",
               "pathPrefix": "/collections"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/orders"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/orders"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/stores"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/stores"
             }
           ],
           "category": [

@@ -21,6 +21,7 @@ import { CartProvider } from '@/hooks/useCart';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
+import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -98,8 +99,10 @@ function App() {
                           }
                         }}
                       >
-                        <OfflineBanner />
-                        <AppNavigator />
+                        <DeepLinkProvider>
+                          <OfflineBanner />
+                          <AppNavigator />
+                        </DeepLinkProvider>
                       </NavigationContainer>
                     </ErrorBoundary>
                   </NotificationProvider>
