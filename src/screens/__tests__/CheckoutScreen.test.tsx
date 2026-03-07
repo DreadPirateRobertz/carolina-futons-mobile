@@ -40,6 +40,20 @@ jest.mock('@/services/analytics', () => ({
   },
 }));
 
+// Mock address book
+jest.mock('@/hooks/useAddressBook', () => ({
+  useAddressBook: () => ({
+    addresses: [],
+    defaultAddress: null,
+    loading: false,
+    addAddress: jest.fn(),
+    updateAddress: jest.fn(),
+    deleteAddress: jest.fn(),
+    setDefault: jest.fn(),
+    saveFromCheckout: jest.fn(),
+  }),
+}));
+
 const mockInitPaymentSheet = jest.fn().mockResolvedValue({ error: null });
 const mockPresentPaymentSheet = jest.fn().mockResolvedValue({ error: null });
 const mockIsPlatformPaySupported = jest.fn().mockResolvedValue(true);

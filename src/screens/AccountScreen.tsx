@@ -29,6 +29,7 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { PremiumBadge } from '@/components/PremiumBadge';
 
 /** Props for the AccountScreen component. */
@@ -56,6 +57,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const { isPremium, restore } = usePremium();
   const deletion = useAccountDeletion();
   const dataExport = useDataExport();
+  const addressBook = useAddressBook();
   const [restoring, setRestoring] = useState(false);
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
 
@@ -318,12 +320,69 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             testID="account-order-history"
           />
           <MenuItem
-            label="Saved Addresses"
+            label={`Saved Addresses${addressBook.addresses.length > 0 ? ` (${addressBook.addresses.length})` : ''}`}
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-addresses"
           />
+          {addressBook.addresses.length > 0 && (
+            <View style={{ gap: 6 }} testID="address-list">
+              {addressBook.addresses.map((addr) => (
+                <GlassCard key={addr.id} intensity="light">
+                  <View style={styles.addressItem} testID={`address-${addr.id}`}>
+                    <View style={styles.addressInfo}>
+                      <Text style={[styles.addressName, { color: darkPalette.textPrimary }]}>
+                        {addr.fullName}
+                        {addr.isDefault && (
+                          <Text style={{ color: colors.sunsetCoral }}> (Default)</Text>
+                        )}
+                      </Text>
+                      <Text style={[styles.addressLine, { color: darkPalette.textMuted }]}>
+                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}
+                      </Text>
+                      <Text style={[styles.addressLine, { color: darkPalette.textMuted }]}>
+                        {addr.city}, {addr.state} {addr.zip}
+                      </Text>
+                    </View>
+                    <View style={styles.addressActions}>
+                      {!addr.isDefault && (
+                        <TouchableOpacity
+                          onPress={() => addressBook.setDefault(addr.id)}
+                          testID={`set-default-${addr.id}`}
+                          accessibilityLabel="Set as default address"
+                          accessibilityRole="button"
+                        >
+                          <Text style={[styles.addressAction, { color: colors.mountainBlue }]}>
+                            Set Default
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity
+                        onPress={() => {
+                          Alert.alert(
+                            'Delete Address',
+                            `Remove ${addr.line1}?`,
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              { text: 'Delete', style: 'destructive', onPress: () => addressBook.deleteAddress(addr.id) },
+                            ],
+                          );
+                        }}
+                        testID={`delete-address-${addr.id}`}
+                        accessibilityLabel="Delete address"
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.addressAction, { color: colors.sunsetCoral }]}>
+                          Delete
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </GlassCard>
+              ))}
+            </View>
+          )}
           <MenuItem
             label="Payment Methods"
             colors={colors}
@@ -617,6 +676,32 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 8,
+  },
+  addressItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 12,
+  },
+  addressInfo: {
+    flex: 1,
+  },
+  addressName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  addressLine: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  addressActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginLeft: 8,
+  },
+  addressAction: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   // Menu
   menuItem: {

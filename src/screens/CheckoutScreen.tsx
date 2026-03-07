@@ -8,7 +8,7 @@
  *
  * Haptic feedback reinforces selection and success states on native.
  */
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -33,6 +33,7 @@ import type { OrderConfirmation } from '@/services/payment';
 import { events } from '@/services/analytics';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { usePremium } from '@/hooks/usePremium';
+import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -144,11 +145,29 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { items, subtotal } = useCart();
   const { status, error, totals, isApplePaySupported, isGooglePaySupported, processPayment, resetPayment } = usePayment();
   const { isPremium } = usePremium();
+  const addressBook = useAddressBook();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
+  const [usingSavedAddress, setUsingSavedAddress] = useState(false);
 
-  // Address state
+  // Address state — pre-fill from default saved address
   const [shippingAddress, setShippingAddress] = useState<Address>(EMPTY_ADDRESS);
+
+  // Pre-fill with default address on load
+  useEffect(() => {
+    if (!addressBook.loading && addressBook.defaultAddress && !usingSavedAddress) {
+      const da = addressBook.defaultAddress;
+      setShippingAddress({
+        fullName: da.fullName,
+        line1: da.line1,
+        line2: da.line2,
+        city: da.city,
+        state: da.state,
+        zip: da.zip,
+      });
+      setUsingSavedAddress(true);
+    }
+  }, [addressBook.loading, addressBook.defaultAddress]); // eslint-disable-line react-hooks/exhaustive-deps
   const [billingAddress, setBillingAddress] = useState<Address>(EMPTY_ADDRESS);
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
   const [shippingErrors, setShippingErrors] = useState<AddressErrors>({});
@@ -248,12 +267,13 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
+      addressBook.saveFromCheckout(shippingAddress);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       onOrderComplete?.(order);
     }
-  }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+  }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length, addressBook, shippingAddress]);
 
   const handleApplePay = useCallback(async () => {
     if (isProcessing) return;
@@ -465,6 +485,77 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           >
             Shipping Address
           </Text>
+
+          {/* Saved address picker */}
+          {addressBook.addresses.length > 0 && (
+            <View style={styles.savedAddressPicker} testID="saved-address-picker">
+              {addressBook.addresses.map((saved) => (
+                <TouchableOpacity
+                  key={saved.id}
+                  style={[
+                    styles.savedAddressChip,
+                    {
+                      borderColor:
+                        shippingAddress.line1 === saved.line1 && shippingAddress.zip === saved.zip
+                          ? colors.sunsetCoral
+                          : colors.espressoLight,
+                      borderRadius: borderRadius.button,
+                    },
+                  ]}
+                  onPress={() => {
+                    setShippingAddress({
+                      fullName: saved.fullName,
+                      line1: saved.line1,
+                      line2: saved.line2,
+                      city: saved.city,
+                      state: saved.state,
+                      zip: saved.zip,
+                    });
+                    setShippingErrors({});
+                  }}
+                  testID={`saved-address-${saved.id}`}
+                  accessibilityLabel={`Use address: ${saved.line1}, ${saved.city}`}
+                  accessibilityRole="button"
+                >
+                  <Text
+                    style={[styles.savedAddressName, { color: colors.espresso }]}
+                    numberOfLines={1}
+                  >
+                    {saved.fullName}
+                  </Text>
+                  <Text
+                    style={[styles.savedAddressLine, { color: colors.espressoLight }]}
+                    numberOfLines={1}
+                  >
+                    {saved.line1}, {saved.city}, {saved.state}
+                  </Text>
+                  {saved.isDefault && (
+                    <Text style={[styles.savedAddressDefault, { color: colors.sunsetCoral }]}>
+                      Default
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={[
+                  styles.savedAddressChip,
+                  { borderColor: colors.espressoLight, borderRadius: borderRadius.button, borderStyle: 'dashed' },
+                ]}
+                onPress={() => {
+                  setShippingAddress(EMPTY_ADDRESS);
+                  setShippingErrors({});
+                }}
+                testID="new-address-button"
+                accessibilityLabel="Enter new address"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.savedAddressName, { color: colors.espressoLight }]}>
+                  + New Address
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping')}
         </View>
 
@@ -1093,5 +1184,30 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
+  },
+  savedAddressPicker: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  savedAddressChip: {
+    borderWidth: 1.5,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 120,
+  },
+  savedAddressName: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  savedAddressLine: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  savedAddressDefault: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
   },
 });

@@ -66,6 +66,20 @@ jest.mock('@/hooks/useDataExport', () => ({
   useDataExport: () => mockDataExport,
 }));
 
+const mockAddressBook = {
+  addresses: [] as any[],
+  defaultAddress: null,
+  loading: false,
+  addAddress: jest.fn(),
+  updateAddress: jest.fn(),
+  deleteAddress: jest.fn(),
+  setDefault: jest.fn(),
+  saveFromCheckout: jest.fn(),
+};
+jest.mock('@/hooks/useAddressBook', () => ({
+  useAddressBook: () => mockAddressBook,
+}));
+
 function renderAccount(
   props: Partial<React.ComponentProps<typeof AccountScreen>> = {},
   authenticated = false,
