@@ -11,6 +11,7 @@ jest.mock('@/services/wix/wixProvider', () => ({
   useWixClient: () => ({
     applyCoupon: mockApplyCoupon,
   }),
+  useOptionalWixClient: () => null,
 }));
 
 const asheville = FUTON_MODELS[0]; // $349

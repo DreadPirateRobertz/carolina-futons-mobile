@@ -368,11 +368,13 @@ describe('Server cart merge on auth', () => {
     const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
     mockUser = testUser;
     rerender(
-      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
-        <CartProvider>
-          <CartHarness />
-        </CartProvider>
-      </AuthContext.Provider>,
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
     );
 
     // Wait for async merge to complete
@@ -395,11 +397,13 @@ describe('Server cart merge on auth', () => {
     const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
     mockUser = testUser;
     rerender(
-      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
-        <CartProvider>
-          <CartHarness />
-        </CartProvider>
-      </AuthContext.Provider>,
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
     );
 
     await waitFor(() => {
@@ -424,11 +428,13 @@ describe('Server cart merge on auth', () => {
     const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
     mockUser = testUser;
     rerender(
-      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
-        <CartProvider>
-          <CartHarness />
-        </CartProvider>
-      </AuthContext.Provider>,
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
     );
 
     // Should not call server
@@ -448,11 +454,13 @@ describe('Server cart merge on auth', () => {
     const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
     mockUser = testUser;
     rerender(
-      <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
-        <CartProvider>
-          <CartHarness />
-        </CartProvider>
-      </AuthContext.Provider>,
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
     );
 
     await waitFor(() => {
