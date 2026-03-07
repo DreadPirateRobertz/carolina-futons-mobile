@@ -24,8 +24,14 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { initCrashReporting } from '@/services/crashReportingInit';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
+
+// Initialize crash reporting before anything else can throw
+initCrashReporting({
+  sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+});
 
 SplashScreen.preventAutoHideAsync();
 

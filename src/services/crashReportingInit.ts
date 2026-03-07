@@ -24,10 +24,11 @@ export function initCrashReporting(config?: CrashReportingConfig): void {
   _initialized = true;
 
   // Register Sentry provider if DSN is available
-  if (config?.sentryDsn) {
+  const dsn = config?.sentryDsn;
+  if (dsn) {
     const sentryProvider = new SentryCrashReportingProvider({
-      dsn: config.sentryDsn,
-      environment: config.environment,
+      dsn,
+      environment: config?.environment,
     });
     registerProvider(sentryProvider);
   }
