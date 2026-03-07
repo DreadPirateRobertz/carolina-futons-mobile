@@ -31,3 +31,5 @@ export { getWixSdkClient, resetWixSdkClient } from './wixSdkClient';
 export { WixAuthService, type AuthResult, type AuthUser } from './wixAuth';
 
 export { saveTokens, loadTokens, clearTokens, type WixTokens } from './tokenStorage';
+
+export { replayOfflineQueue, type ReplayResult, type ReplayError } from './replayOfflineQueue';

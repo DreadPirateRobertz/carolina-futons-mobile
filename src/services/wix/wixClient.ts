@@ -369,6 +369,41 @@ export class WixClient {
     };
   }
 
+  // ── eCommerce Cart ─────────────────────────────────────────
+
+  async addToCart(
+    cartId: string,
+    lineItems: Array<{
+      catalogReference: {
+        catalogItemId: string;
+        appId: string;
+        options?: Record<string, unknown>;
+      };
+      quantity: number;
+    }>,
+  ): Promise<{ cart: { id: string } }> {
+    return this.post(`/ecom/v1/carts/${cartId}/add-to-cart`, { lineItems });
+  }
+
+  async removeCartLineItems(
+    cartId: string,
+    lineItemIds: string[],
+  ): Promise<{ cart: { id: string } }> {
+    return this.post(`/ecom/v1/carts/${cartId}/remove-line-items`, { lineItemIds });
+  }
+
+  async updateCartLineItems(
+    cartId: string,
+    lineItems: Array<{ id: string; quantity: number }>,
+  ): Promise<{ cart: { id: string } }> {
+    return this.post(`/ecom/v1/carts/${cartId}/update-line-items`, {
+      lineItems: lineItems.map((li) => ({
+        id: li.id,
+        quantity: li.quantity,
+      })),
+    });
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {
