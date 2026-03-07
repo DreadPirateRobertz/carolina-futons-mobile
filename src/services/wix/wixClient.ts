@@ -50,6 +50,7 @@ export interface WixProduct {
   additionalInfoSections: unknown[];
   productOptions: WixProductOption[];
   customTextFields: unknown[];
+  sku?: string;
   weight?: number;
   variants: unknown[];
 }
@@ -482,6 +483,7 @@ export function transformWixProduct(wix: WixProduct): Product {
     id: wix.id,
     name: wix.name,
     slug: wix.slug,
+    sku: wix.sku ?? '',
     category: 'futons' as ProductCategory, // Resolved via collection mapping
     price: isDiscounted ? wix.price.discountedPrice : wix.price.price,
     ...(isDiscounted ? { originalPrice: wix.price.price } : {}),
