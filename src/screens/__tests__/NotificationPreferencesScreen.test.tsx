@@ -11,6 +11,7 @@ jest.mock('expo-notifications', () => ({
   getExpoPushTokenAsync: jest.fn().mockResolvedValue({ data: 'ExponentPushToken[test]' }),
   setNotificationHandler: jest.fn(),
   setNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
+  setBadgeCountAsync: jest.fn().mockResolvedValue(true),
   addNotificationReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   AndroidImportance: { MAX: 5 },
@@ -19,6 +20,18 @@ jest.mock('expo-notifications', () => ({
 jest.mock('expo-device', () => ({ isDevice: true }));
 jest.mock('expo-constants', () => ({
   expoConfig: { extra: { eas: { projectId: 'test-project-id' } } },
+}));
+jest.mock('@/hooks/useNotificationStorage', () => ({
+  useNotificationStorage: () => ({
+    preferences: {
+      orderUpdates: true,
+      promotions: true,
+      backInStock: true,
+      cartReminders: false,
+    },
+    isLoading: false,
+    savePreferences: jest.fn().mockResolvedValue(undefined),
+  }),
 }));
 
 function renderNotifPrefs(
