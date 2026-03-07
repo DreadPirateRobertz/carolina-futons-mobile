@@ -15,7 +15,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import ViewShot, { captureRef } from 'react-native-view-shot';
@@ -40,6 +40,9 @@ import { useSurfaceDetection } from '@/hooks/useSurfaceDetection';
 import { useARMeasurement } from '@/hooks/useARMeasurement';
 import { ARMeasurementOverlay } from '@/components/ARMeasurementOverlay';
 import { ARComparisonOverlay } from '@/components/ARComparisonOverlay';
+import { AROnboarding } from '@/components/AROnboarding';
+import { useCameraPermission } from '@/hooks/useCameraPermission';
+import { useAROnboarding } from '@/hooks/useAROnboarding';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -67,7 +70,8 @@ interface Props {
 export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const navigation = useNavigation();
   const modelId = initialModelId ?? route?.params?.initialModelId;
-  const [permission, requestPermission] = useCameraPermissions();
+  const cameraPermission = useCameraPermission();
+  const arOnboarding = useAROnboarding();
 
   // Data from hooks — replaces direct FUTON_MODELS/PRODUCTS imports
   const {
@@ -372,29 +376,19 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Determine product category for snap-to-wall behavior
   const productCategory = currentProduct?.category;
 
-  // Permission not yet determined
-  if (!permission) {
-    return (
-      <View style={styles.permissionContainer} testID="ar-loading">
-        <Text style={styles.permissionText}>Initializing camera...</Text>
-      </View>
-    );
-  }
-
-  // Permission denied
-  if (!permission.granted) {
+  // Permission not yet determined — show priming screen
+  if (cameraPermission.state === 'undetermined') {
     return (
       <View style={styles.permissionContainer} testID="ar-permission">
         <View style={styles.permissionCard}>
-          <Text style={styles.permissionIcon}>📷</Text>
+          <Text style={styles.permissionIcon}>{'\u{1F4F7}'}</Text>
           <Text style={styles.permissionTitle}>See Futons in Your Room</Text>
           <Text style={styles.permissionDescription}>
-            Point your camera at your room to see how our futons look in your space. We need camera
-            access to make the magic happen.
+            {cameraPermission.explanation}
           </Text>
           <TouchableOpacity
             style={styles.permissionButton}
-            onPress={requestPermission}
+            onPress={cameraPermission.request}
             testID="ar-grant-permission"
             accessibilityLabel="Allow camera access"
             accessibilityRole="button"
@@ -408,6 +402,77 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
               testID="ar-permission-dismiss"
             >
               <Text style={styles.permissionDismissText}>Maybe Later</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  // Permission denied — can re-prompt
+  if (cameraPermission.state === 'denied') {
+    return (
+      <View style={styles.permissionContainer} testID="ar-permission">
+        <View style={styles.permissionCard}>
+          <Text style={styles.permissionIcon}>{'\u{1F4F7}'}</Text>
+          <Text style={styles.permissionTitle}>Camera Access Needed</Text>
+          <Text style={styles.permissionDescription}>
+            {cameraPermission.explanation}
+          </Text>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={cameraPermission.request}
+            testID="ar-grant-permission"
+            accessibilityLabel="Allow camera access"
+            accessibilityRole="button"
+          >
+            <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
+          </TouchableOpacity>
+          {(onClose || navigation) && (
+            <TouchableOpacity
+              style={styles.permissionDismiss}
+              onPress={handleClose}
+              testID="ar-permission-dismiss"
+            >
+              <Text style={styles.permissionDismissText}>Maybe Later</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  }
+
+  // Permission permanently denied — direct to Settings
+  if (cameraPermission.state === 'denied-permanently') {
+    return (
+      <View style={styles.permissionContainer} testID="ar-permission-settings">
+        <View style={styles.permissionCard}>
+          <Text style={styles.permissionIcon}>{'\u{1F6AB}'}</Text>
+          <Text style={styles.permissionTitle}>Camera Access Required</Text>
+          <Text style={styles.permissionDescription}>
+            Camera permission was denied. To use AR features, please enable camera access in your device settings.
+          </Text>
+          {cameraPermission.settingsInstructions && (
+            <Text style={styles.settingsInstructions}>
+              {cameraPermission.settingsInstructions}
+            </Text>
+          )}
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={cameraPermission.openSettings}
+            testID="ar-open-settings"
+            accessibilityLabel="Open device settings"
+            accessibilityRole="button"
+          >
+            <Text style={styles.permissionButtonText}>Open Settings</Text>
+          </TouchableOpacity>
+          {(onClose || navigation) && (
+            <TouchableOpacity
+              style={styles.permissionDismiss}
+              onPress={handleClose}
+              testID="ar-permission-dismiss"
+            >
+              <Text style={styles.permissionDismissText}>Go Back</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -557,6 +622,14 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         </CameraView>
       </ViewShot>
 
+      {/* AR onboarding tutorial — shown on first AR session */}
+      {!arOnboarding.isLoading && !arOnboarding.hasSeenAROnboarding && (
+        <AROnboarding
+          onComplete={arOnboarding.completeAROnboarding}
+          onSkip={arOnboarding.completeAROnboarding}
+        />
+      )}
+
       {/* Bottom controls */}
       <ARControls
         models={futonModels}
@@ -690,6 +763,14 @@ const styles = StyleSheet.create({
   permissionDismissText: {
     color: 'rgba(242, 232, 213, 0.5)',
     fontSize: 14,
+  },
+  settingsInstructions: {
+    color: 'rgba(242, 232, 213, 0.5)',
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
   touchableArea: {
     ...StyleSheet.absoluteFillObject,

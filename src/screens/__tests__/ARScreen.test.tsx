@@ -4,6 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
+import { useCameraPermission } from '@/hooks/useCameraPermission';
+import { useAROnboarding } from '@/hooks/useAROnboarding';
 import * as Haptics from 'expo-haptics';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -140,6 +142,33 @@ jest.mock('expo-sharing', () => ({
   shareAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// Mock useCameraPermission hook
+const mockCameraPermission = {
+  state: 'granted' as 'undetermined' | 'granted' | 'denied' | 'denied-permanently',
+  granted: true,
+  request: jest.fn(),
+  openSettings: jest.fn(),
+  explanation: 'Camera needed for AR.',
+  settingsInstructions: null as string | null,
+};
+jest.mock('@/hooks/useCameraPermission', () => ({
+  useCameraPermission: () => mockCameraPermission,
+}));
+
+// Mock useAROnboarding hook
+const mockAROnboarding = {
+  isLoading: false,
+  hasSeenAROnboarding: true,
+  completeAROnboarding: jest.fn(),
+  currentStep: 0,
+  totalSteps: 3,
+  nextStep: jest.fn(),
+  prevStep: jest.fn(),
+};
+jest.mock('@/hooks/useAROnboarding', () => ({
+  useAROnboarding: () => mockAROnboarding,
+}));
+
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
@@ -157,6 +186,11 @@ describe('ARScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+    mockCameraPermission.state = 'granted';
+    mockCameraPermission.granted = true;
+    mockCameraPermission.settingsInstructions = null;
+    mockAROnboarding.hasSeenAROnboarding = true;
+    mockAROnboarding.isLoading = false;
   });
 
   // =========================================================================
@@ -171,45 +205,65 @@ describe('ARScreen', () => {
       expect(getByTestId('ar-controls')).toBeTruthy();
     });
 
-    it('shows loading state when permission is null (not yet determined)', () => {
-      (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
-      const { getByTestId, getByText, queryByTestId } = renderARScreen();
-      expect(getByTestId('ar-loading')).toBeTruthy();
-      expect(getByText('Initializing camera...')).toBeTruthy();
-      expect(queryByTestId('ar-camera')).toBeNull();
-      expect(queryByTestId('ar-controls')).toBeNull();
-    });
-
-    it('shows permission request screen when not granted', () => {
-      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+    it('shows priming screen when permission is undetermined', () => {
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
       const { getByTestId, getByText, queryByTestId } = renderARScreen();
       expect(getByTestId('ar-permission')).toBeTruthy();
       expect(getByText('See Futons in Your Room')).toBeTruthy();
-      expect(getByText(/Point your camera at your room/)).toBeTruthy();
       expect(getByTestId('ar-grant-permission')).toBeTruthy();
+      expect(queryByTestId('ar-camera')).toBeNull();
+    });
+
+    it('shows permission request screen when denied', () => {
+      mockCameraPermission.state = 'denied';
+      mockCameraPermission.granted = false;
+      const { getByTestId, getByText, queryByTestId } = renderARScreen();
+      expect(getByTestId('ar-permission')).toBeTruthy();
+      expect(getByText('Camera Access Needed')).toBeTruthy();
       expect(getByText('Allow Camera Access')).toBeTruthy();
       expect(queryByTestId('ar-camera')).toBeNull();
     });
 
     it('requests permission when Allow Camera Access button is pressed', () => {
-      const mockRequest = jest.fn();
-      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, mockRequest]);
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
       const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-grant-permission'));
-      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockCameraPermission.request).toHaveBeenCalledTimes(1);
     });
 
-    it('shows "Maybe Later" dismiss button on permission screen', () => {
-      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+    it('shows settings screen when denied permanently', () => {
+      mockCameraPermission.state = 'denied-permanently';
+      mockCameraPermission.granted = false;
+      mockCameraPermission.settingsInstructions = 'Open Settings > Carolina Futons > Camera';
+      const { getByTestId, getByText, queryByTestId } = renderARScreen();
+      expect(getByTestId('ar-permission-settings')).toBeTruthy();
+      expect(getByText('Camera Access Required')).toBeTruthy();
+      expect(getByText('Open Settings')).toBeTruthy();
+      expect(getByText(/Open Settings > Carolina Futons/)).toBeTruthy();
+      expect(queryByTestId('ar-camera')).toBeNull();
+    });
 
+    it('opens settings when Open Settings button is pressed', () => {
+      mockCameraPermission.state = 'denied-permanently';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-open-settings'));
+      expect(mockCameraPermission.openSettings).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows dismiss button on permission screen', () => {
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
       const { queryByTestId } = renderARScreen();
-      // Always shown — user can dismiss via navigation.goBack() or onClose
       expect(queryByTestId('ar-permission-dismiss')).toBeTruthy();
     });
 
-    it('"Maybe Later" calls onClose when pressed', () => {
+    it('dismiss calls onClose when pressed', () => {
       const onClose = jest.fn();
-      (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
       const { getByTestId } = renderARScreen({ onClose });
       fireEvent.press(getByTestId('ar-permission-dismiss'));
       expect(onClose).toHaveBeenCalledTimes(1);

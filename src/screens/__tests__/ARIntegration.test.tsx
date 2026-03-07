@@ -102,6 +102,32 @@ jest.mock('@/services/analytics', () => ({
   },
 }));
 
+// Mock useCameraPermission hook
+const mockCameraPermission = {
+  state: 'granted' as 'undetermined' | 'granted' | 'denied' | 'denied-permanently',
+  granted: true,
+  request: jest.fn(),
+  openSettings: jest.fn(),
+  explanation: 'Camera needed for AR.',
+  settingsInstructions: null as string | null,
+};
+jest.mock('@/hooks/useCameraPermission', () => ({
+  useCameraPermission: () => mockCameraPermission,
+}));
+
+// Mock useAROnboarding hook
+jest.mock('@/hooks/useAROnboarding', () => ({
+  useAROnboarding: () => ({
+    isLoading: false,
+    hasSeenAROnboarding: true,
+    completeAROnboarding: jest.fn(),
+    currentStep: 0,
+    totalSteps: 3,
+    nextStep: jest.fn(),
+    prevStep: jest.fn(),
+  }),
+}));
+
 // --- Test Fixtures ---
 
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
@@ -492,13 +518,17 @@ describeARScreen('AR Accessibility', () => {
   });
 
   it('permission screen has accessible button', () => {
-    const { useCameraPermissions } = require('expo-camera');
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+    mockCameraPermission.state = 'undetermined';
+    mockCameraPermission.granted = false;
 
     const { getByTestId } = renderAR();
     const grantBtn = getByTestId('ar-grant-permission');
     expect(grantBtn.props.accessibilityLabel).toBe('Allow camera access');
     expect(grantBtn.props.accessibilityRole).toBe('button');
+
+    // Reset
+    mockCameraPermission.state = 'granted';
+    mockCameraPermission.granted = true;
   });
 });
 
@@ -529,42 +559,44 @@ describeARScreen('Edge Cases & Error States', () => {
   });
 
   it('camera permission denied shows permission screen with grant button', () => {
-    const { useCameraPermissions } = require('expo-camera');
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+    mockCameraPermission.state = 'denied';
+    mockCameraPermission.granted = false;
 
     const { getByTestId, queryByTestId } = renderAR();
     expect(getByTestId('ar-permission')).toBeTruthy();
     expect(getByTestId('ar-grant-permission')).toBeTruthy();
-    // AR screen should NOT render when permission denied
     expect(queryByTestId('ar-screen')).toBeNull();
 
-    // Reset mock for other tests
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+    // Reset
+    mockCameraPermission.state = 'granted';
+    mockCameraPermission.granted = true;
   });
 
-  it('camera permission pending shows loading state', () => {
-    const { useCameraPermissions } = require('expo-camera');
-    (useCameraPermissions as jest.Mock).mockReturnValue([null, jest.fn()]);
+  it('camera permission undetermined shows priming screen', () => {
+    mockCameraPermission.state = 'undetermined';
+    mockCameraPermission.granted = false;
 
     const { getByTestId, queryByTestId } = renderAR();
-    expect(getByTestId('ar-loading')).toBeTruthy();
+    expect(getByTestId('ar-permission')).toBeTruthy();
     expect(queryByTestId('ar-screen')).toBeNull();
 
-    // Reset mock
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+    // Reset
+    mockCameraPermission.state = 'granted';
+    mockCameraPermission.granted = true;
   });
 
   it('permission dismiss button calls onClose', () => {
-    const { useCameraPermissions } = require('expo-camera');
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: false }, jest.fn()]);
+    mockCameraPermission.state = 'undetermined';
+    mockCameraPermission.granted = false;
 
     const onClose = jest.fn();
     const { getByTestId } = renderAR({ onClose });
     fireEvent.press(getByTestId('ar-permission-dismiss'));
     expect(onClose).toHaveBeenCalledTimes(1);
 
-    // Reset mock
-    (useCameraPermissions as jest.Mock).mockReturnValue([{ granted: true }, jest.fn()]);
+    // Reset
+    mockCameraPermission.state = 'granted';
+    mockCameraPermission.granted = true;
   });
 
   it('selecting same model again is a no-op (no crash)', () => {
