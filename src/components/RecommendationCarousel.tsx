@@ -99,7 +99,7 @@ export function RecommendationCarousel({
           {title}
         </Text>
         {onSeeAll && (
-          <TouchableOpacity testID="see-all-link" onPress={onSeeAll}>
+          <TouchableOpacity testID="see-all-link" onPress={onSeeAll} accessibilityLabel={`See all ${title}`}>
             <Text style={[styles.seeAll, { color: colors.mountainBlue }]}>See All</Text>
           </TouchableOpacity>
         )}

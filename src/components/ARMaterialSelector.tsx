@@ -58,6 +58,7 @@ export function ARMaterialSelector({
         activeOpacity={1}
         onPress={onClose}
         testID="material-selector-backdrop"
+        accessibilityLabel="Close fabric selector"
       />
 
       <View style={styles.panel}>

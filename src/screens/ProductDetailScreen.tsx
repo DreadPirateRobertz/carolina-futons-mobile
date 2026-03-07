@@ -513,6 +513,7 @@ export function ProductDetailScreen({
                 ]}
                 onPress={() => setReviewSort(sort)}
                 testID={`sort-${sort}`}
+                accessibilityLabel={`Sort reviews by ${sort === 'helpful' ? 'most helpful' : sort === 'recent' ? 'most recent' : sort}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: reviewSort === sort }}
               >
@@ -548,6 +549,7 @@ export function ProductDetailScreen({
               ]}
               onPress={() => onViewAllReviews?.(model.id)}
               testID="view-all-reviews"
+              accessibilityLabel={`View all ${reviewSummary.totalReviews} reviews`}
               accessibilityRole="button"
             >
               <Text style={[styles.viewAllText, { color: colors.espresso }]}>

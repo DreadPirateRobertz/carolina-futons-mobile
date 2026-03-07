@@ -43,6 +43,8 @@ export function EditorialHero({ title, subtitle, ctaLabel, onCtaPress, testID }:
           onPress={onCtaPress}
           haptic="medium"
           style={styles.ctaWrapper}
+          accessibilityLabel={ctaLabel}
+          accessibilityRole="button"
         >
           <GlassCard style={styles.ctaCard} intensity="heavy">
             <Text style={[styles.ctaText, { fontFamily: typography.bodyFamilySemiBold }]}>

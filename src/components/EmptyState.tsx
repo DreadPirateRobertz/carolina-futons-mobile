@@ -46,6 +46,7 @@ export function EmptyState({ title, message, icon, illustration, action, testID 
           style={styles.actionButton}
           onPress={action.onPress}
           testID={testID ? `${testID}-action` : undefined}
+          accessibilityLabel={action.label}
           accessibilityRole="button"
         >
           <Text style={styles.actionLabel}>{action.label}</Text>

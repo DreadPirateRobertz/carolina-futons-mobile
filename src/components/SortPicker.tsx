@@ -63,6 +63,7 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
           activeOpacity={1}
           onPress={() => setShowModal(false)}
           testID="sort-modal-overlay"
+          accessibilityLabel="Close sort options"
         >
           <View
             style={[
@@ -83,6 +84,7 @@ export function SortPicker({ value, onChange, resultCount, testID }: Props) {
                     setShowModal(false);
                   }}
                   testID={`sort-option-${option.value}`}
+                  accessibilityLabel={`Sort by ${option.label}`}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: isSelected }}
                 >

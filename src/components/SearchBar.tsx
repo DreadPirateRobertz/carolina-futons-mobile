@@ -128,6 +128,7 @@ export function SearchBar({
                   style={styles.dropdownItem}
                   onPress={() => handleSelectSuggestion(suggestion)}
                   testID={`suggestion-${suggestion}`}
+                  accessibilityLabel={`Search for ${suggestion}`}
                 >
                   <Text style={[styles.dropdownIcon, { color: colors.muted }]}>🔍</Text>
                   <Text style={[styles.dropdownText, { color: colors.espresso }]} numberOfLines={1}>
@@ -147,7 +148,7 @@ export function SearchBar({
               <View style={styles.recentHeader}>
                 <Text style={[styles.recentTitle, { color: colors.muted }]}>Recent</Text>
                 {onClearRecent && (
-                  <TouchableOpacity onPress={onClearRecent} testID="clear-recent">
+                  <TouchableOpacity onPress={onClearRecent} testID="clear-recent" accessibilityLabel="Clear all recent searches">
                     <Text style={[styles.recentClear, { color: colors.mountainBlue }]}>Clear</Text>
                   </TouchableOpacity>
                 )}
@@ -158,6 +159,7 @@ export function SearchBar({
                     style={styles.recentTap}
                     onPress={() => handleSelectSuggestion(query)}
                     testID={`recent-${query}`}
+                    accessibilityLabel={`Search for ${query}`}
                   >
                     <Text style={[styles.dropdownIcon, { color: colors.muted }]}>🕐</Text>
                     <Text
@@ -172,6 +174,7 @@ export function SearchBar({
                       onPress={() => onRemoveRecent(query)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       testID={`remove-recent-${query}`}
+                      accessibilityLabel={`Remove ${query} from recent searches`}
                     >
                       <Text style={[styles.clear, { color: colors.muted }]}>✕</Text>
                     </TouchableOpacity>
