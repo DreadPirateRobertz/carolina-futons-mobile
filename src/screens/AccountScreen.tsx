@@ -3,8 +3,9 @@
  *
  * User account hub. When unauthenticated, shows a branded sign-in prompt with
  * the mountain skyline backdrop. When authenticated, displays the user's profile
- * (avatar, name, email) and menu links to Order History, Saved Addresses,
- * Payment Methods, and Notification Preferences. Sign-out lives at the bottom.
+ * (avatar, name, email) and menu links to Order History and CF+ Premium, plus
+ * placeholder rows for Saved Addresses, Payment Methods, and Notification
+ * Preferences (not yet wired). Sign-out lives at the bottom.
  */
 
 import React from 'react';

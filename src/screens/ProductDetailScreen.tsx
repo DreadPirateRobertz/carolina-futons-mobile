@@ -173,7 +173,7 @@ export function ProductDetailScreen({
     return { opacity };
   });
 
-  // --- Callbacks (unchanged) ---
+  // --- Callbacks ---
   const handleSelectFabric = useCallback((fabric: Fabric) => {
     setSelectedFabric(fabric);
     events.selectFabric(model.id, fabric.id);

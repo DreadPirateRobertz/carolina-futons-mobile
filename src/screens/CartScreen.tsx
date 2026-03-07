@@ -25,7 +25,7 @@ import { events } from '@/services/analytics';
 const SHIPPING_THRESHOLD = 499;
 /** Flat shipping charge (in dollars) when below the free-shipping threshold. */
 const SHIPPING_COST = 49;
-/** North Carolina sales tax rate applied to the subtotal. */
+/** Placeholder tax rate applied to the subtotal (will be replaced by Stripe Tax). */
 const TAX_RATE = 0.07;
 
 /** Props for the CartScreen component. */
