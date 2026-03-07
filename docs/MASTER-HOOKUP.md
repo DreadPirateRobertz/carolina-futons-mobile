@@ -67,7 +67,7 @@ AR uses GLB (Android) and USDZ (iOS) files hosted on a CDN.
 | iOS | `apple-app-site-association` | `https://carolinafutons.com/.well-known/apple-app-site-association` |
 | Android | `assetlinks.json` | `https://carolinafutons.com/.well-known/assetlinks.json` |
 
-**Routes supported**: home, shop, category/{slug}, product/{slug}, cart, checkout, orders, orders/{id}, account, login, signup, wishlist, ar, notifications, stores, reset-password
+**Routes supported**: home, shop, category/{slug}, product/{slug}, cart, checkout, orders, orders/{id}, account, login, signup, wishlist, ar, notifications, stores, stores/{id}, reset-password, collections, collections/{slug}, forgot-password
 
 **OAuth callback**: `carolinafutons://oauth/wix/callback` (must match Wix OAuth app config)
 
@@ -84,6 +84,12 @@ Uses Expo Push Notifications (routes through APNs/FCM automatically).
 | No extra service needed | Expo handles APNs/FCM routing |
 
 **Notification types**: order_update, promotion, back_in_stock, cart_reminder — each deep-links to the relevant screen.
+
+**Direct payload routing** (cm-pdg): Notifications can also use direct payload keys instead of type-based routing:
+- `product_id` → ProductDetailScreen
+- `order_id` → OrderDetailScreen
+- `collection_slug` → CollectionDetailScreen
+- `promo` → HomeScreen with promo param
 
 ---
 
@@ -207,9 +213,14 @@ When testing, verify each screen matches the Blue Ridge editorial feel:
 | Product Detail | Dark surfaces, editorial typography, warm shadows |
 | Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) |
 | Cart (items) | Dark editorial, product thumbnails, coral CTA |
-| Account | Dark editorial, Playfair Display heading, coral Sign In |
+| Checkout | KeyboardAwareScrollView, saved address picker chips, address pre-fill |
+| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion) |
 | Onboarding | Brand story slides + style quiz (dark editorial treatment) |
-| Login/SignUp | Dark editorial with GlassCard form container |
+| Login/SignUp | Dark editorial with GlassCard form container, KeyboardAwareScrollView |
+| OrderDetail | Order tracking with status timeline |
+| Collections | Collection grid with deep link support |
+| NotificationPreferences | Per-category toggle switches |
+| ForceUpdateModal | Required/recommended variants with store link |
 
 ### Sandbox Testing Protocol
 
@@ -260,6 +271,7 @@ npm test
 | Deep linking (custom scheme) | **Live** | Nothing |
 | Universal links (HTTPS) | **Configured** | Server-side AASA/assetlinks hosting |
 | Push notifications | **Live** | Backend token storage endpoint |
+| Push notification deep links | **Live** | product_id, order_id, collection_slug, promo payload routing |
 | Push token refresh | **Live** | Nothing |
 | Analytics (Firebase + Mixpanel) | **Live** | Mixpanel token in `.env` |
 | Sentry crash reporting | **Live** | Real DSN in `.env` |
@@ -273,4 +285,9 @@ npm test
 | MountainSkyline SVG | **Live** | Renders on Home hero + divider |
 | Dark editorial theme | **Live** | All 23 screens |
 | GlassCard components | **Live** | Home CTAs, form containers |
-| Test suite | **2699 tests passing** | 176 suites |
+| KeyboardAwareScrollView | **Live** | Auto-scroll to focused field on forms |
+| Saved address book | **Live** | Max 5 addresses, default selection, checkout pre-fill |
+| Force update check | **Live** | Semver comparison, AppState foreground re-check |
+| Account deletion (GDPR/CCPA) | **Live** | Wix member deletion + local data wipe |
+| Data export (GDPR/CCPA) | **Live** | JSON export via share sheet (native) / Share API (web) |
+| Test suite | **2931 tests passing** | 189 suites |
