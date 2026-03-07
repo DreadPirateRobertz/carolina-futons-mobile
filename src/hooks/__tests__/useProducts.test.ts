@@ -11,10 +11,10 @@ describe('useProducts', () => {
     jest.useRealTimers();
   });
 
-  /** Render and advance past the initial loading delay */
-  function renderLoaded(...args: Parameters<typeof useProducts>) {
+  /** Render and flush async cache loading */
+  async function renderLoaded(...args: Parameters<typeof useProducts>) {
     const hook = renderHook(() => useProducts(...args));
-    act(() => jest.advanceTimersByTime(700));
+    await act(async () => {});
     return hook;
   }
 
@@ -25,8 +25,8 @@ describe('useProducts', () => {
       expect(result.current.products).toEqual([]);
     });
 
-    it('returns products after initial load completes', () => {
-      const { result } = renderLoaded();
+    it('returns products after initial load completes', async () => {
+      const { result } = await renderLoaded();
       expect(result.current.isInitialLoading).toBe(false);
       expect(result.current.products.length).toBeGreaterThan(0);
     });
@@ -56,34 +56,34 @@ describe('useProducts', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('returns first page of products (max 8)', () => {
-      const { result } = renderLoaded();
+    it('returns first page of products (max 8)', async () => {
+      const { result } = await renderLoaded();
       expect(result.current.products.length).toBeLessThanOrEqual(8);
     });
   });
 
   describe('initialCategory', () => {
-    it('starts with the given category pre-selected', () => {
-      const { result } = renderLoaded({ initialCategory: 'futons' });
+    it('starts with the given category pre-selected', async () => {
+      const { result } = await renderLoaded({ initialCategory: 'futons' });
       expect(result.current.selectedCategory).toBe('futons');
       expect(result.current.products.every((p) => p.category === 'futons')).toBe(true);
     });
 
-    it('returns only products from the initial category', () => {
+    it('returns only products from the initial category', async () => {
       const futonCount = PRODUCTS.filter((p) => p.category === 'futons').length;
-      const { result } = renderLoaded({ initialCategory: 'futons' });
+      const { result } = await renderLoaded({ initialCategory: 'futons' });
       expect(result.current.products.length).toBe(futonCount);
     });
 
-    it('allows changing category after initialization', () => {
-      const { result } = renderLoaded({ initialCategory: 'futons' });
+    it('allows changing category after initialization', async () => {
+      const { result } = await renderLoaded({ initialCategory: 'futons' });
       act(() => result.current.setSelectedCategory('covers'));
       expect(result.current.selectedCategory).toBe('covers');
       expect(result.current.products.every((p) => p.category === 'covers')).toBe(true);
     });
 
-    it('allows clearing category to show all', () => {
-      const { result } = renderLoaded({ initialCategory: 'futons' });
+    it('allows clearing category to show all', async () => {
+      const { result } = await renderLoaded({ initialCategory: 'futons' });
       act(() => result.current.setSelectedCategory(null));
       expect(result.current.selectedCategory).toBeNull();
       const categories = new Set(result.current.products.map((p) => p.category));
@@ -102,40 +102,40 @@ describe('useProducts', () => {
   });
 
   describe('search', () => {
-    it('filters by product name', () => {
-      const { result } = renderLoaded();
+    it('filters by product name', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('asheville'));
       const names = result.current.products.map((p) => p.name.toLowerCase());
       expect(names.every((n) => n.includes('asheville'))).toBe(true);
     });
 
-    it('filters by short description', () => {
-      const { result } = renderLoaded();
+    it('filters by short description', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('innerspring'));
       expect(result.current.products.length).toBeGreaterThan(0);
     });
 
-    it('filters by category keyword', () => {
-      const { result } = renderLoaded();
+    it('filters by category keyword', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('pillows'));
       expect(result.current.products.length).toBeGreaterThan(0);
       expect(result.current.products.every((p) => p.category === 'pillows')).toBe(true);
     });
 
-    it('is case-insensitive', () => {
-      const { result } = renderLoaded();
+    it('is case-insensitive', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('ASHEVILLE'));
       expect(result.current.products.length).toBeGreaterThan(0);
     });
 
-    it('returns empty for no matches', () => {
-      const { result } = renderLoaded();
+    it('returns empty for no matches', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('xyznonexistent'));
       expect(result.current.products.length).toBe(0);
     });
 
-    it('resets page when search changes', () => {
-      const { result } = renderLoaded();
+    it('resets page when search changes', async () => {
+      const { result } = await renderLoaded();
       // Load more first
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
@@ -146,14 +146,14 @@ describe('useProducts', () => {
   });
 
   describe('category filter', () => {
-    it('filters by category', () => {
-      const { result } = renderLoaded();
+    it('filters by category', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSelectedCategory('covers'));
       expect(result.current.products.every((p) => p.category === 'covers')).toBe(true);
     });
 
-    it('shows all when category is null', () => {
-      const { result } = renderLoaded();
+    it('shows all when category is null', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSelectedCategory('covers'));
       act(() => result.current.setSelectedCategory(null));
       // Should show more than just covers
@@ -161,8 +161,8 @@ describe('useProducts', () => {
       expect(categories.size).toBeGreaterThan(1);
     });
 
-    it('resets page when category changes', () => {
-      const { result } = renderLoaded();
+    it('resets page when category changes', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.setSelectedCategory('futons'));
@@ -171,8 +171,8 @@ describe('useProducts', () => {
   });
 
   describe('sort', () => {
-    it('sorts by price ascending', () => {
-      const { result } = renderLoaded();
+    it('sorts by price ascending', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSortBy('price-asc'));
       const prices = result.current.products.map((p) => p.price);
       for (let i = 1; i < prices.length; i++) {
@@ -180,8 +180,8 @@ describe('useProducts', () => {
       }
     });
 
-    it('sorts by price descending', () => {
-      const { result } = renderLoaded();
+    it('sorts by price descending', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSortBy('price-desc'));
       const prices = result.current.products.map((p) => p.price);
       for (let i = 1; i < prices.length; i++) {
@@ -189,8 +189,8 @@ describe('useProducts', () => {
       }
     });
 
-    it('sorts by rating', () => {
-      const { result } = renderLoaded();
+    it('sorts by rating', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSortBy('rating'));
       const ratings = result.current.products.map((p) => p.rating);
       for (let i = 1; i < ratings.length; i++) {
@@ -198,8 +198,8 @@ describe('useProducts', () => {
       }
     });
 
-    it('resets page when sort changes', () => {
-      const { result } = renderLoaded();
+    it('resets page when sort changes', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.setSortBy('price-asc'));
@@ -208,8 +208,8 @@ describe('useProducts', () => {
   });
 
   describe('pagination', () => {
-    it('loadMore increases visible products', () => {
-      const { result } = renderLoaded();
+    it('loadMore increases visible products', async () => {
+      const { result } = await renderLoaded();
       const initialCount = result.current.products.length;
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
@@ -219,8 +219,8 @@ describe('useProducts', () => {
       }
     });
 
-    it('sets isLoading during loadMore', () => {
-      const { result } = renderLoaded();
+    it('sets isLoading during loadMore', async () => {
+      const { result } = await renderLoaded();
       if (!result.current.hasMore) return;
       act(() => result.current.loadMore());
       expect(result.current.isLoading).toBe(true);
@@ -228,8 +228,8 @@ describe('useProducts', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('does not loadMore when already loading', () => {
-      const { result } = renderLoaded();
+    it('does not loadMore when already loading', async () => {
+      const { result } = await renderLoaded();
       if (!result.current.hasMore) return;
       act(() => result.current.loadMore());
       const countDuringLoad = result.current.products.length;
@@ -237,16 +237,16 @@ describe('useProducts', () => {
       expect(result.current.products.length).toBe(countDuringLoad);
     });
 
-    it('hasMore is false when all products visible', () => {
-      const { result } = renderLoaded();
+    it('hasMore is false when all products visible', async () => {
+      const { result } = await renderLoaded();
       // Filter to small category
       act(() => result.current.setSelectedCategory('pillows'));
       // Pillows has only 1 product, should not have more
       expect(result.current.hasMore).toBe(false);
     });
 
-    it('refresh resets to page 1', () => {
-      const { result } = renderLoaded();
+    it('refresh resets to page 1', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.refresh());
@@ -255,16 +255,16 @@ describe('useProducts', () => {
   });
 
   describe('combined filters', () => {
-    it('search + category filter works together', () => {
-      const { result } = renderLoaded();
+    it('search + category filter works together', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSelectedCategory('futons'));
       act(() => result.current.setSearchQuery('queen'));
       expect(result.current.products.length).toBeGreaterThan(0);
       expect(result.current.products.every((p) => p.category === 'futons')).toBe(true);
     });
 
-    it('search + sort works together', () => {
-      const { result } = renderLoaded();
+    it('search + sort works together', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('futon'));
       act(() => result.current.setSortBy('price-asc'));
       const prices = result.current.products.map((p) => p.price);
@@ -275,23 +275,23 @@ describe('useProducts', () => {
   });
 
   describe('fuzzy search', () => {
-    it('finds products with partial/fuzzy query', () => {
-      const { result } = renderLoaded();
+    it('finds products with partial/fuzzy query', async () => {
+      const { result } = await renderLoaded();
       // "ashvl" doesn't exactly match "Asheville" but fuzzy should find it
       act(() => result.current.setSearchQuery('ashvl'));
       expect(result.current.products.length).toBeGreaterThan(0);
       expect(result.current.products.some((p) => p.name.includes('Asheville'))).toBe(true);
     });
 
-    it('ranks exact matches higher than fuzzy matches', () => {
-      const { result } = renderLoaded();
+    it('ranks exact matches higher than fuzzy matches', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('asheville'));
       // First result should be the Asheville product
       expect(result.current.products[0].name).toContain('Asheville');
     });
 
-    it('returns empty for completely unrelated query', () => {
-      const { result } = renderLoaded();
+    it('returns empty for completely unrelated query', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('xyznothing'));
       expect(result.current.products.length).toBe(0);
     });
@@ -303,27 +303,27 @@ describe('useProducts', () => {
       expect(result.current.suggestions).toEqual([]);
     });
 
-    it('returns empty suggestions when query is short (< 2 chars)', () => {
-      const { result } = renderLoaded();
+    it('returns empty suggestions when query is short (< 2 chars)', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('f'));
       expect(result.current.suggestions).toEqual([]);
     });
 
-    it('returns suggestions for 2+ char query', () => {
-      const { result } = renderLoaded();
+    it('returns suggestions for 2+ char query', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('fu'));
       expect(result.current.suggestions.length).toBeGreaterThan(0);
     });
 
-    it('suggestions are product names', () => {
-      const { result } = renderLoaded();
+    it('suggestions are product names', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('ash'));
       expect(result.current.suggestions.length).toBeGreaterThan(0);
       expect(result.current.suggestions[0]).toContain('Asheville');
     });
 
-    it('caps suggestions at 5', () => {
-      const { result } = renderLoaded();
+    it('caps suggestions at 5', async () => {
+      const { result } = await renderLoaded();
       act(() => result.current.setSearchQuery('the'));
       expect(result.current.suggestions.length).toBeLessThanOrEqual(5);
     });

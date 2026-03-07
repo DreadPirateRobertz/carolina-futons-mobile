@@ -6,7 +6,7 @@
  * cursor-style pagination, and SWR (Stale-While-Revalidate) caching via
  * AsyncStorage for offline-first browsing.
  */
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   PRODUCTS,
   CATEGORIES,
@@ -16,13 +16,19 @@ import {
   type CategoryInfo,
 } from '@/data/products';
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
-import { saveCatalog, loadCachedCatalog } from '@/services/productCache';
+import { useDataCache } from '@/hooks/useDataCache';
 
 export type { Product, ProductCategory, SortOption, CategoryInfo };
 
 const PAGE_SIZE = 8;
+const PRODUCT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 const getSearchableText = (p: Product) => [p.name, p.shortDescription, p.category];
+
+/** Mock fetcher — will be replaced by Wix API call */
+async function fetchProducts(): Promise<Product[]> {
+  return PRODUCTS;
+}
 
 interface UseProductsReturn {
   products: Product[];
@@ -64,38 +70,17 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   );
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [isFromCache, setIsFromCache] = useState(false);
-  const freshLoaded = useRef(false);
 
-  // Step 1: Load cached catalog immediately (non-blocking, fire-and-forget)
-  useEffect(() => {
-    (async () => {
-      const cached = await loadCachedCatalog();
-      // Only use cache if fresh data hasn't arrived yet
-      if (!freshLoaded.current && cached && cached.products.length > 0) {
-        setAllProducts(cached.products);
-        setIsFromCache(true);
-        setIsInitialLoading(false);
-      }
-    })();
-  }, []);
+  const {
+    data: cachedProducts,
+    isLoading: isCacheLoading,
+    isStale: isFromCache,
+    refresh: cacheRefresh,
+  } = useDataCache<Product[]>('products', fetchProducts, { maxAge: PRODUCT_CACHE_MAX_AGE });
 
-  // Step 2: "Fetch" fresh data after simulated network delay
-  // (currently mock PRODUCTS; will be replaced by Wix API call)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      freshLoaded.current = true;
-      setAllProducts(PRODUCTS);
-      setIsFromCache(false);
-      setIsInitialLoading(false);
-      // Cache fresh data for offline use
-      saveCatalog(PRODUCTS);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, []);
+  const allProducts = cachedProducts ?? [];
+  const isInitialLoading = isCacheLoading && cachedProducts === null;
 
   // Product names for autocomplete (derived from current product set)
   const productNames = useMemo(() => allProducts.map((p) => p.name), [allProducts]);
@@ -171,12 +156,8 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const refresh = useCallback(() => {
     setPage(1);
     setIsLoading(false);
-    // Re-fetch and re-cache
-    freshLoaded.current = true;
-    setAllProducts(PRODUCTS);
-    setIsFromCache(false);
-    saveCatalog(PRODUCTS);
-  }, []);
+    cacheRefresh();
+  }, [cacheRefresh]);
 
   // Reset pagination when filters change
   const handleSearchQuery = useCallback((query: string) => {
