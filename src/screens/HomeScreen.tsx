@@ -21,6 +21,7 @@ import { darkPalette, colors as tokenColors } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { ProductCard } from '@/components/ProductCard';
@@ -145,6 +146,9 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           Handcrafted comfort from the Blue Ridge Mountains
         </Text>
       </View>
+
+      {/* Promotional Banner Carousel */}
+      <PromoBannerCarousel />
 
       {/* AR (Augmented Reality) Call To Action — Primary, glassmorphism */}
       <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="medium">
