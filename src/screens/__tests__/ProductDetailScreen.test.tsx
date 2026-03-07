@@ -400,6 +400,9 @@ describe('ProductDetailScreen', () => {
   });
 
   describe('AR CTA', () => {
+    beforeEach(() => { mockPremiumValue.isPremium = true; });
+    afterEach(() => { mockPremiumValue.isPremium = false; });
+
     it('renders AR button', () => {
       const { getByTestId } = renderDetail();
       expect(getByTestId('detail-ar-button')).toBeTruthy();
@@ -576,10 +579,12 @@ describe('ProductDetailScreen', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
+      mockPremiumValue.isPremium = true;
     });
 
     afterEach(() => {
       Object.defineProperty(Platform, 'OS', { value: originalOS });
+      mockPremiumValue.isPremium = false;
     });
 
     it('navigates to ARWeb screen on web platform when AR button tapped', () => {
@@ -644,18 +649,22 @@ describe('ProductDetailScreen', () => {
     });
 
     it('AR button works even without catalog product', () => {
+      mockPremiumValue.isPremium = true;
       const onOpenAR = jest.fn();
       const { getByTestId } = renderDetail({ productId: 'nonexistent', onOpenAR });
       expect(() => fireEvent.press(getByTestId('detail-ar-button'))).not.toThrow();
       expect(onOpenAR).toHaveBeenCalledWith('asheville-full'); // falls back to first model
+      mockPremiumValue.isPremium = false;
     });
 
     it('AR web navigation uses catalog product ID when available', () => {
+      mockPremiumValue.isPremium = true;
       Object.defineProperty(Platform, 'OS', { value: 'web' });
       const { getByTestId } = renderDetail({ productId: 'blue-ridge-queen' });
       fireEvent.press(getByTestId('detail-ar-button'));
       const navParams = mockNavigate.mock.calls[0][1];
       expect(navParams.productId).toBe('prod-blue-ridge-queen');
+      mockPremiumValue.isPremium = false;
     });
   });
 
@@ -674,6 +683,21 @@ describe('ProductDetailScreen', () => {
       mockPremiumValue.isPremium = false;
       const { queryByTestId } = renderDetail();
       expect(queryByTestId('ar-premium-badge')).toBeNull();
+    });
+
+    it('blocks AR for non-premium users with upsell alert', () => {
+      mockPremiumValue.isPremium = false;
+      const onOpenAR = jest.fn();
+      const alertSpy = jest.spyOn(require('react-native').Alert, 'alert');
+      const { getByTestId } = renderDetail({ onOpenAR });
+      fireEvent.press(getByTestId('detail-ar-button'));
+      expect(onOpenAR).not.toHaveBeenCalled();
+      expect(alertSpy).toHaveBeenCalledWith(
+        'CF+ Feature',
+        expect.stringContaining('AR Room Designer'),
+        expect.any(Array),
+      );
+      alertSpy.mockRestore();
     });
   });
 });

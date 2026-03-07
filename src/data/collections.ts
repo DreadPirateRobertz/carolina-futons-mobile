@@ -14,6 +14,7 @@ export interface EditorialCollection {
   mood: string[];
   season?: string;
   featured: boolean;
+  earlyAccess?: boolean;
   productIds: string[];
 }
 
@@ -127,6 +128,28 @@ export const COLLECTIONS: EditorialCollection[] = [
       'prod-mountain-cover-full',
       'prod-arm-pillows',
       'prod-furniture-polish',
+    ],
+  },
+  {
+    id: 'col-spring-preview',
+    slug: 'spring-2026-preview',
+    title: 'Spring 2026 Preview',
+    subtitle: 'First look — CF+ members only',
+    description:
+      'Get an exclusive first look at our Spring 2026 line. New organic fabrics, refreshed colorways, and a brand-new daybed design — available to CF+ members before the public launch.',
+    heroImage: {
+      uri: 'https://placeholder.co/800x500/B8D8BA/3A2518?text=Spring+2026+Preview',
+      alt: 'A bright living room with new spring collection furniture',
+    },
+    mood: ['fresh', 'exclusive', 'seasonal'],
+    season: 'spring',
+    featured: true,
+    earlyAccess: true,
+    productIds: [
+      'prod-asheville-full',
+      'prod-blue-ridge-queen',
+      'prod-sunset-cover-queen',
+      'prod-memory-foam',
     ],
   },
 ];

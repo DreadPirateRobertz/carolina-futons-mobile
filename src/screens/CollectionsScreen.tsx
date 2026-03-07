@@ -8,13 +8,15 @@
  */
 
 import React, { useCallback } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollections } from '@/hooks/useCollections';
+import { usePremium } from '@/hooks/usePremium';
 import { CollectionCard } from '@/components/CollectionCard';
+import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
@@ -33,12 +35,24 @@ export function CollectionsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { collections } = useCollections();
+  const { isPremium } = usePremium();
 
   const handleCollectionPress = useCallback(
     (collection: EditorialCollection) => {
+      if (collection.earlyAccess && !isPremium) {
+        Alert.alert(
+          'CF+ Early Access',
+          'This collection is available exclusively for CF+ members. Upgrade to preview new collections before they launch.',
+          [
+            { text: 'Not Now', style: 'cancel' },
+            { text: 'Learn More', onPress: () => navigation.navigate('Premium') },
+          ],
+        );
+        return;
+      }
       navigation.navigate('CollectionDetail', { slug: collection.slug });
     },
-    [navigation],
+    [navigation, isPremium],
   );
 
   const renderItem = useCallback(
@@ -50,9 +64,17 @@ export function CollectionsScreen() {
           variant={index === 0 ? 'featured' : 'featured'}
           testID={`collection-card-${item.slug}`}
         />
+        {item.earlyAccess && !isPremium && (
+          <View style={styles.earlyAccessOverlay} testID={`early-access-lock-${item.slug}`}>
+            <PremiumBadge size="sm" />
+            <Text style={[styles.earlyAccessText, { color: colors.espresso }]}>
+              CF+ Early Access
+            </Text>
+          </View>
+        )}
       </View>
     ),
-    [handleCollectionPress, spacing.pagePadding],
+    [handleCollectionPress, spacing.pagePadding, isPremium, colors.espresso],
   );
 
   const renderSeparator = useCallback(
@@ -113,5 +135,15 @@ export function CollectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  earlyAccessOverlay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  earlyAccessText: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

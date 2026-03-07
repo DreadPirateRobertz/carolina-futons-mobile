@@ -71,6 +71,18 @@ describe('payment service', () => {
       const totals = calculateTotals(123);
       expect(totals.tax).toBe(8.61);
     });
+
+    it('gives free shipping for premium users regardless of subtotal', () => {
+      const totals = calculateTotals(100, true);
+      expect(totals.shipping).toBe(0);
+      expect(totals.total).toBe(107);
+    });
+
+    it('gives free shipping for premium users even at zero subtotal', () => {
+      const totals = calculateTotals(0, true);
+      expect(totals.shipping).toBe(0);
+      expect(totals.total).toBe(0);
+    });
   });
 
   describe('createPaymentIntent', () => {

@@ -30,6 +30,10 @@ jest.mock('@/services/wix', () => ({
   useWixClient: () => mockWixClient,
 }));
 
+jest.mock('../usePremium', () => ({
+  usePremium: () => ({ isPremium: false }),
+}));
+
 // Mock payment service
 jest.mock('@/services/payment', () => {
   const actual = jest.requireActual('@/services/payment');

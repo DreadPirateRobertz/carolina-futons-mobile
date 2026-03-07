@@ -17,6 +17,7 @@ import {
   Dimensions,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -209,6 +210,17 @@ export function ProductDetailScreen({
   }, []);
 
   const handleOpenAR = useCallback(() => {
+    if (!isPremium) {
+      Alert.alert(
+        'CF+ Feature',
+        'AR Room Designer is a CF+ premium feature. Upgrade to place furniture in your room.',
+        [
+          { text: 'Not Now', style: 'cancel' },
+          { text: 'Learn More', onPress: () => navigation.navigate('Premium') },
+        ],
+      );
+      return;
+    }
     onOpenAR?.(model.id);
     events.openAR(model.id);
     openARViewer(model.id, model.name, {
@@ -221,7 +233,7 @@ export function ProductDetailScreen({
         });
       },
     });
-  }, [model.id, model.name, catalogProduct?.id, onOpenAR, navigation]);
+  }, [model.id, model.name, catalogProduct?.id, onOpenAR, navigation, isPremium]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);

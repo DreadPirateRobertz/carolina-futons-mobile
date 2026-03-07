@@ -13,6 +13,7 @@ import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-nat
 import { useWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
 import { useCart } from './useCart';
+import { usePremium } from './usePremium';
 import {
   createPaymentIntent,
   confirmOrder,
@@ -83,6 +84,7 @@ export function usePayment() {
   const { isPlatformPaySupported, confirmPlatformPayPayment } = usePlatformPay();
   const wixClient = useWixClient();
   const { items, subtotal, clearCart } = useCart();
+  const { isPremium } = usePremium();
   const [state, setState] = useState<PaymentState>({
     status: 'idle',
     error: null,
@@ -92,7 +94,7 @@ export function usePayment() {
   const [googlePaySupported, setGooglePaySupported] = useState(false);
   const processingRef = useRef(false);
 
-  const totals = useMemo(() => calculateTotals(subtotal), [subtotal]);
+  const totals = useMemo(() => calculateTotals(subtotal, isPremium), [subtotal, isPremium]);
 
   // Check Apple Pay support on mount (iOS)
   useEffect(() => {

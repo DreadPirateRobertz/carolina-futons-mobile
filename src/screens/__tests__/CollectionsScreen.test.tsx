@@ -4,6 +4,21 @@ import { NavigationContainer } from '@react-navigation/native';
 import { CollectionsScreen } from '../CollectionsScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+const mockPremiumValue = {
+  isPremium: false,
+  isLoading: false,
+  offerings: [],
+  error: null,
+  purchase: jest.fn(),
+  restore: jest.fn(),
+  refreshStatus: jest.fn(),
+};
+
+jest.mock('@/hooks/usePremium', () => ({
+  PremiumProvider: ({ children }: any) => children,
+  usePremium: () => mockPremiumValue,
+}));
+
 function renderCollectionsScreen() {
   return render(
     <NavigationContainer>
@@ -28,5 +43,19 @@ describe('CollectionsScreen', () => {
   it('renders collection cards', () => {
     const { getByTestId } = renderCollectionsScreen();
     expect(getByTestId('collection-card-mountain-lodge-living')).toBeTruthy();
+  });
+
+  it('shows early access lock on gated collection for non-premium users', () => {
+    mockPremiumValue.isPremium = false;
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('early-access-lock-spring-2026-preview')).toBeTruthy();
+    mockPremiumValue.isPremium = false;
+  });
+
+  it('hides early access lock for premium users', () => {
+    mockPremiumValue.isPremium = true;
+    const { queryByTestId } = renderCollectionsScreen();
+    expect(queryByTestId('early-access-lock-spring-2026-preview')).toBeNull();
+    mockPremiumValue.isPremium = false;
   });
 });

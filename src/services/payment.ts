@@ -40,10 +40,10 @@ export interface OrderConfirmation {
 
 /**
  * Derive shipping, tax, and grand total from a cart subtotal.
- * Shipping is free above $499; tax is a flat 7% (NC rate).
+ * Shipping is free above $499 or for CF+ premium members; tax is a flat 7% (NC rate).
  */
-export function calculateTotals(subtotal: number): OrderTotals {
-  const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+export function calculateTotals(subtotal: number, isPremium = false): OrderTotals {
+  const shipping = isPremium || subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
   const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
   const total = Math.round((subtotal + shipping + tax) * 100) / 100;
   return { subtotal, shipping, tax, total };
