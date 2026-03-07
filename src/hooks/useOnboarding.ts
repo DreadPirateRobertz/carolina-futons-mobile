@@ -7,6 +7,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { captureException } from '@/services/crashReporting';
 
 const STORAGE_KEY = '@carolina_futons_onboarding_complete';
 
@@ -26,7 +27,8 @@ export function useOnboarding(): UseOnboardingReturn {
       .then((value) => {
         setHasSeenOnboarding(value === 'true');
       })
-      .catch(() => {
+      .catch((err) => {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'onboarding_read' });
         setHasSeenOnboarding(false);
       })
       .finally(() => {
@@ -37,8 +39,8 @@ export function useOnboarding(): UseOnboardingReturn {
   const completeOnboarding = useCallback(async () => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, 'true');
-    } catch {
-      // Storage write failed — still mark complete in memory
+    } catch (err) {
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'onboarding_write' });
     }
     setHasSeenOnboarding(true);
   }, []);

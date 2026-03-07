@@ -19,6 +19,7 @@ import {
   shouldShowNotification,
   registerPushToken,
 } from '@/services/notifications';
+import { captureException } from '@/services/crashReporting';
 import { useNotificationStorage } from './useNotificationStorage';
 
 // Show notifications when app is in foreground
@@ -118,7 +119,8 @@ async function registerForPushToken(): Promise<string | null> {
   try {
     const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
     return data;
-  } catch {
+  } catch (err) {
+    captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getExpoPushToken' });
     return null;
   }
 }
@@ -154,8 +156,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         const { status } = await Notifications.getPermissionsAsync();
         const permStatus: PermissionStatus = status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined';
         dispatch({ type: 'SET_PERMISSION', status: permStatus });
-      } catch {
-        // Permission check failed — leave as undetermined
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getPermissionsAsync' });
       }
     })();
   }, []);
@@ -169,7 +171,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(() => {});
+        registerPushToken(token).catch((err) => {
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+        });
       }
       return;
     }
@@ -183,7 +187,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch(() => {});
+        registerPushToken(token).catch((err) => {
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+        });
       }
     }
   }, []);
@@ -249,7 +255,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Gap 4: Sync badge count to OS whenever it changes
   useEffect(() => {
-    Notifications.setBadgeCountAsync(state.badgeCount).catch(() => {});
+    Notifications.setBadgeCountAsync(state.badgeCount).catch((err) => {
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'setBadgeCount' });
+    });
   }, [state.badgeCount]);
 
   const value = useMemo<NotificationContextValue>(
