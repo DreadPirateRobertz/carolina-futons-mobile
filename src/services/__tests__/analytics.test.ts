@@ -341,5 +341,12 @@ describe('analytics', () => {
       expect(ev.name).toBe('ar_save_to_wishlist');
       expect(ev.properties).toEqual({ model_id: 'asheville-full', fabric_id: 'mountain-blue' });
     });
+
+    it('events.beginCheckout tracks correctly', () => {
+      events.beginCheckout(3, 1047);
+      const ev = getEventBuffer()[0];
+      expect(ev.name).toBe('begin_checkout');
+      expect(ev.properties).toEqual({ item_count: 3, total: 1047 });
+    });
   });
 });

@@ -19,6 +19,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
+import { events } from '@/services/analytics';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -49,8 +50,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     (query: string) => {
       setSearchQuery(query);
       addSearch(query);
+      events.search(query, products.length);
     },
-    [setSearchQuery, addSearch],
+    [setSearchQuery, addSearch, products.length],
   );
 
   const renderProduct = useCallback(
@@ -98,11 +100,17 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         <CategoryFilter
           categories={categories}
           selected={selectedCategory}
-          onSelect={setSelectedCategory}
+          onSelect={(category: string) => {
+            setSelectedCategory(category);
+            events.filterCategory(category);
+          }}
         />
 
         {/* Sort + count */}
-        <SortPicker value={sortBy} onChange={setSortBy} resultCount={products.length} />
+        <SortPicker value={sortBy} onChange={(sort: string) => {
+          setSortBy(sort);
+          events.sortProducts(sort);
+        }} resultCount={products.length} />
       </View>
     ),
     [

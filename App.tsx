@@ -1,7 +1,7 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
@@ -29,6 +29,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
 import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 
@@ -47,7 +48,7 @@ initAnalytics({
 SplashScreen.preventAutoHideAsync();
 
 function App() {
-  const navigationRef = useRef<NavigationContainerRef<Record<string, unknown>>>(null);
+  const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!stripeKey) {
     throw new Error(
@@ -94,7 +95,9 @@ function App() {
                       <NavigationContainer
                         ref={navigationRef}
                         linking={linkingConfig}
+                        onStateChange={onStateChange}
                         onReady={() => {
+                          onScreenTrackingReady();
                           if (sentryNavigationIntegration && navigationRef.current) {
                             (sentryNavigationIntegration as { registerNavigationContainer: (ref: unknown) => void })
                               .registerNavigationContainer(navigationRef);

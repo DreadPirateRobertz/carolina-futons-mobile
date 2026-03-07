@@ -26,6 +26,7 @@ import { usePayment } from '@/hooks/usePayment';
 import { formatPrice } from '@/utils';
 import type { PaymentMethod } from '@/services/payment';
 import type { OrderConfirmation } from '@/services/payment';
+import { events } from '@/services/analytics';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -86,8 +87,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { items, subtotal } = useCart();
   const { status, error, totals, processPayment, resetPayment } = usePayment();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
+  const [checkoutTracked, setCheckoutTracked] = useState(false);
 
   const isProcessing = status === 'processing';
+
+  if (!checkoutTracked && items.length > 0) {
+    events.beginCheckout(items.length, totals.total);
+    setCheckoutTracked(true);
+  }
 
   const handleSelectMethod = useCallback(
     (method: PaymentMethod) => {
@@ -111,12 +118,13 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     const order = await processPayment(selectedMethod);
 
     if (order) {
+      events.purchase(order.orderId, totals.total, items.length);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       onOrderComplete?.(order);
     }
-  }, [selectedMethod, isProcessing, processPayment, onOrderComplete]);
+  }, [selectedMethod, isProcessing, processPayment, onOrderComplete, totals.total, items.length]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 

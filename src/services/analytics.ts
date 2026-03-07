@@ -361,6 +361,9 @@ export const events = {
   helpfulVote(reviewId: string, productId: string) {
     trackEvent('helpful_vote', { review_id: reviewId, product_id: productId });
   },
+  beginCheckout(itemCount: number, total: number) {
+    trackEvent('begin_checkout', { item_count: itemCount, total });
+  },
   arSurfaceDetected(planeType: string, confidence: number) {
     trackEvent('ar_surface_detected', { plane_type: planeType, confidence });
   },

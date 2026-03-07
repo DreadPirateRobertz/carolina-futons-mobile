@@ -19,6 +19,7 @@ import { EmptyState } from '@/components';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
+import { events } from '@/services/analytics';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -54,6 +55,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
 
   const handleRemove = useCallback(
     (itemId: string) => {
+      events.removeFromCart(itemId);
       removeItem(itemId);
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -268,7 +270,10 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               },
               shadows.button,
             ]}
-            onPress={onCheckout}
+            onPress={() => {
+              events.beginCheckout(itemCount, total);
+              onCheckout?.();
+            }}
             testID="checkout-button"
             accessibilityLabel={`Proceed to checkout, total ${formatPrice(total)}`}
             accessibilityRole="button"
