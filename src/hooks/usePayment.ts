@@ -1,14 +1,15 @@
 /**
  * @module usePayment
  *
- * Orchestrates the Stripe checkout flow: creates a PaymentIntent on the
- * backend, presents the native payment sheet (Apple Pay / Google Pay / card),
- * confirms the order, and clears the cart on success. Guards against
- * double-submission via a processing ref.
+ * Orchestrates the Stripe checkout flow: creates a PaymentIntent via the
+ * Wix eCommerce API, presents the native payment sheet (Apple Pay /
+ * Google Pay / card), confirms the order, and clears the cart on success.
+ * Guards against double-submission via a processing ref.
  */
 import { useState, useCallback, useRef, useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
+import { useWixClient } from '@/services/wix';
 import { useCart } from './useCart';
 import {
   createPaymentIntent,
@@ -34,6 +35,7 @@ interface PaymentState {
  */
 export function usePayment() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const wixClient = useWixClient();
   const { items, subtotal, clearCart } = useCart();
   const [state, setState] = useState<PaymentState>({
     status: 'idle',
@@ -52,9 +54,9 @@ export function usePayment() {
       setState({ status: 'processing', error: null, order: null });
 
       try {
-        // 1. Create PaymentIntent on backend
+        // 1. Create PaymentIntent via Wix eCommerce API
         const { clientSecret, ephemeralKey, customerId, paymentIntentId } =
-          await createPaymentIntent(items, totals);
+          await createPaymentIntent(wixClient, items, totals);
 
         // 2. Initialize Stripe payment sheet
         const { error: initError } = await initPaymentSheet({
@@ -97,8 +99,8 @@ export function usePayment() {
           );
         }
 
-        // 4. Confirm order on backend
-        const confirmation = await confirmOrder(paymentIntentId, items, totals, method);
+        // 4. Confirm order via Wix eCommerce API
+        const confirmation = await confirmOrder(wixClient, paymentIntentId, items, totals, method);
 
         // 5. Clear cart and set success state
         clearCart();
@@ -115,7 +117,7 @@ export function usePayment() {
         return null;
       }
     },
-    [items, totals, initPaymentSheet, presentPaymentSheet, clearCart],
+    [items, totals, wixClient, initPaymentSheet, presentPaymentSheet, clearCart],
   );
 
   const resetPayment = useCallback(() => {

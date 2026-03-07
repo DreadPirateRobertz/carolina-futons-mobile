@@ -62,6 +62,11 @@ jest.mock('@stripe/stripe-react-native', () => ({
   },
 }));
 
+// Mock useWixClient
+jest.mock('@/services/wix', () => ({
+  useWixClient: () => ({ createPaymentIntent: jest.fn(), confirmOrder: jest.fn() }),
+}));
+
 const mockCreatePaymentIntent = jest.fn().mockResolvedValue({
   clientSecret: 'pi_test_secret',
   ephemeralKey: 'ek_test',
@@ -682,6 +687,7 @@ describe('CheckoutScreen', () => {
       });
 
       expect(mockConfirmOrder).toHaveBeenCalledWith(
+        expect.any(Object), // WixClient
         'pi_test',
         expect.any(Array),
         expect.any(Object),

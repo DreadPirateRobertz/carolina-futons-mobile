@@ -5,10 +5,26 @@ import {
   PaymentError,
 } from '../payment';
 import type { CartItem } from '@/hooks/useCart';
+import { WixClient, type WixClientConfig } from '@/services/wix';
 
 // Mock fetch globally
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
+
+const TEST_CONFIG: WixClientConfig = {
+  apiKey: 'test-api-key',
+  siteId: 'test-site-id',
+};
+
+function mockJsonResponse(data: unknown, status = 200) {
+  return Promise.resolve({
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 200 ? 'OK' : 'Error',
+    json: () => Promise.resolve(data),
+    headers: new Headers(),
+  });
+}
 
 const mockCartItem: CartItem = {
   id: 'model-1:fabric-1',
@@ -19,8 +35,11 @@ const mockCartItem: CartItem = {
 };
 
 describe('payment service', () => {
+  let client: WixClient;
+
   beforeEach(() => {
     mockFetch.mockReset();
+    client = new WixClient(TEST_CONFIG);
   });
 
   describe('calculateTotals', () => {
@@ -49,73 +68,79 @@ describe('payment service', () => {
     });
 
     it('rounds tax to two decimal places', () => {
-      // 123 * 0.07 = 8.61
       const totals = calculateTotals(123);
       expect(totals.tax).toBe(8.61);
     });
   });
 
   describe('createPaymentIntent', () => {
-    it('calls the payment API with correct body', async () => {
+    it('calls WixClient with mapped line items and totals', async () => {
       const mockResponse = {
         clientSecret: 'pi_123_secret_abc',
         paymentIntentId: 'pi_123',
         ephemeralKey: 'ek_123',
         customerId: 'cus_123',
       };
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockResponse),
-      });
+      mockFetch.mockReturnValue(mockJsonResponse(mockResponse));
 
       const totals = calculateTotals(349);
-      const result = await createPaymentIntent([mockCartItem], totals);
+      const result = await createPaymentIntent(client, [mockCartItem], totals);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/payments/create-intent'),
+        expect.stringContaining('/ecom/v1/payments/create-intent'),
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: expect.objectContaining({
+            Authorization: 'test-api-key',
+            'wix-site-id': 'test-site-id',
+          }),
         }),
       );
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.lineItems).toEqual([
+        {
+          id: 'model-1:fabric-1',
+          name: 'Test Futon',
+          fabric: 'Natural Linen',
+          quantity: 1,
+          unitPrice: 349,
+        },
+      ]);
+      expect(body.totals).toEqual(totals);
       expect(result).toEqual(mockResponse);
     });
 
-    it('throws PaymentError on API failure', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        json: () => Promise.resolve({ message: 'Card declined' }),
-      });
-
-      const totals = calculateTotals(349);
-      await expect(createPaymentIntent([mockCartItem], totals)).rejects.toThrow(PaymentError);
-      await expect(createPaymentIntent([mockCartItem], totals)).rejects.toThrow('Card declined');
-    });
-
-    it('throws with default message when API returns non-JSON error', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.reject(new Error('parse error')),
-      });
-
-      const totals = calculateTotals(349);
-      await expect(createPaymentIntent([mockCartItem], totals)).rejects.toThrow(
-        'Payment service unavailable',
+    it('throws PaymentError with INTENT_FAILED code on API failure', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ message: 'Card declined' }, 400),
       );
-    });
-
-    it('throws on network failure', async () => {
-      mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
 
       const totals = calculateTotals(349);
-      await expect(createPaymentIntent([mockCartItem], totals)).rejects.toThrow(
-        'Network request failed',
+      try {
+        await createPaymentIntent(client, [mockCartItem], totals);
+        fail('Expected PaymentError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(PaymentError);
+        expect((err as PaymentError).code).toBe('INTENT_FAILED');
+        expect((err as PaymentError).message).toBe('Card declined');
+      }
+    });
+
+    it('throws PaymentError with default message on non-JSON error', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ message: 'HTTP 503' }, 503),
+      );
+
+      const totals = calculateTotals(349);
+      await expect(createPaymentIntent(client, [mockCartItem], totals)).rejects.toThrow(
+        PaymentError,
       );
     });
   });
 
   describe('confirmOrder', () => {
-    it('calls the order confirmation API', async () => {
+    it('calls WixClient with order details', async () => {
       const mockConfirmation = {
         orderId: 'ord_123',
         orderNumber: 'CF-20260301-001',
@@ -125,41 +150,43 @@ describe('payment service', () => {
         createdAt: '2026-03-01T12:00:00Z',
         estimatedDelivery: 'March 15-20, 2026',
       };
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockConfirmation),
-      });
+      mockFetch.mockReturnValue(mockJsonResponse(mockConfirmation));
 
       const totals = calculateTotals(349);
-      const result = await confirmOrder('pi_123', [mockCartItem], totals, 'card');
+      const result = await confirmOrder(client, 'pi_123', [mockCartItem], totals, 'card');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/orders/confirm'),
+        expect.stringContaining('/ecom/v1/orders/confirm'),
         expect.objectContaining({ method: 'POST' }),
       );
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.paymentIntentId).toBe('pi_123');
+      expect(body.lineItems[0]).toMatchObject({
+        id: 'model-1:fabric-1',
+        modelId: 'model-1',
+        modelName: 'Test Futon',
+        fabricId: 'fabric-1',
+        fabricName: 'Natural Linen',
+      });
+
       expect(result.orderId).toBe('ord_123');
       expect(result.orderNumber).toBe('CF-20260301-001');
     });
 
-    it('throws PaymentError on confirmation failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: () => Promise.resolve({ message: 'Order already exists' }),
-      });
-
-      const totals = calculateTotals(349);
-      await expect(confirmOrder('pi_123', [mockCartItem], totals, 'card')).rejects.toThrow(
-        PaymentError,
+    it('throws PaymentError with CONFIRM_FAILED code on failure', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ message: 'Order already exists' }, 400),
       );
-    });
-
-    it('throws on network failure', async () => {
-      mockFetch.mockRejectedValueOnce(new TypeError('Network request failed'));
 
       const totals = calculateTotals(349);
-      await expect(
-        confirmOrder('pi_123', [mockCartItem], totals, 'card'),
-      ).rejects.toThrow('Network request failed');
+      try {
+        await confirmOrder(client, 'pi_123', [mockCartItem], totals, 'card');
+        fail('Expected PaymentError');
+      } catch (err) {
+        expect(err).toBeInstanceOf(PaymentError);
+        expect((err as PaymentError).code).toBe('CONFIRM_FAILED');
+      }
     });
   });
 

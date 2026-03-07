@@ -332,6 +332,50 @@ export class WixClient {
     };
   }
 
+  // ── Payments (eCommerce Payments API) ─────────────────────────
+
+  async createPaymentIntent(
+    lineItems: { id: string; name: string; fabric: string; quantity: number; unitPrice: number }[],
+    totals: { subtotal: number; shipping: number; tax: number; total: number },
+  ): Promise<{
+    clientSecret: string;
+    paymentIntentId: string;
+    ephemeralKey: string;
+    customerId: string;
+  }> {
+    return this.post('/ecom/v1/payments/create-intent', { lineItems, totals });
+  }
+
+  async confirmOrder(
+    paymentIntentId: string,
+    lineItems: {
+      id: string;
+      modelId: string;
+      modelName: string;
+      fabricId: string;
+      fabricName: string;
+      quantity: number;
+      unitPrice: number;
+    }[],
+    totals: { subtotal: number; shipping: number; tax: number; total: number },
+    paymentMethod: string,
+  ): Promise<{
+    orderId: string;
+    orderNumber: string;
+    items: unknown[];
+    totals: { subtotal: number; shipping: number; tax: number; total: number };
+    paymentMethod: string;
+    createdAt: string;
+    estimatedDelivery: string;
+  }> {
+    return this.post('/ecom/v1/orders/confirm', {
+      paymentIntentId,
+      lineItems,
+      totals,
+      paymentMethod,
+    });
+  }
+
   // ── Cart mutations (eCommerce Cart API) ──────────────────────
 
   async addToCart(productId: string, quantity: number, variantId?: string): Promise<void> {

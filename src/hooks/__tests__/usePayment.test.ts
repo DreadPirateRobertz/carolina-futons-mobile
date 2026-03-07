@@ -15,6 +15,12 @@ jest.mock('@stripe/stripe-react-native', () => ({
   StripeProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+// Mock WixClient via useWixClient
+const mockWixClient = { createPaymentIntent: jest.fn(), confirmOrder: jest.fn() };
+jest.mock('@/services/wix', () => ({
+  useWixClient: () => mockWixClient,
+}));
+
 // Mock payment service
 jest.mock('@/services/payment', () => {
   const actual = jest.requireActual('@/services/payment');
@@ -64,6 +70,60 @@ describe('usePayment', () => {
     });
     expect(order).toBeNull();
     expect(mockedCreatePaymentIntent).not.toHaveBeenCalled();
+  });
+
+  it('passes wixClient to createPaymentIntent', async () => {
+    mockedCreatePaymentIntent.mockResolvedValue({
+      clientSecret: 'pi_123_secret_abc',
+      paymentIntentId: 'pi_123',
+      ephemeralKey: 'ek_123',
+      customerId: 'cus_123',
+    });
+
+    mockedConfirmOrder.mockResolvedValue({
+      orderId: 'ord_123',
+      orderNumber: 'CF-001',
+      items: [],
+      totals: { subtotal: 349, shipping: 49, tax: 24.43, total: 422.43 },
+      paymentMethod: 'card',
+      createdAt: '2026-03-01T12:00:00Z',
+      estimatedDelivery: 'March 15-20, 2026',
+    });
+
+    const { result } = renderHook(
+      () => {
+        const cart = useCart();
+        const payment = usePayment();
+        return { cart, payment };
+      },
+      { wrapper },
+    );
+
+    await act(async () => {
+      result.current.cart.addItem(
+        { id: 'test-model', name: 'Test', basePrice: 349 } as any,
+        { id: 'test-fabric', name: 'Test', color: '#000', price: 0 } as any,
+        1,
+      );
+    });
+
+    await act(async () => {
+      await result.current.payment.processPayment('card');
+    });
+
+    // First arg should be the mock WixClient
+    expect(mockedCreatePaymentIntent).toHaveBeenCalledWith(
+      mockWixClient,
+      expect.any(Array),
+      expect.any(Object),
+    );
+    expect(mockedConfirmOrder).toHaveBeenCalledWith(
+      mockWixClient,
+      'pi_123',
+      expect.any(Array),
+      expect.any(Object),
+      'card',
+    );
   });
 
   it('handles payment cancellation gracefully', async () => {

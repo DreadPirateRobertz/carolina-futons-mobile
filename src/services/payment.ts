@@ -1,14 +1,12 @@
 /**
  * Payment service — handles Stripe payment intent creation and order submission.
  *
- * In production, all calls go through our backend API which creates Stripe
- * PaymentIntents server-side. The mobile app never touches the Stripe secret key.
+ * All calls go through the WixClient which handles auth, retry, and
+ * base URL resolution. The mobile app never touches the Stripe secret key.
  */
 
 import type { CartItem } from '@/hooks/useCart';
-
-// Backend API base URL — in production this comes from env config
-const API_BASE = 'https://api.carolinafutons.com/v1';
+import { WixApiError, type WixClient } from '@/services/wix';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -52,18 +50,17 @@ export function calculateTotals(subtotal: number): OrderTotals {
 }
 
 /**
- * Create a Stripe PaymentIntent via our backend.
+ * Create a Stripe PaymentIntent via the Wix eCommerce Payments API.
  * Returns the client secret needed by the Stripe SDK to confirm payment.
  */
 export async function createPaymentIntent(
+  client: WixClient,
   items: CartItem[],
   totals: OrderTotals,
 ): Promise<PaymentIntentResponse> {
-  const response = await fetch(`${API_BASE}/payments/create-intent`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      items: items.map((item) => ({
+  try {
+    return await client.createPaymentIntent(
+      items.map((item) => ({
         id: item.id,
         name: item.model.name,
         fabric: item.fabric.name,
@@ -71,15 +68,13 @@ export async function createPaymentIntent(
         unitPrice: item.unitPrice,
       })),
       totals,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Payment service unavailable' }));
-    throw new PaymentError(error.message ?? 'Failed to initialize payment', 'INTENT_FAILED');
+    );
+  } catch (err) {
+    if (err instanceof WixApiError) {
+      throw new PaymentError(err.message || 'Failed to initialize payment', 'INTENT_FAILED');
+    }
+    throw err;
   }
-
-  return response.json();
 }
 
 /**
@@ -87,17 +82,16 @@ export async function createPaymentIntent(
  * Backend verifies the payment succeeded and creates the order record.
  */
 export async function confirmOrder(
+  client: WixClient,
   paymentIntentId: string,
   items: CartItem[],
   totals: OrderTotals,
   paymentMethod: PaymentMethod,
 ): Promise<OrderConfirmation> {
-  const response = await fetch(`${API_BASE}/orders/confirm`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  try {
+    const result = await client.confirmOrder(
       paymentIntentId,
-      items: items.map((item) => ({
+      items.map((item) => ({
         id: item.id,
         modelId: item.model.id,
         modelName: item.model.name,
@@ -108,17 +102,14 @@ export async function confirmOrder(
       })),
       totals,
       paymentMethod,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response
-      .json()
-      .catch(() => ({ message: 'Failed to confirm order' }));
-    throw new PaymentError(error.message ?? 'Order confirmation failed', 'CONFIRM_FAILED');
+    );
+    return result as unknown as OrderConfirmation;
+  } catch (err) {
+    if (err instanceof WixApiError) {
+      throw new PaymentError(err.message || 'Order confirmation failed', 'CONFIRM_FAILED');
+    }
+    throw err;
   }
-
-  return response.json();
 }
 
 export type PaymentErrorCode = 'INTENT_FAILED' | 'CONFIRM_FAILED' | 'CANCELLED' | 'STRIPE_ERROR';
