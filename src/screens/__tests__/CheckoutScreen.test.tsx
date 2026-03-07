@@ -1,16 +1,36 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { typography } from '@/theme/tokens';
 
+// Mock expo-haptics
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(),
+  impactAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  ImpactFeedbackStyle: { Medium: 'Medium' },
+  NotificationFeedbackType: { Success: 'Success' },
+}));
+
+// Mock analytics
+jest.mock('@/services/analytics', () => ({
+  events: {
+    beginCheckout: jest.fn(),
+    purchase: jest.fn(),
+  },
+}));
+
+const mockInitPaymentSheet = jest.fn().mockResolvedValue({ error: null });
+const mockPresentPaymentSheet = jest.fn().mockResolvedValue({ error: null });
+
 // Mock @stripe/stripe-react-native
 jest.mock('@stripe/stripe-react-native', () => ({
   useStripe: () => ({
-    initPaymentSheet: jest.fn().mockResolvedValue({ error: null }),
-    presentPaymentSheet: jest.fn().mockResolvedValue({ error: null }),
+    initPaymentSheet: mockInitPaymentSheet,
+    presentPaymentSheet: mockPresentPaymentSheet,
   }),
   StripeProvider: ({ children }: { children: React.ReactNode }) => children,
   CardField: ({
@@ -42,6 +62,17 @@ jest.mock('@stripe/stripe-react-native', () => ({
   },
 }));
 
+const mockCreatePaymentIntent = jest.fn().mockResolvedValue({
+  clientSecret: 'pi_test_secret',
+  ephemeralKey: 'ek_test',
+  customerId: 'cus_test',
+  paymentIntentId: 'pi_test',
+});
+const mockConfirmOrder = jest.fn().mockResolvedValue({
+  orderId: 'order_123',
+  status: 'confirmed',
+});
+
 // Mock the payment service
 jest.mock('@/services/payment', () => ({
   calculateTotals: (subtotal: number) => {
@@ -50,8 +81,8 @@ jest.mock('@/services/payment', () => ({
     const total = subtotal + shipping + tax;
     return { subtotal, shipping, tax, total };
   },
-  createPaymentIntent: jest.fn(),
-  confirmOrder: jest.fn(),
+  createPaymentIntent: (...args: any[]) => mockCreatePaymentIntent(...args),
+  confirmOrder: (...args: any[]) => mockConfirmOrder(...args),
   PaymentError: class PaymentError extends Error {
     code: string;
     constructor(message: string, code: string) {
@@ -108,6 +139,22 @@ function fillShippingAddress(utils: ReturnType<typeof renderCheckout>) {
 }
 
 describe('CheckoutScreen', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCreatePaymentIntent.mockResolvedValue({
+      clientSecret: 'pi_test_secret',
+      ephemeralKey: 'ek_test',
+      customerId: 'cus_test',
+      paymentIntentId: 'pi_test',
+    });
+    mockConfirmOrder.mockResolvedValue({
+      orderId: 'order_123',
+      status: 'confirmed',
+    });
+    mockInitPaymentSheet.mockResolvedValue({ error: null });
+    mockPresentPaymentSheet.mockResolvedValue({ error: null });
+  });
+
   describe('Rendering', () => {
     it('renders with default testID', () => {
       const { getByTestId } = renderCheckout({}, seed);
@@ -490,6 +537,156 @@ describe('CheckoutScreen', () => {
     it('shows "Select Payment Method" when no method selected', () => {
       const { getByText } = renderCheckout({}, seed);
       expect(getByText('Select Payment Method')).toBeTruthy();
+    });
+  });
+
+  describe('Place order — payment submission', () => {
+    function fillAndSelectCard(utils: ReturnType<typeof renderCheckout>) {
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+    }
+
+    function fillAndSelectBNPL(utils: ReturnType<typeof renderCheckout>, method: 'affirm' | 'klarna' = 'affirm') {
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId(`payment-${method}`));
+    }
+
+    it('calls processPayment through Stripe when Place Order pressed', async () => {
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(mockCreatePaymentIntent).toHaveBeenCalledTimes(1);
+      expect(mockInitPaymentSheet).toHaveBeenCalledTimes(1);
+      expect(mockPresentPaymentSheet).toHaveBeenCalledTimes(1);
+      expect(mockConfirmOrder).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onOrderComplete with confirmation on success', async () => {
+      const onOrderComplete = jest.fn();
+      const utils = renderCheckout({ onOrderComplete }, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(onOrderComplete).toHaveBeenCalledWith({
+        orderId: 'order_123',
+        status: 'confirmed',
+      });
+    });
+
+    it('does not submit when no payment method is selected', async () => {
+      const { getByTestId } = renderCheckout({}, seed);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('place-order-button'));
+      });
+
+      expect(mockCreatePaymentIntent).not.toHaveBeenCalled();
+    });
+
+    it('shows processing state while payment is in flight', async () => {
+      let resolvePayment!: (v: any) => void;
+      mockCreatePaymentIntent.mockReturnValue(
+        new Promise((resolve) => { resolvePayment = resolve; }),
+      );
+
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      // Button should show processing state
+      expect(utils.getByText('Processing...')).toBeTruthy();
+      expect(utils.getByTestId('place-order-button').props.accessibilityState).toMatchObject({
+        disabled: true,
+      });
+
+      // Resolve to clean up
+      await act(async () => {
+        resolvePayment({
+          clientSecret: 'pi_test_secret',
+          ephemeralKey: 'ek_test',
+          customerId: 'cus_test',
+          paymentIntentId: 'pi_test',
+        });
+      });
+    });
+
+    it('shows error message when payment fails', async () => {
+      const { PaymentError } = jest.requireMock('@/services/payment');
+      mockCreatePaymentIntent.mockRejectedValue(
+        new PaymentError('Card declined', 'STRIPE_ERROR'),
+      );
+
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await waitFor(() => {
+        expect(utils.getByTestId('payment-error')).toBeTruthy();
+      });
+    });
+
+    it('does not call onOrderComplete on payment failure', async () => {
+      const { PaymentError } = jest.requireMock('@/services/payment');
+      mockCreatePaymentIntent.mockRejectedValue(
+        new PaymentError('Card declined', 'STRIPE_ERROR'),
+      );
+      const onOrderComplete = jest.fn();
+
+      const utils = renderCheckout({ onOrderComplete }, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(onOrderComplete).not.toHaveBeenCalled();
+    });
+
+    it('resets to idle when user cancels Stripe payment sheet', async () => {
+      mockPresentPaymentSheet.mockResolvedValue({
+        error: { code: 'Canceled', message: 'User cancelled' },
+      });
+
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      // Should return to idle — no error, button shows total again
+      expect(utils.queryByTestId('payment-error')).toBeNull();
+      expect(utils.getByText(/Place Order/)).toBeTruthy();
+    });
+
+    it('passes selected payment method through to confirmOrder', async () => {
+      const utils = renderCheckout({}, seed);
+      fillAndSelectBNPL(utils, 'affirm');
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(mockConfirmOrder).toHaveBeenCalledWith(
+        'pi_test',
+        expect.any(Array),
+        expect.any(Object),
+        'affirm',
+      );
     });
   });
 });
