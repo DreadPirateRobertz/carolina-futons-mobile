@@ -57,6 +57,7 @@ import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
+import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -96,6 +97,8 @@ export function ProductDetailScreen({
   const model = getModel(resolvedId) ?? models[0];
   const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
   const { product: catalogProduct } = useProduct(catalogProductId);
+  const isOutOfStock = catalogProduct != null && !catalogProduct.inStock;
+  const backInStock = useBackInStockSubscription(catalogProductId);
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
@@ -774,89 +777,126 @@ export function ProductDetailScreen({
           </TouchableOpacity>
         </View>
 
-        {/* Quantity + Add to Cart */}
+        {/* Quantity + Add to Cart / Notify Me */}
         <View style={[styles.section, styles.cartSection, { paddingHorizontal: spacing.lg }]}>
-          {/* Quantity selector */}
-          <View style={styles.quantityRow} testID="quantity-selector">
-            <Text style={[styles.quantityLabel, { color: colors.espresso }]}>Qty</Text>
-            <TouchableOpacity
-              style={[
-                styles.quantityButton,
-                {
-                  backgroundColor: colors.sandLight,
-                  borderRadius: borderRadius.sm,
-                },
-                quantity <= 1 && styles.quantityButtonDisabled,
-              ]}
-              onPress={handleDecrement}
-              disabled={quantity <= 1}
-              testID="quantity-decrement"
-              accessibilityLabel="Decrease quantity"
-              accessibilityRole="button"
-            >
+          {isOutOfStock ? (
+            <>
               <Text
-                style={[
-                  styles.quantityButtonText,
-                  { color: quantity <= 1 ? colors.muted : colors.espresso },
-                ]}
+                style={[styles.outOfStockLabel, { color: colors.sunsetCoral }]}
+                testID="out-of-stock-label"
               >
-                −
+                Out of Stock
               </Text>
-            </TouchableOpacity>
-            <Text
-              style={[styles.quantityValue, { color: colors.espresso }]}
-              testID="quantity-value"
-              accessibilityLabel={`Quantity: ${quantity}`}
-            >
-              {quantity}
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.quantityButton,
-                {
-                  backgroundColor: colors.sandLight,
-                  borderRadius: borderRadius.sm,
-                },
-                quantity >= 10 && styles.quantityButtonDisabled,
-              ]}
-              onPress={handleIncrement}
-              disabled={quantity >= 10}
-              testID="quantity-increment"
-              accessibilityLabel="Increase quantity"
-              accessibilityRole="button"
-            >
-              <Text
+              <AnimatedPressable
                 style={[
-                  styles.quantityButtonText,
-                  { color: quantity >= 10 ? colors.muted : colors.espresso },
+                  styles.addToCartButton,
+                  {
+                    backgroundColor: backInStock.isSubscribed ? colors.mountainBlue : colors.espresso,
+                    borderRadius: borderRadius.button,
+                  },
+                  shadows.button,
                 ]}
+                onPress={backInStock.toggle}
+                haptic="medium"
+                scaleDown={0.97}
+                testID="notify-back-in-stock-button"
+                accessibilityLabel={
+                  backInStock.isSubscribed
+                    ? 'Cancel back in stock notification'
+                    : 'Notify me when back in stock'
+                }
+                accessibilityRole="button"
               >
-                +
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <Text style={styles.addToCartText}>
+                  {backInStock.isSubscribed ? 'Subscribed \u2713' : 'Notify Me When Available'}
+                </Text>
+              </AnimatedPressable>
+            </>
+          ) : (
+            <>
+              {/* Quantity selector */}
+              <View style={styles.quantityRow} testID="quantity-selector">
+                <Text style={[styles.quantityLabel, { color: colors.espresso }]}>Qty</Text>
+                <TouchableOpacity
+                  style={[
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.sandLight,
+                      borderRadius: borderRadius.sm,
+                    },
+                    quantity <= 1 && styles.quantityButtonDisabled,
+                  ]}
+                  onPress={handleDecrement}
+                  disabled={quantity <= 1}
+                  testID="quantity-decrement"
+                  accessibilityLabel="Decrease quantity"
+                  accessibilityRole="button"
+                >
+                  <Text
+                    style={[
+                      styles.quantityButtonText,
+                      { color: quantity <= 1 ? colors.muted : colors.espresso },
+                    ]}
+                  >
+                    −
+                  </Text>
+                </TouchableOpacity>
+                <Text
+                  style={[styles.quantityValue, { color: colors.espresso }]}
+                  testID="quantity-value"
+                  accessibilityLabel={`Quantity: ${quantity}`}
+                >
+                  {quantity}
+                </Text>
+                <TouchableOpacity
+                  style={[
+                    styles.quantityButton,
+                    {
+                      backgroundColor: colors.sandLight,
+                      borderRadius: borderRadius.sm,
+                    },
+                    quantity >= 10 && styles.quantityButtonDisabled,
+                  ]}
+                  onPress={handleIncrement}
+                  disabled={quantity >= 10}
+                  testID="quantity-increment"
+                  accessibilityLabel="Increase quantity"
+                  accessibilityRole="button"
+                >
+                  <Text
+                    style={[
+                      styles.quantityButtonText,
+                      { color: quantity >= 10 ? colors.muted : colors.espresso },
+                    ]}
+                  >
+                    +
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* Add to Cart */}
-          <AnimatedPressable
-            style={[
-              styles.addToCartButton,
-              {
-                backgroundColor: colors.sunsetCoral,
-                borderRadius: borderRadius.button,
-              },
-              shadows.button,
-            ]}
-            onPress={handleAddToCart}
-            haptic="medium"
-            scaleDown={0.97}
-            testID="add-to-cart-button"
-            accessibilityLabel={`Add ${quantity} ${model.name} to cart for ${formatPrice(totalPrice * quantity)}`}
-            accessibilityRole="button"
-          >
-            <Text style={styles.addToCartText}>
-              Add to Cart — {formatPrice(totalPrice * quantity)}
-            </Text>
-          </AnimatedPressable>
+              {/* Add to Cart */}
+              <AnimatedPressable
+                style={[
+                  styles.addToCartButton,
+                  {
+                    backgroundColor: colors.sunsetCoral,
+                    borderRadius: borderRadius.button,
+                  },
+                  shadows.button,
+                ]}
+                onPress={handleAddToCart}
+                haptic="medium"
+                scaleDown={0.97}
+                testID="add-to-cart-button"
+                accessibilityLabel={`Add ${quantity} ${model.name} to cart for ${formatPrice(totalPrice * quantity)}`}
+                accessibilityRole="button"
+              >
+                <Text style={styles.addToCartText}>
+                  Add to Cart — {formatPrice(totalPrice * quantity)}
+                </Text>
+              </AnimatedPressable>
+            </>
+          )}
         </View>
 
         {/* You May Also Like */}
@@ -1366,6 +1406,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     minWidth: 28,
     textAlign: 'center',
+  },
+  outOfStockLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   addToCartButton: {
     paddingVertical: 16,
