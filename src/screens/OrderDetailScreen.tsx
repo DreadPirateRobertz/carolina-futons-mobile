@@ -24,6 +24,7 @@ import { useOrders, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { formatPrice } from '@/utils';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
+import { SkeletonOrderDetail } from '@/components/SkeletonOrderDetail';
 
 // ── Status Timeline ──────────────────────────────────────────
 
@@ -212,7 +213,7 @@ export function OrderDetailScreen({
   const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
-  const { getOrder, refresh } = useOrders();
+  const { orders, getOrder, refresh, isLoading, error } = useOrders();
   const { getModel, getFabric } = useFutonModels();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -257,6 +258,23 @@ export function OrderDetailScreen({
     }
     onReorderSuccess?.();
   }, [order, addItem, onReorderSuccess, getModel, getFabric]);
+
+  if (!ordersProp && isLoading && orders.length === 0 && !order) {
+    return <SkeletonOrderDetail testID="order-detail-skeleton" />;
+  }
+
+  if (!ordersProp && error && !order) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="order-detail-error"
+      >
+        <Text style={[styles.notFound, { color: colors.espressoLight }]}>
+          Failed to load order. Pull down to retry.
+        </Text>
+      </View>
+    );
+  }
 
   if (!order) {
     return (

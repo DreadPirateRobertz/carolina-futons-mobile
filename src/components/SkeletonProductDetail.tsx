@@ -1,8 +1,8 @@
 /**
  * @module SkeletonProductDetail
  *
- * Full-page skeleton placeholder for the ProductDetailScreen. Mirrors the
- * exact layout: gallery image, product name/tagline, price, fabric swatches,
+ * Full-page skeleton placeholder for the ProductDetailScreen. Approximates the
+ * key layout sections: gallery image, product name/tagline, price, fabric swatches,
  * dimension card, and review section. Shown while the product detail API
  * response is loading.
  */
@@ -13,6 +13,7 @@ import { useTheme } from '@/theme';
 import { Shimmer, ShimmerLines, ShimmerCircle } from './Shimmer';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const GALLERY_HEIGHT = 400;
 
 /**
  * Skeleton placeholder matching ProductDetailScreen layout:
@@ -30,7 +31,7 @@ export function SkeletonProductDetail({ testID }: { testID?: string }) {
       {/* Gallery placeholder */}
       <Shimmer
         width={SCREEN_WIDTH}
-        height={300}
+        height={GALLERY_HEIGHT}
         borderRadius={0}
         style={{ backgroundColor: colors.sandLight }}
       />

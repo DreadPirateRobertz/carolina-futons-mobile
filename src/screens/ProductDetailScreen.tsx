@@ -60,6 +60,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
+import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -99,7 +100,7 @@ export function ProductDetailScreen({
   const { models, getModel } = useFutonModels();
   const model = getModel(resolvedId) ?? models[0];
   const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
-  const { product: catalogProduct } = useProduct(catalogProductId);
+  const { product: catalogProduct, isLoading: isProductLoading } = useProduct(catalogProductId);
   const stockStatus = catalogProduct ? getStockStatus(catalogProduct) : 'in_stock';
   const isOutOfStock = stockStatus === 'out_of_stock';
   const isLowStock = stockStatus === 'low_stock';
@@ -323,6 +324,10 @@ export function ProductDetailScreen({
     ),
     [model, selectedFabric, colors, handleOpenFullscreen],
   );
+
+  if (isProductLoading) {
+    return <SkeletonProductDetail testID="product-detail-skeleton" />;
+  }
 
   return (
     <View
