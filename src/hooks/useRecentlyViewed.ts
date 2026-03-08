@@ -19,7 +19,8 @@ export function useRecentlyViewed() {
     AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
       if (raw) {
         try {
-          setRecentIds(JSON.parse(raw));
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) setRecentIds(parsed);
         } catch {
           // corrupt data, ignore
         }

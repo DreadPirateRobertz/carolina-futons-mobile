@@ -19,13 +19,17 @@ import {
   type ProductCategory,
   type SortOption,
   type CategoryInfo,
+  type StockStatus,
+  getStockStatus,
+  LOW_STOCK_THRESHOLD,
 } from '@/data/products';
 import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 import { useDataCache } from '@/hooks/useDataCache';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { isWixConfigured } from '@/services/wix/config';
 
-export type { Product, ProductCategory, SortOption, CategoryInfo };
+export type { Product, ProductCategory, SortOption, CategoryInfo, StockStatus };
+export { getStockStatus, LOW_STOCK_THRESHOLD };
 
 const PAGE_SIZE = 8;
 const PRODUCT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours

@@ -58,7 +58,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
-import { getStockStatus, LOW_STOCK_THRESHOLD } from '@/data/products';
+import { getStockStatus, LOW_STOCK_THRESHOLD } from '@/hooks/useProducts';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
