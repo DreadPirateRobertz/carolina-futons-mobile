@@ -11,13 +11,13 @@ import { useTheme } from '@/theme';
 
 interface Props {
   label?: string;
-  isStale?: boolean;
+  isStale: boolean;
   testID?: string;
 }
 
 export function StaleDataBadge({
   label = 'Showing cached data',
-  isStale = true,
+  isStale,
   testID = 'stale-data-badge',
 }: Props) {
   const { colors, borderRadius } = useTheme();

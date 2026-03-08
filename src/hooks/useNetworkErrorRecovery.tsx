@@ -2,35 +2,40 @@
  * @module useNetworkErrorRecovery
  *
  * Hook that wraps async data fetchers with error state management and retry
- * logic. Tracks whether data is stale (device offline) and provides a retry
- * function that re-invokes the fetcher. Pairs with NetworkErrorState and
- * StaleDataBadge components for UI rendering.
+ * logic. Tracks whether data is stale (device offline or last fetch failed)
+ * and provides a retry function that re-invokes the fetcher. Pairs with
+ * NetworkErrorState and StaleDataBadge components for UI rendering.
+ *
+ * `execute` sets error state on failure AND re-throws — callers must handle
+ * the rejection. `retry` is fire-and-forget: it swallows errors (already
+ * surfaced via the `error` state) and is safe to pass directly to UI callbacks.
  */
 
 import { useState, useCallback, useRef } from 'react';
 import { useConnectivity } from './useConnectivity';
+import { captureException } from '@/services/crashReporting';
 
-interface UseNetworkErrorRecoveryResult<T> {
+interface UseNetworkErrorRecoveryResult<TArgs extends unknown[], T> {
   error: string | null;
   isRetrying: boolean;
   isStale: boolean;
-  execute: (...args: unknown[]) => Promise<T>;
+  execute: (...args: TArgs) => Promise<T>;
   retry: () => Promise<T | void>;
   clearError: () => void;
 }
 
-export function useNetworkErrorRecovery<T = unknown>(
-  fetcher: (...args: unknown[]) => Promise<T>,
-): UseNetworkErrorRecoveryResult<T> {
+export function useNetworkErrorRecovery<TArgs extends unknown[] = unknown[], T = unknown>(
+  fetcher: (...args: TArgs) => Promise<T>,
+): UseNetworkErrorRecoveryResult<TArgs, T> {
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
   const [fetchedStale, setFetchedStale] = useState(false);
   const { isOnline } = useConnectivity();
-  const lastArgsRef = useRef<unknown[]>([]);
+  const lastArgsRef = useRef<TArgs>([] as unknown as TArgs);
   const isRetryingRef = useRef(false);
 
   const execute = useCallback(
-    async (...args: unknown[]): Promise<T> => {
+    async (...args: TArgs): Promise<T> => {
       lastArgsRef.current = args;
       try {
         const result = await fetcher(...args);
@@ -54,7 +59,11 @@ export function useNetworkErrorRecovery<T = unknown>(
       isRetryingRef.current = true;
       setIsRetrying(true);
       return execute(...lastArgsRef.current)
-        .catch(() => undefined)
+        .catch((err) => {
+          if (err instanceof Error) {
+            captureException(err, 'warning', { action: 'network_error_retry_failed' });
+          }
+        })
         .finally(() => {
           isRetryingRef.current = false;
           setIsRetrying(false);

@@ -187,4 +187,43 @@ describe('useNetworkErrorRecovery', () => {
     });
     expect(result.current.isStale).toBe(false);
   });
+
+  it('forwards arguments to fetcher and replays on retry', async () => {
+    const fetcher = jest.fn()
+      .mockRejectedValueOnce(new Error('Failed'))
+      .mockResolvedValueOnce({ data: 'ok' });
+
+    const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
+
+    await act(async () => {
+      await result.current.execute('products', { page: 2 }).catch(() => {});
+    });
+
+    expect(fetcher).toHaveBeenCalledWith('products', { page: 2 });
+
+    await act(async () => {
+      await result.current.retry();
+    });
+
+    // retry replays the same args
+    expect(fetcher).toHaveBeenLastCalledWith('products', { page: 2 });
+  });
+
+  it('updates error message when retry fails with different error', async () => {
+    const fetcher = jest.fn()
+      .mockRejectedValueOnce(new Error('Timeout'))
+      .mockRejectedValueOnce(new Error('Server unavailable'));
+
+    const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
+
+    await act(async () => {
+      await result.current.execute().catch(() => {});
+    });
+    expect(result.current.error).toBe('Timeout');
+
+    await act(async () => {
+      await result.current.retry();
+    });
+    expect(result.current.error).toBe('Server unavailable');
+  });
 });
