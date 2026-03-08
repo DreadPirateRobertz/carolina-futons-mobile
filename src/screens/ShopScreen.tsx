@@ -218,7 +218,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           </Text>
         </View>
       ),
-    [searchQuery, colors, handleCategoryChipPress, handleTrendingPress],
+    [searchQuery, darkPalette, typography, handleCategoryChipPress, handleTrendingPress],
   );
 
   const renderFooter = useCallback(

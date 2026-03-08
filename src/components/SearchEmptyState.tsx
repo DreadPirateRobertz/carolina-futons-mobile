@@ -100,7 +100,7 @@ export function SearchEmptyState({
               accessibilityRole="button"
               accessibilityLabel={`Search for ${term}`}
             >
-              <Text style={styles.trendingChipText}>{term}</Text>
+              <Text style={[styles.trendingChipText, { color: colors.offWhite }]}>{term}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -160,7 +160,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
   },
   trendingChipText: {
-    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '600',
   },
