@@ -8,10 +8,10 @@
  */
 
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { SearchIllustration } from '@/components/illustrations/SearchIllustration';
-import { CATEGORIES } from '@/data/products';
+import { AnimatedPressable } from '@/components/AnimatedPressable';
 import type { ProductCategory } from '@/data/products';
 
 const TRENDING_SEARCHES = [
@@ -22,41 +22,48 @@ const TRENDING_SEARCHES = [
   'memory foam',
 ];
 
+interface CategoryItem {
+  id: ProductCategory;
+  label: string;
+}
+
 interface Props {
   query: string;
+  categories: CategoryItem[];
   onCategoryPress: (categoryId: ProductCategory) => void;
-  onTrendingPress?: (term: string) => void;
+  onTrendingPress: (term: string) => void;
   testID?: string;
 }
 
 export function SearchEmptyState({
   query,
+  categories,
   onCategoryPress,
   onTrendingPress,
   testID = 'search-empty-state',
 }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
 
+  const accessibilityLabel = query ? `No results for "${query}"` : 'No results found';
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
+    <View
+      style={styles.content}
       testID={testID}
-      accessibilityLabel={`No results for "${query}"`}
+      accessibilityLabel={accessibilityLabel}
     >
       <SearchIllustration width={200} height={140} testID="search-empty-illustration" />
 
       <Text style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}>
-        {query ? `No results for "${query}"` : 'No results found'}
+        {accessibilityLabel}
       </Text>
       <Text style={[styles.message, { color: colors.espressoLight }]}>
         Try browsing by category instead
       </Text>
 
-      {/* Category suggestion chips */}
       <View style={[styles.chipsContainer, { gap: spacing.sm }]} testID="category-chips">
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity
+        {categories.map((cat) => (
+          <AnimatedPressable
             key={cat.id}
             style={[
               styles.chip,
@@ -70,14 +77,14 @@ export function SearchEmptyState({
             testID={`category-chip-${cat.id}`}
             accessibilityRole="button"
             accessibilityLabel={`Browse ${cat.label}`}
+            haptic="light"
           >
             <Text style={[styles.chipText, { color: colors.espresso }]}>{cat.label}</Text>
-          </TouchableOpacity>
+          </AnimatedPressable>
         ))}
       </View>
 
-      {/* Trending searches */}
-      {onTrendingPress && <View style={[styles.trendingSection, { marginTop: spacing.lg }]} testID="trending-section">
+      <View style={[styles.trendingSection, { marginTop: spacing.lg }]} testID="trending-section">
         <Text
           style={[styles.trendingTitle, { color: colors.espressoLight }]}
           accessibilityRole="header"
@@ -86,7 +93,7 @@ export function SearchEmptyState({
         </Text>
         <View style={[styles.chipsContainer, { gap: spacing.sm }]}>
           {TRENDING_SEARCHES.map((term, index) => (
-            <TouchableOpacity
+            <AnimatedPressable
               key={term}
               style={[
                 styles.trendingChip,
@@ -99,20 +106,18 @@ export function SearchEmptyState({
               testID={`trending-chip-${index}`}
               accessibilityRole="button"
               accessibilityLabel={`Search for ${term}`}
+              haptic="light"
             >
               <Text style={[styles.trendingChipText, { color: colors.offWhite }]}>{term}</Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
-      </View>}
-    </ScrollView>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   content: {
     alignItems: 'center',
     paddingHorizontal: 24,

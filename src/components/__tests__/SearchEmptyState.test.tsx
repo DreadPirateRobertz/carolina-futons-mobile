@@ -7,7 +7,9 @@ import { CATEGORIES } from '@/data/products';
 function renderEmpty(props: Partial<React.ComponentProps<typeof SearchEmptyState>> = {}) {
   const defaultProps = {
     query: 'floral couch',
+    categories: CATEGORIES,
     onCategoryPress: jest.fn(),
+    onTrendingPress: jest.fn(),
     ...props,
   };
   return {
@@ -17,6 +19,7 @@ function renderEmpty(props: Partial<React.ComponentProps<typeof SearchEmptyState
       </ThemeProvider>,
     ),
     onCategoryPress: defaultProps.onCategoryPress,
+    onTrendingPress: defaultProps.onTrendingPress,
   };
 }
 
@@ -92,31 +95,32 @@ describe('SearchEmptyState', () => {
   });
 
   describe('Trending Products', () => {
-    it('renders trending section when onTrendingPress provided', () => {
-      const { getByTestId } = renderEmpty({ onTrendingPress: jest.fn() });
+    it('renders trending section', () => {
+      const { getByTestId } = renderEmpty();
       expect(getByTestId('trending-section')).toBeTruthy();
     });
 
     it('shows trending header text', () => {
-      const { getByText } = renderEmpty({ onTrendingPress: jest.fn() });
+      const { getByText } = renderEmpty();
       expect(getByText(/trending/i)).toBeTruthy();
     });
 
     it('renders trending product chips', () => {
-      const { getByTestId } = renderEmpty({ onTrendingPress: jest.fn() });
+      const { getByTestId } = renderEmpty();
       expect(getByTestId('trending-chip-0')).toBeTruthy();
     });
 
     it('calls onTrendingPress with correct term when trending chip tapped', () => {
-      const onTrendingPress = jest.fn();
-      const { getByTestId } = renderEmpty({ onTrendingPress });
+      const { getByTestId, onTrendingPress } = renderEmpty();
       fireEvent.press(getByTestId('trending-chip-0'));
       expect(onTrendingPress).toHaveBeenCalledWith('futon mattress');
     });
 
-    it('hides trending section when onTrendingPress not provided', () => {
-      const { queryByTestId } = renderEmpty();
-      expect(queryByTestId('trending-section')).toBeNull();
+    it('renders all trending chips', () => {
+      const { getByTestId } = renderEmpty();
+      for (let i = 0; i < 5; i++) {
+        expect(getByTestId(`trending-chip-${i}`)).toBeTruthy();
+      }
     });
   });
 
@@ -141,14 +145,21 @@ describe('SearchEmptyState', () => {
       expect(getByText('No results found')).toBeTruthy();
     });
 
+    it('empty query accessibility label matches title text', () => {
+      const { getByTestId } = renderEmpty({ query: '' });
+      const container = getByTestId('search-empty-state');
+      expect(container.props.accessibilityLabel).toBe('No results found');
+    });
+
     it('handles query with special characters', () => {
       const { getByText } = renderEmpty({ query: 'couch & table <b>' });
       expect(getByText(/couch & table/)).toBeTruthy();
     });
 
-    it('renders without onTrendingPress', () => {
-      const { getByTestId } = renderEmpty({ onTrendingPress: undefined });
+    it('renders with empty categories array', () => {
+      const { getByTestId, queryByTestId } = renderEmpty({ categories: [] });
       expect(getByTestId('search-empty-state')).toBeTruthy();
+      expect(queryByTestId('category-chip-futons')).toBeNull();
     });
   });
 });

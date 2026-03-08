@@ -71,7 +71,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     refresh();
-    // Allow animation to play briefly since refresh() is synchronous
+    // Allow animation to play briefly while async fetch completes
     setTimeout(() => setRefreshing(false), 600);
   }, [refresh]);
 
@@ -182,9 +182,11 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     (term: string) => {
       setSearchQuery(term);
       addSearch(term);
-      events.search(term, products.length);
+      // products.length is 0 here (we're in empty state); log 0 intentionally
+      // as this is a new search, not a results count
+      events.search(term, 0);
     },
-    [setSearchQuery, addSearch, products.length],
+    [setSearchQuery, addSearch],
   );
 
   const renderEmpty = useCallback(
@@ -192,6 +194,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       searchQuery ? (
         <SearchEmptyState
           query={searchQuery}
+          categories={categories}
           onCategoryPress={handleCategoryChipPress}
           onTrendingPress={handleTrendingPress}
         />
@@ -219,7 +222,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           </Text>
         </View>
       ),
-    [searchQuery, darkPalette, typography, handleCategoryChipPress, handleTrendingPress],
+    [searchQuery, typography, categories, handleCategoryChipPress, handleTrendingPress],
   );
 
   const renderFooter = useCallback(
