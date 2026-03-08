@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -204,6 +204,20 @@ describe('WishlistScreen', () => {
       expect(getByTestId('wishlist-clear').props.accessibilityLabel).toBe(
         'Clear all items from wishlist',
       );
+    });
+  });
+
+  describe('pull-to-refresh', () => {
+    it('FlatList has refreshControl configured', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      const flatList = getByTestId('wishlist-list');
+      expect(flatList.props.refreshControl).toBeTruthy();
+    });
+
+    it('FlatList has refreshControl on empty wishlist', () => {
+      const { getByTestId } = renderScreen();
+      const flatList = getByTestId('wishlist-list');
+      expect(flatList.props.refreshControl).toBeTruthy();
     });
   });
 });
