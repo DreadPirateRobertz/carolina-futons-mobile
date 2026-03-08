@@ -46,6 +46,7 @@ function AccountScreenWithNav() {
       onLogin={() => nav.navigate('Login')}
       onPremium={() => nav.navigate('Premium')}
       onStyleQuiz={() => nav.navigate('StyleQuiz')}
+      onPrivacyPolicy={() => nav.navigate('PrivacyPolicy')}
     />
   );
 }
