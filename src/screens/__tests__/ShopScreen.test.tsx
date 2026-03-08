@@ -83,8 +83,8 @@ describe('ShopScreen', () => {
     it('shows empty state for no results', async () => {
       const { getByTestId, getByText } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
-      expect(getByTestId('shop-empty')).toBeTruthy();
-      expect(getByText('No products found')).toBeTruthy();
+      expect(getByTestId('search-empty-state')).toBeTruthy();
+      expect(getByText(/No results for "xyznonexistent"/)).toBeTruthy();
     });
 
     it('shows search-specific empty message', async () => {

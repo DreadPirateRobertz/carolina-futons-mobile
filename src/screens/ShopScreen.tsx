@@ -26,6 +26,7 @@ import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { SearchEmptyState } from '@/components/SearchEmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 interface Props {
@@ -169,34 +170,55 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ],
   );
 
+  const handleCategoryChipPress = useCallback(
+    (categoryId: ProductCategory) => {
+      setSelectedCategory(categoryId);
+      setSearchQuery('');
+    },
+    [setSelectedCategory, setSearchQuery],
+  );
+
+  const handleTrendingPress = useCallback(
+    (term: string) => {
+      setSearchQuery(term);
+      addSearch(term);
+    },
+    [setSearchQuery, addSearch],
+  );
+
   const renderEmpty = useCallback(
-    () => (
-      <View
-        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
-        testID="shop-empty"
-      >
-        <Text style={[styles.emptyIcon]}>🔍</Text>
-        <Text
-          style={[
-            styles.emptyTitle,
-            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-          ]}
+    () =>
+      searchQuery ? (
+        <SearchEmptyState
+          query={searchQuery}
+          onCategoryPress={handleCategoryChipPress}
+          onTrendingPress={handleTrendingPress}
+        />
+      ) : (
+        <View
+          style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+          testID="shop-empty"
         >
-          No products found
-        </Text>
-        <Text
-          style={[
-            styles.emptyMessage,
-            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-          ]}
-        >
-          {searchQuery
-            ? `No results for "${searchQuery}". Try a different search.`
-            : 'No products in this category yet.'}
-        </Text>
-      </View>
-    ),
-    [searchQuery, colors],
+          <Text style={[styles.emptyIcon]}>🔍</Text>
+          <Text
+            style={[
+              styles.emptyTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
+          >
+            No products found
+          </Text>
+          <Text
+            style={[
+              styles.emptyMessage,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            No products in this category yet.
+          </Text>
+        </View>
+      ),
+    [searchQuery, colors, handleCategoryChipPress, handleTrendingPress],
   );
 
   const renderFooter = useCallback(
