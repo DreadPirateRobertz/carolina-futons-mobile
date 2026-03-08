@@ -79,8 +79,8 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         fabric_count: selectedFabricIds.size,
         fabrics: Array.from(selectedFabricIds).join(','),
       });
-    } catch {
-      // Analytics failure is non-critical
+    } catch (err) {
+      console.warn('FabricSampleRequest: analytics tracking failed', err);
     }
 
     setSubmitted(true);
