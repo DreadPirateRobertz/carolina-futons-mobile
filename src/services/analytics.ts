@@ -63,6 +63,8 @@ export type AnalyticsEventName =
   | 'ar_product_picker_open'
   | 'heatmap_tap'
   | 'scroll_depth'
+  | 'share_product'
+  | 'rate_app'
   | 'error';
 
 /** A single buffered analytics event with its metadata. */

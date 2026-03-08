@@ -33,7 +33,7 @@ const HERO_HEIGHT = 320;
 const PARALLAX_RATE = 0.5;
 const AnimatedFlatList = Animated.createAnimatedComponent(
   require('react-native').FlatList,
-) as typeof import('react-native').FlatList;
+) as unknown as typeof import('react-native').FlatList;
 
 /** Route parameters expected by this screen from React Navigation. */
 type RouteParams = RouteProp<RootStackParamList, 'CollectionDetail'>;

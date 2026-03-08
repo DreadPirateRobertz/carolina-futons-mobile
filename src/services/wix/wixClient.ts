@@ -12,6 +12,7 @@
  */
 
 import type { Product, ProductImage, ProductCategory, ProductSize, SortOption } from '@/data/products';
+import { productId } from '@/data/productId';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -894,7 +895,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   const size = SIZE_PATTERNS.find(([, re]) => re.test(nameLower))?.[0];
 
   return {
-    id: wix.id,
+    id: productId(wix.id),
     name: wix.name,
     slug: wix.slug,
     sku: wix.sku ?? '',

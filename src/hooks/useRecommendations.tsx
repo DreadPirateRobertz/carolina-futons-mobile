@@ -14,14 +14,15 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { PRODUCTS, Product } from '@/data/products';
+import { type ProductId, productId as toProductId } from '@/data/productId';
 
 /** Maximum number of recently-viewed product IDs to retain. */
 const MAX_RECENT = 20;
 
 /** Internal tracking state for view and purchase history. */
 interface RecommendationsState {
-  viewedIds: string[];
-  purchasedIds: string[];
+  viewedIds: ProductId[];
+  purchasedIds: ProductId[];
 }
 
 /** Shape of the value exposed by RecommendationsContext to consumers. */
@@ -56,18 +57,20 @@ export function RecommendationsProvider({ children }: { children: React.ReactNod
     purchasedIds: [],
   });
 
-  const trackView = useCallback((productId: string) => {
+  const trackView = useCallback((id: string) => {
+    const pid = toProductId(id);
     setState((prev) => {
-      const filtered = prev.viewedIds.filter((id) => id !== productId);
-      const next = [productId, ...filtered].slice(0, MAX_RECENT);
+      const filtered = prev.viewedIds.filter((v) => v !== pid);
+      const next = [pid, ...filtered].slice(0, MAX_RECENT);
       return { ...prev, viewedIds: next };
     });
   }, []);
 
-  const trackPurchase = useCallback((productId: string) => {
+  const trackPurchase = useCallback((id: string) => {
+    const pid = toProductId(id);
     setState((prev) => {
-      if (prev.purchasedIds.includes(productId)) return prev;
-      return { ...prev, purchasedIds: [...prev.purchasedIds, productId] };
+      if (prev.purchasedIds.includes(pid)) return prev;
+      return { ...prev, purchasedIds: [...prev.purchasedIds, pid] };
     });
   }, []);
 

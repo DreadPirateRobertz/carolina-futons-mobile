@@ -81,8 +81,8 @@ export function SignUpScreen({ onLogin, testID }: Props) {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
-        onFocus={handleFieldFocus}
         keyboardShouldPersistTaps="handled"
+        {...({ onFocus: handleFieldFocus } as any)}
         showsVerticalScrollIndicator={false}
       >
         <Text

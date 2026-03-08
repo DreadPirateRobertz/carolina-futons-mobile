@@ -500,7 +500,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isProcessing}
         keyboardShouldPersistTaps="handled"
-        onFocus={handleFieldFocus}
+        {...({ onFocus: handleFieldFocus } as any)}
       >
         {/* Shipping Address */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>

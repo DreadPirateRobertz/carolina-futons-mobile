@@ -27,7 +27,7 @@ describe('collections data', () => {
   });
 
   it('all product references are valid', () => {
-    const productIds = new Set(PRODUCTS.map((p) => p.id));
+    const productIds = new Set(PRODUCTS.map((p) => p.id as string));
     for (const col of COLLECTIONS) {
       for (const pid of col.productIds) {
         expect(productIds.has(pid as ProductId)).toBe(true);

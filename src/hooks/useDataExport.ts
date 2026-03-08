@@ -65,8 +65,8 @@ export function useDataExport(): DataExportState {
         })),
         wishlist: wishlistItems.map((item) => ({
           productId: item.productId,
-          name: item.name,
           addedAt: item.addedAt,
+          savedPrice: item.savedPrice,
         })),
       };
 

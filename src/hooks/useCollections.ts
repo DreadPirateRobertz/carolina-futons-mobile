@@ -130,7 +130,7 @@ export function useCollection(slug: string): {
 
     // Static fallback
     return collection.productIds
-      .map((id) => productMap.get(id))
+      .map((id) => productMap.get(id as import('@/data/productId').ProductId))
       .filter((p): p is Product => p !== undefined);
   }, [collection, client]);
 

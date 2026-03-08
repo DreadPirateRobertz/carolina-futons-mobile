@@ -1,3 +1,4 @@
+export {};
 /**
  * Tests for SentryCrashReportingProvider when @sentry/react-native IS available.
  * Uses jest.mock with virtual:true since the package isn't installed,

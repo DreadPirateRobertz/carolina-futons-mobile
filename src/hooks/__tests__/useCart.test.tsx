@@ -91,6 +91,7 @@ const mockAuthValue = {
   signInWithGoogle: jest.fn(),
   signInWithApple: jest.fn(),
   resetPassword: jest.fn(),
+  updateProfile: jest.fn(),
   signOut: jest.fn(),
   clearError: jest.fn(),
   updateProfile: jest.fn(),

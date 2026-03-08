@@ -202,6 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: claims.sub,
               email: claims.email,
               displayName: claims.name,
+              phone: '',
               provider: 'google',
             },
           });
@@ -270,6 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: claims.sub,
               email: claims.email,
               displayName: claims.name,
+              phone: '',
               provider: 'google',
             },
           });
