@@ -1,3 +1,5 @@
+export {};
+
 const mockTrack = jest.fn();
 const mockIdentify = jest.fn();
 const mockReset = jest.fn();

@@ -53,8 +53,7 @@ const mockedConfirmOrder = confirmOrder as jest.MockedFunction<typeof confirmOrd
 function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(
     ConnectivityProvider,
-    { initialOnline: true, skipNetInfo: true },
-    React.createElement(CartProvider, null, children),
+    { initialOnline: true, skipNetInfo: true, children: React.createElement(CartProvider, null, children) },
   );
 }
 

@@ -3,6 +3,7 @@
  * Uses jest.mock with virtual:true since the package isn't installed,
  * then re-requires the provider so its try/catch picks up the mock.
  */
+export {};
 
 const mockInit = jest.fn();
 const mockCaptureException = jest.fn();

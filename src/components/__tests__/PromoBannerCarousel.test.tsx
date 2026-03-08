@@ -37,11 +37,8 @@ jest.mock('@/theme/tokens', () => ({
 }));
 
 jest.mock('@/components/GlassCard', () => ({
-  GlassCard: ({ children, style, testID }: any) => (
-    <mock-GlassCard style={style} testID={testID}>
-      {children}
-    </mock-GlassCard>
-  ),
+  GlassCard: ({ children, style, testID }: any) =>
+    React.createElement('View', { style, testID }, children),
 }));
 
 const TEST_ITEMS: PromoBannerItem[] = [
