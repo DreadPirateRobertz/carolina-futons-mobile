@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { Text, View } from 'react-native';
 import { ScreenErrorBoundary } from '../ScreenErrorBoundary';
 import * as crashReporting from '@/services/crashReporting';
@@ -20,9 +20,11 @@ let consoleError: jest.SpyInstance;
 beforeEach(() => {
   consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
   crashReporting.resetForTesting();
+  jest.useFakeTimers();
 });
 afterEach(() => {
   consoleError.mockRestore();
+  jest.useRealTimers();
 });
 
 describe('ScreenErrorBoundary', () => {
@@ -35,7 +37,7 @@ describe('ScreenErrorBoundary', () => {
     expect(getByTestId('working')).toBeTruthy();
   });
 
-  it('renders fallback UI with screen-specific testID when child throws', () => {
+  it('renders branded fallback with screen-specific testID when child throws', () => {
     const { getByText, getByTestId } = render(
       <ScreenErrorBoundary screenName="ProductDetail">
         <BrokenComponent />
@@ -74,7 +76,22 @@ describe('ScreenErrorBoundary', () => {
         <BrokenComponent />
       </ScreenErrorBoundary>,
     );
-    expect(getByTestId('screen-error-retry')).toBeTruthy();
+    expect(getByTestId('error-boundary-retry')).toBeTruthy();
+  });
+
+  it('shows spinner during retry', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ScreenErrorBoundary screenName="Test">
+        <BrokenComponent />
+      </ScreenErrorBoundary>,
+    );
+    fireEvent.press(getByTestId('error-boundary-retry'));
+    expect(getByTestId('error-boundary-spinner')).toBeTruthy();
+
+    act(() => {
+      jest.advanceTimersByTime(600);
+    });
+    expect(queryByTestId('error-boundary-spinner')).toBeNull();
   });
 
   it('renders Go Home button when onNavigateHome provided', () => {
@@ -113,7 +130,7 @@ describe('ScreenErrorBoundary', () => {
         <BrokenComponent />
       </ScreenErrorBoundary>,
     );
-    const btn = getByTestId('screen-error-retry');
+    const btn = getByTestId('error-boundary-retry');
     expect(btn.props.accessibilityLabel).toBe('Try again');
     expect(btn.props.accessibilityRole).toBe('button');
   });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { Text, View } from 'react-native';
 import { ErrorBoundary } from '../ErrorBoundary';
 import * as crashReporting from '@/services/crashReporting';
@@ -21,9 +21,11 @@ let consoleError: jest.SpyInstance;
 beforeEach(() => {
   consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
   crashReporting.resetForTesting();
+  jest.useFakeTimers();
 });
 afterEach(() => {
   consoleError.mockRestore();
+  jest.useRealTimers();
 });
 
 describe('ErrorBoundary', () => {
@@ -39,7 +41,7 @@ describe('ErrorBoundary', () => {
   });
 
   describe('error handling', () => {
-    it('renders fallback UI when child throws', () => {
+    it('renders branded fallback UI when child throws', () => {
       const { getByText, getByTestId } = render(
         <ErrorBoundary>
           <BrokenComponent />
@@ -87,13 +89,29 @@ describe('ErrorBoundary', () => {
   });
 
   describe('retry', () => {
-    it('renders retry button in default fallback', () => {
+    it('renders retry button in branded fallback', () => {
       const { getByTestId } = render(
         <ErrorBoundary>
           <BrokenComponent />
         </ErrorBoundary>,
       );
       expect(getByTestId('error-boundary-retry')).toBeTruthy();
+    });
+
+    it('shows spinner then retries on press', () => {
+      const { getByTestId, queryByTestId } = render(
+        <ErrorBoundary>
+          <BrokenComponent />
+        </ErrorBoundary>,
+      );
+      fireEvent.press(getByTestId('error-boundary-retry'));
+      expect(getByTestId('error-boundary-spinner')).toBeTruthy();
+
+      act(() => {
+        jest.advanceTimersByTime(600);
+      });
+      // After retry, the broken component throws again so fallback re-appears
+      expect(queryByTestId('error-boundary-spinner')).toBeNull();
     });
 
     it('retry button has correct accessibility', () => {

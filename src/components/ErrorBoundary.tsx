@@ -3,14 +3,14 @@
  *
  * Root-level React error boundary that catches render errors from any
  * descendant component. Reports crashes to the crash reporting service
- * and renders a fallback UI with a retry button. Wrap at the top of
- * the component tree to prevent full-app white-screens.
+ * and renders a branded fallback UI with MountainSkyline backdrop and
+ * retry button. Wrap at the top of the component tree to prevent
+ * full-app white-screens.
  */
 
 import React, { Component, type ErrorInfo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import * as crashReporting from '@/services/crashReporting';
-import { colors, spacing, borderRadius, typography } from '@/theme/tokens';
+import { BrandedErrorFallback } from '@/components/BrandedErrorFallback';
 
 interface Props {
   children: React.ReactNode;
@@ -26,7 +26,7 @@ interface State {
 
 /**
  * Root error boundary that catches unhandled render errors.
- * Reports to crash reporting and shows a retry fallback.
+ * Reports to crash reporting and shows a branded retry fallback.
  *
  * @param props.children - App subtree to protect
  * @param props.fallback - Optional custom fallback UI
@@ -61,61 +61,15 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <View style={styles.container} testID={this.props.testID ?? 'error-boundary'}>
-          <Text style={styles.icon}>⚠</Text>
-          <Text style={styles.title}>Something went wrong</Text>
-          <Text style={styles.message}>
-            {this.state.error?.message ?? 'An unexpected error occurred'}
-          </Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={this.handleRetry}
-            testID="error-boundary-retry"
-            accessibilityLabel="Try again"
-            accessibilityRole="button"
-          >
-            <Text style={styles.retryText}>Try Again</Text>
-          </TouchableOpacity>
-        </View>
+        <BrandedErrorFallback
+          title="Something went wrong"
+          message={this.state.error?.message ?? 'An unexpected error occurred'}
+          onRetry={this.handleRetry}
+          testID={this.props.testID ?? 'error-boundary'}
+        />
       );
     }
 
     return this.props.children;
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-    backgroundColor: colors.sandBase,
-  },
-  icon: {
-    fontSize: 48,
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.h3,
-    color: colors.espresso,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  message: {
-    ...typography.body,
-    color: colors.espressoLight,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  retryButton: {
-    backgroundColor: colors.sunsetCoral,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: borderRadius.button,
-  },
-  retryText: {
-    ...typography.button,
-    color: '#FFFFFF',
-  },
-});

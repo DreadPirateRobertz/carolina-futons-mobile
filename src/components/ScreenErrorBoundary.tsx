@@ -4,13 +4,12 @@
  * Screen-level React error boundary that catches render crashes and isolates
  * them to individual screens rather than crashing the entire app. Reports
  * errors to the crash reporting service with the screen name for diagnostics.
- * Offers "Try Again" and optional "Go Home" recovery actions.
+ * Renders a branded fallback with "Try Again" and optional "Go Home" actions.
  */
 
 import React, { Component, type ErrorInfo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import * as crashReporting from '@/services/crashReporting';
-import { colors, spacing, borderRadius, typography } from '@/theme/tokens';
+import { BrandedErrorFallback } from '@/components/BrandedErrorFallback';
 
 interface Props {
   children: React.ReactNode;
@@ -62,92 +61,20 @@ export class ScreenErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <View style={styles.container} testID={`screen-error-${this.props.screenName}`}>
-          <Text style={styles.icon}>⚠</Text>
-          <Text style={styles.title}>This page ran into an issue</Text>
-          <Text style={styles.message}>
-            {__DEV__
+        <BrandedErrorFallback
+          title="This page ran into an issue"
+          message={
+            __DEV__
               ? this.state.error?.message ?? 'An unexpected error occurred'
-              : 'Something went wrong. Please try again.'}
-          </Text>
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={this.handleRetry}
-              testID="screen-error-retry"
-              accessibilityLabel="Try again"
-              accessibilityRole="button"
-            >
-              <Text style={styles.retryText}>Try Again</Text>
-            </TouchableOpacity>
-            {this.props.onNavigateHome && (
-              <TouchableOpacity
-                style={styles.homeButton}
-                onPress={this.handleGoHome}
-                testID="screen-error-home"
-                accessibilityLabel="Go to home"
-                accessibilityRole="button"
-              >
-                <Text style={styles.homeText}>Go Home</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+              : 'Something went wrong. Please try again.'
+          }
+          onRetry={this.handleRetry}
+          onGoHome={this.props.onNavigateHome ? this.handleGoHome : undefined}
+          testID={`screen-error-${this.props.screenName}`}
+        />
       );
     }
 
     return this.props.children;
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-    backgroundColor: colors.sandBase,
-  },
-  icon: {
-    fontSize: 48,
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.h3,
-    color: colors.espresso,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  message: {
-    ...typography.body,
-    color: colors.espressoLight,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  retryButton: {
-    backgroundColor: colors.sunsetCoral,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: borderRadius.button,
-  },
-  retryText: {
-    ...typography.button,
-    color: '#FFFFFF',
-  },
-  homeButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: borderRadius.button,
-    borderWidth: 1,
-    borderColor: colors.espressoLight,
-  },
-  homeText: {
-    ...typography.button,
-    color: colors.espresso,
-  },
-});
