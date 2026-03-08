@@ -17,6 +17,7 @@ import {
   CATEGORIES,
   type Product,
   type ProductCategory,
+  type ProductSize,
   type SortOption,
   type CategoryInfo,
   type StockStatus,
@@ -28,8 +29,14 @@ import { useDataCache } from '@/hooks/useDataCache';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { isWixConfigured } from '@/services/wix/config';
 
-export type { Product, ProductCategory, SortOption, CategoryInfo, StockStatus };
+export type { Product, ProductCategory, ProductSize, SortOption, CategoryInfo, StockStatus };
 export { getStockStatus, LOW_STOCK_THRESHOLD };
+
+export interface ProductFilters {
+  sizes: ProductSize[];
+  fabrics: string[];
+  priceRange: [number, number] | null;
+}
 
 const PAGE_SIZE = 8;
 const PRODUCT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
@@ -57,6 +64,10 @@ interface UseProductsReturn {
   searchQuery: string;
   selectedCategory: ProductCategory | null;
   sortBy: SortOption;
+  filters: ProductFilters;
+  activeFilterCount: number;
+  availableFabrics: string[];
+  priceExtent: [number, number];
   isLoading: boolean;
   /** True only during the initial page load (before first data arrives) */
   isInitialLoading: boolean;
@@ -65,9 +76,12 @@ interface UseProductsReturn {
   suggestions: string[];
   /** Whether serving from cache (stale data) */
   isFromCache: boolean;
+  /** Error from the most recent fetch attempt, or null if successful */
+  fetchError: Error | null;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: ProductCategory | null) => void;
   setSortBy: (sort: SortOption) => void;
+  setFilters: (filters: ProductFilters) => void;
   loadMore: () => void;
   refresh: () => void;
 }
@@ -85,12 +99,45 @@ interface UseProductsOptions {
  *
  * When Wix is not configured, falls back to mock data with client-side filtering.
  */
+const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], priceRange: null };
+
+function countActiveFilters(f: ProductFilters): number {
+  let count = 0;
+  if (f.sizes.length > 0) count++;
+  if (f.fabrics.length > 0) count++;
+  if (f.priceRange !== null) count++;
+  return count;
+}
+
+function applyFilters(products: Product[], filters: ProductFilters): Product[] {
+  let result = products;
+
+  if (filters.sizes.length > 0) {
+    // Products without a size (accessories, pillows) pass through the size filter
+    result = result.filter((p) => !p.size || filters.sizes.includes(p.size));
+  }
+
+  if (filters.fabrics.length > 0) {
+    result = result.filter((p) =>
+      p.fabricOptions.some((f) => filters.fabrics.includes(f)),
+    );
+  }
+
+  if (filters.priceRange !== null) {
+    const [min, max] = filters.priceRange;
+    result = result.filter((p) => p.price >= min && p.price <= max);
+  }
+
+  return result;
+}
+
 export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(
     options?.initialCategory ?? null,
   );
   const [sortBy, setSortBy] = useState<SortOption>('featured');
+  const [filters, setFiltersState] = useState<ProductFilters>(EMPTY_FILTERS);
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -103,6 +150,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [wixTotalResults, setWixTotalResults] = useState(0);
   const [wixIsLoading, setWixIsLoading] = useState(false);
   const [wixIsInitialLoading, setWixIsInitialLoading] = useState(useWix);
+  const [wixFetchError, setWixFetchError] = useState<Error | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const wixAbortRef = useRef<AbortController | null>(null);
 
@@ -115,6 +163,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     wixAbortRef.current = controller;
 
     setWixIsLoading(true);
+    setWixFetchError(null);
 
     const collectionId = selectedCategory
       ? CATEGORY_COLLECTION_IDS[selectedCategory]
@@ -137,7 +186,9 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
       .catch((err) => {
         if (controller.signal.aborted) return;
         setWixIsInitialLoading(false);
-        console.warn('[useProducts] Wix fetch error:', err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        setWixFetchError(error);
+        console.error('[useProducts] Wix fetch error:', error);
       })
       .finally(() => {
         if (!controller.signal.aborted) setWixIsLoading(false);
@@ -153,6 +204,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     data: cachedProducts,
     isLoading: isCacheLoading,
     isStale: isFromCache,
+    error: cacheError,
     refresh: cacheRefresh,
   } = useDataCache<Product[]>('products', fetchProducts, { maxAge: PRODUCT_CACHE_MAX_AGE });
 
@@ -184,6 +236,9 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
       result = result.filter((p) => p.category === selectedCategory);
     }
 
+    // Apply product filters (size, fabric, price range)
+    result = applyFilters(result, filters);
+
     // Sort (skip if search is active — fuzzy results are already relevance-sorted)
     if (!searchQuery.trim() || sortBy !== 'featured') {
       switch (sortBy) {
@@ -195,6 +250,9 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
           break;
         case 'rating':
           result.sort((a, b) => b.rating - a.rating);
+          break;
+        case 'popular':
+          result.sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0));
           break;
         case 'newest':
           result.reverse();
@@ -211,7 +269,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     }
 
     return result;
-  }, [searchQuery, selectedCategory, sortBy, allProducts]);
+  }, [searchQuery, selectedCategory, sortBy, filters, allProducts]);
 
   // Paginated slice (mock path only)
   const mockProducts = useMemo(
@@ -225,13 +283,44 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const wixHasMore = wixProducts.length < wixTotalResults;
 
   // Apply client-side category post-filter when Wix has no collection ID for this category
-  const resolvedProducts = useWix
-    ? selectedCategory && !CATEGORY_COLLECTION_IDS[selectedCategory]
-      ? wixProducts.filter((p) => p.category === selectedCategory)
-      : wixProducts
-    : mockIsInitialLoading
-      ? []
-      : mockProducts;
+  const wixFiltered = useMemo(() => {
+    let result = wixProducts;
+    if (selectedCategory && !CATEGORY_COLLECTION_IDS[selectedCategory]) {
+      result = result.filter((p) => p.category === selectedCategory);
+    }
+    return applyFilters(result, filters);
+  }, [wixProducts, selectedCategory, filters]);
+
+  let resolvedProducts: Product[];
+  if (useWix) {
+    resolvedProducts = wixFiltered;
+  } else if (mockIsInitialLoading) {
+    resolvedProducts = [];
+  } else {
+    resolvedProducts = mockProducts;
+  }
+
+  // Derived filter metadata — computed from the full (unfiltered) product set
+  const allProductsForMeta = useWix ? wixProducts : allProducts;
+
+  const availableFabrics = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of allProductsForMeta) {
+      for (const f of p.fabricOptions) set.add(f);
+    }
+    return Array.from(set).sort();
+  }, [allProductsForMeta]);
+
+  const priceExtent = useMemo<[number, number]>(() => {
+    if (allProductsForMeta.length === 0) return [0, 1000];
+    let min = Infinity;
+    let max = -Infinity;
+    for (const p of allProductsForMeta) {
+      if (p.price < min) min = p.price;
+      if (p.price > max) max = p.price;
+    }
+    return [Math.floor(min), Math.ceil(max)];
+  }, [allProductsForMeta]);
 
   const resolvedIsLoading = useWix ? wixIsLoading : isLoading;
   const resolvedIsInitialLoading = useWix ? wixIsInitialLoading : mockIsInitialLoading;
@@ -258,6 +347,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
       setWixProducts([]);
       setWixTotalResults(0);
       setWixIsInitialLoading(true);
+      setWixFetchError(null);
       setRefreshToken((t) => t + 1);
     } else {
       setIsLoading(false);
@@ -281,20 +371,31 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     setPage(1);
   }, []);
 
+  const handleFilters = useCallback((newFilters: ProductFilters) => {
+    setFiltersState(newFilters);
+    setPage(1);
+  }, []);
+
   return {
     products: resolvedProducts,
     categories: CATEGORIES,
     searchQuery,
     selectedCategory,
     sortBy,
+    filters,
+    activeFilterCount: countActiveFilters(filters),
+    availableFabrics,
+    priceExtent,
     isLoading: resolvedIsLoading,
     isInitialLoading: resolvedIsInitialLoading,
     hasMore: resolvedHasMore,
     suggestions,
     isFromCache: useWix ? false : isFromCache,
+    fetchError: useWix ? wixFetchError : (cacheError ?? null),
     setSearchQuery: handleSearchQuery,
     setSelectedCategory: handleCategory,
     setSortBy: handleSort,
+    setFilters: handleFilters,
     loadMore,
     refresh,
   };

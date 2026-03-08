@@ -16,6 +16,8 @@ import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
+import { FilterButton } from '@/components/FilterButton';
+import { FilterModal } from '@/components/FilterModal';
 import { EmptyState } from '@/components/EmptyState';
 
 /** Props for the CategoryScreen component. */
@@ -58,10 +60,23 @@ export function CategoryScreen({
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { products, sortBy, setSortBy, setSelectedCategory, refresh } = useProducts({
+  const {
+    products,
+    sortBy,
+    filters,
+    activeFilterCount,
+    availableFabrics,
+    priceExtent,
+    fetchError,
+    setSortBy,
+    setFilters,
+    setSelectedCategory,
+    refresh,
+  } = useProducts({
     initialCategory: resolvedCategory,
   });
   const scrollPerf = useScrollPerformance('CategoryScreen');
+  const [showFilters, setShowFilters] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -111,10 +126,32 @@ export function CategoryScreen({
             {products.length} {products.length === 1 ? 'product' : 'products'}
           </Text>
         </View>
-        <SortPicker value={sortBy} onChange={setSortBy} resultCount={products.length} />
+        {/* Fetch error banner */}
+        {fetchError && (
+          <View
+            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight ?? '#FEE2E2' }]}
+            testID="category-fetch-error"
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark ?? '#991B1B' }]}>
+              Unable to load products. Pull to refresh.
+            </Text>
+          </View>
+        )}
+        <SortPicker
+          value={sortBy}
+          onChange={setSortBy}
+          resultCount={products.length}
+          leftContent={
+            <FilterButton
+              activeCount={activeFilterCount}
+              onPress={() => setShowFilters(true)}
+            />
+          }
+        />
       </View>
     ),
-    [title, products.length, sortBy, colors, spacing, onBack, setSortBy],
+    [title, products.length, sortBy, activeFilterCount, fetchError, colors, spacing, onBack, setSortBy],
   );
 
   const renderEmpty = useCallback(
@@ -160,6 +197,14 @@ export function CategoryScreen({
         maxToRenderPerBatch={6}
         testID="category-product-list"
       />
+      <FilterModal
+        visible={showFilters}
+        filters={filters}
+        availableFabrics={availableFabrics}
+        priceExtent={priceExtent}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
     </View>
   );
 }
@@ -199,5 +244,17 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: 10,
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

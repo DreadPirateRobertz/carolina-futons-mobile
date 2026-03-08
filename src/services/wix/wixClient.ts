@@ -11,7 +11,7 @@
  * - POST /stores/v1/inventoryItems/query (inventory status)
  */
 
-import type { Product, ProductImage, ProductCategory } from '@/data/products';
+import type { Product, ProductImage, ProductCategory, ProductSize, SortOption } from '@/data/products';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export interface CreateReviewInput {
 export interface QueryProductsOptions {
   limit?: number;
   offset?: number;
-  sort?: 'price-asc' | 'price-desc' | 'newest' | 'rating' | 'featured';
+  sort?: SortOption;
   collectionId?: string;
   productIds?: string[];
   search?: string;
@@ -283,13 +283,22 @@ export function resolveCategory(collectionSlug: string): ProductCategory {
   return collectionMap[collectionSlug] ?? ('futons' as ProductCategory);
 }
 
+// ── Size inference from product names ────────────────────────────
+// Word-boundary patterns prevent false matches (e.g. "Beautiful" vs "full")
+const SIZE_PATTERNS: [ProductSize, RegExp][] = [
+  ['queen', /\bqueen\b/],
+  ['twin', /\btwin\b/],
+  ['full', /\bfull\b/],
+];
+
 // ── Sort mapping ───────────────────────────────────────────────
 
-const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
+const SORT_MAP: Record<SortOption, { fieldName: string; order: string }[]> = {
   'price-asc': [{ fieldName: 'price', order: 'ASC' }],
   'price-desc': [{ fieldName: 'price', order: 'DESC' }],
   newest: [{ fieldName: 'lastUpdated', order: 'DESC' }],
   rating: [{ fieldName: 'numericId', order: 'DESC' }],
+  popular: [{ fieldName: 'numericId', order: 'DESC' }],
   featured: [],
 };
 
@@ -879,12 +888,18 @@ export function transformWixProduct(wix: WixProduct): Product {
   );
   const fabricOptions = fabricOption ? fabricOption.choices.map((c) => c.value) : [];
 
+  // Infer size from product name using word boundaries to avoid false matches
+  // (e.g. "Beautiful" should not match "full")
+  const nameLower = wix.name.toLowerCase();
+  const size = SIZE_PATTERNS.find(([, re]) => re.test(nameLower))?.[0];
+
   return {
     id: wix.id,
     name: wix.name,
     slug: wix.slug,
     sku: wix.sku ?? '',
-    category: 'futons' as ProductCategory, // Resolved via collection mapping
+    category: 'futons' as ProductCategory, // TODO: resolve via collection mapping once Wix collection IDs are configured
+    ...(size ? { size } : {}),
     price: isDiscounted ? wix.price.discountedPrice : wix.price.price,
     ...(isDiscounted ? { originalPrice: wix.price.price } : {}),
     description: wix.description ?? '',

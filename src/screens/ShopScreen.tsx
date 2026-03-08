@@ -23,6 +23,8 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
+import { FilterButton } from '@/components/FilterButton';
+import { FilterModal } from '@/components/FilterModal';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
@@ -56,17 +58,24 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     searchQuery,
     selectedCategory,
     sortBy,
+    filters,
+    activeFilterCount,
+    availableFabrics,
+    priceExtent,
     isLoading,
+    fetchError,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
+    setFilters,
     loadMore,
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -143,11 +152,34 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
         />
 
-        {/* Sort + count */}
-        <SortPicker value={sortBy} onChange={(sort: SortOption) => {
-          setSortBy(sort);
-          events.sortProducts(sort);
-        }} resultCount={products.length} />
+        {/* Fetch error banner */}
+        {fetchError && (
+          <View
+            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight ?? '#FEE2E2' }]}
+            testID="shop-fetch-error"
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark ?? '#991B1B' }]}>
+              Unable to load products. Pull to refresh.
+            </Text>
+          </View>
+        )}
+
+        {/* Filter + Sort row */}
+        <SortPicker
+          value={sortBy}
+          onChange={(sort: SortOption) => {
+            setSortBy(sort);
+            events.sortProducts(sort);
+          }}
+          resultCount={products.length}
+          leftContent={
+            <FilterButton
+              activeCount={activeFilterCount}
+              onPress={() => setShowFilters(true)}
+            />
+          }
+        />
       </View>
     ),
     [
@@ -155,12 +187,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       searchQuery,
       selectedCategory,
       sortBy,
+      activeFilterCount,
       products.length,
       categories,
       colors,
       spacing,
       suggestions,
       recentSearches,
+      fetchError,
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
@@ -269,6 +303,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         removeClippedSubviews
         testID="product-list"
       />
+      <FilterModal
+        visible={showFilters}
+        filters={filters}
+        availableFabrics={availableFabrics}
+        priceExtent={priceExtent}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
     </View>
   );
 }
@@ -314,6 +356,18 @@ const styles = StyleSheet.create({
   emptyMessage: {
     fontSize: 15,
     lineHeight: 22,
+    textAlign: 'center',
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
     textAlign: 'center',
   },
   footer: {
