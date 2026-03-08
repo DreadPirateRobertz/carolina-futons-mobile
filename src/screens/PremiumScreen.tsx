@@ -37,7 +37,7 @@ const FEATURES = [
 ];
 
 function PremiumScreenInner({ onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, typography } = useTheme();
+  const { colors, spacing, typography } = useTheme();
   const { isPremium, offerings, error, purchase, restore } = usePremium();
   const [purchasing, setPurchasing] = useState<string | null>(null);
 
@@ -83,7 +83,12 @@ function PremiumScreenInner({ onBack, testID }: Props) {
           >
             CF+ Active
           </Text>
-          <Text style={[styles.activeTitle, { color: darkPalette.textPrimary, fontFamily: typography.headingFamily }]}>
+          <Text
+            style={[
+              styles.activeTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
+          >
             You're a CF+ member
           </Text>
           <Text style={[styles.activeMessage, { color: darkPalette.textMuted }]}>

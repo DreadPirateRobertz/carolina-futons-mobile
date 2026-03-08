@@ -14,7 +14,10 @@ import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
-import { MountainRefreshControl, MountainRefreshIndicator } from '@/components/MountainRefreshControl';
+import {
+  MountainRefreshControl,
+  MountainRefreshIndicator,
+} from '@/components/MountainRefreshControl';
 import { formatPrice } from '@/utils';
 
 interface Props {
@@ -85,7 +88,10 @@ export function OrderHistoryScreen({
         >
           <View style={styles.orderHeader}>
             <Text
-              style={[styles.orderNumber, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold }]}
+              style={[
+                styles.orderNumber,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold },
+              ]}
               testID={`order-number-${item.id}`}
             >
               {item.orderNumber}
@@ -102,7 +108,10 @@ export function OrderHistoryScreen({
           </View>
 
           <Text
-            style={[styles.orderDate, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.orderDate,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
             testID={`order-date-${item.id}`}
           >
             {formatDate(item.createdAt)}
@@ -110,14 +119,20 @@ export function OrderHistoryScreen({
 
           <View style={styles.orderFooter}>
             <Text
-              style={[styles.orderItems, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.orderItems,
+                { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+              ]}
               testID={`order-items-${item.id}`}
               numberOfLines={1}
             >
               {itemSummary}
             </Text>
             <Text
-              style={[styles.orderTotal, { color: darkPalette.textPrimary, fontFamily: typography.headingFamily }]}
+              style={[
+                styles.orderTotal,
+                { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+              ]}
               testID={`order-total-${item.id}`}
             >
               {formatPrice(item.total)}
@@ -174,9 +189,7 @@ export function OrderHistoryScreen({
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <MountainRefreshIndicator refreshing={refreshing} />
-        }
+        ListHeaderComponent={<MountainRefreshIndicator refreshing={refreshing} />}
         refreshControl={
           <MountainRefreshControl
             refreshing={refreshing}

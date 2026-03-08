@@ -6,7 +6,6 @@
  * signing out. Required for GDPR/CCPA compliance.
  */
 import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { useWixClient } from '@/services/wix';
@@ -23,11 +22,7 @@ export interface AccountDeletionState {
   cancel: () => void;
 }
 
-const SECURE_STORE_KEYS = [
-  'biometric_auth_enabled',
-  'wix_auth_tokens',
-  'google_session',
-];
+const SECURE_STORE_KEYS = ['biometric_auth_enabled', 'wix_auth_tokens', 'google_session'];
 
 export function useAccountDeletion(): AccountDeletionState {
   const [status, setStatus] = useState<DeletionStatus>('idle');

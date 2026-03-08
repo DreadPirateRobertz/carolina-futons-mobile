@@ -6,7 +6,15 @@
  * per-category preference toggles, and deep-link routing when the user
  * taps a notification.
  */
-import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
 import { AppState, Linking, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -39,7 +47,11 @@ Notifications.setNotificationHandler({
     const type = data?.type as NotificationType | undefined;
 
     // If the notification has a known type, check user preferences
-    if (type && type in NOTIFICATION_TYPE_CONFIG && !shouldShowNotification(type, _currentPreferences)) {
+    if (
+      type &&
+      type in NOTIFICATION_TYPE_CONFIG &&
+      !shouldShowNotification(type, _currentPreferences)
+    ) {
       return {
         shouldPlaySound: false,
         shouldSetBadge: false,

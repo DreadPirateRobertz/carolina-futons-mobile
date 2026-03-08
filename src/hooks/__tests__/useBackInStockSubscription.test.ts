@@ -50,10 +50,7 @@ describe('useBackInStockSubscription', () => {
     });
 
     expect(result.current.isSubscribed).toBe(false);
-    expect(mockSetItem).toHaveBeenCalledWith(
-      '@back_in_stock_subscriptions',
-      '[]',
-    );
+    expect(mockSetItem).toHaveBeenCalledWith('@back_in_stock_subscriptions', '[]');
   });
 
   it('toggles subscription on then off', async () => {

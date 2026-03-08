@@ -58,7 +58,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
-import { getStockStatus, LOW_STOCK_THRESHOLD } from '@/hooks/useProducts';
+import { getStockStatus } from '@/hooks/useProducts';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -113,7 +113,7 @@ export function ProductDetailScreen({
     height: sizeGuideHeight.value,
     overflow: 'hidden' as const,
     opacity: interpolate(sizeGuideHeight.value, [0, 50], [0, 1]),
-    pointerEvents: sizeGuideHeight.value === 0 ? 'none' as const : 'auto' as const,
+    pointerEvents: sizeGuideHeight.value === 0 ? ('none' as const) : ('auto' as const),
   }));
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -215,13 +215,16 @@ export function ProductDetailScreen({
   });
 
   // --- Callbacks ---
-  const handleSelectFabric = useCallback((fabric: Fabric) => {
-    setSelectedFabric(fabric);
-    events.selectFabric(model.id, fabric.id);
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, [model.id]);
+  const handleSelectFabric = useCallback(
+    (fabric: Fabric) => {
+      setSelectedFabric(fabric);
+      events.selectFabric(model.id, fabric.id);
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+    },
+    [model.id],
+  );
 
   const handleAddToCart = useCallback(() => {
     onAddToCart?.(model, selectedFabric, quantity);
@@ -292,9 +295,7 @@ export function ProductDetailScreen({
     const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}`;
     try {
       await Share.share(
-        Platform.OS === 'ios'
-          ? { message, url: deepLink }
-          : { message: `${message}\n${deepLink}` },
+        Platform.OS === 'ios' ? { message, url: deepLink } : { message: `${message}\n${deepLink}` },
       );
       events.shareProduct(model.id);
     } catch {
@@ -412,7 +413,12 @@ export function ProductDetailScreen({
                 gradientStrip1Style,
               ]}
             />
-            <View style={[styles.gradientStrip, { backgroundColor: colors.sandBase, height: 16, opacity: 0.7 }]} />
+            <View
+              style={[
+                styles.gradientStrip,
+                { backgroundColor: colors.sandBase, height: 16, opacity: 0.7 },
+              ]}
+            />
           </View>
         </Animated.View>
 
@@ -609,9 +615,7 @@ export function ProductDetailScreen({
             accessibilityLabel="Size Guide"
             accessibilityState={{ expanded: sizeGuideExpanded }}
           >
-            <Text style={[styles.sizeGuideToggleText, { color: colors.espresso }]}>
-              Size Guide
-            </Text>
+            <Text style={[styles.sizeGuideToggleText, { color: colors.espresso }]}>Size Guide</Text>
             <Text style={[styles.sizeGuideChevron, { color: colors.espressoLight }]}>
               {sizeGuideExpanded ? '▲' : '▼'}
             </Text>
@@ -642,7 +646,9 @@ export function ProductDetailScreen({
             <EmptyState
               title="No Reviews Yet"
               message="Be the first to share your experience with this product."
-              illustration={<ReviewsIllustration width={200} height={140} testID="reviews-illustration" />}
+              illustration={
+                <ReviewsIllustration width={200} height={140} testID="reviews-illustration" />
+              }
               testID="reviews-empty-state"
             />
           ) : (
@@ -784,14 +790,20 @@ export function ProductDetailScreen({
         {(isLowStock || isOutOfStock) && (
           <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
             {isLowStock && catalogProduct?.stockCount !== undefined && (
-              <View style={[styles.stockAlert, { backgroundColor: '#FFF3CD' }]} testID="low-stock-alert">
+              <View
+                style={[styles.stockAlert, { backgroundColor: '#FFF3CD' }]}
+                testID="low-stock-alert"
+              >
                 <Text style={[styles.stockAlertText, { color: '#856404' }]}>
                   Only {catalogProduct.stockCount} left in stock — order soon!
                 </Text>
               </View>
             )}
             {isOutOfStock && (
-              <View style={[styles.stockAlert, { backgroundColor: '#F8D7DA' }]} testID="out-of-stock-alert">
+              <View
+                style={[styles.stockAlert, { backgroundColor: '#F8D7DA' }]}
+                testID="out-of-stock-alert"
+              >
                 <Text style={[styles.stockAlertText, { color: '#721C24' }]}>
                   Currently out of stock
                 </Text>
@@ -808,7 +820,9 @@ export function ProductDetailScreen({
                 style={[
                   styles.addToCartButton,
                   {
-                    backgroundColor: backInStock.isSubscribed ? colors.mountainBlue : colors.espresso,
+                    backgroundColor: backInStock.isSubscribed
+                      ? colors.mountainBlue
+                      : colors.espresso,
                     borderRadius: borderRadius.button,
                   },
                   shadows.button,
@@ -944,7 +958,12 @@ export function ProductDetailScreen({
         onClose={handleCloseFullscreen}
         onIndexChange={setActiveGalleryIndex}
         renderImage={(image, index) => (
-          <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={image.label} index={index} />
+          <FutonPlaceholder
+            model={model}
+            fabric={selectedFabric}
+            viewLabel={image.label}
+            index={index}
+          />
         )}
         testID="fullscreen-gallery-modal"
       />
@@ -1059,9 +1078,15 @@ function DimensionItem({
       accessible={true}
       accessibilityLabel={`${label}: ${value}, ${inches} inches`}
     >
-      <Text style={[styles.dimValue, { color }]} importantForAccessibility="no">{value}</Text>
-      <Text style={[styles.dimLabel, { color: mutedColor }]} importantForAccessibility="no">{label}</Text>
-      <Text style={[styles.dimInches, { color: mutedColor }]} importantForAccessibility="no">{inches}"</Text>
+      <Text style={[styles.dimValue, { color }]} importantForAccessibility="no">
+        {value}
+      </Text>
+      <Text style={[styles.dimLabel, { color: mutedColor }]} importantForAccessibility="no">
+        {label}
+      </Text>
+      <Text style={[styles.dimInches, { color: mutedColor }]} importantForAccessibility="no">
+        {inches}"
+      </Text>
     </View>
   );
 }
@@ -1071,7 +1096,13 @@ function SizeGuideDiagram({
   colors,
 }: {
   dimensions: { width: number; depth: number; height: number; seatHeight: number };
-  colors: { espresso: string; espressoLight: string; mountainBlue: string; sandDark: string; sandLight: string };
+  colors: {
+    espresso: string;
+    espressoLight: string;
+    mountainBlue: string;
+    sandDark: string;
+    sandLight: string;
+  };
 }) {
   const DIAGRAM_W = 200;
   const DIAGRAM_H = 140;
@@ -1100,7 +1131,12 @@ function SizeGuideDiagram({
         />
         {/* Width label — bottom */}
         <View style={[styles.diagramLabelRow, { bottom: -20, left: 0, right: 0 }]}>
-          <View style={[styles.diagramLine, { backgroundColor: colors.mountainBlue, width: scaledW, alignSelf: 'center' }]} />
+          <View
+            style={[
+              styles.diagramLine,
+              { backgroundColor: colors.mountainBlue, width: scaledW, alignSelf: 'center' },
+            ]}
+          />
           <Text
             style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
             testID="diagram-label-width"
@@ -1110,7 +1146,9 @@ function SizeGuideDiagram({
         </View>
         {/* Height label — right side */}
         <View style={[styles.diagramLabelCol, { right: -40, bottom: 0, height: scaledH }]}>
-          <View style={[styles.diagramLineV, { backgroundColor: colors.mountainBlue, height: scaledH }]} />
+          <View
+            style={[styles.diagramLineV, { backgroundColor: colors.mountainBlue, height: scaledH }]}
+          />
           <Text
             style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
             testID="diagram-label-height"
@@ -1120,7 +1158,12 @@ function SizeGuideDiagram({
         </View>
         {/* Depth label — top */}
         <View style={[styles.diagramLabelRow, { top: -20, left: 0, right: 0 }]}>
-          <View style={[styles.diagramLine, { backgroundColor: colors.mountainBlue, width: scaledD, alignSelf: 'center' }]} />
+          <View
+            style={[
+              styles.diagramLine,
+              { backgroundColor: colors.mountainBlue, width: scaledD, alignSelf: 'center' },
+            ]}
+          />
           <Text
             style={[styles.diagramLabelText, { color: colors.mountainBlue }]}
             testID="diagram-label-depth"
@@ -1136,12 +1179,7 @@ function SizeGuideDiagram({
           Fits comfortably in a 10' × 10' room with space for walking around.
         </Text>
         <View style={styles.roomDiagramRow}>
-          <View
-            style={[
-              styles.roomSquare,
-              { borderColor: colors.sandDark },
-            ]}
-          >
+          <View style={[styles.roomSquare, { borderColor: colors.sandDark }]}>
             <View
               style={[
                 styles.futonInRoom,

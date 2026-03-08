@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-native';
-import { Linking, Platform } from 'react-native';
-import { useCameraPermission, type CameraPermissionState } from '../useCameraPermission';
+import { Linking } from 'react-native';
+import { useCameraPermission } from '../useCameraPermission';
 
 // Mock expo-camera
 const mockRequestPermission = jest.fn();
@@ -52,7 +52,11 @@ describe('useCameraPermission', () => {
   });
 
   it('request() calls the expo permission request', async () => {
-    mockRequestPermission.mockResolvedValue({ granted: true, canAskAgain: true, status: 'granted' });
+    mockRequestPermission.mockResolvedValue({
+      granted: true,
+      canAskAgain: true,
+      status: 'granted',
+    });
     const { result } = renderHook(() => useCameraPermission());
     await act(async () => {
       await result.current.request();

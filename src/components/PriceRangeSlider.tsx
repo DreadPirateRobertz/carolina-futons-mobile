@@ -80,10 +80,7 @@ export function PriceRangeSlider({ min, max, low, high, onChangeRange, testID }:
   return (
     <View testID={testID ?? 'price-range-slider'} style={styles.container}>
       <View style={styles.labels}>
-        <Text
-          style={[styles.labelText, { color: colors.espresso }]}
-          testID="price-range-low-label"
-        >
+        <Text style={[styles.labelText, { color: colors.espresso }]} testID="price-range-low-label">
           ${low}
         </Text>
         <Text
@@ -97,7 +94,10 @@ export function PriceRangeSlider({ min, max, low, high, onChangeRange, testID }:
       <View style={styles.trackContainer} onLayout={onLayout}>
         {/* Background track */}
         <View
-          style={[styles.track, { backgroundColor: colors.sandDark, borderRadius: borderRadius.sm }]}
+          style={[
+            styles.track,
+            { backgroundColor: colors.sandDark, borderRadius: borderRadius.sm },
+          ]}
         />
 
         {/* Active range */}

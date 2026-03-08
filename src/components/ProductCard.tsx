@@ -12,7 +12,12 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
-import { type Product, DEFAULT_PRODUCT_BLURHASH, getStockStatus, type StockStatus } from '@/data/products';
+import {
+  type Product,
+  DEFAULT_PRODUCT_BLURHASH,
+  getStockStatus,
+  type StockStatus,
+} from '@/data/products';
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { WishlistButton } from './WishlistButton';

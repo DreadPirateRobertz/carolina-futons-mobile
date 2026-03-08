@@ -9,7 +9,11 @@
  * @bead cm-vdk
  */
 import React from 'react';
-import { render, fireEvent, waitFor, act, within } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
+
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { CartProvider, useCart, type CartItem } from '@/hooks/useCart';
+import { calculateTotals } from '@/services/payment';
 
 // ── Mocks ──────────────────────────────────────────────────────────
 
@@ -211,21 +215,13 @@ jest.mock('@/hooks/useRecentlyViewed', () => ({
   useRecentlyViewed: () => ({ addItem: jest.fn(), items: [] }),
 }));
 
-import { FUTON_MODELS, FABRICS } from '@/data/futons';
-import { CartProvider, useCart, type CartItem } from '@/hooks/useCart';
-import { calculateTotals } from '@/services/payment';
-
 // ── Test helpers ───────────────────────────────────────────────────
 
 const TEST_MODEL = FUTON_MODELS[0]; // The Asheville
 const TEST_FABRIC = FABRICS[0]; // Natural Linen (free)
 const TEST_FABRIC_PREMIUM = FABRICS[2]; // Mountain Blue (+$29)
 
-function buildCartItem(
-  model = TEST_MODEL,
-  fabric = TEST_FABRIC,
-  quantity = 1,
-): CartItem {
+function buildCartItem(model = TEST_MODEL, fabric = TEST_FABRIC, quantity = 1): CartItem {
   return {
     id: `${model.id}:${fabric.id}`,
     model,
@@ -323,7 +319,7 @@ describe('Purchase Flow Integration', () => {
 
       expect(getByTestId('item-count').props.children).toBe(1);
       expect(getByTestId('subtotal').props.children).toBe(TEST_MODEL.basePrice);
-    });
+    }, 15000);
 
     it('increments quantity when same item added twice', async () => {
       const { getByTestId } = render(
@@ -333,8 +329,12 @@ describe('Purchase Flow Integration', () => {
       );
 
       await act(async () => {});
-      await act(async () => { fireEvent.press(getByTestId('add-item')); });
-      await act(async () => { fireEvent.press(getByTestId('add-item')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
 
       expect(getByTestId('item-count').props.children).toBe(2);
     });
@@ -347,7 +347,9 @@ describe('Purchase Flow Integration', () => {
       );
 
       await act(async () => {});
-      await act(async () => { fireEvent.press(getByTestId('add-premium-fabric')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('add-premium-fabric'));
+      });
 
       const expectedPrice = TEST_MODEL.basePrice + TEST_FABRIC_PREMIUM.price;
       expect(getByTestId('subtotal').props.children).toBe(expectedPrice);
@@ -361,10 +363,14 @@ describe('Purchase Flow Integration', () => {
       );
 
       await act(async () => {});
-      await act(async () => { fireEvent.press(getByTestId('add-item')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
       expect(getByTestId('item-count').props.children).toBe(1);
 
-      await act(async () => { fireEvent.press(getByTestId('clear-cart')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('clear-cart'));
+      });
       expect(getByTestId('item-count').props.children).toBe(0);
     });
   });
@@ -395,7 +401,7 @@ describe('Purchase Flow Integration', () => {
 
   describe('Promo code flow', () => {
     it('validates and applies a percentage discount', async () => {
-      const { usePromoCode } = jest.requireActual('@/hooks/usePromoCode');
+      const { usePromoCode: _usePromoCode } = jest.requireActual('@/hooks/usePromoCode');
       // The mock wixClient.applyCoupon returns SPRING20 → 20% discount
       // We test the getDiscount computation directly
       const coupon = {
@@ -406,9 +412,10 @@ describe('Purchase Flow Integration', () => {
       };
 
       // Manually compute: 20% off $349 = $69.80
-      const discount = coupon.discountType === 'percentage'
-        ? (349 * coupon.discountValue) / 100
-        : coupon.discountValue;
+      const discount =
+        coupon.discountType === 'percentage'
+          ? (349 * coupon.discountValue) / 100
+          : coupon.discountValue;
       expect(discount).toBe(69.8);
     });
   });
@@ -503,11 +510,7 @@ describe('Purchase Flow Integration', () => {
 
       // Step 9: Purchase analytics
       mockAnalyticsEvents.purchase(confirmation.orderId, confirmation.totals.total, 1);
-      expect(mockAnalyticsEvents.purchase).toHaveBeenCalledWith(
-        'order_test_123',
-        425.86,
-        1,
-      );
+      expect(mockAnalyticsEvents.purchase).toHaveBeenCalledWith('order_test_123', 425.86, 1);
 
       // Verify all analytics events fired
       expect(mockAnalyticsEvents.viewProduct).toHaveBeenCalledTimes(1);

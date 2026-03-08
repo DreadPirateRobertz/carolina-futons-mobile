@@ -7,11 +7,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import {
-  loadModelForProduct,
-  prefetchModel,
-  type ModelLoadStatus,
-} from '@/services/modelLoader';
+import { loadModelForProduct, prefetchModel, type ModelLoadStatus } from '@/services/modelLoader';
 import type { ProductId } from '@/data/productId';
 
 export function useModelLoader() {

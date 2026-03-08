@@ -54,7 +54,8 @@ describe('useNetworkErrorRecovery', () => {
   });
 
   it('retry calls fetcher again and clears error on success', async () => {
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Failed'))
       .mockResolvedValueOnce({ data: 'recovered' });
 
@@ -73,9 +74,15 @@ describe('useNetworkErrorRecovery', () => {
 
   it('sets isRetrying during retry', async () => {
     let resolve: (v: unknown) => void;
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Failed'))
-      .mockImplementationOnce(() => new Promise((r) => { resolve = r; }));
+      .mockImplementationOnce(
+        () =>
+          new Promise((r) => {
+            resolve = r;
+          }),
+      );
 
     const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
 
@@ -137,7 +144,8 @@ describe('useNetworkErrorRecovery', () => {
   });
 
   it('guards against concurrent retry calls', async () => {
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Failed'))
       .mockResolvedValueOnce({ data: 'ok' });
 
@@ -171,7 +179,8 @@ describe('useNetworkErrorRecovery', () => {
   });
 
   it('clears stale after successful fetch', async () => {
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Failed'))
       .mockResolvedValueOnce({ data: 'fresh' });
 
@@ -189,7 +198,8 @@ describe('useNetworkErrorRecovery', () => {
   });
 
   it('forwards arguments to fetcher and replays on retry', async () => {
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Failed'))
       .mockResolvedValueOnce({ data: 'ok' });
 
@@ -210,7 +220,8 @@ describe('useNetworkErrorRecovery', () => {
   });
 
   it('updates error message when retry fails with different error', async () => {
-    const fetcher = jest.fn()
+    const fetcher = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Timeout'))
       .mockRejectedValueOnce(new Error('Server unavailable'));
 

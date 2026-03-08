@@ -77,10 +77,7 @@ export function CollectionsScreen() {
     [handleCollectionPress, spacing.pagePadding, isPremium, colors.espresso],
   );
 
-  const renderSeparator = useCallback(
-    () => <View style={{ height: spacing.md }} />,
-    [spacing.md],
-  );
+  const renderSeparator = useCallback(() => <View style={{ height: spacing.md }} />, [spacing.md]);
 
   const renderHeader = useCallback(
     () => (

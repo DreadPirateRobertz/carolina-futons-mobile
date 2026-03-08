@@ -17,7 +17,7 @@ function renderOrderDetail(
     <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
       <ThemeProvider>
         <CartProvider>
-        <OrderDetailScreen {...props} />
+          <OrderDetailScreen {...props} />
         </CartProvider>
       </ThemeProvider>
     </ConnectivityProvider>,
@@ -42,8 +42,8 @@ function renderWithCartReader(
     <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
       <ThemeProvider>
         <CartProvider>
-        <OrderDetailScreen {...props} />
-        <CartReader testID="cart-reader" />
+          <OrderDetailScreen {...props} />
+          <CartReader testID="cart-reader" />
         </CartProvider>
       </ThemeProvider>
     </ConnectivityProvider>,

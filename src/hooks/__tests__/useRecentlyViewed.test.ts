@@ -68,11 +68,9 @@ describe('useRecentlyViewed', () => {
   });
 
   it('loads stored data on mount', async () => {
-    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
-      JSON.stringify(['prod-stored']),
-    );
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(JSON.stringify(['prod-stored']));
 
-    const { result } = renderHook(() => useRecentlyViewed());
+    const { result: _result } = renderHook(() => useRecentlyViewed());
 
     await act(async () => {
       // Wait for async useEffect to complete

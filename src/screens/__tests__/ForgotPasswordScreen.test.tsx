@@ -163,11 +163,13 @@ describe('ForgotPasswordScreen', () => {
       const { getByTestId } = renderScreen();
       await waitFor(() => expect(getByTestId('forgot-password-screen')).toBeTruthy());
       const screen = getByTestId('forgot-password-screen');
-      const flat = [screen.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [screen.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
 
@@ -215,11 +217,13 @@ describe('ForgotPasswordScreen', () => {
         expect(getByTestId('forgot-password-screen')).toBeTruthy();
       });
       const screen = getByTestId('forgot-password-screen');
-      const flat = [screen.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [screen.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
   });

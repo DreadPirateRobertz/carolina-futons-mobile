@@ -464,8 +464,12 @@ describe('ProductDetailScreen', () => {
   });
 
   describe('AR CTA', () => {
-    beforeEach(() => { mockPremiumValue.isPremium = true; });
-    afterEach(() => { mockPremiumValue.isPremium = false; });
+    beforeEach(() => {
+      mockPremiumValue.isPremium = true;
+    });
+    afterEach(() => {
+      mockPremiumValue.isPremium = false;
+    });
 
     it('renders AR button', () => {
       const { getByTestId } = renderDetail();
@@ -832,7 +836,9 @@ describe('ProductDetailScreen', () => {
       const toggle = getByTestId('size-guide-toggle');
       expect(toggle.props.accessibilityState).toMatchObject({ expanded: false });
       fireEvent.press(toggle);
-      expect(getByTestId('size-guide-toggle').props.accessibilityState).toMatchObject({ expanded: true });
+      expect(getByTestId('size-guide-toggle').props.accessibilityState).toMatchObject({
+        expanded: true,
+      });
     });
 
     it('shows size guide for all products', () => {
@@ -886,7 +892,9 @@ describe('ProductDetailScreen', () => {
 
     it('does not crash when onRelatedProductPress not provided', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      expect(() => fireEvent.press(getByTestId(`rec-card-${mockSimilarItems[0].id}`))).not.toThrow();
+      expect(() =>
+        fireEvent.press(getByTestId(`rec-card-${mockSimilarItems[0].id}`)),
+      ).not.toThrow();
     });
 
     it('hides section when no similar items', () => {

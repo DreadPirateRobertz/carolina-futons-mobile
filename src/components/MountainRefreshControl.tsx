@@ -11,7 +11,14 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Animated, RefreshControl, RefreshControlProps, StyleSheet, View, Platform } from 'react-native';
+import {
+  Animated,
+  RefreshControl,
+  RefreshControlProps,
+  StyleSheet,
+  View,
+  Platform,
+} from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '@/theme/tokens';
 
@@ -88,27 +95,10 @@ export function MountainRefreshIndicator({
 
   return (
     <View style={styles.indicatorContainer} testID={testID ?? 'mountain-refresh-indicator'}>
-      <AnimatedSvg
-        width={28}
-        height={20}
-        viewBox="0 0 28 20"
-        style={{ transform: [{ scale }] }}
-      >
-        <Path
-          d="M14 2L22 18H6L14 2Z"
-          fill={colors.mountainBlue}
-          opacity={0.9}
-        />
-        <Path
-          d="M20 8L26 18H14L20 8Z"
-          fill={colors.mountainBlueDark}
-          opacity={0.7}
-        />
-        <Path
-          d="M8 10L12 18H4L8 10Z"
-          fill={colors.mountainBlueLight}
-          opacity={0.8}
-        />
+      <AnimatedSvg width={28} height={20} viewBox="0 0 28 20" style={{ transform: [{ scale }] }}>
+        <Path d="M14 2L22 18H6L14 2Z" fill={colors.mountainBlue} opacity={0.9} />
+        <Path d="M20 8L26 18H14L20 8Z" fill={colors.mountainBlueDark} opacity={0.7} />
+        <Path d="M8 10L12 18H4L8 10Z" fill={colors.mountainBlueLight} opacity={0.8} />
       </AnimatedSvg>
     </View>
   );

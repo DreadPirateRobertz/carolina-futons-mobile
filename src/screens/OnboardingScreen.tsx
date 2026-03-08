@@ -97,7 +97,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
   const isCompletionStep = step === TOTAL_STEPS - 1;
-  const isLastBrandSlide = step === BRAND_SLIDES.length - 1;
+  const _isLastBrandSlide = step === BRAND_SLIDES.length - 1;
 
   const handleNext = useCallback(() => {
     setStep((s) => s + 1);
@@ -146,7 +146,10 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         />
       </View>
       <Text
-        style={[styles.progressLabel, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily }]}
+        style={[
+          styles.progressLabel,
+          { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+        ]}
       >
         {step + 1} / {TOTAL_STEPS}
       </Text>

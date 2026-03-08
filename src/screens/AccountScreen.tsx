@@ -15,7 +15,6 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Switch,
   Alert,
   Platform,
@@ -34,7 +33,7 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
-import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
+import { useAddressBook } from '@/hooks/useAddressBook';
 import { useRatingPrompt } from '@/hooks/useRatingPrompt';
 import { PremiumBadge } from '@/components/PremiumBadge';
 
@@ -65,7 +64,13 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const dataExport = useDataExport();
   const addressBook = useAddressBook();
   const [restoring, setRestoring] = useState(false);
-  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
+  const {
+    status: bioStatus,
+    isEnabled: biometricEnabled,
+    loading: bioLoading,
+    enableBiometric,
+    disableBiometric,
+  } = useBiometricAuth();
   const ratingPrompt = useRatingPrompt();
 
   const [editing, setEditing] = useState(false);
@@ -76,9 +81,13 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const versionTapCount = useRef(0);
   const versionTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const appVersion = Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? '0.0.0';
-  const buildNumber = Application.nativeBuildVersion ?? Constants.expoConfig?.ios?.buildNumber ?? '1';
-  const environment = __DEV__ ? 'development' : (Constants.expoConfig?.extra?.environment ?? 'production');
+  const appVersion =
+    Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? '0.0.0';
+  const buildNumber =
+    Application.nativeBuildVersion ?? Constants.expoConfig?.ios?.buildNumber ?? '1';
+  const environment = __DEV__
+    ? 'development'
+    : (Constants.expoConfig?.extra?.environment ?? 'production');
 
   const handleVersionTap = useCallback(() => {
     versionTapCount.current += 1;
@@ -112,11 +121,16 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   }, [clearError]);
 
   const saveProfile = useCallback(async () => {
-    await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim() });
+    await updateProfile({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      phone: phone.trim(),
+    });
     setEditing(false);
   }, [updateProfile, firstName, lastName, phone]);
 
-  const showBiometricToggle = isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
+  const showBiometricToggle =
+    isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
   const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
 
   const handleBiometricToggle = async (value: boolean) => {
@@ -223,11 +237,17 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                 </Text>
                 {isPremium && <PremiumBadge />}
               </View>
-              <Text style={[styles.userEmail, { color: darkPalette.textMuted }]} testID="user-email">
+              <Text
+                style={[styles.userEmail, { color: darkPalette.textMuted }]}
+                testID="user-email"
+              >
                 {user.email}
               </Text>
               {user.phone ? (
-                <Text style={[styles.userPhone, { color: darkPalette.textMuted }]} testID="user-phone">
+                <Text
+                  style={[styles.userPhone, { color: darkPalette.textMuted }]}
+                  testID="user-phone"
+                >
                   {user.phone}
                 </Text>
               ) : null}
@@ -243,12 +263,20 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
           ) : (
             <View style={styles.editForm} testID="edit-profile-form">
               {error && (
-                <Text style={[styles.editError, { color: colors.sunsetCoral }]} testID="edit-profile-error">
+                <Text
+                  style={[styles.editError, { color: colors.sunsetCoral }]}
+                  testID="edit-profile-error"
+                >
                   {error}
                 </Text>
               )}
               <View style={styles.fieldGroup}>
-                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                <Text
+                  style={[
+                    styles.fieldLabel,
+                    { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+                  ]}
+                >
                   First Name
                 </Text>
                 <TextInput
@@ -271,7 +299,12 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                 />
               </View>
               <View style={styles.fieldGroup}>
-                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                <Text
+                  style={[
+                    styles.fieldLabel,
+                    { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+                  ]}
+                >
                   Last Name
                 </Text>
                 <TextInput
@@ -294,7 +327,12 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                 />
               </View>
               <View style={styles.fieldGroup}>
-                <Text style={[styles.fieldLabel, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+                <Text
+                  style={[
+                    styles.fieldLabel,
+                    { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+                  ]}
+                >
                   Phone
                 </Text>
                 <TextInput
@@ -320,16 +358,24 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
               </View>
               <View style={styles.editActions}>
                 <TouchableOpacity
-                  style={[styles.editCancelButton, { borderColor: darkPalette.borderSubtle, borderRadius: borderRadius.button }]}
+                  style={[
+                    styles.editCancelButton,
+                    { borderColor: darkPalette.borderSubtle, borderRadius: borderRadius.button },
+                  ]}
                   onPress={cancelEditing}
                   testID="edit-cancel-button"
                   accessibilityLabel="Cancel editing"
                   accessibilityRole="button"
                 >
-                  <Text style={[styles.editCancelText, { color: darkPalette.textMuted }]}>Cancel</Text>
+                  <Text style={[styles.editCancelText, { color: darkPalette.textMuted }]}>
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.editSaveButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+                  style={[
+                    styles.editSaveButton,
+                    { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button },
+                  ]}
                   onPress={saveProfile}
                   disabled={loading}
                   testID="edit-save-button"
@@ -377,7 +423,8 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                         )}
                       </Text>
                       <Text style={[styles.addressLine, { color: darkPalette.textMuted }]}>
-                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}
+                        {addr.line1}
+                        {addr.line2 ? `, ${addr.line2}` : ''}
                       </Text>
                       <Text style={[styles.addressLine, { color: darkPalette.textMuted }]}>
                         {addr.city}, {addr.state} {addr.zip}
@@ -398,14 +445,14 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
                       )}
                       <TouchableOpacity
                         onPress={() => {
-                          Alert.alert(
-                            'Delete Address',
-                            `Remove ${addr.line1}?`,
-                            [
-                              { text: 'Cancel', style: 'cancel' },
-                              { text: 'Delete', style: 'destructive', onPress: () => addressBook.deleteAddress(addr.id) },
-                            ],
-                          );
+                          Alert.alert('Delete Address', `Remove ${addr.line1}?`, [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                              text: 'Delete',
+                              style: 'destructive',
+                              onPress: () => addressBook.deleteAddress(addr.id),
+                            },
+                          ]);
                         }}
                         testID={`delete-address-${addr.id}`}
                         accessibilityLabel="Delete address"
@@ -435,7 +482,9 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-premium"
-            trailing={isPremium ? <PremiumBadge size="sm" testID="menu-premium-badge" /> : undefined}
+            trailing={
+              isPremium ? <PremiumBadge size="sm" testID="menu-premium-badge" /> : undefined
+            }
           />
           <MenuItem
             label="Notification Preferences"
@@ -486,7 +535,10 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
         {/* Privacy section */}
         <View style={{ paddingHorizontal: spacing.lg, marginTop: 24 }}>
           <Text
-            style={[styles.sectionTitle, { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold }]}
+            style={[
+              styles.sectionTitle,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold },
+            ]}
             testID="privacy-section-title"
           >
             Privacy
@@ -582,7 +634,12 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
 
           {showDebugMenu && (
             <View style={styles.debugMenu} testID="debug-menu">
-              <Text style={[styles.debugTitle, { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold }]}>
+              <Text
+                style={[
+                  styles.debugTitle,
+                  { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold },
+                ]}
+              >
                 Debug Info
               </Text>
               <Text style={[styles.debugLine, { color: darkPalette.textMuted }]}>

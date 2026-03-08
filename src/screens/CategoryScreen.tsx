@@ -143,15 +143,22 @@ export function CategoryScreen({
           onChange={setSortBy}
           resultCount={products.length}
           leftContent={
-            <FilterButton
-              activeCount={activeFilterCount}
-              onPress={() => setShowFilters(true)}
-            />
+            <FilterButton activeCount={activeFilterCount} onPress={() => setShowFilters(true)} />
           }
         />
       </View>
     ),
-    [title, products.length, sortBy, activeFilterCount, fetchError, colors, spacing, onBack, setSortBy],
+    [
+      title,
+      products.length,
+      sortBy,
+      activeFilterCount,
+      fetchError,
+      colors,
+      spacing,
+      onBack,
+      setSortBy,
+    ],
   );
 
   const renderEmpty = useCallback(

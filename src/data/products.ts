@@ -61,7 +61,8 @@ export const LOW_STOCK_THRESHOLD = 5;
 
 export function getStockStatus(product: Product): StockStatus {
   if (!product.inStock) return 'out_of_stock';
-  if (product.stockCount !== undefined && product.stockCount < LOW_STOCK_THRESHOLD) return 'low_stock';
+  if (product.stockCount !== undefined && product.stockCount < LOW_STOCK_THRESHOLD)
+    return 'low_stock';
   return 'in_stock';
 }
 

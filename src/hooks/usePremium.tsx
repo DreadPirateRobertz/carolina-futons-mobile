@@ -43,10 +43,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     async function init() {
       try {
         await initializePurchases();
-        const [active, pkgs] = await Promise.all([
-          getActiveEntitlements(),
-          getOfferings(),
-        ]);
+        const [active, pkgs] = await Promise.all([getActiveEntitlements(), getOfferings()]);
         if (mounted) {
           setIsPremium(active);
           setOfferings(pkgs);

@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useCollections, useCollection } from '../useCollections';
-import { COLLECTIONS } from '@/data/collections';
 
 const mockQueryData = jest.fn();
 const mockQueryProducts = jest.fn();
@@ -103,7 +102,20 @@ describe('useCollection', () => {
   it('fetches products from Wix API when available', async () => {
     mockQueryProducts.mockResolvedValue({
       products: [
-        { id: 'wix-prod-1', name: 'Wix Product', slug: 'wix-product', price: 299, category: 'futons', description: '', shortDescription: '', images: [], rating: 4.5, reviewCount: 10, inStock: true, badge: null },
+        {
+          id: 'wix-prod-1',
+          name: 'Wix Product',
+          slug: 'wix-product',
+          price: 299,
+          category: 'futons',
+          description: '',
+          shortDescription: '',
+          images: [],
+          rating: 4.5,
+          reviewCount: 10,
+          inStock: true,
+          badge: null,
+        },
       ],
       totalResults: 1,
     });

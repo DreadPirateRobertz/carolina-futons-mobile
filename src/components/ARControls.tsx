@@ -8,13 +8,7 @@
  */
 
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { type FutonModel, type Fabric } from '@/data/futons';
 import { BrandedSpinner } from './BrandedSpinner';
 import { formatPrice } from '@/utils';
@@ -176,7 +170,9 @@ export function ARControls({
             accessibilityLabel={isMeasuring ? 'Exit measurement mode' : 'Measure room'}
             accessibilityRole="button"
           >
-            <Text style={[styles.shareButtonIcon, isMeasuring && styles.measureIconActive]}>📏</Text>
+            <Text style={[styles.shareButtonIcon, isMeasuring && styles.measureIconActive]}>
+              📏
+            </Text>
             <Text style={[styles.shareButtonText, isMeasuring && styles.measureTextActive]}>
               {isMeasuring ? 'Exit' : 'Measure'}
             </Text>

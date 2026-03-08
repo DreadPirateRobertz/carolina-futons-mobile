@@ -7,15 +7,8 @@
  */
 import React from 'react';
 import { StyleSheet, type ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
-import {
-  Gesture,
-  GestureDetector,
-} from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
@@ -82,11 +75,7 @@ export function ZoomableImage({ children, style, testID }: Props) {
       }
     });
 
-  const composed = Gesture.Simultaneous(
-    pinchGesture,
-    panGesture,
-    doubleTapGesture,
-  );
+  const composed = Gesture.Simultaneous(pinchGesture, panGesture, doubleTapGesture);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

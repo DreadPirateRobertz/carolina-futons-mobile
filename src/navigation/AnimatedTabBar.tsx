@@ -98,10 +98,7 @@ export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarP
       tint="dark"
       style={[styles.blurContainer, { paddingBottom: insets.bottom || 8 }]}
     >
-      <View
-        testID="animated-tab-bar"
-        style={styles.container}
-      >
+      <View testID="animated-tab-bar" style={styles.container}>
         {state.routes.map((route, index) => (
           <TabButton
             key={route.key}

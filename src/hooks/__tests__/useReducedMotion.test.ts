@@ -31,10 +31,7 @@ describe('useReducedMotion', () => {
 
   it('subscribes to reduceMotionChanged events', () => {
     renderHook(() => useReducedMotion());
-    expect(addListenerSpy).toHaveBeenCalledWith(
-      'reduceMotionChanged',
-      expect.any(Function),
-    );
+    expect(addListenerSpy).toHaveBeenCalledWith('reduceMotionChanged', expect.any(Function));
   });
 
   it('cleans up listener on unmount', () => {

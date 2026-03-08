@@ -9,10 +9,7 @@
 
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import Animated, {
-  SlideInDown,
-  SlideOutDown,
-} from 'react-native-reanimated';
+import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { type FutonModel, type Fabric } from '@/data/futons';
 import { formatPrice } from '@/utils';
 

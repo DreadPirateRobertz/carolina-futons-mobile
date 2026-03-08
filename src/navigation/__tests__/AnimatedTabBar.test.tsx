@@ -2,6 +2,9 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
+import { AnimatedTabBar } from '../AnimatedTabBar';
+import * as Haptics from 'expo-haptics';
+
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
@@ -10,7 +13,7 @@ jest.mock('expo-haptics', () => ({
 
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
-  const { View, Pressable } = require('react-native');
+  const { View } = require('react-native');
   return {
     __esModule: true,
     default: {
@@ -36,9 +39,6 @@ jest.mock('expo-blur', () => {
     BlurView: ({ children, ...props }: any) => createElement(View, props, children),
   };
 });
-
-import { AnimatedTabBar } from '../AnimatedTabBar';
-import * as Haptics from 'expo-haptics';
 
 // Build a mock BottomTabBarProps-like state
 function createMockProps(activeIndex = 0) {

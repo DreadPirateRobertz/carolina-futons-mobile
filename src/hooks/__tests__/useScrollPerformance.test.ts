@@ -21,7 +21,7 @@ jest.mock('@/services/performance', () => ({
 }));
 
 // Mock requestAnimationFrame/cancelAnimationFrame
-let rafCallbacks: Array<(time: number) => void> = [];
+let rafCallbacks: ((time: number) => void)[] = [];
 let rafId = 0;
 (globalThis as Record<string, unknown>).requestAnimationFrame = (cb: (time: number) => void) => {
   rafCallbacks.push(cb);

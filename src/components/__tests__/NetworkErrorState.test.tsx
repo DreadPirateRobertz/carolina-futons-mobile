@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { NetworkErrorState } from '../NetworkErrorState';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
@@ -8,11 +8,14 @@ function renderError(props: Partial<React.ComponentProps<typeof NetworkErrorStat
     onRetry: jest.fn(),
     ...props,
   };
-  return { ...render(
-    <ThemeProvider>
-      <NetworkErrorState {...defaultProps} />
-    </ThemeProvider>,
-  ), onRetry: defaultProps.onRetry };
+  return {
+    ...render(
+      <ThemeProvider>
+        <NetworkErrorState {...defaultProps} />
+      </ThemeProvider>,
+    ),
+    onRetry: defaultProps.onRetry,
+  };
 }
 
 describe('NetworkErrorState', () => {

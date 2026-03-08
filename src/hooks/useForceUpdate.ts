@@ -13,8 +13,7 @@ import { Platform, AppState, AppStateStatus } from 'react-native';
 import * as Application from 'expo-application';
 
 const VERSION_CHECK_URL =
-  process.env.EXPO_PUBLIC_VERSION_CHECK_URL ??
-  'https://api.carolinafutons.com/config/app-version';
+  process.env.EXPO_PUBLIC_VERSION_CHECK_URL ?? 'https://api.carolinafutons.com/config/app-version';
 
 interface VersionConfig {
   minimumVersion: string;

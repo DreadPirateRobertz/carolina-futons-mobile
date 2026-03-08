@@ -37,11 +37,7 @@ describe('MountainRefreshControl', () => {
 
   it('forwards additional props to RefreshControl', () => {
     const { UNSAFE_getByType } = render(
-      <MountainRefreshControl
-        refreshing={false}
-        onRefresh={onRefresh}
-        testID="custom-refresh"
-      />,
+      <MountainRefreshControl refreshing={false} onRefresh={onRefresh} testID="custom-refresh" />,
     );
     const control = UNSAFE_getByType(RefreshControl);
     expect(control.props.testID).toBe('custom-refresh');
@@ -50,16 +46,12 @@ describe('MountainRefreshControl', () => {
 
 describe('MountainRefreshIndicator', () => {
   it('renders mountain icon when refreshing', () => {
-    const { getByTestId } = render(
-      <MountainRefreshIndicator refreshing={true} />,
-    );
+    const { getByTestId } = render(<MountainRefreshIndicator refreshing={true} />);
     expect(getByTestId('mountain-refresh-indicator')).toBeTruthy();
   });
 
   it('renders nothing when not refreshing', () => {
-    const { queryByTestId } = render(
-      <MountainRefreshIndicator refreshing={false} />,
-    );
+    const { queryByTestId } = render(<MountainRefreshIndicator refreshing={false} />);
     expect(queryByTestId('mountain-refresh-indicator')).toBeNull();
   });
 

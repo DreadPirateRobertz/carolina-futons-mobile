@@ -1,11 +1,4 @@
-import {
-  type ProductId,
-  type FutonModelId,
-  productId,
-  futonModelId,
-  productIdToModelId,
-  modelIdToProductId,
-} from '../productId';
+import { productId, futonModelId, productIdToModelId, modelIdToProductId } from '../productId';
 
 describe('productId branded types', () => {
   describe('productId constructor', () => {

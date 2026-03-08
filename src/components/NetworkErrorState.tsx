@@ -36,10 +36,7 @@ export function NetworkErrorState({
       accessibilityLiveRegion="assertive"
       accessibilityLabel={message}
     >
-      <Text
-        style={[styles.icon, { color: colors.espressoLight }]}
-        testID="network-error-icon"
-      >
+      <Text style={[styles.icon, { color: colors.espressoLight }]} testID="network-error-icon">
         📡
       </Text>
       <Text style={[styles.message, { color: colors.espresso }]}>{message}</Text>

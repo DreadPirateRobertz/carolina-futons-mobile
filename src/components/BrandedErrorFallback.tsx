@@ -20,13 +20,7 @@ interface Props {
   testID?: string;
 }
 
-export function BrandedErrorFallback({
-  title,
-  message,
-  onRetry,
-  onGoHome,
-  testID,
-}: Props) {
+export function BrandedErrorFallback({ title, message, onRetry, onGoHome, testID }: Props) {
   const [retrying, setRetrying] = useState(false);
 
   const handleRetry = () => {
@@ -48,10 +42,7 @@ export function BrandedErrorFallback({
         >
           <Text style={styles.iconText}>!</Text>
         </View>
-        <Text
-          style={styles.title}
-          accessibilityRole="header"
-        >
+        <Text style={styles.title} accessibilityRole="header">
           {title}
         </Text>
         <Text style={styles.message}>{message}</Text>

@@ -244,7 +244,10 @@ describe('loadModelForProduct', () => {
     const statuses: ModelLoadStatus[] = [];
     const result = await loadModelForProduct(productId('prod-nonexistent'), (s) => statuses.push(s));
     expect(result).toBeNull();
-    expect(statuses).toContainEqual({ state: 'error', message: 'No AR model available for this product' });
+    expect(statuses).toContainEqual({
+      state: 'error',
+      message: 'No AR model available for this product',
+    });
   });
 
   it('returns cached path when model is already cached', async () => {

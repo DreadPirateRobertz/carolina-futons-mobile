@@ -26,7 +26,9 @@ export interface UseCameraPermissionReturn {
   settingsInstructions: string | null;
 }
 
-function deriveState(permission: { granted: boolean; canAskAgain: boolean; status: string } | null): CameraPermissionState {
+function deriveState(
+  permission: { granted: boolean; canAskAgain: boolean; status: string } | null,
+): CameraPermissionState {
   if (!permission) return 'undetermined';
   if (permission.granted) return 'granted';
   if (permission.status === 'undetermined') return 'undetermined';

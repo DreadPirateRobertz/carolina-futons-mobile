@@ -7,12 +7,7 @@
  */
 
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  type ViewStyle,
-} from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, type ViewStyle } from 'react-native';
 import { colors, borderRadius, shadows, typography } from '@/theme/tokens';
 import { BrandedSpinner } from './BrandedSpinner';
 

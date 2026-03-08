@@ -99,10 +99,7 @@ export function FilterModal({
           ]}
           onStartShouldSetResponder={() => true}
         >
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            testID={testID ?? 'filter-modal'}
-          >
+          <ScrollView showsVerticalScrollIndicator={false} testID={testID ?? 'filter-modal'}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={[styles.title, { color: colors.espresso }]}>Filter Products</Text>

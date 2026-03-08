@@ -9,7 +9,13 @@
  * instantly; fresh data replaces them and is re-cached in the background.
  */
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { MOCK_ORDERS, ORDER_STATUS_CONFIG, getTrackingUrl, type Order, type OrderStatus } from '@/data/orders';
+import {
+  MOCK_ORDERS,
+  ORDER_STATUS_CONFIG,
+  getTrackingUrl,
+  type Order,
+  type OrderStatus,
+} from '@/data/orders';
 import { cacheOrders, loadCachedOrders } from '@/services/orderCache';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import type { WixOrderResponse } from '@/services/wix/wixClient';
@@ -73,7 +79,9 @@ export function transformWixOrder(wix: WixOrderResponse): Order {
     ? {
         carrier: trackingInfo.shippingProvider,
         trackingNumber: trackingInfo.trackingNumber,
-        url: trackingInfo.trackingLink || getTrackingUrl(trackingInfo.shippingProvider, trackingInfo.trackingNumber),
+        url:
+          trackingInfo.trackingLink ||
+          getTrackingUrl(trackingInfo.shippingProvider, trackingInfo.trackingNumber),
         estimatedDelivery: logistics?.deliveryTime,
       }
     : undefined;
@@ -121,41 +129,44 @@ export function useOrders(): UseOrdersReturn {
   const mountedRef = useRef(true);
   const wixClient = useOptionalWixClient();
 
-  const fetchOrders = useCallback(async (cancelled: { current: boolean }) => {
-    // 1. Serve cached orders instantly (offline-first)
-    try {
-      const cached = await loadCachedOrders();
-      if (!cancelled.current && cached && cached.orders.length > 0) {
-        setAllOrders(sortOrders(cached.orders));
+  const fetchOrders = useCallback(
+    async (cancelled: { current: boolean }) => {
+      // 1. Serve cached orders instantly (offline-first)
+      try {
+        const cached = await loadCachedOrders();
+        if (!cancelled.current && cached && cached.orders.length > 0) {
+          setAllOrders(sortOrders(cached.orders));
+        }
+      } catch {
+        // Cache miss is fine — continue to fresh data
       }
-    } catch {
-      // Cache miss is fine — continue to fresh data
-    }
 
-    // 2. Try Wix API first, fall back to mock data
-    try {
-      let fresh: Order[];
-      if (wixClient) {
-        const result = await wixClient.queryOrders({ limit: 100 });
-        fresh = result.orders.map(transformWixOrder);
-      } else {
-        fresh = MOCK_ORDERS;
+      // 2. Try Wix API first, fall back to mock data
+      try {
+        let fresh: Order[];
+        if (wixClient) {
+          const result = await wixClient.queryOrders({ limit: 100 });
+          fresh = result.orders.map(transformWixOrder);
+        } else {
+          fresh = MOCK_ORDERS;
+        }
+        if (!cancelled.current) {
+          const sorted = sortOrders(fresh);
+          setAllOrders(sorted);
+          setIsLoading(false);
+          // 3. Persist fresh orders for offline viewing
+          await cacheOrders(fresh);
+        }
+      } catch (err) {
+        if (!cancelled.current) {
+          // On API failure, keep showing cached/mock data
+          setError(err instanceof Error ? err : new Error(String(err)));
+          setIsLoading(false);
+        }
       }
-      if (!cancelled.current) {
-        const sorted = sortOrders(fresh);
-        setAllOrders(sorted);
-        setIsLoading(false);
-        // 3. Persist fresh orders for offline viewing
-        await cacheOrders(fresh);
-      }
-    } catch (err) {
-      if (!cancelled.current) {
-        // On API failure, keep showing cached/mock data
-        setError(err instanceof Error ? err : new Error(String(err)));
-        setIsLoading(false);
-      }
-    }
-  }, [wixClient]);
+    },
+    [wixClient],
+  );
 
   useEffect(() => {
     mountedRef.current = true;

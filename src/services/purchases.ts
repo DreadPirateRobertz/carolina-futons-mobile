@@ -24,9 +24,10 @@ export async function initializePurchases(): Promise<void> {
   if (__DEV__) {
     Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
   }
-  const apiKey = Platform.OS === 'ios'
-    ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
-    : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
+  const apiKey =
+    Platform.OS === 'ios'
+      ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
+      : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
   if (!apiKey) {
     console.warn('RevenueCat API key not set — skipping purchases init');
     return;
@@ -39,9 +40,7 @@ export async function getOfferings(): Promise<PurchasesPackage[]> {
   return offerings.current?.availablePackages ?? [];
 }
 
-export async function purchasePackage(
-  pkg: PurchasesPackage,
-): Promise<CustomerInfo | null> {
+export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo | null> {
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return customerInfo;

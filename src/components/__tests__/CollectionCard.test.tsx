@@ -20,12 +20,7 @@ function renderCard(props: Partial<React.ComponentProps<typeof CollectionCard>> 
   const onPress = jest.fn();
   const result = render(
     <ThemeProvider>
-      <CollectionCard
-        collection={mockCollection}
-        onPress={onPress}
-        testID="test-card"
-        {...props}
-      />
+      <CollectionCard collection={mockCollection} onPress={onPress} testID="test-card" {...props} />
     </ThemeProvider>,
   );
   return { ...result, onPress };

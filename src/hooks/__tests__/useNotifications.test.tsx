@@ -234,10 +234,22 @@ describe('useNotifications', () => {
       });
 
       // orders = HIGH (4), promotions = DEFAULT (3), back-in-stock = DEFAULT (3), cart-reminders = LOW (2)
-      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('orders', expect.objectContaining({ importance: 4 }));
-      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('promotions', expect.objectContaining({ importance: 3 }));
-      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('back-in-stock', expect.objectContaining({ importance: 3 }));
-      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith('cart-reminders', expect.objectContaining({ importance: 2 }));
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith(
+        'orders',
+        expect.objectContaining({ importance: 4 }),
+      );
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith(
+        'promotions',
+        expect.objectContaining({ importance: 3 }),
+      );
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith(
+        'back-in-stock',
+        expect.objectContaining({ importance: 3 }),
+      );
+      expect(mockSetNotificationChannelAsync).toHaveBeenCalledWith(
+        'cart-reminders',
+        expect.objectContaining({ importance: 2 }),
+      );
     });
 
     it('does not create channels on iOS', async () => {

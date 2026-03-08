@@ -2,6 +2,8 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
+import { ParallaxHeader } from '../ParallaxHeader';
+
 // Mock expo-image
 jest.mock('expo-image', () => {
   const React = require('react');
@@ -36,8 +38,6 @@ jest.mock('react-native-reanimated', () => {
     Extrapolation: { CLAMP: 'clamp' },
   };
 });
-
-import { ParallaxHeader } from '../ParallaxHeader';
 
 describe('ParallaxHeader', () => {
   const scrollY = { value: 0 } as any;

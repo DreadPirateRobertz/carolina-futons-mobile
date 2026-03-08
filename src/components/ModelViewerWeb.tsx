@@ -120,7 +120,14 @@ function injectModelViewerScript(): void {
  * On web, injects a real <model-viewer> custom element into the DOM via safe DOM APIs.
  * Renders null on native platforms (iOS/Android).
  */
-export function ModelViewerWeb({ glbUrl, usdzUrl, title, dimensions, shadowIntensity, testID }: Props) {
+export function ModelViewerWeb({
+  glbUrl,
+  usdzUrl,
+  title,
+  dimensions,
+  shadowIntensity,
+  testID,
+}: Props) {
   const viewerRef = useRef<View>(null);
 
   useEffect(() => {

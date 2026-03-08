@@ -61,10 +61,7 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
     toggle(product);
 
     // Spring bounce: quick overshoot then settle
-    scale.value = withSequence(
-      withSpring(1.3, SPRING_CONFIG),
-      withSpring(1, SPRING_CONFIG),
-    );
+    scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
 
     if (Platform.OS !== 'web') {
       if (wasActive) {

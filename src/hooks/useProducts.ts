@@ -118,9 +118,7 @@ function applyFilters(products: Product[], filters: ProductFilters): Product[] {
   }
 
   if (filters.fabrics.length > 0) {
-    result = result.filter((p) =>
-      p.fabricOptions.some((f) => filters.fabrics.includes(f)),
-    );
+    result = result.filter((p) => p.fabricOptions.some((f) => filters.fabrics.includes(f)));
   }
 
   if (filters.priceRange !== null) {
@@ -165,9 +163,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     setWixIsLoading(true);
     setWixFetchError(null);
 
-    const collectionId = selectedCategory
-      ? CATEGORY_COLLECTION_IDS[selectedCategory]
-      : undefined;
+    const collectionId = selectedCategory ? CATEGORY_COLLECTION_IDS[selectedCategory] : undefined;
 
     wixClient
       .queryProducts({

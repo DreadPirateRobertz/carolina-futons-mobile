@@ -8,11 +8,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { BrandedSpinner } from './BrandedSpinner';
 import { colors } from '@/theme/tokens';
 import type { ModelLoadStatus } from '@/services/modelLoader';
@@ -40,7 +36,8 @@ export function ModelLoadingOverlay({ status, testID }: Props) {
   const isError = status.state === 'error';
 
   const barStyle = useAnimatedStyle(() => ({
-    width: `${withTiming(progress * 100, { duration: 200, easing: Easing.out(Easing.ease) })}%` as any,
+    width:
+      `${withTiming(progress * 100, { duration: 200, easing: Easing.out(Easing.ease) })}%` as any,
   }));
 
   return (
@@ -48,9 +45,7 @@ export function ModelLoadingOverlay({ status, testID }: Props) {
       <View style={styles.card}>
         {!isError && <BrandedSpinner size="large" color={colors.mountainBlue} />}
 
-        <Text style={[styles.label, isError && styles.errorLabel]}>
-          {statusLabel(status)}
-        </Text>
+        <Text style={[styles.label, isError && styles.errorLabel]}>{statusLabel(status)}</Text>
 
         {status.state === 'downloading' && (
           <View style={styles.progressTrack} testID="model-progress-bar">

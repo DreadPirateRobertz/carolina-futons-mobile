@@ -111,7 +111,11 @@ export const CollectionCard = memo(function CollectionCard({
         <Text
           style={[
             typography.caption,
-            { color: 'rgba(255,255,255,0.6)', fontFamily: typography.bodyFamily, marginTop: spacing.xs },
+            {
+              color: 'rgba(255,255,255,0.6)',
+              fontFamily: typography.bodyFamily,
+              marginTop: spacing.xs,
+            },
           ]}
         >
           {collection.productIds.length} items

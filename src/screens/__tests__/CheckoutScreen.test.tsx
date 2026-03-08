@@ -57,7 +57,9 @@ jest.mock('@/hooks/useAddressBook', () => ({
 const mockInitPaymentSheet = jest.fn().mockResolvedValue({ error: null });
 const mockPresentPaymentSheet = jest.fn().mockResolvedValue({ error: null });
 const mockIsPlatformPaySupported = jest.fn().mockResolvedValue(true);
-const mockConfirmPlatformPayPayment = jest.fn().mockResolvedValue({ error: null, paymentIntent: {} });
+const mockConfirmPlatformPayPayment = jest
+  .fn()
+  .mockResolvedValue({ error: null, paymentIntent: {} });
 
 // Mock @stripe/stripe-react-native
 jest.mock('@stripe/stripe-react-native', () => ({
@@ -614,7 +616,10 @@ describe('CheckoutScreen', () => {
       fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
     }
 
-    function fillAndSelectBNPL(utils: ReturnType<typeof renderCheckout>, method: 'affirm' | 'klarna' = 'affirm') {
+    function fillAndSelectBNPL(
+      utils: ReturnType<typeof renderCheckout>,
+      method: 'affirm' | 'klarna' = 'affirm',
+    ) {
       fillShippingAddress(utils);
       fireEvent.press(utils.getByTestId(`payment-${method}`));
     }
@@ -661,7 +666,9 @@ describe('CheckoutScreen', () => {
     it('shows processing state while payment is in flight', async () => {
       let resolvePayment!: (v: any) => void;
       mockCreatePaymentIntent.mockReturnValue(
-        new Promise((resolve) => { resolvePayment = resolve; }),
+        new Promise((resolve) => {
+          resolvePayment = resolve;
+        }),
       );
 
       const utils = renderCheckout({}, seed);
@@ -690,9 +697,7 @@ describe('CheckoutScreen', () => {
 
     it('shows error message when payment fails', async () => {
       const { PaymentError } = jest.requireMock('@/services/payment');
-      mockCreatePaymentIntent.mockRejectedValue(
-        new PaymentError('Card declined', 'STRIPE_ERROR'),
-      );
+      mockCreatePaymentIntent.mockRejectedValue(new PaymentError('Card declined', 'STRIPE_ERROR'));
 
       const utils = renderCheckout({}, seed);
       fillAndSelectCard(utils);
@@ -708,9 +713,7 @@ describe('CheckoutScreen', () => {
 
     it('does not call onOrderComplete on payment failure', async () => {
       const { PaymentError } = jest.requireMock('@/services/payment');
-      mockCreatePaymentIntent.mockRejectedValue(
-        new PaymentError('Card declined', 'STRIPE_ERROR'),
-      );
+      mockCreatePaymentIntent.mockRejectedValue(new PaymentError('Card declined', 'STRIPE_ERROR'));
       const onOrderComplete = jest.fn();
 
       const utils = renderCheckout({ onOrderComplete }, seed);

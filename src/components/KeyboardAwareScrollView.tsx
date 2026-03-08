@@ -11,9 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   type ScrollViewProps,
-  type TextInput,
   type NativeSyntheticEvent,
-  type LayoutChangeEvent,
   findNodeHandle,
   UIManager,
 } from 'react-native';

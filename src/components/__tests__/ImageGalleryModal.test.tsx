@@ -20,7 +20,11 @@ jest.mock('react-native-gesture-handler', () => {
   return {
     Gesture: {
       Pinch: () => ({ onUpdate: jest.fn().mockReturnThis(), onEnd: jest.fn().mockReturnThis() }),
-      Pan: () => ({ minPointers: jest.fn().mockReturnThis(), onUpdate: jest.fn().mockReturnThis(), onEnd: jest.fn().mockReturnThis() }),
+      Pan: () => ({
+        minPointers: jest.fn().mockReturnThis(),
+        onUpdate: jest.fn().mockReturnThis(),
+        onEnd: jest.fn().mockReturnThis(),
+      }),
       Tap: () => ({ numberOfTaps: jest.fn().mockReturnThis(), onEnd: jest.fn().mockReturnThis() }),
       Simultaneous: jest.fn(),
     },
@@ -28,11 +32,7 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
-const mockImages = [
-  { label: 'Front View' },
-  { label: 'Side View' },
-  { label: 'Flat Position' },
-];
+const mockImages = [{ label: 'Front View' }, { label: 'Side View' }, { label: 'Flat Position' }];
 
 const defaultProps = {
   visible: true,
@@ -57,27 +57,21 @@ describe('ImageGalleryModal', () => {
   });
 
   it('does not render content when not visible', () => {
-    const { queryByText } = render(
-      <ImageGalleryModal {...defaultProps} visible={false} />,
-    );
+    const { queryByText } = render(<ImageGalleryModal {...defaultProps} visible={false} />);
     // Modal with visible=false doesn't render children
     expect(queryByText('1 / 3')).toBeNull();
   });
 
   it('calls onClose when close button pressed', () => {
     const onClose = jest.fn();
-    const { getByTestId } = render(
-      <ImageGalleryModal {...defaultProps} onClose={onClose} />,
-    );
+    const { getByTestId } = render(<ImageGalleryModal {...defaultProps} onClose={onClose} />);
 
     fireEvent.press(getByTestId('gallery-modal-close'));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it('renders correct number of pagination dots', () => {
-    const { getByTestId } = render(
-      <ImageGalleryModal {...defaultProps} testID="modal" />,
-    );
+    const { getByTestId } = render(<ImageGalleryModal {...defaultProps} testID="modal" />);
 
     expect(getByTestId('fullscreen-gallery-list')).toBeTruthy();
   });

@@ -2,6 +2,8 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
+import { AnimatedListItem } from '../AnimatedListItem';
+
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
@@ -20,8 +22,6 @@ jest.mock('react-native-reanimated', () => {
     },
   };
 });
-
-import { AnimatedListItem } from '../AnimatedListItem';
 
 describe('AnimatedListItem', () => {
   it('renders children with index-based delay', () => {

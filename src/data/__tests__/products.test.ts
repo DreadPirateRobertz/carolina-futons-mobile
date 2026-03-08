@@ -1,4 +1,11 @@
-import { PRODUCTS, CATEGORIES, SORT_OPTIONS, type Product, type CategoryInfo, getStockStatus } from '../products';
+import {
+  PRODUCTS,
+  CATEGORIES,
+  SORT_OPTIONS,
+  type Product,
+  type CategoryInfo,
+  getStockStatus,
+} from '../products';
 import { productId } from '../productId';
 
 describe('Product catalog data integrity', () => {

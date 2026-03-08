@@ -31,7 +31,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
 
 /** Per-category notification toggle screen with OS permission handling. */
 export function NotificationPreferencesScreen({ onBack, testID }: Props) {
-  const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const { colors, spacing, borderRadius, typography } = useTheme();
   const { permissionStatus, preferences, togglePreference, requestPermission } = useNotifications();
 
   const handleToggle = useCallback(

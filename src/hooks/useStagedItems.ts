@@ -22,20 +22,23 @@ export function useStagedItems() {
   const [items, setItems] = useState<StagedItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const addItem = useCallback((model: FutonModel, fabric: Fabric): StagedItem | null => {
-    if (items.length >= MAX_STAGED_ITEMS) return null;
+  const addItem = useCallback(
+    (model: FutonModel, fabric: Fabric): StagedItem | null => {
+      if (items.length >= MAX_STAGED_ITEMS) return null;
 
-    const item: StagedItem = {
-      id: `staged-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      model,
-      fabric,
-      placedAt: Date.now(),
-    };
+      const item: StagedItem = {
+        id: `staged-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        model,
+        fabric,
+        placedAt: Date.now(),
+      };
 
-    setItems((prev) => [...prev, item]);
-    setActiveId(item.id);
-    return item;
-  }, [items.length]);
+      setItems((prev) => [...prev, item]);
+      setActiveId(item.id);
+      return item;
+    },
+    [items.length],
+  );
 
   const removeItem = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));

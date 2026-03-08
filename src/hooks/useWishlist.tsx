@@ -12,14 +12,22 @@
  * @module useWishlist
  */
 
-import React, { createContext, useContext, useCallback, useMemo, useReducer, useEffect, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useMemo,
+  useReducer,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 import { useOptionalConnectivity } from './useConnectivity';
 import {
   enqueue,
   loadQueue,
   getQueue,
-  getQueueLength,
   replay,
   registerExecutor,
   clearExecutors,
@@ -146,10 +154,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
     registerExecutor('WISHLIST_ADD', async (payload) => {
       const client = wixClientRef.current;
       if (!client) return;
-      await client.addToWishlist(
-        payload.productId as string,
-        payload.savedPrice as number,
-      );
+      await client.addToWishlist(payload.productId as string, payload.savedPrice as number);
     });
 
     registerExecutor('WISHLIST_REMOVE', async (payload) => {
@@ -343,10 +348,31 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
   const count = state.items.length;
   const value = useMemo<WishlistContextValue>(
     () => ({
-      items: state.items, count, isInWishlist, toggle, add, remove, clear,
-      getProducts, getShareText, pendingSync, isSyncing,
+      items: state.items,
+      count,
+      isInWishlist,
+      toggle,
+      add,
+      remove,
+      clear,
+      getProducts,
+      getShareText,
+      pendingSync,
+      isSyncing,
     }),
-    [state.items, count, isInWishlist, toggle, add, remove, clear, getProducts, getShareText, pendingSync, isSyncing],
+    [
+      state.items,
+      count,
+      isInWishlist,
+      toggle,
+      add,
+      remove,
+      clear,
+      getProducts,
+      getShareText,
+      pendingSync,
+      isSyncing,
+    ],
   );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;

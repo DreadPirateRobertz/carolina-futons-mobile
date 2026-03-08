@@ -30,13 +30,7 @@ export function ForceUpdateModal({ visible, required, onDismiss, testID }: Props
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      transparent
-      statusBarTranslucent
-      testID={testID}
-    >
+    <Modal visible={visible} animationType="fade" transparent statusBarTranslucent testID={testID}>
       <View style={styles.overlay}>
         <View
           style={[
@@ -91,9 +85,7 @@ export function ForceUpdateModal({ visible, required, onDismiss, testID }: Props
                 accessibilityLabel="Dismiss update"
                 accessibilityRole="button"
               >
-                <Text style={[styles.dismissText, { color: colors.espressoLight }]}>
-                  Not Now
-                </Text>
+                <Text style={[styles.dismissText, { color: colors.espressoLight }]}>Not Now</Text>
               </TouchableOpacity>
             )}
           </View>

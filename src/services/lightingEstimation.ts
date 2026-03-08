@@ -268,23 +268,33 @@ export function computeModelShading(
 
   if (temp < 3500) {
     // Very warm (incandescent) — amber tint
-    tintR = 255; tintG = 180; tintB = 80;
+    tintR = 255;
+    tintG = 180;
+    tintB = 80;
     tintOpacity = 0.08;
   } else if (temp < 4500) {
     // Warm white — subtle warm tint
-    tintR = 255; tintG = 220; tintB = 160;
+    tintR = 255;
+    tintG = 220;
+    tintB = 160;
     tintOpacity = 0.04;
   } else if (temp > 6000) {
     // Cool daylight — blue tint
-    tintR = 160; tintG = 200; tintB = 255;
+    tintR = 160;
+    tintG = 200;
+    tintB = 255;
     tintOpacity = 0.06;
   } else if (temp > 5500) {
     // Slightly cool — subtle blue
-    tintR = 180; tintG = 210; tintB = 255;
+    tintR = 180;
+    tintG = 210;
+    tintB = 255;
     tintOpacity = 0.03;
   } else {
     // Neutral (4500-5500K) — no tint
-    tintR = 0; tintG = 0; tintB = 0;
+    tintR = 0;
+    tintG = 0;
+    tintB = 0;
     tintOpacity = 0;
   }
 

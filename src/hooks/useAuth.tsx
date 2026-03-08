@@ -372,7 +372,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signOut,
       clearError,
     }),
-    [state, signIn, signUp, signInWithGoogle, signInWithApple, updateProfile, resetPassword, signOut, clearError],
+    [
+      state,
+      signIn,
+      signUp,
+      signInWithGoogle,
+      signInWithApple,
+      updateProfile,
+      resetPassword,
+      signOut,
+      clearError,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

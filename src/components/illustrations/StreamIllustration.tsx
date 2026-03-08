@@ -39,16 +39,40 @@ export function StreamIllustration({ width = VBW, height = VBH, testID }: Props)
       </Defs>
       <Rect width={VBW} height={VBH} fill="url(#sc-sky)" />
       {/* 5 mountain layers */}
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.50, 39)} fill={colors.mountainBlueDark} opacity={0.2} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.58, 56)} fill={colors.mountainBlue} opacity={0.25} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.5, 39)}
+        fill={colors.mountainBlueDark}
+        opacity={0.2}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.58, 56)}
+        fill={colors.mountainBlue}
+        opacity={0.25}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.65, 12)} fill={colors.espresso} opacity={0.3} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.73, 78)} fill={colors.espressoLight} opacity={0.35} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.80, 95)} fill={colors.sandDark} opacity={0.4} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.73, 78)}
+        fill={colors.espressoLight}
+        opacity={0.35}
+      />
+      <Path d={buildSmallMountainPath(VBW, VBH, 0.8, 95)} fill={colors.sandDark} opacity={0.4} />
       {/* Stream channel */}
       <Path d="M100 200 Q110 172 125 158 Q140 148 155 158 Q170 172 180 200" fill="url(#sc-water)" />
       {/* Water ripples */}
-      <Path d="M115 168 Q140 158 165 168" fill="none" stroke={colors.offWhite} strokeWidth={1} opacity={0.5} />
-      <Path d="M108 180 Q140 170 172 180" fill="none" stroke={colors.offWhite} strokeWidth={0.8} opacity={0.4} />
+      <Path
+        d="M115 168 Q140 158 165 168"
+        fill="none"
+        stroke={colors.offWhite}
+        strokeWidth={1}
+        opacity={0.5}
+      />
+      <Path
+        d="M108 180 Q140 170 172 180"
+        fill="none"
+        stroke={colors.offWhite}
+        strokeWidth={0.8}
+        opacity={0.4}
+      />
       <Circle cx={130} cy={163} r={2} fill={colors.offWhite} opacity={0.6} />
       <Circle cx={150} cy={166} r={1.5} fill={colors.offWhite} opacity={0.5} />
       <Circle cx={140} cy={175} r={1.8} fill={colors.offWhite} opacity={0.4} />

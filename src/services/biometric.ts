@@ -36,7 +36,9 @@ export async function getBiometricStatus(): Promise<BiometricStatus> {
   };
 }
 
-export async function authenticate(promptMessage?: string): Promise<{ success: boolean; error?: string }> {
+export async function authenticate(
+  promptMessage?: string,
+): Promise<{ success: boolean; error?: string }> {
   const result = await LocalAuthentication.authenticateAsync({
     promptMessage: promptMessage ?? 'Sign in to Carolina Futons',
     cancelLabel: 'Cancel',

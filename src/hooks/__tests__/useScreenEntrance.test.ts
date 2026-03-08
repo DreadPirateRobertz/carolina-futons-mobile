@@ -27,16 +27,12 @@ describe('useScreenEntrance', () => {
   });
 
   it('accepts custom delay and duration', () => {
-    const { result } = renderHook(() =>
-      useScreenEntrance({ delay: 200, duration: 600 }),
-    );
+    const { result } = renderHook(() => useScreenEntrance({ delay: 200, duration: 600 }));
     expect(result.current.animatedStyle).toBeDefined();
   });
 
   it('accepts custom translateY distance', () => {
-    const { result } = renderHook(() =>
-      useScreenEntrance({ translateY: 30 }),
-    );
+    const { result } = renderHook(() => useScreenEntrance({ translateY: 30 }));
     expect(result.current.animatedStyle).toBeDefined();
   });
 

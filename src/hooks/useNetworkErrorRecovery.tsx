@@ -53,24 +53,21 @@ export function useNetworkErrorRecovery<TArgs extends unknown[] = unknown[], T =
     [fetcher],
   );
 
-  const retry = useCallback(
-    (): Promise<T | void> => {
-      if (isRetryingRef.current) return Promise.resolve();
-      isRetryingRef.current = true;
-      setIsRetrying(true);
-      return execute(...lastArgsRef.current)
-        .catch((err) => {
-          if (err instanceof Error) {
-            captureException(err, 'warning', { action: 'network_error_retry_failed' });
-          }
-        })
-        .finally(() => {
-          isRetryingRef.current = false;
-          setIsRetrying(false);
-        });
-    },
-    [execute],
-  );
+  const retry = useCallback((): Promise<T | void> => {
+    if (isRetryingRef.current) return Promise.resolve();
+    isRetryingRef.current = true;
+    setIsRetrying(true);
+    return execute(...lastArgsRef.current)
+      .catch((err) => {
+        if (err instanceof Error) {
+          captureException(err, 'warning', { action: 'network_error_retry_failed' });
+        }
+      })
+      .finally(() => {
+        isRetryingRef.current = false;
+        setIsRetrying(false);
+      });
+  }, [execute]);
 
   const clearError = useCallback(() => {
     setError(null);

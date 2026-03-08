@@ -20,7 +20,7 @@ describe('useModelLoader', () => {
   });
 
   it('transitions through states during load', async () => {
-    const states: any[] = [];
+    const _states: any[] = [];
     mockLoadModelForProduct.mockImplementation(async (_id: string, onProgress: any) => {
       onProgress({ state: 'checking-cache' });
       onProgress({ state: 'downloading', progress: 0.5 });

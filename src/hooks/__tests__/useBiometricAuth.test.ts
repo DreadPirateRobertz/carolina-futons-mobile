@@ -91,7 +91,10 @@ describe('useBiometricAuth', () => {
   it('promptBiometric sets authenticating state', async () => {
     let resolveAuth: (v: { success: boolean }) => void;
     mockBio.authenticate.mockImplementation(
-      () => new Promise((resolve) => { resolveAuth = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveAuth = resolve;
+        }),
     );
     const { result } = renderHook(() => useBiometricAuth());
     await act(async () => {});

@@ -77,7 +77,11 @@ function StatusTimeline({
   const completed = getCompletedSteps(status);
 
   return (
-    <View style={timelineStyles.container} testID={testID} accessibilityLabel={`Order status: ${ORDER_STATUS_CONFIG[status].label}`}>
+    <View
+      style={timelineStyles.container}
+      testID={testID}
+      accessibilityLabel={`Order status: ${ORDER_STATUS_CONFIG[status].label}`}
+    >
       {TIMELINE_STEPS.map((step, index) => {
         const isCompleted = index < completed;
         const isActive = index === completed && completed < 4;
@@ -329,11 +333,7 @@ export function OrderDetailScreen({
 
         {/* Status timeline */}
         <View style={{ paddingHorizontal: spacing.lg }}>
-          <StatusTimeline
-            status={order.status}
-            colors={colors}
-            testID="order-status-timeline"
-          />
+          <StatusTimeline status={order.status} colors={colors} testID="order-status-timeline" />
         </View>
 
         {/* Tracking */}

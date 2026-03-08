@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { CartProvider, useCart, mergeCartItems, type CartItem } from '../useCart';
 import { AuthContext } from '@/hooks/useAuth';
 import { ConnectivityProvider } from '../useConnectivity';
@@ -33,7 +33,8 @@ const espressoBrown = FABRICS[5]; // $49
 
 /** Test harness that exposes cart state + actions */
 function CartHarness() {
-  const { items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart } =
+    useCart();
 
   return (
     <View>
@@ -412,11 +413,7 @@ describe('Server cart merge on auth', () => {
       expect(getByTestId('syncing').props.children).toBe('false');
     });
 
-    expect(mockAddToCart).toHaveBeenCalledWith(
-      FUTON_MODELS[0].id,
-      1,
-      FABRICS[0].id,
-    );
+    expect(mockAddToCart).toHaveBeenCalledWith(FUTON_MODELS[0].id, 1, FABRICS[0].id);
   });
 
   it('skips merge when Wix is not configured', async () => {

@@ -131,11 +131,13 @@ describe('NotificationPreferencesScreen', () => {
     it('uses dark editorial background', () => {
       const { getByTestId } = renderNotifPrefs();
       const screen = getByTestId('notification-prefs-screen');
-      const flat = [screen.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [screen.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.background);
     });
 
@@ -160,11 +162,13 @@ describe('NotificationPreferencesScreen', () => {
     it('preference rows use dark surface background', () => {
       const { getByTestId } = renderNotifPrefs();
       const row = getByTestId('pref-row-order_update');
-      const flat = [row.props.style].flat(Infinity).reduce(
-        (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
-          s ? { ...acc, ...s } : acc,
-        {},
-      );
+      const flat = [row.props.style]
+        .flat(Infinity)
+        .reduce(
+          (acc: Record<string, unknown>, s: Record<string, unknown> | undefined) =>
+            s ? { ...acc, ...s } : acc,
+          {},
+        );
       expect(flat.backgroundColor).toBe(darkPalette.surface);
     });
   });

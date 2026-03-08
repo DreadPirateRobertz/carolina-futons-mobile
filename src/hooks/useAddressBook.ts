@@ -30,7 +30,14 @@ export interface AddressBookState {
   updateAddress: (id: string, address: Partial<Omit<SavedAddress, 'id'>>) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
   setDefault: (id: string) => Promise<void>;
-  saveFromCheckout: (address: { fullName: string; line1: string; line2: string; city: string; state: string; zip: string }) => Promise<void>;
+  saveFromCheckout: (address: {
+    fullName: string;
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    zip: string;
+  }) => Promise<void>;
 }
 
 function generateId(): string {
@@ -57,7 +64,7 @@ export function useAddressBook(): AddressBookState {
     })();
   }, []);
 
-  const persist = useCallback(async (updated: SavedAddress[]) => {
+  const _persist = useCallback(async (updated: SavedAddress[]) => {
     setAddresses(updated);
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, []);
@@ -72,13 +79,16 @@ export function useAddressBook(): AddressBookState {
     });
   }, []);
 
-  const updateAddress = useCallback(async (id: string, updates: Partial<Omit<SavedAddress, 'id'>>) => {
-    setAddresses((prev) => {
-      const updated = prev.map((a) => (a.id === id ? { ...a, ...updates } : a));
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+  const updateAddress = useCallback(
+    async (id: string, updates: Partial<Omit<SavedAddress, 'id'>>) => {
+      setAddresses((prev) => {
+        const updated = prev.map((a) => (a.id === id ? { ...a, ...updates } : a));
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    },
+    [],
+  );
 
   const deleteAddress = useCallback(async (id: string) => {
     setAddresses((prev) => {
@@ -100,21 +110,29 @@ export function useAddressBook(): AddressBookState {
     });
   }, []);
 
-  const saveFromCheckout = useCallback(async (address: { fullName: string; line1: string; line2: string; city: string; state: string; zip: string }) => {
-    setAddresses((prev) => {
-      // Don't save duplicates (match on line1 + zip)
-      const exists = prev.some(
-        (a) => a.line1 === address.line1 && a.zip === address.zip,
-      );
-      if (exists) return prev;
+  const saveFromCheckout = useCallback(
+    async (address: {
+      fullName: string;
+      line1: string;
+      line2: string;
+      city: string;
+      state: string;
+      zip: string;
+    }) => {
+      setAddresses((prev) => {
+        // Don't save duplicates (match on line1 + zip)
+        const exists = prev.some((a) => a.line1 === address.line1 && a.zip === address.zip);
+        if (exists) return prev;
 
-      const isFirst = prev.length === 0;
-      const newAddr: SavedAddress = { ...address, id: generateId(), isDefault: isFirst };
-      const updated = [...prev, newAddr].slice(-MAX_ADDRESSES);
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+        const isFirst = prev.length === 0;
+        const newAddr: SavedAddress = { ...address, id: generateId(), isDefault: isFirst };
+        const updated = [...prev, newAddr].slice(-MAX_ADDRESSES);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
+    },
+    [],
+  );
 
   const defaultAddress = addresses.find((a) => a.isDefault) ?? null;
 

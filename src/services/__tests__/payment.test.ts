@@ -1,9 +1,4 @@
-import {
-  calculateTotals,
-  createPaymentIntent,
-  confirmOrder,
-  PaymentError,
-} from '../payment';
+import { calculateTotals, createPaymentIntent, confirmOrder, PaymentError } from '../payment';
 import type { CartItem } from '@/hooks/useCart';
 import { WixClient, type WixClientConfig } from '@/services/wix';
 
@@ -124,9 +119,7 @@ describe('payment service', () => {
     });
 
     it('throws PaymentError with INTENT_FAILED code on API failure', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Card declined' }, 400),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Card declined' }, 400));
 
       const totals = calculateTotals(349);
       try {
@@ -140,9 +133,7 @@ describe('payment service', () => {
     });
 
     it('throws PaymentError with default message on non-JSON error', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'HTTP 503' }, 503),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'HTTP 503' }, 503));
 
       const totals = calculateTotals(349);
       await expect(createPaymentIntent(client, [mockCartItem], totals)).rejects.toThrow(
@@ -187,9 +178,7 @@ describe('payment service', () => {
     });
 
     it('throws PaymentError with CONFIRM_FAILED code on failure', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Order already exists' }, 400),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Order already exists' }, 400));
 
       const totals = calculateTotals(349);
       try {

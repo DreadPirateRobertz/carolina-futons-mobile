@@ -13,7 +13,10 @@ export class MultiProvider implements AnalyticsProvider {
     this.providers = providers;
   }
 
-  trackEvent(name: AnalyticsEventName, properties?: Record<string, string | number | boolean>): void {
+  trackEvent(
+    name: AnalyticsEventName,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     for (const p of this.providers) {
       try {
         p.trackEvent(name, properties);
@@ -23,7 +26,10 @@ export class MultiProvider implements AnalyticsProvider {
     }
   }
 
-  trackScreenView(screenName: string, properties?: Record<string, string | number | boolean>): void {
+  trackScreenView(
+    screenName: string,
+    properties?: Record<string, string | number | boolean>,
+  ): void {
     for (const p of this.providers) {
       try {
         p.trackScreenView(screenName, properties);

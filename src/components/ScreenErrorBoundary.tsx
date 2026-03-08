@@ -42,11 +42,9 @@ export class ScreenErrorBoundary extends Component<Props, State> {
       screen: this.props.screenName,
       componentStack: errorInfo.componentStack ?? 'unknown',
     });
-    crashReporting.addBreadcrumb(
-      `Screen crash: ${this.props.screenName}`,
-      'error',
-      { message: error.message },
-    );
+    crashReporting.addBreadcrumb(`Screen crash: ${this.props.screenName}`, 'error', {
+      message: error.message,
+    });
   }
 
   handleRetry = () => {
@@ -65,7 +63,7 @@ export class ScreenErrorBoundary extends Component<Props, State> {
           title="This page ran into an issue"
           message={
             __DEV__
-              ? this.state.error?.message ?? 'An unexpected error occurred'
+              ? (this.state.error?.message ?? 'An unexpected error occurred')
               : 'Something went wrong. Please try again.'
           }
           onRetry={this.handleRetry}

@@ -26,9 +26,8 @@ jest.mock('@/services/wix/wixAuth', () => ({
 // --- Mock Google auth ---
 
 const mockGooglePromptAsync = jest.fn();
-const mockUseIdTokenAuthRequest = jest.requireMock(
-  'expo-auth-session/providers/google',
-).useIdTokenAuthRequest as jest.Mock;
+const mockUseIdTokenAuthRequest = jest.requireMock('expo-auth-session/providers/google')
+  .useIdTokenAuthRequest as jest.Mock;
 
 jest.mock('@/services/googleAuth', () => ({
   googleAuthConfig: {

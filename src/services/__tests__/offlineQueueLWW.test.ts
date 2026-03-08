@@ -1,10 +1,4 @@
-import {
-  enqueue,
-  getQueue,
-  getQueueLength,
-  compactByLWW,
-  _resetForTesting,
-} from '../offlineQueue';
+import { enqueue, getQueue, getQueueLength, compactByLWW, _resetForTesting } from '../offlineQueue';
 
 beforeEach(() => {
   _resetForTesting();

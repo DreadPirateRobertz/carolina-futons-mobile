@@ -2,6 +2,10 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { TabNavigator } from '../TabNavigator';
+
 // Use real @react-navigation/native (override jest.setup.js mock)
 jest.mock('@react-navigation/native', () => jest.requireActual('@react-navigation/native'));
 
@@ -49,10 +53,17 @@ jest.mock('@/screens/AccountScreen', () => ({
   AccountScreen: () => <MockScreen testID="account-screen" label="AccountContent" />,
 }));
 
-
 // --- Hook mocks ---
 
-const mockCartState = { itemCount: 0, items: [], subtotal: 0, addItem: jest.fn(), removeItem: jest.fn(), updateQuantity: jest.fn(), clearCart: jest.fn() };
+const mockCartState = {
+  itemCount: 0,
+  items: [],
+  subtotal: 0,
+  addItem: jest.fn(),
+  removeItem: jest.fn(),
+  updateQuantity: jest.fn(),
+  clearCart: jest.fn(),
+};
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => mockCartState,
 }));
@@ -68,10 +79,6 @@ jest.mock('@/theme', () => ({
   }),
   ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { TabNavigator } from '../TabNavigator';
 
 function MockScreen({ testID, label }: { testID: string; label: string }) {
   return (

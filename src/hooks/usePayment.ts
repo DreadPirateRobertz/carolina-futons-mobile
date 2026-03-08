@@ -36,9 +36,7 @@ type PaymentState =
  * Build Apple Pay cart summary items from order totals.
  * The last item is treated as the grand total by Apple Pay.
  */
-function buildApplePayCartItems(
-  totals: OrderTotals,
-): PlatformPay.CartSummaryItem[] {
+function buildApplePayCartItems(totals: OrderTotals): PlatformPay.CartSummaryItem[] {
   const items: PlatformPay.CartSummaryItem[] = [
     {
       paymentType: PlatformPay.PaymentType.Immediate,
@@ -99,7 +97,9 @@ export function usePayment() {
   // Check Apple Pay support on mount (iOS)
   useEffect(() => {
     if (Platform.OS === 'ios') {
-      isPlatformPaySupported().then(setApplePaySupported).catch(() => setApplePaySupported(false));
+      isPlatformPaySupported()
+        .then(setApplePaySupported)
+        .catch(() => setApplePaySupported(false));
     }
   }, [isPlatformPaySupported]);
 
@@ -126,16 +126,13 @@ export function usePayment() {
 
         if (method === 'apple-pay') {
           // 2a. Apple Pay flow via confirmPlatformPayPayment
-          const { error: applePayError } = await confirmPlatformPayPayment(
-            clientSecret,
-            {
-              applePay: {
-                merchantCountryCode: 'US',
-                currencyCode: 'USD',
-                cartItems: buildApplePayCartItems(totals),
-              },
+          const { error: applePayError } = await confirmPlatformPayPayment(clientSecret, {
+            applePay: {
+              merchantCountryCode: 'US',
+              currencyCode: 'USD',
+              cartItems: buildApplePayCartItems(totals),
             },
-          );
+          });
 
           if (applePayError) {
             if (applePayError.code === 'Canceled') {
@@ -143,23 +140,17 @@ export function usePayment() {
               setState({ status: 'idle', error: null, order: null });
               return null;
             }
-            throw new PaymentError(
-              applePayError.message ?? 'Apple Pay failed',
-              'STRIPE_ERROR',
-            );
+            throw new PaymentError(applePayError.message ?? 'Apple Pay failed', 'STRIPE_ERROR');
           }
         } else if (method === 'google-pay') {
           // 2b. Google Pay flow via confirmPlatformPayPayment
-          const { error: googlePayError } = await confirmPlatformPayPayment(
-            clientSecret,
-            {
-              googlePay: {
-                merchantCountryCode: 'US',
-                currencyCode: 'USD',
-                testEnv: __DEV__,
-              },
+          const { error: googlePayError } = await confirmPlatformPayPayment(clientSecret, {
+            googlePay: {
+              merchantCountryCode: 'US',
+              currencyCode: 'USD',
+              testEnv: __DEV__,
             },
-          );
+          });
 
           if (googlePayError) {
             if (googlePayError.code === 'Canceled') {
@@ -167,10 +158,7 @@ export function usePayment() {
               setState({ status: 'idle', error: null, order: null });
               return null;
             }
-            throw new PaymentError(
-              googlePayError.message ?? 'Google Pay failed',
-              'STRIPE_ERROR',
-            );
+            throw new PaymentError(googlePayError.message ?? 'Google Pay failed', 'STRIPE_ERROR');
           }
         } else {
           // 2b. Standard Stripe Payment Sheet flow (card, BNPL, Google Pay)
@@ -179,10 +167,7 @@ export function usePayment() {
             customerEphemeralKeySecret: ephemeralKey,
             customerId,
             merchantDisplayName: 'Carolina Futons',
-            applePay:
-              Platform.OS === 'ios'
-                ? { merchantCountryCode: 'US' }
-                : undefined,
+            applePay: Platform.OS === 'ios' ? { merchantCountryCode: 'US' } : undefined,
             googlePay:
               Platform.OS === 'android' && method === 'card'
                 ? { merchantCountryCode: 'US', testEnv: __DEV__ }
@@ -207,10 +192,7 @@ export function usePayment() {
               setState({ status: 'idle', error: null, order: null });
               return null;
             }
-            throw new PaymentError(
-              presentError.message ?? 'Payment failed',
-              'STRIPE_ERROR',
-            );
+            throw new PaymentError(presentError.message ?? 'Payment failed', 'STRIPE_ERROR');
           }
         }
 
@@ -229,15 +211,22 @@ export function usePayment() {
             ? err.message
             : 'An unexpected error occurred. Please try again.';
         setState({ status: 'error', error: message, order: null });
-        captureException(
-          err instanceof Error ? err : new Error(message),
-          'error',
-          { action: 'processPayment', method },
-        );
+        captureException(err instanceof Error ? err : new Error(message), 'error', {
+          action: 'processPayment',
+          method,
+        });
         return null;
       }
     },
-    [items, totals, wixClient, initPaymentSheet, presentPaymentSheet, confirmPlatformPayPayment, clearCart],
+    [
+      items,
+      totals,
+      wixClient,
+      initPaymentSheet,
+      presentPaymentSheet,
+      confirmPlatformPayPayment,
+      clearCart,
+    ],
   );
 
   const resetPayment = useCallback(() => {

@@ -190,17 +190,18 @@ export function MountainSkyline({
               strokeWidth={f.stem.strokeWidth}
               opacity={0.3}
             />
-            <Circle cx={f.bloom.cx} cy={f.bloom.cy} r={f.bloom.r} fill={f.bloom.color} opacity={0.5} />
+            <Circle
+              cx={f.bloom.cx}
+              cy={f.bloom.cy}
+              r={f.bloom.r}
+              fill={f.bloom.color}
+              opacity={0.5}
+            />
           </React.Fragment>
         ))}
 
         {/* Paper grain overlay */}
-        <Rect
-          width={VIEWBOX_WIDTH}
-          height={height}
-          fill={colors.espresso}
-          opacity={0.06}
-        />
+        <Rect width={VIEWBOX_WIDTH} height={height} fill={colors.espresso} opacity={0.06} />
       </Svg>
     </View>
   );

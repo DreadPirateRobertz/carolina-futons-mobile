@@ -14,7 +14,13 @@ jest.mock('@/services/wix', () => ({
 
 jest.mock('../useAuth', () => ({
   useAuth: () => ({
-    user: { id: 'user-123', email: 'test@example.com', displayName: 'Test User', phone: '', provider: 'email' },
+    user: {
+      id: 'user-123',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      phone: '',
+      provider: 'email',
+    },
     signOut: mockSignOut,
   }),
 }));

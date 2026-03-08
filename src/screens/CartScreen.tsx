@@ -11,7 +11,16 @@
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { Animated as RNAnimated, StyleSheet, Text, TextInput, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import {
+  Animated as RNAnimated,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
@@ -433,10 +442,7 @@ function renderDeleteAction(
 
   return (
     <RNAnimated.View
-      style={[
-        styles.deleteAction,
-        { borderRadius, opacity },
-      ]}
+      style={[styles.deleteAction, { borderRadius, opacity }]}
       testID="swipe-delete-action"
     >
       <Text style={styles.deleteActionText}>Delete</Text>
@@ -503,9 +509,7 @@ function CartItemRow({
   return (
     <Swipeable
       ref={swipeableRef}
-      renderRightActions={(progress, dragX) =>
-        renderDeleteAction(progress, dragX, br.card)
-      }
+      renderRightActions={(progress, dragX) => renderDeleteAction(progress, dragX, br.card)}
       onSwipeableOpen={handleSwipeOpen}
       rightThreshold={80}
       overshootRight={false}
@@ -564,7 +568,10 @@ function CartItemRow({
           <View style={styles.quantityRow}>
             <Animated.View testID={`qty-btn-animated-decrement-${item.id}`} style={decrementStyle}>
               <TouchableOpacity
-                style={[styles.qtyButton, { backgroundColor: colors.sandDark, borderRadius: br.sm }]}
+                style={[
+                  styles.qtyButton,
+                  { backgroundColor: colors.sandDark, borderRadius: br.sm },
+                ]}
                 onPress={handleDecrement}
                 testID={`cart-item-decrement-${item.id}`}
                 accessibilityLabel="Decrease quantity"

@@ -60,7 +60,13 @@ describe('useAddressBook', () => {
   it('deletes an address and promotes next as default', async () => {
     const saved: SavedAddress[] = [
       { ...TEST_ADDRESS, id: 'addr-1', isDefault: true },
-      { ...TEST_ADDRESS, id: 'addr-2', fullName: 'Jane Doe', line1: '456 Oak Ave', isDefault: false },
+      {
+        ...TEST_ADDRESS,
+        id: 'addr-2',
+        fullName: 'Jane Doe',
+        line1: '456 Oak Ave',
+        isDefault: false,
+      },
     ];
     mockGetItem.mockResolvedValue(JSON.stringify(saved));
 
@@ -79,7 +85,13 @@ describe('useAddressBook', () => {
   it('sets a different address as default', async () => {
     const saved: SavedAddress[] = [
       { ...TEST_ADDRESS, id: 'addr-1', isDefault: true },
-      { ...TEST_ADDRESS, id: 'addr-2', fullName: 'Jane Doe', line1: '456 Oak Ave', isDefault: false },
+      {
+        ...TEST_ADDRESS,
+        id: 'addr-2',
+        fullName: 'Jane Doe',
+        line1: '456 Oak Ave',
+        isDefault: false,
+      },
     ];
     mockGetItem.mockResolvedValue(JSON.stringify(saved));
 

@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { Platform, AppState } from 'react-native';
-import * as Application from 'expo-application';
 import { useForceUpdate, compareSemver, fetchVersionConfig } from '../useForceUpdate';
 
 // Mock expo-application with mutable getter

@@ -29,7 +29,13 @@ export {
   type WixOrderResponse,
 } from './wixClient';
 
-export { WixProvider, useWixClient, useOptionalWixClient, useWixProducts, useWixCollections } from './wixProvider';
+export {
+  WixProvider,
+  useWixClient,
+  useOptionalWixClient,
+  useWixProducts,
+  useWixCollections,
+} from './wixProvider';
 
 export { getWixConfig, isWixConfigured } from './config';
 

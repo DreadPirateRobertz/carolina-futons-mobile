@@ -24,7 +24,11 @@ declare module '@react-native-firebase/analytics' {
      * Log a screen view event for automatic screen tracking.
      * @param params - Must include `screen_name` and `screen_class`; extra keys are forwarded.
      */
-    logScreenView(params: { screen_name: string; screen_class: string; [key: string]: unknown }): Promise<void>;
+    logScreenView(params: {
+      screen_name: string;
+      screen_class: string;
+      [key: string]: unknown;
+    }): Promise<void>;
 
     /**
      * Associate future events with a user ID (or `null` to clear).

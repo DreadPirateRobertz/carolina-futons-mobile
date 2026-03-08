@@ -15,7 +15,13 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
-function renderHomeScreen(props: { onOpenAR?: () => void; onOpenShop?: () => void; onCollectionPress?: (c: any) => void } = {}) {
+function renderHomeScreen(
+  props: {
+    onOpenAR?: () => void;
+    onOpenShop?: () => void;
+    onCollectionPress?: (c: any) => void;
+  } = {},
+) {
   return render(
     <NavigationContainer>
       <ThemeProvider>

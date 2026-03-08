@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';

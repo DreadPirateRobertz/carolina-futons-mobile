@@ -35,7 +35,13 @@ interface Props {
 export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, testID }: Props) {
   const { colors, borderRadius, shadows, typography, spacing } = useTheme();
   const { signIn, signInWithGoogle, signInWithApple, loading, error, clearError } = useAuth();
-  const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, authenticating, promptBiometric } = useBiometricAuth();
+  const {
+    status: bioStatus,
+    isEnabled: biometricEnabled,
+    loading: bioLoading,
+    authenticating,
+    promptBiometric,
+  } = useBiometricAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,7 +76,8 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
     }
   }, [promptBiometric, clearError, onBiometricSuccess]);
 
-  const showBiometric = biometricEnabled && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
+  const showBiometric =
+    biometricEnabled && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
   const biometricLabel = bioStatus.biometricType === 'facial' ? 'Face ID' : 'Touch ID';
 
   return (
@@ -129,7 +136,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
           {/* Email */}
           <View style={styles.fieldGroup}>
             <Text
-              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
               testID="login-email-label"
             >
               Email
@@ -172,7 +182,10 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
           {/* Password */}
           <View style={styles.fieldGroup}>
             <Text
-              style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
               testID="login-password-label"
             >
               Password
@@ -274,9 +287,7 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
               {authenticating ? (
                 <BrandedSpinner color="#FFFFFF" testID="biometric-loading" />
               ) : (
-                <Text style={styles.socialButtonText}>
-                  Sign in with {biometricLabel}
-                </Text>
+                <Text style={styles.socialButtonText}>Sign in with {biometricLabel}</Text>
               )}
             </TouchableOpacity>
           )}

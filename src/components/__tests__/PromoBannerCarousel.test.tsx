@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 import { PromoBannerCarousel, type PromoBannerItem } from '../PromoBannerCarousel';
 
@@ -88,9 +88,7 @@ describe('PromoBannerCarousel', () => {
   });
 
   it('does not render dots for single item', () => {
-    const { queryByTestId } = render(
-      <PromoBannerCarousel items={[TEST_ITEMS[0]]} />,
-    );
+    const { queryByTestId } = render(<PromoBannerCarousel items={[TEST_ITEMS[0]]} />);
     expect(queryByTestId('promo-dots')).toBeNull();
   });
 

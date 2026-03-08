@@ -14,7 +14,13 @@ jest.mock('@/services/wix', () => ({
 
 jest.mock('../useAuth', () => ({
   useAuth: () => ({
-    user: { id: 'user-123', email: 'test@example.com', displayName: 'Test User', phone: '555-1234', provider: 'email' },
+    user: {
+      id: 'user-123',
+      email: 'test@example.com',
+      displayName: 'Test User',
+      phone: '555-1234',
+      provider: 'email',
+    },
   }),
 }));
 
@@ -34,9 +40,7 @@ jest.mock('../useCart', () => ({
 
 jest.mock('../useWishlist', () => ({
   useWishlist: () => ({
-    items: [
-      { productId: 'blue-ridge-queen', name: 'The Blue Ridge', addedAt: '2026-03-01' },
-    ],
+    items: [{ productId: 'blue-ridge-queen', name: 'The Blue Ridge', addedAt: '2026-03-01' }],
   }),
 }));
 

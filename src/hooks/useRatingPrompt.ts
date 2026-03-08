@@ -93,23 +93,20 @@ export function useRatingPrompt() {
     return () => subscription.remove();
   }, [loaded]);
 
-  const requestPrompt = useCallback(
-    async (currentState: RatingState, trigger: string) => {
-      try {
-        const available = await StoreReview.isAvailableAsync();
-        if (!available) return;
+  const requestPrompt = useCallback(async (currentState: RatingState, trigger: string) => {
+    try {
+      const available = await StoreReview.isAvailableAsync();
+      if (!available) return;
 
-        await StoreReview.requestReview();
-        const updated = { ...currentState, lastPromptedAt: Date.now() };
-        setState(updated);
-        await persistState(updated);
-        events.rateApp(trigger);
-      } catch {
-        // Review dialog failed — non-critical
-      }
-    },
-    [],
-  );
+      await StoreReview.requestReview();
+      const updated = { ...currentState, lastPromptedAt: Date.now() };
+      setState(updated);
+      await persistState(updated);
+      events.rateApp(trigger);
+    } catch {
+      // Review dialog failed — non-critical
+    }
+  }, []);
 
   /** Call after a successful purchase. Triggers review prompt at the 3rd purchase. */
   const recordPurchase = useCallback(async () => {

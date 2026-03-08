@@ -9,7 +9,6 @@ import {
   getARCapabilitiesSync,
   supportsSurfaceDetection,
   resetCache,
-  type ARCapabilities,
 } from '../arSupport';
 
 const originalPlatform = Platform.OS;

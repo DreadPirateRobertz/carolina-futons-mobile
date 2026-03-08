@@ -206,8 +206,8 @@ export function ARFutonOverlay({
   // Resolve shadow opacity: prefer full shadowParams, fall back to prop
   const resolvedShadowOpacity = shadowParams?.opacity ?? shadowOpacity;
   const resolvedShadowColor = shadowParams?.color ?? `rgba(0,0,0,${resolvedShadowOpacity})`;
-  const resolvedShadowOffsetX = shadowParams?.offsetX ?? 0;
-  const resolvedShadowOffsetY = shadowParams?.offsetY ?? 4;
+  const _resolvedShadowOffsetX = shadowParams?.offsetX ?? 0;
+  const _resolvedShadowOffsetY = shadowParams?.offsetY ?? 4;
 
   // Wall snap indicator visibility
   const wallSnapBadge = useMemo(() => {

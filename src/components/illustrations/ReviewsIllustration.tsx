@@ -51,16 +51,64 @@ export function ReviewsIllustration({ width = VBW, height = VBH, testID }: Props
       {/* Sun glow */}
       <Circle cx={140} cy={110} r={70} fill="url(#rev-sun)" />
       {/* Sun rays */}
-      <Line x1={140} y1={50} x2={140} y2={30} stroke={colors.sunsetCoralLight} strokeWidth={1} opacity={0.3} />
-      <Line x1={170} y1={55} x2={185} y2={38} stroke={colors.sunsetCoralLight} strokeWidth={0.8} opacity={0.25} />
-      <Line x1={110} y1={55} x2={95} y2={38} stroke={colors.sunsetCoralLight} strokeWidth={0.8} opacity={0.25} />
-      <Line x1={190} y1={70} x2={210} y2={60} stroke={colors.sunsetCoralLight} strokeWidth={0.6} opacity={0.2} />
-      <Line x1={90} y1={70} x2={70} y2={60} stroke={colors.sunsetCoralLight} strokeWidth={0.6} opacity={0.2} />
+      <Line
+        x1={140}
+        y1={50}
+        x2={140}
+        y2={30}
+        stroke={colors.sunsetCoralLight}
+        strokeWidth={1}
+        opacity={0.3}
+      />
+      <Line
+        x1={170}
+        y1={55}
+        x2={185}
+        y2={38}
+        stroke={colors.sunsetCoralLight}
+        strokeWidth={0.8}
+        opacity={0.25}
+      />
+      <Line
+        x1={110}
+        y1={55}
+        x2={95}
+        y2={38}
+        stroke={colors.sunsetCoralLight}
+        strokeWidth={0.8}
+        opacity={0.25}
+      />
+      <Line
+        x1={190}
+        y1={70}
+        x2={210}
+        y2={60}
+        stroke={colors.sunsetCoralLight}
+        strokeWidth={0.6}
+        opacity={0.2}
+      />
+      <Line
+        x1={90}
+        y1={70}
+        x2={70}
+        y2={60}
+        stroke={colors.sunsetCoralLight}
+        strokeWidth={0.6}
+        opacity={0.2}
+      />
       {/* 5 mountain layers */}
       <Path d={buildSmallMountainPath(VBW, VBH, 0.52, 42)} fill={colors.espresso} opacity={0.2} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.60, 17)} fill={colors.espresso} opacity={0.3} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.68, 73)} fill={colors.espressoLight} opacity={0.35} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.76, 29)} fill={colors.espressoLight} opacity={0.4} />
+      <Path d={buildSmallMountainPath(VBW, VBH, 0.6, 17)} fill={colors.espresso} opacity={0.3} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.68, 73)}
+        fill={colors.espressoLight}
+        opacity={0.35}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.76, 29)}
+        fill={colors.espressoLight}
+        opacity={0.4}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.84, 61)} fill={colors.sandDark} opacity={0.5} />
     </Svg>
   );

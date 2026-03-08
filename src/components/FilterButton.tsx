@@ -19,24 +19,16 @@ export function FilterButton({ activeCount, onPress, testID }: Props) {
 
   return (
     <TouchableOpacity
-      style={[
-        styles.button,
-        { backgroundColor: colors.sandLight, borderRadius: borderRadius.md },
-      ]}
+      style={[styles.button, { backgroundColor: colors.sandLight, borderRadius: borderRadius.md }]}
       onPress={handlePress}
       testID={testID ?? 'filter-button'}
-      accessibilityLabel={
-        activeCount > 0 ? `Filters, ${activeCount} active` : 'Filters'
-      }
+      accessibilityLabel={activeCount > 0 ? `Filters, ${activeCount} active` : 'Filters'}
       accessibilityRole="button"
     >
       <Text style={[styles.icon, { color: colors.espresso }]}>☰</Text>
       <Text style={[styles.label, { color: colors.espresso }]}>Filter</Text>
       {activeCount > 0 && (
-        <View
-          style={[styles.badge, { backgroundColor: colors.sunsetCoral }]}
-          testID="filter-badge"
-        >
+        <View style={[styles.badge, { backgroundColor: colors.sunsetCoral }]} testID="filter-badge">
           <Text style={[styles.badgeText, { color: colors.white }]}>{activeCount}</Text>
         </View>
       )}

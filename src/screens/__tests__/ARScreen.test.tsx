@@ -4,8 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import { ARScreen } from '../ARScreen';
 import { useCameraPermissions } from 'expo-camera';
-import { useCameraPermission } from '@/hooks/useCameraPermission';
-import { useAROnboarding } from '@/hooks/useAROnboarding';
 import * as Haptics from 'expo-haptics';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';

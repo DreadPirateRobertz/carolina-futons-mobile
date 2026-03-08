@@ -65,10 +65,7 @@ export function AROnboarding({ onComplete, onSkip }: Props) {
         {/* Progress dots */}
         <View style={styles.progress} testID="ar-onboarding-progress">
           {STEPS.map((_, i) => (
-            <View
-              key={i}
-              style={[styles.dot, i === step && styles.dotActive]}
-            />
+            <View key={i} style={[styles.dot, i === step && styles.dotActive]} />
           ))}
         </View>
 

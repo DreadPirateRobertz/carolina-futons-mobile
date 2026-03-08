@@ -82,9 +82,7 @@ describe('FilterModal', () => {
     const { getByTestId } = renderFilterModal({ onApply });
     fireEvent.press(getByTestId('filter-size-queen'));
     fireEvent.press(getByTestId('filter-apply'));
-    expect(onApply).toHaveBeenCalledWith(
-      expect.objectContaining({ sizes: ['queen'] }),
-    );
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ sizes: ['queen'] }));
   });
 
   it('toggles fabric selection on press', () => {
@@ -92,9 +90,7 @@ describe('FilterModal', () => {
     const { getByTestId } = renderFilterModal({ onApply });
     fireEvent.press(getByTestId('filter-fabric-slate-gray'));
     fireEvent.press(getByTestId('filter-apply'));
-    expect(onApply).toHaveBeenCalledWith(
-      expect.objectContaining({ fabrics: ['Slate Gray'] }),
-    );
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ fabrics: ['Slate Gray'] }));
   });
 
   it('deselects size on second press', () => {
@@ -103,9 +99,7 @@ describe('FilterModal', () => {
     fireEvent.press(getByTestId('filter-size-twin'));
     fireEvent.press(getByTestId('filter-size-twin'));
     fireEvent.press(getByTestId('filter-apply'));
-    expect(onApply).toHaveBeenCalledWith(
-      expect.objectContaining({ sizes: [] }),
-    );
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ sizes: [] }));
   });
 
   it('supports multiple size selections', () => {
@@ -114,9 +108,7 @@ describe('FilterModal', () => {
     fireEvent.press(getByTestId('filter-size-twin'));
     fireEvent.press(getByTestId('filter-size-queen'));
     fireEvent.press(getByTestId('filter-apply'));
-    expect(onApply).toHaveBeenCalledWith(
-      expect.objectContaining({ sizes: ['twin', 'queen'] }),
-    );
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ sizes: ['twin', 'queen'] }));
   });
 
   it('clear all resets all filters', () => {

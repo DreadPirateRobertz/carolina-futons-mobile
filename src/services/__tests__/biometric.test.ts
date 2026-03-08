@@ -109,10 +109,7 @@ describe('isBiometricEnabled / setBiometricEnabled', () => {
 
   it('setBiometricEnabled(true) stores value', async () => {
     await setBiometricEnabled(true);
-    expect(mockSecureStore.setItemAsync).toHaveBeenCalledWith(
-      'biometric_auth_enabled',
-      'true',
-    );
+    expect(mockSecureStore.setItemAsync).toHaveBeenCalledWith('biometric_auth_enabled', 'true');
   });
 
   it('setBiometricEnabled(false) deletes value', async () => {

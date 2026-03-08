@@ -17,7 +17,6 @@ import { useConnectivity } from './useConnectivity';
 import {
   drain,
   loadQueue,
-  getQueue,
   getQueueLength,
   enqueue,
   reEnqueue,

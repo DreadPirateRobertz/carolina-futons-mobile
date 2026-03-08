@@ -1,6 +1,9 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 
+import { EditorialHero } from '../EditorialHero';
+import { ThemeProvider } from '@/theme';
+
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
@@ -9,7 +12,7 @@ jest.mock('expo-haptics', () => ({
 
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
-  const { View, Pressable } = require('react-native');
+  const { View } = require('react-native');
   return {
     __esModule: true,
     default: {
@@ -24,9 +27,6 @@ jest.mock('react-native-reanimated', () => {
     },
   };
 });
-
-import { EditorialHero } from '../EditorialHero';
-import { ThemeProvider } from '@/theme';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider initialColorMode="dark">{children}</ThemeProvider>

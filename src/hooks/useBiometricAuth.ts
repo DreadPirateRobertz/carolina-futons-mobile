@@ -37,16 +37,15 @@ export function useBiometricAuth(): UseBiometricAuthReturn {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [bioStatus, enabled] = await Promise.all([
-        getBiometricStatus(),
-        isBiometricEnabled(),
-      ]);
+      const [bioStatus, enabled] = await Promise.all([getBiometricStatus(), isBiometricEnabled()]);
       if (!mounted) return;
       setStatus(bioStatus);
       setIsEnabled(enabled);
       setLoading(false);
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const enableBiometric = useCallback(async (): Promise<boolean> => {

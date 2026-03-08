@@ -2,6 +2,9 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
+import { AnimatedPressable } from '../AnimatedPressable';
+import * as Haptics from 'expo-haptics';
+
 // Mock expo-haptics
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
@@ -26,9 +29,6 @@ jest.mock('react-native-reanimated', () => {
     withSpring: (val: any) => val,
   };
 });
-
-import { AnimatedPressable } from '../AnimatedPressable';
-import * as Haptics from 'expo-haptics';
 
 describe('AnimatedPressable', () => {
   beforeEach(() => {

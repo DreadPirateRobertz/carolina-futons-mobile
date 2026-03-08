@@ -25,7 +25,13 @@ beforeEach(() => {
 describe('WixClient — Payment', () => {
   describe('createPaymentIntent', () => {
     const lineItems = [
-      { id: 'item-1', name: 'Asheville Full', fabric: 'Natural Linen', quantity: 1, unitPrice: 349 },
+      {
+        id: 'item-1',
+        name: 'Asheville Full',
+        fabric: 'Natural Linen',
+        quantity: 1,
+        unitPrice: 349,
+      },
     ];
     const totals = { subtotal: 349, shipping: 49, tax: 24.43, total: 422.43 };
 
@@ -81,9 +87,7 @@ describe('WixClient — Payment', () => {
     });
 
     it('throws WixApiError on HTTP failure', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Payment service unavailable' }, 503),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Payment service unavailable' }, 503));
 
       const client = new WixClient(TEST_CONFIG);
       await expect(client.createPaymentIntent(lineItems, totals)).rejects.toThrow(WixApiError);
@@ -197,9 +201,7 @@ describe('WixClient — Payment', () => {
     });
 
     it('throws WixApiError on HTTP failure', async () => {
-      mockFetch.mockReturnValue(
-        mockJsonResponse({ message: 'Order confirmation failed' }, 400),
-      );
+      mockFetch.mockReturnValue(mockJsonResponse({ message: 'Order confirmation failed' }, 400));
 
       const client = new WixClient(TEST_CONFIG);
       await expect(

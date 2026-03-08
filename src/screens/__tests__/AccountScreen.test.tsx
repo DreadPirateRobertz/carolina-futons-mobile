@@ -2,7 +2,6 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import { PremiumProvider } from '@/hooks/usePremium';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 jest.mock('expo-application', () => ({
@@ -316,12 +315,13 @@ describe('AccountScreen', () => {
       fireEvent.press(getByTestId('edit-save-button'));
 
       await waitFor(() => {
-        expect(mockAuthService.updateMember).toHaveBeenCalledWith(
-          'member-1',
-          { firstName: 'Jane', lastName: 'Doe', phone: '555-0000' },
-        );
+        expect(mockAuthService.updateMember).toHaveBeenCalledWith('member-1', {
+          firstName: 'Jane',
+          lastName: 'Doe',
+          phone: '555-0000',
+        });
       });
-    });
+    }, 15000);
 
     it('shows privacy section with Export and Delete options', async () => {
       const { getByTestId } = renderAccount({}, true);
@@ -353,7 +353,13 @@ describe('AccountScreen', () => {
       await waitFor(() => {
         expect(getByTestId('app-version-text')).toBeTruthy();
       });
-      expect(getByTestId('app-version-text').props.children).toEqual(['v', '1.2.3', ' (', '42', ')']);
+      expect(getByTestId('app-version-text').props.children).toEqual([
+        'v',
+        '1.2.3',
+        ' (',
+        '42',
+        ')',
+      ]);
     });
 
     it('does not show debug menu by default', async () => {

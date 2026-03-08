@@ -77,8 +77,16 @@ export function ErrorIllustration({ width = VBW, height = VBH, testID }: Props) 
       {/* 5 mountain layers */}
       <Path d={buildSmallMountainPath(VBW, VBH, 0.55, 42)} fill={colors.espresso} opacity={0.25} />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.63, 17)} fill={colors.espresso} opacity={0.3} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.72, 73)} fill={colors.espressoLight} opacity={0.35} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.80, 29)} fill={colors.espressoLight} opacity={0.4} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.72, 73)}
+        fill={colors.espressoLight}
+        opacity={0.35}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.8, 29)}
+        fill={colors.espressoLight}
+        opacity={0.4}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.88, 61)} fill={colors.sandDark} opacity={0.45} />
     </Svg>
   );

@@ -17,8 +17,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
-import { MountainRefreshControl, MountainRefreshIndicator } from '@/components/MountainRefreshControl';
-import { useProducts, type Product, type ProductCategory, type SortOption } from '@/hooks/useProducts';
+import {
+  MountainRefreshControl,
+  MountainRefreshIndicator,
+} from '@/components/MountainRefreshControl';
+import {
+  useProducts,
+  type Product,
+  type ProductCategory,
+  type SortOption,
+} from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -174,10 +182,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
           resultCount={products.length}
           leftContent={
-            <FilterButton
-              activeCount={activeFilterCount}
-              onPress={() => setShowFilters(true)}
-            />
+            <FilterButton activeCount={activeFilterCount} onPress={() => setShowFilters(true)} />
           }
         />
       </View>
@@ -234,7 +239,10 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         />
       ) : (
         <View
-          style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+          style={[
+            styles.emptyContainer,
+            { backgroundColor: darkPalette.surface, borderRadius: 16 },
+          ]}
           testID="shop-empty"
         >
           <Text style={[styles.emptyIcon]}>🔍</Text>

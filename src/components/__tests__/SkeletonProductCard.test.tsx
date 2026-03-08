@@ -2,6 +2,8 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+import { SkeletonProductCard, SkeletonProductGrid } from '../SkeletonProductCard';
+
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   return {
@@ -17,8 +19,6 @@ jest.mock('react-native-reanimated', () => {
     Easing: { inOut: () => undefined, ease: undefined },
   };
 });
-
-import { SkeletonProductCard, SkeletonProductGrid } from '../SkeletonProductCard';
 
 function wrap(ui: React.ReactElement) {
   return render(<ThemeProvider>{ui}</ThemeProvider>);
@@ -37,9 +37,7 @@ describe('SkeletonProductCard', () => {
 
   it('has loading accessibility label', () => {
     const { getByTestId } = wrap(<SkeletonProductCard />);
-    expect(getByTestId('skeleton-product-card').props.accessibilityLabel).toBe(
-      'Loading product',
-    );
+    expect(getByTestId('skeleton-product-card').props.accessibilityLabel).toBe('Loading product');
   });
 
   it('renders shimmer placeholders for image, text, rating, and price', () => {

@@ -9,7 +9,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { PRODUCTS, type Product, type ProductCategory, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
+import {
+  PRODUCTS,
+  type Product,
+  type ProductCategory,
+  DEFAULT_PRODUCT_BLURHASH,
+} from '@/data/products';
 import { hasARModel } from '@/data/models3d';
 import { formatPrice } from '@/utils';
 

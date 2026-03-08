@@ -2,6 +2,8 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+import { Shimmer, ShimmerLines, ShimmerCircle } from '../Shimmer';
+
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   return {
@@ -18,8 +20,6 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
-import { Shimmer, ShimmerLines, ShimmerCircle } from '../Shimmer';
-
 function wrap(ui: React.ReactElement) {
   return render(<ThemeProvider>{ui}</ThemeProvider>);
 }
@@ -33,9 +33,7 @@ describe('Shimmer', () => {
   });
 
   it('applies custom width, height, and borderRadius', () => {
-    const { getByLabelText } = wrap(
-      <Shimmer width={200} height={24} borderRadius={8} />,
-    );
+    const { getByLabelText } = wrap(<Shimmer width={200} height={24} borderRadius={8} />);
     const styles = getByLabelText('Loading').props.style;
     const flat = Object.assign({}, ...styles.filter(Boolean));
     expect(flat.width).toBe(200);
@@ -63,9 +61,7 @@ describe('ShimmerLines', () => {
   });
 
   it('applies lastLineWidth to the final line only', () => {
-    const { getAllByLabelText } = wrap(
-      <ShimmerLines lines={3} lastLineWidth="40%" />,
-    );
+    const { getAllByLabelText } = wrap(<ShimmerLines lines={3} lastLineWidth="40%" />);
     const bars = getAllByLabelText('Loading');
     const firstStyles = Object.assign({}, ...bars[0].props.style.filter(Boolean));
     const lastStyles = Object.assign({}, ...bars[2].props.style.filter(Boolean));

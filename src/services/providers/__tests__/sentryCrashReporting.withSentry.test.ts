@@ -26,17 +26,21 @@ const mockNavigationIntegration = { registerNavigationContainer: jest.fn() };
 const mockReactNavigationIntegration = jest.fn(() => mockNavigationIntegration);
 const mockMobileReplayIntegration = jest.fn(() => ({ name: 'MobileReplay' }));
 
-jest.mock('@sentry/react-native', () => ({
-  init: mockInit,
-  captureException: mockCaptureException,
-  captureMessage: mockCaptureMessage,
-  setUser: mockSetUser,
-  addBreadcrumb: mockAddBreadcrumb,
-  withScope: mockWithScope,
-  wrap: mockWrap,
-  reactNavigationIntegration: mockReactNavigationIntegration,
-  mobileReplayIntegration: mockMobileReplayIntegration,
-}), { virtual: true });
+jest.mock(
+  '@sentry/react-native',
+  () => ({
+    init: mockInit,
+    captureException: mockCaptureException,
+    captureMessage: mockCaptureMessage,
+    setUser: mockSetUser,
+    addBreadcrumb: mockAddBreadcrumb,
+    withScope: mockWithScope,
+    wrap: mockWrap,
+    reactNavigationIntegration: mockReactNavigationIntegration,
+    mobileReplayIntegration: mockMobileReplayIntegration,
+  }),
+  { virtual: true },
+);
 
 // Re-require the provider so the module-level try/catch picks up our mock
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -70,9 +74,7 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
     expect(mockMobileReplayIntegration).toHaveBeenCalled();
     expect(mockInit).toHaveBeenCalledWith(
       expect.objectContaining({
-        integrations: expect.arrayContaining([
-          mockNavigationIntegration,
-        ]),
+        integrations: expect.arrayContaining([mockNavigationIntegration]),
       }),
     );
   });
@@ -92,9 +94,7 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
       environment: 'staging',
     });
     provider.init();
-    expect(mockInit).toHaveBeenCalledWith(
-      expect.objectContaining({ environment: 'staging' }),
-    );
+    expect(mockInit).toHaveBeenCalledWith(expect.objectContaining({ environment: 'staging' }));
   });
 
   it('passes custom tracesSampleRate to Sentry.init', () => {
@@ -103,9 +103,7 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
       tracesSampleRate: 0.5,
     });
     provider.init();
-    expect(mockInit).toHaveBeenCalledWith(
-      expect.objectContaining({ tracesSampleRate: 0.5 }),
-    );
+    expect(mockInit).toHaveBeenCalledWith(expect.objectContaining({ tracesSampleRate: 0.5 }));
   });
 
   it('captureException uses withScope and sets severity', () => {
@@ -190,9 +188,7 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
       dsn: 'https://key@sentry.io/123',
     });
     provider.addBreadcrumb('App started');
-    expect(mockAddBreadcrumb).toHaveBeenCalledWith(
-      expect.objectContaining({ category: 'app' }),
-    );
+    expect(mockAddBreadcrumb).toHaveBeenCalledWith(expect.objectContaining({ category: 'app' }));
   });
 
   it('wrapWithSentry delegates to Sentry.wrap', () => {

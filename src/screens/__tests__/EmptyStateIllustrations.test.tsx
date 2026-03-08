@@ -23,7 +23,7 @@ describe.skip('Empty state illustrations', () => {
         <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
           <ThemeProvider>
             <CartProvider>
-            <CartScreen />
+              <CartScreen />
             </CartProvider>
           </ThemeProvider>
         </ConnectivityProvider>,
@@ -36,7 +36,7 @@ describe.skip('Empty state illustrations', () => {
         <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
           <ThemeProvider>
             <CartProvider>
-            <CartScreen />
+              <CartScreen />
             </CartProvider>
           </ThemeProvider>
         </ConnectivityProvider>,
@@ -68,7 +68,9 @@ describe.skip('Empty state illustrations', () => {
         </ThemeProvider>,
       );
       // Advance past loading skeleton
-      act(() => { jest.advanceTimersByTime(700); });
+      act(() => {
+        jest.advanceTimersByTime(700);
+      });
       // Search for nonexistent term
       const { fireEvent } = require('@testing-library/react-native');
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');

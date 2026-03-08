@@ -27,9 +27,5 @@ function handleDeepLink(parsed: ParsedDeepLink, route: DeepLinkRoute) {
 export function DeepLinkProvider({ children }: { children: React.ReactNode }) {
   const deepLink = useDeepLink({ onDeepLink: handleDeepLink });
 
-  return (
-    <DeepLinkContext.Provider value={deepLink}>
-      {children}
-    </DeepLinkContext.Provider>
-  );
+  return <DeepLinkContext.Provider value={deepLink}>{children}</DeepLinkContext.Provider>;
 }

@@ -1,3 +1,9 @@
+import { initAnalytics, resetAnalyticsInit } from '../analyticsInit';
+import { registerProvider } from '../analytics';
+import { FirebaseAnalyticsProvider } from '../providers/firebaseAnalytics';
+import { MixpanelAnalyticsProvider, initMixpanel } from '../providers/mixpanelAnalytics';
+import { MultiProvider } from '../providers/multiProvider';
+
 jest.mock('../providers/firebaseAnalytics', () => ({
   FirebaseAnalyticsProvider: jest.fn().mockImplementation(() => ({
     trackEvent: jest.fn(),
@@ -33,12 +39,6 @@ jest.mock('../providers/multiProvider', () => ({
 jest.mock('../analytics', () => ({
   registerProvider: jest.fn(),
 }));
-
-import { initAnalytics, resetAnalyticsInit } from '../analyticsInit';
-import { registerProvider } from '../analytics';
-import { FirebaseAnalyticsProvider } from '../providers/firebaseAnalytics';
-import { MixpanelAnalyticsProvider, initMixpanel } from '../providers/mixpanelAnalytics';
-import { MultiProvider } from '../providers/multiProvider';
 
 describe('initAnalytics', () => {
   beforeEach(() => {

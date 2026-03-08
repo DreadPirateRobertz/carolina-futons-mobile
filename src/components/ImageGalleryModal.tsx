@@ -137,13 +137,7 @@ export function ImageGalleryModal({
         {/* Pagination dots */}
         <View style={[styles.pagination, { bottom: insets.bottom + 20 }]}>
           {images.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                i === activeIndex && styles.dotActive,
-              ]}
-            />
+            <View key={i} style={[styles.dot, i === activeIndex && styles.dotActive]} />
           ))}
         </View>
       </View>

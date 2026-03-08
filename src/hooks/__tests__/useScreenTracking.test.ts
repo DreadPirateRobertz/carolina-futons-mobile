@@ -1,5 +1,8 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useScreenTracking } from '../useScreenTracking';
+import { trackScreenView } from '@/services/analytics';
+
 const mockGetCurrentRoute = jest.fn();
 const mockNavigationRef = { getCurrentRoute: mockGetCurrentRoute };
 
@@ -10,9 +13,6 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('@/services/analytics', () => ({
   trackScreenView: jest.fn(),
 }));
-
-import { useScreenTracking } from '../useScreenTracking';
-import { trackScreenView } from '@/services/analytics';
 
 describe('useScreenTracking', () => {
   beforeEach(() => {

@@ -51,7 +51,9 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
         setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [productId]);
 
   const subscribe = useCallback(async () => {

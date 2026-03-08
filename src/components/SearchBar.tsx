@@ -148,7 +148,11 @@ export function SearchBar({
               <View style={styles.recentHeader}>
                 <Text style={[styles.recentTitle, { color: colors.muted }]}>Recent</Text>
                 {onClearRecent && (
-                  <TouchableOpacity onPress={onClearRecent} testID="clear-recent" accessibilityLabel="Clear all recent searches">
+                  <TouchableOpacity
+                    onPress={onClearRecent}
+                    testID="clear-recent"
+                    accessibilityLabel="Clear all recent searches"
+                  >
                     <Text style={[styles.recentClear, { color: colors.mountainBlue }]}>Clear</Text>
                   </TouchableOpacity>
                 )}

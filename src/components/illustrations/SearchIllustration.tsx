@@ -34,10 +34,26 @@ export function SearchIllustration({ width = VBW, height = VBH, testID }: Props)
       </Defs>
       <Rect width={VBW} height={VBH} fill="url(#search-sky)" />
       {/* 5 mountain layers */}
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.50, 33)} fill={colors.mountainBlueDark} opacity={0.2} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.58, 51)} fill={colors.mountainBlue} opacity={0.3} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.66, 14)} fill={colors.mountainBlue} opacity={0.4} />
-      <Path d={buildSmallMountainPath(VBW, VBH, 0.75, 77)} fill={colors.espressoLight} opacity={0.45} />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.5, 33)}
+        fill={colors.mountainBlueDark}
+        opacity={0.2}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.58, 51)}
+        fill={colors.mountainBlue}
+        opacity={0.3}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.66, 14)}
+        fill={colors.mountainBlue}
+        opacity={0.4}
+      />
+      <Path
+        d={buildSmallMountainPath(VBW, VBH, 0.75, 77)}
+        fill={colors.espressoLight}
+        opacity={0.45}
+      />
       <Path d={buildSmallMountainPath(VBW, VBH, 0.83, 92)} fill={colors.sandDark} opacity={0.5} />
       {/* Fog wisps */}
       <Ellipse cx={70} cy={130} rx={55} ry={10} fill={colors.offWhite} opacity={0.5} />

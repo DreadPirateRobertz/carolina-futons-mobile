@@ -6,11 +6,9 @@
  * deselected ones settle back to normal size.
  */
 import { useState, useCallback, useRef } from 'react';
-import { useSharedValue, withSpring } from 'react-native-reanimated';
 
 const SELECTED_SCALE = 1.2;
 const DESELECTED_SCALE = 1;
-const SPRING_CONFIG = { damping: 14, stiffness: 300 };
 
 interface SwatchState {
   scale: { value: number };

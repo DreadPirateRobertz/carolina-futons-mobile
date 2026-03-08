@@ -32,7 +32,7 @@ describe('useARMeasurement', () => {
     expect(result.current.state).toBe('measured');
     expect(result.current.distanceMeters).toBeCloseTo(1.0);
     // 1 meter = 39.37 inches = 3 feet 3.37 inches
-    expect(result.current.distanceDisplay).toBe("3' 3\"");
+    expect(result.current.distanceDisplay).toBe('3\' 3"');
   });
 
   it('calculates 3D diagonal distance', () => {
@@ -113,7 +113,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 1.5, y: 0.2, z: 3.0 }));
       act(() => result.current.placePoint({ x: 1.5, y: 0.2, z: 3.0 }));
       expect(result.current.distanceMeters).toBe(0);
-      expect(result.current.distanceDisplay).toBe("0' 0\"");
+      expect(result.current.distanceDisplay).toBe('0\' 0"');
     });
 
     it('handles very small distances (10cm = ~4 inches)', () => {
@@ -122,7 +122,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       act(() => result.current.placePoint({ x: 0.1, y: 0, z: 0 }));
       expect(result.current.distanceMeters).toBeCloseTo(0.1);
-      expect(result.current.distanceDisplay).toBe("0' 4\"");
+      expect(result.current.distanceDisplay).toBe('0\' 4"');
     });
 
     it('handles large room distances (5m = ~16 feet)', () => {
@@ -132,7 +132,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 5, y: 0, z: 0 }));
       expect(result.current.distanceMeters).toBeCloseTo(5.0);
       // 5m = 196.85" = 16' 4.85" -> rounds to 16' 5"
-      expect(result.current.distanceDisplay).toBe("16' 5\"");
+      expect(result.current.distanceDisplay).toBe('16\' 5"');
     });
 
     // Real futon dimensions as meters for fit testing
@@ -143,7 +143,9 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       act(() => result.current.placePoint({ x: 1.524, y: 0, z: 0 })); // 5 feet
       const ashevilleWidth = 54 / 39.3701; // inches to meters
-      expect(result.current.checkFit({ width: ashevilleWidth, depth: 0.8, height: 0.4 })).toBe(true);
+      expect(result.current.checkFit({ width: ashevilleWidth, depth: 0.8, height: 0.4 })).toBe(
+        true,
+      );
     });
 
     // Blue Ridge Queen: 60" W = 1.524m
@@ -154,7 +156,9 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 1.524, y: 0, z: 0 })); // 5 feet
       const blueRidgeWidth = 60 / 39.3701;
       // Exact same size should still fit (<=)
-      expect(result.current.checkFit({ width: blueRidgeWidth, depth: 0.9, height: 0.4 })).toBe(true);
+      expect(result.current.checkFit({ width: blueRidgeWidth, depth: 0.9, height: 0.4 })).toBe(
+        true,
+      );
     });
 
     // Blue Ridge should NOT fit in 4.5 feet
@@ -164,7 +168,9 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       act(() => result.current.placePoint({ x: 1.3716, y: 0, z: 0 })); // 4.5 feet = 54"
       const blueRidgeWidth = 60 / 39.3701; // 60" in meters
-      expect(result.current.checkFit({ width: blueRidgeWidth, depth: 0.9, height: 0.4 })).toBe(false);
+      expect(result.current.checkFit({ width: blueRidgeWidth, depth: 0.9, height: 0.4 })).toBe(
+        false,
+      );
     });
 
     it('handles negative coordinates correctly', () => {
@@ -190,7 +196,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       // 6 feet = 72 inches = 1.8288m
       act(() => result.current.placePoint({ x: 1.8288, y: 0, z: 0 }));
-      expect(result.current.distanceDisplay).toBe("6' 0\"");
+      expect(result.current.distanceDisplay).toBe('6\' 0"');
     });
 
     it('conversion precision: 2.54m = exactly 100 inches = 8 feet 4 inches', () => {
@@ -199,7 +205,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       act(() => result.current.placePoint({ x: 2.54, y: 0, z: 0 }));
       // 2.54m = 100 inches = 8'4"
-      expect(result.current.distanceDisplay).toBe("8' 4\"");
+      expect(result.current.distanceDisplay).toBe('8\' 4"');
     });
 
     it('never displays 12 inches (rolls over to next foot)', () => {
@@ -208,7 +214,7 @@ describe('useARMeasurement', () => {
       act(() => result.current.placePoint({ x: 0, y: 0, z: 0 }));
       // 0.293m ≈ 11.54 inches — remainder rounds to 12, must roll over to 1' 0"
       act(() => result.current.placePoint({ x: 0.293, y: 0, z: 0 }));
-      expect(result.current.distanceDisplay).toBe("1' 0\"");
+      expect(result.current.distanceDisplay).toBe('1\' 0"');
     });
 
     it('handles rounding at foot boundary (23.7 inches)', () => {
@@ -218,7 +224,7 @@ describe('useARMeasurement', () => {
       // 23.7 inches = 1' 11.7" → rounds to 2' 0"
       const meters = 23.7 / 39.3701;
       act(() => result.current.placePoint({ x: meters, y: 0, z: 0 }));
-      expect(result.current.distanceDisplay).toBe("2' 0\"");
+      expect(result.current.distanceDisplay).toBe('2\' 0"');
     });
   });
 });

@@ -22,7 +22,9 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
 const ARScreen = lazy(() =>
-  import('@/screens/ARScreen').then((m) => ({ default: withScreenErrorBoundary(m.ARScreen, 'AR') })),
+  import('@/screens/ARScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ARScreen, 'AR'),
+  })),
 );
 const ProductDetailScreen = lazy(() =>
   import('@/screens/ProductDetailScreen').then((m) => ({
@@ -155,11 +157,6 @@ const fadeTransition: NativeStackNavigationOptions = {
   animationDuration: 250,
 };
 
-const slideUpTransition: NativeStackNavigationOptions = {
-  animation: 'slide_from_bottom',
-  animationDuration: 300,
-};
-
 const modalTransition: NativeStackNavigationOptions = {
   presentation: 'modal',
   animation: 'slide_from_bottom',
@@ -212,7 +209,11 @@ export function AppNavigator() {
           component={ARScreen}
           options={{ presentation: 'fullScreenModal', animation: 'fade' }}
         />
-        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} options={fadeTransition} />
+        <Stack.Screen
+          name="ProductDetail"
+          component={ProductDetailScreen}
+          options={fadeTransition}
+        />
         <Stack.Screen name="Category" component={CategoryScreen} options={fadeTransition} />
         <Stack.Screen name="Checkout">
           {({ navigation: nav }) => (
@@ -234,9 +235,7 @@ export function AppNavigator() {
             <OrderConfirmationScreen
               order={(route.params as { order: OrderConfirmation }).order}
               onContinueShopping={() => {
-                nav.dispatch(
-                  CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
-                );
+                nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
               }}
               onViewOrders={() => {
                 nav.dispatch(
@@ -254,9 +253,7 @@ export function AppNavigator() {
             <OrderHistoryScreen
               onSelectOrder={(orderId) => nav.navigate('OrderDetail', { orderId })}
               onStartShopping={() => {
-                nav.dispatch(
-                  CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }),
-                );
+                nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
               }}
             />
           )}
@@ -290,11 +287,13 @@ export function AppNavigator() {
           options={{ presentation: 'fullScreenModal', animation: 'fade' }}
         />
         <Stack.Screen name="Collections" component={CollectionsScreen} options={fadeTransition} />
-        <Stack.Screen name="CollectionDetail" component={CollectionDetailScreen} options={fadeTransition} />
+        <Stack.Screen
+          name="CollectionDetail"
+          component={CollectionDetailScreen}
+          options={fadeTransition}
+        />
         <Stack.Screen name="Premium">
-          {({ navigation: nav }) => (
-            <PremiumScreen onBack={() => nav.goBack()} />
-          )}
+          {({ navigation: nav }) => <PremiumScreen onBack={() => nav.goBack()} />}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>

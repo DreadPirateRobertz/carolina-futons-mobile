@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
-import { darkPalette, colors as tokenColors } from '@/theme/tokens';
+import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -99,7 +99,11 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       testID="home-screen"
     >
       {/* Hero — Mountain skyline backdrop (decorative) */}
-      <View style={styles.heroBackdrop} accessible={false} importantForAccessibility="no-hide-descendants">
+      <View
+        style={styles.heroBackdrop}
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
+      >
         <MountainSkyline variant="sunrise" height={140} showGlow testID="home-hero-skyline" />
       </View>
 
@@ -194,7 +198,12 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               See how our futons fit using your camera
             </Text>
           </View>
-          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]} importantForAccessibility="no">›</Text>
+          <Text
+            style={[styles.ctaArrow, { color: darkPalette.textMuted }]}
+            importantForAccessibility="no"
+          >
+            ›
+          </Text>
         </Pressable>
       </GlassCard>
 
@@ -242,7 +251,12 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               Futons, covers, mattresses & more
             </Text>
           </View>
-          <Text style={[styles.ctaArrow, { color: darkPalette.textMuted }]} importantForAccessibility="no">›</Text>
+          <Text
+            style={[styles.ctaArrow, { color: darkPalette.textMuted }]}
+            importantForAccessibility="no"
+          >
+            ›
+          </Text>
         </Pressable>
       </GlassCard>
 
@@ -318,10 +332,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           >
             {recentProducts.slice(0, 10).map((product) => (
               <View key={product.id} style={styles.recentProductCard}>
-                <ProductCard
-                  product={product}
-                  onPress={() => handleProductPress(product)}
-                />
+                <ProductCard product={product} onPress={() => handleProductPress(product)} />
               </View>
             ))}
           </ScrollView>
@@ -329,7 +340,11 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       )}
 
       {/* Mountain skyline section divider (decorative) */}
-      <View style={styles.dividerSection} accessible={false} importantForAccessibility="no-hide-descendants">
+      <View
+        style={styles.dividerSection}
+        accessible={false}
+        importantForAccessibility="no-hide-descendants"
+      >
         <MountainSkyline variant="sunrise" height={80} testID="home-mountain-skyline" />
         <Text
           style={[

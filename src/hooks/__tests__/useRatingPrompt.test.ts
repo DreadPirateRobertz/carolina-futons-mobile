@@ -64,8 +64,12 @@ describe('useRatingPrompt', () => {
     it('does not prompt before 3rd purchase', async () => {
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
@@ -73,9 +77,15 @@ describe('useRatingPrompt', () => {
     it('prompts on 3rd purchase', async () => {
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).toHaveBeenCalledTimes(1);
     });
@@ -83,10 +93,18 @@ describe('useRatingPrompt', () => {
     it('does not prompt if disabled', async () => {
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.toggleDisabled(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.toggleDisabled();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
@@ -103,7 +121,9 @@ describe('useRatingPrompt', () => {
       );
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
@@ -120,7 +140,9 @@ describe('useRatingPrompt', () => {
       );
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).toHaveBeenCalledTimes(1);
     });
@@ -129,9 +151,15 @@ describe('useRatingPrompt', () => {
       mockIsAvailable.mockResolvedValue(false);
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
@@ -139,7 +167,9 @@ describe('useRatingPrompt', () => {
     it('persists purchase count to AsyncStorage', async () => {
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
 
       expect(mockSetItem).toHaveBeenCalledWith(
         '@cfutons/rating_prompt',
@@ -157,7 +187,9 @@ describe('useRatingPrompt', () => {
     it('increments app open count on foreground', async () => {
       await renderLoaded();
 
-      await act(async () => { appStateCallback?.('active'); });
+      await act(async () => {
+        appStateCallback?.('active');
+      });
 
       expect(mockSetItem).toHaveBeenCalledWith(
         '@cfutons/rating_prompt',
@@ -176,7 +208,9 @@ describe('useRatingPrompt', () => {
       );
       await renderLoaded();
 
-      await act(async () => { appStateCallback?.('active'); });
+      await act(async () => {
+        appStateCallback?.('active');
+      });
 
       expect(mockRequestReview).toHaveBeenCalledTimes(1);
     });
@@ -192,7 +226,9 @@ describe('useRatingPrompt', () => {
       );
       await renderLoaded();
 
-      await act(async () => { appStateCallback?.('background'); });
+      await act(async () => {
+        appStateCallback?.('background');
+      });
 
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
@@ -209,17 +245,23 @@ describe('useRatingPrompt', () => {
       const { result } = await renderLoaded();
       expect(result.current.disabled).toBe(false);
 
-      await act(async () => { await result.current.toggleDisabled(); });
+      await act(async () => {
+        await result.current.toggleDisabled();
+      });
       expect(result.current.disabled).toBe(true);
 
-      await act(async () => { await result.current.toggleDisabled(); });
+      await act(async () => {
+        await result.current.toggleDisabled();
+      });
       expect(result.current.disabled).toBe(false);
     });
 
     it('persists disabled state to AsyncStorage', async () => {
       const { result } = await renderLoaded();
 
-      await act(async () => { await result.current.toggleDisabled(); });
+      await act(async () => {
+        await result.current.toggleDisabled();
+      });
 
       expect(mockSetItem).toHaveBeenCalledWith(
         '@cfutons/rating_prompt',

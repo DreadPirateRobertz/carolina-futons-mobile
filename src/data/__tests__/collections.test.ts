@@ -1,4 +1,4 @@
-import { COLLECTIONS, type EditorialCollection } from '../collections';
+import { COLLECTIONS } from '../collections';
 import { PRODUCTS } from '../products';
 import { type ProductId } from '../productId';
 

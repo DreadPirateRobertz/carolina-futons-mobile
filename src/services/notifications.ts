@@ -66,9 +66,7 @@ export function getDeepLinkForNotification(
  * Supports: product_id, order_id, collection_slug, promo.
  * Returns null if no recognized key is found.
  */
-export function getDeepLinkFromPayload(
-  data?: Record<string, string>,
-): string | null {
+export function getDeepLinkFromPayload(data?: Record<string, string>): string | null {
   if (!data) return null;
 
   if (data.product_id) return `carolinafutons://product/${data.product_id}`;

@@ -3,7 +3,11 @@ import { render } from '@testing-library/react-native';
 import { StaleDataBadge } from '../StaleDataBadge';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-function renderBadge(props: { isStale: boolean } & Partial<Omit<React.ComponentProps<typeof StaleDataBadge>, 'isStale'>>) {
+function renderBadge(
+  props: { isStale: boolean } & Partial<
+    Omit<React.ComponentProps<typeof StaleDataBadge>, 'isStale'>
+  >,
+) {
   return render(
     <ThemeProvider>
       <StaleDataBadge {...props} />
@@ -36,7 +40,9 @@ describe('StaleDataBadge', () => {
   it('shows custom label and updates accessibility label', () => {
     const { getByText, getByTestId } = renderBadge({ isStale: true, label: 'Last updated 5m ago' });
     expect(getByText('Last updated 5m ago')).toBeTruthy();
-    expect(getByTestId('stale-data-badge').props.accessibilityLabel).toContain('last updated 5m ago');
+    expect(getByTestId('stale-data-badge').props.accessibilityLabel).toContain(
+      'last updated 5m ago',
+    );
   });
 
   it('does not render when isStale is false', () => {

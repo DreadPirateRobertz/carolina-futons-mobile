@@ -47,7 +47,7 @@ import { useCameraPermission } from '@/hooks/useCameraPermission';
 import { useAROnboarding } from '@/hooks/useAROnboarding';
 import { useModelLoader } from '@/hooks/useModelLoader';
 import { ModelLoadingOverlay } from '@/components/ModelLoadingOverlay';
-import { useStagedItems, type StagedItem } from '@/hooks/useStagedItems';
+import { useStagedItems } from '@/hooks/useStagedItems';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -265,7 +265,14 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasFloor, detectionState, performHitTest, selectedModel?.id, measurement.state, measurement.placePoint],
+    [
+      hasFloor,
+      detectionState,
+      performHitTest,
+      selectedModel?.id,
+      measurement.state,
+      measurement.placePoint,
+    ],
   );
 
   const captureScene = useCallback(async (): Promise<string | null> => {
@@ -362,13 +369,10 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     }
   }, [compareModel, showComparePicker]);
 
-  const handleSelectCompareModel = useCallback(
-    (model: FutonModel) => {
-      setCompareModel(model);
-      setShowComparePicker(false);
-    },
-    [],
-  );
+  const handleSelectCompareModel = useCallback((model: FutonModel) => {
+    setCompareModel(model);
+    setShowComparePicker(false);
+  }, []);
 
   /** Toggle material/fabric selector overlay */
   const handleToggleMaterialSelector = useCallback(() => {
@@ -433,9 +437,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         <View style={styles.permissionCard}>
           <Text style={styles.permissionIcon}>{'\u{1F4F7}'}</Text>
           <Text style={styles.permissionTitle}>See Futons in Your Room</Text>
-          <Text style={styles.permissionDescription}>
-            {cameraPermission.explanation}
-          </Text>
+          <Text style={styles.permissionDescription}>{cameraPermission.explanation}</Text>
           <TouchableOpacity
             style={styles.permissionButton}
             onPress={cameraPermission.request}
@@ -466,9 +468,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         <View style={styles.permissionCard}>
           <Text style={styles.permissionIcon}>{'\u{1F4F7}'}</Text>
           <Text style={styles.permissionTitle}>Camera Access Needed</Text>
-          <Text style={styles.permissionDescription}>
-            {cameraPermission.explanation}
-          </Text>
+          <Text style={styles.permissionDescription}>{cameraPermission.explanation}</Text>
           <TouchableOpacity
             style={styles.permissionButton}
             onPress={cameraPermission.request}
@@ -500,12 +500,11 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
           <Text style={styles.permissionIcon}>{'\u{1F6AB}'}</Text>
           <Text style={styles.permissionTitle}>Camera Access Required</Text>
           <Text style={styles.permissionDescription}>
-            Camera permission was denied. To use AR features, please enable camera access in your device settings.
+            Camera permission was denied. To use AR features, please enable camera access in your
+            device settings.
           </Text>
           {cameraPermission.settingsInstructions && (
-            <Text style={styles.settingsInstructions}>
-              {cameraPermission.settingsInstructions}
-            </Text>
+            <Text style={styles.settingsInstructions}>{cameraPermission.settingsInstructions}</Text>
           )}
           <TouchableOpacity
             style={styles.permissionButton}
@@ -561,7 +560,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   }
 
   // Camera granted — show AR view with surface detection
-  const showModelLoading = modelLoader.status.state === 'downloading' || modelLoader.status.state === 'checking-cache';
+  const showModelLoading =
+    modelLoader.status.state === 'downloading' || modelLoader.status.state === 'checking-cache';
 
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
@@ -611,11 +611,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             points={measurement.points}
             state={measurement.state}
             distanceDisplay={measurement.distanceDisplay}
-            fits={selectedModel ? measurement.checkFit({
-              width: selectedModel.dimensions.width / 39.3701,
-              depth: selectedModel.dimensions.depth / 39.3701,
-              height: selectedModel.dimensions.height / 39.3701,
-            }) : null}
+            fits={
+              selectedModel
+                ? measurement.checkFit({
+                    width: selectedModel.dimensions.width / 39.3701,
+                    depth: selectedModel.dimensions.depth / 39.3701,
+                    height: selectedModel.dimensions.height / 39.3701,
+                  })
+                : null
+            }
             testID="ar-measurement-overlay"
           />
 
@@ -783,7 +787,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
                 >
                   <Text style={styles.comparePickerItemName}>{model.name}</Text>
                   <Text style={styles.comparePickerItemDims}>
-                    {model.dimensions.width}" W × {model.dimensions.depth}" D × {model.dimensions.height}" H
+                    {model.dimensions.width}" W × {model.dimensions.depth}" D ×{' '}
+                    {model.dimensions.height}" H
                   </Text>
                 </TouchableOpacity>
               ))}

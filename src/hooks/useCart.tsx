@@ -140,9 +140,7 @@ function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
   const model = FUTON_MODELS.find((m) => m.id === modelId);
   if (!model) return null;
 
-  const fabric = fabricId
-    ? FABRICS.find((f) => f.id === fabricId)
-    : FABRICS[0];
+  const fabric = fabricId ? FABRICS.find((f) => f.id === fabricId) : FABRICS[0];
   if (!fabric) return null;
 
   return {
@@ -211,10 +209,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       CART_ADD_ITEM: async (payload: Record<string, unknown>) => {
         const client = wixClientRef.current;
         if (!client) return;
-        await client.addToCart(
-          payload.productId as string,
-          payload.quantity as number,
-        );
+        await client.addToCart(payload.productId as string, payload.quantity as number);
       },
       CART_REMOVE_ITEM: async (payload: Record<string, unknown>) => {
         const client = wixClientRef.current;
@@ -318,11 +313,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           const serverItemIds = new Set(serverItems.map((i) => i.id));
           for (const localItem of localItems) {
             if (!serverItemIds.has(localItem.id)) {
-              await client.addToCart(
-                localItem.model.id,
-                localItem.quantity,
-                localItem.fabric.id,
-              );
+              await client.addToCart(localItem.model.id, localItem.quantity, localItem.fabric.id);
             }
           }
         } catch {
@@ -404,7 +395,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingSync: pendingCount,
       isSyncing,
     }),
-    [state.items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart, pendingCount, isSyncing],
+    [
+      state.items,
+      itemCount,
+      subtotal,
+      syncing,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clearCart,
+      pendingCount,
+      isSyncing,
+    ],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

@@ -105,10 +105,7 @@ export function useCollection(slug: string): {
   const { collections } = useCollections();
   const client = useOptionalWixClient();
 
-  const collection = useMemo(
-    () => collections.find((c) => c.slug === slug),
-    [slug, collections],
-  );
+  const collection = useMemo(() => collections.find((c) => c.slug === slug), [slug, collections]);
 
   const productFetcher = useCallback(async (): Promise<Product[]> => {
     if (!collection) return [];

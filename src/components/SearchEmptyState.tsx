@@ -14,13 +14,7 @@ import { SearchIllustration } from '@/components/illustrations/SearchIllustratio
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import type { ProductCategory } from '@/data/products';
 
-const TRENDING_SEARCHES = [
-  'futon mattress',
-  'queen size',
-  'wall bed',
-  'slipcover',
-  'memory foam',
-];
+const TRENDING_SEARCHES = ['futon mattress', 'queen size', 'wall bed', 'slipcover', 'memory foam'];
 
 interface CategoryItem {
   id: ProductCategory;
@@ -47,14 +41,12 @@ export function SearchEmptyState({
   const accessibilityLabel = query ? `No results for "${query}"` : 'No results found';
 
   return (
-    <View
-      style={styles.content}
-      testID={testID}
-      accessibilityLabel={accessibilityLabel}
-    >
+    <View style={styles.content} testID={testID} accessibilityLabel={accessibilityLabel}>
       <SearchIllustration width={200} height={140} testID="search-empty-illustration" />
 
-      <Text style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}>
+      <Text
+        style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+      >
         {accessibilityLabel}
       </Text>
       <Text style={[styles.message, { color: colors.espressoLight }]}>

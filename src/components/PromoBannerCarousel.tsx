@@ -16,13 +16,10 @@ import {
   type ViewToken,
   type ListRenderItemInfo,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Linking } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
-import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH - 48;
@@ -102,13 +99,11 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
     };
   }, [items.length, startAutoRotate]);
 
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0 && viewableItems[0].index != null) {
-        setActiveIndex(viewableItems[0].index);
-      }
-    },
-  ).current;
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0 && viewableItems[0].index != null) {
+      setActiveIndex(viewableItems[0].index);
+    }
+  }).current;
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
@@ -172,12 +167,7 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
               { backgroundColor: item.accentColor, borderRadius: borderRadius.md },
             ]}
           >
-            <Text
-              style={[
-                styles.bannerCtaText,
-                { fontFamily: typography.bodyFamilyBold },
-              ]}
-            >
+            <Text style={[styles.bannerCtaText, { fontFamily: typography.bodyFamilyBold }]}>
               {item.ctaText}
             </Text>
           </View>
@@ -190,7 +180,10 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
   if (items.length === 0) return null;
 
   return (
-    <View style={[styles.container, { marginHorizontal: spacing.lg }]} testID="promo-banner-carousel">
+    <View
+      style={[styles.container, { marginHorizontal: spacing.lg }]}
+      testID="promo-banner-carousel"
+    >
       <FlatList
         ref={flatListRef}
         data={items}
@@ -219,9 +212,7 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
                 styles.dot,
                 {
                   backgroundColor:
-                    index === activeIndex
-                      ? colors.sunsetCoral
-                      : darkPalette.textMuted,
+                    index === activeIndex ? colors.sunsetCoral : darkPalette.textMuted,
                   width: index === activeIndex ? 20 : 8,
                   borderRadius: borderRadius.pill,
                 },

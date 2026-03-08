@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { SkeletonLoader } from '../SkeletonLoader';
+
 // Mock reanimated
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
@@ -21,8 +23,6 @@ jest.mock('react-native-reanimated', () => {
     Easing: { inOut: () => easingFn, ease: easingFn },
   };
 });
-
-import { SkeletonLoader } from '../SkeletonLoader';
 
 describe('SkeletonLoader', () => {
   it('renders with default dimensions', () => {

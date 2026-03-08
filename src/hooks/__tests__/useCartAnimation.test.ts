@@ -49,9 +49,7 @@ describe('useCartAnimation', () => {
   it('accepts custom duration', () => {
     jest.useFakeTimers();
     const onComplete = jest.fn();
-    const { result } = renderHook(() =>
-      useCartAnimation({ duration: 300, onComplete }),
-    );
+    const { result } = renderHook(() => useCartAnimation({ duration: 300, onComplete }));
     act(() => result.current.trigger());
     act(() => jest.advanceTimersByTime(250));
     expect(onComplete).not.toHaveBeenCalled();

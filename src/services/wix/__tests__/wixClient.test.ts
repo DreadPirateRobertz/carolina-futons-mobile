@@ -634,9 +634,7 @@ describe('queryReviews', () => {
   });
 
   it('throws WixApiError on API failure', async () => {
-    mockFetch.mockReturnValue(
-      mockJsonResponse({ message: 'Collection not found' }, 404),
-    );
+    mockFetch.mockReturnValue(mockJsonResponse({ message: 'Collection not found' }, 404));
 
     const client = new WixClient(TEST_CONFIG);
     await expect(client.queryReviews('asheville-full')).rejects.toThrow(WixApiError);
@@ -724,9 +722,7 @@ describe('createReview', () => {
   });
 
   it('throws WixApiError on failure', async () => {
-    mockFetch.mockReturnValue(
-      mockJsonResponse({ message: 'Unauthorized' }, 401),
-    );
+    mockFetch.mockReturnValue(mockJsonResponse({ message: 'Unauthorized' }, 401));
 
     const client = new WixClient(TEST_CONFIG);
     await expect(

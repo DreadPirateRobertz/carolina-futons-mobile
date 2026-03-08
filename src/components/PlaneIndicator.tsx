@@ -129,19 +129,23 @@ export function PlaneIndicator({
       </Animated.View>
 
       {/* Placement reticle — shown when surface detected/tracking and no furniture placed */}
-      {(detectionState === 'detected' || detectionState === 'tracking') && !hasPlacement && floorPlanes.length > 0 && (
-        <View style={styles.reticleContainer} testID="placement-reticle">
-          <Animated.View style={[styles.reticle, reticleStyle]}>
-            <View style={styles.reticleRing} />
-            <View style={styles.reticleDot} />
-            <View style={[styles.reticleLine, styles.reticleLineH]} />
-            <View style={[styles.reticleLine, styles.reticleLineV]} />
-          </Animated.View>
-          <Text style={styles.reticleHint}>
-            {detectionState === 'detected' ? 'Surface found — tap to place furniture' : 'Tap on the floor to place furniture'}
-          </Text>
-        </View>
-      )}
+      {(detectionState === 'detected' || detectionState === 'tracking') &&
+        !hasPlacement &&
+        floorPlanes.length > 0 && (
+          <View style={styles.reticleContainer} testID="placement-reticle">
+            <Animated.View style={[styles.reticle, reticleStyle]}>
+              <View style={styles.reticleRing} />
+              <View style={styles.reticleDot} />
+              <View style={[styles.reticleLine, styles.reticleLineH]} />
+              <View style={[styles.reticleLine, styles.reticleLineV]} />
+            </Animated.View>
+            <Text style={styles.reticleHint}>
+              {detectionState === 'detected'
+                ? 'Surface found — tap to place furniture'
+                : 'Tap on the floor to place furniture'}
+            </Text>
+          </View>
+        )}
 
       {/* Status badge */}
       <View style={styles.statusContainer}>
