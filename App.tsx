@@ -24,6 +24,7 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
 import { PremiumProvider } from '@/hooks/usePremium';
+import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
 
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -99,6 +100,7 @@ function App() {
               <CartProvider>
                 <WishlistProvider>
                   <NotificationProvider>
+                    <CartAbandonmentBridge />
                     <PremiumProvider>
                     <ErrorBoundary>
                       <NavigationContainer
