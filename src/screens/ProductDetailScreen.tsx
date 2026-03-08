@@ -51,7 +51,7 @@ import { events } from '@/services/analytics';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
-import { modelIdToProductId } from '@/utils';
+import { modelIdToProductId, productId as toProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
@@ -139,7 +139,7 @@ export function ProductDetailScreen({
   // Track product view on mount
   useEffect(() => {
     events.viewProduct(model.id, 'product_detail');
-    const productId = catalogProduct?.id ?? `prod-${model.id}`;
+    const productId = catalogProduct?.id ?? toProductId(`prod-${model.id}`);
     addViewed(productId);
     trackView(productId);
   }, [model.id, catalogProduct?.id, addViewed, trackView]);

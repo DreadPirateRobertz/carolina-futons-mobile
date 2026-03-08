@@ -14,6 +14,7 @@ export { inchesToFeetDisplay } from './dimensions';
 export {
   type ProductId,
   type FutonModelId,
+  productId,
   productIdToModelId,
   modelIdToProductId,
 } from '@/data/productId';

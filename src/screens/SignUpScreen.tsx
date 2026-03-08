@@ -84,6 +84,7 @@ export function SignUpScreen({ onLogin, testID }: Props) {
         keyboardShouldPersistTaps="handled"
         {...({ onFocus: handleFieldFocus } as any)}
         showsVerticalScrollIndicator={false}
+        {...({ onFocus: handleFieldFocus } as any)}
       >
         <Text
           style={[

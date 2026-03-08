@@ -61,6 +61,8 @@ export type AnalyticsEventName =
   | 'ar_lighting_warning'
   | 'ar_material_swap'
   | 'ar_product_picker_open'
+  | 'share_product'
+  | 'rate_app'
   | 'heatmap_tap'
   | 'scroll_depth'
   | 'share_product'
