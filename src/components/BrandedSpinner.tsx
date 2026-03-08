@@ -18,6 +18,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { colors as tokenColors } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   size?: 'small' | 'large';
@@ -26,9 +27,14 @@ interface Props {
 }
 
 function PulsingDot({ delay, size, color }: { delay: number; size: number; color: string }) {
-  const scale = useSharedValue(0.6);
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(reduceMotion ? 0.8 : 0.6);
 
   useEffect(() => {
+    if (reduceMotion) {
+      scale.value = 0.8;
+      return;
+    }
     scale.value = withDelay(
       delay,
       withRepeat(
@@ -39,7 +45,7 @@ function PulsingDot({ delay, size, color }: { delay: number; size: number; color
         -1,
       ),
     );
-  }, [scale, delay]);
+  }, [scale, delay, reduceMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

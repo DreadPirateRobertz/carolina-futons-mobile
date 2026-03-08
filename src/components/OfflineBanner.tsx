@@ -11,6 +11,7 @@ import { StyleSheet, Text } from 'react-native';
 import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useConnectivity } from '@/hooks/useConnectivity';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   testID?: string;
@@ -26,13 +27,14 @@ interface Props {
 export function OfflineBanner({ testID }: Props) {
   const { colors } = useTheme();
   const { isOnline } = useConnectivity();
+  const reduceMotion = useReducedMotion();
 
   if (isOnline) return null;
 
   return (
     <Animated.View
-      entering={SlideInUp.duration(300)}
-      exiting={SlideOutUp.duration(300)}
+      entering={reduceMotion ? undefined : SlideInUp.duration(300)}
+      exiting={reduceMotion ? undefined : SlideOutUp.duration(300)}
       style={[styles.banner, { backgroundColor: colors.espresso }]}
       testID={testID ?? 'offline-banner'}
       accessibilityRole="alert"

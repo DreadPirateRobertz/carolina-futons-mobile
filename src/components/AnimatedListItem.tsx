@@ -9,6 +9,7 @@
 import React from 'react';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ViewStyle } from 'react-native';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   children: React.ReactNode;
@@ -19,11 +20,17 @@ interface Props {
 
 /** Wraps children in a staggered fade-in-down entrance animation based on list index. */
 export function AnimatedListItem({ children, index, delay = 80, style }: Props) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <Animated.View
-      entering={FadeInDown.delay(index * delay)
-        .duration(400)
-        .springify()}
+      entering={
+        reduceMotion
+          ? undefined
+          : FadeInDown.delay(index * delay)
+              .duration(400)
+              .springify()
+      }
       style={style}
     >
       {children}

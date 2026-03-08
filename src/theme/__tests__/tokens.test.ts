@@ -77,8 +77,8 @@ describe('Design Tokens', () => {
         overlay: 'rgba(58, 37, 24, 0.6)',
         success: '#4A7C59',
         error: '#E8845C',
-        muted: '#999999',
-        mutedBrown: '#8B7355',
+        muted: '#666666',
+        mutedBrown: '#6B5740',
       };
       Object.entries(canonical).forEach(([key, value]) => {
         expect(colors[key as keyof typeof colors]).toBe(value);

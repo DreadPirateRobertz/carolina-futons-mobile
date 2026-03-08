@@ -114,7 +114,10 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
           testID={`wishlist-item-${item.id}`}
         />
         {item.priceDrop > 0 && (
-          <View style={[styles.priceDropBadge, { backgroundColor: colors.success }]}>
+          <View
+            style={[styles.priceDropBadge, { backgroundColor: colors.success }]}
+            accessibilityLabel={`Price dropped ${formatPrice(item.priceDrop)}`}
+          >
             <Text style={styles.priceDropText}>{formatPrice(item.priceDrop)} off!</Text>
           </View>
         )}
@@ -141,7 +144,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     () => (
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: colors.espresso }]}>Wishlist</Text>
+          <Text style={[styles.title, { color: colors.espresso }]} accessibilityRole="header">Wishlist</Text>
           <Text style={[styles.count, { color: colors.espressoLight }]}>
             {count} {count === 1 ? 'item' : 'items'}
           </Text>
@@ -156,6 +159,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
               ]}
               testID="wishlist-share"
               accessibilityLabel="Share wishlist"
+              accessibilityHint="Opens the share sheet with your wishlist items"
               accessibilityRole="button"
             >
               <Text style={styles.actionButtonText}>Share</Text>
@@ -169,6 +173,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
               ]}
               testID="wishlist-clear"
               accessibilityLabel="Clear all items from wishlist"
+              accessibilityHint="Removes all products from your wishlist"
               accessibilityRole="button"
             >
               <Text style={[styles.clearButtonText, { color: colors.espressoLight }]}>

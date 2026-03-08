@@ -18,6 +18,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { darkPalette } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   width?: DimensionValue;
@@ -37,15 +38,20 @@ export function SkeletonLoader({
   style,
   testID,
 }: Props) {
-  const shimmer = useSharedValue(0);
+  const reduceMotion = useReducedMotion();
+  const shimmer = useSharedValue(reduceMotion ? 0.5 : 0);
 
   useEffect(() => {
+    if (reduceMotion) {
+      shimmer.value = 0.5;
+      return;
+    }
     shimmer.value = withRepeat(
       withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     );
-  }, [shimmer]);
+  }, [shimmer, reduceMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(shimmer.value, [0, 1], [0.4, 0.9]),

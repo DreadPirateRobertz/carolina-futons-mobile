@@ -20,6 +20,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import type { DetectionPhase } from '@/services/surfaceDetection';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   /** Current detection phase */
@@ -55,6 +56,7 @@ export function SurfaceIndicator({
   isLightingSufficient,
   testID,
 }: Props) {
+  const reduceMotion = useReducedMotion();
   const scanPulse = useSharedValue(0);
   const gridOpacity = useSharedValue(0);
   const readyScale = useSharedValue(1);
@@ -62,31 +64,38 @@ export function SurfaceIndicator({
   // Scanning pulse animation
   useEffect(() => {
     if (phase === 'scanning' || phase === 'initializing') {
-      scanPulse.value = withRepeat(
-        withSequence(
-          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-          withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-        false,
-      );
-      gridOpacity.value = withTiming(0.3, { duration: 300 });
+      if (reduceMotion) {
+        scanPulse.value = 0.5;
+        gridOpacity.value = 0.3;
+      } else {
+        scanPulse.value = withRepeat(
+          withSequence(
+            withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+            withTiming(0, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+          ),
+          -1,
+          false,
+        );
+        gridOpacity.value = withTiming(0.3, { duration: 300 });
+      }
     } else if (phase === 'detected') {
-      scanPulse.value = withTiming(0.5, { duration: 300 });
-      gridOpacity.value = withTiming(0.6, { duration: 500 });
+      scanPulse.value = reduceMotion ? 0.5 : withTiming(0.5, { duration: 300 });
+      gridOpacity.value = reduceMotion ? 0.6 : withTiming(0.6, { duration: 500 });
     } else if (phase === 'ready') {
-      scanPulse.value = withTiming(1, { duration: 300 });
-      gridOpacity.value = withTiming(0.8, { duration: 500 });
-      readyScale.value = withRepeat(
-        withSequence(
-          withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-        false,
-      );
+      scanPulse.value = reduceMotion ? 1 : withTiming(1, { duration: 300 });
+      gridOpacity.value = reduceMotion ? 0.8 : withTiming(0.8, { duration: 500 });
+      if (!reduceMotion) {
+        readyScale.value = withRepeat(
+          withSequence(
+            withTiming(1.05, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
+          ),
+          -1,
+          false,
+        );
+      }
     }
-  }, [phase, scanPulse, gridOpacity, readyScale]);
+  }, [phase, scanPulse, gridOpacity, readyScale, reduceMotion]);
 
   const gridStyle = useAnimatedStyle(() => ({
     opacity: gridOpacity.value,

@@ -70,7 +70,7 @@ export function CollectionsScreen() {
           testID={`collection-card-${item.slug}`}
         />
         {item.earlyAccess && !isPremium && (
-          <View style={styles.earlyAccessOverlay} testID={`early-access-lock-${item.slug}`}>
+          <View style={styles.earlyAccessOverlay} testID={`early-access-lock-${item.slug}`} accessibilityLabel="CF+ Early Access collection">
             <PremiumBadge size="sm" />
             <Text style={[styles.earlyAccessText, { color: colors.espresso }]}>
               CF+ Early Access
@@ -105,6 +105,7 @@ export function CollectionsScreen() {
               marginBottom: spacing.xs,
             },
           ]}
+          accessibilityRole="header"
         >
           Shop the Look
         </Text>

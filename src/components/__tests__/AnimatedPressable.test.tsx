@@ -104,4 +104,19 @@ describe('AnimatedPressable', () => {
     );
     expect(getByTestId('a11y').props.accessibilityRole).toBe('link');
   });
+
+  it('passes accessibilityHint through to pressable', () => {
+    const { getByTestId } = render(
+      <AnimatedPressable
+        testID="hint-btn"
+        accessibilityLabel="Add to cart"
+        accessibilityHint="Adds this item to your shopping cart"
+      >
+        <Text>Add</Text>
+      </AnimatedPressable>,
+    );
+    expect(getByTestId('hint-btn').props.accessibilityHint).toBe(
+      'Adds this item to your shopping cart',
+    );
+  });
 });

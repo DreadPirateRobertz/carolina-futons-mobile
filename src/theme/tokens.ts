@@ -73,10 +73,10 @@ export const colors = {
   success: '#4A7C59',
   /** Re-uses sunsetCoral for error states to keep the palette tight */
   error: '#E8845C',
-  /** Neutral gray for disabled or secondary text */
-  muted: '#999999',
-  /** Warm muted brown for subtle captions and metadata */
-  mutedBrown: '#8B7355',
+  /** Neutral gray for disabled or secondary text (WCAG AA: ≥4.5:1 on offWhite) */
+  muted: '#666666',
+  /** Warm muted brown for subtle captions and metadata (WCAG AA: ≥4.5:1 on offWhite) */
+  mutedBrown: '#6B5740',
 } as const;
 
 /**

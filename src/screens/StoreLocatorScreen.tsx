@@ -140,6 +140,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
         <Text
           style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
           testID="store-locator-title"
+          accessibilityRole="header"
         >
           Find a Showroom
         </Text>

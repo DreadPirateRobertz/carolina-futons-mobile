@@ -17,6 +17,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface ShimmerProps {
   width?: number | string;
@@ -32,15 +33,20 @@ interface ShimmerProps {
  */
 export function Shimmer({ width, height = 16, borderRadius = 4, style, children }: ShimmerProps) {
   const { colors } = useTheme();
-  const opacity = useSharedValue(1);
+  const reduceMotion = useReducedMotion();
+  const opacity = useSharedValue(reduceMotion ? 0.6 : 1);
 
   useEffect(() => {
+    if (reduceMotion) {
+      opacity.value = 0.6;
+      return;
+    }
     opacity.value = withRepeat(
       withTiming(0.3, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       -1,
       true,
     );
-  }, [opacity]);
+  }, [opacity, reduceMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

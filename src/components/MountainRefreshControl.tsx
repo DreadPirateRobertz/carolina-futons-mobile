@@ -12,6 +12,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import {
+  AccessibilityInfo,
   Animated,
   RefreshControl,
   RefreshControlProps,
@@ -56,9 +57,24 @@ export function MountainRefreshIndicator({
   testID?: string;
 }) {
   const bounceAnim = useRef(new Animated.Value(0)).current;
+  const reduceMotionRef = useRef(false);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled().then((v) => {
+      reduceMotionRef.current = v;
+    });
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', (v) => {
+      reduceMotionRef.current = v;
+    });
+    return () => sub.remove();
+  }, []);
 
   useEffect(() => {
     if (refreshing) {
+      if (reduceMotionRef.current) {
+        bounceAnim.setValue(1);
+        return;
+      }
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.spring(bounceAnim, {
@@ -77,6 +93,10 @@ export function MountainRefreshIndicator({
       );
       pulse.start();
       return () => pulse.stop();
+    }
+    if (reduceMotionRef.current) {
+      bounceAnim.setValue(0);
+      return;
     }
     Animated.spring(bounceAnim, {
       toValue: 0,

@@ -28,7 +28,7 @@ describe('Design Tokens', () => {
     expect(colors.mauve).toBe('#C9A0A0');
     expect(colors.success).toBe('#4A7C59');
     expect(colors.overlay).toBe('rgba(58, 37, 24, 0.6)');
-    expect(colors.mutedBrown).toBe('#8B7355');
+    expect(colors.mutedBrown).toBe('#6B5740');
   });
 
   it('exports 4px grid spacing', () => {

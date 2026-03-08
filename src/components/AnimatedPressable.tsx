@@ -11,6 +11,7 @@ import React, { useCallback } from 'react';
 import { Pressable, ViewStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const AnimatedPress = Animated.createAnimatedComponent(Pressable);
 
@@ -23,6 +24,7 @@ interface Props {
   haptic?: 'light' | 'medium' | 'heavy' | 'none';
   scaleDown?: number;
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   accessibilityRole?: 'button' | 'link' | 'tab';
   disabled?: boolean;
 }
@@ -39,9 +41,11 @@ export function AnimatedPressable({
   haptic = 'light',
   scaleDown = 0.96,
   accessibilityLabel,
+  accessibilityHint,
   accessibilityRole = 'button',
   disabled,
 }: Props) {
+  const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -49,12 +53,16 @@ export function AnimatedPressable({
   }));
 
   const handlePressIn = useCallback(() => {
-    scale.value = withSpring(scaleDown, SPRING_CONFIG);
-  }, [scale, scaleDown]);
+    if (!reduceMotion) {
+      scale.value = withSpring(scaleDown, SPRING_CONFIG);
+    }
+  }, [scale, scaleDown, reduceMotion]);
 
   const handlePressOut = useCallback(() => {
-    scale.value = withSpring(1, SPRING_CONFIG);
-  }, [scale]);
+    if (!reduceMotion) {
+      scale.value = withSpring(1, SPRING_CONFIG);
+    }
+  }, [scale, reduceMotion]);
 
   const handlePress = useCallback(() => {
     if (haptic !== 'none') {
@@ -78,6 +86,7 @@ export function AnimatedPressable({
       onPressOut={handlePressOut}
       style={[animatedStyle, style]}
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityRole={accessibilityRole}
       disabled={disabled}
     >

@@ -33,6 +33,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
@@ -92,6 +93,7 @@ export function ProductDetailScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { isPremium } = usePremium();
+  const reduceMotion = useReducedMotion();
 
   const resolvedId = productId ?? slug ?? route?.params?.slug ?? '';
   const { models, getModel } = useFutonModels();
@@ -608,7 +610,7 @@ export function ProductDetailScreen({
             onPress={() => {
               const next = !sizeGuideExpanded;
               setSizeGuideExpanded(next);
-              sizeGuideHeight.value = withTiming(next ? 280 : 0, { duration: 300 });
+              sizeGuideHeight.value = reduceMotion ? (next ? 280 : 0) : withTiming(next ? 280 : 0, { duration: 300 });
             }}
             testID="size-guide-toggle"
             accessibilityRole="button"

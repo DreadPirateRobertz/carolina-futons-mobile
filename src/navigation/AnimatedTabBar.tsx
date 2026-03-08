@@ -12,6 +12,7 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { darkPalette } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const SPRING_CONFIG = { damping: 15, stiffness: 150 };
@@ -29,6 +30,7 @@ function TabButton({
   isFocused: boolean;
   navigation: any;
 }) {
+  const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -50,12 +52,16 @@ function TabButton({
   }, [isFocused, navigation, route]);
 
   const handlePressIn = useCallback(() => {
-    scale.value = withSpring(0.9, SPRING_CONFIG);
-  }, [scale]);
+    if (!reduceMotion) {
+      scale.value = withSpring(0.9, SPRING_CONFIG);
+    }
+  }, [scale, reduceMotion]);
 
   const handlePressOut = useCallback(() => {
-    scale.value = withSpring(1, SPRING_CONFIG);
-  }, [scale]);
+    if (!reduceMotion) {
+      scale.value = withSpring(1, SPRING_CONFIG);
+    }
+  }, [scale, reduceMotion]);
 
   const { options } = descriptor;
   const label = options.tabBarLabel ?? route.name;

@@ -18,6 +18,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { DetectedPlane, DetectionState } from '@/services/surfaceDetection';
 import type { ShadowParams } from '@/services/lightingEstimation';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   planes: DetectedPlane[];
@@ -42,6 +43,7 @@ export function PlaneIndicator({
   hasPlacement,
   testID,
 }: Props) {
+  const reduceMotion = useReducedMotion();
   const scanLinePosition = useSharedValue(0);
   const planeOpacity = useSharedValue(0);
   const reticleScale = useSharedValue(1);
@@ -49,39 +51,45 @@ export function PlaneIndicator({
   // Animate scan line during scanning phase
   useEffect(() => {
     if (detectionState === 'scanning') {
-      scanLinePosition.value = withRepeat(
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        -1,
-        true,
-      );
+      if (reduceMotion) {
+        scanLinePosition.value = 0.5;
+      } else {
+        scanLinePosition.value = withRepeat(
+          withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+          -1,
+          true,
+        );
+      }
     } else {
-      scanLinePosition.value = withTiming(0.5, { duration: 300 });
+      scanLinePosition.value = reduceMotion ? 0.5 : withTiming(0.5, { duration: 300 });
     }
-  }, [detectionState, scanLinePosition]);
+  }, [detectionState, scanLinePosition, reduceMotion]);
 
   // Fade in planes when detected
   useEffect(() => {
     if (detectionState === 'detected' || detectionState === 'tracking') {
-      planeOpacity.value = withTiming(1, { duration: 500 });
+      planeOpacity.value = reduceMotion ? 1 : withTiming(1, { duration: 500 });
     } else {
-      planeOpacity.value = withTiming(0, { duration: 300 });
+      planeOpacity.value = reduceMotion ? 0 : withTiming(0, { duration: 300 });
     }
-  }, [detectionState, planeOpacity]);
+  }, [detectionState, planeOpacity, reduceMotion]);
 
   // Pulse reticle in detected/tracking state
   useEffect(() => {
     if ((detectionState === 'detected' || detectionState === 'tracking') && !hasPlacement) {
-      reticleScale.value = withRepeat(
-        withSequence(
-          withTiming(1.15, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
-        ),
-        -1,
-      );
+      if (!reduceMotion) {
+        reticleScale.value = withRepeat(
+          withSequence(
+            withTiming(1.15, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+          ),
+          -1,
+        );
+      }
     } else {
-      reticleScale.value = withTiming(1, { duration: 200 });
+      reticleScale.value = reduceMotion ? 1 : withTiming(1, { duration: 200 });
     }
-  }, [detectionState, hasPlacement, reticleScale]);
+  }, [detectionState, hasPlacement, reticleScale, reduceMotion]);
 
   const scanLineStyle = useAnimatedStyle(() => ({
     top: `${scanLinePosition.value * 100}%` as `${number}%`,

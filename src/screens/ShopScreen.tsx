@@ -11,6 +11,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -89,6 +90,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const scrollPerf = useScrollPerformance('ShopScreen');
+  const reduceMotion = useReducedMotion();
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -112,12 +114,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={FadeInDown.delay(index * 80).duration(400)}
+        entering={reduceMotion ? undefined : FadeInDown.delay(index * 80).duration(400)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress],
+    [handleProductPress, reduceMotion],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -139,6 +141,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
                 fontFamily: typography.headingFamily,
               },
             ]}
+            accessibilityRole="header"
           >
             Shop
           </Text>

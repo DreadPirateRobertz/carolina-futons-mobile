@@ -22,6 +22,7 @@ import {
   Platform,
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
@@ -476,6 +477,7 @@ function CartItemRow({
 }) {
   const lineTotal = item.unitPrice * item.quantity;
   const swipeableRef = useRef<Swipeable>(null);
+  const reduceMotion = useReducedMotion();
 
   const handleSwipeOpen = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -495,16 +497,20 @@ function CartItemRow({
   }));
 
   const handleDecrement = useCallback(() => {
-    decrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
-    decrementScale.value = 0.85;
+    if (!reduceMotion) {
+      decrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
+      decrementScale.value = 0.85;
+    }
     onDecrement();
-  }, [onDecrement, decrementScale]);
+  }, [onDecrement, decrementScale, reduceMotion]);
 
   const handleIncrement = useCallback(() => {
-    incrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
-    incrementScale.value = 0.85;
+    if (!reduceMotion) {
+      incrementScale.value = withSpring(1, { damping: 4, stiffness: 300 });
+      incrementScale.value = 0.85;
+    }
     onIncrement();
-  }, [onIncrement, incrementScale]);
+  }, [onIncrement, incrementScale, reduceMotion]);
 
   return (
     <Swipeable

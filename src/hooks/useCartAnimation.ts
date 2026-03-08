@@ -13,6 +13,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useReducedMotion } from './useReducedMotion';
 
 interface Options {
   duration?: number;
@@ -25,6 +26,7 @@ export function useCartAnimation(options?: Options) {
   const duration = options?.duration ?? DEFAULT_DURATION;
   const onCompleteRef = useRef(options?.onComplete);
   onCompleteRef.current = options?.onComplete;
+  const reduceMotion = useReducedMotion();
 
   const [isAnimating, setIsAnimating] = useState(false);
   const scale = useSharedValue(1);
@@ -34,25 +36,27 @@ export function useCartAnimation(options?: Options) {
     if (isAnimating) return;
     setIsAnimating(true);
 
-    // Scale: 1 -> 1.15 -> 0.95 -> 1.0 (bounce)
-    scale.value = withSequence(
-      withSpring(1.15, { damping: 8, stiffness: 400 }),
-      withSpring(0.95, { damping: 10, stiffness: 300 }),
-      withSpring(1.0, { damping: 12, stiffness: 200 }),
-    );
+    if (!reduceMotion) {
+      // Scale: 1 -> 1.15 -> 0.95 -> 1.0 (bounce)
+      scale.value = withSequence(
+        withSpring(1.15, { damping: 8, stiffness: 400 }),
+        withSpring(0.95, { damping: 10, stiffness: 300 }),
+        withSpring(1.0, { damping: 12, stiffness: 200 }),
+      );
 
-    // Brief opacity dip for "flash" effect
-    opacity.value = withSequence(
-      withTiming(0.7, { duration: duration * 0.2 }),
-      withTiming(1.0, { duration: duration * 0.3 }),
-    );
+      // Brief opacity dip for "flash" effect
+      opacity.value = withSequence(
+        withTiming(0.7, { duration: duration * 0.2 }),
+        withTiming(1.0, { duration: duration * 0.3 }),
+      );
+    }
 
-    // Complete after duration
+    // Complete after duration (or immediately if reduce motion)
     setTimeout(() => {
       setIsAnimating(false);
       onCompleteRef.current?.();
-    }, duration);
-  }, [isAnimating, scale, opacity, duration]);
+    }, reduceMotion ? 0 : duration);
+  }, [isAnimating, scale, opacity, duration, reduceMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
