@@ -8,7 +8,7 @@
  * Preferences (not yet wired). Sign-out lives at the bottom.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -20,6 +20,8 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
@@ -68,6 +70,29 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  const [showDebugMenu, setShowDebugMenu] = useState(false);
+  const versionTapCount = useRef(0);
+  const versionTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const appVersion = Application.nativeApplicationVersion ?? Constants.expoConfig?.version ?? '0.0.0';
+  const buildNumber = Application.nativeBuildVersion ?? Constants.expoConfig?.ios?.buildNumber ?? '1';
+  const environment = __DEV__ ? 'development' : (Constants.expoConfig?.extra?.environment ?? 'production');
+
+  const handleVersionTap = useCallback(() => {
+    versionTapCount.current += 1;
+    if (versionTapTimer.current) clearTimeout(versionTapTimer.current);
+    if (versionTapCount.current >= 5) {
+      versionTapCount.current = 0;
+      setShowDebugMenu((prev) => !prev);
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    } else {
+      versionTapTimer.current = setTimeout(() => {
+        versionTapCount.current = 0;
+      }, 1500);
+    }
+  }, []);
 
   const startEditing = useCallback(() => {
     if (!user) return;
@@ -503,7 +528,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
         </View>
 
         {/* Restore purchases */}
-        <View style={{ alignItems: 'center', marginTop: spacing.lg, paddingBottom: spacing.xxl }}>
+        <View style={{ alignItems: 'center', marginTop: spacing.lg }}>
           <TouchableOpacity
             onPress={handleRestore}
             disabled={restoring}
@@ -515,6 +540,43 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
               Restore Purchases
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* App version info */}
+        <View style={styles.versionContainer}>
+          <TouchableOpacity
+            onPress={handleVersionTap}
+            activeOpacity={0.8}
+            testID="app-version-tap"
+            accessibilityLabel={`App version ${appVersion}, build ${buildNumber}`}
+          >
+            <Text
+              style={[styles.versionText, { color: darkPalette.textMuted }]}
+              testID="app-version-text"
+            >
+              v{appVersion} ({buildNumber})
+            </Text>
+          </TouchableOpacity>
+
+          {showDebugMenu && (
+            <View style={styles.debugMenu} testID="debug-menu">
+              <Text style={[styles.debugTitle, { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold }]}>
+                Debug Info
+              </Text>
+              <Text style={[styles.debugLine, { color: darkPalette.textMuted }]}>
+                Environment: {environment}
+              </Text>
+              <Text style={[styles.debugLine, { color: darkPalette.textMuted }]}>
+                Expo SDK: {Constants.expoConfig?.sdkVersion ?? 'N/A'}
+              </Text>
+              <Text style={[styles.debugLine, { color: darkPalette.textMuted }]}>
+                Platform: {Platform.OS} {Platform.Version}
+              </Text>
+              <Text style={[styles.debugLine, { color: darkPalette.textMuted }]}>
+                Bundle ID: {Application.applicationId ?? 'N/A'}
+              </Text>
+            </View>
+          )}
         </View>
       </KeyboardAwareScrollView>
     </View>
@@ -757,5 +819,30 @@ const styles = StyleSheet.create({
   restoreText: {
     fontSize: 15,
     fontWeight: '600',
+  },
+  versionContainer: {
+    alignItems: 'center',
+    paddingTop: 24,
+    paddingBottom: 40,
+  },
+  versionText: {
+    fontSize: 12,
+    fontWeight: '400',
+  },
+  debugMenu: {
+    marginTop: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  debugTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  debugLine: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

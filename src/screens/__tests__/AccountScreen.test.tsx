@@ -5,6 +5,12 @@ import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { PremiumProvider } from '@/hooks/usePremium';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('expo-application', () => ({
+  nativeApplicationVersion: '1.2.3',
+  nativeBuildVersion: '42',
+  applicationId: 'com.carolinafutons.app',
+}));
+
 const mockMember = {
   id: 'member-1',
   email: 'test@test.com',
@@ -340,6 +346,50 @@ describe('AccountScreen', () => {
       await waitFor(() => {
         expect(queryByTestId('privacy-section-title')).toBeNull();
       });
+    });
+
+    it('shows app version text', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('app-version-text')).toBeTruthy();
+      });
+      expect(getByTestId('app-version-text').props.children).toEqual(['v', '1.2.3', ' (', '42', ')']);
+    });
+
+    it('does not show debug menu by default', async () => {
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('app-version-text')).toBeTruthy();
+      });
+      expect(queryByTestId('debug-menu')).toBeNull();
+    });
+
+    it('shows debug menu after tapping version 5 times', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('app-version-tap')).toBeTruthy();
+      });
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(getByTestId('app-version-tap'));
+      }
+      expect(getByTestId('debug-menu')).toBeTruthy();
+    });
+
+    it('hides debug menu after tapping version 5 more times', async () => {
+      const { getByTestId, queryByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('app-version-tap')).toBeTruthy();
+      });
+      // Show
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(getByTestId('app-version-tap'));
+      }
+      expect(getByTestId('debug-menu')).toBeTruthy();
+      // Hide
+      for (let i = 0; i < 5; i++) {
+        fireEvent.press(getByTestId('app-version-tap'));
+      }
+      expect(queryByTestId('debug-menu')).toBeNull();
     });
   });
 });
