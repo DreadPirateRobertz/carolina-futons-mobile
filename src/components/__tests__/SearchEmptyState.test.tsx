@@ -92,31 +92,31 @@ describe('SearchEmptyState', () => {
   });
 
   describe('Trending Products', () => {
-    it('renders trending section', () => {
-      const { getByTestId } = renderEmpty();
+    it('renders trending section when onTrendingPress provided', () => {
+      const { getByTestId } = renderEmpty({ onTrendingPress: jest.fn() });
       expect(getByTestId('trending-section')).toBeTruthy();
     });
 
     it('shows trending header text', () => {
-      const { getByText } = renderEmpty();
+      const { getByText } = renderEmpty({ onTrendingPress: jest.fn() });
       expect(getByText(/trending/i)).toBeTruthy();
     });
 
     it('renders trending product chips', () => {
-      const { getByTestId } = renderEmpty();
+      const { getByTestId } = renderEmpty({ onTrendingPress: jest.fn() });
       expect(getByTestId('trending-chip-0')).toBeTruthy();
     });
 
-    it('calls onTrendingPress when trending chip tapped', () => {
+    it('calls onTrendingPress with correct term when trending chip tapped', () => {
       const onTrendingPress = jest.fn();
       const { getByTestId } = renderEmpty({ onTrendingPress });
       fireEvent.press(getByTestId('trending-chip-0'));
-      expect(onTrendingPress).toHaveBeenCalledTimes(1);
+      expect(onTrendingPress).toHaveBeenCalledWith('futon mattress');
     });
 
-    it('does not crash when onTrendingPress not provided', () => {
-      const { getByTestId } = renderEmpty();
-      expect(() => fireEvent.press(getByTestId('trending-chip-0'))).not.toThrow();
+    it('hides trending section when onTrendingPress not provided', () => {
+      const { queryByTestId } = renderEmpty();
+      expect(queryByTestId('trending-section')).toBeNull();
     });
   });
 
@@ -135,9 +135,10 @@ describe('SearchEmptyState', () => {
   });
 
   describe('Edge Cases', () => {
-    it('handles empty query string', () => {
-      const { getByTestId } = renderEmpty({ query: '' });
+    it('handles empty query string with fallback message', () => {
+      const { getByTestId, getByText } = renderEmpty({ query: '' });
       expect(getByTestId('search-empty-state')).toBeTruthy();
+      expect(getByText('No results found')).toBeTruthy();
     });
 
     it('handles query with special characters', () => {

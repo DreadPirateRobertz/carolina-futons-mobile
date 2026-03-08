@@ -77,7 +77,7 @@ export function SearchEmptyState({
       </View>
 
       {/* Trending searches */}
-      <View style={[styles.trendingSection, { marginTop: spacing.lg }]} testID="trending-section">
+      {onTrendingPress && <View style={[styles.trendingSection, { marginTop: spacing.lg }]} testID="trending-section">
         <Text
           style={[styles.trendingTitle, { color: colors.espressoLight }]}
           accessibilityRole="header"
@@ -95,7 +95,7 @@ export function SearchEmptyState({
                   borderRadius: borderRadius.pill,
                 },
               ]}
-              onPress={() => onTrendingPress?.(term)}
+              onPress={() => onTrendingPress(term)}
               testID={`trending-chip-${index}`}
               accessibilityRole="button"
               accessibilityLabel={`Search for ${term}`}
@@ -104,7 +104,7 @@ export function SearchEmptyState({
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </View>}
     </ScrollView>
   );
 }

@@ -182,8 +182,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     (term: string) => {
       setSearchQuery(term);
       addSearch(term);
+      events.search(term, products.length);
     },
-    [setSearchQuery, addSearch],
+    [setSearchQuery, addSearch, products.length],
   );
 
   const renderEmpty = useCallback(
