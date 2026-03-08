@@ -122,6 +122,7 @@ export function PriceRangeSlider({ min, max, low, high, onChangeRange, testID }:
               left: `${lowPct}%`,
               backgroundColor: colors.white,
               borderColor: colors.mountainBlue,
+              shadowColor: colors.espresso,
             },
           ]}
           testID="price-range-low-thumb"
@@ -138,6 +139,7 @@ export function PriceRangeSlider({ min, max, low, high, onChangeRange, testID }:
               left: `${highPct}%`,
               backgroundColor: colors.white,
               borderColor: colors.mountainBlue,
+              shadowColor: colors.espresso,
             },
           ]}
           testID="price-range-high-thumb"
@@ -184,7 +186,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     position: 'absolute',
     marginLeft: -THUMB_SIZE / 2,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.15,
     shadowRadius: 3,

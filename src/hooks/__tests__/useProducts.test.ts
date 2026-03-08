@@ -198,6 +198,15 @@ describe('useProducts', () => {
       }
     });
 
+    it('sorts by popular (review count descending)', async () => {
+      const { result } = await renderLoaded();
+      act(() => result.current.setSortBy('popular'));
+      const counts = result.current.products.map((p) => p.reviewCount ?? 0);
+      for (let i = 1; i < counts.length; i++) {
+        expect(counts[i]).toBeLessThanOrEqual(counts[i - 1]);
+      }
+    });
+
     it('resets page when sort changes', async () => {
       const { result } = await renderLoaded();
       act(() => result.current.loadMore());

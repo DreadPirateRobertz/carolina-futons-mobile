@@ -65,6 +65,7 @@ export function CategoryScreen({
     activeFilterCount,
     availableFabrics,
     priceExtent,
+    fetchError,
     setSortBy,
     setFilters,
     setSelectedCategory,
@@ -114,6 +115,18 @@ export function CategoryScreen({
             {products.length} {products.length === 1 ? 'product' : 'products'}
           </Text>
         </View>
+        {/* Fetch error banner */}
+        {fetchError && (
+          <View
+            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight ?? '#FEE2E2' }]}
+            testID="category-fetch-error"
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark ?? '#991B1B' }]}>
+              Unable to load products. Pull to refresh.
+            </Text>
+          </View>
+        )}
         <SortPicker
           value={sortBy}
           onChange={setSortBy}
@@ -127,7 +140,7 @@ export function CategoryScreen({
         />
       </View>
     ),
-    [title, products.length, sortBy, activeFilterCount, colors, spacing, onBack, setSortBy],
+    [title, products.length, sortBy, activeFilterCount, fetchError, colors, spacing, onBack, setSortBy],
   );
 
   const renderEmpty = useCallback(
@@ -207,5 +220,17 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: 10,
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

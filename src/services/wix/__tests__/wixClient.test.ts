@@ -825,6 +825,36 @@ describe('transformWixProduct', () => {
     expect(product.fabricOptions).toEqual(['Linen', 'Velvet']);
   });
 
+  it('infers "full" size from product name', () => {
+    const wix = { ...WIX_PRODUCT_FIXTURE, name: 'The Asheville Full Futon' };
+    const product = transformWixProduct(wix);
+    expect(product.size).toBe('full');
+  });
+
+  it('infers "queen" size from product name', () => {
+    const wix = { ...WIX_PRODUCT_FIXTURE, name: 'The Biltmore Queen Sleeper' };
+    const product = transformWixProduct(wix);
+    expect(product.size).toBe('queen');
+  });
+
+  it('infers "twin" size from product name', () => {
+    const wix = { ...WIX_PRODUCT_FIXTURE, name: 'Pisgah Twin Daybed' };
+    const product = transformWixProduct(wix);
+    expect(product.size).toBe('twin');
+  });
+
+  it('does not infer size from partial word matches (e.g. "Beautiful" ≠ "full")', () => {
+    const wix = { ...WIX_PRODUCT_FIXTURE, name: 'Beautiful Linen Pillow' };
+    const product = transformWixProduct(wix);
+    expect(product.size).toBeUndefined();
+  });
+
+  it('returns undefined size when name has no size keyword', () => {
+    const wix = { ...WIX_PRODUCT_FIXTURE, name: 'Organic Cotton Cover' };
+    const product = transformWixProduct(wix);
+    expect(product.size).toBeUndefined();
+  });
+
   it('defaults rating and reviewCount to 0', () => {
     const product = transformWixProduct(WIX_PRODUCT_FIXTURE);
     // Wix products don't include rating in product query — that comes separately
