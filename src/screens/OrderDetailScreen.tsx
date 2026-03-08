@@ -213,7 +213,7 @@ export function OrderDetailScreen({
   const orderId = orderIdProp ?? route?.params?.orderId ?? '';
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { addItem } = useCart();
-  const { orders, getOrder, refresh, isLoading } = useOrders();
+  const { orders, getOrder, refresh, isLoading, error } = useOrders();
   const { getModel, getFabric } = useFutonModels();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -261,6 +261,19 @@ export function OrderDetailScreen({
 
   if (!ordersProp && isLoading && orders.length === 0 && !order) {
     return <SkeletonOrderDetail testID="order-detail-skeleton" />;
+  }
+
+  if (!ordersProp && error && !order) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
+        testID="order-detail-error"
+      >
+        <Text style={[styles.notFound, { color: colors.espressoLight }]}>
+          Failed to load order. Pull down to retry.
+        </Text>
+      </View>
+    );
   }
 
   if (!order) {
