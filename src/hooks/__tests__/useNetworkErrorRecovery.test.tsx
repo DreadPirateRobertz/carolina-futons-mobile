@@ -135,4 +135,56 @@ describe('useNetworkErrorRecovery', () => {
 
     expect(result.current.error).toBe('Something went wrong. Please try again.');
   });
+
+  it('guards against concurrent retry calls', async () => {
+    const fetcher = jest.fn()
+      .mockRejectedValueOnce(new Error('Failed'))
+      .mockResolvedValueOnce({ data: 'ok' });
+
+    const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
+
+    await act(async () => {
+      await result.current.execute().catch(() => {});
+    });
+
+    let p1: Promise<unknown>;
+    let p2: Promise<unknown>;
+    await act(async () => {
+      p1 = result.current.retry();
+      p2 = result.current.retry(); // second call should be no-op
+      await Promise.all([p1!, p2!]);
+    });
+
+    // fetcher called once for initial execute + once for retry (not twice)
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('marks data stale after fetch failure even when online', async () => {
+    const fetcher = jest.fn().mockRejectedValue(new Error('Server error'));
+    const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
+
+    await act(async () => {
+      await result.current.execute().catch(() => {});
+    });
+
+    expect(result.current.isStale).toBe(true);
+  });
+
+  it('clears stale after successful fetch', async () => {
+    const fetcher = jest.fn()
+      .mockRejectedValueOnce(new Error('Failed'))
+      .mockResolvedValueOnce({ data: 'fresh' });
+
+    const { result } = renderHook(() => useNetworkErrorRecovery(fetcher), { wrapper });
+
+    await act(async () => {
+      await result.current.execute().catch(() => {});
+    });
+    expect(result.current.isStale).toBe(true);
+
+    await act(async () => {
+      await result.current.retry();
+    });
+    expect(result.current.isStale).toBe(false);
+  });
 });

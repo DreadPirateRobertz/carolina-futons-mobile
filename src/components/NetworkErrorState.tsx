@@ -33,6 +33,7 @@ export function NetworkErrorState({
       style={[styles.container, compact && styles.compact, { padding: spacing.lg }]}
       testID={testID}
       accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
       accessibilityLabel={message}
     >
       <Text

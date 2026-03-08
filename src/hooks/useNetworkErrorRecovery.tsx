@@ -24,8 +24,10 @@ export function useNetworkErrorRecovery<T = unknown>(
 ): UseNetworkErrorRecoveryResult<T> {
   const [error, setError] = useState<string | null>(null);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [fetchedStale, setFetchedStale] = useState(false);
   const { isOnline } = useConnectivity();
   const lastArgsRef = useRef<unknown[]>([]);
+  const isRetryingRef = useRef(false);
 
   const execute = useCallback(
     async (...args: unknown[]): Promise<T> => {
@@ -33,28 +35,33 @@ export function useNetworkErrorRecovery<T = unknown>(
       try {
         const result = await fetcher(...args);
         setError(null);
+        setFetchedStale(false);
         return result;
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Something went wrong. Please try again.';
         setError(message);
+        setFetchedStale(true);
         throw err;
       }
     },
     [fetcher],
   );
 
-  const retry = useCallback(async (): Promise<T | void> => {
-    setIsRetrying(true);
-    try {
-      const result = await execute(...lastArgsRef.current);
-      return result;
-    } catch {
-      // error is already set by execute
-    } finally {
-      setIsRetrying(false);
-    }
-  }, [execute]);
+  const retry = useCallback(
+    (): Promise<T | void> => {
+      if (isRetryingRef.current) return Promise.resolve();
+      isRetryingRef.current = true;
+      setIsRetrying(true);
+      return execute(...lastArgsRef.current)
+        .catch(() => undefined)
+        .finally(() => {
+          isRetryingRef.current = false;
+          setIsRetrying(false);
+        });
+    },
+    [execute],
+  );
 
   const clearError = useCallback(() => {
     setError(null);
@@ -63,7 +70,7 @@ export function useNetworkErrorRecovery<T = unknown>(
   return {
     error,
     isRetrying,
-    isStale: !isOnline,
+    isStale: !isOnline || fetchedStale,
     execute,
     retry,
     clearError,
