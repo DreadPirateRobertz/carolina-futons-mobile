@@ -48,6 +48,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { EmptyState } from '@/components/EmptyState';
 import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
+import { useRecommendations } from '@/hooks/useRecommendations';
+import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
@@ -70,6 +72,7 @@ interface Props {
   onBack?: () => void;
   onOpenAR?: (modelId: string) => void;
   onViewAllReviews?: (productId: string) => void;
+  onRelatedProductPress?: (product: import('@/data/products').Product) => void;
   testID?: string;
 }
 
@@ -82,6 +85,7 @@ export function ProductDetailScreen({
   onBack,
   onOpenAR,
   onViewAllReviews,
+  onRelatedProductPress,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
@@ -108,6 +112,7 @@ export function ProductDetailScreen({
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { isAuthenticated } = useAuth();
+  const { similarItems, trackView } = useRecommendations();
   const {
     reviews,
     summary: reviewSummary,
@@ -130,7 +135,8 @@ export function ProductDetailScreen({
     events.viewProduct(model.id, 'product_detail');
     const productId = catalogProduct?.id ?? `prod-${model.id}`;
     addViewed(productId);
-  }, [model.id, catalogProduct?.id, addViewed]);
+    trackView(productId);
+  }, [model.id, catalogProduct?.id, addViewed, trackView]);
 
   // --- Parallax scroll tracking ---
   const scrollY = useSharedValue(0);
@@ -852,6 +858,22 @@ export function ProductDetailScreen({
             </Text>
           </AnimatedPressable>
         </View>
+
+        {/* You May Also Like */}
+        {similarItems.length > 0 && (
+          <View
+            style={[styles.section, { marginTop: spacing.md }]}
+            testID="related-products"
+            accessibilityLabel="You May Also Like"
+          >
+            <RecommendationCarousel
+              title="You May Also Like"
+              products={similarItems}
+              onProductPress={onRelatedProductPress}
+              testID="related-carousel"
+            />
+          </View>
+        )}
 
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />

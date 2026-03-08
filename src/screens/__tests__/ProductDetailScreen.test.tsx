@@ -46,6 +46,23 @@ jest.mock('@/hooks/useAuth', () => ({
   AuthProvider: ({ children }: any) => children,
 }));
 
+const mockTrackView = jest.fn();
+const mockSimilarItems = PRODUCTS.filter((p) => p.category === 'futons').slice(0, 4);
+const mockRecommendationsValue = {
+  recentlyViewed: [],
+  similarItems: mockSimilarItems,
+  alsoBoought: [],
+  recommendedForYou: [],
+  trackView: mockTrackView,
+  trackPurchase: jest.fn(),
+  clearHistory: jest.fn(),
+};
+
+jest.mock('@/hooks/useRecommendations', () => ({
+  useRecommendations: () => mockRecommendationsValue,
+  RecommendationsProvider: ({ children }: any) => children,
+}));
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
@@ -826,6 +843,67 @@ describe('ProductDetailScreen', () => {
         expect(getByTestId('size-diagram')).toBeTruthy();
         unmount();
       }
+    });
+  });
+
+  describe('Related Products (You May Also Like)', () => {
+    beforeEach(() => {
+      mockTrackView.mockClear();
+      mockRecommendationsValue.similarItems = mockSimilarItems;
+    });
+
+    it('renders You May Also Like section', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('related-products')).toBeTruthy();
+    });
+
+    it('shows You May Also Like title', () => {
+      const { getByText } = renderDetail({ productId: 'asheville-full' });
+      expect(getByText('You May Also Like')).toBeTruthy();
+    });
+
+    it('renders recommendation carousel with similar products', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('recommendation-list')).toBeTruthy();
+    });
+
+    it('renders product cards for similar items', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      for (const product of mockSimilarItems) {
+        expect(getByTestId(`rec-card-${product.id}`)).toBeTruthy();
+      }
+    });
+
+    it('calls onRelatedProductPress when a related product is tapped', () => {
+      const onRelatedProductPress = jest.fn();
+      const { getByTestId } = renderDetail({
+        productId: 'asheville-full',
+        onRelatedProductPress,
+      });
+      fireEvent.press(getByTestId(`rec-card-${mockSimilarItems[0].id}`));
+      expect(onRelatedProductPress).toHaveBeenCalledWith(mockSimilarItems[0]);
+    });
+
+    it('does not crash when onRelatedProductPress not provided', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(() => fireEvent.press(getByTestId(`rec-card-${mockSimilarItems[0].id}`))).not.toThrow();
+    });
+
+    it('hides section when no similar items', () => {
+      mockRecommendationsValue.similarItems = [];
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('related-products')).toBeNull();
+    });
+
+    it('tracks product view on mount', () => {
+      renderDetail({ productId: 'asheville-full' });
+      expect(mockTrackView).toHaveBeenCalledWith('prod-asheville-full');
+    });
+
+    it('related products section has accessibility', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const section = getByTestId('related-products');
+      expect(section.props.accessibilityLabel).toBe('You May Also Like');
     });
   });
 
