@@ -83,14 +83,31 @@ describe('ShopScreen', () => {
     it('shows empty state for no results', async () => {
       const { getByTestId, getByText } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
-      expect(getByTestId('shop-empty')).toBeTruthy();
-      expect(getByText('No products found')).toBeTruthy();
+      expect(getByTestId('search-empty-state')).toBeTruthy();
+      expect(getByText(/No results for "xyznonexistent"/)).toBeTruthy();
     });
 
     it('shows search-specific empty message', async () => {
       const { getByTestId, getByText } = await renderShop();
       fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
       expect(getByText(/No results for "xyznonexistent"/)).toBeTruthy();
+    });
+
+    it('clears search and sets category when empty-state category chip pressed', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
+      fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
+      expect(getByTestId('search-empty-state')).toBeTruthy();
+      fireEvent.press(getByTestId('category-chip-futons'));
+      expect(queryByTestId('search-empty-state')).toBeNull();
+    });
+
+    it('sets search query when trending chip pressed', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
+      fireEvent.changeText(getByTestId('search-input'), 'xyznonexistent');
+      expect(getByTestId('search-empty-state')).toBeTruthy();
+      fireEvent.press(getByTestId('trending-chip-0'));
+      // Trending chip sets search to 'futon mattress', which should match products
+      expect(queryByTestId('search-empty-state')).toBeNull();
     });
   });
 

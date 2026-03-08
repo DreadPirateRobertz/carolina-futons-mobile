@@ -26,6 +26,7 @@ import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { SearchEmptyState } from '@/components/SearchEmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 interface Props {
@@ -70,7 +71,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     refresh();
-    // Allow animation to play briefly since refresh() is synchronous
+    // Allow animation to play briefly while async fetch completes
     setTimeout(() => setRefreshing(false), 600);
   }, [refresh]);
 
@@ -169,34 +170,59 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ],
   );
 
+  const handleCategoryChipPress = useCallback(
+    (categoryId: ProductCategory) => {
+      setSelectedCategory(categoryId);
+      setSearchQuery('');
+    },
+    [setSelectedCategory, setSearchQuery],
+  );
+
+  const handleTrendingPress = useCallback(
+    (term: string) => {
+      setSearchQuery(term);
+      addSearch(term);
+      // products.length is 0 here (we're in empty state); log 0 intentionally
+      // as this is a new search, not a results count
+      events.search(term, 0);
+    },
+    [setSearchQuery, addSearch],
+  );
+
   const renderEmpty = useCallback(
-    () => (
-      <View
-        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
-        testID="shop-empty"
-      >
-        <Text style={[styles.emptyIcon]}>🔍</Text>
-        <Text
-          style={[
-            styles.emptyTitle,
-            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-          ]}
+    () =>
+      searchQuery ? (
+        <SearchEmptyState
+          query={searchQuery}
+          categories={categories}
+          onCategoryPress={handleCategoryChipPress}
+          onTrendingPress={handleTrendingPress}
+        />
+      ) : (
+        <View
+          style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+          testID="shop-empty"
         >
-          No products found
-        </Text>
-        <Text
-          style={[
-            styles.emptyMessage,
-            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-          ]}
-        >
-          {searchQuery
-            ? `No results for "${searchQuery}". Try a different search.`
-            : 'No products in this category yet.'}
-        </Text>
-      </View>
-    ),
-    [searchQuery, colors],
+          <Text style={[styles.emptyIcon]}>🔍</Text>
+          <Text
+            style={[
+              styles.emptyTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
+          >
+            No products found
+          </Text>
+          <Text
+            style={[
+              styles.emptyMessage,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            No products in this category yet.
+          </Text>
+        </View>
+      ),
+    [searchQuery, typography, categories, handleCategoryChipPress, handleTrendingPress],
   );
 
   const renderFooter = useCallback(
