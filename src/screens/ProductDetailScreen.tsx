@@ -58,6 +58,7 @@ import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
+import { FinancingBadge } from '@/components/FinancingBadge';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
@@ -499,6 +500,7 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
+          <FinancingBadge price={totalPrice} variant="detail" testID="financing-detail" />
         </View>
 
         {/* Fabric Selector */}
