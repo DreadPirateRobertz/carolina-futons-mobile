@@ -20,6 +20,9 @@ import { FilterButton } from '@/components/FilterButton';
 import { FilterModal } from '@/components/FilterModal';
 import { EmptyState } from '@/components/EmptyState';
 
+/** Estimated height (px) of a single product-grid row (two-column layout). */
+const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
+
 /** Props for the CategoryScreen component. */
 interface Props {
   /** Explicit category identifier. Takes precedence over slug and route params. */
@@ -99,6 +102,15 @@ export function CategoryScreen({
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
+
+  const getItemLayout = useCallback(
+    (_data: unknown, index: number) => ({
+      length: ESTIMATED_PRODUCT_ROW_HEIGHT,
+      offset: ESTIMATED_PRODUCT_ROW_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
 
   const renderHeader = useCallback(
     () => (
@@ -185,6 +197,7 @@ export function CategoryScreen({
         keyExtractor={keyExtractor}
         numColumns={2}
         columnWrapperStyle={products.length > 0 ? styles.row : undefined}
+        getItemLayout={getItemLayout}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         onScrollBeginDrag={scrollPerf.onScrollBeginDrag}

@@ -25,9 +25,13 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
+import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { WishlistIllustration } from '@/components/illustrations/WishlistIllustration';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
+
+/** Estimated height (px) of a single product-grid row (two-column layout). */
+const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -41,6 +45,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const insets = useSafeAreaInsets();
   const { count, getProducts, getShareText, remove, clear } = useWishlist();
 
+  const scrollPerf = useScrollPerformance('WishlistScreen');
   const products = getProducts();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -123,6 +128,15 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     [],
   );
 
+  const getItemLayout = useCallback(
+    (_data: unknown, index: number) => ({
+      length: ESTIMATED_PRODUCT_ROW_HEIGHT,
+      offset: ESTIMATED_PRODUCT_ROW_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
+
   const renderHeader = useCallback(
     () => (
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
@@ -192,6 +206,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         keyExtractor={keyExtractor}
         numColumns={2}
         columnWrapperStyle={products.length > 0 ? styles.row : undefined}
+        getItemLayout={getItemLayout}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         refreshControl={
@@ -202,7 +217,13 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
           />
         }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
+        onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
         testID="wishlist-list"
       />
     </View>

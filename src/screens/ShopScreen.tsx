@@ -39,6 +39,13 @@ import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
+/**
+ * Estimated height (px) of a single product-grid row in the two-column layout.
+ * Image (aspect 4:3 at ~170 px column width ≈ 128) + info section (~122) + margin (12).
+ * Used by getItemLayout so FlatList can skip measurement for off-screen rows.
+ */
+const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
+
 interface Props {
   onProductPress?: (product: Product) => void;
   testID?: string;
@@ -267,6 +274,15 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     [searchQuery, typography, categories, handleCategoryChipPress, handleTrendingPress],
   );
 
+  const getItemLayout = useCallback(
+    (_data: unknown, index: number) => ({
+      length: ESTIMATED_PRODUCT_ROW_HEIGHT,
+      offset: ESTIMATED_PRODUCT_ROW_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
+
   const renderFooter = useCallback(
     () =>
       isLoading ? (
@@ -288,6 +304,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         keyExtractor={keyExtractor}
         numColumns={2}
         columnWrapperStyle={styles.row}
+        getItemLayout={getItemLayout}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
