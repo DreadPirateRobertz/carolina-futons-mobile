@@ -11,7 +11,6 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -32,20 +31,10 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
-import { FilterButton } from '@/components/FilterButton';
-import { FilterModal } from '@/components/FilterModal';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
-import { SearchEmptyState } from '@/components/SearchEmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
-
-/**
- * Estimated height (px) of a single product-grid row in the two-column layout.
- * Image (aspect 4:3 at ~170 px column width ≈ 128) + info section (~122) + margin (12).
- * Used by getItemLayout so FlatList can skip measurement for off-screen rows.
- */
-const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -74,30 +63,22 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     searchQuery,
     selectedCategory,
     sortBy,
-    filters,
-    activeFilterCount,
-    availableFabrics,
-    priceExtent,
     isLoading,
-    fetchError,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
-    setFilters,
     loadMore,
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const scrollPerf = useScrollPerformance('ShopScreen');
-  const reduceMotion = useReducedMotion();
   const [refreshing, setRefreshing] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
     refresh();
-    // Allow animation to play briefly while async fetch completes
+    // Allow animation to play briefly since refresh() is synchronous
     setTimeout(() => setRefreshing(false), 600);
   }, [refresh]);
 
@@ -114,12 +95,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={reduceMotion ? undefined : FadeInDown.delay(index * 80).duration(400)}
+        entering={FadeInDown.delay(index * 80).duration(400)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress, reduceMotion],
+    [handleProductPress],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -141,7 +122,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
                 fontFamily: typography.headingFamily,
               },
             ]}
-            accessibilityRole="header"
           >
             Shop
           </Text>
@@ -170,20 +150,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
         />
 
-        {/* Fetch error banner */}
-        {fetchError && (
-          <View
-            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight ?? '#FEE2E2' }]}
-            testID="shop-fetch-error"
-            accessibilityRole="alert"
-          >
-            <Text style={[styles.errorText, { color: colors.sunsetCoralDark ?? '#991B1B' }]}>
-              Unable to load products. Pull to refresh.
-            </Text>
-          </View>
-        )}
-
-        {/* Filter + Sort row */}
+        {/* Sort + count */}
         <SortPicker
           value={sortBy}
           onChange={(sort: SortOption) => {
@@ -191,9 +158,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
             events.sortProducts(sort);
           }}
           resultCount={products.length}
-          leftContent={
-            <FilterButton activeCount={activeFilterCount} onPress={() => setShowFilters(true)} />
-          }
         />
       </View>
     ),
@@ -202,14 +166,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       searchQuery,
       selectedCategory,
       sortBy,
-      activeFilterCount,
       products.length,
       categories,
       colors,
       spacing,
       suggestions,
       recentSearches,
-      fetchError,
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
@@ -219,71 +181,34 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ],
   );
 
-  const handleCategoryChipPress = useCallback(
-    (categoryId: ProductCategory) => {
-      setSelectedCategory(categoryId);
-      setSearchQuery('');
-    },
-    [setSelectedCategory, setSearchQuery],
-  );
-
-  const handleTrendingPress = useCallback(
-    (term: string) => {
-      setSearchQuery(term);
-      addSearch(term);
-      // products.length is 0 here (we're in empty state); log 0 intentionally
-      // as this is a new search, not a results count
-      events.search(term, 0);
-    },
-    [setSearchQuery, addSearch],
-  );
-
   const renderEmpty = useCallback(
-    () =>
-      searchQuery ? (
-        <SearchEmptyState
-          query={searchQuery}
-          categories={categories}
-          onCategoryPress={handleCategoryChipPress}
-          onTrendingPress={handleTrendingPress}
-        />
-      ) : (
-        <View
+    () => (
+      <View
+        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
+        testID="shop-empty"
+      >
+        <Text style={[styles.emptyIcon]}>🔍</Text>
+        <Text
           style={[
-            styles.emptyContainer,
-            { backgroundColor: darkPalette.surface, borderRadius: 16 },
+            styles.emptyTitle,
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
           ]}
-          testID="shop-empty"
         >
-          <Text style={[styles.emptyIcon]}>🔍</Text>
-          <Text
-            style={[
-              styles.emptyTitle,
-              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-            ]}
-          >
-            No products found
-          </Text>
-          <Text
-            style={[
-              styles.emptyMessage,
-              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-            ]}
-          >
-            No products in this category yet.
-          </Text>
-        </View>
-      ),
-    [searchQuery, typography, categories, handleCategoryChipPress, handleTrendingPress],
-  );
-
-  const getItemLayout = useCallback(
-    (_data: unknown, index: number) => ({
-      length: ESTIMATED_PRODUCT_ROW_HEIGHT,
-      offset: ESTIMATED_PRODUCT_ROW_HEIGHT * index,
-      index,
-    }),
-    [],
+          No products found
+        </Text>
+        <Text
+          style={[
+            styles.emptyMessage,
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          {searchQuery
+            ? `No results for "${searchQuery}". Try a different search.`
+            : 'No products in this category yet.'}
+        </Text>
+      </View>
+    ),
+    [searchQuery, colors],
   );
 
   const renderFooter = useCallback(
@@ -307,7 +232,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         keyExtractor={keyExtractor}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        getItemLayout={getItemLayout}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
@@ -330,14 +254,6 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         maxToRenderPerBatch={6}
         removeClippedSubviews
         testID="product-list"
-      />
-      <FilterModal
-        visible={showFilters}
-        filters={filters}
-        availableFabrics={availableFabrics}
-        priceExtent={priceExtent}
-        onApply={setFilters}
-        onClose={() => setShowFilters(false)}
       />
     </View>
   );
@@ -384,18 +300,6 @@ const styles = StyleSheet.create({
   emptyMessage: {
     fontSize: 15,
     lineHeight: 22,
-    textAlign: 'center',
-  },
-  errorBanner: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-  },
-  errorText: {
-    fontSize: 13,
-    fontWeight: '600',
     textAlign: 'center',
   },
   footer: {

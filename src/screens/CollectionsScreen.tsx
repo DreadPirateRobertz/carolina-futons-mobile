@@ -15,15 +15,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollections } from '@/hooks/useCollections';
 import { usePremium } from '@/hooks/usePremium';
-import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
-
-/** Featured card height (220) + separator (spacing.md ≈ 16). */
-const ESTIMATED_COLLECTION_ROW_HEIGHT = 236;
 
 /** FlatList key extractor using the collection id. */
 const keyExtractor = (item: EditorialCollection) => item.id;
@@ -40,7 +36,6 @@ export function CollectionsScreen() {
   const insets = useSafeAreaInsets();
   const { collections } = useCollections();
   const { isPremium } = usePremium();
-  const scrollPerf = useScrollPerformance('CollectionsScreen');
 
   const handleCollectionPress = useCallback(
     (collection: EditorialCollection) => {
@@ -70,7 +65,7 @@ export function CollectionsScreen() {
           testID={`collection-card-${item.slug}`}
         />
         {item.earlyAccess && !isPremium && (
-          <View style={styles.earlyAccessOverlay} testID={`early-access-lock-${item.slug}`} accessibilityLabel="CF+ Early Access collection">
+          <View style={styles.earlyAccessOverlay} testID={`early-access-lock-${item.slug}`}>
             <PremiumBadge size="sm" />
             <Text style={[styles.earlyAccessText, { color: colors.espresso }]}>
               CF+ Early Access
@@ -84,15 +79,6 @@ export function CollectionsScreen() {
 
   const renderSeparator = useCallback(() => <View style={{ height: spacing.md }} />, [spacing.md]);
 
-  const getItemLayout = useCallback(
-    (_data: unknown, index: number) => ({
-      length: ESTIMATED_COLLECTION_ROW_HEIGHT,
-      offset: ESTIMATED_COLLECTION_ROW_HEIGHT * index,
-      index,
-    }),
-    [],
-  );
-
   const renderHeader = useCallback(
     () => (
       <View style={{ paddingHorizontal: spacing.pagePadding, marginBottom: spacing.lg }}>
@@ -105,7 +91,6 @@ export function CollectionsScreen() {
               marginBottom: spacing.xs,
             },
           ]}
-          accessibilityRole="header"
         >
           Shop the Look
         </Text>
@@ -132,21 +117,13 @@ export function CollectionsScreen() {
         data={collections}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        getItemLayout={getItemLayout}
         ItemSeparatorComponent={renderSeparator}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={{
           paddingTop: spacing.lg,
           paddingBottom: insets.bottom + spacing.xl,
         }}
-        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
-        onScrollEndDrag={scrollPerf.onScrollEndDrag}
-        onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
         showsVerticalScrollIndicator={false}
-        windowSize={5}
-        maxToRenderPerBatch={6}
-        removeClippedSubviews
-        testID="collections-list"
       />
     </View>
   );

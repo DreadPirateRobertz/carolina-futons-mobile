@@ -18,7 +18,6 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { type Product } from '@/data/products';
 import { useWishlist } from '@/hooks/useWishlist';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   product: Product;
@@ -47,7 +46,6 @@ const SPRING_CONFIG = { damping: 10, stiffness: 400 };
  */
 export function WishlistButton({ product, size = 'md', overlay = false, testID }: Props) {
   const { isInWishlist, toggle } = useWishlist();
-  const reduceMotion = useReducedMotion();
   const active = isInWishlist(product.id);
 
   const scale = useSharedValue(1);
@@ -63,9 +61,7 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
     toggle(product);
 
     // Spring bounce: quick overshoot then settle
-    if (!reduceMotion) {
-      scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
-    }
+    scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
 
     if (Platform.OS !== 'web') {
       if (wasActive) {
@@ -74,7 +70,7 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     }
-  }, [toggle, product, isInWishlist, scale, reduceMotion]);
+  }, [toggle, product, isInWishlist, scale]);
 
   return (
     <Pressable
@@ -93,7 +89,6 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
       accessibilityLabel={
         active ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`
       }
-      accessibilityHint={active ? 'Double tap to remove from wishlist' : 'Double tap to add to wishlist'}
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
