@@ -283,6 +283,14 @@ export function resolveCategory(collectionSlug: string): ProductCategory {
   return collectionMap[collectionSlug] ?? ('futons' as ProductCategory);
 }
 
+// ── Size inference from product names ────────────────────────────
+// Word-boundary patterns prevent false matches (e.g. "Beautiful" vs "full")
+const SIZE_PATTERNS: [ProductSize, RegExp][] = [
+  ['queen', /\bqueen\b/],
+  ['twin', /\btwin\b/],
+  ['full', /\bfull\b/],
+];
+
 // ── Sort mapping ───────────────────────────────────────────────
 
 const SORT_MAP: Record<SortOption, { fieldName: string; order: string }[]> = {
@@ -871,13 +879,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   // Infer size from product name using word boundaries to avoid false matches
   // (e.g. "Beautiful" should not match "full")
   const nameLower = wix.name.toLowerCase();
-  const size: ProductSize | undefined = /\bqueen\b/.test(nameLower)
-    ? 'queen'
-    : /\btwin\b/.test(nameLower)
-      ? 'twin'
-      : /\bfull\b/.test(nameLower)
-        ? 'full'
-        : undefined;
+  const size = SIZE_PATTERNS.find(([, re]) => re.test(nameLower))?.[0];
 
   return {
     id: wix.id,

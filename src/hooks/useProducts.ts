@@ -287,11 +287,14 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     return applyFilters(result, filters);
   }, [wixProducts, selectedCategory, filters]);
 
-  const resolvedProducts = useWix
-    ? wixFiltered
-    : mockIsInitialLoading
-      ? []
-      : mockProducts;
+  let resolvedProducts: Product[];
+  if (useWix) {
+    resolvedProducts = wixFiltered;
+  } else if (mockIsInitialLoading) {
+    resolvedProducts = [];
+  } else {
+    resolvedProducts = mockProducts;
+  }
 
   // Derived filter metadata — computed from the full (unfiltered) product set
   const allProductsForMeta = useWix ? wixProducts : allProducts;
