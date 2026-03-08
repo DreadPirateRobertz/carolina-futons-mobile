@@ -36,10 +36,13 @@ jest.mock('@/theme/tokens', () => ({
   colors: {},
 }));
 
-jest.mock('@/components/GlassCard', () => ({
-  GlassCard: ({ children, style, testID }: any) =>
-    React.createElement('View', { style, testID }, children),
-}));
+jest.mock('@/components/GlassCard', () => {
+  const { createElement } = require('react');
+  return {
+    GlassCard: ({ children, style, testID }: any) =>
+      createElement('View', { style, testID }, children),
+  };
+});
 
 const TEST_ITEMS: PromoBannerItem[] = [
   {
