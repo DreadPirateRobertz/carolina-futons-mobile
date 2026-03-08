@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carolina Futons Mobile — Design Overview</title>
+<style>
+  :root {
+    --sand-base: #E8D5B7;
+    --sand-light: #F2E8D5;
+    --sand-dark: #D4BC96;
+    --espresso: #3A2518;
+    --espresso-light: #5C4033;
+    --mountain-blue: #5B8FA8;
+    --mountain-blue-dark: #3D6B80;
+    --mountain-blue-light: #A8CCD8;
+    --sunset-coral: #E8845C;
+    --sunset-coral-dark: #C96B44;
+    --sunset-coral-light: #F2A882;
+    --mauve: #C9A0A0;
+    --off-white: #FAF7F2;
+    --dark-bg: #1C1410;
+    --dark-surface: #2A1F19;
+    --success: #4A7C59;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', 'Source Sans Pro', -apple-system, sans-serif;
+    background: var(--dark-bg);
+    color: var(--sand-base);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--sand-light);
+  }
+
+  .hero {
+    background: linear-gradient(180deg, var(--mountain-blue-light) 0%, var(--sand-base) 40%, var(--sunset-coral-light) 70%, var(--dark-bg) 100%);
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 80'%3E%3Cpath d='M0 80 L200 30 L400 50 L600 15 L800 45 L1000 20 L1200 40 L1200 80 Z' fill='%231C1410'/%3E%3C/svg%3E");
+    background-size: cover;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+    color: var(--espresso);
+    margin-bottom: 8px;
+  }
+
+  .hero .subtitle {
+    color: var(--espresso-light);
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--espresso-light);
+  }
+
+  .section-header h2 { font-size: 1.8rem; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-live { background: var(--success); color: white; }
+  .badge-pr { background: var(--mountain-blue); color: white; }
+  .badge-progress { background: var(--sunset-coral); color: white; }
+  .badge-planned { background: var(--espresso-light); color: var(--sand-light); }
+
+  /* Color palette */
+  .palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .swatch {
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--dark-surface);
+    box-shadow: 0 4px 12px rgba(58, 37, 24, 0.3);
+  }
+
+  .swatch-color {
+    height: 80px;
+    display: flex;
+    align-items: flex-end;
+    padding: 8px 12px;
+  }
+
+  .swatch-info {
+    padding: 10px 12px;
+  }
+
+  .swatch-name { font-weight: 700; font-size: 0.85rem; }
+  .swatch-hex { font-size: 0.75rem; color: var(--sand-dark); font-family: monospace; }
+
+  /* Screen cards */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+  }
+
+  .screen-card {
+    background: var(--dark-surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(58, 37, 24, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .screen-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(58, 37, 24, 0.4);
+  }
+
+  .screen-preview {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen-body {
+    padding: 16px;
+  }
+
+  .screen-name {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+    color: var(--sand-light);
+  }
+
+  .screen-desc {
+    font-size: 0.85rem;
+    color: var(--sand-dark);
+    margin-bottom: 8px;
+  }
+
+  .screen-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .feature-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(91, 143, 168, 0.2);
+    color: var(--mountain-blue-light);
+    border: 1px solid rgba(91, 143, 168, 0.3);
+  }
+
+  /* Component library */
+  .components-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .comp-card {
+    background: var(--dark-surface);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 3px solid var(--mountain-blue);
+  }
+
+  .comp-name {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--mountain-blue-light);
+    margin-bottom: 6px;
+  }
+
+  .comp-desc {
+    font-size: 0.8rem;
+    color: var(--sand-dark);
+  }
+
+  /* Sprint tracker */
+  .sprint-track {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 24px 0;
+  }
+
+  .track-col {
+    background: var(--dark-surface);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .track-col h3 {
+    font-size: 1rem;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--espresso-light);
+  }
+
+  .bead-item {
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    background: rgba(232, 213, 183, 0.05);
+    font-size: 0.85rem;
+  }
+
+  .bead-id {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: var(--mountain-blue);
+  }
+
+  .bead-assignee {
+    font-size: 0.7rem;
+    color: var(--mauve);
+  }
+
+  /* Phone mockup */
+  .phone-frame {
+    width: 180px;
+    height: 360px;
+    border: 3px solid var(--espresso-light);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .phone-status-bar {
+    height: 24px;
+    background: var(--dark-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--sand-dark);
+  }
+
+  .phone-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .phone-nav {
+    height: 36px;
+    background: var(--dark-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    font-size: 0.65rem;
+    color: var(--sand-dark);
+    border-top: 1px solid var(--espresso-light);
+  }
+
+  .phone-nav span.active { color: var(--sunset-coral); }
+
+  /* Specific screen previews */
+  .preview-home {
+    background: linear-gradient(180deg, var(--mountain-blue-light) 0%, var(--sand-base) 60%, var(--dark-bg) 100%);
+  }
+
+  .preview-shop {
+    background: var(--dark-bg);
+  }
+
+  .preview-product {
+    background: var(--dark-surface);
+  }
+
+  .preview-cart {
+    background: var(--dark-bg);
+  }
+
+  .preview-ar {
+    background: linear-gradient(135deg, #2a3a2a 0%, var(--dark-bg) 100%);
+  }
+
+  .preview-account {
+    background: var(--dark-bg);
+  }
+
+  .preview-checkout {
+    background: var(--dark-surface);
+  }
+
+  .preview-onboarding {
+    background: linear-gradient(180deg, var(--mountain-blue-dark) 0%, var(--dark-bg) 100%);
+  }
+
+  .mini-card {
+    width: 70%;
+    height: 30px;
+    background: rgba(232, 213, 183, 0.1);
+    border-radius: 6px;
+    margin: 4px 0;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(232, 213, 183, 0.1);
+  }
+
+  .mini-hero {
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, var(--mountain-blue-light) 0%, transparent 100%);
+    margin-bottom: 8px;
+  }
+
+  .mini-cta {
+    width: 60%;
+    height: 24px;
+    background: var(--sunset-coral);
+    border-radius: 12px;
+    margin: 8px auto;
+  }
+
+  .mini-product {
+    width: 45%;
+    height: 50px;
+    background: var(--sand-dark);
+    border-radius: 8px;
+    opacity: 0.6;
+  }
+
+  .mini-product-grid {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .mini-search {
+    width: 85%;
+    height: 22px;
+    background: rgba(232, 213, 183, 0.1);
+    border-radius: 11px;
+    margin: 8px auto;
+    border: 1px solid var(--espresso-light);
+  }
+
+  .mini-sort {
+    width: 90%;
+    height: 18px;
+    display: flex;
+    gap: 4px;
+    margin: 4px auto;
+  }
+
+  .mini-sort span {
+    flex: 1;
+    height: 100%;
+    background: var(--espresso-light);
+    border-radius: 4px;
+  }
+
+  .mini-gallery {
+    width: 100%;
+    height: 100px;
+    background: var(--sand-dark);
+    opacity: 0.4;
+  }
+
+  .mini-price {
+    font-size: 0.9rem;
+    color: var(--sunset-coral);
+    font-weight: bold;
+    margin: 4px 12px;
+  }
+
+  .preview-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.5);
+    color: var(--sand-light);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .stat-card {
+    background: var(--dark-surface);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(58, 37, 24, 0.2);
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--sunset-coral);
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--sand-dark);
+    margin-top: 4px;
+  }
+
+  /* Typography showcase */
+  .type-showcase {
+    background: var(--dark-surface);
+    border-radius: 16px;
+    padding: 32px;
+    margin: 24px 0;
+  }
+
+  .type-heading {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2rem;
+    color: var(--sand-light);
+    margin-bottom: 8px;
+  }
+
+  .type-body {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 1rem;
+    color: var(--sand-dark);
+    margin-bottom: 16px;
+  }
+
+  .type-cta {
+    display: inline-block;
+    background: var(--sunset-coral);
+    color: white;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Glass card demo */
+  .glass-demo {
+    display: flex;
+    gap: 20px;
+    margin: 24px 0;
+    flex-wrap: wrap;
+  }
+
+  .glass-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 24px;
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(232, 213, 183, 0.1);
+  }
+
+  .glass-light { background: rgba(42, 31, 25, 0.4); }
+  .glass-medium { background: rgba(42, 31, 25, 0.6); }
+  .glass-heavy { background: rgba(42, 31, 25, 0.8); }
+
+  .glass-label {
+    font-size: 0.75rem;
+    color: var(--mountain-blue-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .glass-text {
+    font-size: 0.9rem;
+    color: var(--sand-base);
+  }
+
+  /* PR status */
+  .pr-list {
+    margin: 24px 0;
+  }
+
+  .pr-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--dark-surface);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+
+  .pr-number {
+    font-family: monospace;
+    font-size: 1.1rem;
+    color: var(--mountain-blue);
+    min-width: 50px;
+  }
+
+  .pr-title { flex: 1; color: var(--sand-light); }
+
+  .pr-status {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .pr-approved { background: var(--success); color: white; }
+  .pr-changes { background: var(--sunset-coral); color: white; }
+  .pr-pending { background: var(--mountain-blue); color: white; }
+
+  footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--espresso-light);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--espresso-light);
+    margin-top: 60px;
+  }
+
+  @media (max-width: 768px) {
+    .sprint-track { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .hero h1 { font-size: 2rem; }
+  }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="hero">
+  <h1>Carolina Futons</h1>
+  <p class="subtitle">Blue Ridge Mountain Aesthetic &mdash; Mobile App Design Overview</p>
+  <p style="margin-top: 12px; color: var(--espresso-light); font-size: 0.9rem;">Sprint 2: Beta Launch &bull; Updated 2026-03-08</p>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-number">23</div>
+      <div class="stat-label">Screens</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">50+</div>
+      <div class="stat-label">Components</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">2931</div>
+      <div class="stat-label">Tests Passing</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">4</div>
+      <div class="stat-label">Active PRs</div>
+    </div>
+  </div>
+
+  <!-- Color Palette -->
+  <div class="section-header">
+    <h2>Color Palette</h2>
+    <span class="badge badge-live">Design Tokens</span>
+  </div>
+
+  <div class="palette">
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--sand-base);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Sand Base</div>
+        <div class="swatch-hex">#E8D5B7</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--sand-light);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Sand Light</div>
+        <div class="swatch-hex">#F2E8D5</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--sand-dark);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Sand Dark</div>
+        <div class="swatch-hex">#D4BC96</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--espresso);">
+        <span style="color: var(--sand-base);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Espresso</div>
+        <div class="swatch-hex">#3A2518</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--espresso-light);">
+        <span style="color: var(--sand-base);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Espresso Light</div>
+        <div class="swatch-hex">#5C4033</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--mountain-blue);">
+        <span style="color: white;">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Mountain Blue</div>
+        <div class="swatch-hex">#5B8FA8</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--mountain-blue-light);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Mountain Blue Light</div>
+        <div class="swatch-hex">#A8CCD8</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--sunset-coral);">
+        <span style="color: white;">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Sunset Coral (CTA)</div>
+        <div class="swatch-hex">#E8845C</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--sunset-coral-light);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Sunset Coral Light</div>
+        <div class="swatch-hex">#F2A882</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--mauve);">
+        <span style="color: var(--espresso);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Mauve</div>
+        <div class="swatch-hex">#C9A0A0</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--dark-bg);">
+        <span style="color: var(--sand-base);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Dark Background</div>
+        <div class="swatch-hex">#1C1410</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background: var(--dark-surface);">
+        <span style="color: var(--sand-base);">Aa</span>
+      </div>
+      <div class="swatch-info">
+        <div class="swatch-name">Dark Surface</div>
+        <div class="swatch-hex">#2A1F19</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Typography -->
+  <div class="section-header">
+    <h2>Typography</h2>
+  </div>
+  <div class="type-showcase">
+    <div class="type-heading">Playfair Display</div>
+    <div class="type-body">Headings use Playfair Display for an editorial, high-end feel that pairs with the warm mountain palette.</div>
+    <div style="margin-top: 20px;">
+      <div style="font-family: 'Source Sans 3', sans-serif; font-size: 1rem; color: var(--sand-base); margin-bottom: 8px;">
+        <strong>Source Sans 3</strong> &mdash; Body text, readable and clean. Used for descriptions, prices, and UI labels.
+      </div>
+    </div>
+    <div style="margin-top: 24px;">
+      <span class="type-cta">Add to Cart</span>
+      <span style="margin-left: 16px; font-size: 0.8rem; color: var(--sand-dark);">&larr; CTA buttons always use Sunset Coral #E8845C</span>
+    </div>
+  </div>
+
+  <!-- Glass Card Demo -->
+  <div class="section-header">
+    <h2>GlassCard Component</h2>
+  </div>
+  <div class="glass-demo">
+    <div class="glass-card glass-light">
+      <div class="glass-label">Light</div>
+      <div class="glass-text">Semi-transparent with espresso tint. Used for overlays and hero CTAs.</div>
+    </div>
+    <div class="glass-card glass-medium">
+      <div class="glass-label">Medium</div>
+      <div class="glass-text">Default glass card. Form containers, modal panels.</div>
+    </div>
+    <div class="glass-card glass-heavy">
+      <div class="glass-label">Heavy</div>
+      <div class="glass-text">Near-opaque. Bottom sheets, navigation panels.</div>
+    </div>
+  </div>
+
+  <!-- Screens -->
+  <div class="section-header">
+    <h2>Screen Map</h2>
+    <span class="badge badge-live">23 Screens</span>
+  </div>
+
+  <div class="screens-grid">
+    <!-- Home -->
+    <div class="screen-card">
+      <div class="screen-preview preview-home">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Carolina Futons</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div class="mini-hero"></div>
+            <div class="mini-card" style="margin: 0 auto;"></div>
+            <div class="mini-cta"></div>
+            <div class="mini-card" style="margin: 4px auto; width: 80%;"></div>
+          </div>
+          <div class="phone-nav">
+            <span class="active">Home</span>
+            <span>Shop</span>
+            <span>Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">HomeScreen</h3>
+        <p class="screen-desc">Mountain skyline hero, GlassCard CTAs, promo carousel, recommendations</p>
+        <div class="screen-features">
+          <span class="feature-tag">MountainSkyline</span>
+          <span class="feature-tag">GlassCard</span>
+          <span class="feature-tag">ParallaxHeader</span>
+          <span class="feature-tag">PromoCarousel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shop -->
+    <div class="screen-card">
+      <div class="screen-preview preview-shop">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Shop</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div class="mini-search"></div>
+            <div class="mini-sort"><span></span><span></span><span></span></div>
+            <div class="mini-product-grid">
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span class="active">Shop</span>
+            <span>Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">ShopScreen</h3>
+        <p class="screen-desc">Product grid with search, filters, sort, pull-to-refresh, search empty state</p>
+        <div class="screen-features">
+          <span class="feature-tag">SearchBar</span>
+          <span class="feature-tag">FilterModal</span>
+          <span class="feature-tag">SortPicker</span>
+          <span class="feature-tag">ProductCard</span>
+          <span class="feature-tag">SearchEmptyState</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Detail -->
+    <div class="screen-card">
+      <div class="screen-preview preview-product">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Product</div>
+          <div class="phone-content" style="background: var(--dark-surface);">
+            <div class="mini-gallery"></div>
+            <div class="mini-price">$499</div>
+            <div class="mini-card" style="margin: 4px 12px; width: auto;"></div>
+            <div class="mini-cta"></div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span class="active">Shop</span>
+            <span>Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">ProductDetailScreen</h3>
+        <p class="screen-desc">Image gallery, size/fabric picker, reviews, AR view, stock status, wishlist, skeleton loading</p>
+        <div class="screen-features">
+          <span class="feature-tag">ZoomableImage</span>
+          <span class="feature-tag">StarRating</span>
+          <span class="feature-tag">WishlistButton</span>
+          <span class="feature-tag">AR Launch</span>
+          <span class="feature-tag">SkeletonDetail</span>
+          <span class="feature-tag">StockStatus</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div class="screen-card">
+      <div class="screen-preview preview-shop">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Futons</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div class="mini-sort"><span></span><span></span></div>
+            <div class="mini-product-grid">
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span class="active">Shop</span>
+            <span>Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">CategoryScreen</h3>
+        <p class="screen-desc">Filtered product grid by category with sort + filter controls, pull-to-refresh</p>
+        <div class="screen-features">
+          <span class="feature-tag">FilterButton</span>
+          <span class="feature-tag">SortPicker</span>
+          <span class="feature-tag">PullToRefresh</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cart -->
+    <div class="screen-card">
+      <div class="screen-preview preview-cart">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Cart</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div class="mini-card" style="margin: 12px auto; height: 50px;"></div>
+            <div class="mini-card" style="margin: 4px auto; height: 50px;"></div>
+            <div style="flex:1;"></div>
+            <div class="mini-cta" style="width: 80%; margin-bottom: 12px;"></div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span class="active">Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">CartScreen</h3>
+        <p class="screen-desc">Cart items with thumbnails, quantity control, animated empty state with Blue Ridge illustration</p>
+        <div class="screen-features">
+          <span class="feature-tag">EmptyState</span>
+          <span class="feature-tag">AnimatedPressable</span>
+          <span class="feature-tag">Haptic Feedback</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkout -->
+    <div class="screen-card">
+      <div class="screen-preview preview-checkout">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Checkout</div>
+          <div class="phone-content" style="background: var(--dark-surface);">
+            <div class="mini-card" style="margin: 12px auto; height: 40px;"></div>
+            <div class="mini-card" style="margin: 4px auto; height: 40px;"></div>
+            <div class="mini-card" style="margin: 4px auto; height: 40px;"></div>
+            <div style="flex:1;"></div>
+            <div class="mini-cta" style="width: 80%; margin-bottom: 12px;"></div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span class="active">Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">CheckoutScreen</h3>
+        <p class="screen-desc">Address picker, saved addresses, order summary with thumbnails, payment integration</p>
+        <div class="screen-features">
+          <span class="feature-tag">KeyboardAware</span>
+          <span class="feature-tag">SavedAddresses</span>
+          <span class="feature-tag">Apple/Google Pay</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AR -->
+    <div class="screen-card">
+      <div class="screen-preview preview-ar">
+        <div class="phone-frame">
+          <div class="phone-status-bar">AR View</div>
+          <div class="phone-content" style="background: linear-gradient(135deg, #2a3a2a, var(--dark-bg));">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+              <div style="width:60px; height:40px; border: 2px dashed var(--mountain-blue); border-radius:8px; opacity:0.5;"></div>
+            </div>
+            <div style="display:flex; gap:4px; justify-content:center; padding:8px;">
+              <div style="width:30px; height:30px; background:var(--dark-surface); border-radius:6px;"></div>
+              <div style="width:30px; height:30px; background:var(--dark-surface); border-radius:6px;"></div>
+              <div style="width:30px; height:30px; background:var(--dark-surface); border-radius:6px;"></div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span>Cart</span>
+            <span>Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">ARScreen</h3>
+        <p class="screen-desc">3D model placement, measurement tool, comparison mode, multi-product staging (up to 5)</p>
+        <div class="screen-features">
+          <span class="feature-tag">3D Models</span>
+          <span class="feature-tag">Measurement</span>
+          <span class="feature-tag">Multi-Stage</span>
+          <span class="feature-tag">Material Swap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account -->
+    <div class="screen-card">
+      <div class="screen-preview preview-account">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Account</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div style="width:60px; height:60px; background:var(--espresso-light); border-radius:30px; margin: 16px auto 8px;"></div>
+            <div class="mini-card" style="margin: 8px auto;"></div>
+            <div class="mini-card" style="margin: 4px auto;"></div>
+            <div class="mini-card" style="margin: 4px auto;"></div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span>Cart</span>
+            <span class="active">Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">AccountScreen</h3>
+        <p class="screen-desc">Profile, order history, saved addresses, CF+ premium, privacy (GDPR/CCPA)</p>
+        <div class="screen-features">
+          <span class="feature-tag">PremiumBadge</span>
+          <span class="feature-tag">DataExport</span>
+          <span class="feature-tag">AccountDeletion</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onboarding -->
+    <div class="screen-card">
+      <div class="screen-preview preview-onboarding">
+        <div class="phone-frame">
+          <div class="phone-status-bar" style="background: var(--mountain-blue-dark);">Welcome</div>
+          <div class="phone-content" style="background: linear-gradient(180deg, var(--mountain-blue-dark), var(--dark-bg));">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="font-size:1.5rem; margin-bottom:8px;">&#127956;</div>
+              <div class="mini-card" style="width: 60%;"></div>
+            </div>
+            <div class="mini-cta" style="margin-bottom: 16px;"></div>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">OnboardingScreen</h3>
+        <p class="screen-desc">Brand story slides, style quiz, editorial dark treatment</p>
+        <div class="screen-features">
+          <span class="feature-tag">Brand Story</span>
+          <span class="feature-tag">Style Quiz</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Detail -->
+    <div class="screen-card">
+      <div class="screen-preview preview-checkout">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Order #1234</div>
+          <div class="phone-content" style="background: var(--dark-surface);">
+            <div class="mini-card" style="margin: 12px auto; height: 20px; width: 50%;"></div>
+            <div style="display:flex; flex-direction:column; align-items:flex-start; padding: 8px 16px; gap:4px;">
+              <div style="width:8px; height:8px; background:var(--success); border-radius:50%;"></div>
+              <div style="width:2px; height:16px; background:var(--espresso-light); margin-left:3px;"></div>
+              <div style="width:8px; height:8px; background:var(--mountain-blue); border-radius:50%;"></div>
+              <div style="width:2px; height:16px; background:var(--espresso-light); margin-left:3px;"></div>
+              <div style="width:8px; height:8px; background:var(--sand-dark); border-radius:50%;"></div>
+            </div>
+            <div class="mini-card" style="margin: 4px auto; height: 40px;"></div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span>Cart</span>
+            <span class="active">Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">OrderDetailScreen</h3>
+        <p class="screen-desc">Status timeline, line items, totals card, shipping info, reorder, skeleton loading</p>
+        <div class="screen-features">
+          <span class="feature-tag">StatusTimeline</span>
+          <span class="feature-tag">Reorder</span>
+          <span class="feature-tag">SkeletonOrder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div class="screen-card">
+      <div class="screen-preview preview-account">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Sign In</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 16px;">
+              <div class="glass-card glass-medium" style="width:100%; padding:12px; border-radius:12px;">
+                <div class="mini-card" style="height:24px; margin-bottom:8px;"></div>
+                <div class="mini-card" style="height:24px; margin-bottom:8px;"></div>
+                <div class="mini-cta" style="width:100%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">LoginScreen</h3>
+        <p class="screen-desc">GlassCard form container, Wix OAuth, biometric auth, keyboard-aware</p>
+        <div class="screen-features">
+          <span class="feature-tag">GlassCard</span>
+          <span class="feature-tag">OAuth</span>
+          <span class="feature-tag">Biometric</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishlist -->
+    <div class="screen-card">
+      <div class="screen-preview preview-shop">
+        <div class="phone-frame">
+          <div class="phone-status-bar">Wishlist</div>
+          <div class="phone-content" style="background: var(--dark-bg);">
+            <div class="mini-product-grid">
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+              <div class="mini-product"></div>
+            </div>
+          </div>
+          <div class="phone-nav">
+            <span>Home</span>
+            <span>Shop</span>
+            <span>Cart</span>
+            <span class="active">Account</span>
+          </div>
+        </div>
+        <span class="preview-label">LIVE</span>
+      </div>
+      <div class="screen-body">
+        <h3 class="screen-name">WishlistScreen</h3>
+        <p class="screen-desc">Saved products grid with pull-to-refresh, empty state illustration</p>
+        <div class="screen-features">
+          <span class="feature-tag">PullToRefresh</span>
+          <span class="feature-tag">EmptyState</span>
+          <span class="feature-tag">WishlistButton</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional screens list -->
+  <div style="background: var(--dark-surface); border-radius: 12px; padding: 24px; margin-top: 16px;">
+    <h3 style="margin-bottom: 16px; font-size: 1.1rem;">Additional Screens</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; font-size: 0.85rem;">
+      <div><span style="color: var(--mountain-blue);">SignUpScreen</span> &mdash; Registration with GlassCard</div>
+      <div><span style="color: var(--mountain-blue);">ForgotPasswordScreen</span> &mdash; Password reset flow</div>
+      <div><span style="color: var(--mountain-blue);">OrderHistoryScreen</span> &mdash; Order list with status badges</div>
+      <div><span style="color: var(--mountain-blue);">OrderConfirmationScreen</span> &mdash; Success with order summary</div>
+      <div><span style="color: var(--mountain-blue);">CollectionsScreen</span> &mdash; Collection grid with deep links</div>
+      <div><span style="color: var(--mountain-blue);">CollectionDetailScreen</span> &mdash; Products within a collection</div>
+      <div><span style="color: var(--mountain-blue);">StoreLocatorScreen</span> &mdash; Map + store cards</div>
+      <div><span style="color: var(--mountain-blue);">StoreDetailScreen</span> &mdash; Store info + directions</div>
+      <div><span style="color: var(--mountain-blue);">PremiumScreen</span> &mdash; CF+ membership perks</div>
+      <div><span style="color: var(--mountain-blue);">NotificationPrefsScreen</span> &mdash; Per-category toggles</div>
+      <div><span style="color: var(--mountain-blue);">ARWebScreen</span> &mdash; Web fallback 3D viewer</div>
+    </div>
+  </div>
+
+  <!-- Sprint Status -->
+  <div class="section-header">
+    <h2>Sprint 2 — Active Work</h2>
+  </div>
+
+  <div class="pr-list">
+    <div class="pr-item">
+      <span class="pr-number">#62</span>
+      <span class="pr-title">Product filtering and sorting (cm-dw5) &mdash; <span class="bead-assignee">bishop</span></span>
+      <span class="pr-status pr-changes">Changes Requested</span>
+    </div>
+    <div class="pr-item">
+      <span class="pr-number">#65</span>
+      <span class="pr-title">Search empty state with suggestions (cm-0yl) &mdash; <span class="bead-assignee">ripley</span></span>
+      <span class="pr-status pr-approved">Approved</span>
+    </div>
+    <div class="pr-item">
+      <span class="pr-number">#66</span>
+      <span class="pr-title">Skeleton loading states (cm-8zh) &mdash; <span class="bead-assignee">hicks</span></span>
+      <span class="pr-status pr-pending">Pending Review</span>
+    </div>
+    <div class="pr-item">
+      <span class="pr-number">WIP</span>
+      <span class="pr-title">In-app rating prompt (cm-2yv) &mdash; <span class="bead-assignee">burke</span></span>
+      <span class="pr-status pr-pending">In Progress</span>
+    </div>
+  </div>
+
+  <!-- Key Components -->
+  <div class="section-header">
+    <h2>Key Components</h2>
+    <span class="badge badge-live">50+ Built</span>
+  </div>
+
+  <div class="components-grid">
+    <div class="comp-card">
+      <div class="comp-name">MountainSkyline</div>
+      <div class="comp-desc">SVG mountain silhouette with sky gradient. Variants: sunrise, sunset.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">GlassCard</div>
+      <div class="comp-desc">Glassmorphism with espresso tint. Intensity: light/medium/heavy.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">AnimatedPressable</div>
+      <div class="comp-desc">Spring scale + haptic feedback on press. Replaces TouchableOpacity.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">BrandedSpinner</div>
+      <div class="comp-desc">Pulsing dots animation. Replaces ALL ActivityIndicator usage.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ProductCard</div>
+      <div class="comp-desc">Product display with image, price, rating, wishlist, stock badge.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">FilterModal</div>
+      <div class="comp-desc">Size, fabric, price range filters with draft state pattern.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">PriceRangeSlider</div>
+      <div class="comp-desc">Dual-thumb slider with PanResponder gesture handling.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">SearchEmptyState</div>
+      <div class="comp-desc">Category chips + trending searches when search returns empty.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">Shimmer</div>
+      <div class="comp-desc">Animated skeleton placeholder. ShimmerLines, ShimmerCircle variants.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">OfflineBanner</div>
+      <div class="comp-desc">Network status banner with reconnect animation.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">BrandedErrorFallback</div>
+      <div class="comp-desc">Error boundary with branded mountain illustration.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">MountainRefreshControl</div>
+      <div class="comp-desc">Custom pull-to-refresh with mountain animation.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">EditorialHero</div>
+      <div class="comp-desc">Full-bleed hero section for editorial-style layouts.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ZoomableImage</div>
+      <div class="comp-desc">Pinch-to-zoom image viewer for product photos.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ReviewCard / ReviewForm</div>
+      <div class="comp-desc">Product reviews with star rating and submission.</div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">ForceUpdateModal</div>
+      <div class="comp-desc">Required/recommended update prompt with store link.</div>
+    </div>
+  </div>
+
+  <!-- Design Principles -->
+  <div class="section-header">
+    <h2>Design Principles</h2>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 24px 0;">
+    <div style="background: var(--dark-surface); border-radius: 12px; padding: 24px; border-top: 3px solid var(--sunset-coral);">
+      <h4 style="margin-bottom: 8px;">Warm, Not Cold</h4>
+      <p style="font-size: 0.85rem; color: var(--sand-dark);">Shadows use espresso (#3A2518), never gray or black. Backgrounds are warm brown, never pure black. The palette evokes Blue Ridge sunsets.</p>
+    </div>
+    <div style="background: var(--dark-surface); border-radius: 12px; padding: 24px; border-top: 3px solid var(--mountain-blue);">
+      <h4 style="margin-bottom: 8px;">Editorial Typography</h4>
+      <p style="font-size: 0.85rem; color: var(--sand-dark);">Playfair Display headings give a high-end magazine feel. Source Sans 3 body text is clean and readable. Together they say "premium, not generic."</p>
+    </div>
+    <div style="background: var(--dark-surface); border-radius: 12px; padding: 24px; border-top: 3px solid var(--success);">
+      <h4 style="margin-bottom: 8px;">Haptic & Motion</h4>
+      <p style="font-size: 0.85rem; color: var(--sand-dark);">Every interactive element uses AnimatedPressable with spring scale + haptic feedback. Transitions feel physical and deliberate.</p>
+    </div>
+    <div style="background: var(--dark-surface); border-radius: 12px; padding: 24px; border-top: 3px solid var(--mauve);">
+      <h4 style="margin-bottom: 8px;">CTA = Sunset Coral</h4>
+      <p style="font-size: 0.85rem; color: var(--sand-dark);">All primary CTAs use #E8845C (Sunset Coral). Never green, never blue. This is non-negotiable across all screens.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Carolina Futons Mobile &bull; Sprint 2: Beta Launch &bull; 23 screens &bull; 50+ components &bull; 2931 tests<br>
+  <span style="font-size: 0.75rem;">Blue Ridge Mountain aesthetic &mdash; Asheville, NC</span>
+</footer>
+
+</body>
+</html>
