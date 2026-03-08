@@ -72,6 +72,8 @@ interface UseProductsReturn {
   suggestions: string[];
   /** Whether serving from cache (stale data) */
   isFromCache: boolean;
+  /** Error from the most recent fetch attempt, or null if successful */
+  fetchError: Error | null;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: ProductCategory | null) => void;
   setSortBy: (sort: SortOption) => void;
@@ -107,7 +109,8 @@ function applyFilters(products: Product[], filters: ProductFilters): Product[] {
   let result = products;
 
   if (filters.sizes.length > 0) {
-    result = result.filter((p) => p.size && filters.sizes.includes(p.size));
+    // Products without a size (accessories, pillows) pass through the size filter
+    result = result.filter((p) => !p.size || filters.sizes.includes(p.size));
   }
 
   if (filters.fabrics.length > 0) {
@@ -143,6 +146,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
   const [wixTotalResults, setWixTotalResults] = useState(0);
   const [wixIsLoading, setWixIsLoading] = useState(false);
   const [wixIsInitialLoading, setWixIsInitialLoading] = useState(useWix);
+  const [wixFetchError, setWixFetchError] = useState<Error | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const wixAbortRef = useRef<AbortController | null>(null);
 
@@ -155,6 +159,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     wixAbortRef.current = controller;
 
     setWixIsLoading(true);
+    setWixFetchError(null);
 
     const collectionId = selectedCategory
       ? CATEGORY_COLLECTION_IDS[selectedCategory]
@@ -177,7 +182,9 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
       .catch((err) => {
         if (controller.signal.aborted) return;
         setWixIsInitialLoading(false);
-        console.warn('[useProducts] Wix fetch error:', err);
+        const error = err instanceof Error ? err : new Error(String(err));
+        setWixFetchError(error);
+        console.error('[useProducts] Wix fetch error:', error);
       })
       .finally(() => {
         if (!controller.signal.aborted) setWixIsLoading(false);
@@ -193,6 +200,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     data: cachedProducts,
     isLoading: isCacheLoading,
     isStale: isFromCache,
+    error: cacheError,
     refresh: cacheRefresh,
   } = useDataCache<Product[]>('products', fetchProducts, { maxAge: PRODUCT_CACHE_MAX_AGE });
 
@@ -332,6 +340,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
       setWixProducts([]);
       setWixTotalResults(0);
       setWixIsInitialLoading(true);
+      setWixFetchError(null);
       setRefreshToken((t) => t + 1);
     } else {
       setIsLoading(false);
@@ -375,6 +384,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
     hasMore: resolvedHasMore,
     suggestions,
     isFromCache: useWix ? false : isFromCache,
+    fetchError: useWix ? wixFetchError : (cacheError ?? null),
     setSearchQuery: handleSearchQuery,
     setSelectedCategory: handleCategory,
     setSortBy: handleSort,

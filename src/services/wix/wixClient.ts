@@ -11,7 +11,7 @@
  * - POST /stores/v1/inventoryItems/query (inventory status)
  */
 
-import type { Product, ProductImage, ProductCategory, ProductSize } from '@/data/products';
+import type { Product, ProductImage, ProductCategory, ProductSize, SortOption } from '@/data/products';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -223,7 +223,7 @@ export interface CreateReviewInput {
 export interface QueryProductsOptions {
   limit?: number;
   offset?: number;
-  sort?: 'price-asc' | 'price-desc' | 'newest' | 'rating' | 'featured' | 'popular';
+  sort?: SortOption;
   collectionId?: string;
   productIds?: string[];
   search?: string;
@@ -285,7 +285,7 @@ export function resolveCategory(collectionSlug: string): ProductCategory {
 
 // ── Sort mapping ───────────────────────────────────────────────
 
-const SORT_MAP: Record<string, { fieldName: string; order: string }[]> = {
+const SORT_MAP: Record<SortOption, { fieldName: string; order: string }[]> = {
   'price-asc': [{ fieldName: 'price', order: 'ASC' }],
   'price-desc': [{ fieldName: 'price', order: 'DESC' }],
   newest: [{ fieldName: 'lastUpdated', order: 'DESC' }],
@@ -868,14 +868,14 @@ export function transformWixProduct(wix: WixProduct): Product {
   );
   const fabricOptions = fabricOption ? fabricOption.choices.map((c) => c.value) : [];
 
-  // Infer size from product name — more reliable than Wix product options
-  // which list all variant choices rather than a single product size
+  // Infer size from product name using word boundaries to avoid false matches
+  // (e.g. "Beautiful" should not match "full")
   const nameLower = wix.name.toLowerCase();
-  const size: ProductSize | undefined = nameLower.includes('queen')
+  const size: ProductSize | undefined = /\bqueen\b/.test(nameLower)
     ? 'queen'
-    : nameLower.includes('twin')
+    : /\btwin\b/.test(nameLower)
       ? 'twin'
-      : nameLower.includes('full')
+      : /\bfull\b/.test(nameLower)
         ? 'full'
         : undefined;
 
@@ -884,7 +884,7 @@ export function transformWixProduct(wix: WixProduct): Product {
     name: wix.name,
     slug: wix.slug,
     sku: wix.sku ?? '',
-    category: 'futons' as ProductCategory, // Resolved via collection mapping
+    category: 'futons' as ProductCategory, // TODO: resolve via collection mapping once Wix collection IDs are configured
     ...(size ? { size } : {}),
     price: isDiscounted ? wix.price.discountedPrice : wix.price.price,
     ...(isDiscounted ? { originalPrice: wix.price.price } : {}),

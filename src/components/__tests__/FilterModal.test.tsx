@@ -4,6 +4,12 @@ import { FilterModal } from '../FilterModal';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { ProductFilters } from '@/hooks/useProducts';
 
+jest.mock('expo-haptics', () => ({
+  selectionAsync: jest.fn(),
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+}));
+
 const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], priceRange: null };
 const FABRICS = ['Natural Linen', 'Slate Gray', 'Mountain Blue'];
 const PRICE_EXTENT: [number, number] = [12, 1899];

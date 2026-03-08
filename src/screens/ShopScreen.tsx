@@ -61,6 +61,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     availableFabrics,
     priceExtent,
     isLoading,
+    fetchError,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
@@ -148,6 +149,19 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
         />
 
+        {/* Fetch error banner */}
+        {fetchError && (
+          <View
+            style={[styles.errorBanner, { backgroundColor: colors.sunsetCoralLight ?? '#FEE2E2' }]}
+            testID="shop-fetch-error"
+            accessibilityRole="alert"
+          >
+            <Text style={[styles.errorText, { color: colors.sunsetCoralDark ?? '#991B1B' }]}>
+              Unable to load products. Pull to refresh.
+            </Text>
+          </View>
+        )}
+
         {/* Filter + Sort row */}
         <SortPicker
           value={sortBy}
@@ -177,6 +191,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       spacing,
       suggestions,
       recentSearches,
+      fetchError,
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
@@ -310,6 +325,18 @@ const styles = StyleSheet.create({
   emptyMessage: {
     fontSize: 15,
     lineHeight: 22,
+    textAlign: 'center',
+  },
+  errorBanner: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  errorText: {
+    fontSize: 13,
+    fontWeight: '600',
     textAlign: 'center',
   },
   footer: {

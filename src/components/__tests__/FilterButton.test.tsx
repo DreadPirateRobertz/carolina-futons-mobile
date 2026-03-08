@@ -3,6 +3,11 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { FilterButton } from '../FilterButton';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+}));
+
 function renderFilterButton(overrides: { activeCount?: number; onPress?: jest.Mock } = {}) {
   const onPress = overrides.onPress ?? jest.fn();
   return {

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 
 interface Props {
@@ -11,13 +12,18 @@ interface Props {
 export function FilterButton({ activeCount, onPress, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 
+  const handlePress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  }, [onPress]);
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
         { backgroundColor: colors.sandLight, borderRadius: borderRadius.md },
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       testID={testID ?? 'filter-button'}
       accessibilityLabel={
         activeCount > 0 ? `Filters, ${activeCount} active` : 'Filters'

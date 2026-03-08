@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { PriceRangeSlider } from '@/components/PriceRangeSlider';
 import type { ProductFilters, ProductSize } from '@/hooks/useProducts';
@@ -38,6 +39,7 @@ export function FilterModal({
   }, [filters]);
 
   const toggleSize = useCallback((size: ProductSize) => {
+    Haptics.selectionAsync();
     setDraft((prev) => ({
       ...prev,
       sizes: prev.sizes.includes(size)
@@ -47,6 +49,7 @@ export function FilterModal({
   }, []);
 
   const toggleFabric = useCallback((fabric: string) => {
+    Haptics.selectionAsync();
     setDraft((prev) => ({
       ...prev,
       fabrics: prev.fabrics.includes(fabric)
@@ -64,6 +67,7 @@ export function FilterModal({
   }, []);
 
   const handleApply = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onApply(draft);
     onClose();
   }, [draft, onApply, onClose]);
@@ -102,7 +106,12 @@ export function FilterModal({
             {/* Header */}
             <View style={styles.header}>
               <Text style={[styles.title, { color: colors.espresso }]}>Filter Products</Text>
-              <TouchableOpacity onPress={clearAll} testID="filter-clear-all">
+              <TouchableOpacity
+                onPress={clearAll}
+                testID="filter-clear-all"
+                accessibilityRole="button"
+                accessibilityLabel="Clear all filters"
+              >
                 <Text style={[styles.clearText, { color: colors.mountainBlue }]}>Clear All</Text>
               </TouchableOpacity>
             </View>
