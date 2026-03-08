@@ -45,6 +45,8 @@ interface Props {
   onOrderHistory?: () => void;
   /** Callback to navigate to the premium subscription screen. */
   onPremium?: () => void;
+  /** Callback to navigate to the privacy policy screen. */
+  onPrivacyPolicy?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -56,7 +58,7 @@ interface Props {
  * @param props - {@link Props}
  * @returns The account screen view.
  */
-export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
+export function AccountScreen({ onLogin, onOrderHistory, onPremium, onPrivacyPolicy, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, loading, error, signOut, updateProfile, clearError } = useAuth();
   const { isPremium, restore } = usePremium();
@@ -544,6 +546,16 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             Privacy
           </Text>
           <View style={{ gap: 8 }}>
+            {onPrivacyPolicy && (
+              <MenuItem
+                label="Privacy Policy"
+                onPress={onPrivacyPolicy}
+                colors={colors}
+                borderRadius={borderRadius}
+                shadows={shadows}
+                testID="account-privacy-policy"
+              />
+            )}
             <MenuItem
               label="Export My Data"
               onPress={dataExport.exportData}
