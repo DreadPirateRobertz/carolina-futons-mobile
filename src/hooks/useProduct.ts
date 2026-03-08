@@ -25,7 +25,7 @@ export function useProduct(productId: string): UseProductReturn {
   const [product, setProduct] = useState<Product | null>(() =>
     productId ? (PRODUCTS.find((p) => p.id === productId) ?? null) : null,
   );
-  const [isLoading, setIsLoading] = useState(!!productId);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
