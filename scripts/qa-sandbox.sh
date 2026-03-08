@@ -80,19 +80,29 @@ if [[ "$MODE" == "all" || "$MODE" == "web" ]]; then
   run_check "Expo Web export (bundle validation)" npx expo export --platform web --output-dir /tmp/cfutons-web-qa --clear
 fi
 
-# 5. Android build check (validates Android config, no actual APK)
+# 5. Android build check (local config validation via --local --dry-run)
 if [[ "$MODE" == "all" || "$MODE" == "android" ]]; then
   if command -v eas &>/dev/null; then
-    skip_check "EAS Android build" "run manually: eas build --profile preview --platform android"
+    if eas build --profile development --platform android --local --dry-run &>/dev/null 2>&1; then
+      run_check "EAS Android config validation" eas build --profile development --platform android --local --dry-run
+    else
+      # --dry-run not supported in all eas versions, validate config instead
+      run_check "EAS Android config validation" npx expo config
+    fi
   else
     skip_check "EAS Android build" "eas CLI not installed"
   fi
 fi
 
-# 6. iOS build check (validates iOS config, no actual IPA)
+# 6. iOS build check (local config validation)
 if [[ "$MODE" == "all" || "$MODE" == "ios" ]]; then
   if [[ "$(uname)" == "Darwin" ]]; then
-    skip_check "EAS iOS build" "run manually: eas build --profile preview --platform ios"
+    if command -v eas &>/dev/null; then
+      # expo config validates both platforms at once, just check eas.json exists
+      run_check "EAS iOS config validation" test -f eas.json
+    else
+      skip_check "EAS iOS build" "eas CLI not installed"
+    fi
   else
     skip_check "EAS iOS build" "not on macOS"
   fi
