@@ -325,6 +325,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         keyboardShouldPersistTaps="handled"
         windowSize={5}
         maxToRenderPerBatch={6}
+        initialNumToRender={4}
         removeClippedSubviews
         testID="product-list"
       />
