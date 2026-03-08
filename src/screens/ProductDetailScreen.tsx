@@ -58,6 +58,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
+import { getStockStatus, LOW_STOCK_THRESHOLD } from '@/data/products';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -97,7 +98,9 @@ export function ProductDetailScreen({
   const model = getModel(resolvedId) ?? models[0];
   const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
   const { product: catalogProduct } = useProduct(catalogProductId);
-  const isOutOfStock = catalogProduct != null && !catalogProduct.inStock;
+  const stockStatus = catalogProduct ? getStockStatus(catalogProduct) : 'in_stock';
+  const isOutOfStock = stockStatus === 'out_of_stock';
+  const isLowStock = stockStatus === 'low_stock';
   const backInStock = useBackInStockSubscription(catalogProductId);
   const [selectedFabric, setSelectedFabric] = useState<Fabric>(model.fabrics[0]);
   const [quantity, setQuantity] = useState(1);
@@ -777,16 +780,30 @@ export function ProductDetailScreen({
           </TouchableOpacity>
         </View>
 
+        {/* Stock Status */}
+        {(isLowStock || isOutOfStock) && (
+          <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
+            {isLowStock && catalogProduct?.stockCount !== undefined && (
+              <View style={[styles.stockAlert, { backgroundColor: '#FFF3CD' }]} testID="low-stock-alert">
+                <Text style={[styles.stockAlertText, { color: '#856404' }]}>
+                  Only {catalogProduct.stockCount} left in stock — order soon!
+                </Text>
+              </View>
+            )}
+            {isOutOfStock && (
+              <View style={[styles.stockAlert, { backgroundColor: '#F8D7DA' }]} testID="out-of-stock-alert">
+                <Text style={[styles.stockAlertText, { color: '#721C24' }]}>
+                  Currently out of stock
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
         {/* Quantity + Add to Cart / Notify Me */}
         <View style={[styles.section, styles.cartSection, { paddingHorizontal: spacing.lg }]}>
           {isOutOfStock ? (
             <>
-              <Text
-                style={[styles.outOfStockLabel, { color: colors.sunsetCoral }]}
-                testID="out-of-stock-label"
-              >
-                Out of Stock
-              </Text>
               <AnimatedPressable
                 style={[
                   styles.addToCartButton,
@@ -1422,6 +1439,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
+  },
+  stockAlert: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  stockAlertText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   placeholderFuton: {
     position: 'relative',

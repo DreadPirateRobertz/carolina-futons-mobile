@@ -28,6 +28,7 @@ export interface Product {
   rating: number;
   reviewCount: number;
   inStock: boolean;
+  stockCount?: number;
   fabricOptions: string[];
   dimensions: {
     width: number;
@@ -49,6 +50,16 @@ export interface CategoryInfo {
   id: ProductCategory;
   label: string;
   count: number;
+}
+
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
+
+export const LOW_STOCK_THRESHOLD = 5;
+
+export function getStockStatus(product: Product): StockStatus {
+  if (!product.inStock) return 'out_of_stock';
+  if (product.stockCount !== undefined && product.stockCount < LOW_STOCK_THRESHOLD) return 'low_stock';
+  return 'in_stock';
 }
 
 export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating';
@@ -139,6 +150,7 @@ export const PRODUCTS: Product[] = [
     rating: 4.6,
     reviewCount: 89,
     inStock: true,
+    stockCount: 3,
     fabricOptions: ['Natural Linen', 'Slate Gray', 'Forest Green'],
     dimensions: { width: 39, depth: 32, height: 31 },
   },
@@ -438,7 +450,8 @@ export const PRODUCTS: Product[] = [
     ],
     rating: 4.1,
     reviewCount: 456,
-    inStock: true,
+    inStock: false,
+    stockCount: 0,
     fabricOptions: [],
     dimensions: { width: 12, depth: 2, height: 0 },
   },

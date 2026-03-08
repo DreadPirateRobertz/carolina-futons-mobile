@@ -4,6 +4,7 @@ import { ProductCard } from '../ProductCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS, type Product } from '@/data/products';
+import { productId } from '@/data/productId';
 
 const futon = PRODUCTS.find((p) => p.category === 'futons')!;
 const saleProduct = PRODUCTS.find((p) => p.originalPrice !== undefined)!;
@@ -120,6 +121,42 @@ describe('ProductCard', () => {
     it('has button role', () => {
       const { getByTestId } = renderCard();
       expect(getByTestId(`product-card-${futon.id}`).props.accessibilityRole).toBe('button');
+    });
+  });
+
+  describe('stock status', () => {
+    const lowStockProduct: Product = {
+      ...futon,
+      id: productId('test-low-stock'),
+      stockCount: 3,
+    };
+
+    const outOfStockProduct: Product = {
+      ...futon,
+      id: productId('test-oos'),
+      inStock: false,
+      stockCount: 0,
+    };
+
+    it('shows Low Stock badge when stockCount < 5', () => {
+      const { getByText } = renderCard({ product: lowStockProduct });
+      expect(getByText('Low Stock')).toBeTruthy();
+    });
+
+    it('shows Out of Stock badge when product is not in stock', () => {
+      const { getByTestId } = renderCard({ product: outOfStockProduct });
+      expect(getByTestId(`stock-badge-${outOfStockProduct.id}`)).toBeTruthy();
+    });
+
+    it('does not show stock badge for in-stock products', () => {
+      const { queryByText } = renderCard();
+      expect(queryByText('Low Stock')).toBeNull();
+      expect(queryByText('Out of Stock')).toBeNull();
+    });
+
+    it('renders stock badge with correct testID', () => {
+      const { getByTestId } = renderCard({ product: lowStockProduct });
+      expect(getByTestId(`stock-badge-${lowStockProduct.id}`)).toBeTruthy();
     });
   });
 });

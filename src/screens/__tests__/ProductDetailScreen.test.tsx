@@ -939,4 +939,28 @@ describe('ProductDetailScreen', () => {
       alertSpy.mockRestore();
     });
   });
+
+  describe('Stock status indicators', () => {
+    it('does not show stock alerts for in-stock products', () => {
+      const { queryByTestId } = renderDetail();
+      expect(queryByTestId('low-stock-alert')).toBeNull();
+      expect(queryByTestId('out-of-stock-alert')).toBeNull();
+    });
+
+    it('shows low stock alert for Pisgah (stockCount: 3)', () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'pisgah-twin' });
+      expect(getByTestId('low-stock-alert')).toBeTruthy();
+      expect(getByText(/Only 3 left/)).toBeTruthy();
+    });
+
+    it('shows add to cart button for low stock products', () => {
+      const { getByTestId } = renderDetail({ productId: 'pisgah-twin' });
+      expect(getByTestId('add-to-cart-button')).toBeTruthy();
+    });
+
+    it('does not show notify-back-in-stock button for in-stock products', () => {
+      const { queryByTestId } = renderDetail();
+      expect(queryByTestId('notify-back-in-stock-button')).toBeNull();
+    });
+  });
 });

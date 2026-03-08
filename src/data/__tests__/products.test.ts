@@ -1,4 +1,5 @@
-import { PRODUCTS, CATEGORIES, SORT_OPTIONS, type Product, type CategoryInfo } from '../products';
+import { PRODUCTS, CATEGORIES, SORT_OPTIONS, type Product, type CategoryInfo, getStockStatus } from '../products';
+import { productId } from '../productId';
 
 describe('Product catalog data integrity', () => {
   it('has at least 10 products', () => {
@@ -142,5 +143,51 @@ describe('Type contracts', () => {
     expect(typeof c.id).toBe('string');
     expect(typeof c.label).toBe('string');
     expect(typeof c.count).toBe('number');
+  });
+});
+
+describe('getStockStatus', () => {
+  const baseProduct: Product = {
+    id: productId('test-product'),
+    name: 'Test',
+    slug: 'test',
+    category: 'futons',
+    price: 100,
+    description: 'Test',
+    shortDescription: 'Test',
+    images: [{ uri: 'https://example.com/img.jpg', alt: 'Test' }],
+    rating: 4.0,
+    reviewCount: 10,
+    inStock: true,
+    fabricOptions: [],
+    dimensions: { width: 50, depth: 30, height: 30 },
+  };
+
+  it('returns in_stock for product with inStock=true and no stockCount', () => {
+    expect(getStockStatus(baseProduct)).toBe('in_stock');
+  });
+
+  it('returns in_stock for product with stockCount >= 5', () => {
+    expect(getStockStatus({ ...baseProduct, stockCount: 10 })).toBe('in_stock');
+  });
+
+  it('returns low_stock for product with stockCount < 5', () => {
+    expect(getStockStatus({ ...baseProduct, stockCount: 3 })).toBe('low_stock');
+  });
+
+  it('returns low_stock for stockCount = 1', () => {
+    expect(getStockStatus({ ...baseProduct, stockCount: 1 })).toBe('low_stock');
+  });
+
+  it('returns out_of_stock for product with inStock=false', () => {
+    expect(getStockStatus({ ...baseProduct, inStock: false })).toBe('out_of_stock');
+  });
+
+  it('returns out_of_stock for inStock=false even with stockCount > 0', () => {
+    expect(getStockStatus({ ...baseProduct, inStock: false, stockCount: 5 })).toBe('out_of_stock');
+  });
+
+  it('returns in_stock at threshold boundary (stockCount = 5)', () => {
+    expect(getStockStatus({ ...baseProduct, stockCount: 5 })).toBe('in_stock');
   });
 });

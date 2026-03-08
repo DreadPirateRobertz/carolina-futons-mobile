@@ -12,7 +12,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
-import { type Product, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
+import { type Product, DEFAULT_PRODUCT_BLURHASH, getStockStatus, type StockStatus } from '@/data/products';
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { WishlistButton } from './WishlistButton';
@@ -32,6 +32,15 @@ export const ProductCard = memo(function ProductCard({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
+
+  const stockStatus = getStockStatus(product);
+
+  const stockBadgeConfig: Record<StockStatus, { label: string; color: string } | null> = {
+    in_stock: null,
+    low_stock: { label: 'Low Stock', color: '#D4920B' },
+    out_of_stock: { label: 'Out of Stock', color: '#C0392B' },
+  };
+  const stockBadge = stockBadgeConfig[stockStatus];
 
   const badgeColor =
     product.badge === 'Sale'
@@ -116,6 +125,15 @@ export const ProductCard = memo(function ProductCard({
             </Text>
           )}
         </View>
+
+        {stockBadge && (
+          <View
+            style={[styles.stockBadge, { backgroundColor: stockBadge.color }]}
+            testID={`stock-badge-${product.id}`}
+          >
+            <Text style={styles.stockBadgeText}>{stockBadge.label}</Text>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -200,5 +218,18 @@ const styles = StyleSheet.create({
   originalPrice: {
     fontSize: 13,
     textDecorationLine: 'line-through',
+  },
+  stockBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+    marginTop: 2,
+  },
+  stockBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
 });
