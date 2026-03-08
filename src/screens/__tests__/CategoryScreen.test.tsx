@@ -160,4 +160,12 @@ describe('CategoryScreen', () => {
       expect(onProductPress).toHaveBeenCalledWith(expect.objectContaining({ id: firstFuton.id }));
     });
   });
+
+  describe('pull-to-refresh', () => {
+    it('FlatList has refreshControl configured', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
+      const flatList = getByTestId('category-product-list');
+      expect(flatList.props.refreshControl).toBeTruthy();
+    });
+  });
 });

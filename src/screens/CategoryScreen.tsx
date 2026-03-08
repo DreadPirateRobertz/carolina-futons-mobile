@@ -7,12 +7,13 @@
  * products yet.
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
@@ -57,10 +58,17 @@ export function CategoryScreen({
   const { colors, spacing } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
+  const { products, sortBy, setSortBy, setSelectedCategory, refresh } = useProducts({
     initialCategory: resolvedCategory,
   });
   const scrollPerf = useScrollPerformance('CategoryScreen');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    refresh();
+    setTimeout(() => setRefreshing(false), 600);
+  }, [refresh]);
 
   // Sync hook state when category changes
   useEffect(() => {
@@ -138,6 +146,13 @@ export function CategoryScreen({
         onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
         onScrollEndDrag={scrollPerf.onScrollEndDrag}
         onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
+        refreshControl={
+          <MountainRefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            testID="category-refresh-control"
+          />
+        }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews

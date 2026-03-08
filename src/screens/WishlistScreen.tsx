@@ -6,7 +6,7 @@
  * spot deals. Long-press triggers a removal confirmation dialog.
  * Share exports a plain-text list via the native share sheet.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
@@ -41,6 +42,13 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { count, getProducts, getShareText, remove, clear } = useWishlist();
 
   const products = getProducts();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Wishlist is local state; refresh triggers a re-render for price updates
+    setTimeout(() => setRefreshing(false), 600);
+  }, []);
 
   const handleRemove = useCallback(
     (productId: string) => {
@@ -186,6 +194,13 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         columnWrapperStyle={products.length > 0 ? styles.row : undefined}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
+        refreshControl={
+          <MountainRefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            testID="wishlist-refresh-control"
+          />
+        }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         testID="wishlist-list"
