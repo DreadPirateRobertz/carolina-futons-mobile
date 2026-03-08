@@ -18,6 +18,11 @@
 import { useCallback, useRef } from 'react';
 import { perf, type ScrollSession } from '@/services/performance';
 
+/** FPS threshold below which we consider a frame "slow" */
+const LOW_FPS_THRESHOLD_MS = 1000 / 55; // ~18.18ms per frame = below 55fps
+/** Number of consecutive slow frames before logging a warning */
+const CONSECUTIVE_SLOW_FRAMES_WARN = 3;
+
 /**
  * Returns FlatList scroll event handlers that measure per-frame timing via
  * requestAnimationFrame and report dropped frames / FPS (Frames Per Second)
@@ -27,6 +32,7 @@ export function useScrollPerformance(screenName: string) {
   const sessionRef = useRef<ScrollSession | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number>(0);
+  const consecutiveSlowFrames = useRef<number>(0);
 
   const startTracking = useCallback(() => {
     lastFrameTimeRef.current = performance.now();
@@ -38,6 +44,19 @@ export function useScrollPerformance(screenName: string) {
 
       if (sessionRef.current && frameDuration > 0 && frameDuration < 500) {
         perf.recordFrame(sessionRef.current, frameDuration);
+
+        // Track consecutive slow frames (below 55fps)
+        if (frameDuration > LOW_FPS_THRESHOLD_MS) {
+          consecutiveSlowFrames.current++;
+          if (consecutiveSlowFrames.current >= CONSECUTIVE_SLOW_FRAMES_WARN && __DEV__) {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `[Perf] ${screenName}: FPS below 55 for ${consecutiveSlowFrames.current} consecutive frames (${Math.round(1000 / frameDuration)}fps)`,
+            );
+          }
+        } else {
+          consecutiveSlowFrames.current = 0;
+        }
       }
 
       rafIdRef.current = requestAnimationFrame(tick);
@@ -54,6 +73,7 @@ export function useScrollPerformance(screenName: string) {
   }, []);
 
   const onScrollBeginDrag = useCallback(() => {
+    consecutiveSlowFrames.current = 0;
     sessionRef.current = perf.startScrollSession(screenName);
     startTracking();
   }, [screenName, startTracking]);

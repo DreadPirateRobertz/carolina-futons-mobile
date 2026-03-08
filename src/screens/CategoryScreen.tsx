@@ -12,6 +12,7 @@ import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
+import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { ProductCard } from '@/components/ProductCard';
 import { SortPicker } from '@/components/SortPicker';
 import { EmptyState } from '@/components/EmptyState';
@@ -59,6 +60,7 @@ export function CategoryScreen({
   const { products, sortBy, setSortBy, setSelectedCategory } = useProducts({
     initialCategory: resolvedCategory,
   });
+  const scrollPerf = useScrollPerformance('CategoryScreen');
 
   // Sync hook state when category changes
   useEffect(() => {
@@ -133,8 +135,14 @@ export function CategoryScreen({
         columnWrapperStyle={products.length > 0 ? styles.row : undefined}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
+        onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+        windowSize={5}
+        maxToRenderPerBatch={6}
         testID="category-product-list"
       />
     </View>

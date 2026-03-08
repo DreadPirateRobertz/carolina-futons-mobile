@@ -25,6 +25,7 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
+import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 interface Props {
@@ -63,6 +64,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -231,6 +233,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           />
         }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
+        onMomentumScrollEnd={scrollPerf.onMomentumScrollEnd}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         windowSize={5}
