@@ -129,6 +129,12 @@ jest.mock('expo-crypto', () => ({
   getRandomBytes: jest.fn(() => new Uint8Array(32)),
 }));
 
+// Mock expo-store-review (used by useRatingPrompt)
+jest.mock('expo-store-review', () => ({
+  isAvailableAsync: jest.fn(() => Promise.resolve(false)),
+  requestReview: jest.fn(() => Promise.resolve()),
+}));
+
 // Silence the warning about animated values
 // NativeAnimatedHelper path changed in RN 0.76+ new architecture
 try {

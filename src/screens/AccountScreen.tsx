@@ -35,6 +35,7 @@ import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
+import { useRatingPrompt } from '@/hooks/useRatingPrompt';
 import { PremiumBadge } from '@/components/PremiumBadge';
 
 /** Props for the AccountScreen component. */
@@ -65,6 +66,7 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
   const addressBook = useAddressBook();
   const [restoring, setRestoring] = useState(false);
   const { status: bioStatus, isEnabled: biometricEnabled, loading: bioLoading, enableBiometric, disableBiometric } = useBiometricAuth();
+  const ratingPrompt = useRatingPrompt();
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -459,6 +461,26 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
               </View>
             </GlassCard>
           )}
+          <GlassCard intensity="light">
+            <View style={styles.menuItem} testID="account-rating-prompt-toggle">
+              <Text style={[styles.menuLabel, { color: darkPalette.textPrimary }]}>
+                App Rating Prompts
+              </Text>
+              <Switch
+                value={!ratingPrompt.disabled}
+                onValueChange={() => {
+                  if (Platform.OS !== 'web') {
+                    Haptics.selectionAsync();
+                  }
+                  ratingPrompt.toggleDisabled();
+                }}
+                trackColor={{ false: darkPalette.borderSubtle, true: colors.mountainBlue }}
+                thumbColor="#FFFFFF"
+                testID="rating-prompt-switch"
+                accessibilityLabel="Enable app rating prompts"
+              />
+            </View>
+          </GlassCard>
         </View>
 
         {/* Privacy section */}

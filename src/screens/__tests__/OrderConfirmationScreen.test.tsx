@@ -4,6 +4,14 @@ import { OrderConfirmationScreen } from '../OrderConfirmationScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { OrderConfirmation } from '@/services/payment';
 
+jest.mock('@/hooks/useRatingPrompt', () => ({
+  useRatingPrompt: () => ({
+    disabled: false,
+    recordPurchase: jest.fn(),
+    toggleDisabled: jest.fn(),
+  }),
+}));
+
 const mockOrder: OrderConfirmation = {
   orderId: 'ord_123',
   orderNumber: 'CF-20260301-001',

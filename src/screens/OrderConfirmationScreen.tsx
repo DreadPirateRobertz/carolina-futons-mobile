@@ -6,16 +6,12 @@
  * estimated delivery window, and CTAs (Call To Action) to continue
  * shopping or view order history.
  */
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform } from 'react-native';
-import * as StoreReview from 'expo-store-review';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
 import { formatPrice } from '@/utils';
-import { events } from '@/services/analytics';
+import { useRatingPrompt } from '@/hooks/useRatingPrompt';
 import type { OrderConfirmation } from '@/services/payment';
-
-const RATING_PROMPTED_KEY = '@store_rating_prompted';
 
 interface Props {
   order: OrderConfirmation;
@@ -32,27 +28,11 @@ export function OrderConfirmationScreen({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
-  const ratingTimer = useRef<ReturnType<typeof setTimeout>>();
+  const { recordPurchase } = useRatingPrompt();
 
   useEffect(() => {
-    if (Platform.OS === 'web') return;
-
-    ratingTimer.current = setTimeout(async () => {
-      const alreadyPrompted = await AsyncStorage.getItem(RATING_PROMPTED_KEY);
-      if (alreadyPrompted) return;
-
-      const available = await StoreReview.isAvailableAsync();
-      if (!available) return;
-
-      await StoreReview.requestReview();
-      await AsyncStorage.setItem(RATING_PROMPTED_KEY, 'true');
-      events.rateApp('post_purchase');
-    }, 3000);
-
-    return () => {
-      if (ratingTimer.current) clearTimeout(ratingTimer.current);
-    };
-  }, []);
+    recordPurchase();
+  }, [recordPurchase]);
 
   return (
     <View
