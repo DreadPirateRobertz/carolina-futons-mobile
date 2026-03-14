@@ -95,7 +95,6 @@ const mockAuthValue = {
   updateProfile: jest.fn(),
   signOut: jest.fn(),
   clearError: jest.fn(),
-  updateProfile: jest.fn(),
 };
 
 beforeEach(() => {
