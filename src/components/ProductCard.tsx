@@ -21,6 +21,7 @@ import {
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { WishlistButton } from './WishlistButton';
+import { FinancingBadge } from './FinancingBadge';
 
 interface Props {
   product: Product;
@@ -130,6 +131,8 @@ export const ProductCard = memo(function ProductCard({
             </Text>
           )}
         </View>
+
+        <FinancingBadge price={product.price} variant="compact" />
 
         {stockBadge && (
           <View
