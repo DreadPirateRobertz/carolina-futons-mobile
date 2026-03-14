@@ -45,6 +45,7 @@ function AccountScreenWithNav() {
       onOrderHistory={() => nav.navigate('OrderHistory')}
       onLogin={() => nav.navigate('Login')}
       onPremium={() => nav.navigate('Premium')}
+      onPrivacyPolicy={() => nav.navigate('PrivacyPolicy')}
     />
   );
 }
