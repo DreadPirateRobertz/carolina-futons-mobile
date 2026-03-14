@@ -106,6 +106,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/D4C5A9/3A2518?text=Asheville',
         alt: 'The Asheville Full Futon',
+        blurhash: 'LKJRq_~q9F%M00WB-;ay4nofRjWB',
       },
     ],
     badge: 'Bestseller',
@@ -130,6 +131,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/5B8FA8/FFFFFF?text=Blue+Ridge',
         alt: 'The Blue Ridge Queen Futon',
+        blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.',
       },
     ],
     badge: 'Premium',
@@ -153,6 +155,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/4A7C59/FFFFFF?text=Pisgah',
         alt: 'The Pisgah Twin Futon',
+        blurhash: 'LCEf;R~q4n%M-;WB9Fof00ay%MRj',
       },
     ],
     rating: 4.6,
@@ -177,6 +180,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/C9A0A0/3A2518?text=Biltmore',
         alt: 'The Biltmore Loveseat',
+        blurhash: 'LMN],-xu9F~q_3WB%MRj4nofIUt7',
       },
     ],
     badge: 'Sale',
@@ -201,6 +205,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Hendersonville',
         alt: 'The Hendersonville Queen Murphy Cabinet Bed',
+        blurhash: 'LJIh5}~q9F%M00WB-;WB4nRjRjWB',
       },
     ],
     badge: 'Bestseller',
@@ -224,6 +229,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/C9A0A0/3A2518?text=Appalachian',
         alt: 'The Appalachian Full Horizontal Murphy Cabinet',
+        blurhash: 'LMN],-xu9F~q_3t7%MRj4nofIURj',
       },
     ],
     rating: 4.7,
@@ -246,6 +252,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/5B8FA8/FFFFFF?text=Smoky+Mountain',
         alt: 'The Smoky Mountain Queen Bookcase Murphy',
+        blurhash: 'LGF5]+Yk^6#M@-5c,1Ex@[or[Q6.',
       },
     ],
     badge: 'Premium',
@@ -269,6 +276,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/4A7C59/FFFFFF?text=Brevard',
         alt: 'The Brevard Twin Cabinet Bed',
+        blurhash: 'LCEf;R~q4n%M-;t79Fof00ay%MRj',
       },
     ],
     rating: 4.6,
@@ -292,6 +300,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/E8845C/FFFFFF?text=Chimney+Rock',
         alt: 'The Chimney Rock Queen Desk Murphy',
+        blurhash: 'LHKB%|~q0KIU_3WB%MRj9Fof%MRj',
       },
     ],
     badge: 'Sale',
@@ -315,6 +324,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/6B7B8D/FFFFFF?text=Nantahala',
         alt: 'The Nantahala Full Storage Murphy',
+        blurhash: 'LDG+h2~q4n%M-;WB9FRj00of%Mt7',
       },
     ],
     rating: 4.7,
@@ -337,6 +347,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/E8D5B7/3A2518?text=Cover',
         alt: 'Mountain Weave Futon Cover',
+        blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj',
       },
     ],
     rating: 4.5,
@@ -360,6 +371,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/E8845C/FFFFFF?text=Sunset+Cover',
         alt: 'Sunset Cotton Cover',
+        blurhash: 'LHKB%|~q0KIU_3of%MWB9Fay%MRj',
       },
     ],
     badge: 'Sale',
@@ -383,6 +395,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/F2E8D5/3A2518?text=Mattress',
         alt: 'Premium Innerspring Mattress',
+        blurhash: 'LPO|x_~q9F%M00of-;WB4nayRjWB',
       },
     ],
     rating: 4.7,
@@ -405,6 +418,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/A8CCD8/3A2518?text=Memory+Foam',
         alt: 'Memory Foam Mattress',
+        blurhash: 'LKH_$O~q9F%M00WB-;of4nayRjt7',
       },
     ],
     badge: 'New',
@@ -428,6 +442,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Frame',
         alt: 'Solid Hardwood Frame',
+        blurhash: 'LJIh5}~q9F%M00WBD%WB4nRjRjWB',
       },
     ],
     rating: 4.6,
@@ -445,7 +460,11 @@ export const PRODUCTS: Product[] = [
     description: 'Set of 2 matching arm pillows. Memory foam fill with removable, washable covers.',
     shortDescription: 'Set of 2 memory foam arm pillows',
     images: [
-      { uri: 'https://placeholder.co/400x300/C9A0A0/FFFFFF?text=Pillows', alt: 'Arm Pillow Set' },
+      {
+        uri: 'https://placeholder.co/400x300/C9A0A0/FFFFFF?text=Pillows',
+        alt: 'Arm Pillow Set',
+        blurhash: 'LMN],-xu9F~q_3WBD%Rj4nofIUt7',
+      },
     ],
     rating: 4.3,
     reviewCount: 87,
@@ -466,6 +485,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/999999/FFFFFF?text=Grip+Strips',
         alt: 'Non-Slip Grip Strips',
+        blurhash: 'L9ABV]~q00%M-;WB9Fof00of%MRj',
       },
     ],
     rating: 4.1,
@@ -487,6 +507,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://placeholder.co/400x300/D4BC96/3A2518?text=Polish',
         alt: 'Natural Wood Polish',
+        blurhash: 'LJIh5}~q9F%M00WB-;ay4nRjofWB',
       },
     ],
     rating: 4.6,
