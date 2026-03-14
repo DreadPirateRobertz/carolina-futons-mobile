@@ -33,7 +33,8 @@ const espressoBrown = FABRICS[5]; // $49
 
 /** Test harness that exposes cart state + actions */
 function CartHarness() {
-  const { items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, itemCount, subtotal, syncing, addItem, removeItem, updateQuantity, clearCart } =
+    useCart();
 
   return (
     <View>
@@ -93,6 +94,7 @@ const mockAuthValue = {
   resetPassword: jest.fn(),
   signOut: jest.fn(),
   clearError: jest.fn(),
+  updateProfile: jest.fn(),
 };
 
 beforeEach(() => {
@@ -410,11 +412,7 @@ describe('Server cart merge on auth', () => {
       expect(getByTestId('syncing').props.children).toBe('false');
     });
 
-    expect(mockAddToCart).toHaveBeenCalledWith(
-      FUTON_MODELS[0].id,
-      1,
-      FABRICS[0].id,
-    );
+    expect(mockAddToCart).toHaveBeenCalledWith(FUTON_MODELS[0].id, 1, FABRICS[0].id);
   });
 
   it('skips merge when Wix is not configured', async () => {

@@ -14,6 +14,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { PRODUCTS, Product } from '@/data/products';
+import type { ProductId } from '@/data/productId';
 
 /** Maximum number of recently-viewed product IDs to retain. */
 const MAX_RECENT = 20;
@@ -76,34 +77,40 @@ export function RecommendationsProvider({ children }: { children: React.ReactNod
   }, []);
 
   const recentlyViewed = useMemo(
-    () => state.viewedIds.map((id) => productById.get(id)).filter((p): p is Product => p != null),
+    () =>
+      state.viewedIds
+        .map((id) => productById.get(id as ProductId))
+        .filter((p): p is Product => p != null),
     [state.viewedIds],
   );
 
   const similarItems = useMemo(() => {
     if (state.viewedIds.length === 0) return [];
     const lastViewedId = state.viewedIds[0];
-    const lastViewed = productById.get(lastViewedId);
+    const lastViewed = productById.get(lastViewedId as ProductId);
     if (!lastViewed) return [];
-    return PRODUCTS.filter((p) => p.category === lastViewed.category && p.id !== lastViewedId);
+    return PRODUCTS.filter(
+      (p) => p.category === lastViewed.category && (p.id as string) !== lastViewedId,
+    );
   }, [state.viewedIds]);
 
   const alsoBoought = useMemo(() => {
     if (state.purchasedIds.length === 0) return [];
     const purchasedCategories = new Set(
       state.purchasedIds
-        .map((id) => productById.get(id))
+        .map((id) => productById.get(id as ProductId))
         .filter((p): p is Product => p != null)
         .map((p) => p.category),
     );
     return PRODUCTS.filter(
-      (p) => purchasedCategories.has(p.category) && !state.purchasedIds.includes(p.id),
+      (p) => purchasedCategories.has(p.category) && !state.purchasedIds.includes(p.id as string),
     );
   }, [state.purchasedIds]);
 
   const recommendedForYou = useMemo(() => {
     return PRODUCTS.filter(
-      (p) => !state.viewedIds.includes(p.id) && !state.purchasedIds.includes(p.id),
+      (p) =>
+        !state.viewedIds.includes(p.id as string) && !state.purchasedIds.includes(p.id as string),
     ).slice(0, 8);
   }, [state.viewedIds, state.purchasedIds]);
 

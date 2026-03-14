@@ -23,6 +23,7 @@ import {
   MODEL_CACHE_BUDGET_BYTES,
   type ModelLoadStatus,
 } from '../modelLoader';
+import { productId as pid } from '@/data/productId';
 
 // Cast mocks for type safety
 const mockGetInfo = FileSystem.getInfoAsync as jest.Mock;
@@ -131,7 +132,7 @@ describe('ensureCacheDir', () => {
 describe('getCachedModel', () => {
   it('returns null when file does not exist', async () => {
     mockGetInfo.mockResolvedValue({ exists: false });
-    const result = await getCachedModel('prod-a', 'hash123');
+    const result = await getCachedModel(pid('prod-a'), 'hash123');
     expect(result).toBeNull();
   });
 
@@ -157,7 +158,7 @@ describe('getCachedModel', () => {
     };
     mockReadString.mockResolvedValue(JSON.stringify(manifestData));
 
-    const result = await getCachedModel('prod-a', 'hash123');
+    const result = await getCachedModel(pid('prod-a'), 'hash123');
     expect(result).toContain('prod-a-hash123.usdz');
     // Should have written updated manifest with new access time
     expect(mockWriteString).toHaveBeenCalled();
@@ -168,7 +169,7 @@ describe('getCachedModel', () => {
       .mockResolvedValueOnce({ exists: true }) // file exists
       .mockResolvedValueOnce({ exists: false }); // manifest does not exist
 
-    const result = await getCachedModel('prod-a', 'hash123');
+    const result = await getCachedModel(pid('prod-a'), 'hash123');
     expect(result).toContain('prod-a-hash123.usdz');
     // No write since entry was not found in manifest
   });
@@ -241,9 +242,12 @@ describe('evictIfNeeded', () => {
 describe('loadModelForProduct', () => {
   it('returns null and notifies error for unknown product', async () => {
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-nonexistent', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-nonexistent'), (s) => statuses.push(s));
     expect(result).toBeNull();
-    expect(statuses).toContainEqual({ state: 'error', message: 'No AR model available for this product' });
+    expect(statuses).toContainEqual({
+      state: 'error',
+      message: 'No AR model available for this product',
+    });
   });
 
   it('returns cached path when model is already cached', async () => {
@@ -265,7 +269,7 @@ describe('loadModelForProduct', () => {
     );
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
     expect(result).toContain('prod-asheville-full');
     expect(statuses.some((s) => s.state === 'checking-cache')).toBe(true);
     expect(statuses.some((s) => s.state === 'ready')).toBe(true);
@@ -283,7 +287,7 @@ describe('loadModelForProduct', () => {
     mockCreateDownload.mockReturnValue({ downloadAsync: mockDownload });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
 
     expect(result).toBe('/mock-cache/models3d/model.usdz');
     expect(statuses.some((s) => s.state === 'downloading')).toBe(true);
@@ -298,7 +302,7 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
     expect(result).toBeNull();
     expect(statuses.some((s) => s.state === 'error')).toBe(true);
   });
@@ -310,7 +314,7 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
     expect(result).toBeNull();
     expect(statuses).toContainEqual({ state: 'error', message: 'Network timeout' });
   });
@@ -322,7 +326,7 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    const result = await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
     expect(result).toBeNull();
     expect(statuses).toContainEqual({ state: 'error', message: 'Download failed' });
   });
@@ -336,7 +340,7 @@ describe('loadModelForProduct', () => {
       }),
     });
     // Should not throw
-    const result = await loadModelForProduct('prod-asheville-full');
+    const result = await loadModelForProduct(pid('prod-asheville-full'));
     expect(result).toBe('/mock-cache/model.usdz');
   });
 
@@ -357,7 +361,7 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
 
     const downloadStatuses = statuses.filter((s) => s.state === 'downloading');
     expect(downloadStatuses.length).toBeGreaterThanOrEqual(2);
@@ -378,7 +382,7 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    await loadModelForProduct('prod-asheville-full', (s) => statuses.push(s));
+    await loadModelForProduct(pid('prod-asheville-full'), (s) => statuses.push(s));
 
     const downloadWithZero = statuses.find(
       (s) => s.state === 'downloading' && 'progress' in s && s.progress === 0,
@@ -397,13 +401,13 @@ describe('prefetchModel', () => {
       }),
     });
     // Should not throw
-    await expect(prefetchModel('prod-asheville-full')).resolves.toBeUndefined();
+    await expect(prefetchModel(pid('prod-asheville-full'))).resolves.toBeUndefined();
   });
 
   it('silently fails for errors', async () => {
     mockGetInfo.mockRejectedValue(new Error('catastrophic'));
     // Should not throw — prefetch swallows errors
-    await expect(prefetchModel('prod-asheville-full')).resolves.toBeUndefined();
+    await expect(prefetchModel(pid('prod-asheville-full'))).resolves.toBeUndefined();
   });
 });
 

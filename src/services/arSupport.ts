@@ -132,7 +132,7 @@ export async function getDeviceTier(): Promise<DeviceTier> {
 export function isProductAREnabled(product: ProductLike & { id?: string }): boolean {
   if (!product.inStock) return false;
   if (!AR_CATEGORIES.has(product.category)) return false;
-  if (product.id && !hasARModel(product.id)) return false;
+  if (product.id && !hasARModel(product.id as ProductId)) return false;
   return true;
 }
 

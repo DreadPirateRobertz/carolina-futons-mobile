@@ -1,5 +1,6 @@
 import { COLLECTIONS, type EditorialCollection } from '../collections';
 import { PRODUCTS } from '../products';
+import { type ProductId } from '../productId';
 
 describe('collections data', () => {
   it('has at least 3 collections', () => {
@@ -29,7 +30,7 @@ describe('collections data', () => {
     const productIds = new Set(PRODUCTS.map((p) => p.id));
     for (const col of COLLECTIONS) {
       for (const pid of col.productIds) {
-        expect(productIds.has(pid)).toBe(true);
+        expect(productIds.has(pid as ProductId)).toBe(true);
       }
     }
   });

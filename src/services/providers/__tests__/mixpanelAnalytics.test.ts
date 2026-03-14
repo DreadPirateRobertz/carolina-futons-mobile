@@ -1,3 +1,5 @@
+export {}; // Ensure this file is treated as a module
+
 const mockTrack = jest.fn();
 const mockIdentify = jest.fn();
 const mockReset = jest.fn();

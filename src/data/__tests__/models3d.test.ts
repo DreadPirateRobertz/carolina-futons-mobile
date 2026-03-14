@@ -1,5 +1,6 @@
 import { MODELS_3D, getModel3DForProduct, hasARModel, type Model3DAsset } from '../models3d';
 import { PRODUCTS } from '../products';
+import { productId as pid } from '../productId';
 
 describe('models3d', () => {
   describe('MODELS_3D catalog', () => {
@@ -49,14 +50,14 @@ describe('models3d', () => {
 
   describe('getModel3DForProduct', () => {
     it('returns asset for a known futon product', () => {
-      const asset = getModel3DForProduct('prod-asheville-full');
+      const asset = getModel3DForProduct(pid('prod-asheville-full'));
       expect(asset).toBeDefined();
       expect(asset!.productId).toBe('prod-asheville-full');
       expect(asset!.hasFabricVariants).toBe(true);
     });
 
     it('returns asset for murphy bed products (no fabric variants)', () => {
-      const asset = getModel3DForProduct('prod-murphy-queen-vertical');
+      const asset = getModel3DForProduct(pid('prod-murphy-queen-vertical'));
       expect(asset).toBeDefined();
       expect(asset!.productId).toBe('prod-murphy-queen-vertical');
       expect(asset!.hasFabricVariants).toBe(false);
@@ -65,50 +66,50 @@ describe('models3d', () => {
     });
 
     it('returns undefined for a product without AR model', () => {
-      expect(getModel3DForProduct('prod-grip-strips')).toBeUndefined();
+      expect(getModel3DForProduct(pid('prod-grip-strips'))).toBeUndefined();
     });
 
     it('returns undefined for non-existent product', () => {
-      expect(getModel3DForProduct('prod-does-not-exist')).toBeUndefined();
+      expect(getModel3DForProduct(pid('prod-does-not-exist'))).toBeUndefined();
     });
   });
 
   describe('hasARModel', () => {
     it('returns true for futon products', () => {
-      expect(hasARModel('prod-asheville-full')).toBe(true);
-      expect(hasARModel('prod-blue-ridge-queen')).toBe(true);
-      expect(hasARModel('prod-pisgah-twin')).toBe(true);
-      expect(hasARModel('prod-biltmore-loveseat')).toBe(true);
+      expect(hasARModel(pid('prod-asheville-full'))).toBe(true);
+      expect(hasARModel(pid('prod-blue-ridge-queen'))).toBe(true);
+      expect(hasARModel(pid('prod-pisgah-twin'))).toBe(true);
+      expect(hasARModel(pid('prod-biltmore-loveseat'))).toBe(true);
     });
 
     it('returns true for murphy bed products', () => {
-      expect(hasARModel('prod-murphy-queen-vertical')).toBe(true);
-      expect(hasARModel('prod-murphy-full-horizontal')).toBe(true);
-      expect(hasARModel('prod-murphy-queen-bookcase')).toBe(true);
-      expect(hasARModel('prod-murphy-twin-cabinet')).toBe(true);
-      expect(hasARModel('prod-murphy-queen-desk')).toBe(true);
-      expect(hasARModel('prod-murphy-full-storage')).toBe(true);
+      expect(hasARModel(pid('prod-murphy-queen-vertical'))).toBe(true);
+      expect(hasARModel(pid('prod-murphy-full-horizontal'))).toBe(true);
+      expect(hasARModel(pid('prod-murphy-queen-bookcase'))).toBe(true);
+      expect(hasARModel(pid('prod-murphy-twin-cabinet'))).toBe(true);
+      expect(hasARModel(pid('prod-murphy-queen-desk'))).toBe(true);
+      expect(hasARModel(pid('prod-murphy-full-storage'))).toBe(true);
     });
 
     it('returns true for frame product', () => {
-      expect(hasARModel('prod-hardwood-frame')).toBe(true);
+      expect(hasARModel(pid('prod-hardwood-frame'))).toBe(true);
     });
 
     it('returns false for covers, pillows, accessories', () => {
-      expect(hasARModel('prod-mountain-cover-full')).toBe(false);
-      expect(hasARModel('prod-arm-pillows')).toBe(false);
-      expect(hasARModel('prod-grip-strips')).toBe(false);
-      expect(hasARModel('prod-furniture-polish')).toBe(false);
+      expect(hasARModel(pid('prod-mountain-cover-full'))).toBe(false);
+      expect(hasARModel(pid('prod-arm-pillows'))).toBe(false);
+      expect(hasARModel(pid('prod-grip-strips'))).toBe(false);
+      expect(hasARModel(pid('prod-furniture-polish'))).toBe(false);
     });
 
     it('returns false for non-existent product', () => {
-      expect(hasARModel('fake-product')).toBe(false);
+      expect(hasARModel(pid('fake-product'))).toBe(false);
     });
   });
 
   describe('PoC sample model (asheville-full)', () => {
     it('has a real downloadable GLB URL (not CDN placeholder)', () => {
-      const asset = getModel3DForProduct('prod-asheville-full')!;
+      const asset = getModel3DForProduct(pid('prod-asheville-full'))!;
       expect(asset).toBeDefined();
       // Real model URLs should be https:// but NOT the placeholder CDN
       expect(asset.glbUrl).toMatch(/^https:\/\//);
@@ -116,20 +117,20 @@ describe('models3d', () => {
     });
 
     it('has a real downloadable USDZ URL', () => {
-      const asset = getModel3DForProduct('prod-asheville-full')!;
+      const asset = getModel3DForProduct(pid('prod-asheville-full'))!;
       expect(asset.usdzUrl).toMatch(/^https:\/\//);
       expect(asset.usdzUrl).toMatch(/\.usdz$/);
     });
 
     it('has accurate file size for real GLB model', () => {
-      const asset = getModel3DForProduct('prod-asheville-full')!;
+      const asset = getModel3DForProduct(pid('prod-asheville-full'))!;
       // KhronosGroup SheenChair GLB is ~4.1 MB
       expect(asset.fileSizeBytes).toBeGreaterThan(3_000_000);
       expect(asset.fileSizeBytes).toBeLessThan(5_000_000);
     });
 
     it('has real content hash (not placeholder)', () => {
-      const asset = getModel3DForProduct('prod-asheville-full')!;
+      const asset = getModel3DForProduct(pid('prod-asheville-full'))!;
       // SHA-256 prefix
       expect(asset.contentHash.length).toBeGreaterThanOrEqual(8);
     });

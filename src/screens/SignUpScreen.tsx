@@ -81,9 +81,9 @@ export function SignUpScreen({ onLogin, testID }: Props) {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
-        onFocus={handleFieldFocus}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        {...({ onFocus: handleFieldFocus } as any)}
       >
         <Text
           style={[
@@ -127,7 +127,12 @@ export function SignUpScreen({ onLogin, testID }: Props) {
 
           {/* Name */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+            <Text
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
               Full Name
             </Text>
             <TextInput
@@ -165,7 +170,12 @@ export function SignUpScreen({ onLogin, testID }: Props) {
 
           {/* Email */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+            <Text
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
               Email
             </Text>
             <TextInput
@@ -205,7 +215,12 @@ export function SignUpScreen({ onLogin, testID }: Props) {
 
           {/* Password */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold }]}>
+            <Text
+              style={[
+                styles.label,
+                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+            >
               Password
             </Text>
             <TextInput

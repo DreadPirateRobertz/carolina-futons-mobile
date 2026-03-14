@@ -6,6 +6,7 @@
 import { useMemo, useCallback } from 'react';
 import { COLLECTIONS, type EditorialCollection } from '@/data/collections';
 import { PRODUCTS, type Product } from '@/data/products';
+import type { ProductId } from '@/data/productId';
 import { useDataCache } from '@/hooks/useDataCache';
 import { useOptionalWixClient } from '@/services/wix';
 import type { WixClient } from '@/services/wix/wixClient';
@@ -105,10 +106,7 @@ export function useCollection(slug: string): {
   const { collections } = useCollections();
   const client = useOptionalWixClient();
 
-  const collection = useMemo(
-    () => collections.find((c) => c.slug === slug),
-    [slug, collections],
-  );
+  const collection = useMemo(() => collections.find((c) => c.slug === slug), [slug, collections]);
 
   const productFetcher = useCallback(async (): Promise<Product[]> => {
     if (!collection) return [];
@@ -130,7 +128,7 @@ export function useCollection(slug: string): {
 
     // Static fallback
     return collection.productIds
-      .map((id) => productMap.get(id))
+      .map((id) => productMap.get(id as ProductId))
       .filter((p): p is Product => p !== undefined);
   }, [collection, client]);
 

@@ -69,8 +69,8 @@ export function KeyboardAwareScrollView({
         contentContainerStyle={contentContainerStyle}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        onFocus={handleFocus as any}
         {...rest}
+        {...({ onFocus: handleFocus } as any)}
       >
         {children}
       </ScrollView>

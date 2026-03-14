@@ -36,13 +36,13 @@ jest.mock('@/theme/tokens', () => ({
   colors: {},
 }));
 
-jest.mock('@/components/GlassCard', () => ({
-  GlassCard: ({ children, style, testID }: any) => (
-    <mock-GlassCard style={style} testID={testID}>
-      {children}
-    </mock-GlassCard>
-  ),
-}));
+jest.mock('@/components/GlassCard', () => {
+  const { createElement } = require('react');
+  return {
+    GlassCard: ({ children, style, testID }: any) =>
+      createElement('View', { style, testID }, children),
+  };
+});
 
 const TEST_ITEMS: PromoBannerItem[] = [
   {
@@ -91,9 +91,7 @@ describe('PromoBannerCarousel', () => {
   });
 
   it('does not render dots for single item', () => {
-    const { queryByTestId } = render(
-      <PromoBannerCarousel items={[TEST_ITEMS[0]]} />,
-    );
+    const { queryByTestId } = render(<PromoBannerCarousel items={[TEST_ITEMS[0]]} />);
     expect(queryByTestId('promo-dots')).toBeNull();
   });
 

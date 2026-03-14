@@ -33,7 +33,7 @@ const HERO_HEIGHT = 320;
 const PARALLAX_RATE = 0.5;
 const AnimatedFlatList = Animated.createAnimatedComponent(
   require('react-native').FlatList,
-) as typeof import('react-native').FlatList;
+) as unknown as typeof import('react-native').FlatList;
 
 /** Route parameters expected by this screen from React Navigation. */
 type RouteParams = RouteProp<RootStackParamList, 'CollectionDetail'>;
@@ -74,10 +74,7 @@ export function CollectionDetailScreen() {
     ],
   }));
 
-  const totalValue = useMemo(
-    () => products.reduce((sum, p) => sum + p.price, 0),
-    [products],
-  );
+  const totalValue = useMemo(() => products.reduce((sum, p) => sum + p.price, 0), [products]);
 
   const handleProductPress = useCallback(
     (product: Product) => {
@@ -137,10 +134,7 @@ export function CollectionDetailScreen() {
             ))}
           </View>
           <Text
-            style={[
-              typography.h1,
-              { color: colors.white, fontFamily: typography.headingFamily },
-            ]}
+            style={[typography.h1, { color: colors.white, fontFamily: typography.headingFamily }]}
           >
             {collection.title}
           </Text>
@@ -183,10 +177,7 @@ export function CollectionDetailScreen() {
         ]}
       >
         <Text
-          style={[
-            typography.h3,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
-          ]}
+          style={[typography.h3, { color: colors.espresso, fontFamily: typography.headingFamily }]}
         >
           In This Look
         </Text>
@@ -255,7 +246,10 @@ export function CollectionDetailScreen() {
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         numColumns={2}
-        columnWrapperStyle={[styles.row, { paddingHorizontal: spacing.pagePadding, gap: spacing.md }]}
+        columnWrapperStyle={[
+          styles.row,
+          { paddingHorizontal: spacing.pagePadding, gap: spacing.md },
+        ]}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}

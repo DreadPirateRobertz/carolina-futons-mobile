@@ -53,7 +53,7 @@ const mockedConfirmOrder = confirmOrder as jest.MockedFunction<typeof confirmOrd
 function wrapper({ children }: { children: React.ReactNode }) {
   return React.createElement(
     ConnectivityProvider,
-    { initialOnline: true, skipNetInfo: true },
+    { initialOnline: true, skipNetInfo: true } as any,
     React.createElement(CartProvider, null, children),
   );
 }
@@ -122,10 +122,7 @@ describe('usePayment', () => {
     mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
     mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -214,10 +211,7 @@ describe('usePayment', () => {
     });
     mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -239,10 +233,7 @@ describe('usePayment', () => {
     });
     mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -257,14 +248,9 @@ describe('usePayment', () => {
   });
 
   it('handles payment intent failure', async () => {
-    mockedCreatePaymentIntent.mockRejectedValue(
-      new PaymentError('Card declined', 'INTENT_FAILED'),
-    );
+    mockedCreatePaymentIntent.mockRejectedValue(new PaymentError('Card declined', 'INTENT_FAILED'));
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -281,13 +267,13 @@ describe('usePayment', () => {
   it('prevents concurrent double-submit', async () => {
     let resolvePaymentIntent: (value: any) => void;
     mockedCreatePaymentIntent.mockImplementation(
-      () => new Promise((resolve) => { resolvePaymentIntent = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolvePaymentIntent = resolve;
+        }),
     );
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -308,14 +294,9 @@ describe('usePayment', () => {
   });
 
   it('resets payment state', async () => {
-    mockedCreatePaymentIntent.mockRejectedValue(
-      new PaymentError('Failed', 'INTENT_FAILED'),
-    );
+    mockedCreatePaymentIntent.mockRejectedValue(new PaymentError('Failed', 'INTENT_FAILED'));
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
 
     await addCartItem(result);
 
@@ -366,10 +347,9 @@ describe('usePayment', () => {
         paymentIntent: { id: 'pi_123' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -415,10 +395,9 @@ describe('usePayment', () => {
         error: { code: 'Canceled', message: 'User cancelled' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -437,10 +416,9 @@ describe('usePayment', () => {
         error: { code: 'Failed', message: 'Apple Pay authorization failed' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -474,10 +452,9 @@ describe('usePayment', () => {
         paymentIntent: { id: 'pi_123' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -520,10 +497,9 @@ describe('usePayment', () => {
         error: { code: 'Canceled', message: 'User cancelled' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -542,10 +518,9 @@ describe('usePayment', () => {
         error: { code: 'Failed', message: 'Google Pay authorization failed' },
       });
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 
@@ -561,10 +536,9 @@ describe('usePayment', () => {
       mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
       mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
 
-      const { result } = renderHook(
-        () => ({ cart: useCart(), payment: usePayment() }),
-        { wrapper },
-      );
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
 
       await addCartItem(result);
 

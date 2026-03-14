@@ -12,6 +12,7 @@
  */
 
 import type { Product, ProductImage, ProductCategory } from '@/data/products';
+import { productId } from '@/data/productId';
 import { withRetry } from './retry';
 
 // ── Config ─────────────────────────────────────────────────────
@@ -533,10 +534,7 @@ export class WixClient {
   // ── Cart queries (eCommerce Cart API) ──────────────────────
 
   async getCart(): Promise<WixCart> {
-    const data = await this.post<{ cart: WixCart }>(
-      '/ecom/v1/carts/current',
-      {},
-    );
+    const data = await this.post<{ cart: WixCart }>('/ecom/v1/carts/current', {});
     return data.cart ?? { lineItems: [] };
   }
 
@@ -559,10 +557,9 @@ export class WixClient {
 
   async removeFromCart(productId: string): Promise<void> {
     // First query the current cart to find the line item ID for this product
-    const cart = await this.post<{ cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] } }>(
-      '/ecom/v1/carts/current',
-      {},
-    );
+    const cart = await this.post<{
+      cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] };
+    }>('/ecom/v1/carts/current', {});
 
     const lineItem = cart.cart?.lineItems?.find(
       (li) => li.catalogReference?.catalogItemId === productId,
@@ -576,10 +573,9 @@ export class WixClient {
   }
 
   async updateCartItemQuantity(productId: string, quantity: number): Promise<void> {
-    const cart = await this.post<{ cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] } }>(
-      '/ecom/v1/carts/current',
-      {},
-    );
+    const cart = await this.post<{
+      cart: { lineItems: { _id: string; catalogReference: { catalogItemId: string } }[] };
+    }>('/ecom/v1/carts/current', {});
 
     const lineItem = cart.cart?.lineItems?.find(
       (li) => li.catalogReference?.catalogItemId === productId,
@@ -669,7 +665,11 @@ export class WixClient {
 
   async queryReviews(
     productId: string,
-    options: { limit?: number; offset?: number; sort?: 'recent' | 'helpful' | 'highest' | 'lowest' } = {},
+    options: {
+      limit?: number;
+      offset?: number;
+      sort?: 'recent' | 'helpful' | 'highest' | 'lowest';
+    } = {},
   ): Promise<{ reviews: WixReview[]; totalResults: number }> {
     if (!productId) throw new WixApiError('Product ID is required');
 
@@ -765,9 +765,7 @@ export class WixClient {
   }
 
   async getMemberProfile(memberId: string): Promise<Record<string, unknown>> {
-    return this.get<Record<string, unknown>>(
-      '/members/v1/members/' + encodeURIComponent(memberId),
-    );
+    return this.get<Record<string, unknown>>('/members/v1/members/' + encodeURIComponent(memberId));
   }
 
   // ── HTTP helpers ───────────────────────────────────────────
@@ -880,7 +878,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   const fabricOptions = fabricOption ? fabricOption.choices.map((c) => c.value) : [];
 
   return {
-    id: wix.id,
+    id: productId(wix.id),
     name: wix.name,
     slug: wix.slug,
     sku: wix.sku ?? '',

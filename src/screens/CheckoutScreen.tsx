@@ -24,7 +24,12 @@ import {
   UIManager,
 } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
-import { CardField, type CardFieldInput, PlatformPayButton, PlatformPay } from '@stripe/stripe-react-native';
+import {
+  CardField,
+  type CardFieldInput,
+  PlatformPayButton,
+  PlatformPay,
+} from '@stripe/stripe-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { typography } from '@/theme/tokens';
@@ -41,10 +46,57 @@ import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 const SHIPPING_THRESHOLD = 499;
 
 const US_STATES = [
-  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA',
-  'KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ',
-  'NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT',
-  'VA','WA','WV','WI','WY','DC',
+  'AL',
+  'AK',
+  'AZ',
+  'AR',
+  'CA',
+  'CO',
+  'CT',
+  'DE',
+  'FL',
+  'GA',
+  'HI',
+  'ID',
+  'IL',
+  'IN',
+  'IA',
+  'KS',
+  'KY',
+  'LA',
+  'ME',
+  'MD',
+  'MA',
+  'MI',
+  'MN',
+  'MS',
+  'MO',
+  'MT',
+  'NE',
+  'NV',
+  'NH',
+  'NJ',
+  'NM',
+  'NY',
+  'NC',
+  'ND',
+  'OH',
+  'OK',
+  'OR',
+  'PA',
+  'RI',
+  'SC',
+  'SD',
+  'TN',
+  'TX',
+  'UT',
+  'VT',
+  'VA',
+  'WA',
+  'WV',
+  'WI',
+  'WY',
+  'DC',
 ];
 
 interface Address {
@@ -146,7 +198,15 @@ interface Props {
 export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { items, subtotal } = useCart();
-  const { status, error, totals, isApplePaySupported, isGooglePaySupported, processPayment, resetPayment } = usePayment();
+  const {
+    status,
+    error,
+    totals,
+    isApplePaySupported,
+    isGooglePaySupported,
+    processPayment,
+    resetPayment,
+  } = usePayment();
   const { isPremium } = usePremium();
   const addressBook = useAddressBook();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -295,7 +355,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       }
       onOrderComplete?.(order);
     }
-  }, [selectedMethod, isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length, addressBook, shippingAddress]);
+  }, [
+    selectedMethod,
+    isProcessing,
+    validateForm,
+    processPayment,
+    onOrderComplete,
+    totals.total,
+    items.length,
+    addressBook,
+    shippingAddress,
+  ]);
 
   const handleApplePay = useCallback(async () => {
     if (isProcessing) return;
@@ -408,23 +478,41 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     testIDPrefix: string,
   ) => (
     <View testID={`${testIDPrefix}-form`}>
-      {renderAddressField('Full Name', address.fullName, errors.fullName, (t) => onUpdate('fullName', t), {
-        testIDPrefix,
-        fieldName: 'fullName',
-        placeholder: 'John Doe',
-        autoComplete: 'name',
-      })}
-      {renderAddressField('Street Address', address.line1, errors.line1, (t) => onUpdate('line1', t), {
-        testIDPrefix,
-        fieldName: 'line1',
-        placeholder: '123 Main St',
-        autoComplete: 'street-address',
-      })}
-      {renderAddressField('Apt, Suite, etc. (optional)', address.line2, undefined, (t) => onUpdate('line2', t), {
-        testIDPrefix,
-        fieldName: 'line2',
-        placeholder: 'Apt 4B',
-      })}
+      {renderAddressField(
+        'Full Name',
+        address.fullName,
+        errors.fullName,
+        (t) => onUpdate('fullName', t),
+        {
+          testIDPrefix,
+          fieldName: 'fullName',
+          placeholder: 'John Doe',
+          autoComplete: 'name',
+        },
+      )}
+      {renderAddressField(
+        'Street Address',
+        address.line1,
+        errors.line1,
+        (t) => onUpdate('line1', t),
+        {
+          testIDPrefix,
+          fieldName: 'line1',
+          placeholder: '123 Main St',
+          autoComplete: 'street-address',
+        },
+      )}
+      {renderAddressField(
+        'Apt, Suite, etc. (optional)',
+        address.line2,
+        undefined,
+        (t) => onUpdate('line2', t),
+        {
+          testIDPrefix,
+          fieldName: 'line2',
+          placeholder: 'Apt 4B',
+        },
+      )}
       <View style={styles.rowFields}>
         <View style={styles.cityField}>
           {renderAddressField('City', address.city, errors.city, (t) => onUpdate('city', t), {
@@ -435,13 +523,19 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           })}
         </View>
         <View style={styles.stateField}>
-          {renderAddressField('State', address.state, errors.state, (t) => onUpdate('state', t.toUpperCase()), {
-            testIDPrefix,
-            fieldName: 'state',
-            placeholder: 'NC',
-            autoCapitalize: 'none',
-            maxLength: 2,
-          })}
+          {renderAddressField(
+            'State',
+            address.state,
+            errors.state,
+            (t) => onUpdate('state', t.toUpperCase()),
+            {
+              testIDPrefix,
+              fieldName: 'state',
+              placeholder: 'NC',
+              autoCapitalize: 'none',
+              maxLength: 2,
+            },
+          )}
         </View>
         <View style={styles.zipField}>
           {renderAddressField('ZIP', address.zip, errors.zip, (t) => onUpdate('zip', t), {
@@ -474,17 +568,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             accessibilityRole="button"
           >
             <Text
-              style={[
-                styles.backText,
-                { color: isProcessing ? colors.muted : colors.espresso },
-              ]}
+              style={[styles.backText, { color: isProcessing ? colors.muted : colors.espresso }]}
             >
               {'‹'}
             </Text>
           </TouchableOpacity>
         )}
         <Text
-          style={[styles.headerTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+          style={[
+            styles.headerTitle,
+            { color: colors.espresso, fontFamily: typography.headingFamily },
+          ]}
           accessibilityRole="header"
           testID="checkout-header"
         >
@@ -500,12 +594,15 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isProcessing}
         keyboardShouldPersistTaps="handled"
-        onFocus={handleFieldFocus}
+        {...({ onFocus: handleFieldFocus } as any)}
       >
         {/* Shipping Address */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
           <Text
-            style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
+            style={[
+              styles.sectionTitle,
+              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+            ]}
             testID="shipping-address-title"
             accessibilityRole="header"
           >
@@ -565,7 +662,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               <TouchableOpacity
                 style={[
                   styles.savedAddressChip,
-                  { borderColor: colors.espressoLight, borderRadius: borderRadius.button, borderStyle: 'dashed' },
+                  {
+                    borderColor: colors.espressoLight,
+                    borderRadius: borderRadius.button,
+                    borderStyle: 'dashed',
+                  },
                 ]}
                 onPress={() => {
                   setShippingAddress(EMPTY_ADDRESS);
@@ -622,7 +723,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         {!billingSameAsShipping && (
           <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
             <Text
-              style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}
+              style={[
+                styles.sectionTitle,
+                { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+              ]}
               testID="billing-address-title"
               accessibilityRole="header"
             >
@@ -647,7 +751,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             accessibilityRole={items.length >= 3 ? 'button' : 'header'}
           >
             <Text
-              style={[styles.sectionTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold, marginBottom: 0 }]}
+              style={[
+                styles.sectionTitle,
+                {
+                  color: colors.espresso,
+                  fontFamily: typography.bodyFamilySemiBold,
+                  marginBottom: 0,
+                },
+              ]}
               testID="checkout-items-section-title"
             >
               Items ({items.length})
@@ -669,17 +780,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                 {items.slice(0, 3).map((item, i) => (
                   <View
                     key={item.id}
-                    style={[
-                      styles.stackedThumb,
-                      { left: i * 20, zIndex: 3 - i },
-                    ]}
+                    style={[styles.stackedThumb, { left: i * 20, zIndex: 3 - i }]}
                   >
                     <ItemThumbnail item={item} size={36} />
                   </View>
                 ))}
               </View>
               <Text
-                style={[styles.collapsedText, { color: colors.espressoLight, marginLeft: items.slice(0, 3).length * 20 + 24 }]}
+                style={[
+                  styles.collapsedText,
+                  { color: colors.espressoLight, marginLeft: items.slice(0, 3).length * 20 + 24 },
+                ]}
               >
                 {items.length} items · {formatPrice(subtotal)}
               </Text>
@@ -687,20 +798,23 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           )}
 
           {/* Expanded item list with thumbnails */}
-          {itemsExpanded && items.map((item) => (
-            <View key={item.id} style={styles.itemRow} testID={`checkout-item-${item.id}`}>
-              <ItemThumbnail item={item} size={48} />
-              <View style={[styles.itemInfo, { marginLeft: 12 }]}>
-                <Text style={[styles.itemName, { color: colors.espresso }]}>{item.model.name}</Text>
-                <Text style={[styles.itemDetail, { color: colors.espressoLight }]}>
-                  {item.fabric.name} x{item.quantity}
+          {itemsExpanded &&
+            items.map((item) => (
+              <View key={item.id} style={styles.itemRow} testID={`checkout-item-${item.id}`}>
+                <ItemThumbnail item={item} size={48} />
+                <View style={[styles.itemInfo, { marginLeft: 12 }]}>
+                  <Text style={[styles.itemName, { color: colors.espresso }]}>
+                    {item.model.name}
+                  </Text>
+                  <Text style={[styles.itemDetail, { color: colors.espressoLight }]}>
+                    {item.fabric.name} x{item.quantity}
+                  </Text>
+                </View>
+                <Text style={[styles.itemPrice, { color: colors.espresso }]}>
+                  {formatPrice(item.unitPrice * item.quantity)}
                 </Text>
               </View>
-              <Text style={[styles.itemPrice, { color: colors.espresso }]}>
-                {formatPrice(item.unitPrice * item.quantity)}
-              </Text>
-            </View>
-          ))}
+            ))}
         </View>
 
         {/* Totals */}
@@ -751,7 +865,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
             <Text
-              style={[styles.grandTotalValue, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+              style={[
+                styles.grandTotalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
               testID="checkout-total"
             >
               {formatPrice(totals.total)}
@@ -811,7 +928,12 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
         {/* Payment Methods */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <Text style={[styles.sectionTitle, { color: colors.espresso }]} accessibilityRole="header">Payment Method</Text>
+          <Text
+            style={[styles.sectionTitle, { color: colors.espresso }]}
+            accessibilityRole="header"
+          >
+            Payment Method
+          </Text>
           {PAYMENT_OPTIONS.map((option) => (
             <TouchableOpacity
               key={option.id}
@@ -864,7 +986,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             <Text
               style={[
                 styles.fieldLabel,
-                { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold, marginBottom: 8 },
+                {
+                  color: colors.espresso,
+                  fontFamily: typography.bodyFamilySemiBold,
+                  marginBottom: 8,
+                },
               ]}
             >
               Card Details

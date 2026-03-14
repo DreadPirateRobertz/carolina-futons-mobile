@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { type Product } from '@/data/products';
+import { type ProductId } from '@/data/productId';
 
 // ============================================================================
 // ViewInRoomButton — Test-first specs for cm-88d Phase 1
@@ -41,7 +42,7 @@ jest.mock('@/services/analytics', () => ({
 // --- Test Fixtures ---
 
 const futonProduct: Product = {
-  id: 'prod-asheville-full',
+  id: 'prod-asheville-full' as ProductId,
   name: 'The Asheville Full Futon',
   slug: 'asheville-full-futon',
   category: 'futons',
@@ -58,7 +59,7 @@ const futonProduct: Product = {
 };
 
 const coverProduct: Product = {
-  id: 'prod-mountain-cover-full',
+  id: 'prod-mountain-cover-full' as ProductId,
   name: 'Mountain Weave Futon Cover',
   slug: 'mountain-weave-cover',
   category: 'covers',
@@ -75,12 +76,12 @@ const coverProduct: Product = {
 
 const outOfStockFuton: Product = {
   ...futonProduct,
-  id: 'prod-oos-futon',
+  id: 'prod-oos-futon' as ProductId,
   inStock: false,
 };
 
 const frameProduct: Product = {
-  id: 'prod-hardwood-frame',
+  id: 'prod-hardwood-frame' as ProductId,
   name: 'Solid Hardwood Frame',
   slug: 'solid-hardwood-frame',
   category: 'frames',
