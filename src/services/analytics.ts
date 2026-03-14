@@ -50,6 +50,8 @@ export type AnalyticsEventName =
   | 'notification_opened'
   | 'ar_screenshot'
   | 'ar_share'
+  | 'share_product'
+  | 'rate_app'
   | 'ar_save_to_gallery'
   | 'ar_save_to_wishlist'
   | 'ar_add_to_cart'
