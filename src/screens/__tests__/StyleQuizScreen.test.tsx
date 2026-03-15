@@ -1,7 +1,9 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { StyleQuizScreen } from '../StyleQuizScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { captureException } from '@/services/crashReporting';
 
 // Mock useTheme
 jest.mock('@/theme', () => ({
@@ -37,6 +39,11 @@ jest.mock('@/theme', () => ({
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
+}));
+
+// Mock crashReporting
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
 }));
 
 describe('StyleQuizScreen', () => {
@@ -215,7 +222,8 @@ describe('StyleQuizScreen', () => {
 
   // ── Edge cases ────────────────────────────────────────────────
 
-  it('handles AsyncStorage write failure gracefully', async () => {
+  it('handles AsyncStorage write failure gracefully with alert and logging', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert');
     (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Storage full'));
     const { getByTestId } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
@@ -225,10 +233,19 @@ describe('StyleQuizScreen', () => {
     fireEvent.press(getByTestId('quiz-option-seating'));
     fireEvent.press(getByTestId('style-quiz-save-button'));
 
-    // Should still call onComplete even if storage fails
+    // Should log the error
     await waitFor(() => {
-      expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      expect(captureException).toHaveBeenCalledWith(expect.any(Error));
     });
+    // Should show user feedback
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Could Not Save',
+      expect.stringContaining('could not be saved'),
+      expect.any(Array),
+    );
+    // Should still call onComplete
+    expect(mockOnComplete).toHaveBeenCalledTimes(1);
+    alertSpy.mockRestore();
   });
 
   it('accepts custom testID', () => {
@@ -297,7 +314,7 @@ describe('StyleQuizScreen', () => {
     expect(studioOption.props.accessibilityState?.selected).toBe(true);
   });
 
-  it('handles corrupted AsyncStorage data gracefully', async () => {
+  it('handles corrupted AsyncStorage data gracefully and logs error', async () => {
     (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce('not valid json{{{');
 
     const { getByTestId } = render(
@@ -308,9 +325,11 @@ describe('StyleQuizScreen', () => {
     await waitFor(() => {
       expect(getByTestId('style-quiz-screen')).toBeTruthy();
     });
+    // Should log the parse error
+    expect(captureException).toHaveBeenCalled();
   });
 
-  it('handles AsyncStorage read failure gracefully', async () => {
+  it('handles AsyncStorage read failure gracefully and logs error', async () => {
     (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error('Read error'));
 
     const { getByTestId } = render(
@@ -321,5 +340,7 @@ describe('StyleQuizScreen', () => {
     await waitFor(() => {
       expect(getByTestId('style-quiz-screen')).toBeTruthy();
     });
+    // Should log the read error
+    expect(captureException).toHaveBeenCalled();
   });
 });

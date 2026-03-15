@@ -10,11 +10,12 @@
  * Loads any previously saved preferences on mount.
  */
 import React, { useState, useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { captureException } from '@/services/crashReporting';
 import type { RoomType, StylePreference, PrimaryUse, StylePreferences } from '@/hooks/useStyleQuiz';
 
 const STORAGE_KEY = '@carolina_futons_style_preferences';
@@ -76,8 +77,10 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
           const parsed = JSON.parse(stored) as StylePreferences;
           setPreferences(parsed);
         }
-      } catch {
-        // Corrupted or unavailable storage — start fresh
+      } catch (error) {
+        captureException(
+          error instanceof Error ? error : new Error('Style preferences load failed'),
+        );
       }
     })();
   }, []);
@@ -106,8 +109,13 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
   const handleSave = useCallback(async () => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-    } catch {
-      // Storage write failed — preferences lost but flow continues
+    } catch (error) {
+      captureException(error instanceof Error ? error : new Error('Style preferences save failed'));
+      Alert.alert(
+        'Could Not Save',
+        'Your style preferences could not be saved. They will be applied for this session but may not persist.',
+        [{ text: 'OK' }],
+      );
     }
     onComplete();
   }, [preferences, onComplete]);
