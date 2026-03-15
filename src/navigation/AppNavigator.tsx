@@ -116,6 +116,11 @@ const OrderConfirmationScreen = lazy(() =>
     default: m.OrderConfirmationScreen,
   })),
 );
+const CompareScreen = lazy(() =>
+  import('@/screens/CompareScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -154,6 +159,7 @@ export type RootStackParamList = {
   CollectionDetail: { slug: string };
   Premium: undefined;
   StyleQuiz: undefined;
+  Compare: { productSlugs: string[] };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -306,6 +312,7 @@ export function AppNavigator() {
             <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
           )}
         </Stack.Screen>
+        <Stack.Screen name="Compare" component={CompareScreen} options={fadeTransition} />
       </Stack.Navigator>
     </Suspense>
   );
