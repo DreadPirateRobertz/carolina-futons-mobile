@@ -139,19 +139,27 @@ describe('prefetchCriticalData', () => {
     expect(getPrefetchStatus()).toBe('complete');
   });
 
-  it('sets status to "error" when AsyncStorage write fails', async () => {
+  it('sets status to "error" and logs warning when AsyncStorage write fails', async () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     mockSetItem.mockRejectedValue(new Error('Storage full'));
 
     await prefetchCriticalData();
 
     expect(getPrefetchStatus()).toBe('error');
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[prefetch]'),
+      expect.any(Error),
+    );
+    warnSpy.mockRestore();
   });
 
   it('does not throw when AsyncStorage write fails', async () => {
+    jest.spyOn(console, 'warn').mockImplementation();
     mockSetItem.mockRejectedValue(new Error('Storage full'));
 
     // Should not throw — prefetch failures are non-fatal
     await expect(prefetchCriticalData()).resolves.toBeUndefined();
+    jest.restoreAllMocks();
   });
 
   it('writes data in useDataCache-compatible format', async () => {

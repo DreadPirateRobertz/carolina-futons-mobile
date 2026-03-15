@@ -31,9 +31,12 @@ export function resetPrefetchState(): void {
 }
 
 /**
- * Prefetch product catalog into AsyncStorage.
+ * Prefetch product catalog and collections into AsyncStorage.
  *
- * - Safe to call multiple times (deduplicates).
+ * - Safe to call multiple times (deduplicates via inflightPromise).
+ * - One-shot: after the first call completes (or fails), subsequent calls
+ *   return the same resolved promise. Call resetPrefetchState() to allow
+ *   re-prefetching (e.g., in tests or after a cache clear).
  * - Never throws — prefetch failure is non-fatal (screens will fetch on mount).
  * - Writes in useDataCache-compatible format: { data: T, timestamp: number }
  */
@@ -61,7 +64,8 @@ export function prefetchCriticalData(): Promise<void> {
       ]);
 
       status = 'complete';
-    } catch {
+    } catch (err) {
+      console.warn('[prefetch] Failed to prime cache — screens will fetch on mount:', err);
       status = 'error';
     }
   })();
