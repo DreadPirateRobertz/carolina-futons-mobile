@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type { Product } from '@/data/products';
-import { MAX_COMPARE_ITEMS } from '@/screens/CompareScreen';
+
+export const MAX_COMPARE_ITEMS = 3;
 
 export interface UseCompareReturn {
   compareList: Product[];
-  addToCompare: (product: Product) => boolean;
+  addToCompare: (product: Product) => void;
   removeFromCompare: (productId: string) => void;
   clearCompare: () => void;
   isInCompare: (productId: string) => boolean;
@@ -16,15 +17,12 @@ export function useCompare(): UseCompareReturn {
   const [compareList, setCompareList] = useState<Product[]>([]);
 
   const addToCompare = useCallback(
-    (product: Product): boolean => {
-      let added = false;
+    (product: Product): void => {
       setCompareList((prev) => {
         if (prev.length >= MAX_COMPARE_ITEMS) return prev;
         if (prev.some((p) => p.id === product.id)) return prev;
-        added = true;
         return [...prev, product];
       });
-      return added;
     },
     [],
   );

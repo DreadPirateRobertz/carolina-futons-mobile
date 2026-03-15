@@ -39,7 +39,7 @@ describe('useCompare', () => {
     });
     expect(result.current.isFull).toBe(true);
     act(() => {
-      const added = result.current.addToCompare(productD);
+      result.current.addToCompare(productD);
     });
     expect(result.current.count).toBe(3);
   });

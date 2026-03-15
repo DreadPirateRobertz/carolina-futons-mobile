@@ -10,10 +10,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import type { Product } from '@/data/products';
-import { getStockStatus, LOW_STOCK_THRESHOLD } from '@/data/products';
+import { getStockStatus } from '@/data/products';
 import { formatPrice } from '@/utils';
-
-export const MAX_COMPARE_ITEMS = 3;
+import { MAX_COMPARE_ITEMS } from '@/hooks/useCompare';
 
 interface Props {
   products: Product[];
@@ -28,7 +27,8 @@ interface CompareRow {
   values: (product: Product) => React.ReactNode;
 }
 
-function formatDimensions(d: Product['dimensions']): string {
+function formatDimensions(d: Product['dimensions'] | undefined): string {
+  if (!d) return '-';
   return `${d.width}" × ${d.depth}" × ${d.height}"`;
 }
 
@@ -79,14 +79,16 @@ export function CompareScreen({
     );
   }
 
-  // Find lowest price for highlight
+  // Find lowest price for highlight — only highlight if exactly one product has it
   const lowestPrice = Math.min(...products.map((p) => p.price));
+  const lowestPriceCount = products.filter((p) => p.price === lowestPrice).length;
+  const highlightLowest = products.length > 1 && lowestPriceCount === 1;
 
   const rows: CompareRow[] = [
     {
       label: 'Price',
       values: (product) => {
-        const isBest = product.price === lowestPrice && products.length > 1;
+        const isBest = highlightLowest && product.price === lowestPrice;
         return (
           <View testID={isBest ? `price-best-${product.id}` : undefined}>
             <Text
@@ -95,11 +97,11 @@ export function CompareScreen({
                 { color: isBest ? colors.success : colors.text, fontWeight: isBest ? '700' : '400' },
               ]}
             >
-              ${product.price}
+              {formatPrice(product.price)}
             </Text>
             {product.originalPrice != null && (
               <Text style={[styles.originalPrice, { color: colors.textSecondary }]}>
-                ${product.originalPrice}
+                {formatPrice(product.originalPrice)}
               </Text>
             )}
           </View>

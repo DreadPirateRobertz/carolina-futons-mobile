@@ -3,6 +3,7 @@ import { render, fireEvent, within } from '@testing-library/react-native';
 import { CompareScreen } from '../CompareScreen';
 import { PRODUCTS } from '@/data/products';
 import type { Product } from '@/data/products';
+import { formatPrice } from '@/utils';
 
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
@@ -56,7 +57,7 @@ describe('CompareScreen', () => {
   it('renders a single product column', () => {
     const { getByText } = render(<CompareScreen products={[productA]} />);
     expect(getByText(productA.name)).toBeTruthy();
-    expect(getByText(`$${productA.price}`)).toBeTruthy();
+    expect(getByText(formatPrice(productA.price))).toBeTruthy();
   });
 
   it('renders two products side by side', () => {
@@ -229,8 +230,8 @@ describe('CompareScreen', () => {
     const { getByText } = render(
       <CompareScreen products={[discountProduct, productB]} />,
     );
-    expect(getByText('$249')).toBeTruthy();
-    expect(getByText('$349')).toBeTruthy();
+    expect(getByText(formatPrice(249))).toBeTruthy();
+    expect(getByText(formatPrice(349))).toBeTruthy();
   });
 
   it('caps at MAX_COMPARE_ITEMS (3) products', () => {
@@ -240,6 +241,44 @@ describe('CompareScreen', () => {
     );
     // Fourth product should not render
     expect(queryByText('Extra')).toBeNull();
+  });
+
+  it('handles undefined dimensions gracefully', () => {
+    const noDimsProduct: Product = {
+      ...productA,
+      id: 'prod-nodims' as any,
+      name: 'No Dims Futon',
+      dimensions: undefined as any,
+    };
+    const { getByText, getAllByText } = render(
+      <CompareScreen products={[noDimsProduct, productB]} />,
+    );
+    expect(getByText('No Dims Futon')).toBeTruthy();
+    // Should show '-' for missing dimensions
+    expect(getAllByText('-').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders without onProductPress (no crash on tap)', () => {
+    const { getByText } = render(
+      <CompareScreen products={[productA, productB]} />,
+    );
+    // Tapping product name without onProductPress should not throw
+    expect(() => fireEvent.press(getByText(productA.name))).not.toThrow();
+  });
+
+  it('does not highlight best price when prices are tied', () => {
+    const tiedProduct: Product = {
+      ...productB,
+      id: 'prod-tied' as any,
+      name: 'Tied Price Futon',
+      price: productA.price,
+    };
+    const { queryByTestId } = render(
+      <CompareScreen products={[productA, tiedProduct]} />,
+    );
+    // Neither should get best-value highlight
+    expect(queryByTestId(`price-best-${productA.id}`)).toBeNull();
+    expect(queryByTestId('price-best-prod-tied')).toBeNull();
   });
 
   it('renders accessibly with proper labels', () => {
