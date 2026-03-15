@@ -144,7 +144,9 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     () => (
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
         <View style={styles.titleRow}>
-          <Text style={[styles.title, { color: colors.espresso }]} accessibilityRole="header">Wishlist</Text>
+          <Text style={[styles.title, { color: colors.espresso }]} accessibilityRole="header">
+            Wishlist
+          </Text>
           <Text style={[styles.count, { color: colors.espressoLight }]}>
             {count} {count === 1 ? 'item' : 'items'}
           </Text>

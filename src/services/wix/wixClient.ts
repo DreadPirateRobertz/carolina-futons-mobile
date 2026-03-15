@@ -11,7 +11,13 @@
  * - POST /stores/v1/inventoryItems/query (inventory status)
  */
 
-import type { Product, ProductImage, ProductCategory, ProductSize, SortOption } from '@/data/products';
+import type {
+  Product,
+  ProductImage,
+  ProductCategory,
+  ProductSize,
+  SortOption,
+} from '@/data/products';
 import { productId } from '@/data/productId';
 import { withRetry } from './retry';
 
