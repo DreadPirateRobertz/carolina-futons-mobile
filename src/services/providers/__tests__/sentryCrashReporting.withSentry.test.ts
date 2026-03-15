@@ -42,6 +42,10 @@ jest.mock(
   { virtual: true },
 );
 
+// Reset module registry so any previously-cached @sentry/react-native (from other
+// test suites sharing this worker) is replaced by our virtual mock above.
+jest.resetModules();
+
 // Re-require the provider so the module-level try/catch picks up our mock
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SentryCrashReportingProvider, wrapWithSentry } = require('../sentryCrashReporting');
