@@ -10,9 +10,11 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRODUCTS } from '@/data/products';
+import { COLLECTIONS } from '@/data/collections';
 
-/** Must match the key used by useDataCache('products', ...) */
+/** Must match the keys used by useDataCache('products', ...) and useDataCache('editorial-collections', ...) */
 export const PREFETCH_CACHE_KEY = '@cfutons/cache/products';
+export const PREFETCH_COLLECTIONS_KEY = '@cfutons/cache/editorial-collections';
 
 type PrefetchStatus = 'idle' | 'fetching' | 'complete' | 'error';
 
@@ -42,16 +44,22 @@ export function prefetchCriticalData(): Promise<void> {
 
   inflightPromise = (async () => {
     try {
-      // In mock mode, PRODUCTS is available synchronously.
-      // When Wix is wired up, this would become an API call.
-      const products = PRODUCTS;
+      const now = Date.now();
 
-      const cacheEntry = {
-        data: products,
-        timestamp: Date.now(),
-      };
+      // Prefetch products and collections in parallel.
+      // In mock mode, data is available synchronously.
+      // When Wix is wired up, these would become API calls.
+      await Promise.all([
+        AsyncStorage.setItem(
+          PREFETCH_CACHE_KEY,
+          JSON.stringify({ data: PRODUCTS, timestamp: now }),
+        ),
+        AsyncStorage.setItem(
+          PREFETCH_COLLECTIONS_KEY,
+          JSON.stringify({ data: COLLECTIONS, timestamp: now }),
+        ),
+      ]);
 
-      await AsyncStorage.setItem(PREFETCH_CACHE_KEY, JSON.stringify(cacheEntry));
       status = 'complete';
     } catch {
       status = 'error';

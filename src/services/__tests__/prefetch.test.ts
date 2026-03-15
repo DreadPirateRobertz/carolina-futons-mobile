@@ -34,11 +34,28 @@ jest.mock('@/data/products', () => ({
   ],
 }));
 
+jest.mock('@/data/collections', () => ({
+  COLLECTIONS: [
+    {
+      id: 'c1',
+      slug: 'test-collection',
+      title: 'Test Collection',
+      subtitle: 'A test',
+      description: 'Test collection',
+      heroImage: { uri: 'test.jpg', alt: 'test' },
+      mood: ['modern'],
+      featured: true,
+      productIds: ['p1'],
+    },
+  ],
+}));
+
 import {
   prefetchCriticalData,
   getPrefetchStatus,
   resetPrefetchState,
   PREFETCH_CACHE_KEY,
+  PREFETCH_COLLECTIONS_KEY,
 } from '../prefetch';
 
 const mockGetItem = AsyncStorage.getItem as jest.MockedFunction<typeof AsyncStorage.getItem>;
@@ -61,6 +78,25 @@ describe('prefetchCriticalData', () => {
     );
   });
 
+  it('loads collection data and caches it in AsyncStorage', async () => {
+    await prefetchCriticalData();
+
+    expect(mockSetItem).toHaveBeenCalledWith(
+      '@cfutons/cache/editorial-collections',
+      expect.stringContaining('"data"'),
+    );
+  });
+
+  it('prefetches products and collections in parallel', async () => {
+    await prefetchCriticalData();
+
+    // Both should be written
+    expect(mockSetItem).toHaveBeenCalledTimes(2);
+    const keys = mockSetItem.mock.calls.map(([key]) => key);
+    expect(keys).toContain('@cfutons/cache/products');
+    expect(keys).toContain('@cfutons/cache/editorial-collections');
+  });
+
   it('returns a promise that resolves when prefetch completes', async () => {
     const result = await prefetchCriticalData();
     expect(result).toBeUndefined(); // resolves without error
@@ -72,8 +108,8 @@ describe('prefetchCriticalData', () => {
 
     await Promise.all([p1, p2]);
 
-    // setItem should be called once, not twice
-    expect(mockSetItem).toHaveBeenCalledTimes(1);
+    // setItem should be called twice (products + collections), not four times
+    expect(mockSetItem).toHaveBeenCalledTimes(2);
   });
 
   it('sets status to "complete" after successful prefetch', async () => {
@@ -85,10 +121,10 @@ describe('prefetchCriticalData', () => {
   });
 
   it('sets status to "fetching" while in progress', async () => {
-    // Use a slow setItem to observe intermediate state
-    let resolveSetItem: () => void;
+    // Use slow setItem calls to observe intermediate state
+    const resolvers: Array<() => void> = [];
     mockSetItem.mockImplementation(
-      () => new Promise<void>((resolve) => { resolveSetItem = resolve; }),
+      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
     );
 
     const promise = prefetchCriticalData();
@@ -97,7 +133,8 @@ describe('prefetchCriticalData', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(getPrefetchStatus()).toBe('fetching');
 
-    resolveSetItem!();
+    // Resolve all pending setItem calls
+    resolvers.forEach((r) => r());
     await promise;
     expect(getPrefetchStatus()).toBe('complete');
   });
@@ -120,14 +157,22 @@ describe('prefetchCriticalData', () => {
   it('writes data in useDataCache-compatible format', async () => {
     await prefetchCriticalData();
 
-    const [key, value] = mockSetItem.mock.calls[0];
-    expect(key).toBe('@cfutons/cache/products');
-
-    const parsed = JSON.parse(value as string);
+    // Check products entry
+    const productCall = mockSetItem.mock.calls.find(([key]) => key === '@cfutons/cache/products');
+    expect(productCall).toBeDefined();
+    const parsed = JSON.parse(productCall![1] as string);
     expect(parsed).toHaveProperty('data');
     expect(parsed).toHaveProperty('timestamp');
     expect(typeof parsed.timestamp).toBe('number');
     expect(Array.isArray(parsed.data)).toBe(true);
+
+    // Check collections entry
+    const collectionCall = mockSetItem.mock.calls.find(([key]) => key === '@cfutons/cache/editorial-collections');
+    expect(collectionCall).toBeDefined();
+    const parsedCol = JSON.parse(collectionCall![1] as string);
+    expect(parsedCol).toHaveProperty('data');
+    expect(parsedCol).toHaveProperty('timestamp');
+    expect(Array.isArray(parsedCol.data)).toBe(true);
   });
 
   it('uses existing cache when available and fresh', async () => {
@@ -160,13 +205,16 @@ describe('resetPrefetchState', () => {
     resetPrefetchState();
     await prefetchCriticalData();
 
-    expect(mockSetItem).toHaveBeenCalledTimes(1);
+    expect(mockSetItem).toHaveBeenCalledTimes(2);
   });
 });
 
-describe('PREFETCH_CACHE_KEY', () => {
-  it('matches the useDataCache products key', () => {
-    // This ensures prefetch writes to the same cache useDataCache reads from
+describe('cache key constants', () => {
+  it('PREFETCH_CACHE_KEY matches the useDataCache products key', () => {
     expect(PREFETCH_CACHE_KEY).toBe('@cfutons/cache/products');
+  });
+
+  it('PREFETCH_COLLECTIONS_KEY matches the useDataCache editorial-collections key', () => {
+    expect(PREFETCH_COLLECTIONS_KEY).toBe('@cfutons/cache/editorial-collections');
   });
 });
