@@ -116,6 +116,11 @@ const OrderConfirmationScreen = lazy(() =>
     default: m.OrderConfirmationScreen,
   })),
 );
+const CompareScreen = lazy(() =>
+  import('@/screens/CompareScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -154,6 +159,7 @@ export type RootStackParamList = {
   CollectionDetail: { slug: string };
   Premium: undefined;
   StyleQuiz: undefined;
+  Compare: { productSlugs: string[] };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -305,6 +311,31 @@ export function AppNavigator() {
           {({ navigation: nav }) => (
             <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
           )}
+        </Stack.Screen>
+        <Stack.Screen name="Compare" options={fadeTransition}>
+          {({ navigation: nav, route }) => {
+            const { PRODUCTS } = require('@/data/products');
+            const products = (route.params?.productSlugs ?? [])
+              .map((slug: string) => PRODUCTS.find((p: { slug: string }) => p.slug === slug))
+              .filter(Boolean);
+            return (
+              <CompareScreen
+                products={products}
+                onRemove={(id: string) => {
+                  const remaining = products.filter((p: { id: string }) => p.id !== id);
+                  if (remaining.length === 0) {
+                    nav.goBack();
+                  } else {
+                    nav.setParams({ productSlugs: remaining.map((p: { slug: string }) => p.slug) });
+                  }
+                }}
+                onProductPress={(p: { slug: string }) =>
+                  nav.navigate('ProductDetail', { slug: p.slug })
+                }
+                onBack={() => nav.goBack()}
+              />
+            );
+          }}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
