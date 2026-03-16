@@ -30,6 +30,8 @@ export interface WixClientConfig {
   apiKey: string;
   siteId: string;
   baseUrl?: string;
+  /** When set, all requests route through this proxy instead of directly to Wix. */
+  proxyUrl?: string;
 }
 
 const DEFAULT_BASE_URL = 'https://www.wixapis.com';
@@ -201,11 +203,20 @@ export class WixClient {
   readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly siteId: string;
+  private readonly useProxy: boolean;
 
   constructor(config: WixClientConfig) {
+    this.useProxy = !!config.proxyUrl;
     this.apiKey = config.apiKey;
     this.siteId = config.siteId;
-    this.baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
+    this.baseUrl = config.proxyUrl ?? config.baseUrl ?? DEFAULT_BASE_URL;
+
+    if (!this.useProxy && config.apiKey && !__DEV__) {
+      console.error(
+        'WIX SECURITY: Direct API key usage is not allowed in production builds. ' +
+          'Configure EXPO_PUBLIC_WIX_PROXY_URL to route requests through a backend proxy.',
+      );
+    }
   }
 
   // ── Products ───────────────────────────────────────────────
@@ -480,11 +491,16 @@ export class WixClient {
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {
-    return {
-      Authorization: this.apiKey,
-      'wix-site-id': this.siteId,
+    const h: Record<string, string> = {
       'Content-Type': 'application/json',
+      'wix-site-id': this.siteId,
     };
+    // Only include Authorization when NOT using proxy (dev-only direct access).
+    // In proxy mode, the proxy server injects the API key server-side.
+    if (!this.useProxy && this.apiKey) {
+      h['Authorization'] = this.apiKey;
+    }
+    return h;
   }
 
   private async post<T>(path: string, body: unknown): Promise<T> {

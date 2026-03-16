@@ -22,7 +22,7 @@ npx expo start
 |---|---|
 | `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key — app crashes without it |
 | `EXPO_PUBLIC_WIX_CLIENT_ID` | Wix OAuth client ID |
-| `EXPO_PUBLIC_WIX_API_KEY` | Wix REST API key |
+| `WIX_API_KEY` | Wix REST API key (secret — dev only, NOT `EXPO_PUBLIC_`) |
 | `EXPO_PUBLIC_WIX_SITE_ID` | Wix site ID |
 
 See [`.env.example`](.env.example) for all variables and where to obtain them.

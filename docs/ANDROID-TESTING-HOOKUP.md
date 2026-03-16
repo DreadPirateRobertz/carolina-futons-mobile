@@ -46,7 +46,7 @@ npx expo run:android --device
 Create `.env` at project root (if not already there):
 
 ```bash
-EXPO_PUBLIC_WIX_API_KEY=your-api-key
+WIX_API_KEY=your-api-key  # SECRET — dev only, not compiled into bundle
 EXPO_PUBLIC_WIX_SITE_ID=your-site-id
 EXPO_PUBLIC_WIX_CLIENT_ID=your-oauth-client-id
 ```

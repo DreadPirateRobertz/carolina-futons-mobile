@@ -10,7 +10,7 @@
 Create `.env` at project root (git-ignored, never commit):
 
 ```bash
-EXPO_PUBLIC_WIX_API_KEY=your-api-key
+WIX_API_KEY=your-api-key  # SECRET — not EXPO_PUBLIC_ (kept server-side)
 EXPO_PUBLIC_WIX_SITE_ID=your-site-id
 EXPO_PUBLIC_WIX_CLIENT_ID=your-oauth-client-id
 EXPO_PUBLIC_WIX_BASE_URL=https://www.wixapis.com   # optional, this is the default
@@ -27,7 +27,7 @@ Wix powers: product listings, collections, inventory, user auth (login/register/
 | Step | Where | Result |
 |------|-------|--------|
 | Create/select Wix site | wix.com → My Sites | You have a site |
-| Generate API key | Dashboard → Settings → API Keys | `EXPO_PUBLIC_WIX_API_KEY` |
+| Generate API key | Dashboard → Settings → API Keys | `WIX_API_KEY` (secret — dev only) |
 | Copy Site ID | Dashboard → Settings → Advanced → Site ID | `EXPO_PUBLIC_WIX_SITE_ID` |
 | Create OAuth app | Dashboard → Settings → OAuth Apps → New | `EXPO_PUBLIC_WIX_CLIENT_ID` |
 | Set OAuth redirect URI | Same OAuth app settings | `carolinafutons://oauth/wix/callback` |
