@@ -121,6 +121,11 @@ const OrderConfirmationScreen = lazy(() =>
     default: m.OrderConfirmationScreen,
   })),
 );
+const SearchScreen = lazy(() =>
+  import('@/screens/SearchScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.SearchScreen, 'Search'),
+  })),
+);
 const CompareScreen = lazy(() =>
   import('@/screens/CompareScreen').then((m) => ({
     default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
@@ -164,6 +169,7 @@ export type RootStackParamList = {
   CollectionDetail: { slug: string };
   Premium: undefined;
   StyleQuiz: undefined;
+  Search: undefined;
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
 };
@@ -318,6 +324,7 @@ export function AppNavigator() {
             <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
           )}
         </Stack.Screen>
+        <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />
         <Stack.Screen name="Compare" options={fadeTransition}>
           {({ navigation: nav, route }) => {
             const { PRODUCTS } = require('@/data/products');
