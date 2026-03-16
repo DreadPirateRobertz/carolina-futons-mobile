@@ -93,8 +93,15 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         fabricNames: selectedFabricNames.join(','),
       });
 
-      events.fabricSampleRequest(productName, selectedFabricIds.size, fabricIdArray.join(','));
       setSubmitted(true);
+
+      try {
+        events.fabricSampleRequest(productName, selectedFabricIds.size, fabricIdArray.join(','));
+      } catch (analyticsError) {
+        captureException(
+          analyticsError instanceof Error ? analyticsError : new Error('Fabric sample analytics failed'),
+        );
+      }
     } catch (error) {
       captureException(error instanceof Error ? error : new Error('Fabric sample request failed'));
       Alert.alert(
@@ -198,6 +205,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         testID="swatch-name-input"
         accessibilityLabel="Your name"
         autoCapitalize="words"
+        maxLength={100}
       />
 
       <TextInput
@@ -210,6 +218,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         accessibilityLabel="Shipping address"
         multiline
         numberOfLines={2}
+        maxLength={300}
       />
 
       <TouchableOpacity

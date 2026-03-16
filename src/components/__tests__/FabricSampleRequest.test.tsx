@@ -241,6 +241,38 @@ describe('FabricSampleRequest', () => {
     });
   });
 
+  it('still shows confirmation if analytics throws after successful API call', async () => {
+    events.fabricSampleRequest.mockImplementationOnce(() => {
+      throw new Error('Analytics exploded');
+    });
+
+    const { getByTestId, getByText } = render(
+      <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
+    );
+    fireEvent.press(getByTestId('request-swatches-btn'));
+
+    fireEvent.changeText(getByTestId('swatch-name-input'), 'John Doe');
+    fireEvent.changeText(getByTestId('swatch-address-input'), '123 Main St');
+    fireEvent.press(getByTestId('swatch-chip-fabric-1'));
+    fireEvent.press(getByTestId('swatch-submit-btn'));
+
+    // Should still show confirmation — analytics failure is non-fatal
+    await waitFor(() => {
+      expect(getByText(/Swatches are on the way/)).toBeTruthy();
+    });
+    expect(captureException).toHaveBeenCalled();
+  });
+
+  it('enforces maxLength on name and address inputs', () => {
+    const { getByTestId } = render(
+      <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
+    );
+    fireEvent.press(getByTestId('request-swatches-btn'));
+
+    expect(getByTestId('swatch-name-input').props.maxLength).toBe(100);
+    expect(getByTestId('swatch-address-input').props.maxLength).toBe(300);
+  });
+
   it('renders nothing when fabrics array is empty', () => {
     const { toJSON } = render(
       <FabricSampleRequest fabrics={[]} productName="Asheville Futon" />,
