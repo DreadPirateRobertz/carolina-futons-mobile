@@ -258,9 +258,7 @@ describe('useProductBySlug', () => {
       const firstPromise = new Promise<Product | null>((resolve) => {
         firstResolve = resolve;
       });
-      mockGetProductBySlug
-        .mockReturnValueOnce(firstPromise)
-        .mockResolvedValueOnce(wixOnlyProduct);
+      mockGetProductBySlug.mockReturnValueOnce(firstPromise).mockResolvedValueOnce(wixOnlyProduct);
 
       const { result, rerender } = renderHook(
         ({ slug }: { slug: string }) => useProductBySlug(slug),
