@@ -27,7 +27,10 @@ export interface WixClientConfig {
   apiKey: string;
   siteId: string;
   baseUrl?: string;
+  timeoutMs?: number;
 }
+
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 const DEFAULT_BASE_URL = 'https://www.wixapis.com';
 
@@ -329,11 +332,13 @@ export class WixClient {
   readonly baseUrl: string;
   private readonly apiKey: string;
   private readonly siteId: string;
+  private readonly timeoutMs: number;
 
   constructor(config: WixClientConfig) {
     this.apiKey = config.apiKey;
     this.siteId = config.siteId;
     this.baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
+    this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
   // ── Products ───────────────────────────────────────────────
@@ -941,19 +946,31 @@ export class WixClient {
 
   private async rawRequest<T>(path: string, method: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     let response: Response;
     try {
       response = await fetch(url, {
         method,
         headers: this.headers(),
+        signal: controller.signal,
         ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
       });
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new WixApiError(
+          `Request timeout after ${this.timeoutMs}ms`,
+          undefined,
+          path,
+        );
+      }
       throw new WixApiError(
         `Network error: ${err instanceof Error ? err.message : String(err)}`,
         undefined,
         path,
       );
+    } finally {
+      clearTimeout(timer);
     }
 
     if (!response.ok) {
@@ -973,6 +990,8 @@ export class WixClient {
 
 function isRetryableError(err: Error): boolean {
   if (err instanceof WixApiError) {
+    // Don't retry timeouts — the server is unresponsive, retrying wastes time
+    if (err.message.startsWith('Request timeout')) return false;
     // Don't retry client errors (4xx) — they won't resolve with retry
     if (err.statusCode && err.statusCode >= 400 && err.statusCode < 500) {
       return false;
