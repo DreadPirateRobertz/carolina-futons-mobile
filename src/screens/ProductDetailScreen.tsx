@@ -62,6 +62,7 @@ import { FinancingBadge } from '@/components/FinancingBadge';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
+import { FabricSampleRequest } from '@/components/FabricSampleRequest';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -548,6 +549,15 @@ export function ProductDetailScreen({
               </TouchableOpacity>
             ))}
           </ScrollView>
+        </View>
+
+        {/* Fabric Sample Request */}
+        <View style={{ paddingHorizontal: spacing.lg }}>
+          <FabricSampleRequest
+            fabrics={model.fabrics}
+            productName={model.name}
+            testID="fabric-sample-request"
+          />
         </View>
 
         {/* Dimensions */}
