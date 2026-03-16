@@ -24,6 +24,7 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
 import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
 import { PremiumProvider } from '@/hooks/usePremium';
+import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
 
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -66,9 +67,7 @@ function App() {
   }, []);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!stripeKey) {
-    throw new Error(
-      'EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Add it to your .env file.',
-    );
+    throw new Error('EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Add it to your .env file.');
   }
 
   const [fontsLoaded] = useFonts({
@@ -95,41 +94,42 @@ function App() {
 
   return (
     <SafeAreaProvider onLayout={onLayoutRootView}>
-      <StripeProvider
-        publishableKey={stripeKey}
-        merchantIdentifier={STRIPE_MERCHANT_ID}
-      >
+      <StripeProvider publishableKey={stripeKey} merchantIdentifier={STRIPE_MERCHANT_ID}>
         <ThemeProvider>
           <ConnectivityProvider>
             <AuthProvider>
               <CartProvider>
                 <WishlistProvider>
                   <NotificationProvider>
+                    <CartAbandonmentBridge />
                     <PremiumProvider>
-                    <ErrorBoundary>
-                      <NavigationContainer
-                        ref={navigationRef}
-                        linking={linkingConfig}
-                        onStateChange={onStateChange}
-                        onReady={() => {
-                          onScreenTrackingReady();
-                          if (sentryNavigationIntegration && navigationRef.current) {
-                            (sentryNavigationIntegration as { registerNavigationContainer: (ref: unknown) => void })
-                              .registerNavigationContainer(navigationRef);
-                          }
-                        }}
-                      >
-                        <DeepLinkProvider>
-                          <OfflineBanner />
-                          <AppNavigator />
-                          <ForceUpdateModal
-                            visible={forceUpdate.visible}
-                            required={forceUpdate.required}
-                            onDismiss={forceUpdate.dismiss}
-                          />
-                        </DeepLinkProvider>
-                      </NavigationContainer>
-                    </ErrorBoundary>
+                      <ErrorBoundary>
+                        <NavigationContainer
+                          ref={navigationRef}
+                          linking={linkingConfig}
+                          onStateChange={onStateChange}
+                          onReady={() => {
+                            onScreenTrackingReady();
+                            if (sentryNavigationIntegration && navigationRef.current) {
+                              (
+                                sentryNavigationIntegration as {
+                                  registerNavigationContainer: (ref: unknown) => void;
+                                }
+                              ).registerNavigationContainer(navigationRef);
+                            }
+                          }}
+                        >
+                          <DeepLinkProvider>
+                            <OfflineBanner />
+                            <AppNavigator />
+                            <ForceUpdateModal
+                              visible={forceUpdate.visible}
+                              required={forceUpdate.required}
+                              onDismiss={forceUpdate.dismiss}
+                            />
+                          </DeepLinkProvider>
+                        </NavigationContainer>
+                      </ErrorBoundary>
                     </PremiumProvider>
                   </NotificationProvider>
                 </WishlistProvider>
