@@ -57,12 +57,14 @@ export function useDataCache<T>(
         const age = Date.now() - entry.timestamp;
         setData(entry.data);
         setIsStale(age > maxAge);
+        // Cache hit: stop showing loading state — data is usable while we revalidate
+        setIsLoading(false);
       }
     } catch {
       // Cache read failed — continue to fetch
     }
 
-    // Fetch fresh data
+    // Fetch fresh data (revalidate in background if cache was served)
     try {
       const freshData = await fetcherRef.current();
       setData(freshData);

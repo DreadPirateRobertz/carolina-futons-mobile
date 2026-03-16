@@ -38,17 +38,32 @@ describe('useDataCache', () => {
     );
   });
 
-  it('serves cached data immediately when available', async () => {
+  it('serves cached data immediately and stops loading before revalidation', async () => {
+    let resolveFetcher: (v: { items: number[] }) => void;
+    const fetcher = jest.fn().mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveFetcher = resolve;
+        }),
+    );
     const cached = JSON.stringify({ data: { items: [1, 2] }, timestamp: Date.now() });
     mockGetItem.mockResolvedValue(cached);
-    const fetcher = jest.fn().mockResolvedValue({ items: [1, 2, 3] });
 
     const { result } = renderHook(() => useDataCache('products', fetcher));
+
+    // Let cache read resolve (but fetcher is still pending)
     await act(async () => {});
 
-    // Cached data served first
-    expect(result.current.data).toBeDefined();
+    // Cache served — isLoading should be false even though fetcher hasn't resolved
+    expect(result.current.data).toEqual({ items: [1, 2] });
+    expect(result.current.isLoading).toBe(false);
     expect(result.current.isStale).toBe(false);
+
+    // Now resolve fetcher — data updates to fresh
+    await act(async () => {
+      resolveFetcher!({ items: [1, 2, 3] });
+    });
+    expect(result.current.data).toEqual({ items: [1, 2, 3] });
   });
 
   it('marks data as stale when cache is old', async () => {

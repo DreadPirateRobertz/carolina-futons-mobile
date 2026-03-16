@@ -47,7 +47,9 @@ initCrashReporting({
 
 const sentryNavigationIntegration = getSentryNavigationIntegration();
 
-SplashScreen.preventAutoHideAsync();
+// Store the promise so hideAsync() can await it — prevents a race where
+// hideAsync fires before preventAutoHideAsync resolves (crashes on some devices).
+const preventHidePromise = SplashScreen.preventAutoHideAsync();
 
 // Splash-screen data race: start prefetching product data while fonts load.
 // By the time the splash hides, product data is already in AsyncStorage
@@ -80,6 +82,7 @@ function App() {
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
+      await preventHidePromise;
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
