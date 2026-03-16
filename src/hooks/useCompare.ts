@@ -16,16 +16,13 @@ export interface UseCompareReturn {
 export function useCompare(): UseCompareReturn {
   const [compareList, setCompareList] = useState<Product[]>([]);
 
-  const addToCompare = useCallback(
-    (product: Product): void => {
-      setCompareList((prev) => {
-        if (prev.length >= MAX_COMPARE_ITEMS) return prev;
-        if (prev.some((p) => p.id === product.id)) return prev;
-        return [...prev, product];
-      });
-    },
-    [],
-  );
+  const addToCompare = useCallback((product: Product): void => {
+    setCompareList((prev) => {
+      if (prev.length >= MAX_COMPARE_ITEMS) return prev;
+      if (prev.some((p) => p.id === product.id)) return prev;
+      return [...prev, product];
+    });
+  }, []);
 
   const removeFromCompare = useCallback((productId: string) => {
     setCompareList((prev) => prev.filter((p) => p.id !== productId));

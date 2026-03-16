@@ -62,17 +62,13 @@ describe('CompareScreen', () => {
   });
 
   it('renders two products side by side', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText(productA.name)).toBeTruthy();
     expect(getByText(productB.name)).toBeTruthy();
   });
 
   it('renders three products side by side (max)', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB, productC]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB, productC]} />);
     expect(getByText(productA.name)).toBeTruthy();
     expect(getByText(productB.name)).toBeTruthy();
     expect(getByText(productC.name)).toBeTruthy();
@@ -81,9 +77,7 @@ describe('CompareScreen', () => {
   // --- COMPARISON ROWS ---
 
   it('displays dimension comparison rows', () => {
-    const { getAllByText, getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getAllByText, getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText('Dimensions')).toBeTruthy();
     // Dimensions formatted as W×D×H
     const dimA = `${productA.dimensions.width}" × ${productA.dimensions.depth}" × ${productA.dimensions.height}"`;
@@ -93,9 +87,7 @@ describe('CompareScreen', () => {
   });
 
   it('displays price comparison with highlight on lowest', () => {
-    const { getByTestId } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
     // The cheaper product's price cell should have a "best-value" testID
     const cheaper = productA.price < productB.price ? productA : productB;
     const bestValueCell = getByTestId(`price-best-${cheaper.id}`);
@@ -103,36 +95,26 @@ describe('CompareScreen', () => {
   });
 
   it('displays rating comparison', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText('Rating')).toBeTruthy();
     expect(getByText(`${productA.rating}`)).toBeTruthy();
     expect(getByText(`${productB.rating}`)).toBeTruthy();
   });
 
   it('displays fabric options', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText('Fabrics')).toBeTruthy();
     // Each product's fabric count
-    expect(
-      getByText(`${productA.fabricOptions.length} options`),
-    ).toBeTruthy();
+    expect(getByText(`${productA.fabricOptions.length} options`)).toBeTruthy();
   });
 
   it('displays stock status', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText('Availability')).toBeTruthy();
   });
 
   it('displays size row when products have sizes', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByText('Size')).toBeTruthy();
   });
 
@@ -141,10 +123,7 @@ describe('CompareScreen', () => {
   it('calls onRemove when remove button is pressed', () => {
     const onRemove = jest.fn();
     const { getAllByTestId } = render(
-      <CompareScreen
-        products={[productA, productB]}
-        onRemove={onRemove}
-      />,
+      <CompareScreen products={[productA, productB]} onRemove={onRemove} />,
     );
     const removeButtons = getAllByTestId(/remove-product/);
     fireEvent.press(removeButtons[0]);
@@ -154,10 +133,7 @@ describe('CompareScreen', () => {
   it('calls onProductPress when product name is tapped', () => {
     const onProductPress = jest.fn();
     const { getByText } = render(
-      <CompareScreen
-        products={[productA, productB]}
-        onProductPress={onProductPress}
-      />,
+      <CompareScreen products={[productA, productB]} onProductPress={onProductPress} />,
     );
     fireEvent.press(getByText(productA.name));
     expect(onProductPress).toHaveBeenCalledWith(productA);
@@ -184,9 +160,7 @@ describe('CompareScreen', () => {
       badge: undefined,
       stockCount: undefined,
     };
-    const { getByText } = render(
-      <CompareScreen products={[sparseProduct, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[sparseProduct, productB]} />);
     expect(getByText('Sparse Product')).toBeTruthy();
     // Size row should show '-' for missing size
     expect(getByText('-')).toBeTruthy();
@@ -200,9 +174,7 @@ describe('CompareScreen', () => {
       inStock: false,
       stockCount: 0,
     };
-    const { getByText } = render(
-      <CompareScreen products={[oosProduct, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[oosProduct, productB]} />);
     expect(getByText('Out of Stock')).toBeTruthy();
   });
 
@@ -214,9 +186,7 @@ describe('CompareScreen', () => {
       inStock: true,
       stockCount: 2,
     };
-    const { getByText } = render(
-      <CompareScreen products={[lowStockProduct, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[lowStockProduct, productB]} />);
     expect(getByText('Low Stock (2)')).toBeTruthy();
   });
 
@@ -228,18 +198,14 @@ describe('CompareScreen', () => {
       price: 249,
       originalPrice: 349,
     };
-    const { getByText } = render(
-      <CompareScreen products={[discountProduct, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[discountProduct, productB]} />);
     expect(getByText(formatPrice(249))).toBeTruthy();
     expect(getByText(formatPrice(349))).toBeTruthy();
   });
 
   it('caps at MAX_COMPARE_ITEMS (3) products', () => {
     const fourProducts = [...futons, { ...productA, id: 'prod-extra' as any, name: 'Extra' }];
-    const { queryByText } = render(
-      <CompareScreen products={fourProducts} />,
-    );
+    const { queryByText } = render(<CompareScreen products={fourProducts} />);
     // Fourth product should not render
     expect(queryByText('Extra')).toBeNull();
   });
@@ -260,9 +226,7 @@ describe('CompareScreen', () => {
   });
 
   it('renders without onProductPress (no crash on tap)', () => {
-    const { getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByText } = render(<CompareScreen products={[productA, productB]} />);
     // Tapping product name without onProductPress should not throw
     expect(() => fireEvent.press(getByText(productA.name))).not.toThrow();
   });
@@ -274,18 +238,14 @@ describe('CompareScreen', () => {
       name: 'Tied Price Futon',
       price: productA.price,
     };
-    const { queryByTestId } = render(
-      <CompareScreen products={[productA, tiedProduct]} />,
-    );
+    const { queryByTestId } = render(<CompareScreen products={[productA, tiedProduct]} />);
     // Neither should get best-value highlight
     expect(queryByTestId(`price-best-${productA.id}`)).toBeNull();
     expect(queryByTestId('price-best-prod-tied')).toBeNull();
   });
 
   it('renders accessibly with proper labels', () => {
-    const { getByLabelText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByLabelText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByLabelText(/compare products/i)).toBeTruthy();
   });
 });

@@ -329,7 +329,9 @@ export function AppNavigator() {
                     nav.setParams({ productSlugs: remaining.map((p: { slug: string }) => p.slug) });
                   }
                 }}
-                onProductPress={(p: { slug: string }) => nav.navigate('ProductDetail', { slug: p.slug })}
+                onProductPress={(p: { slug: string }) =>
+                  nav.navigate('ProductDetail', { slug: p.slug })
+                }
                 onBack={() => nav.goBack()}
               />
             );

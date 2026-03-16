@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import type { Product } from '@/data/products';
@@ -40,11 +33,7 @@ function StockLabel({ product }: { product: Product }) {
     return <Text style={{ color: colors.error }}>Out of Stock</Text>;
   }
   if (status === 'low_stock') {
-    return (
-      <Text style={{ color: colors.sunsetCoral }}>
-        Low Stock ({product.stockCount})
-      </Text>
-    );
+    return <Text style={{ color: colors.sunsetCoral }}>Low Stock ({product.stockCount})</Text>;
   }
   return <Text style={{ color: colors.success }}>In Stock</Text>;
 }
@@ -94,7 +83,10 @@ export function CompareScreen({
             <Text
               style={[
                 styles.cellValue,
-                { color: isBest ? colors.success : colors.espresso, fontWeight: isBest ? '700' : '400' },
+                {
+                  color: isBest ? colors.success : colors.espresso,
+                  fontWeight: isBest ? '700' : '400',
+                },
               ]}
             >
               {formatPrice(product.price)}
@@ -111,9 +103,7 @@ export function CompareScreen({
     {
       label: 'Rating',
       values: (product) => (
-        <Text style={[styles.cellValue, { color: colors.espresso }]}>
-          {product.rating}
-        </Text>
+        <Text style={[styles.cellValue, { color: colors.espresso }]}>{product.rating}</Text>
       ),
     },
     {
@@ -158,10 +148,7 @@ export function CompareScreen({
         <View style={styles.headerRow}>
           <View style={styles.labelCell} />
           {products.map((product) => (
-            <View
-              key={product.id}
-              style={[styles.productCell, { borderColor: colors.sandDark }]}
-            >
+            <View key={product.id} style={[styles.productCell, { borderColor: colors.sandDark }]}>
               {product.images.length > 0 && (
                 <Image
                   source={{ uri: product.images[0].uri }}
@@ -173,10 +160,7 @@ export function CompareScreen({
                 onPress={() => onProductPress?.(product)}
                 accessibilityRole="button"
               >
-                <Text
-                  style={[styles.productName, { color: colors.espresso }]}
-                  numberOfLines={2}
-                >
+                <Text style={[styles.productName, { color: colors.espresso }]} numberOfLines={2}>
                   {product.name}
                 </Text>
               </TouchableOpacity>
@@ -207,9 +191,7 @@ export function CompareScreen({
             ]}
           >
             <View style={styles.labelCell}>
-              <Text style={[styles.rowLabel, { color: colors.espressoLight }]}>
-                {row.label}
-              </Text>
+              <Text style={[styles.rowLabel, { color: colors.espressoLight }]}>{row.label}</Text>
             </View>
             {products.map((product) => (
               <View key={product.id} style={styles.productCell}>
