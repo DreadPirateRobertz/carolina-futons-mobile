@@ -22,9 +22,7 @@ describe('CompareButton', () => {
   });
 
   it('renders with "Remove" label when product is in list', () => {
-    const { getByText, rerender } = renderWithProvider(
-      <CompareButton product={productA} />,
-    );
+    const { getByText, rerender } = renderWithProvider(<CompareButton product={productA} />);
     fireEvent.press(getByText('Compare'));
     // After press, should flip to remove state
     expect(getByText('Remove')).toBeTruthy();

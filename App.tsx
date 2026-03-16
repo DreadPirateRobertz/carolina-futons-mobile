@@ -110,49 +110,49 @@ function App() {
         <ThemeProvider>
           <ConnectivityProvider>
             <MaybeWixProvider>
-            <AuthProvider>
-              <CartProvider>
-                <WishlistProvider>
-                  <NotificationProvider>
-                    <CartAbandonmentBridge />
-                    <PremiumProvider>
-                      <RecommendationsProvider>
-                      <CompareProvider>
-                      <ErrorBoundary>
-                        <NavigationContainer
-                          ref={navigationRef}
-                          linking={linkingConfig}
-                          onStateChange={onStateChange}
-                          onReady={() => {
-                            onScreenTrackingReady();
-                            if (sentryNavigationIntegration && navigationRef.current) {
-                              (
-                                sentryNavigationIntegration as {
-                                  registerNavigationContainer: (ref: unknown) => void;
-                                }
-                              ).registerNavigationContainer(navigationRef);
-                            }
-                          }}
-                        >
-                          <DeepLinkProvider>
-                            <OfflineBanner />
-                            <AppNavigator />
-                            <ForceUpdateModal
-                              visible={forceUpdate.visible}
-                              required={forceUpdate.required}
-                              onDismiss={forceUpdate.dismiss}
-                            />
-                          </DeepLinkProvider>
-                        </NavigationContainer>
-                      </ErrorBoundary>
-                      </CompareProvider>
-                      </RecommendationsProvider>
-                    </PremiumProvider>
-                  </NotificationProvider>
-                </WishlistProvider>
-              </CartProvider>
-            </AuthProvider>
-          </MaybeWixProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <WishlistProvider>
+                    <NotificationProvider>
+                      <CartAbandonmentBridge />
+                      <PremiumProvider>
+                        <RecommendationsProvider>
+                          <CompareProvider>
+                            <ErrorBoundary>
+                              <NavigationContainer
+                                ref={navigationRef}
+                                linking={linkingConfig}
+                                onStateChange={onStateChange}
+                                onReady={() => {
+                                  onScreenTrackingReady();
+                                  if (sentryNavigationIntegration && navigationRef.current) {
+                                    (
+                                      sentryNavigationIntegration as {
+                                        registerNavigationContainer: (ref: unknown) => void;
+                                      }
+                                    ).registerNavigationContainer(navigationRef);
+                                  }
+                                }}
+                              >
+                                <DeepLinkProvider>
+                                  <OfflineBanner />
+                                  <AppNavigator />
+                                  <ForceUpdateModal
+                                    visible={forceUpdate.visible}
+                                    required={forceUpdate.required}
+                                    onDismiss={forceUpdate.dismiss}
+                                  />
+                                </DeepLinkProvider>
+                              </NavigationContainer>
+                            </ErrorBoundary>
+                          </CompareProvider>
+                        </RecommendationsProvider>
+                      </PremiumProvider>
+                    </NotificationProvider>
+                  </WishlistProvider>
+                </CartProvider>
+              </AuthProvider>
+            </MaybeWixProvider>
           </ConnectivityProvider>
         </ThemeProvider>
       </StripeProvider>

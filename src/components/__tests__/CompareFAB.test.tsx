@@ -45,26 +45,23 @@ describe('CompareFAB', () => {
   });
 
   it('renders when compare list has items', () => {
-    const { getByTestId } = renderWithProvider(
-      <CompareFAB testID="compare-fab" />,
-      [productA],
-    );
+    const { getByTestId } = renderWithProvider(<CompareFAB testID="compare-fab" />, [productA]);
     expect(getByTestId('compare-fab')).toBeTruthy();
   });
 
   it('displays the compare count as badge text', () => {
-    const { getByText } = renderWithProvider(
-      <CompareFAB testID="compare-fab" />,
-      [productA, productB],
-    );
+    const { getByText } = renderWithProvider(<CompareFAB testID="compare-fab" />, [
+      productA,
+      productB,
+    ]);
     expect(getByText('2')).toBeTruthy();
   });
 
   it('navigates to Compare screen with product slugs on press', () => {
-    const { getByTestId } = renderWithProvider(
-      <CompareFAB testID="compare-fab" />,
-      [productA, productB],
-    );
+    const { getByTestId } = renderWithProvider(<CompareFAB testID="compare-fab" />, [
+      productA,
+      productB,
+    ]);
     fireEvent.press(getByTestId('compare-fab'));
     expect(mockNavigate).toHaveBeenCalledWith('Compare', {
       productSlugs: [productA.slug, productB.slug],
@@ -72,10 +69,7 @@ describe('CompareFAB', () => {
   });
 
   it('has accessible label indicating compare action', () => {
-    const { getByLabelText } = renderWithProvider(
-      <CompareFAB testID="compare-fab" />,
-      [productA],
-    );
+    const { getByLabelText } = renderWithProvider(<CompareFAB testID="compare-fab" />, [productA]);
     expect(getByLabelText(/compare/i)).toBeTruthy();
   });
 });

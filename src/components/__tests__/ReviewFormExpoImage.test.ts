@@ -9,10 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('ReviewForm — expo-image migration', () => {
-  const source = fs.readFileSync(
-    path.join(__dirname, '../ReviewForm.tsx'),
-    'utf8',
-  );
+  const source = fs.readFileSync(path.join(__dirname, '../ReviewForm.tsx'), 'utf8');
 
   it('does not import Image from react-native', () => {
     // Should not have RN Image import
