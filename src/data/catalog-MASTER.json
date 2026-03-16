@@ -17,7 +17,16 @@
       "materials": ["hardwood-oak", "metal-hardware"],
       "finishes": ["Honey Oak", "Espresso", "Natural"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware", "detail-hinge"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-hardware",
+          "detail-hinge"
+        ],
         "directory": "photos/murphy-queen-vertical/"
       },
       "modelSpec": {
@@ -41,7 +50,16 @@
       "materials": ["hardwood-maple", "metal-hardware"],
       "finishes": ["Maple Natural", "Walnut Stain", "White"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware", "detail-hinge"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-hardware",
+          "detail-hinge"
+        ],
         "directory": "photos/murphy-full-horizontal/"
       },
       "modelSpec": {
@@ -65,7 +83,17 @@
       "materials": ["hardwood-oak", "metal-hardware", "mdf-shelving"],
       "finishes": ["Espresso", "Honey Oak", "Gray Wash"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-bookcase", "detail-hardware", "detail-hinge"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-bookcase",
+          "detail-hardware",
+          "detail-hinge"
+        ],
         "directory": "photos/murphy-queen-bookcase/"
       },
       "modelSpec": {
@@ -89,7 +117,15 @@
       "materials": ["hardwood-birch", "metal-hardware"],
       "finishes": ["Natural Birch", "Espresso", "White"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-hardware"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-hardware"
+        ],
         "directory": "photos/murphy-twin-cabinet/"
       },
       "modelSpec": {
@@ -113,7 +149,17 @@
       "materials": ["hardwood-oak", "metal-hardware", "laminate-desktop"],
       "finishes": ["Espresso", "Walnut", "Gray Wash"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "front-desk-mode", "side-left", "side-right", "3q-front", "top-down", "detail-desk", "detail-hardware"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "front-desk-mode",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-desk",
+          "detail-hardware"
+        ],
         "directory": "photos/murphy-queen-desk/"
       },
       "modelSpec": {
@@ -137,7 +183,16 @@
       "materials": ["hardwood-oak", "metal-hardware"],
       "finishes": ["Honey Oak", "Espresso", "Natural"],
       "photoInputs": {
-        "required": ["front-closed", "front-open", "side-left", "side-right", "3q-front", "top-down", "detail-storage", "detail-hardware"],
+        "required": [
+          "front-closed",
+          "front-open",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-storage",
+          "detail-hardware"
+        ],
         "directory": "photos/murphy-full-storage/"
       },
       "modelSpec": {
@@ -161,7 +216,16 @@
       "materials": ["hardwood-frame", "fabric-upholstery"],
       "finishes": ["Natural Linen", "Slate Gray", "Mountain Blue", "Sunset Coral"],
       "photoInputs": {
-        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric", "detail-frame"],
+        "required": [
+          "front-sofa",
+          "front-bed",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-fabric",
+          "detail-frame"
+        ],
         "directory": "photos/asheville-full/"
       },
       "modelSpec": {
@@ -185,7 +249,16 @@
       "materials": ["hardwood-ash-frame", "fabric-upholstery"],
       "finishes": ["Natural Linen", "Slate Gray", "Mountain Blue", "Espresso Brown", "Charcoal"],
       "photoInputs": {
-        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric", "detail-frame"],
+        "required": [
+          "front-sofa",
+          "front-bed",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-fabric",
+          "detail-frame"
+        ],
         "directory": "photos/blue-ridge-queen/"
       },
       "modelSpec": {
@@ -208,7 +281,15 @@
       "materials": ["hardwood-frame", "metal-hardware"],
       "finishes": ["Honey Oak", "Espresso", "Natural"],
       "photoInputs": {
-        "required": ["front", "side-left", "side-right", "3q-front", "top-down", "detail-finish", "detail-hardware"],
+        "required": [
+          "front",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-finish",
+          "detail-hardware"
+        ],
         "directory": "photos/hardwood-frame/"
       },
       "modelSpec": {
@@ -232,7 +313,15 @@
       "materials": ["hardwood-frame", "fabric-upholstery"],
       "finishes": ["Natural Linen", "Slate Gray", "Forest Green"],
       "photoInputs": {
-        "required": ["front-sofa", "front-bed", "side-left", "side-right", "3q-front", "top-down", "detail-fabric"],
+        "required": [
+          "front-sofa",
+          "front-bed",
+          "side-left",
+          "side-right",
+          "3q-front",
+          "top-down",
+          "detail-fabric"
+        ],
         "directory": "photos/pisgah-twin/"
       },
       "modelSpec": {

@@ -34,11 +34,11 @@ The current AR implementation (`ARScreen.tsx`, `ARFutonOverlay.tsx`, `ARControls
 
 ### 2.1 Placement Accuracy
 
-| Metric | ARKit (LiDAR) | ARKit (no LiDAR) | ARCore |
-|--------|---------------|-------------------|--------|
-| Positional drift | ~0.02m/sec | ~0.05m/sec | ~0.05-0.10m/sec |
-| Measurement error (<3m) | +/-1-2.5 cm | +/-2.5-5 cm | +/-3-7 cm |
-| Reliable range | ~5m | ~3-5m | ~3-5m |
+| Metric                  | ARKit (LiDAR) | ARKit (no LiDAR) | ARCore          |
+| ----------------------- | ------------- | ---------------- | --------------- |
+| Positional drift        | ~0.02m/sec    | ~0.05m/sec       | ~0.05-0.10m/sec |
+| Measurement error (<3m) | +/-1-2.5 cm   | +/-2.5-5 cm      | +/-3-7 cm       |
+| Reliable range          | ~5m           | ~3-5m            | ~3-5m           |
 
 **Pass/fail criteria**: Scale accuracy within 5%, positional drift <3cm over 15s, plane detection <5s in normal lighting, frame rate >30fps sustained.
 
@@ -46,16 +46,17 @@ The current AR implementation (`ARScreen.tsx`, `ARFutonOverlay.tsx`, `ARControls
 
 ### 2.2 Automated vs Manual Testing
 
-| Layer | Tool | Automation Level |
-|-------|------|-----------------|
-| Component logic (model/fabric/price) | Jest + RNTL | **Fully automated** (already done) |
-| Visual regression (overlay rendering) | Applitools/Percy | **Automated** (mask camera region) |
-| Gesture interactions | Detox/Maestro | **Partial** (Detox: iOS sim only) |
-| Performance (FPS/CPU/memory) | Xcode Instruments / Android Profiler | **Semi-automated** (real device only) |
-| Plane detection & anchoring | ARKit/ARCore session replay | **Automatable via session replay** |
-| E2E AR in real rooms | Manual | **Cannot be automated** |
+| Layer                                 | Tool                                 | Automation Level                      |
+| ------------------------------------- | ------------------------------------ | ------------------------------------- |
+| Component logic (model/fabric/price)  | Jest + RNTL                          | **Fully automated** (already done)    |
+| Visual regression (overlay rendering) | Applitools/Percy                     | **Automated** (mask camera region)    |
+| Gesture interactions                  | Detox/Maestro                        | **Partial** (Detox: iOS sim only)     |
+| Performance (FPS/CPU/memory)          | Xcode Instruments / Android Profiler | **Semi-automated** (real device only) |
+| Plane detection & anchoring           | ARKit/ARCore session replay          | **Automatable via session replay**    |
+| E2E AR in real rooms                  | Manual                               | **Cannot be automated**               |
 
 **Session Replay** is the most impactful automation investment:
+
 - **iOS**: ARKit session recording via Reality Composer, replay in XCTest
 - **Android**: ARCore Recording & Playback API (`ArRecordingConfig`/`ArPlaybackConfig`)
 
@@ -65,14 +66,14 @@ The current AR implementation (`ARScreen.tsx`, `ARFutonOverlay.tsx`, `ARControls
 
 **Tier 1 — Must Test (blocks release):**
 
-| Device | OS | Rationale |
-|--------|----|-----------|
-| iPhone 15/16 Pro | iOS 17-18 | LiDAR, latest ARKit, high-end buyers |
-| iPhone 13/14 | iOS 17-18 | No LiDAR, most common iPhones |
-| iPhone SE 3 | iOS 17 | Lowest-spec supported iPhone |
-| Samsung Galaxy S24/S25 | Android 14-15 | Dominant Android flagship |
-| Google Pixel 8/9 | Android 14-15 | ARCore reference hardware |
-| Samsung Galaxy A54/A55 | Android 14 | Mid-range bulk of Android AR users |
+| Device                 | OS            | Rationale                            |
+| ---------------------- | ------------- | ------------------------------------ |
+| iPhone 15/16 Pro       | iOS 17-18     | LiDAR, latest ARKit, high-end buyers |
+| iPhone 13/14           | iOS 17-18     | No LiDAR, most common iPhones        |
+| iPhone SE 3            | iOS 17        | Lowest-spec supported iPhone         |
+| Samsung Galaxy S24/S25 | Android 14-15 | Dominant Android flagship            |
+| Google Pixel 8/9       | Android 14-15 | ARCore reference hardware            |
+| Samsung Galaxy A54/A55 | Android 14    | Mid-range bulk of Android AR users   |
 
 **Tier 2 — Should Test**: iPad Pro M2/M4, iPhone 12, OnePlus 12, Xiaomi 14, Galaxy Tab S9
 
@@ -82,12 +83,12 @@ The current AR implementation (`ARScreen.tsx`, `ARFutonOverlay.tsx`, `ARControls
 
 ### 2.4 Test Environment Requirements
 
-| Variable | Baseline | Edge Case |
-|----------|----------|-----------|
-| Lighting | 300-500 lux (normal indoor) | 50-100 lux (low light), harsh directional (sun) |
-| Surface | Textured floor (hardwood, carpet) | Featureless (white tile), reflective (polished), dark |
-| Room size | 10-25 sqm | <10 sqm (bedroom), >25 sqm (open plan) |
-| Clutter | Furnished room | Empty room, heavily cluttered |
+| Variable  | Baseline                          | Edge Case                                             |
+| --------- | --------------------------------- | ----------------------------------------------------- |
+| Lighting  | 300-500 lux (normal indoor)       | 50-100 lux (low light), harsh directional (sun)       |
+| Surface   | Textured floor (hardwood, carpet) | Featureless (white tile), reflective (polished), dark |
+| Room size | 10-25 sqm                         | <10 sqm (bedroom), >25 sqm (open plan)                |
+| Clutter   | Furnished room                    | Empty room, heavily cluttered                         |
 
 **Reproducible test setup**: Dedicated room with dimmable lighting, floor markers at known positions, calibration object (24"x24" box), standard test protocol (place → walk circle → verify).
 
@@ -104,11 +105,11 @@ The current AR implementation (`ARScreen.tsx`, `ARFutonOverlay.tsx`, `ARControls
 
 Key ARKit versions for furniture placement:
 
-| Version | iOS | Key Feature |
-|---------|-----|-------------|
-| ARKit 2 | 12 | Vertical plane detection (walls) |
-| ARKit 4 | 14 | Depth API, semantic scene classification |
-| ARKit 6 | 16 | RoomPlan API, 4K video |
+| Version | iOS | Key Feature                              |
+| ------- | --- | ---------------------------------------- |
+| ARKit 2 | 12  | Vertical plane detection (walls)         |
+| ARKit 4 | 14  | Depth API, semantic scene classification |
+| ARKit 6 | 16  | RoomPlan API, 4K video                   |
 
 ### 3.2 ARCore (Android)
 
@@ -120,12 +121,12 @@ Key ARKit versions for furniture placement:
 
 ### 3.3 ARCore vs ARKit Gaps
 
-| Dimension | Impact on Furniture Placement |
-|-----------|-------------------------------|
-| Depth sensing | ARKit LiDAR: hardware depth at 60Hz. ARCore: software RGB-based, lower accuracy |
-| Scene mesh | ARKit: 3D polygonal mesh with semantic labels. ARCore: depth map only |
-| RoomPlan | ARKit 6: full room scanning. ARCore: no equivalent |
-| Device fragmentation | ARKit: 6-8 iPhone models. ARCore: 600+ models with varying quality |
+| Dimension            | Impact on Furniture Placement                                                   |
+| -------------------- | ------------------------------------------------------------------------------- |
+| Depth sensing        | ARKit LiDAR: hardware depth at 60Hz. ARCore: software RGB-based, lower accuracy |
+| Scene mesh           | ARKit: 3D polygonal mesh with semantic labels. ARCore: depth map only           |
+| RoomPlan             | ARKit 6: full room scanning. ARCore: no equivalent                              |
+| Device fragmentation | ARKit: 6-8 iPhone models. ARCore: 600+ models with varying quality              |
 
 ### 3.4 React Native AR Library
 
@@ -133,11 +134,11 @@ Key ARKit versions for furniture placement:
 
 ### 3.5 Recommended Tiered Experience
 
-| Tier | Devices | Experience |
-|------|---------|------------|
-| Premium | iOS 16+ with LiDAR, flagships with ARCore Depth | Full AR: room scanning, occlusion, shadows, RoomPlan (iOS) |
-| Standard | iOS 15+, Android 9+ with ARCore | Basic plane detection, furniture placement, simpler occlusion |
-| Fallback | No AR support | Static 3D model viewer or 2D overlay (current implementation) |
+| Tier     | Devices                                         | Experience                                                    |
+| -------- | ----------------------------------------------- | ------------------------------------------------------------- |
+| Premium  | iOS 16+ with LiDAR, flagships with ARCore Depth | Full AR: room scanning, occlusion, shadows, RoomPlan (iOS)    |
+| Standard | iOS 15+, Android 9+ with ARCore                 | Basic plane detection, furniture placement, simpler occlusion |
+| Fallback | No AR support                                   | Static 3D model viewer or 2D overlay (current implementation) |
 
 ---
 
@@ -145,54 +146,54 @@ Key ARKit versions for furniture placement:
 
 ### 4.1 Frame Rate
 
-| Tier | FPS | Notes |
-|------|-----|-------|
-| Minimum acceptable | 24 | Below this: tracking fails, motion sickness |
-| Target | 30 | Standard for consumer AR, shippable floor |
-| Ideal | 60 | ARKit default on iPhone 12+ |
-| Danger zone | <20 | Users abandon the feature |
+| Tier               | FPS | Notes                                       |
+| ------------------ | --- | ------------------------------------------- |
+| Minimum acceptable | 24  | Below this: tracking fails, motion sickness |
+| Target             | 30  | Standard for consumer AR, shippable floor   |
+| Ideal              | 60  | ARKit default on iPhone 12+                 |
+| Danger zone        | <20 | Users abandon the feature                   |
 
 **Frame drop causes**: Tracking/pose estimation (3-6ms/frame), model rendering (4-12ms depending on complexity), RN bridge overhead (1-5ms), oversized textures.
 
 ### 4.2 3D Model Specs
 
-| Metric | Target | Maximum |
-|--------|--------|---------|
-| Polygons per furniture model | 15K-25K tris | 50K tris |
-| Total scene budget | 75K-100K tris | — |
-| USDZ file size (iOS) | 3-8 MB | 15 MB |
-| GLB file size (Android) | 2-6 MB | 12 MB |
-| Model load time | <1.5s | 3s |
-| Base color texture | 1024x1024 | 2048x2048 |
-| Normal/roughness maps | 512x512 | 1024x1024 |
+| Metric                       | Target        | Maximum   |
+| ---------------------------- | ------------- | --------- |
+| Polygons per furniture model | 15K-25K tris  | 50K tris  |
+| Total scene budget           | 75K-100K tris | —         |
+| USDZ file size (iOS)         | 3-8 MB        | 15 MB     |
+| GLB file size (Android)      | 2-6 MB        | 12 MB     |
+| Model load time              | <1.5s         | 3s        |
+| Base color texture           | 1024x1024     | 2048x2048 |
+| Normal/roughness maps        | 512x512       | 1024x1024 |
 
 **LOD strategy**: LOD0 (25K tris, full tex) at <1m, LOD1 (10-20K tris, half tex) at 1-3m, LOD2 (2-5K tris, quarter tex) at >3m, LOD3 (500 tris, solid color) as loading placeholder.
 
 ### 4.3 Memory Budgets
 
-| Component | Memory |
-|-----------|--------|
-| AR session baseline | 80-150 MB |
-| Furniture model (geometry) | 5-20 MB |
-| Textures (decompressed GPU) | 20-80 MB |
-| React Native runtime | 40-80 MB |
-| **Total AR session** | **250-450 MB** |
+| Component                   | Memory         |
+| --------------------------- | -------------- |
+| AR session baseline         | 80-150 MB      |
+| Furniture model (geometry)  | 5-20 MB        |
+| Textures (decompressed GPU) | 20-80 MB       |
+| React Native runtime        | 40-80 MB       |
+| **Total AR session**        | **250-450 MB** |
 
-| Device | AR Session Budget | Warning Threshold |
-|--------|-------------------|-------------------|
-| iPhone SE 3 | 400 MB | 350 MB |
-| iPhone 12 | 500 MB | 450 MB |
-| Galaxy A54 | 350 MB | 300 MB |
-| Pixel 7a | 400 MB | 350 MB |
+| Device      | AR Session Budget | Warning Threshold |
+| ----------- | ----------------- | ----------------- |
+| iPhone SE 3 | 400 MB            | 350 MB            |
+| iPhone 12   | 500 MB            | 450 MB            |
+| Galaxy A54  | 350 MB            | 300 MB            |
+| Pixel 7a    | 400 MB            | 350 MB            |
 
 ### 4.4 Thermal & Battery
 
-| Device | Thermal Throttle Onset | Battery Drain |
-|--------|----------------------|---------------|
-| iPhone SE 3 | 3-5 min | ~1.3%/min |
-| iPhone 12 | 5-8 min | ~1.0%/min |
-| Galaxy A54 | 4-7 min | ~0.7%/min |
-| Pixel 7a | 4-6 min | ~0.9%/min |
+| Device      | Thermal Throttle Onset | Battery Drain |
+| ----------- | ---------------------- | ------------- |
+| iPhone SE 3 | 3-5 min                | ~1.3%/min     |
+| iPhone 12   | 5-8 min                | ~1.0%/min     |
+| Galaxy A54  | 4-7 min                | ~0.7%/min     |
+| Pixel 7a    | 4-6 min                | ~0.9%/min     |
 
 **Session duration targets**: Optimal 0-3 min, acceptable 3-5 min (show battery indicator), warn 5-8 min, suggest screenshot & exit 8-10 min.
 
@@ -219,14 +220,14 @@ Tier 3 (Galaxy A54, older mid-range Android):
 
 WCAG 2.2 applies to AR features. Key criteria:
 
-| Criterion | Level | Requirement |
-|-----------|-------|-------------|
-| 1.1.1 Non-text Content | A | AR overlays need text alternatives |
-| 1.4.3 Contrast | AA | UI overlays on camera feed: 4.5:1 ratio |
-| 1.4.11 Non-text Contrast | AA | Interactive controls: 3:1 |
-| 2.5.1 Pointer Gestures | A | Multipoint gestures need single-pointer alternatives |
-| 2.5.7 Dragging Movements | AA | Drag-to-move needs non-dragging alternative |
-| 2.5.8 Target Size | AA | Minimum 24x24 CSS px |
+| Criterion                | Level | Requirement                                          |
+| ------------------------ | ----- | ---------------------------------------------------- |
+| 1.1.1 Non-text Content   | A     | AR overlays need text alternatives                   |
+| 1.4.3 Contrast           | AA    | UI overlays on camera feed: 4.5:1 ratio              |
+| 1.4.11 Non-text Contrast | AA    | Interactive controls: 3:1                            |
+| 2.5.1 Pointer Gestures   | A     | Multipoint gestures need single-pointer alternatives |
+| 2.5.7 Dragging Movements | AA    | Drag-to-move needs non-dragging alternative          |
+| 2.5.8 Target Size        | AA    | Minimum 24x24 CSS px                                 |
 
 W3C XAUR (XR Accessibility User Requirements) exists but has no testable criteria yet. WCAG 2.2 AA is the legal/practical floor.
 
@@ -246,6 +247,7 @@ W3C XAUR (XR Accessibility User Requirements) exists but has no testable criteri
 10. **Switch Control / Switch Access** — Test full flow with both
 
 **SHOULD-HAVE:**
+
 - Photo upload with static overlay
 - Quick-scan and freeze (3-5s scan, then frozen view)
 - Bottom sheet with sliders for position/rotation/scale
@@ -253,6 +255,7 @@ W3C XAUR (XR Accessibility User Requirements) exists but has no testable criteri
 - Voice Control / Voice Access testing
 
 **NICE-TO-HAVE:**
+
 - Audio scene descriptions
 - Voice-driven placement ("Place futon against back wall")
 - Spatial audio cues
@@ -261,6 +264,7 @@ W3C XAUR (XR Accessibility User Requirements) exists but has no testable criteri
 ### 5.3 VoiceOver/TalkBack
 
 ARKit/ARCore views are opaque to screen readers by default. Must build custom accessibility layer:
+
 - **iOS**: `UIAccessibilityElement` at screen-projected position of each placed object, `UIAccessibilityCustomAction` for rotate/resize/remove
 - **Android**: `AccessibilityNodeProvider` with virtual nodes, `contentDescription` on each
 - **React Native**: `accessibilityRole="adjustable"`, `accessibilityActions` for increment/decrement/delete
@@ -297,15 +301,15 @@ ARKit/ARCore views are opaque to screen readers by default. Must build custom ac
 
 ### Performance Pass/Fail Gate
 
-| Metric | Pass | Fail |
-|--------|------|------|
-| FPS (sustained, 30s) | ≥30 | <24 |
-| Model load time | ≤3s | >5s |
-| Placement accuracy | ±3cm | >5cm drift |
-| Plane detection time (normal light) | ≤5s | >10s |
-| Memory (AR session) | ≤400 MB | >500 MB |
-| Battery drain | ≤1.5%/min | >2%/min |
+| Metric                              | Pass      | Fail       |
+| ----------------------------------- | --------- | ---------- |
+| FPS (sustained, 30s)                | ≥30       | <24        |
+| Model load time                     | ≤3s       | >5s        |
+| Placement accuracy                  | ±3cm      | >5cm drift |
+| Plane detection time (normal light) | ≤5s       | >10s       |
+| Memory (AR session)                 | ≤400 MB   | >500 MB    |
+| Battery drain                       | ≤1.5%/min | >2%/min    |
 
 ---
 
-*Research compiled from: Apple ARKit docs, Google ARCore docs, W3C WCAG 2.2, W3C XAUR, TelemetryDeck iOS adoption data, GFXBench/3DMark mobile GPU data, ViroReact GitHub, industry AR apps (IKEA Place, Wayfair, Houzz), MobiDev AR testing guides, Applitools visual testing research.*
+_Research compiled from: Apple ARKit docs, Google ARCore docs, W3C WCAG 2.2, W3C XAUR, TelemetryDeck iOS adoption data, GFXBench/3DMark mobile GPU data, ViroReact GitHub, industry AR apps (IKEA Place, Wayfair, Houzz), MobiDev AR testing guides, Applitools visual testing research._
