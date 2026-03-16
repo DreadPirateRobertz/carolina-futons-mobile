@@ -118,7 +118,7 @@ export function useProductBySlug(slug: string): UseProductReturn {
     return () => {
       controller.abort();
     };
-  }, [slug, useWix, wixClient, refreshToken]);
+  }, [slug, useWix, refreshToken]);
 
   const refresh = useCallback(() => {
     setRefreshToken((t) => t + 1);
