@@ -53,7 +53,10 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
       </Text>
       <View style={styles.termsRow}>
         {terms.map((term) => (
-          <View key={term.months} style={[styles.termPill, { backgroundColor: `${colors.mountainBlue}15` }]}>
+          <View
+            key={term.months}
+            style={[styles.termPill, { backgroundColor: `${colors.mountainBlue}15` }]}
+          >
             <Text style={[styles.termText, { color: colors.mountainBlue }]}>
               {term.months}mo: {formatPrice(term.monthlyPayment)}
             </Text>

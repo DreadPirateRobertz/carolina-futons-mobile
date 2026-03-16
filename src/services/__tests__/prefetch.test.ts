@@ -124,7 +124,10 @@ describe('prefetchCriticalData', () => {
     // Use slow setItem calls to observe intermediate state
     const resolvers: Array<() => void> = [];
     mockSetItem.mockImplementation(
-      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolvers.push(resolve);
+        }),
     );
 
     const promise = prefetchCriticalData();
@@ -146,10 +149,7 @@ describe('prefetchCriticalData', () => {
     await prefetchCriticalData();
 
     expect(getPrefetchStatus()).toBe('error');
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[prefetch]'),
-      expect.any(Error),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[prefetch]'), expect.any(Error));
     warnSpy.mockRestore();
   });
 
@@ -175,7 +175,9 @@ describe('prefetchCriticalData', () => {
     expect(Array.isArray(parsed.data)).toBe(true);
 
     // Check collections entry
-    const collectionCall = mockSetItem.mock.calls.find(([key]) => key === '@cfutons/cache/editorial-collections');
+    const collectionCall = mockSetItem.mock.calls.find(
+      ([key]) => key === '@cfutons/cache/editorial-collections',
+    );
     expect(collectionCall).toBeDefined();
     const parsedCol = JSON.parse(collectionCall![1] as string);
     expect(parsedCol).toHaveProperty('data');

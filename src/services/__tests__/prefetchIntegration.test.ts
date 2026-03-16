@@ -17,10 +17,7 @@ describe('Splash-screen data race integration', () => {
   it('App.tsx imports and calls prefetchCriticalData', () => {
     const fs = require('fs');
     const path = require('path');
-    const appSource = fs.readFileSync(
-      path.resolve(__dirname, '../../../App.tsx'),
-      'utf8',
-    );
+    const appSource = fs.readFileSync(path.resolve(__dirname, '../../../App.tsx'), 'utf8');
 
     expect(appSource).toContain("import { prefetchCriticalData } from '@/services/prefetch'");
     expect(appSource).toContain('prefetchCriticalData()');

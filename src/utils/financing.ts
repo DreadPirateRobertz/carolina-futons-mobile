@@ -37,7 +37,7 @@ export function isFinancingEligible(price: number): boolean {
 export function calculateMonthlyPayment(price: number, months: number): number {
   const monthlyRate = FINANCING_APR / 12;
   const factor = Math.pow(1 + monthlyRate, months);
-  const payment = price * (monthlyRate * factor) / (factor - 1);
+  const payment = (price * (monthlyRate * factor)) / (factor - 1);
   return Math.round(payment * 100) / 100;
 }
 
