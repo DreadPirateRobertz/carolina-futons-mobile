@@ -90,6 +90,19 @@ jobs:
           fi
           eas init --non-interactive --force
 
+      - name: Initialize EAS project
+        run: |
+          if grep -q 'YOUR_PROJECT_ID' app.json; then
+            node -e "
+              const fs = require('fs');
+              const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+              delete app.expo.extra.eas.projectId;
+              delete app.expo.updates;
+              fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
+            "
+          fi
+          eas init --non-interactive --force
+
       - name: Determine build profile
         id: profile
         env:
@@ -109,6 +122,8 @@ jobs:
         env:
           BUILD_PROFILE: ${{ steps.profile.outputs.profile }}
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
+          EXPO_APPLE_PASSWORD: ${{ secrets.EXPO_APPLE_PASSWORD }}
         run: eas build --platform ios --profile "$BUILD_PROFILE" --non-interactive
 
   build-android:
@@ -188,5 +203,7 @@ jobs:
       - name: Submit to TestFlight
         run: eas submit --platform ios --latest --non-interactive
         env:
+          EXPO_APPLE_ID: ${{ secrets.EXPO_APPLE_ID }}
+          EXPO_APPLE_PASSWORD: ${{ secrets.EXPO_APPLE_PASSWORD }}
           EXPO_ASC_APP_ID: ${{ secrets.EXPO_ASC_APP_ID }}
           EXPO_APPLE_TEAM_ID: ${{ secrets.EXPO_APPLE_TEAM_ID }}
