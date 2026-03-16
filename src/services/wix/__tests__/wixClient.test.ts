@@ -942,14 +942,14 @@ describe('WixClient eCommerce Cart', () => {
     client = new WixClient(TEST_CONFIG);
   });
 
-  describe('addToCart', () => {
+  describe('addToCartById', () => {
     it('POSTs line items to the cart add endpoint', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ cart: { id: 'cart-1' } }),
       });
 
-      const result = await client.addToCart('cart-1', [
+      const result = await client.addToCartById('cart-1', [
         {
           catalogReference: {
             catalogItemId: 'prod-1',
@@ -986,7 +986,7 @@ describe('WixClient eCommerce Cart', () => {
         json: () => Promise.resolve({ message: 'Cart not found' }),
       });
 
-      await expect(client.addToCart('bad-cart', [])).rejects.toThrow(WixApiError);
+      await expect(client.addToCartById('bad-cart', [])).rejects.toThrow(WixApiError);
     });
   });
 

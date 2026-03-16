@@ -33,7 +33,7 @@ async function replayCartAction(
       const productId = payload.productId as string;
       const variantId = payload.variantId as string | undefined;
       const quantity = (payload.quantity as number) || 1;
-      await client.addToCart(cartId, [
+      await client.addToCartById(cartId, [
         {
           catalogReference: {
             catalogItemId: productId,

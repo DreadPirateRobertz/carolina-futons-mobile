@@ -14,14 +14,14 @@ import { replayOfflineQueue } from '../replayOfflineQueue';
 
 describe('replayOfflineQueue', () => {
   let mockClient: {
-    addToCart: jest.Mock;
+    addToCartById: jest.Mock;
     removeCartLineItems: jest.Mock;
     updateCartLineItems: jest.Mock;
   };
 
   beforeEach(() => {
     mockClient = {
-      addToCart: jest.fn().mockResolvedValue({ cart: { id: 'cart-1' } }),
+      addToCartById: jest.fn().mockResolvedValue({ cart: { id: 'cart-1' } }),
       removeCartLineItems: jest.fn().mockResolvedValue({ cart: { id: 'cart-1' } }),
       updateCartLineItems: jest.fn().mockResolvedValue({ cart: { id: 'cart-1' } }),
     };
@@ -39,7 +39,7 @@ describe('replayOfflineQueue', () => {
   }
 
   describe('cart/ADD_ITEM', () => {
-    it('calls addToCart with catalogItemId and quantity', async () => {
+    it('calls addToCartById with catalogItemId and quantity', async () => {
       const actions: QueuedAction[] = [
         makeAction({
           domain: 'cart',
@@ -54,7 +54,7 @@ describe('replayOfflineQueue', () => {
 
       const result = await replayOfflineQueue(actions, 'cart-1', mockClient as any);
 
-      expect(mockClient.addToCart).toHaveBeenCalledWith('cart-1', [
+      expect(mockClient.addToCartById).toHaveBeenCalledWith('cart-1', [
         {
           catalogReference: {
             catalogItemId: 'prod-123',
@@ -79,7 +79,7 @@ describe('replayOfflineQueue', () => {
 
       await replayOfflineQueue(actions, 'cart-1', mockClient as any);
 
-      expect(mockClient.addToCart).toHaveBeenCalledWith('cart-1', [
+      expect(mockClient.addToCartById).toHaveBeenCalledWith('cart-1', [
         {
           catalogReference: {
             catalogItemId: 'prod-123',
@@ -152,7 +152,7 @@ describe('replayOfflineQueue', () => {
 
       const result = await replayOfflineQueue(actions, 'cart-1', mockClient as any);
 
-      expect(mockClient.addToCart).not.toHaveBeenCalled();
+      expect(mockClient.addToCartById).not.toHaveBeenCalled();
       expect(mockClient.removeCartLineItems).not.toHaveBeenCalled();
       expect(mockClient.updateCartLineItems).not.toHaveBeenCalled();
       expect(result.skipped).toBe(1);
@@ -175,7 +175,7 @@ describe('replayOfflineQueue', () => {
 
   describe('error handling', () => {
     it('continues processing after a failed action', async () => {
-      mockClient.addToCart
+      mockClient.addToCartById
         .mockRejectedValueOnce(new Error('Network error'))
         .mockResolvedValueOnce({ cart: { id: 'cart-1' } });
 
@@ -239,7 +239,7 @@ describe('replayOfflineQueue', () => {
       expect(result.succeeded).toBe(3);
       expect(result.skipped).toBe(2);
       expect(result.failed).toBe(0);
-      expect(mockClient.addToCart).toHaveBeenCalledTimes(1);
+      expect(mockClient.addToCartById).toHaveBeenCalledTimes(1);
       expect(mockClient.removeCartLineItems).toHaveBeenCalledTimes(1);
       expect(mockClient.updateCartLineItems).toHaveBeenCalledTimes(1);
     });

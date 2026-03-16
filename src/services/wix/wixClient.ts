@@ -871,9 +871,9 @@ export class WixClient {
     return this.insertDataItem(collectionId, data);
   }
 
-  // ── eCommerce Cart ─────────────────────────────────────────
+  // ── eCommerce Cart (by ID) ──────────────────────────────────
 
-  async addToCart(
+  async addToCartById(
     cartId: string,
     lineItems: Array<{
       catalogReference: {
