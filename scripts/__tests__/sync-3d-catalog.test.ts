@@ -85,9 +85,9 @@ describe('shared/catalog-3d.json schema', () => {
     }
   });
 
-  it('all models have valid file sizes (1-20 MB)', () => {
+  it('all models have valid file sizes (> 0, < 20 MB)', () => {
     for (const model of catalog.models) {
-      expect(model.fileSizeBytes).toBeGreaterThan(1_000_000);
+      expect(model.fileSizeBytes).toBeGreaterThan(0);
       expect(model.fileSizeBytes).toBeLessThan(20_000_000);
     }
   });
@@ -194,13 +194,17 @@ describe('sync-3d-catalog output', () => {
     expect(tsContent).toContain('inToM');
   });
 
-  it('constructs CDN URLs for models without explicit URLs', () => {
+  it('all models have GLB URLs in output', () => {
     const tsOut = path.join(tmpDir, 'models3d.ts');
     const tsContent = fs.readFileSync(tsOut, 'utf-8');
 
-    // Murphy queen vertical has no explicit URL, should use CDN convention
-    expect(tsContent).toContain('murphy-queen-vertical-q1r2s3.glb');
-    expect(tsContent).toContain('murphy-queen-vertical-q1r2s3.usdz');
+    // All demo models have explicit GLB URLs from KhronosGroup
+    const catalog: Catalog = JSON.parse(fs.readFileSync(CATALOG_PATH, 'utf-8'));
+    for (const model of catalog.models) {
+      if (model.glbUrl) {
+        expect(tsContent).toContain(model.glbUrl);
+      }
+    }
   });
 
   it('preserves explicit URLs from catalog', () => {

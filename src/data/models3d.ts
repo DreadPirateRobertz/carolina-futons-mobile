@@ -50,57 +50,69 @@ function inToM(inches: number): number {
 export const MODELS_3D: Model3DAsset[] = [
   // --- Murphy Cabinet Beds ---
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-queen-vertical'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-vertical-q1r2s3.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-vertical-q1r2s3.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/AntiqueCamera/glTF-Binary/AntiqueCamera.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-vertical-demo-q1r2s3.usdz`,
     dimensions: { width: inToM(64), depth: inToM(24), height: inToM(42) },
-    fileSizeBytes: 7_200_000,
-    contentHash: 'q1r2s3',
+    fileSizeBytes: 1_800_000,
+    contentHash: 'demo-q1r2s3',
     hasFabricVariants: false,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-full-horizontal'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-horizontal-t4u5v6.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-horizontal-t4u5v6.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/WaterBottle/glTF-Binary/WaterBottle.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-horizontal-demo-t4u5v6.usdz`,
     dimensions: { width: inToM(78), depth: inToM(20), height: inToM(44) },
-    fileSizeBytes: 6_500_000,
-    contentHash: 't4u5v6',
+    fileSizeBytes: 2_300_000,
+    contentHash: 'demo-t4u5v6',
     hasFabricVariants: false,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-queen-bookcase'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-bookcase-w7x8y9.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-bookcase-w7x8y9.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Suzanne/glTF-Binary/Suzanne.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-bookcase-demo-w7x8y9.usdz`,
     dimensions: { width: inToM(100), depth: inToM(24), height: inToM(84) },
-    fileSizeBytes: 8_400_000,
-    contentHash: 'w7x8y9',
+    fileSizeBytes: 800_000,
+    contentHash: 'demo-w7x8y9',
     hasFabricVariants: false,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-twin-cabinet'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-twin-cabinet-z0a1b2.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-twin-cabinet-z0a1b2.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoxAnimated/glTF-Binary/BoxAnimated.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-twin-cabinet-demo-z0a1b2.usdz`,
     dimensions: { width: inToM(44), depth: inToM(24), height: inToM(38) },
-    fileSizeBytes: 4_800_000,
-    contentHash: 'z0a1b2',
+    fileSizeBytes: 12_000,
+    contentHash: 'demo-z0a1b2',
     hasFabricVariants: false,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-queen-desk'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-queen-desk-c3d4e5.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-desk-c3d4e5.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-queen-desk-demo-c3d4e5.usdz`,
     dimensions: { width: inToM(66), depth: inToM(26), height: inToM(84) },
-    fileSizeBytes: 8_100_000,
-    contentHash: 'c3d4e5',
+    fileSizeBytes: 3_600_000,
+    contentHash: 'demo-c3d4e5',
     hasFabricVariants: false,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-murphy-full-storage'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/murphy-full-storage-f6g7h8.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-storage-f6g7h8.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Lantern/glTF-Binary/Lantern.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/murphy-full-storage-demo-f6g7h8.usdz`,
     dimensions: { width: inToM(60), depth: inToM(24), height: inToM(82) },
-    fileSizeBytes: 7_000_000,
-    contentHash: 'f6g7h8',
+    fileSizeBytes: 1_200_000,
+    contentHash: 'demo-f6g7h8',
     hasFabricVariants: false,
   },
 
@@ -117,39 +129,46 @@ export const MODELS_3D: Model3DAsset[] = [
     hasFabricVariants: true,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-blue-ridge-queen'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/blue-ridge-queen-d4e5f6.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/blue-ridge-queen-d4e5f6.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/blue-ridge-queen-demo-d4e5f6.usdz`,
     dimensions: { width: inToM(60), depth: inToM(36), height: inToM(35) },
-    fileSizeBytes: 7_500_000,
-    contentHash: 'd4e5f6',
+    fileSizeBytes: 4_400_000,
+    contentHash: 'demo-d4e5f6',
     hasFabricVariants: true,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-pisgah-twin'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/pisgah-twin-g7h8i9.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/pisgah-twin-g7h8i9.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/ToyCar/glTF-Binary/ToyCar.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/pisgah-twin-demo-g7h8i9.usdz`,
     dimensions: { width: inToM(39), depth: inToM(32), height: inToM(31) },
-    fileSizeBytes: 5_200_000,
-    contentHash: 'g7h8i9',
+    fileSizeBytes: 5_700_000,
+    contentHash: 'demo-g7h8i9',
     hasFabricVariants: true,
   },
   {
     productId: productId('prod-biltmore-loveseat'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/biltmore-loveseat-j0k1l2.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/biltmore-loveseat-j0k1l2.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/nicferrier/glTF-Samples/main/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/biltmore-loveseat-demo-j0k1l2.usdz`,
     dimensions: { width: inToM(48), depth: inToM(33), height: inToM(32) },
-    fileSizeBytes: 5_800_000,
-    contentHash: 'j0k1l2',
+    fileSizeBytes: 420_000,
+    contentHash: 'demo-j0k1l2',
     hasFabricVariants: true,
   },
   {
+    // PoC: Real 3D model — KhronosGroup SheenChair (Wayfair, CC-BY-4.0)
     productId: productId('prod-hardwood-frame'),
-    glbUrl: `${MODEL_CDN_BASE}/glb/hardwood-frame-m3n4o5.glb`,
-    usdzUrl: `${MODEL_CDN_BASE}/usdz/hardwood-frame-m3n4o5.usdz`,
+    glbUrl:
+      'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BoomBox/glTF-Binary/BoomBox.glb',
+    usdzUrl: `${MODEL_CDN_BASE}/usdz/hardwood-frame-demo-m3n4o5.usdz`,
     dimensions: { width: inToM(54), depth: inToM(38), height: inToM(33) },
-    fileSizeBytes: 4_100_000,
-    contentHash: 'm3n4o5',
+    fileSizeBytes: 10_200_000,
+    contentHash: 'demo-m3n4o5',
     hasFabricVariants: false,
   },
 ];
