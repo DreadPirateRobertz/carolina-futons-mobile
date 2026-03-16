@@ -14,7 +14,12 @@ const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 // Mock auth — provide a logged-in user
-const mockUser = { id: 'user-1', email: 'test@test.com', displayName: 'Test', provider: 'email' as const };
+const mockUser = {
+  id: 'user-1',
+  email: 'test@test.com',
+  displayName: 'Test',
+  provider: 'email' as const,
+};
 jest.mock('../useAuth', () => ({
   ...jest.requireActual('../useAuth'),
   useAuth: () => ({
@@ -51,7 +56,8 @@ function mockQueryEmpty() {
 function mockMutationSuccess(id = 'doc-1') {
   mockFetch.mockResolvedValueOnce({
     ok: true,
-    json: () => Promise.resolve({ dataItem: { id, data: {}, _updatedDate: '2026-03-06T12:00:00.000Z' } }),
+    json: () =>
+      Promise.resolve({ dataItem: { id, data: {}, _updatedDate: '2026-03-06T12:00:00.000Z' } }),
   });
 }
 
@@ -69,10 +75,7 @@ function SyncedCartHarness({ client }: { client: WixClient }) {
         testID="add-item"
         onPress={() => synced.addItem(asheville, naturalLinen, 1)}
       />
-      <TouchableOpacity
-        testID="clear"
-        onPress={() => synced.clearCart()}
-      />
+      <TouchableOpacity testID="clear" onPress={() => synced.clearCart()} />
     </View>
   );
 }
@@ -151,7 +154,14 @@ describe('useSyncedCart', () => {
   describe('server-win conflict resolution', () => {
     const SERVER_CART_ITEM = {
       id: 'model-2:fabric-2',
-      model: { id: 'model-2', name: 'Boone', basePrice: 399, description: 'Server futon', images: [], fabrics: [] },
+      model: {
+        id: 'model-2',
+        name: 'Boone',
+        basePrice: 399,
+        description: 'Server futon',
+        images: [],
+        fabrics: [],
+      },
       fabric: { id: 'fabric-2', name: 'Charcoal', hex: '#333', price: 60, swatch: 'swatch2.jpg' },
       quantity: 3,
       unitPrice: 459,
@@ -161,14 +171,17 @@ describe('useSyncedCart', () => {
       // Server returns a cart with newer timestamp than local (local starts at 0)
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          dataItems: [{
-            id: 'doc-1',
-            data: { userId: 'user-1', items: [SERVER_CART_ITEM] },
-            _updatedDate: '2026-03-10T12:00:00.000Z',
-          }],
-          pagingMetadata: { total: 1 },
-        }),
+        json: () =>
+          Promise.resolve({
+            dataItems: [
+              {
+                id: 'doc-1',
+                data: { userId: 'user-1', items: [SERVER_CART_ITEM] },
+                _updatedDate: '2026-03-10T12:00:00.000Z',
+              },
+            ],
+            pagingMetadata: { total: 1 },
+          }),
       });
     }
 
@@ -196,14 +209,17 @@ describe('useSyncedCart', () => {
       // Server returns non-array items
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          dataItems: [{
-            id: 'doc-1',
-            data: { userId: 'user-1', items: 'not-an-array' },
-            _updatedDate: '2026-03-10T12:00:00.000Z',
-          }],
-          pagingMetadata: { total: 1 },
-        }),
+        json: () =>
+          Promise.resolve({
+            dataItems: [
+              {
+                id: 'doc-1',
+                data: { userId: 'user-1', items: 'not-an-array' },
+                _updatedDate: '2026-03-10T12:00:00.000Z',
+              },
+            ],
+            pagingMetadata: { total: 1 },
+          }),
       });
 
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -221,9 +237,7 @@ describe('useSyncedCart', () => {
         expect(getByTestId('item-count').props.children).toBe(0);
       });
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[useSyncedCart]'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[useSyncedCart]'));
       warnSpy.mockRestore();
     });
 
@@ -252,14 +266,17 @@ describe('useSyncedCart', () => {
       // Server returns empty items with newer timestamp
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          dataItems: [{
-            id: 'doc-1',
-            data: { userId: 'user-1', items: [] },
-            _updatedDate: '2026-03-10T12:00:00.000Z',
-          }],
-          pagingMetadata: { total: 1 },
-        }),
+        json: () =>
+          Promise.resolve({
+            dataItems: [
+              {
+                id: 'doc-1',
+                data: { userId: 'user-1', items: [] },
+                _updatedDate: '2026-03-10T12:00:00.000Z',
+              },
+            ],
+            pagingMetadata: { total: 1 },
+          }),
       });
 
       jest.spyOn(console, 'warn').mockImplementation();
@@ -292,14 +309,20 @@ describe('useSyncedCart', () => {
     it('rejects items with invalid shape (null, missing id, negative quantity)', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({
-          dataItems: [{
-            id: 'doc-1',
-            data: { userId: 'user-1', items: [null, { id: null, quantity: -1 }, { garbage: true }] },
-            _updatedDate: '2026-03-10T12:00:00.000Z',
-          }],
-          pagingMetadata: { total: 1 },
-        }),
+        json: () =>
+          Promise.resolve({
+            dataItems: [
+              {
+                id: 'doc-1',
+                data: {
+                  userId: 'user-1',
+                  items: [null, { id: null, quantity: -1 }, { garbage: true }],
+                },
+                _updatedDate: '2026-03-10T12:00:00.000Z',
+              },
+            ],
+            pagingMetadata: { total: 1 },
+          }),
       });
 
       jest.spyOn(console, 'warn').mockImplementation();

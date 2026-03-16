@@ -88,7 +88,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
           }
           // Empty server cart with local items = keep local (don't silently wipe)
           if (validItems.length === 0 && cart.items.length > 0) {
-            console.warn('[useSyncedCart] Server cart is empty but local has items, keeping local state');
+            console.warn(
+              '[useSyncedCart] Server cart is empty but local has items, keeping local state',
+            );
             return;
           }
           if (cancelled) return;
@@ -100,7 +102,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, isOnline, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pushIfOnline = useCallback(
@@ -108,11 +112,14 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
       if (!syncService.current || !user?.id) return;
 
       if (isOnline) {
-        syncService.current.pushCart(user.id, items).then((serverTs) => {
-          lastServerTimestamp.current = serverTs;
-        }).catch((err) => {
-          console.warn('[useSyncedCart] Push failed, will retry on next sync:', err);
-        });
+        syncService.current
+          .pushCart(user.id, items)
+          .then((serverTs) => {
+            lastServerTimestamp.current = serverTs;
+          })
+          .catch((err) => {
+            console.warn('[useSyncedCart] Push failed, will retry on next sync:', err);
+          });
       } else {
         queueAction('cart', 'SYNC', { items });
       }
@@ -149,11 +156,14 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
   const clearCart = useCallback(() => {
     cart.clearCart();
     if (syncService.current && user?.id && isOnline) {
-      syncService.current.pushCart(user.id, []).then((serverTs) => {
-        lastServerTimestamp.current = serverTs;
-      }).catch((err) => {
-        console.warn('[useSyncedCart] Clear push failed:', err);
-      });
+      syncService.current
+        .pushCart(user.id, [])
+        .then((serverTs) => {
+          lastServerTimestamp.current = serverTs;
+        })
+        .catch((err) => {
+          console.warn('[useSyncedCart] Clear push failed:', err);
+        });
     } else if (user?.id) {
       queueAction('cart', 'SYNC', { items: [] });
     }

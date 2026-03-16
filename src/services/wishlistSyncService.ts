@@ -45,9 +45,7 @@ export class WishlistSyncService {
       { userId, items },
     );
 
-    return result._updatedDate
-      ? new Date(result._updatedDate).getTime()
-      : Date.now();
+    return result._updatedDate ? new Date(result._updatedDate).getTime() : Date.now();
   }
 
   resolveConflict(local: SyncState, server: SyncState): ConflictResult {

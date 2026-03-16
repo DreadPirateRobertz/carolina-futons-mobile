@@ -79,11 +79,15 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
         if (result.source === 'server') {
           const validItems = validateServerWishlistItems(result.items);
           if (validItems === null) {
-            console.warn('[useSyncedWishlist] Server returned malformed items, keeping local state');
+            console.warn(
+              '[useSyncedWishlist] Server returned malformed items, keeping local state',
+            );
             return;
           }
           if (validItems.length === 0 && wishlist.items.length > 0) {
-            console.warn('[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state');
+            console.warn(
+              '[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state',
+            );
             return;
           }
           if (cancelled) return;
@@ -95,7 +99,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [isAuthenticated, isOnline, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pushIfOnline = useCallback(
@@ -103,11 +109,14 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
       if (!syncService.current || !user?.id) return;
 
       if (isOnline) {
-        syncService.current.pushWishlist(user.id, items).then((serverTs) => {
-          lastServerTimestamp.current = serverTs;
-        }).catch((err) => {
-          console.warn('[useSyncedWishlist] Push failed, will retry on next sync:', err);
-        });
+        syncService.current
+          .pushWishlist(user.id, items)
+          .then((serverTs) => {
+            lastServerTimestamp.current = serverTs;
+          })
+          .catch((err) => {
+            console.warn('[useSyncedWishlist] Push failed, will retry on next sync:', err);
+          });
       } else {
         queueAction('wishlist', 'SYNC', { items });
       }
@@ -142,11 +151,14 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
   const clear = useCallback(() => {
     wishlist.clear();
     if (syncService.current && user?.id && isOnline) {
-      syncService.current.pushWishlist(user.id, []).then((serverTs) => {
-        lastServerTimestamp.current = serverTs;
-      }).catch((err) => {
-        console.warn('[useSyncedWishlist] Clear push failed:', err);
-      });
+      syncService.current
+        .pushWishlist(user.id, [])
+        .then((serverTs) => {
+          lastServerTimestamp.current = serverTs;
+        })
+        .catch((err) => {
+          console.warn('[useSyncedWishlist] Clear push failed:', err);
+        });
     } else if (user?.id) {
       queueAction('wishlist', 'SYNC', { items: [] });
     }

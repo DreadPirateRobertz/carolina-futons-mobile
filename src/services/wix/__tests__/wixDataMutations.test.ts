@@ -52,9 +52,9 @@ describe('WixClient data mutations', () => {
 
     it('throws WixApiError on 400 response', async () => {
       mockFetchError(400, 'Bad Request');
-      await expect(
-        client.insertDataItem('user_carts', { userId: 'u1' }),
-      ).rejects.toThrow(WixApiError);
+      await expect(client.insertDataItem('user_carts', { userId: 'u1' })).rejects.toThrow(
+        WixApiError,
+      );
     });
 
     it('throws WixApiError on network failure', async () => {
@@ -62,21 +62,23 @@ describe('WixClient data mutations', () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
-      await expect(
-        client.insertDataItem('user_carts', { userId: 'u1' }),
-      ).rejects.toThrow(WixApiError);
+      await expect(client.insertDataItem('user_carts', { userId: 'u1' })).rejects.toThrow(
+        WixApiError,
+      );
     }, 10000);
 
     it('rejects empty collectionId', async () => {
-      await expect(
-        client.insertDataItem('', { userId: 'u1' }),
-      ).rejects.toThrow('Collection ID is required');
+      await expect(client.insertDataItem('', { userId: 'u1' })).rejects.toThrow(
+        'Collection ID is required',
+      );
     });
   });
 
   describe('updateDataItem', () => {
     it('puts to wix-data update endpoint', async () => {
-      mockFetchSuccess({ dataItem: { id: 'item-1', data: { userId: 'u1', items: [{ id: 'x' }] } } });
+      mockFetchSuccess({
+        dataItem: { id: 'item-1', data: { userId: 'u1', items: [{ id: 'x' }] } },
+      });
 
       const result = await client.updateDataItem('user_carts', 'item-1', {
         userId: 'u1',
@@ -92,9 +94,9 @@ describe('WixClient data mutations', () => {
     });
 
     it('rejects empty itemId', async () => {
-      await expect(
-        client.updateDataItem('user_carts', '', { userId: 'u1' }),
-      ).rejects.toThrow('Item ID is required');
+      await expect(client.updateDataItem('user_carts', '', { userId: 'u1' })).rejects.toThrow(
+        'Item ID is required',
+      );
     });
   });
 
@@ -124,11 +126,15 @@ describe('WixClient data mutations', () => {
       // insertDataItem succeeds
       mockFetchSuccess({ dataItem: { id: 'new-1', data: { userId: 'u1', items: [] } } });
 
-      const result = await client.upsertDataItem('user_carts', { userId: { $eq: 'u1' } }, {
-        userId: 'u1',
-        items: [],
-        updatedAt: 1000,
-      });
+      const result = await client.upsertDataItem(
+        'user_carts',
+        { userId: { $eq: 'u1' } },
+        {
+          userId: 'u1',
+          items: [],
+          updatedAt: 1000,
+        },
+      );
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result.id).toBe('new-1');
@@ -145,11 +151,15 @@ describe('WixClient data mutations', () => {
         dataItem: { id: 'existing-1', data: { userId: 'u1', items: [{ id: 'x' }] } },
       });
 
-      const result = await client.upsertDataItem('user_carts', { userId: { $eq: 'u1' } }, {
-        userId: 'u1',
-        items: [{ id: 'x' }],
-        updatedAt: 2000,
-      });
+      const result = await client.upsertDataItem(
+        'user_carts',
+        { userId: { $eq: 'u1' } },
+        {
+          userId: 'u1',
+          items: [{ id: 'x' }],
+          updatedAt: 2000,
+        },
+      );
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
       expect(result.id).toBe('existing-1');

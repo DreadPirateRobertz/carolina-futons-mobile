@@ -770,9 +770,7 @@ export class WixClient {
     return {
       items: (data.dataItems ?? []).map((item) => ({
         ...item.data,
-        _serverUpdatedAt: item._updatedDate
-          ? new Date(item._updatedDate).getTime()
-          : undefined,
+        _serverUpdatedAt: item._updatedDate ? new Date(item._updatedDate).getTime() : undefined,
       })),
       totalResults: data.pagingMetadata?.total ?? 0,
     };
@@ -886,11 +884,7 @@ export class WixClient {
     });
   }
 
-  private async rawRequest<T>(
-    path: string,
-    method: string,
-    body?: unknown,
-  ): Promise<T> {
+  private async rawRequest<T>(path: string, method: string, body?: unknown): Promise<T> {
     const url = `${this.baseUrl}${path}`;
     let response: Response;
     try {

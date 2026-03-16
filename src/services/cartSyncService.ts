@@ -46,9 +46,7 @@ export class CartSyncService {
     );
 
     // Return server timestamp from Wix _updatedDate metadata
-    return result._updatedDate
-      ? new Date(result._updatedDate).getTime()
-      : Date.now(); // fallback only if server doesn't return timestamp
+    return result._updatedDate ? new Date(result._updatedDate).getTime() : Date.now(); // fallback only if server doesn't return timestamp
   }
 
   resolveConflict(local: SyncState, server: SyncState): ConflictResult {
