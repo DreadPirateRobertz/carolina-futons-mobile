@@ -32,6 +32,12 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'Success' },
 }));
 
+// Mock cart abandonment
+const mockCancelCartAbandonment = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/hooks/useCartAbandonmentReminder', () => ({
+  cancelCartAbandonmentForOrder: (...args: any[]) => mockCancelCartAbandonment(...args),
+}));
+
 // Mock analytics
 jest.mock('@/services/analytics', () => ({
   events: {
@@ -651,6 +657,31 @@ describe('CheckoutScreen', () => {
         orderId: 'order_123',
         status: 'confirmed',
       });
+    });
+
+    it('cancels cart abandonment notification on successful order', async () => {
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(mockCancelCartAbandonment).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not cancel cart abandonment on payment failure', async () => {
+      const { PaymentError } = jest.requireMock('@/services/payment');
+      mockCreatePaymentIntent.mockRejectedValue(new PaymentError('Card declined', 'STRIPE_ERROR'));
+
+      const utils = renderCheckout({}, seed);
+      fillAndSelectCard(utils);
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      expect(mockCancelCartAbandonment).not.toHaveBeenCalled();
     });
 
     it('does not submit when no payment method is selected', async () => {

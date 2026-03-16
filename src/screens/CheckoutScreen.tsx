@@ -42,6 +42,7 @@ import { events } from '@/services/analytics';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { usePremium } from '@/hooks/usePremium';
 import { useAddressBook } from '@/hooks/useAddressBook';
+import { cancelCartAbandonmentForOrder } from '@/hooks/useCartAbandonmentReminder';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -350,6 +351,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
       addressBook.saveFromCheckout(shippingAddress);
+      cancelCartAbandonmentForOrder();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -382,6 +384,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
+      cancelCartAbandonmentForOrder();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
@@ -404,6 +407,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
     if (order) {
       events.purchase(order.orderId, totals.total, items.length);
+      cancelCartAbandonmentForOrder();
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }

@@ -61,6 +61,20 @@ async function cancelExisting(state: AbandonmentState | null): Promise<void> {
   }
 }
 
+/**
+ * Standalone function to cancel any pending cart abandonment notification
+ * and reset throttle state. Call from checkout on successful order.
+ */
+export async function cancelCartAbandonmentForOrder(): Promise<void> {
+  const state = await loadState();
+  await cancelExisting(state);
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Fire-and-forget cleanup
+  }
+}
+
 export function useCartAbandonmentReminder({
   itemCount,
   cartRemindersEnabled,

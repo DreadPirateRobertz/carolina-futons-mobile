@@ -7,7 +7,10 @@
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
-import { useCartAbandonmentReminder } from '../useCartAbandonmentReminder';
+import {
+  useCartAbandonmentReminder,
+  cancelCartAbandonmentForOrder,
+} from '../useCartAbandonmentReminder';
 
 // Mock dependencies
 jest.mock('expo-notifications', () => ({
@@ -314,5 +317,52 @@ describe('useCartAbandonmentReminder', () => {
     await act(async () => {
       await result.current.onCartChanged();
     });
+  });
+});
+
+describe('cancelCartAbandonmentForOrder', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('cancels existing notification and removes storage', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(
+      JSON.stringify({
+        scheduledNotificationId: 'order-notif-123',
+        lastModifiedAt: 999999990000,
+        lastReminderSentAt: 999999000000,
+      }),
+    );
+
+    await cancelCartAbandonmentForOrder();
+
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith('order-notif-123');
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEY);
+  });
+
+  it('handles no existing state gracefully', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+
+    await cancelCartAbandonmentForOrder();
+
+    expect(Notifications.cancelScheduledNotificationAsync).not.toHaveBeenCalled();
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEY);
+  });
+
+  it('handles storage errors gracefully', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockRejectedValueOnce(new Error('Storage error'));
+
+    // Should not throw
+    await cancelCartAbandonmentForOrder();
+
+    expect(AsyncStorage.removeItem).toHaveBeenCalledWith(STORAGE_KEY);
+  });
+
+  it('handles removeItem errors gracefully', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValueOnce(null);
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('Remove error'));
+
+    // Should not throw
+    await cancelCartAbandonmentForOrder();
   });
 });
