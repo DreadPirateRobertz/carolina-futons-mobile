@@ -92,9 +92,7 @@ describe('ImageGalleryModal', () => {
     });
 
     it('handles initialIndex at last image', () => {
-      const { getByText } = render(
-        <ImageGalleryModal {...defaultProps} initialIndex={2} />,
-      );
+      const { getByText } = render(<ImageGalleryModal {...defaultProps} initialIndex={2} />);
       expect(getByText('3 / 3')).toBeTruthy();
     });
 
