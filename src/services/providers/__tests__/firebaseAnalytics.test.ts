@@ -127,7 +127,10 @@ describe('FirebaseAnalyticsProvider', () => {
   });
 
   it('converts boolean property values to strings in identify', () => {
-    provider.identify('user-bool', { isPremium: true } as Record<string, unknown> as import('../../analytics').UserProperties);
+    provider.identify('user-bool', { isPremium: true } as Record<
+      string,
+      unknown
+    > as import('../../analytics').UserProperties);
     expect(mockSetUserProperties).toHaveBeenCalledWith({ isPremium: 'true' });
   });
 
@@ -137,7 +140,9 @@ describe('FirebaseAnalyticsProvider', () => {
   });
 
   it('passes null for null property values in identify', () => {
-    provider.identify('user-null', { name: null } as unknown as import('../../analytics').UserProperties);
+    provider.identify('user-null', {
+      name: null,
+    } as unknown as import('../../analytics').UserProperties);
     expect(mockSetUserProperties).toHaveBeenCalledWith({ name: null });
   });
 
@@ -147,43 +152,43 @@ describe('FirebaseAnalyticsProvider', () => {
     mockLogEvent.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.trackEvent('add_to_cart', { id: '1' })).not.toThrow();
     // Let the microtask queue flush to ensure .catch handles it
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows logScreenView rejection without throwing', async () => {
     mockLogScreenView.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.trackScreenView('Home')).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows setUserId rejection without throwing', async () => {
     mockSetUserId.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.identify('user-err')).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows setUserProperties rejection without throwing', async () => {
     mockSetUserProperties.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.identify('user-err', { email: 'a@b.com' })).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows resetAnalyticsData rejection without throwing', async () => {
     mockResetAnalyticsData.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.reset()).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows setUserId rejection on reset without throwing', async () => {
     mockSetUserId.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.reset()).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 
   it('swallows setAnalyticsCollectionEnabled rejection without throwing', async () => {
     mockSetAnalyticsCollectionEnabled.mockRejectedValueOnce(new Error('Firebase error'));
     expect(() => provider.setEnabled(false)).not.toThrow();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   });
 });
 
