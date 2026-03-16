@@ -106,11 +106,11 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
+      "url": "https://u.expo.dev/eaa288da-8d17-4ff4-90c2-04fe225a252d"
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_PROJECT_ID"
+        "projectId": "eaa288da-8d17-4ff4-90c2-04fe225a252d"
       }
     },
     "web": {
