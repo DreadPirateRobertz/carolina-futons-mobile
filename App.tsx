@@ -58,10 +58,7 @@ function App() {
     });
     initializePurchases();
   }, []);
-  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-  if (!stripeKey) {
-    throw new Error('EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set. Add it to your .env file.');
-  }
+  const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
   const [fontsLoaded] = useFonts({
     // Load only the 5 weights we use from local assets (saves ~5.4M vs @expo-google-fonts packages)
