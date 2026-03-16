@@ -5,7 +5,7 @@ import { WixApiError } from '@/services/wix/wixClient';
 const mockApplyCoupon = jest.fn();
 
 jest.mock('@/services/wix/wixProvider', () => ({
-  useWixClient: () => ({
+  useOptionalWixClient: () => ({
     applyCoupon: mockApplyCoupon,
   }),
 }));

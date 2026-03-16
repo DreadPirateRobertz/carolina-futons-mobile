@@ -132,7 +132,7 @@ jest.mock('@stripe/stripe-react-native', () => ({
 
 // Mock useWixClient
 jest.mock('@/services/wix', () => ({
-  useWixClient: () => ({ createPaymentIntent: jest.fn(), confirmOrder: jest.fn() }),
+  useOptionalWixClient: () => ({ createPaymentIntent: jest.fn(), confirmOrder: jest.fn() }),
 }));
 
 const mockCreatePaymentIntent = jest.fn().mockResolvedValue({

@@ -8,10 +8,9 @@ import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
 const mockApplyCoupon = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
-  useWixClient: () => ({
+  useOptionalWixClient: () => ({
     applyCoupon: mockApplyCoupon,
   }),
-  useOptionalWixClient: () => null,
 }));
 
 const asheville = FUTON_MODELS[0]; // $349

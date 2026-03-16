@@ -11,7 +11,7 @@ import * as Sharing from 'expo-sharing';
 import { useAuth } from './useAuth';
 import { useCart } from './useCart';
 import { useWishlist } from './useWishlist';
-import { useWixClient } from '@/services/wix';
+import { useOptionalWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
 
 export type ExportStatus = 'idle' | 'generating' | 'ready' | 'error';
@@ -28,7 +28,7 @@ export function useDataExport(): DataExportState {
   const { user } = useAuth();
   const { items: cartItems } = useCart();
   const { items: wishlistItems } = useWishlist();
-  const wixClient = useWixClient();
+  const wixClient = useOptionalWixClient();
 
   const exportData = useCallback(async () => {
     if (!user) return;
@@ -39,11 +39,13 @@ export function useDataExport(): DataExportState {
     try {
       // Gather orders
       let orders: unknown[] = [];
-      try {
-        const result = await wixClient.queryOrders({ limit: 100 });
-        orders = result.orders;
-      } catch {
-        // Orders may fail if none exist
+      if (wixClient) {
+        try {
+          const result = await wixClient.queryOrders({ limit: 100 });
+          orders = result.orders;
+        } catch {
+          // Orders may fail if none exist
+        }
       }
 
       const exportPayload = {

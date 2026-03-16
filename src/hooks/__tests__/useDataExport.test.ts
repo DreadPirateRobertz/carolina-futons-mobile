@@ -5,7 +5,7 @@ import * as Sharing from 'expo-sharing';
 import { useDataExport } from '../useDataExport';
 
 jest.mock('@/services/wix', () => ({
-  useWixClient: () => ({
+  useOptionalWixClient: () => ({
     queryOrders: jest.fn().mockResolvedValue({
       orders: [{ id: 'order-1', total: 349 }],
     }),

@@ -15,8 +15,8 @@ const baseReview: Review = {
   helpful: 18,
   verified: true,
   photos: [
-    'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+1',
-    'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+2',
+    'https://placehold.co/600x400/D4C5A9/3A2518?text=Photo+1',
+    'https://placehold.co/600x400/D4C5A9/3A2518?text=Photo+2',
   ],
 };
 
@@ -72,8 +72,8 @@ describe('ReviewCard', () => {
       const { getByTestId } = renderCard(
         {
           photos: [
-            'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+1',
-            'https://placeholder.co/600x400/D4C5A9/3A2518?text=Photo+2',
+            'https://placehold.co/600x400/D4C5A9/3A2518?text=Photo+1',
+            'https://placehold.co/600x400/D4C5A9/3A2518?text=Photo+2',
           ],
         },
         { testID: 'review-card' },

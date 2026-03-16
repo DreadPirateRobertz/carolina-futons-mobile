@@ -10,7 +10,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
-import { useWixClient } from '@/services/wix';
+import { useOptionalWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
 import { useCart } from './useCart';
 import { usePremium } from './usePremium';
@@ -80,7 +80,7 @@ function buildApplePayCartItems(totals: OrderTotals): PlatformPay.CartSummaryIte
 export function usePayment() {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const { isPlatformPaySupported, confirmPlatformPayPayment } = usePlatformPay();
-  const wixClient = useWixClient();
+  const wixClient = useOptionalWixClient();
   const { items, subtotal, clearCart } = useCart();
   const { isPremium } = usePremium();
   const [state, setState] = useState<PaymentState>({
@@ -121,6 +121,9 @@ export function usePayment() {
 
       try {
         // 1. Create PaymentIntent via Wix eCommerce API
+        if (!wixClient) {
+          throw new PaymentError('Payment service unavailable', 'NETWORK_ERROR');
+        }
         const { clientSecret, ephemeralKey, customerId, paymentIntentId } =
           await createPaymentIntent(wixClient, items, totals);
 

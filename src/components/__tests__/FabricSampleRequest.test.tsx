@@ -38,7 +38,7 @@ jest.mock('expo-haptics', () => ({
 const mockSubmitFabricSampleRequest = jest.fn().mockResolvedValue(undefined);
 
 jest.mock('@/services/wix/wixProvider', () => ({
-  useWixClient: () => ({
+  useOptionalWixClient: () => ({
     submitFabricSampleRequest: mockSubmitFabricSampleRequest,
   }),
 }));

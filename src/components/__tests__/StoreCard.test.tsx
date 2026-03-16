@@ -24,7 +24,7 @@ const mockStore: Store = {
     { day: 'Saturday', open: '09:00', close: '18:00' },
     { day: 'Sunday', open: '12:00', close: '17:00' },
   ],
-  photos: ['https://placeholder.co/600x400?text=Test'],
+  photos: ['https://placehold.co/600x400?text=Test'],
   features: ['Full showroom', 'Design consultation', 'Free parking'],
   description: 'Test showroom description.',
 };

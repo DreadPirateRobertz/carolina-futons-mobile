@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { events } from '@/services/analytics';
 import { captureException } from '@/services/crashReporting';
-import { useWixClient } from '@/services/wix/wixProvider';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import type { Fabric } from '@/data/futons';
 
 const MAX_SWATCHES = 5;
@@ -24,7 +24,7 @@ interface Props {
 
 export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
   const { colors, borderRadius, typography } = useTheme();
-  const wixClient = useWixClient();
+  const wixClient = useOptionalWixClient();
   const [expanded, setExpanded] = useState(false);
   const [selectedFabricIds, setSelectedFabricIds] = useState<Set<string>>(new Set());
   const [name, setName] = useState('');
@@ -72,6 +72,10 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         .filter((f) => fabricIdArray.includes(f.id))
         .map((f) => f.name);
 
+      if (!wixClient) {
+        Alert.alert('Unavailable', 'Swatch requests require an internet connection.');
+        return;
+      }
       await wixClient.submitFabricSampleRequest({
         customerName: name.trim(),
         shippingAddress: address.trim(),

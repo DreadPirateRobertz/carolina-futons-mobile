@@ -8,7 +8,7 @@
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { useWixClient } from '@/services/wix';
+import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from './useAuth';
 import { captureException } from '@/services/crashReporting';
 
@@ -27,7 +27,7 @@ const SECURE_STORE_KEYS = ['biometric_auth_enabled', 'wix_auth_tokens', 'google_
 export function useAccountDeletion(): AccountDeletionState {
   const [status, setStatus] = useState<DeletionStatus>('idle');
   const [error, setError] = useState<string | null>(null);
-  const wixClient = useWixClient();
+  const wixClient = useOptionalWixClient();
   const { user, signOut } = useAuth();
 
   const requestDeletion = useCallback(() => {
@@ -48,7 +48,9 @@ export function useAccountDeletion(): AccountDeletionState {
 
     try {
       // Delete member from Wix
-      await wixClient.deleteMember(user.id);
+      if (wixClient) {
+        await wixClient.deleteMember(user.id);
+      }
 
       // Clear all local data
       await AsyncStorage.clear();

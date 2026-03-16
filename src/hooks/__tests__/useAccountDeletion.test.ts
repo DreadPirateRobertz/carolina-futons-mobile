@@ -7,7 +7,7 @@ const mockDeleteMember = jest.fn().mockResolvedValue(undefined);
 const mockSignOut = jest.fn();
 
 jest.mock('@/services/wix', () => ({
-  useWixClient: () => ({
+  useOptionalWixClient: () => ({
     deleteMember: mockDeleteMember,
   }),
 }));

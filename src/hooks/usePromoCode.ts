@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useWixClient } from '@/services/wix';
+import { useOptionalWixClient } from '@/services/wix';
 import { WixApiError, type CouponResult } from '@/services/wix';
 
 export type PromoCodeStatus = 'idle' | 'validating' | 'applied' | 'error';
@@ -27,7 +27,7 @@ export interface PromoCodeState {
 }
 
 export function usePromoCode(): PromoCodeState {
-  const wixClient = useWixClient();
+  const wixClient = useOptionalWixClient();
   const [status, setStatus] = useState<PromoCodeStatus>('idle');
   const [coupon, setCoupon] = useState<CouponResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +44,9 @@ export function usePromoCode(): PromoCodeState {
       setError(null);
 
       try {
+        if (!wixClient) {
+          throw new Error('Promo codes are not available offline');
+        }
         const result = await wixClient.applyCoupon(code);
         setCoupon(result);
         setStatus('applied');
