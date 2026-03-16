@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRODUCTS } from '@/data/products';
 import { COLLECTIONS } from '@/data/collections';
 import { captureException } from '@/services/crashReporting';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 
 /** Must match the keys used by useDataCache('products', ...) and useDataCache('editorial-collections', ...) */
 export const PREFETCH_CACHE_KEY = '@cfutons/cache/products';
@@ -49,18 +50,35 @@ export function prefetchCriticalData(): Promise<void> {
   inflightPromise = (async () => {
     try {
       const now = Date.now();
+      const wix = getWixClientSingleton();
 
-      // Prefetch products and collections in parallel.
-      // In mock mode, data is available synchronously.
-      // When Wix is wired up, these would become API calls.
+      let products: unknown = PRODUCTS;
+      let collections: unknown = COLLECTIONS;
+
+      if (wix) {
+        // Wix configured — fetch live data, fall back to mock on failure
+        try {
+          const [prodResult, colResult] = await Promise.all([
+            wix.queryProducts({ limit: 100 }),
+            wix.queryCollections({ limit: 100 }),
+          ]);
+          products = prodResult.products;
+          collections = colResult.collections;
+        } catch {
+          // Non-fatal: fall back to static mock data
+          products = PRODUCTS;
+          collections = COLLECTIONS;
+        }
+      }
+
       await Promise.all([
         AsyncStorage.setItem(
           PREFETCH_CACHE_KEY,
-          JSON.stringify({ data: PRODUCTS, timestamp: now }),
+          JSON.stringify({ data: products, timestamp: now }),
         ),
         AsyncStorage.setItem(
           PREFETCH_COLLECTIONS_KEY,
-          JSON.stringify({ data: COLLECTIONS, timestamp: now }),
+          JSON.stringify({ data: collections, timestamp: now }),
         ),
       ]);
 
