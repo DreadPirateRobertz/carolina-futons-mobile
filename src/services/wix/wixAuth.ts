@@ -58,6 +58,8 @@ const ERROR_MESSAGES: Record<string, string> = {
  * and persists tokens via tokenStorage for cross-session survival.
  */
 export class WixAuthService {
+  private refreshPromise: Promise<boolean> | null = null;
+
   private get auth() {
     return getWixSdkClient().auth;
   }
@@ -274,6 +276,21 @@ export class WixAuthService {
   }
 
   async refreshSession(): Promise<boolean> {
+    // Mutex: if a refresh is already in-flight, piggyback on it
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this._doRefresh().catch(() => false);
+
+    try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async _doRefresh(): Promise<boolean> {
     try {
       const currentTokens = this.auth.getTokens();
       const newTokens = await this.auth.renewToken(currentTokens.refreshToken);
