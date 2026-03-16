@@ -99,8 +99,7 @@ QUALITY & COMFORT
 
   android: {
     title: 'Carolina Futons',
-    shortDescription:
-      'Shop futons, Murphy beds & AR preview. Handcrafted in Asheville, NC.',
+    shortDescription: 'Shop futons, Murphy beds & AR preview. Handcrafted in Asheville, NC.',
     fullDescription: `Shop handcrafted futons, Murphy cabinet beds, and accessories from Carolina Futons — Asheville's favorite furniture maker since 1995.
 
 BROWSE & DISCOVER
@@ -167,8 +166,7 @@ QUALITY & COMFORT
     },
     {
       name: 'Collections',
-      description:
-        'CollectionsScreen with curated collection cards showing editorial hero images',
+      description: 'CollectionsScreen with curated collection cards showing editorial hero images',
       screen: 'CollectionsScreen',
     },
     {
@@ -184,8 +182,7 @@ QUALITY & COMFORT
     },
     {
       name: 'Store Locator',
-      description:
-        'StoreLocatorScreen showing map with store pins and list of nearby locations',
+      description: 'StoreLocatorScreen showing map with store pins and list of nearby locations',
       screen: 'StoreLocatorScreen',
     },
   ],
