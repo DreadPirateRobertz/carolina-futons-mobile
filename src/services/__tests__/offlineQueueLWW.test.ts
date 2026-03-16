@@ -92,4 +92,30 @@ describe('compactByLWW', () => {
     expect(removed).toBe(1);
     expect(getQueue()[0].payload.value).toBe(2);
   });
+
+  it('groups actions with missing keyField under empty string key', () => {
+    enqueue('wishlist', 'WISHLIST_ADD', { other: 'data1' });
+    enqueue('wishlist', 'WISHLIST_ADD', { other: 'data2' });
+
+    const removed = compactByLWW('wishlist');
+
+    // Both have undefined productId → same key '', keeps latest
+    expect(removed).toBe(1);
+    expect(getQueueLength()).toBe(1);
+    expect(getQueue()[0].payload.other).toBe('data2');
+  });
+
+  it('maintains timestamp order after compaction', () => {
+    enqueue('cart', 'ADD', { productId: 'b' });
+    enqueue('wishlist', 'ADD', { productId: 'a', v: 1 });
+    enqueue('wishlist', 'ADD', { productId: 'a', v: 2 });
+
+    compactByLWW('wishlist');
+
+    const q = getQueue();
+    expect(q).toHaveLength(2);
+    // Cart action (earlier) should be before wishlist action
+    expect(q[0].domain).toBe('cart');
+    expect(q[1].domain).toBe('wishlist');
+  });
 });

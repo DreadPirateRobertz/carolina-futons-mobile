@@ -113,6 +113,28 @@ describe('LoginScreen', () => {
       fireEvent.changeText(getByTestId('login-email-input'), 'a');
       expect(queryByTestId('login-email-error')).toBeNull();
     });
+
+    it('clears password error when typing in password field', async () => {
+      const { getByTestId, queryByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('login-email-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('login-email-input'), 'test@test.com');
+      fireEvent.press(getByTestId('login-submit-button'));
+      expect(getByTestId('login-password-error')).toBeTruthy();
+      fireEvent.changeText(getByTestId('login-password-input'), 'a');
+      expect(queryByTestId('login-password-error')).toBeNull();
+    });
+
+    it('calls signIn with valid email and password', async () => {
+      mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('login-email-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('login-email-input'), 'user@example.com');
+      fireEvent.changeText(getByTestId('login-password-input'), 'Password123');
+      fireEvent.press(getByTestId('login-submit-button'));
+      await waitFor(() => {
+        expect(mockAuthService.loginWithEmail).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('Navigation', () => {
@@ -130,6 +152,24 @@ describe('LoginScreen', () => {
       await waitFor(() => expect(getByTestId('forgot-password-link')).toBeTruthy());
       fireEvent.press(getByTestId('forgot-password-link'));
       expect(onForgotPassword).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Social sign-in', () => {
+    it('pressing Google button does not crash', async () => {
+      mockAuthService.loginWithOAuth.mockResolvedValue({ success: false, error: 'cancelled' });
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('google-sign-in-button'));
+      // Should not throw — just verifying the button press triggers without error
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+    });
+  });
+
+  describe('Custom testID', () => {
+    it('uses provided testID', async () => {
+      const { getByTestId } = renderLogin({ testID: 'custom-login' });
+      await waitFor(() => expect(getByTestId('custom-login')).toBeTruthy());
     });
   });
 
