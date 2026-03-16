@@ -110,7 +110,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         style={[styles.confirmationContainer, { backgroundColor: `${colors.mountainBlue}15` }]}
         testID={testID ?? 'swatch-confirmation'}
       >
-        <Text style={[styles.confirmationTitle, { color: colors.mountainBlue }]}>
+        <Text style={[styles.confirmationTitle, { color: colors.mountainBlueDark }]}>
           Swatches are on the way!
         </Text>
         <Text style={[styles.confirmationText, { color: colors.espressoLight }]}>
@@ -133,7 +133,9 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         accessibilityLabel="Request free fabric swatches"
         accessibilityRole="button"
       >
-        <Text style={[styles.ctaText, { color: colors.mountainBlue }]}>Request Free Swatches</Text>
+        <Text style={[styles.ctaText, { color: colors.mountainBlueDark }]}>
+          Request Free Swatches
+        </Text>
       </TouchableOpacity>
     );
   }
@@ -178,7 +180,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
               <Text
                 style={[
                   styles.chipLabel,
-                  { color: selected ? colors.mountainBlue : colors.espresso },
+                  { color: selected ? colors.mountainBlueDark : colors.espresso },
                 ]}
                 numberOfLines={1}
               >

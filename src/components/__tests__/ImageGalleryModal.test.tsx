@@ -80,4 +80,26 @@ describe('ImageGalleryModal', () => {
     const { getAllByText } = render(<ImageGalleryModal {...defaultProps} />);
     expect(getAllByText('Front View').length).toBeGreaterThanOrEqual(1);
   });
+
+  describe('Accessibility', () => {
+    it('has accessibilityLabel on gallery list', () => {
+      const { getByTestId } = render(<ImageGalleryModal {...defaultProps} />);
+      const list = getByTestId('fullscreen-gallery-list');
+      expect(list.props.accessibilityRole).toBe('adjustable');
+      expect(list.props.accessibilityLabel).toBe('Product image gallery');
+      expect(list.props.accessibilityHint).toBe('Swipe left or right to view more images');
+    });
+
+    it('has close button with accessibilityLabel', () => {
+      const { getByTestId } = render(<ImageGalleryModal {...defaultProps} />);
+      const close = getByTestId('gallery-modal-close');
+      expect(close.props.accessibilityLabel).toBe('Close gallery');
+      expect(close.props.accessibilityRole).toBe('button');
+    });
+
+    it('announces pagination position', () => {
+      const { getByLabelText } = render(<ImageGalleryModal {...defaultProps} />);
+      expect(getByLabelText('Image 1 of 3')).toBeTruthy();
+    });
+  });
 });

@@ -373,7 +373,7 @@ export function OrderDetailScreen({
               accessibilityLabel={`Track package with ${order.tracking.carrier}, tracking number ${order.tracking.trackingNumber}`}
               accessibilityRole="link"
             >
-              <Text style={[styles.trackingNumber, { color: colors.mountainBlue }]}>
+              <Text style={[styles.trackingNumber, { color: colors.mountainBlueDark }]}>
                 {order.tracking.trackingNumber}
               </Text>
             </TouchableOpacity>

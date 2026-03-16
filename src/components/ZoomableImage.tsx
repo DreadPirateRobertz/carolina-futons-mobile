@@ -87,7 +87,11 @@ export function ZoomableImage({ children, style, testID }: Props) {
 
   return (
     <GestureDetector gesture={composed}>
-      <Animated.View style={[styles.container, style, animatedStyle]} testID={testID}>
+      <Animated.View
+        style={[styles.container, style, animatedStyle]}
+        testID={testID}
+        accessibilityHint="Double-tap to zoom in or out. Pinch to zoom."
+      >
         {children}
       </Animated.View>
     </GestureDetector>

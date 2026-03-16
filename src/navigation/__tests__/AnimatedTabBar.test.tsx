@@ -123,4 +123,29 @@ describe('AnimatedTabBar', () => {
     const { getByTestId } = render(<AnimatedTabBar {...props} />);
     expect(getByTestId('tab-bar-blur')).toBeTruthy();
   });
+
+  describe('Accessibility', () => {
+    it('sets accessibilityLabel on each tab', () => {
+      const props = createMockProps(0);
+      const { getByTestId } = render(<AnimatedTabBar {...props} />);
+      for (const name of ['Home', 'Shop', 'Cart', 'Account']) {
+        const tab = getByTestId(`tab-${name}`);
+        expect(tab.props.accessibilityLabel).toBe(name);
+      }
+    });
+
+    it('sets accessibilityRole="tab" on each tab', () => {
+      const props = createMockProps(0);
+      const { getByTestId } = render(<AnimatedTabBar {...props} />);
+      const tab = getByTestId('tab-Home');
+      expect(tab.props.accessibilityRole).toBe('tab');
+    });
+
+    it('marks active tab as selected', () => {
+      const props = createMockProps(1);
+      const { getByTestId } = render(<AnimatedTabBar {...props} />);
+      expect(getByTestId('tab-Shop').props.accessibilityState).toEqual({ selected: true });
+      expect(getByTestId('tab-Home').props.accessibilityState).toEqual({});
+    });
+  });
 });

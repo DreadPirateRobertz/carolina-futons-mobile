@@ -336,7 +336,12 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
           <Text style={[styles.signUpText, { color: darkPalette.textMuted }]}>
             Don't have an account?{' '}
           </Text>
-          <TouchableOpacity onPress={onSignUp} testID="sign-up-link" accessibilityRole="link">
+          <TouchableOpacity
+            onPress={onSignUp}
+            testID="sign-up-link"
+            accessibilityRole="link"
+            accessibilityLabel="Sign up for an account"
+          >
             <Text style={[styles.signUpLink, { color: colors.mountainBlueLight }]}>Sign Up</Text>
           </TouchableOpacity>
         </View>

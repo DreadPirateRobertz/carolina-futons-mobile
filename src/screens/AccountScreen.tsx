@@ -706,6 +706,7 @@ function MenuItem({
         }}
         testID={testID}
         accessibilityRole="button"
+        accessibilityLabel={label}
       >
         <Text style={[styles.menuLabel, { color: darkPalette.textPrimary }]}>{label}</Text>
         <View style={styles.menuTrailing}>

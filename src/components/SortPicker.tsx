@@ -95,13 +95,13 @@ export function SortPicker({ value, onChange, resultCount, leftContent, testID }
                   <Text
                     style={[
                       styles.modalOptionText,
-                      { color: isSelected ? colors.mountainBlue : colors.espresso },
+                      { color: isSelected ? colors.mountainBlueDark : colors.espresso },
                       isSelected && styles.modalOptionSelected,
                     ]}
                   >
                     {option.label}
                   </Text>
-                  {isSelected && <Text style={{ color: colors.mountainBlue }}>✓</Text>}
+                  {isSelected && <Text style={{ color: colors.mountainBlueDark }}>✓</Text>}
                 </TouchableOpacity>
               );
             })}

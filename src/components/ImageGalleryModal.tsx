@@ -132,12 +132,24 @@ export function ImageGalleryModal({
             index,
           })}
           testID="fullscreen-gallery-list"
+          accessibilityRole="adjustable"
+          accessibilityLabel="Product image gallery"
+          accessibilityHint="Swipe left or right to view more images"
         />
 
         {/* Pagination dots */}
-        <View style={[styles.pagination, { bottom: insets.bottom + 20 }]}>
+        <View
+          style={[styles.pagination, { bottom: insets.bottom + 20 }]}
+          accessibilityLabel={`Image ${activeIndex + 1} of ${images.length}`}
+          accessibilityRole="text"
+        >
           {images.map((_, i) => (
-            <View key={i} style={[styles.dot, i === activeIndex && styles.dotActive]} />
+            <View
+              key={i}
+              style={[styles.dot, i === activeIndex && styles.dotActive]}
+              accessible={false}
+              importantForAccessibility="no"
+            />
           ))}
         </View>
       </View>
