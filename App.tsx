@@ -32,6 +32,7 @@ import { initCrashReporting, getSentryNavigationIntegration } from '@/services/c
 import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
 import { initializePurchases } from '@/services/purchases';
+import { prefetchCriticalData } from '@/services/prefetch';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
 import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
@@ -46,6 +47,11 @@ initCrashReporting({
 const sentryNavigationIntegration = getSentryNavigationIntegration();
 
 SplashScreen.preventAutoHideAsync();
+
+// Splash-screen data race: start prefetching product data while fonts load.
+// By the time the splash hides, product data is already in AsyncStorage
+// and useDataCache will serve it instantly without a loading spinner.
+prefetchCriticalData();
 
 function App() {
   const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
