@@ -292,7 +292,9 @@ export function ProductDetailScreen({
 
   const handleCloseFullscreen = useCallback(() => {
     setFullscreenVisible(false);
-  }, []);
+    // Sync inline gallery to the current index after modal closes
+    galleryRef.current?.scrollToIndex({ index: activeGalleryIndex, animated: false });
+  }, [activeGalleryIndex]);
 
   const handleShare = useCallback(async () => {
     if (Platform.OS !== 'web') {

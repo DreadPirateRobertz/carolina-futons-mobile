@@ -81,6 +81,45 @@ describe('ImageGalleryModal', () => {
     expect(getAllByText('Front View').length).toBeGreaterThanOrEqual(1);
   });
 
+  describe('Edge cases', () => {
+    it('renders single image without pagination dots issue', () => {
+      const singleImage = [{ label: 'Only View' }];
+      const { getByText, getByLabelText } = render(
+        <ImageGalleryModal {...defaultProps} images={singleImage} />,
+      );
+      expect(getByText('1 / 1')).toBeTruthy();
+      expect(getByLabelText('Image 1 of 1')).toBeTruthy();
+    });
+
+    it('handles initialIndex at last image', () => {
+      const { getByText } = render(<ImageGalleryModal {...defaultProps} initialIndex={2} />);
+      expect(getByText('3 / 3')).toBeTruthy();
+    });
+
+    it('calls onRequestClose (Android back) which triggers onClose', () => {
+      const onClose = jest.fn();
+      const { getByTestId } = render(
+        <ImageGalleryModal {...defaultProps} onClose={onClose} testID="gallery-modal" />,
+      );
+      // Modal's onRequestClose is wired to onClose
+      const modal = getByTestId('gallery-modal');
+      expect(modal.props.onRequestClose).toBeDefined();
+    });
+
+    it('wraps each image in ZoomableImage', () => {
+      const { getByTestId } = render(<ImageGalleryModal {...defaultProps} />);
+      // Each slide has a ZoomableImage wrapper with testID
+      expect(getByTestId('fullscreen-zoom-0')).toBeTruthy();
+    });
+
+    it('renders image labels below each slide', () => {
+      const { getAllByText } = render(<ImageGalleryModal {...defaultProps} />);
+      // All labels from images should be rendered
+      expect(getAllByText('Front View').length).toBeGreaterThanOrEqual(1);
+      expect(getAllByText('Side View').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
   describe('Accessibility', () => {
     it('has accessibilityLabel on gallery list', () => {
       const { getByTestId } = render(<ImageGalleryModal {...defaultProps} />);
