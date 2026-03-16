@@ -130,10 +130,7 @@ describe('FabricSampleRequest', () => {
     );
     fireEvent.press(getByTestId('request-swatches-btn'));
     fireEvent.press(getByTestId('swatch-submit-btn'));
-    expect(Alert.alert).toHaveBeenCalledWith(
-      'Missing Information',
-      expect.any(String),
-    );
+    expect(Alert.alert).toHaveBeenCalledWith('Missing Information', expect.any(String));
     // Should NOT call the API when validation fails
     expect(mockSubmitFabricSampleRequest).not.toHaveBeenCalled();
   });
@@ -177,11 +174,7 @@ describe('FabricSampleRequest', () => {
     fireEvent.press(getByTestId('swatch-submit-btn'));
 
     await waitFor(() => {
-      expect(events.fabricSampleRequest).toHaveBeenCalledWith(
-        'Asheville Futon',
-        1,
-        'fabric-2',
-      );
+      expect(events.fabricSampleRequest).toHaveBeenCalledWith('Asheville Futon', 1, 'fabric-2');
     });
   });
 
@@ -215,7 +208,10 @@ describe('FabricSampleRequest', () => {
     // Make the API call hang
     let resolveSubmit: () => void;
     mockSubmitFabricSampleRequest.mockImplementationOnce(
-      () => new Promise<void>((resolve) => { resolveSubmit = resolve; }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolveSubmit = resolve;
+        }),
     );
 
     const { getByTestId, getByText } = render(
@@ -274,9 +270,7 @@ describe('FabricSampleRequest', () => {
   });
 
   it('renders nothing when fabrics array is empty', () => {
-    const { toJSON } = render(
-      <FabricSampleRequest fabrics={[]} productName="Asheville Futon" />,
-    );
+    const { toJSON } = render(<FabricSampleRequest fabrics={[]} productName="Asheville Futon" />);
     expect(toJSON()).toBeNull();
   });
 });
