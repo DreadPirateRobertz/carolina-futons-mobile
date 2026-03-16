@@ -391,9 +391,10 @@ export class WixClient {
   async getProductBySlug(slug: string): Promise<Product> {
     if (!slug) throw new WixApiError('Product slug is required');
 
+    // The Wix Stores REST API requires the filter for slug to be a JSON string
     const body = {
       query: {
-        filter: { slug: { $eq: slug } },
+        filter: JSON.stringify({ slug }),
         paging: { limit: 1 },
       },
     };
@@ -990,7 +991,7 @@ export function transformWixProduct(wix: WixProduct): Product {
   const isDiscounted = wix.price.discountedPrice < wix.price.price;
 
   const images: ProductImage[] = (wix.media?.items ?? [])
-    .filter((item) => item.mediaType === 'IMAGE')
+    .filter((item) => item.mediaType.toLowerCase() === 'image')
     .map((item) => ({
       uri: item.image.url,
       alt: item.image.altText ?? wix.name,

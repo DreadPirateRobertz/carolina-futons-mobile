@@ -41,7 +41,7 @@ import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
 import { CompareButton } from '@/components/CompareButton';
 import { useFutonModels } from '@/hooks/useFutonModels';
-import { useProduct } from '@/hooks/useProduct';
+import { useProduct, useProductBySlug } from '@/hooks/useProduct';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
@@ -65,6 +65,8 @@ import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
 import { FabricSampleRequest } from '@/components/FabricSampleRequest';
 import { SwatchRequestModal } from '@/components/SwatchRequestModal';
+import { WixProductDetail } from '@/components/WixProductDetail';
+import { isWixConfigured } from '@/services/wix/config';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -102,7 +104,15 @@ export function ProductDetailScreen({
 
   const resolvedId = productId ?? slug ?? route?.params?.slug ?? '';
   const { models, getModel } = useFutonModels();
-  const model = getModel(resolvedId) ?? models[0];
+  const localModel = getModel(resolvedId);
+  const model = localModel ?? models[0];
+
+  // When Wix is configured and no local model matches, fetch from Wix API
+  const isWixProduct = !localModel && isWixConfigured();
+  const { product: wixProduct, isLoading: isWixLoading, error: wixError } = useProductBySlug(
+    isWixProduct ? resolvedId : '',
+  );
+
   const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
   const { product: catalogProduct, isLoading: isProductLoading } = useProduct(catalogProductId);
   const stockStatus = catalogProduct ? getStockStatus(catalogProduct) : 'in_stock';
@@ -334,6 +344,23 @@ export function ProductDetailScreen({
     ),
     [model, selectedFabric, colors, handleOpenFullscreen],
   );
+
+  // Render Wix product detail when no local FutonModel matches
+  if (isWixProduct) {
+    if (isWixLoading) {
+      return <SkeletonProductDetail testID="product-detail-skeleton" />;
+    }
+    if (wixProduct) {
+      return (
+        <WixProductDetail
+          product={wixProduct}
+          onBack={onBack}
+          testID={testID}
+        />
+      );
+    }
+    // Wix fetch failed or product not found — fall through to local model
+  }
 
   if (isProductLoading) {
     return <SkeletonProductDetail testID="product-detail-skeleton" />;
