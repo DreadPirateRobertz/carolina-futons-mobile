@@ -93,6 +93,106 @@
               "scheme": "https",
               "host": "www.carolinafutons.com",
               "pathPrefix": "/stores"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/cart"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/cart"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/checkout"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/checkout"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/account"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/account"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/login"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/login"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/signup"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/signup"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/wishlist"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/wishlist"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/ar"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/ar"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/notifications"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/notifications"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/forgot-password"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/forgot-password"
+            },
+            {
+              "scheme": "https",
+              "host": "carolinafutons.com",
+              "pathPrefix": "/shop"
+            },
+            {
+              "scheme": "https",
+              "host": "www.carolinafutons.com",
+              "pathPrefix": "/shop"
             }
           ],
           "category": [
