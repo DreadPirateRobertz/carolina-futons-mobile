@@ -693,9 +693,7 @@ describe('reportMemorySnapshot', () => {
 
     perf.reportMemorySnapshot();
 
-    const call = trackEvent.mock.calls.find(
-      (c: unknown[]) => c[0] === 'perf_memory',
-    );
+    const call = trackEvent.mock.calls.find((c: unknown[]) => c[0] === 'perf_memory');
     expect(call).toBeDefined();
     expect(call![1]).toHaveProperty('js_heap_used_mb', 75);
 
@@ -717,9 +715,7 @@ describe('Render tracking — edge cases', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     perf.recordRender('SlowComp', 25);
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[Perf] Slow render: SlowComp'),
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[Perf] Slow render: SlowComp'));
     warnSpy.mockRestore();
   });
 
