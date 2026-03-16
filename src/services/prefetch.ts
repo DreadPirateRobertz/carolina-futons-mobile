@@ -66,7 +66,9 @@ export function prefetchCriticalData(): Promise<void> {
 
       status = 'complete';
     } catch (err) {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'prefetch-cache-prime' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'prefetch-cache-prime',
+      });
       status = 'error';
     }
   })();
