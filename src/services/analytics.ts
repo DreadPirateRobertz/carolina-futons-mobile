@@ -63,6 +63,7 @@ export type AnalyticsEventName =
   | 'ar_lighting_warning'
   | 'ar_material_swap'
   | 'ar_product_picker_open'
+  | 'request_swatches'
   | 'share_product'
   | 'rate_app'
   | 'heatmap_tap'
@@ -402,5 +403,13 @@ export const events = {
   },
   arProductPickerOpen(currentModelId: string) {
     trackEvent('ar_product_picker_open', { current_model_id: currentModelId });
+  },
+  requestSwatches(productId: string, fabricIds: string[], state: string) {
+    trackEvent('request_swatches', {
+      product_id: productId,
+      fabric_ids: fabricIds.join(','),
+      fabric_count: fabricIds.length,
+      state,
+    });
   },
 } as const;

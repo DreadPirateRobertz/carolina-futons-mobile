@@ -63,6 +63,7 @@ import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
 import { FabricSampleRequest } from '@/components/FabricSampleRequest';
+import { SwatchRequestModal } from '@/components/SwatchRequestModal';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -112,6 +113,7 @@ export function ProductDetailScreen({
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
+  const [swatchModalVisible, setSwatchModalVisible] = useState(false);
   const sizeGuideHeight = useSharedValue(0);
 
   const sizeGuideAnimStyle = useAnimatedStyle(() => ({
@@ -549,6 +551,20 @@ export function ProductDetailScreen({
               </TouchableOpacity>
             ))}
           </ScrollView>
+          <TouchableOpacity
+            onPress={() => setSwatchModalVisible(true)}
+            style={[
+              styles.swatchRequestButton,
+              { borderColor: colors.espresso, borderRadius: borderRadius.md },
+            ]}
+            testID="request-swatches-button"
+            accessibilityLabel="Request free fabric swatches for this product"
+            accessibilityRole="button"
+          >
+            <Text style={[styles.swatchRequestText, { color: colors.espresso }]}>
+              Request Free Swatches
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Fabric Sample Request */}
@@ -990,6 +1006,14 @@ export function ProductDetailScreen({
         )}
         testID="fullscreen-gallery-modal"
       />
+
+      <SwatchRequestModal
+        visible={swatchModalVisible}
+        onClose={() => setSwatchModalVisible(false)}
+        productId={catalogProductId || model.id}
+        productName={model.name}
+        fabrics={model.fabrics}
+      />
     </View>
   );
 }
@@ -1406,6 +1430,16 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  swatchRequestButton: {
+    borderWidth: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  swatchRequestText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   dimensionsCard: {
     flexDirection: 'row',
