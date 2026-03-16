@@ -84,12 +84,18 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
         if (result.source === 'server') {
           const validItems = validateServerCartItems(result.items);
           if (validItems === null) {
-            captureMessage('[useSyncedCart] Server returned malformed items, keeping local state', 'warning');
+            captureMessage(
+              '[useSyncedCart] Server returned malformed items, keeping local state',
+              'warning',
+            );
             return;
           }
           // Empty server cart with local items = keep local (don't silently wipe)
           if (validItems.length === 0 && cart.items.length > 0) {
-            captureMessage('[useSyncedCart] Server cart is empty but local has items, keeping local state', 'warning');
+            captureMessage(
+              '[useSyncedCart] Server cart is empty but local has items, keeping local state',
+              'warning',
+            );
             return;
           }
           if (cancelled) return;
@@ -97,7 +103,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
           cart.loadItems(validItems);
         }
       } catch (err) {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-pull' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'cart-pull',
+        });
       }
     })();
 
@@ -117,7 +125,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
             lastServerTimestamp.current = serverTs;
           })
           .catch((err) => {
-            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-push' });
+            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+              action: 'cart-push',
+            });
           });
       } else {
         queueAction('cart', 'SYNC', { items });
@@ -161,7 +171,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
           lastServerTimestamp.current = serverTs;
         })
         .catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-clear' });
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            action: 'cart-clear',
+          });
         });
     } else if (user?.id) {
       queueAction('cart', 'SYNC', { items: [] });

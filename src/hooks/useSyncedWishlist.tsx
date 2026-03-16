@@ -80,11 +80,17 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
         if (result.source === 'server') {
           const validItems = validateServerWishlistItems(result.items);
           if (validItems === null) {
-            captureMessage('[useSyncedWishlist] Server returned malformed items, keeping local state', 'warning');
+            captureMessage(
+              '[useSyncedWishlist] Server returned malformed items, keeping local state',
+              'warning',
+            );
             return;
           }
           if (validItems.length === 0 && wishlist.items.length > 0) {
-            captureMessage('[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state', 'warning');
+            captureMessage(
+              '[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state',
+              'warning',
+            );
             return;
           }
           if (cancelled) return;
@@ -92,7 +98,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
           wishlist.loadItems(validItems);
         }
       } catch (err) {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'wishlist-pull' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'wishlist-pull',
+        });
       }
     })();
 
@@ -112,7 +120,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
             lastServerTimestamp.current = serverTs;
           })
           .catch((err) => {
-            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'wishlist-push' });
+            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+              action: 'wishlist-push',
+            });
           });
       } else {
         queueAction('wishlist', 'SYNC', { items });
@@ -154,7 +164,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
           lastServerTimestamp.current = serverTs;
         })
         .catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'wishlist-clear' });
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            action: 'wishlist-clear',
+          });
         });
     } else if (user?.id) {
       queueAction('wishlist', 'SYNC', { items: [] });
