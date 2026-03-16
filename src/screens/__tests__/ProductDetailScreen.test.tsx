@@ -63,6 +63,16 @@ jest.mock('@/hooks/useRecommendations', () => ({
   RecommendationsProvider: ({ children }: any) => children,
 }));
 
+jest.mock('@/services/wix/wixProvider', () => ({
+  useWixClient: () => ({
+    queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
+    addToWishlist: jest.fn(),
+    removeFromWishlist: jest.fn(),
+  }),
+  useOptionalWixClient: () => null,
+  WixProvider: ({ children }: any) => children,
+}));
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
