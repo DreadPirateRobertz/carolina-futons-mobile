@@ -79,7 +79,12 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
   };
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleClose}
+    >
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: colors.offWhite }]}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -114,25 +119,28 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
           {swatch.status === 'submitted' ? (
             /* Success State */
             <View style={styles.successContainer}>
-              <Text
-                style={[styles.successIcon]}
-                accessibilityLabel="Success checkmark"
-              >
+              <Text style={[styles.successIcon]} accessibilityLabel="Success checkmark">
                 ✓
               </Text>
               <Text
-                style={[styles.successTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+                style={[
+                  styles.successTitle,
+                  { color: colors.espresso, fontFamily: typography.headingFamily },
+                ]}
               >
                 Your swatches are on the way!
               </Text>
               <Text style={[styles.successBody, { color: colors.espressoLight }]}>
                 We'll ship {swatch.selectedFabrics.length} fabric{' '}
-                {swatch.selectedFabrics.length === 1 ? 'sample' : 'samples'} to your address.
-                Allow 3-5 business days for delivery.
+                {swatch.selectedFabrics.length === 1 ? 'sample' : 'samples'} to your address. Allow
+                3-5 business days for delivery.
               </Text>
               <TouchableOpacity
                 onPress={handleDone}
-                style={[styles.doneButton, { backgroundColor: colors.espresso, borderRadius: borderRadius.md }]}
+                style={[
+                  styles.doneButton,
+                  { backgroundColor: colors.espresso, borderRadius: borderRadius.md },
+                ]}
                 testID="swatch-done-button"
                 accessibilityLabel="Done, close swatch request"
                 accessibilityRole="button"
@@ -144,17 +152,25 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
             <>
               {/* Rate limit notice */}
               {swatch.hasRecentRequest && (
-                <View style={[styles.notice, { backgroundColor: colors.sandBase, borderRadius: borderRadius.sm }]}>
+                <View
+                  style={[
+                    styles.notice,
+                    { backgroundColor: colors.sandBase, borderRadius: borderRadius.sm },
+                  ]}
+                >
                   <Text style={[styles.noticeText, { color: colors.espresso }]}>
-                    You've already requested swatches for this product recently.
-                    You can submit a new request after 24 hours.
+                    You've already requested swatches for this product recently. You can submit a
+                    new request after 24 hours.
                   </Text>
                 </View>
               )}
 
               {/* Fabric Selection */}
               <Text
-                style={[styles.sectionLabel, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+                style={[
+                  styles.sectionLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                ]}
                 accessibilityRole="header"
               >
                 Select Fabrics
@@ -192,7 +208,12 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                       accessibilityRole="button"
                       accessibilityState={{ selected: isSelected }}
                     >
-                      <View style={[styles.swatchColor, { backgroundColor: fabric.color, borderRadius: borderRadius.sm }]} />
+                      <View
+                        style={[
+                          styles.swatchColor,
+                          { backgroundColor: fabric.color, borderRadius: borderRadius.sm },
+                        ]}
+                      />
                       <Text
                         style={[styles.swatchName, { color: colors.espresso }]}
                         numberOfLines={1}
@@ -207,7 +228,14 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
               {/* Shipping Address */}
               <Text
-                style={[styles.sectionLabel, { color: colors.espresso, fontFamily: typography.bodyFamilyBold, marginTop: spacing.lg }]}
+                style={[
+                  styles.sectionLabel,
+                  {
+                    color: colors.espresso,
+                    fontFamily: typography.bodyFamilyBold,
+                    marginTop: spacing.lg,
+                  },
+                ]}
                 accessibilityRole="header"
               >
                 Shipping Address
@@ -215,7 +243,16 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
               <View style={styles.formGroup}>
                 <TextInput
-                  style={[styles.input, { borderColor: swatch.validationErrors.includes('name') ? '#D32F2F' : colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: swatch.validationErrors.includes('name')
+                        ? '#D32F2F'
+                        : colors.sandDark,
+                      borderRadius: borderRadius.sm,
+                      color: colors.espresso,
+                    },
+                  ]}
                   placeholder="Full Name"
                   placeholderTextColor={colors.espressoLight}
                   value={address.fullName}
@@ -225,7 +262,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                   autoComplete="name"
                 />
                 {swatch.validationErrors.includes('name') && (
-                  <Text testID="swatch-error-name" style={[styles.fieldError, { color: '#D32F2F' }]}>
+                  <Text
+                    testID="swatch-error-name"
+                    style={[styles.fieldError, { color: '#D32F2F' }]}
+                  >
                     Name is required
                   </Text>
                 )}
@@ -233,7 +273,16 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
               <View style={styles.formGroup}>
                 <TextInput
-                  style={[styles.input, { borderColor: swatch.validationErrors.includes('line1') ? '#D32F2F' : colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: swatch.validationErrors.includes('line1')
+                        ? '#D32F2F'
+                        : colors.sandDark,
+                      borderRadius: borderRadius.sm,
+                      color: colors.espresso,
+                    },
+                  ]}
                   placeholder="Address Line 1"
                   placeholderTextColor={colors.espressoLight}
                   value={address.line1}
@@ -243,7 +292,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                   autoComplete="street-address"
                 />
                 {swatch.validationErrors.includes('line1') && (
-                  <Text testID="swatch-error-line1" style={[styles.fieldError, { color: '#D32F2F' }]}>
+                  <Text
+                    testID="swatch-error-line1"
+                    style={[styles.fieldError, { color: '#D32F2F' }]}
+                  >
                     Address is required
                   </Text>
                 )}
@@ -251,7 +303,14 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
               <View style={styles.formGroup}>
                 <TextInput
-                  style={[styles.input, { borderColor: colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                  style={[
+                    styles.input,
+                    {
+                      borderColor: colors.sandDark,
+                      borderRadius: borderRadius.sm,
+                      color: colors.espresso,
+                    },
+                  ]}
                   placeholder="Address Line 2 (optional)"
                   placeholderTextColor={colors.espressoLight}
                   value={address.line2}
@@ -265,7 +324,16 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
               <View style={styles.rowFields}>
                 <View style={[styles.formGroup, { flex: 2 }]}>
                   <TextInput
-                    style={[styles.input, { borderColor: swatch.validationErrors.includes('city') ? '#D32F2F' : colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                    style={[
+                      styles.input,
+                      {
+                        borderColor: swatch.validationErrors.includes('city')
+                          ? '#D32F2F'
+                          : colors.sandDark,
+                        borderRadius: borderRadius.sm,
+                        color: colors.espresso,
+                      },
+                    ]}
                     placeholder="City"
                     placeholderTextColor={colors.espressoLight}
                     value={address.city}
@@ -274,7 +342,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                     accessibilityLabel="City for swatch delivery"
                   />
                   {swatch.validationErrors.includes('city') && (
-                    <Text testID="swatch-error-city" style={[styles.fieldError, { color: '#D32F2F' }]}>
+                    <Text
+                      testID="swatch-error-city"
+                      style={[styles.fieldError, { color: '#D32F2F' }]}
+                    >
                       City is required
                     </Text>
                   )}
@@ -282,7 +353,16 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
                 <View style={[styles.formGroup, { flex: 1, marginLeft: spacing.sm }]}>
                   <TextInput
-                    style={[styles.input, { borderColor: swatch.validationErrors.includes('state') ? '#D32F2F' : colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                    style={[
+                      styles.input,
+                      {
+                        borderColor: swatch.validationErrors.includes('state')
+                          ? '#D32F2F'
+                          : colors.sandDark,
+                        borderRadius: borderRadius.sm,
+                        color: colors.espresso,
+                      },
+                    ]}
                     placeholder="State"
                     placeholderTextColor={colors.espressoLight}
                     value={address.state}
@@ -293,7 +373,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                     autoCapitalize="characters"
                   />
                   {swatch.validationErrors.includes('state') && (
-                    <Text testID="swatch-error-state" style={[styles.fieldError, { color: '#D32F2F' }]}>
+                    <Text
+                      testID="swatch-error-state"
+                      style={[styles.fieldError, { color: '#D32F2F' }]}
+                    >
                       Required
                     </Text>
                   )}
@@ -301,7 +384,16 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
                 <View style={[styles.formGroup, { flex: 1, marginLeft: spacing.sm }]}>
                   <TextInput
-                    style={[styles.input, { borderColor: swatch.validationErrors.includes('zip') ? '#D32F2F' : colors.sandDark, borderRadius: borderRadius.sm, color: colors.espresso }]}
+                    style={[
+                      styles.input,
+                      {
+                        borderColor: swatch.validationErrors.includes('zip')
+                          ? '#D32F2F'
+                          : colors.sandDark,
+                        borderRadius: borderRadius.sm,
+                        color: colors.espresso,
+                      },
+                    ]}
                     placeholder="ZIP"
                     placeholderTextColor={colors.espressoLight}
                     value={address.zip}
@@ -312,7 +404,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                     maxLength={10}
                   />
                   {swatch.validationErrors.includes('zip') && (
-                    <Text testID="swatch-error-zip" style={[styles.fieldError, { color: '#D32F2F' }]}>
+                    <Text
+                      testID="swatch-error-zip"
+                      style={[styles.fieldError, { color: '#D32F2F' }]}
+                    >
                       Invalid ZIP
                     </Text>
                   )}
@@ -333,7 +428,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                 style={[
                   styles.submitButton,
                   {
-                    backgroundColor: swatch.isSubmitting || swatch.hasRecentRequest ? colors.sandDark : colors.espresso,
+                    backgroundColor:
+                      swatch.isSubmitting || swatch.hasRecentRequest
+                        ? colors.sandDark
+                        : colors.espresso,
                     borderRadius: borderRadius.md,
                   },
                 ]}

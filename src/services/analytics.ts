@@ -405,6 +405,11 @@ export const events = {
     trackEvent('ar_product_picker_open', { current_model_id: currentModelId });
   },
   requestSwatches(productId: string, fabricIds: string[], state: string) {
-    trackEvent('request_swatches', { product_id: productId, fabric_ids: fabricIds.join(','), fabric_count: fabricIds.length, state });
+    trackEvent('request_swatches', {
+      product_id: productId,
+      fabric_ids: fabricIds.join(','),
+      fabric_count: fabricIds.length,
+      state,
+    });
   },
 } as const;

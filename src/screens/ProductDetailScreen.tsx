@@ -553,7 +553,10 @@ export function ProductDetailScreen({
           </ScrollView>
           <TouchableOpacity
             onPress={() => setSwatchModalVisible(true)}
-            style={[styles.swatchRequestButton, { borderColor: colors.espresso, borderRadius: borderRadius.md }]}
+            style={[
+              styles.swatchRequestButton,
+              { borderColor: colors.espresso, borderRadius: borderRadius.md },
+            ]}
             testID="request-swatches-button"
             accessibilityLabel="Request free fabric swatches for this product"
             accessibilityRole="button"
