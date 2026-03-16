@@ -51,10 +51,11 @@ const mockedCreatePaymentIntent = createPaymentIntent as jest.MockedFunction<
 const mockedConfirmOrder = confirmOrder as jest.MockedFunction<typeof confirmOrder>;
 
 function wrapper({ children }: { children: React.ReactNode }) {
-  return React.createElement(
-    ConnectivityProvider,
-    { initialOnline: true, skipNetInfo: true, children: React.createElement(CartProvider, null, children) },
-  );
+  return React.createElement(ConnectivityProvider, {
+    initialOnline: true,
+    skipNetInfo: true,
+    children: React.createElement(CartProvider, null, children),
+  });
 }
 
 const INTENT_RESPONSE = {

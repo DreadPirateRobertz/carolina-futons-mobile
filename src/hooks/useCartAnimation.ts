@@ -52,10 +52,13 @@ export function useCartAnimation(options?: Options) {
     }
 
     // Complete after duration (or immediately if reduce motion)
-    setTimeout(() => {
-      setIsAnimating(false);
-      onCompleteRef.current?.();
-    }, reduceMotion ? 0 : duration);
+    setTimeout(
+      () => {
+        setIsAnimating(false);
+        onCompleteRef.current?.();
+      },
+      reduceMotion ? 0 : duration,
+    );
   }, [isAnimating, scale, opacity, duration, reduceMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({

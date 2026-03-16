@@ -242,7 +242,9 @@ describe('evictIfNeeded', () => {
 describe('loadModelForProduct', () => {
   it('returns null and notifies error for unknown product', async () => {
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-nonexistent'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-nonexistent'), (s) =>
+      statuses.push(s),
+    );
     expect(result).toBeNull();
     expect(statuses).toContainEqual({
       state: 'error',
@@ -269,7 +271,9 @@ describe('loadModelForProduct', () => {
     );
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) =>
+      statuses.push(s),
+    );
     expect(result).toContain('prod-asheville-full');
     expect(statuses.some((s) => s.state === 'checking-cache')).toBe(true);
     expect(statuses.some((s) => s.state === 'ready')).toBe(true);
@@ -287,7 +291,9 @@ describe('loadModelForProduct', () => {
     mockCreateDownload.mockReturnValue({ downloadAsync: mockDownload });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) =>
+      statuses.push(s),
+    );
 
     expect(result).toBe('/mock-cache/models3d/model.usdz');
     expect(statuses.some((s) => s.state === 'downloading')).toBe(true);
@@ -302,7 +308,9 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) =>
+      statuses.push(s),
+    );
     expect(result).toBeNull();
     expect(statuses.some((s) => s.state === 'error')).toBe(true);
   });
@@ -314,7 +322,9 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) =>
+      statuses.push(s),
+    );
     expect(result).toBeNull();
     expect(statuses).toContainEqual({ state: 'error', message: 'Network timeout' });
   });
@@ -326,7 +336,9 @@ describe('loadModelForProduct', () => {
     });
 
     const statuses: ModelLoadStatus[] = [];
-    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) => statuses.push(s));
+    const result = await loadModelForProduct(productId('prod-asheville-full'), (s) =>
+      statuses.push(s),
+    );
     expect(result).toBeNull();
     expect(statuses).toContainEqual({ state: 'error', message: 'Download failed' });
   });
