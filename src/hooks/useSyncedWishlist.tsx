@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useWishlist } from './useWishlist';
+import { useWishlist, type WishlistItem } from './useWishlist';
 import { useAuth } from './useAuth';
 import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
@@ -9,6 +9,27 @@ import type { Product } from '@/data/products';
 
 interface UseSyncedWishlistOptions {
   client: WixClient | null;
+}
+
+/** Validate that a value is a well-formed WishlistItem. */
+function isValidWishlistItem(item: unknown): item is WishlistItem {
+  if (item == null || typeof item !== 'object') return false;
+  const o = item as Record<string, unknown>;
+  return (
+    typeof o.productId === 'string' &&
+    o.productId.length > 0 &&
+    typeof o.addedAt === 'number' &&
+    typeof o.savedPrice === 'number' &&
+    o.savedPrice >= 0
+  );
+}
+
+/** Validate and filter server wishlist items. Returns only well-formed items. */
+export function validateServerWishlistItems(items: unknown): WishlistItem[] | null {
+  if (!Array.isArray(items)) return null;
+  const valid = items.filter(isValidWishlistItem);
+  if (items.length > 0 && valid.length === 0) return null;
+  return valid;
 }
 
 export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
@@ -43,11 +64,12 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
     hasPulled.current = true;
     const service = syncService.current;
     const userId = user.id;
+    let cancelled = false;
 
     (async () => {
       try {
         const serverState = await service.pullWishlist(userId);
-        if (!serverState) return;
+        if (!serverState || cancelled) return;
 
         const result = service.resolveConflict(
           { items: wishlist.items, serverTimestamp: lastServerTimestamp.current },
@@ -55,17 +77,25 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
         );
 
         if (result.source === 'server') {
-          if (!Array.isArray(result.items)) {
+          const validItems = validateServerWishlistItems(result.items);
+          if (validItems === null) {
             console.warn('[useSyncedWishlist] Server returned malformed items, keeping local state');
             return;
           }
+          if (validItems.length === 0 && wishlist.items.length > 0) {
+            console.warn('[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state');
+            return;
+          }
+          if (cancelled) return;
           lastServerTimestamp.current = serverState.serverTimestamp;
-          wishlist.loadItems(result.items);
+          wishlist.loadItems(validItems);
         }
       } catch (err) {
         console.warn('[useSyncedWishlist] Server pull failed, continuing with local state:', err);
       }
     })();
+
+    return () => { cancelled = true; };
   }, [isAuthenticated, isOnline, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pushIfOnline = useCallback(

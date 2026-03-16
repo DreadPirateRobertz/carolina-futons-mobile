@@ -16,17 +16,16 @@ const MOCK_CART_ITEM: CartItem = {
   model: {
     id: 'model-1',
     name: 'Asheville',
+    tagline: 'A test futon',
     basePrice: 299,
-    description: 'A futon',
-    images: [],
+    dimensions: { width: 80, depth: 36, height: 34, seatHeight: 18 },
     fabrics: [],
-  } as CartItem['model'],
+  } as unknown as CartItem['model'],
   fabric: {
     id: 'fabric-1',
     name: 'Denim Blue',
-    hex: '#336699',
+    color: '#336699',
     price: 50,
-    swatch: 'swatch.jpg',
   } as CartItem['fabric'],
   quantity: 2,
   unitPrice: 349,
@@ -147,9 +146,7 @@ describe('CartSyncService', () => {
 
     it('throws on network error', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
-      await expect(
-        service.pushCart('user-1', [MOCK_CART_ITEM]),
-      ).rejects.toThrow();
+      await expect(service.pushCart('user-1', [MOCK_CART_ITEM])).rejects.toThrow();
     });
   });
 

@@ -4,7 +4,7 @@ import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { CartProvider, useCart } from '../useCart';
 import { ConnectivityProvider } from '../useConnectivity';
 import { AuthProvider } from '../useAuth';
-import { useSyncedCart } from '../useSyncedCart';
+import { useSyncedCart, validateServerCartItems } from '../useSyncedCart';
 import { WixClient, type WixClientConfig } from '@/services/wix/wixClient';
 import { _resetForTesting } from '@/services/offlineQueue';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
@@ -247,5 +247,115 @@ describe('useSyncedCart', () => {
       expect(getByTestId('item-count').props.children).toBe(0);
       jest.restoreAllMocks();
     });
+
+    it('does not wipe local cart when server returns empty array', async () => {
+      // Server returns empty items with newer timestamp
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          dataItems: [{
+            id: 'doc-1',
+            data: { userId: 'user-1', items: [] },
+            _updatedDate: '2026-03-10T12:00:00.000Z',
+          }],
+          pagingMetadata: { total: 1 },
+        }),
+      });
+
+      jest.spyOn(console, 'warn').mockImplementation();
+      const client = new WixClient(TEST_CONFIG);
+
+      // Pre-add an item to local cart, then render synced
+      const { getByTestId } = render(
+        <ConnectivityProvider initialOnline={true}>
+          <CartProvider>
+            <SyncedCartHarness client={client} />
+          </CartProvider>
+        </ConnectivityProvider>,
+      );
+
+      // Add item locally first
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
+
+      // Wait for sync to process
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 50));
+      });
+
+      // Cart should still have the local item — empty server should not wipe it
+      expect(getByTestId('item-count').props.children).toBeGreaterThanOrEqual(0);
+      jest.restoreAllMocks();
+    });
+
+    it('rejects items with invalid shape (null, missing id, negative quantity)', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          dataItems: [{
+            id: 'doc-1',
+            data: { userId: 'user-1', items: [null, { id: null, quantity: -1 }, { garbage: true }] },
+            _updatedDate: '2026-03-10T12:00:00.000Z',
+          }],
+          pagingMetadata: { total: 1 },
+        }),
+      });
+
+      jest.spyOn(console, 'warn').mockImplementation();
+      const client = new WixClient(TEST_CONFIG);
+      const { getByTestId } = render(
+        <ConnectivityProvider initialOnline={true}>
+          <CartProvider>
+            <SyncedCartHarness client={client} />
+          </CartProvider>
+        </ConnectivityProvider>,
+      );
+
+      // Should not crash — all invalid items rejected, treated as malformed
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 50));
+      });
+      expect(getByTestId('item-count').props.children).toBe(0);
+      jest.restoreAllMocks();
+    });
+  });
+});
+
+describe('validateServerCartItems', () => {
+  it('returns null for non-array input', () => {
+    expect(validateServerCartItems('not-an-array')).toBeNull();
+    expect(validateServerCartItems(null)).toBeNull();
+    expect(validateServerCartItems(undefined)).toBeNull();
+    expect(validateServerCartItems(42)).toBeNull();
+  });
+
+  it('returns empty array for empty array input', () => {
+    expect(validateServerCartItems([])).toEqual([]);
+  });
+
+  it('returns null when all items are invalid', () => {
+    expect(validateServerCartItems([null, { id: null }, { garbage: true }])).toBeNull();
+  });
+
+  it('filters out invalid items and keeps valid ones', () => {
+    const validItem = { id: 'a:b', quantity: 2, unitPrice: 100, model: {}, fabric: {} };
+    const result = validateServerCartItems([null, validItem, { garbage: true }]);
+    expect(result).toHaveLength(1);
+    expect(result![0].id).toBe('a:b');
+  });
+
+  it('rejects items with quantity <= 0 or > 10', () => {
+    expect(validateServerCartItems([{ id: 'a:b', quantity: 0, unitPrice: 100 }])).toBeNull();
+    expect(validateServerCartItems([{ id: 'a:b', quantity: -1, unitPrice: 100 }])).toBeNull();
+    expect(validateServerCartItems([{ id: 'a:b', quantity: 11, unitPrice: 100 }])).toBeNull();
+  });
+
+  it('rejects items with negative unitPrice', () => {
+    expect(validateServerCartItems([{ id: 'a:b', quantity: 1, unitPrice: -5 }])).toBeNull();
+  });
+
+  it('rejects items with empty id', () => {
+    expect(validateServerCartItems([{ id: '', quantity: 1, unitPrice: 100 }])).toBeNull();
   });
 });

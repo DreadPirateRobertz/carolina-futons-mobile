@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useCart } from './useCart';
+import { useCart, type CartItem } from './useCart';
 import { useAuth } from './useAuth';
 import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
@@ -9,6 +9,30 @@ import type { FutonModel, Fabric } from '@/data/futons';
 
 interface UseSyncedCartOptions {
   client: WixClient | null;
+}
+
+/** Validate that a value is a well-formed CartItem. */
+function isValidCartItem(item: unknown): item is CartItem {
+  if (item == null || typeof item !== 'object') return false;
+  const o = item as Record<string, unknown>;
+  return (
+    typeof o.id === 'string' &&
+    o.id.length > 0 &&
+    typeof o.quantity === 'number' &&
+    o.quantity > 0 &&
+    o.quantity <= 10 &&
+    typeof o.unitPrice === 'number' &&
+    o.unitPrice >= 0
+  );
+}
+
+/** Validate and filter server cart items. Returns only well-formed items. */
+export function validateServerCartItems(items: unknown): CartItem[] | null {
+  if (!Array.isArray(items)) return null;
+  const valid = items.filter(isValidCartItem);
+  // If server had items but none passed validation, treat as malformed
+  if (items.length > 0 && valid.length === 0) return null;
+  return valid;
 }
 
 export function useSyncedCart({ client }: UseSyncedCartOptions) {
@@ -44,11 +68,12 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
     hasPulled.current = true;
     const service = syncService.current;
     const userId = user.id;
+    let cancelled = false;
 
     (async () => {
       try {
         const serverState = await service.pullCart(userId);
-        if (!serverState) return;
+        if (!serverState || cancelled) return;
 
         const result = service.resolveConflict(
           { items: cart.items, serverTimestamp: lastServerTimestamp.current },
@@ -56,17 +81,26 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
         );
 
         if (result.source === 'server') {
-          if (!Array.isArray(result.items)) {
+          const validItems = validateServerCartItems(result.items);
+          if (validItems === null) {
             console.warn('[useSyncedCart] Server returned malformed items, keeping local state');
             return;
           }
+          // Empty server cart with local items = keep local (don't silently wipe)
+          if (validItems.length === 0 && cart.items.length > 0) {
+            console.warn('[useSyncedCart] Server cart is empty but local has items, keeping local state');
+            return;
+          }
+          if (cancelled) return;
           lastServerTimestamp.current = serverState.serverTimestamp;
-          cart.loadItems(result.items);
+          cart.loadItems(validItems);
         }
       } catch (err) {
         console.warn('[useSyncedCart] Server pull failed, continuing with local state:', err);
       }
     })();
+
+    return () => { cancelled = true; };
   }, [isAuthenticated, isOnline, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pushIfOnline = useCallback(
