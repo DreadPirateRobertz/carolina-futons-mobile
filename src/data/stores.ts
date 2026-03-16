@@ -71,8 +71,8 @@ export const STORES: Store[] = [
     longitude: -82.554,
     hours: WEEKDAY_HOURS,
     photos: [
-      'https://placehold.co/600x400/D4C5A9/3A2518?text=Asheville+Showroom',
-      'https://placehold.co/600x400/D4C5A9/3A2518?text=Asheville+Interior',
+      'https://placehold.co/1200x800/D4C5A9/3A2518?text=Asheville+Showroom',
+      'https://placehold.co/1200x800/D4C5A9/3A2518?text=Asheville+Interior',
     ],
     features: ['Full showroom', 'Design consultation', 'Same-day pickup', 'Free parking'],
     description:
@@ -90,7 +90,7 @@ export const STORES: Store[] = [
     latitude: 35.2271,
     longitude: -80.8431,
     hours: WEEKDAY_HOURS,
-    photos: ['https://placehold.co/600x400/D4C5A9/3A2518?text=Charlotte+Showroom'],
+    photos: ['https://placehold.co/1200x800/D4C5A9/3A2518?text=Charlotte+Showroom'],
     features: ['Full showroom', 'Design consultation', 'Delivery available'],
     description:
       'Our Charlotte location features a spacious showroom with every model on display. Convenient access from I-85.',
@@ -107,7 +107,7 @@ export const STORES: Store[] = [
     latitude: 35.7876,
     longitude: -78.6389,
     hours: WEEKDAY_HOURS,
-    photos: ['https://placehold.co/600x400/D4C5A9/3A2518?text=Raleigh+Showroom'],
+    photos: ['https://placehold.co/1200x800/D4C5A9/3A2518?text=Raleigh+Showroom'],
     features: ['Full showroom', 'Room measurement service', 'Free parking'],
     description:
       'Located in the Glenwood South district. Browse our collection and get expert help finding the perfect futon for your space.',
@@ -132,7 +132,7 @@ export const STORES: Store[] = [
       { day: 'Saturday', open: '09:00', close: '17:00' },
       { day: 'Sunday', open: '', close: '', closed: true },
     ],
-    photos: ['https://placehold.co/600x400/D4C5A9/3A2518?text=Greenville+Showroom'],
+    photos: ['https://placehold.co/1200x800/D4C5A9/3A2518?text=Greenville+Showroom'],
     features: ['Compact showroom', 'Design consultation', 'Order pickup'],
     description:
       'Our newest location on Main Street in downtown Greenville. Compact showroom with select models and full fabric samples.',

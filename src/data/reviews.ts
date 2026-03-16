@@ -39,8 +39,8 @@ export const MOCK_REVIEWS: Review[] = [
     helpful: 18,
     verified: true,
     photos: [
-      'https://placehold.co/600x400/D4C5A9/3A2518?text=Review+Photo+1',
-      'https://placehold.co/600x400/D4C5A9/3A2518?text=Review+Photo+2',
+      'https://placehold.co/1200x800/D4C5A9/3A2518?text=Review+Photo+1',
+      'https://placehold.co/1200x800/D4C5A9/3A2518?text=Review+Photo+2',
     ],
   },
   {
@@ -64,7 +64,7 @@ export const MOCK_REVIEWS: Review[] = [
     createdAt: '2026-01-28T16:45:00Z',
     helpful: 9,
     verified: true,
-    photos: ['https://placehold.co/600x400/5B8FA8/FFFFFF?text=Guest+Room+Setup'],
+    photos: ['https://placehold.co/1200x800/5B8FA8/FFFFFF?text=Guest+Room+Setup'],
   },
   {
     id: 'rev-004',
@@ -87,7 +87,7 @@ export const MOCK_REVIEWS: Review[] = [
     createdAt: '2026-01-15T20:00:00Z',
     helpful: 14,
     verified: true,
-    photos: ['https://placehold.co/600x400/E8845C/FFFFFF?text=Coral+Fabric+Close'],
+    photos: ['https://placehold.co/1200x800/E8845C/FFFFFF?text=Coral+Fabric+Close'],
   },
   {
     id: 'rev-006',
@@ -123,8 +123,8 @@ export const MOCK_REVIEWS: Review[] = [
     helpful: 25,
     verified: true,
     photos: [
-      'https://placehold.co/600x400/5B8FA8/FFFFFF?text=Blue+Ridge+Living+Room',
-      'https://placehold.co/600x400/5B8FA8/FFFFFF?text=Blue+Ridge+Bed+Mode',
+      'https://placehold.co/1200x800/5B8FA8/FFFFFF?text=Blue+Ridge+Living+Room',
+      'https://placehold.co/1200x800/5B8FA8/FFFFFF?text=Blue+Ridge+Bed+Mode',
     ],
   },
   {
@@ -159,7 +159,7 @@ export const MOCK_REVIEWS: Review[] = [
     createdAt: '2026-01-14T19:05:00Z',
     helpful: 11,
     verified: true,
-    photos: ['https://placehold.co/600x400/3D3D3D/FFFFFF?text=Charcoal+Setup'],
+    photos: ['https://placehold.co/1200x800/3D3D3D/FFFFFF?text=Charcoal+Setup'],
   },
   {
     id: 'rev-012',
@@ -195,9 +195,9 @@ export const MOCK_REVIEWS: Review[] = [
     helpful: 13,
     verified: true,
     photos: [
-      'https://placehold.co/600x400/4A7C59/FFFFFF?text=Cabin+Living+Room',
-      'https://placehold.co/600x400/4A7C59/FFFFFF?text=Smoky+Bed+Mode',
-      'https://placehold.co/600x400/4A7C59/FFFFFF?text=Smoky+Detail',
+      'https://placehold.co/1200x800/4A7C59/FFFFFF?text=Cabin+Living+Room',
+      'https://placehold.co/1200x800/4A7C59/FFFFFF?text=Smoky+Bed+Mode',
+      'https://placehold.co/1200x800/4A7C59/FFFFFF?text=Smoky+Detail',
     ],
   },
   {
@@ -221,7 +221,7 @@ export const MOCK_REVIEWS: Review[] = [
     createdAt: '2026-01-30T22:15:00Z',
     helpful: 19,
     verified: true,
-    photos: ['https://placehold.co/600x400/4A7C59/FFFFFF?text=Color+Comparison'],
+    photos: ['https://placehold.co/1200x800/4A7C59/FFFFFF?text=Color+Comparison'],
   },
   {
     id: 'rev-017',
