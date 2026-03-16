@@ -5,15 +5,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
-import {
-  PlayfairDisplay_400Regular,
-  PlayfairDisplay_700Bold,
-} from '@expo-google-fonts/playfair-display';
-import {
-  SourceSans3_400Regular,
-  SourceSans3_600SemiBold,
-  SourceSans3_700Bold,
-} from '@expo-google-fonts/source-sans-3';
 import * as SplashScreen from 'expo-splash-screen';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { ThemeProvider } from '@/theme';
@@ -73,11 +64,17 @@ function App() {
   }
 
   const [fontsLoaded] = useFonts({
-    PlayfairDisplay_400Regular,
-    PlayfairDisplay_700Bold,
-    SourceSans3_400Regular,
-    SourceSans3_600SemiBold,
-    SourceSans3_700Bold,
+    // Load only the 5 weights we use from local assets (saves ~5.4M vs @expo-google-fonts packages)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    PlayfairDisplay_400Regular: require('./assets/fonts/PlayfairDisplay_400Regular.ttf'),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    PlayfairDisplay_700Bold: require('./assets/fonts/PlayfairDisplay_700Bold.ttf'),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    SourceSans3_400Regular: require('./assets/fonts/SourceSans3_400Regular.ttf'),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    SourceSans3_600SemiBold: require('./assets/fonts/SourceSans3_600SemiBold.ttf'),
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    SourceSans3_700Bold: require('./assets/fonts/SourceSans3_700Bold.ttf'),
   });
 
   const onLayoutRootView = useCallback(async () => {
