@@ -20,6 +20,7 @@ import {
 } from '@/data/products';
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
+import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
 
 interface Props {
@@ -37,6 +38,7 @@ export const ProductCard = memo(function ProductCard({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
+  const imageTracking = useImageLoadTracking('ProductCard');
 
   const stockStatus = getStockStatus(product);
 
@@ -87,6 +89,8 @@ export const ProductCard = memo(function ProductCard({
           accessibilityLabel={product.images[0]?.alt}
           cachePolicy="memory-disk"
           placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
+          onLoadStart={imageTracking.onLoadStart}
+          onLoad={imageTracking.onLoad}
         />
         <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
         {product.badge && (

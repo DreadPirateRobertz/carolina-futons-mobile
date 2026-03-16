@@ -215,6 +215,7 @@ export function CategoryScreen({
         removeClippedSubviews
         windowSize={5}
         maxToRenderPerBatch={6}
+        initialNumToRender={4}
         testID="category-product-list"
       />
       <FilterModal
