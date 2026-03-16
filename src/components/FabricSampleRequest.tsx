@@ -17,7 +17,9 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
-import { trackEvent } from '@/services/analytics';
+import { events } from '@/services/analytics';
+import { captureException } from '@/services/crashReporting';
+import { useWixClient } from '@/services/wix/wixProvider';
 import type { Fabric } from '@/data/futons';
 
 const MAX_SWATCHES = 5;
@@ -30,11 +32,13 @@ interface Props {
 
 export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
+  const wixClient = useWixClient();
   const [expanded, setExpanded] = useState(false);
   const [selectedFabricIds, setSelectedFabricIds] = useState<Set<string>>(new Set());
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   if (fabrics.length === 0) return null;
 
@@ -60,7 +64,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
     setExpanded(true);
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!name.trim() || !address.trim() || selectedFabricIds.size === 0) {
       Alert.alert(
         'Missing Information',
@@ -73,18 +77,34 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    try {
-      trackEvent('fabric_sample_request' as any, {
-        product_name: productName,
-        fabric_count: selectedFabricIds.size,
-        fabrics: Array.from(selectedFabricIds).join(','),
-      });
-    } catch (err) {
-      console.warn('FabricSampleRequest: analytics tracking failed', err);
-    }
+    setSubmitting(true);
 
-    setSubmitted(true);
-  }, [name, address, selectedFabricIds, productName]);
+    try {
+      const fabricIdArray = Array.from(selectedFabricIds);
+      const selectedFabricNames = fabrics
+        .filter((f) => fabricIdArray.includes(f.id))
+        .map((f) => f.name);
+
+      await wixClient.submitFabricSampleRequest({
+        customerName: name.trim(),
+        shippingAddress: address.trim(),
+        productName,
+        fabricIds: fabricIdArray.join(','),
+        fabricNames: selectedFabricNames.join(','),
+      });
+
+      events.fabricSampleRequest(productName, selectedFabricIds.size, fabricIdArray.join(','));
+      setSubmitted(true);
+    } catch (error) {
+      captureException(error instanceof Error ? error : new Error('Fabric sample request failed'));
+      Alert.alert(
+        'Request Failed',
+        'We could not submit your swatch request. Please try again later.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }, [name, address, selectedFabricIds, productName, fabrics, wixClient]);
 
   if (submitted) {
     return (
@@ -193,13 +213,22 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
       />
 
       <TouchableOpacity
-        style={[styles.submitButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+        style={[
+          styles.submitButton,
+          {
+            backgroundColor: submitting ? colors.espressoLight : colors.mountainBlue,
+            borderRadius: borderRadius.button,
+          },
+        ]}
         onPress={handleSubmit}
+        disabled={submitting}
         testID="swatch-submit-btn"
         accessibilityLabel="Submit swatch request"
         accessibilityRole="button"
       >
-        <Text style={styles.submitText}>Send My Free Swatches</Text>
+        <Text style={styles.submitText}>
+          {submitting ? 'Sending...' : 'Send My Free Swatches'}
+        </Text>
       </TouchableOpacity>
     </View>
   );

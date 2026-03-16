@@ -655,6 +655,25 @@ export class WixClient {
     });
   }
 
+  async submitFabricSampleRequest(data: {
+    customerName: string;
+    shippingAddress: string;
+    productName: string;
+    fabricIds: string;
+    fabricNames: string;
+  }): Promise<void> {
+    await this.post('/wix-data/v2/items', {
+      dataCollectionId: 'FabricSampleRequests',
+      dataItem: {
+        data: {
+          ...data,
+          status: 'pending',
+          requestedAt: new Date().toISOString(),
+        },
+      },
+    });
+  }
+
   async removeFromWishlist(productId: string): Promise<void> {
     // Find the wishlist item first
     const result = await this.post<{

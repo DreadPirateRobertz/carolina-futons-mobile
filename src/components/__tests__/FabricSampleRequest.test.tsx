@@ -35,12 +35,26 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
 }));
 
+const mockSubmitFabricSampleRequest = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/services/wix/wixProvider', () => ({
+  useWixClient: () => ({
+    submitFabricSampleRequest: mockSubmitFabricSampleRequest,
+  }),
+}));
+
 jest.mock('@/services/analytics', () => ({
   events: {
-    trackEvent: jest.fn(),
+    fabricSampleRequest: jest.fn(),
   },
-  trackEvent: jest.fn(),
 }));
+
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
+const { events } = require('@/services/analytics');
+const { captureException } = require('@/services/crashReporting');
 
 const mockFabrics = [
   { id: 'fabric-1', name: 'Natural Linen', color: '#E8D5B7', price: 0 },
@@ -54,6 +68,7 @@ const mockFabrics = [
 describe('FabricSampleRequest', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSubmitFabricSampleRequest.mockResolvedValue(undefined);
   });
 
   it('renders the "Request Free Swatches" button', () => {
@@ -119,9 +134,11 @@ describe('FabricSampleRequest', () => {
       'Missing Information',
       expect.any(String),
     );
+    // Should NOT call the API when validation fails
+    expect(mockSubmitFabricSampleRequest).not.toHaveBeenCalled();
   });
 
-  it('shows confirmation after successful submission', async () => {
+  it('submits to Wix API and shows confirmation', async () => {
     const { getByTestId, getByText } = render(
       <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
     );
@@ -132,6 +149,92 @@ describe('FabricSampleRequest', () => {
     fireEvent.changeText(getByTestId('swatch-address-input'), '123 Main St, Asheville, NC');
     fireEvent.press(getByTestId('swatch-chip-fabric-1'));
     fireEvent.press(getByTestId('swatch-submit-btn'));
+
+    await waitFor(() => {
+      expect(mockSubmitFabricSampleRequest).toHaveBeenCalledWith({
+        customerName: 'John Doe',
+        shippingAddress: '123 Main St, Asheville, NC',
+        productName: 'Asheville Futon',
+        fabricIds: 'fabric-1',
+        fabricNames: 'Natural Linen',
+      });
+    });
+
+    await waitFor(() => {
+      expect(getByText(/Swatches are on the way/)).toBeTruthy();
+    });
+  });
+
+  it('tracks analytics event on successful submission', async () => {
+    const { getByTestId } = render(
+      <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
+    );
+    fireEvent.press(getByTestId('request-swatches-btn'));
+
+    fireEvent.changeText(getByTestId('swatch-name-input'), 'Jane Doe');
+    fireEvent.changeText(getByTestId('swatch-address-input'), '456 Oak St');
+    fireEvent.press(getByTestId('swatch-chip-fabric-2'));
+    fireEvent.press(getByTestId('swatch-submit-btn'));
+
+    await waitFor(() => {
+      expect(events.fabricSampleRequest).toHaveBeenCalledWith(
+        'Asheville Futon',
+        1,
+        'fabric-2',
+      );
+    });
+  });
+
+  it('shows error alert and logs on API failure', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert');
+    mockSubmitFabricSampleRequest.mockRejectedValueOnce(new Error('Network error'));
+
+    const { getByTestId, queryByText } = render(
+      <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
+    );
+    fireEvent.press(getByTestId('request-swatches-btn'));
+
+    fireEvent.changeText(getByTestId('swatch-name-input'), 'John Doe');
+    fireEvent.changeText(getByTestId('swatch-address-input'), '123 Main St');
+    fireEvent.press(getByTestId('swatch-chip-fabric-1'));
+    fireEvent.press(getByTestId('swatch-submit-btn'));
+
+    await waitFor(() => {
+      expect(captureException).toHaveBeenCalled();
+    });
+    expect(alertSpy).toHaveBeenCalledWith(
+      'Request Failed',
+      expect.stringContaining('could not submit'),
+    );
+    // Should NOT show confirmation on failure
+    expect(queryByText(/Swatches are on the way/)).toBeNull();
+    alertSpy.mockRestore();
+  });
+
+  it('disables submit button while submitting', async () => {
+    // Make the API call hang
+    let resolveSubmit: () => void;
+    mockSubmitFabricSampleRequest.mockImplementationOnce(
+      () => new Promise<void>((resolve) => { resolveSubmit = resolve; }),
+    );
+
+    const { getByTestId, getByText } = render(
+      <FabricSampleRequest fabrics={mockFabrics} productName="Asheville Futon" />,
+    );
+    fireEvent.press(getByTestId('request-swatches-btn'));
+
+    fireEvent.changeText(getByTestId('swatch-name-input'), 'John Doe');
+    fireEvent.changeText(getByTestId('swatch-address-input'), '123 Main St');
+    fireEvent.press(getByTestId('swatch-chip-fabric-1'));
+    fireEvent.press(getByTestId('swatch-submit-btn'));
+
+    // Button should show loading state
+    await waitFor(() => {
+      expect(getByText('Sending...')).toBeTruthy();
+    });
+
+    // Resolve the API call
+    resolveSubmit!();
 
     await waitFor(() => {
       expect(getByText(/Swatches are on the way/)).toBeTruthy();
