@@ -111,6 +111,11 @@ const StyleQuizScreen = lazy(() =>
     default: withScreenErrorBoundary(m.StyleQuizScreen, 'StyleQuiz'),
   })),
 );
+const PrivacyPolicyScreen = lazy(() =>
+  import('@/screens/PrivacyPolicyScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.PrivacyPolicyScreen, 'PrivacyPolicy'),
+  })),
+);
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
     default: m.OrderConfirmationScreen,
@@ -160,6 +165,7 @@ export type RootStackParamList = {
   Premium: undefined;
   StyleQuiz: undefined;
   Compare: { productSlugs: string[] };
+  PrivacyPolicy: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -336,6 +342,9 @@ export function AppNavigator() {
               />
             );
           }}
+        </Stack.Screen>
+        <Stack.Screen name="PrivacyPolicy">
+          {({ navigation: nav }) => <PrivacyPolicyScreen onBack={() => nav.goBack()} />}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
