@@ -6,6 +6,7 @@ import { useOfflineSync } from './useOfflineSync';
 import { WishlistSyncService } from '@/services/wishlistSyncService';
 import type { WixClient } from '@/services/wix/wixClient';
 import type { Product } from '@/data/products';
+import { captureMessage, captureException } from '@/services/crashReporting';
 
 interface UseSyncedWishlistOptions {
   client: WixClient | null;
@@ -79,14 +80,16 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
         if (result.source === 'server') {
           const validItems = validateServerWishlistItems(result.items);
           if (validItems === null) {
-            console.warn(
+            captureMessage(
               '[useSyncedWishlist] Server returned malformed items, keeping local state',
+              'warning',
             );
             return;
           }
           if (validItems.length === 0 && wishlist.items.length > 0) {
-            console.warn(
+            captureMessage(
               '[useSyncedWishlist] Server wishlist is empty but local has items, keeping local state',
+              'warning',
             );
             return;
           }
@@ -95,7 +98,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
           wishlist.loadItems(validItems);
         }
       } catch (err) {
-        console.warn('[useSyncedWishlist] Server pull failed, continuing with local state:', err);
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'wishlist-pull',
+        });
       }
     })();
 
@@ -115,7 +120,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
             lastServerTimestamp.current = serverTs;
           })
           .catch((err) => {
-            console.warn('[useSyncedWishlist] Push failed, will retry on next sync:', err);
+            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+              action: 'wishlist-push',
+            });
           });
       } else {
         queueAction('wishlist', 'SYNC', { items });
@@ -157,7 +164,9 @@ export function useSyncedWishlist({ client }: UseSyncedWishlistOptions) {
           lastServerTimestamp.current = serverTs;
         })
         .catch((err) => {
-          console.warn('[useSyncedWishlist] Clear push failed:', err);
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            action: 'wishlist-clear',
+          });
         });
     } else if (user?.id) {
       queueAction('wishlist', 'SYNC', { items: [] });

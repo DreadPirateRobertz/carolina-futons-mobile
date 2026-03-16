@@ -9,6 +9,13 @@ import { WixClient, type WixClientConfig } from '@/services/wix/wixClient';
 import { _resetForTesting } from '@/services/offlineQueue';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+const mockCaptureMessage = jest.fn();
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
 // Mock fetch
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
@@ -222,7 +229,7 @@ describe('useSyncedCart', () => {
           }),
       });
 
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      mockCaptureMessage.mockClear();
       const client = new WixClient(TEST_CONFIG);
       const { getByTestId } = render(
         <ConnectivityProvider initialOnline={true}>
@@ -237,8 +244,10 @@ describe('useSyncedCart', () => {
         expect(getByTestId('item-count').props.children).toBe(0);
       });
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[useSyncedCart]'));
-      warnSpy.mockRestore();
+      expect(mockCaptureMessage).toHaveBeenCalledWith(
+        expect.stringContaining('[useSyncedCart]'),
+        'warning',
+      );
     });
 
     it('keeps local cart when server pull fails', async () => {
