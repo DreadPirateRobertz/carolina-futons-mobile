@@ -41,7 +41,7 @@ function StockLabel({ product }: { product: Product }) {
   }
   if (status === 'low_stock') {
     return (
-      <Text style={{ color: colors.warning }}>
+      <Text style={{ color: colors.sunsetCoral }}>
         Low Stock ({product.stockCount})
       </Text>
     );
@@ -65,13 +65,13 @@ export function CompareScreen({
   if (products.length === 0) {
     return (
       <View
-        style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
+        style={[styles.container, { backgroundColor: colors.sandBase, paddingTop: insets.top }]}
         accessibilityLabel="Compare products"
         testID={testID}
       >
         <Header onBack={onBack} />
         <View style={styles.emptyContainer}>
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          <Text style={[styles.emptyText, { color: colors.espressoLight }]}>
             Add products to compare
           </Text>
         </View>
@@ -94,13 +94,13 @@ export function CompareScreen({
             <Text
               style={[
                 styles.cellValue,
-                { color: isBest ? colors.success : colors.text, fontWeight: isBest ? '700' : '400' },
+                { color: isBest ? colors.success : colors.espresso, fontWeight: isBest ? '700' : '400' },
               ]}
             >
               {formatPrice(product.price)}
             </Text>
             {product.originalPrice != null && (
-              <Text style={[styles.originalPrice, { color: colors.textSecondary }]}>
+              <Text style={[styles.originalPrice, { color: colors.espressoLight }]}>
                 {formatPrice(product.originalPrice)}
               </Text>
             )}
@@ -111,7 +111,7 @@ export function CompareScreen({
     {
       label: 'Rating',
       values: (product) => (
-        <Text style={[styles.cellValue, { color: colors.text }]}>
+        <Text style={[styles.cellValue, { color: colors.espresso }]}>
           {product.rating}
         </Text>
       ),
@@ -119,7 +119,7 @@ export function CompareScreen({
     {
       label: 'Size',
       values: (product) => (
-        <Text style={[styles.cellValue, { color: colors.text }]}>
+        <Text style={[styles.cellValue, { color: colors.espresso }]}>
           {product.size ? product.size.charAt(0).toUpperCase() + product.size.slice(1) : '-'}
         </Text>
       ),
@@ -127,7 +127,7 @@ export function CompareScreen({
     {
       label: 'Dimensions',
       values: (product) => (
-        <Text style={[styles.cellValue, { color: colors.text }]}>
+        <Text style={[styles.cellValue, { color: colors.espresso }]}>
           {formatDimensions(product.dimensions)}
         </Text>
       ),
@@ -135,7 +135,7 @@ export function CompareScreen({
     {
       label: 'Fabrics',
       values: (product) => (
-        <Text style={[styles.cellValue, { color: colors.text }]}>
+        <Text style={[styles.cellValue, { color: colors.espresso }]}>
           {product.fabricOptions.length} options
         </Text>
       ),
@@ -148,7 +148,7 @@ export function CompareScreen({
 
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}
+      style={[styles.container, { backgroundColor: colors.sandBase, paddingTop: insets.top }]}
       accessibilityLabel="Compare products"
       testID={testID}
     >
@@ -160,7 +160,7 @@ export function CompareScreen({
           {products.map((product) => (
             <View
               key={product.id}
-              style={[styles.productCell, { borderColor: colors.border }]}
+              style={[styles.productCell, { borderColor: colors.sandDark }]}
             >
               {product.images.length > 0 && (
                 <Image
@@ -174,7 +174,7 @@ export function CompareScreen({
                 accessibilityRole="button"
               >
                 <Text
-                  style={[styles.productName, { color: colors.text }]}
+                  style={[styles.productName, { color: colors.espresso }]}
                   numberOfLines={2}
                 >
                   {product.name}
@@ -201,13 +201,13 @@ export function CompareScreen({
             style={[
               styles.comparisonRow,
               {
-                backgroundColor: index % 2 === 0 ? colors.surface : colors.background,
-                borderColor: colors.border,
+                backgroundColor: index % 2 === 0 ? colors.offWhite : colors.sandBase,
+                borderColor: colors.sandDark,
               },
             ]}
           >
             <View style={styles.labelCell}>
-              <Text style={[styles.rowLabel, { color: colors.textSecondary }]}>
+              <Text style={[styles.rowLabel, { color: colors.espressoLight }]}>
                 {row.label}
               </Text>
             </View>
@@ -226,7 +226,7 @@ export function CompareScreen({
 function Header({ onBack }: { onBack?: () => void }) {
   const { colors, spacing } = useTheme();
   return (
-    <View style={[styles.header, { borderBottomColor: colors.border }]}>
+    <View style={[styles.header, { borderBottomColor: colors.sandDark }]}>
       {onBack && (
         <TouchableOpacity
           testID="back-button"
@@ -234,10 +234,10 @@ function Header({ onBack }: { onBack?: () => void }) {
           style={styles.backButton}
           accessibilityLabel="Go back"
         >
-          <Text style={[styles.backText, { color: colors.primary }]}>←</Text>
+          <Text style={[styles.backText, { color: colors.mountainBlue }]}>←</Text>
         </TouchableOpacity>
       )}
-      <Text style={[styles.title, { color: colors.text }]}>Compare</Text>
+      <Text style={[styles.title, { color: colors.espresso }]}>Compare</Text>
     </View>
   );
 }

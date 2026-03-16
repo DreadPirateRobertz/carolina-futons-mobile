@@ -312,7 +312,29 @@ export function AppNavigator() {
             <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
           )}
         </Stack.Screen>
-        <Stack.Screen name="Compare" component={CompareScreen} options={fadeTransition} />
+        <Stack.Screen name="Compare" options={fadeTransition}>
+          {({ navigation: nav, route }) => {
+            const { PRODUCTS } = require('@/data/products');
+            const products = (route.params?.productSlugs ?? [])
+              .map((slug: string) => PRODUCTS.find((p: { slug: string }) => p.slug === slug))
+              .filter(Boolean);
+            return (
+              <CompareScreen
+                products={products}
+                onRemove={(id: string) => {
+                  const remaining = products.filter((p: { id: string }) => p.id !== id);
+                  if (remaining.length === 0) {
+                    nav.goBack();
+                  } else {
+                    nav.setParams({ productSlugs: remaining.map((p: { slug: string }) => p.slug) });
+                  }
+                }}
+                onProductPress={(p: { slug: string }) => nav.navigate('ProductDetail', { slug: p.slug })}
+                onBack={() => nav.goBack()}
+              />
+            );
+          }}
+        </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
   );
