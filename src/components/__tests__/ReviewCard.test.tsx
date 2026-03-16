@@ -85,6 +85,11 @@ describe('ReviewCard', () => {
       const { queryByLabelText } = renderCard({ photos: undefined });
       expect(queryByLabelText('Review photo 1')).toBeNull();
     });
+
+    it('does not render photo row when photos is empty array', () => {
+      const { queryByLabelText } = renderCard({ photos: [] });
+      expect(queryByLabelText('Review photo 1')).toBeNull();
+    });
   });
 
   describe('helpful button', () => {
@@ -102,14 +107,118 @@ describe('ReviewCard', () => {
   });
 
   describe('relative date', () => {
-    it('shows relative date text', () => {
-      const { getByText } = renderCard();
-      expect(getByText('3 days ago')).toBeTruthy();
-    });
-
     it('shows "just now" for very recent reviews', () => {
       const { getByText } = renderCard({ createdAt: new Date().toISOString() });
       expect(getByText('just now')).toBeTruthy();
+    });
+
+    it('shows "1 minute ago" for singular minute', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 90 * 1000).toISOString(),
+      });
+      expect(getByText('1 minute ago')).toBeTruthy();
+    });
+
+    it('shows plural minutes', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('5 minutes ago')).toBeTruthy();
+    });
+
+    it('shows "1 hour ago" for singular hour', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('1 hour ago')).toBeTruthy();
+    });
+
+    it('shows plural hours', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('5 hours ago')).toBeTruthy();
+    });
+
+    it('shows "1 day ago" for singular day', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('1 day ago')).toBeTruthy();
+    });
+
+    it('shows plural days', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('3 days ago')).toBeTruthy();
+    });
+
+    it('shows "1 week ago" for singular week', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('1 week ago')).toBeTruthy();
+    });
+
+    it('shows plural weeks', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('3 weeks ago')).toBeTruthy();
+    });
+
+    it('shows "1 month ago" for singular month', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('1 month ago')).toBeTruthy();
+    });
+
+    it('shows plural months', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('3 months ago')).toBeTruthy();
+    });
+
+    it('shows "1 year ago" for singular year', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 400 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('1 year ago')).toBeTruthy();
+    });
+
+    it('shows plural years', () => {
+      const { getByText } = renderCard({
+        createdAt: new Date(Date.now() - 800 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      expect(getByText('2 years ago')).toBeTruthy();
+    });
+  });
+
+  describe('custom testID', () => {
+    it('uses custom testID for card', () => {
+      const { getByTestId } = renderCard({}, { testID: 'my-review' });
+      expect(getByTestId('my-review')).toBeTruthy();
+    });
+
+    it('uses custom testID for helpful button', () => {
+      const { getByTestId } = renderCard({}, { testID: 'my-review' });
+      expect(getByTestId('my-review-helpful')).toBeTruthy();
+    });
+
+    it('defaults to review id testID', () => {
+      const { getByTestId } = renderCard();
+      expect(getByTestId(`review-card-${baseReview.id}`)).toBeTruthy();
+    });
+  });
+
+  describe('no onHelpful callback', () => {
+    it('renders without crashing when onHelpful is undefined', () => {
+      const { getByTestId } = renderCard();
+      fireEvent.press(getByTestId(`review-helpful-${baseReview.id}`));
+      // Should not throw
     });
   });
 

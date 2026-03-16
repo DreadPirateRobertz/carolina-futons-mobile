@@ -2,6 +2,9 @@ import {
   enqueue,
   replay,
   registerExecutor,
+  getExecutor,
+  clearExecutors,
+  reEnqueue,
   getQueueLength,
   getQueue,
   _resetForTesting,
@@ -102,6 +105,19 @@ describe('offlineQueue replay', () => {
     expect(result.errors).toEqual([]);
   });
 
+  it('wraps non-Error thrown values in Error', async () => {
+    const mockExecutor = jest.fn().mockRejectedValue('string error');
+    registerExecutor('THROW_STRING', mockExecutor);
+
+    enqueue('cart', 'THROW_STRING', { id: 1 });
+
+    const result = await replay({ maxRetries: 0, baseDelayMs: 1 });
+
+    expect(result.failed).toBe(1);
+    expect(result.errors[0].error).toBeInstanceOf(Error);
+    expect(result.errors[0].error.message).toBe('string error');
+  });
+
   it('replays actions from different domains', async () => {
     const cartExecutor = jest.fn().mockResolvedValue(undefined);
     const wishlistExecutor = jest.fn().mockResolvedValue(undefined);
@@ -117,5 +133,61 @@ describe('offlineQueue replay', () => {
     expect(wishlistExecutor).toHaveBeenCalledWith({ productId: 'p2', savedPrice: 299 });
     expect(result.succeeded).toBe(2);
     expect(getQueueLength()).toBe(0);
+  });
+
+  it('uses default options when none provided', async () => {
+    const mockExecutor = jest.fn().mockResolvedValue(undefined);
+    registerExecutor('ADD_ITEM', mockExecutor);
+    enqueue('cart', 'ADD_ITEM', { productId: 'p1' });
+
+    const result = await replay();
+
+    expect(result.succeeded).toBe(1);
+  });
+});
+
+describe('executor registry', () => {
+  it('registers and retrieves an executor', () => {
+    const executor = jest.fn();
+    registerExecutor('MY_ACTION', executor);
+    expect(getExecutor('MY_ACTION')).toBe(executor);
+  });
+
+  it('returns undefined for unregistered action', () => {
+    expect(getExecutor('NONEXISTENT')).toBeUndefined();
+  });
+
+  it('clearExecutors removes all executors', () => {
+    registerExecutor('A', jest.fn());
+    registerExecutor('B', jest.fn());
+    clearExecutors();
+    expect(getExecutor('A')).toBeUndefined();
+    expect(getExecutor('B')).toBeUndefined();
+  });
+});
+
+describe('reEnqueue', () => {
+  it('prepends failed actions back to front of queue', () => {
+    enqueue('cart', 'ADD_ITEM', { productId: 'p2' });
+    const failed = [
+      {
+        id: 'oq-old-1',
+        timestamp: Date.now() - 1000,
+        domain: 'cart' as const,
+        action: 'ADD_ITEM',
+        payload: { productId: 'p1' },
+      },
+    ];
+    reEnqueue(failed);
+
+    const q = getQueue();
+    expect(q).toHaveLength(2);
+    expect(q[0].id).toBe('oq-old-1');
+  });
+
+  it('handles empty array', () => {
+    enqueue('cart', 'ADD_ITEM', { productId: 'p1' });
+    reEnqueue([]);
+    expect(getQueueLength()).toBe(1);
   });
 });

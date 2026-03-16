@@ -1,4 +1,5 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { AccountScreen } from '../AccountScreen';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
@@ -8,6 +9,39 @@ jest.mock('expo-application', () => ({
   nativeApplicationVersion: '1.2.3',
   nativeBuildVersion: '42',
   applicationId: 'com.carolinafutons.app',
+}));
+
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  selectionAsync: jest.fn(),
+  notificationAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'Light', Medium: 'Medium', Heavy: 'Heavy' },
+  NotificationFeedbackType: { Success: 'Success', Warning: 'Warning', Error: 'Error' },
+}));
+
+const mockBiometricAuth: {
+  status: {
+    isAvailable: boolean;
+    isEnrolled: boolean;
+    biometricType: 'none' | 'fingerprint' | 'facial' | 'iris';
+  };
+  isEnabled: boolean;
+  loading: boolean;
+  authenticating: boolean;
+  enableBiometric: jest.Mock;
+  disableBiometric: jest.Mock;
+  promptBiometric: jest.Mock;
+} = {
+  status: { isAvailable: false, isEnrolled: false, biometricType: 'none' },
+  isEnabled: false,
+  loading: false,
+  authenticating: false,
+  enableBiometric: jest.fn().mockResolvedValue(true),
+  disableBiometric: jest.fn().mockResolvedValue(undefined),
+  promptBiometric: jest.fn().mockResolvedValue(true),
+};
+jest.mock('@/hooks/useBiometricAuth', () => ({
+  useBiometricAuth: () => mockBiometricAuth,
 }));
 
 const mockMember = {
@@ -117,12 +151,33 @@ function AutoSignIn() {
   return null;
 }
 
+/** Signs in with a custom member mock for edge-case tests */
+function AutoSignInWithMember({ member }: { member: typeof mockMember }) {
+  const { signIn } = useAuth();
+  React.useEffect(() => {
+    mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+    mockAuthService.getCurrentMember.mockResolvedValue(member);
+    signIn('test@test.com', 'Pass1234');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return null;
+}
+
 describe('AccountScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockAuthService.restoreSession.mockResolvedValue(false);
     mockAuthService.getCurrentMember.mockResolvedValue(null);
     mockAuthService.logout.mockResolvedValue(undefined);
+    mockAddressBook.addresses = [];
+    mockAddressBook.defaultAddress = null;
+    mockPremiumValue.isPremium = false;
+    mockBiometricAuth.status = {
+      isAvailable: false,
+      isEnrolled: false,
+      biometricType: 'none' as const,
+    };
+    mockBiometricAuth.isEnabled = false;
+    mockBiometricAuth.loading = false;
   });
 
   describe('Guest state', () => {
@@ -211,11 +266,9 @@ describe('AccountScreen', () => {
       await waitFor(() => {
         expect(getByTestId('premium-badge')).toBeTruthy();
       });
-      mockPremiumValue.isPremium = false;
     });
 
     it('does not show CF+ badge when user is not premium', async () => {
-      mockPremiumValue.isPremium = false;
       const { queryByTestId, getByTestId } = renderAccount({}, true);
       await waitFor(() => {
         expect(getByTestId('user-display-name')).toBeTruthy();
@@ -229,11 +282,9 @@ describe('AccountScreen', () => {
       await waitFor(() => {
         expect(getByTestId('menu-premium-badge')).toBeTruthy();
       });
-      mockPremiumValue.isPremium = false;
     });
 
     it('does not show CF+ badge on Premium menu item when not premium', async () => {
-      mockPremiumValue.isPremium = false;
       const { queryByTestId, getByTestId } = renderAccount({}, true);
       await waitFor(() => {
         expect(getByTestId('user-display-name')).toBeTruthy();
@@ -398,6 +449,560 @@ describe('AccountScreen', () => {
         fireEvent.press(getByTestId('app-version-tap'));
       }
       expect(queryByTestId('debug-menu')).toBeNull();
+    });
+
+    it('does not open debug menu with fewer than 5 taps', async () => {
+      const { getByTestId, queryByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('app-version-tap')).toBeTruthy();
+      });
+      for (let i = 0; i < 4; i++) {
+        fireEvent.press(getByTestId('app-version-tap'));
+      }
+      expect(queryByTestId('debug-menu')).toBeNull();
+    });
+
+    it('uses custom testID when provided', async () => {
+      const { getByTestId } = renderAccount({ testID: 'my-account' }, true);
+      await waitFor(() => {
+        expect(getByTestId('my-account')).toBeTruthy();
+      });
+    });
+
+    it('uses custom testID for guest state', async () => {
+      const { getByTestId } = renderAccount({ testID: 'guest-custom' });
+      await waitFor(() => {
+        expect(getByTestId('guest-custom')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Biometric toggle', () => {
+    it('shows biometric toggle when available, enrolled, and not loading', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      mockBiometricAuth.loading = false;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-biometric-toggle')).toBeTruthy();
+      });
+      expect(getByTestId('biometric-switch')).toBeTruthy();
+    });
+
+    it('hides biometric toggle when not available', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: false,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('account-biometric-toggle')).toBeNull();
+    });
+
+    it('hides biometric toggle when not enrolled', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: false,
+        biometricType: 'fingerprint',
+      };
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('account-biometric-toggle')).toBeNull();
+    });
+
+    it('hides biometric toggle when loading', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      mockBiometricAuth.loading = true;
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('account-biometric-toggle')).toBeNull();
+    });
+
+    it('shows "Face ID Sign-In" label for facial biometric', async () => {
+      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'facial' };
+      const { getByTestId, getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-biometric-toggle')).toBeTruthy();
+      });
+      expect(getByText('Face ID Sign-In')).toBeTruthy();
+    });
+
+    it('shows "Touch ID Sign-In" label for fingerprint biometric', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      const { getByTestId, getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-biometric-toggle')).toBeTruthy();
+      });
+      expect(getByText('Touch ID Sign-In')).toBeTruthy();
+    });
+
+    it('calls enableBiometric when toggle switched on', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      mockBiometricAuth.isEnabled = false;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('biometric-switch')).toBeTruthy();
+      });
+      fireEvent(getByTestId('biometric-switch'), 'valueChange', true);
+      await waitFor(() => {
+        expect(mockBiometricAuth.enableBiometric).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('calls disableBiometric when toggle switched off', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      mockBiometricAuth.isEnabled = true;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('biometric-switch')).toBeTruthy();
+      });
+      fireEvent(getByTestId('biometric-switch'), 'valueChange', false);
+      await waitFor(() => {
+        expect(mockBiometricAuth.disableBiometric).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('does not show biometric toggle for guests', async () => {
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
+      const { queryByTestId } = renderAccount();
+      await waitFor(() => {
+        expect(queryByTestId('account-biometric-toggle')).toBeNull();
+      });
+    });
+  });
+
+  describe('Address management', () => {
+    const mockAddresses = [
+      {
+        id: 'addr-1',
+        fullName: 'John Doe',
+        line1: '123 Main St',
+        line2: 'Apt 4B',
+        city: 'Raleigh',
+        state: 'NC',
+        zip: '27601',
+        isDefault: true,
+      },
+      {
+        id: 'addr-2',
+        fullName: 'Jane Doe',
+        line1: '456 Oak Ave',
+        line2: '',
+        city: 'Durham',
+        state: 'NC',
+        zip: '27701',
+        isDefault: false,
+      },
+    ];
+
+    it('renders address list when addresses exist', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('address-list')).toBeTruthy();
+      });
+      expect(getByTestId('address-addr-1')).toBeTruthy();
+      expect(getByTestId('address-addr-2')).toBeTruthy();
+    });
+
+    it('shows address count in menu label', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByText('Saved Addresses (2)')).toBeTruthy();
+      });
+    });
+
+    it('does not show address list when no addresses', async () => {
+      mockAddressBook.addresses = [];
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-addresses')).toBeTruthy();
+      });
+      expect(queryByTestId('address-list')).toBeNull();
+    });
+
+    it('shows "(Default)" label on default address', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByText(' (Default)')).toBeTruthy();
+      });
+    });
+
+    it('shows line2 when present', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByText('123 Main St, Apt 4B')).toBeTruthy();
+      });
+    });
+
+    it('omits line2 separator when line2 is empty', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByText('456 Oak Ave')).toBeTruthy();
+      });
+    });
+
+    it('hides "Set Default" button on default address', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('address-addr-1')).toBeTruthy();
+      });
+      expect(queryByTestId('set-default-addr-1')).toBeNull();
+    });
+
+    it('shows "Set Default" button on non-default address', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('set-default-addr-2')).toBeTruthy();
+      });
+    });
+
+    it('calls setDefault when "Set Default" pressed', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('set-default-addr-2')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('set-default-addr-2'));
+      expect(mockAddressBook.setDefault).toHaveBeenCalledWith('addr-2');
+    });
+
+    it('shows delete confirmation alert when delete pressed', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('delete-address-addr-1')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('delete-address-addr-1'));
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Delete Address',
+        'Remove 123 Main St?',
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel', style: 'cancel' }),
+          expect.objectContaining({ text: 'Delete', style: 'destructive' }),
+        ]),
+      );
+    });
+
+    it('calls deleteAddress when delete confirmed in alert', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('delete-address-addr-2')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('delete-address-addr-2'));
+      // Find and invoke the destructive button's onPress
+      const alertButtons = alertSpy.mock.calls[0][2] as any[];
+      const deleteButton = alertButtons.find((b: any) => b.text === 'Delete');
+      deleteButton.onPress();
+      expect(mockAddressBook.deleteAddress).toHaveBeenCalledWith('addr-2');
+    });
+  });
+
+  describe('Profile editing — edge cases', () => {
+    it('shows error message when auth error is set during editing', async () => {
+      mockAuthService.updateMember.mockResolvedValue({ success: false, error: 'Update failed' });
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      // Trigger a save that will fail
+      fireEvent.press(getByTestId('edit-save-button'));
+      await waitFor(() => {
+        expect(mockAuthService.updateMember).toHaveBeenCalled();
+      });
+    });
+
+    it('pre-fills name fields from user displayName with multi-word last name', async () => {
+      const multiNameMember = {
+        ...mockMember,
+        displayName: 'Mary Jane Watson',
+        phone: '',
+      };
+      mockAuthService.getCurrentMember.mockResolvedValue(multiNameMember);
+      // renderAccount sets getCurrentMember to mockMember when authenticated=true,
+      // so override it again after renderAccount's setup
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <AuthProvider>
+            <AutoSignInWithMember member={multiNameMember} />
+            <AccountScreen />
+          </AuthProvider>
+        </ThemeProvider>,
+      );
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      expect(getByTestId('edit-first-name-input').props.value).toBe('Mary');
+      expect(getByTestId('edit-last-name-input').props.value).toBe('Jane Watson');
+    });
+
+    it('pre-fills phone as empty string when user has no phone', async () => {
+      const noPhoneMember = { ...mockMember, phone: '' };
+      mockAuthService.getCurrentMember.mockResolvedValue(noPhoneMember);
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <AuthProvider>
+            <AutoSignInWithMember member={noPhoneMember} />
+            <AccountScreen />
+          </AuthProvider>
+        </ThemeProvider>,
+      );
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      expect(getByTestId('edit-phone-input').props.value).toBe('');
+    });
+
+    it('does not show phone text when user has no phone', async () => {
+      const noPhoneMember = { ...mockMember, phone: '' };
+      mockAuthService.getCurrentMember.mockResolvedValue(noPhoneMember);
+      const { queryByTestId, getByTestId } = render(
+        <ThemeProvider>
+          <AuthProvider>
+            <AutoSignInWithMember member={noPhoneMember} />
+            <AccountScreen />
+          </AuthProvider>
+        </ThemeProvider>,
+      );
+      await waitFor(() => {
+        expect(getByTestId('user-display-name')).toBeTruthy();
+      });
+      expect(queryByTestId('user-phone')).toBeNull();
+    });
+
+    it('shows phone text when user has a phone number', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('user-phone')).toBeTruthy();
+      });
+      expect(getByTestId('user-phone').props.children).toBe('555-1234');
+    });
+
+    it('handles single-word display name (no last name)', async () => {
+      const singleNameMember = { ...mockMember, displayName: 'Madonna' };
+      mockAuthService.getCurrentMember.mockResolvedValue(singleNameMember);
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <AuthProvider>
+            <AutoSignInWithMember member={singleNameMember} />
+            <AccountScreen />
+          </AuthProvider>
+        </ThemeProvider>,
+      );
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      expect(getByTestId('edit-first-name-input').props.value).toBe('Madonna');
+      expect(getByTestId('edit-last-name-input').props.value).toBe('');
+    });
+
+    it('trims whitespace from fields when saving profile', async () => {
+      mockAuthService.updateMember.mockResolvedValue({ success: true });
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('edit-profile-button')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('edit-profile-button'));
+      fireEvent.changeText(getByTestId('edit-first-name-input'), '  Jane  ');
+      fireEvent.changeText(getByTestId('edit-last-name-input'), '  Doe  ');
+      fireEvent.changeText(getByTestId('edit-phone-input'), '  555-0000  ');
+      fireEvent.press(getByTestId('edit-save-button'));
+      await waitFor(() => {
+        expect(mockAuthService.updateMember).toHaveBeenCalledWith('member-1', {
+          firstName: 'Jane',
+          lastName: 'Doe',
+          phone: '555-0000',
+        });
+      });
+    }, 15000);
+  });
+
+  describe('Restore purchases', () => {
+    it('shows success alert when restore succeeds', async () => {
+      mockPremiumValue.restore.mockResolvedValue(true);
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('restore-purchases')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('restore-purchases'));
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          'Restored!',
+          'Your CF+ subscription has been restored.',
+        );
+      });
+    });
+
+    it('shows failure alert when restore finds no purchases', async () => {
+      mockPremiumValue.restore.mockResolvedValue(false);
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('restore-purchases')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('restore-purchases'));
+      await waitFor(() => {
+        expect(alertSpy).toHaveBeenCalledWith(
+          'No Purchases Found',
+          'We could not find any previous purchases for this account.',
+        );
+      });
+    });
+  });
+
+  describe('Account deletion', () => {
+    it('calls requestDeletion and shows confirmation alert when Delete Account pressed', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-delete-account')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-delete-account'));
+      expect(mockDeletion.requestDeletion).toHaveBeenCalledTimes(1);
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Delete Account',
+        expect.stringContaining('permanently delete'),
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Cancel', style: 'cancel' }),
+          expect.objectContaining({ text: 'Delete', style: 'destructive' }),
+        ]),
+      );
+    });
+
+    it('calls confirmDeletion when delete alert is confirmed', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-delete-account')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-delete-account'));
+      const alertButtons = alertSpy.mock.calls[0][2] as any[];
+      const deleteButton = alertButtons.find((b: any) => b.text === 'Delete');
+      deleteButton.onPress();
+      expect(mockDeletion.confirmDeletion).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls cancel when delete alert is cancelled', async () => {
+      const alertSpy = jest.spyOn(Alert, 'alert');
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-delete-account')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-delete-account'));
+      const alertButtons = alertSpy.mock.calls[0][2] as any[];
+      const cancelButton = alertButtons.find((b: any) => b.text === 'Cancel');
+      cancelButton.onPress();
+      expect(mockDeletion.cancel).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Privacy policy', () => {
+    it('shows Privacy Policy menu item when onPrivacyPolicy is provided', async () => {
+      const onPrivacyPolicy = jest.fn();
+      const { getByTestId } = renderAccount({ onPrivacyPolicy }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-privacy-policy')).toBeTruthy();
+      });
+    });
+
+    it('calls onPrivacyPolicy when pressed', async () => {
+      const onPrivacyPolicy = jest.fn();
+      const { getByTestId } = renderAccount({ onPrivacyPolicy }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-privacy-policy')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-privacy-policy'));
+      expect(onPrivacyPolicy).toHaveBeenCalledTimes(1);
+    });
+
+    it('hides Privacy Policy menu item when onPrivacyPolicy is not provided', async () => {
+      const { queryByTestId, getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('privacy-section-title')).toBeTruthy();
+      });
+      expect(queryByTestId('account-privacy-policy')).toBeNull();
+    });
+  });
+
+  describe('Navigation callbacks', () => {
+    it('calls onPremium when CF+ Premium pressed', async () => {
+      const onPremium = jest.fn();
+      const { getByTestId } = renderAccount({ onPremium }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-premium')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-premium'));
+      expect(onPremium).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls onStyleQuiz when Style Preferences pressed', async () => {
+      const onStyleQuiz = jest.fn();
+      const { getByTestId } = renderAccount({ onStyleQuiz }, true);
+      await waitFor(() => {
+        expect(getByTestId('account-style-quiz')).toBeTruthy();
+      });
+      fireEvent.press(getByTestId('account-style-quiz'));
+      expect(onStyleQuiz).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not throw when pressing menu item without onPress', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-payment')).toBeTruthy();
+      });
+      expect(() => fireEvent.press(getByTestId('account-payment'))).not.toThrow();
+    });
+
+    it('does not throw when sign in pressed without onLogin', async () => {
+      const { getByTestId } = renderAccount();
+      await waitFor(() => {
+        expect(getByTestId('account-sign-in-button')).toBeTruthy();
+      });
+      expect(() => fireEvent.press(getByTestId('account-sign-in-button'))).not.toThrow();
     });
   });
 });

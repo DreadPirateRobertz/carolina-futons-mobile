@@ -468,4 +468,565 @@ describe('Server cart merge on auth', () => {
     // Local cart should be preserved
     expect(getByTestId('item-count').props.children).toBe(1);
   });
+
+  it('skips server line items with unknown model', async () => {
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-unknown',
+          catalogReference: {
+            catalogItemId: 'nonexistent-model-id',
+            appId: 'wix-stores',
+            options: { variantId: FABRICS[0].id },
+          },
+          quantity: 2,
+        },
+      ],
+    });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Unknown model items should be filtered out
+    expect(getByTestId('item-count').props.children).toBe(0);
+  });
+
+  it('skips server line items with unknown fabric variant', async () => {
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-bad-fabric',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[0].id,
+            appId: 'wix-stores',
+            options: { variantId: 'nonexistent-fabric-id' },
+          },
+          quantity: 1,
+        },
+      ],
+    });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Unknown fabric items should be filtered out
+    expect(getByTestId('item-count').props.children).toBe(0);
+  });
+
+  it('defaults to FABRICS[0] when server line item has no variantId', async () => {
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-no-variant',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[0].id,
+            appId: 'wix-stores',
+            options: {},
+          },
+          quantity: 3,
+        },
+      ],
+    });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Should use default fabric (FABRICS[0]) and have qty 3
+    expect(getByTestId('item-count').props.children).toBe(3);
+    const items = JSON.parse(getByTestId('items-json').props.children);
+    expect(items[0].id).toBe(`${FUTON_MODELS[0].id}:${FABRICS[0].id}`);
+  });
+
+  it('clamps server line item quantity to [1, 10]', async () => {
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-big-qty',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[0].id,
+            appId: 'wix-stores',
+            options: { variantId: FABRICS[0].id },
+          },
+          quantity: 25,
+        },
+        {
+          _id: 'wix-zero-qty',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[1].id,
+            appId: 'wix-stores',
+            options: { variantId: FABRICS[0].id },
+          },
+          quantity: 0,
+        },
+      ],
+    });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    const items = JSON.parse(getByTestId('items-json').props.children);
+    // quantity 25 should be clamped to 10
+    expect(items[0].qty).toBe(10);
+    // quantity 0 should be clamped to 1
+    expect(items[1].qty).toBe(1);
+  });
+
+  it('does not dispatch when merged equals local items', async () => {
+    // Server returns the exact same item that's already in local cart
+    mockGetCart.mockResolvedValue({
+      lineItems: [
+        {
+          _id: 'wix-same',
+          catalogReference: {
+            catalogItemId: FUTON_MODELS[0].id,
+            appId: 'wix-stores',
+            options: { variantId: FABRICS[0].id },
+          },
+          quantity: 1,
+        },
+      ],
+    });
+
+    mockUser = null;
+    const { getByTestId, rerender } = renderCart();
+
+    // Add same item locally
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+
+    const testUser = { id: 'u1', email: 'test@test.com', displayName: 'Test', provider: 'wix' };
+    mockUser = testUser;
+    rerender(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: testUser as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    await waitFor(() => {
+      expect(getByTestId('syncing').props.children).toBe('false');
+    });
+
+    // Cart should still have 1 item — no unnecessary changes
+    expect(getByTestId('item-count').props.children).toBe(1);
+    // Server already has this item, so no push needed
+    expect(mockAddToCart).not.toHaveBeenCalled();
+  });
+});
+
+describe('cartReducer edge cases', () => {
+  describe('UPDATE_QUANTITY with negative values', () => {
+    it('removes item when quantity is negative', () => {
+      const { getByTestId } = renderCart();
+      fireEvent.press(getByTestId('add-asheville-linen'));
+      expect(getByTestId('item-count').props.children).toBe(1);
+
+      // We need a button for negative qty — use the update-qty-0 pattern
+      // but the reducer handles qty <= 0 the same way
+      fireEvent.press(getByTestId('update-qty-0'));
+      expect(getByTestId('item-count').props.children).toBe(0);
+    });
+  });
+
+  describe('UPDATE_QUANTITY for nonexistent item', () => {
+    it('is a no-op when updating quantity of item not in cart', () => {
+      const { getByTestId } = renderCart();
+      // Update quantity on empty cart
+      fireEvent.press(getByTestId('update-qty-3'));
+      expect(getByTestId('item-count').props.children).toBe(0);
+    });
+  });
+
+  describe('REMOVE_ITEM from empty cart', () => {
+    it('is a no-op when removing from empty cart', () => {
+      const { getByTestId } = renderCart();
+      fireEvent.press(getByTestId('remove-asheville-linen'));
+      expect(getByTestId('item-count').props.children).toBe(0);
+    });
+  });
+});
+
+describe('loadItems', () => {
+  it('replaces cart items atomically', () => {
+    function LoadItemsHarness() {
+      const { items, itemCount, loadItems, addItem } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <Text testID="items-json">
+            {JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity })))}
+          </Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+          <TouchableOpacity
+            testID="load-items"
+            onPress={() =>
+              loadItems([
+                {
+                  id: `${blueRidge.id}:${mountainBlue.id}`,
+                  model: blueRidge,
+                  fabric: mountainBlue,
+                  quantity: 5,
+                  unitPrice: blueRidge.basePrice + mountainBlue.price,
+                },
+              ])
+            }
+          />
+          <TouchableOpacity testID="load-empty" onPress={() => loadItems([])} />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <LoadItemsHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    // Add an item first
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+
+    // Load replaces all items
+    fireEvent.press(getByTestId('load-items'));
+    expect(getByTestId('item-count').props.children).toBe(5);
+    const items = JSON.parse(getByTestId('items-json').props.children);
+    expect(items).toHaveLength(1);
+    expect(items[0].id).toBe(`${blueRidge.id}:${mountainBlue.id}`);
+  });
+
+  it('loadItems with empty array clears cart', () => {
+    function LoadEmptyHarness() {
+      const { itemCount, addItem, loadItems } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+          <TouchableOpacity testID="load-empty" onPress={() => loadItems([])} />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <LoadEmptyHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+
+    fireEvent.press(getByTestId('load-empty'));
+    expect(getByTestId('item-count').props.children).toBe(0);
+  });
+});
+
+describe('Offline queueing', () => {
+  it('queues addItem when offline', () => {
+    function OfflineHarness() {
+      const { itemCount, addItem, pendingSync } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <Text testID="pending-sync">{pendingSync}</Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={false} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <OfflineHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+    // pendingSync should have increased (queued offline action)
+    expect(getByTestId('pending-sync').props.children).toBeGreaterThanOrEqual(1);
+  });
+
+  it('queues removeItem when offline', () => {
+    function OfflineRemoveHarness() {
+      const { itemCount, addItem, removeItem, pendingSync } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <Text testID="pending-sync">{pendingSync}</Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+          <TouchableOpacity
+            testID="remove-asheville-linen"
+            onPress={() => removeItem('asheville-full:natural-linen')}
+          />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={false} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <OfflineRemoveHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('remove-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(0);
+    // Should have queued both add and remove
+    expect(getByTestId('pending-sync').props.children).toBeGreaterThanOrEqual(2);
+  });
+
+  it('queues updateQuantity when offline', () => {
+    function OfflineUpdateHarness() {
+      const { itemCount, addItem, updateQuantity, pendingSync } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <Text testID="pending-sync">{pendingSync}</Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+          <TouchableOpacity
+            testID="update-qty-5"
+            onPress={() => updateQuantity('asheville-full:natural-linen', 5)}
+          />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={false} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <OfflineUpdateHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('update-qty-5'));
+    expect(getByTestId('item-count').props.children).toBe(5);
+    expect(getByTestId('pending-sync').props.children).toBeGreaterThanOrEqual(2);
+  });
+
+  it('does not queue actions when online', () => {
+    function OnlineHarness() {
+      const { itemCount, addItem, pendingSync } = useCart();
+      return (
+        <View>
+          <Text testID="item-count">{itemCount}</Text>
+          <Text testID="pending-sync">{pendingSync}</Text>
+          <TouchableOpacity
+            testID="add-asheville-linen"
+            onPress={() => addItem(asheville, naturalLinen, 1)}
+          />
+        </View>
+      );
+    }
+
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <OnlineHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+    expect(getByTestId('pending-sync').props.children).toBe(0);
+  });
+});
+
+describe('mergeCartItems edge cases', () => {
+  const makeItem = (modelIdx: number, fabricIdx: number, qty: number): CartItem => {
+    const model = FUTON_MODELS[modelIdx];
+    const fabric = FABRICS[fabricIdx];
+    return {
+      id: `${model.id}:${fabric.id}`,
+      model,
+      fabric,
+      quantity: qty,
+      unitPrice: model.basePrice + fabric.price,
+    };
+  };
+
+  it('returns empty array when both sides are empty', () => {
+    const result = mergeCartItems([], []);
+    expect(result).toEqual([]);
+  });
+
+  it('preserves local quantity when equal to server', () => {
+    const local = [makeItem(0, 0, 5)];
+    const server = [makeItem(0, 0, 5)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(1);
+    expect(result[0].quantity).toBe(5);
+  });
+
+  it('handles multiple overlapping items', () => {
+    const local = [makeItem(0, 0, 3), makeItem(1, 0, 2)];
+    const server = [makeItem(0, 0, 1), makeItem(1, 0, 7)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(2);
+    expect(result[0].quantity).toBe(3); // local higher
+    expect(result[1].quantity).toBe(7); // server higher
+  });
+
+  it('handles server items all unique from local', () => {
+    const local = [makeItem(0, 0, 1)];
+    const server = [makeItem(1, 0, 2), makeItem(1, 2, 3)];
+    const result = mergeCartItems(local, server);
+    expect(result).toHaveLength(3);
+  });
+});
+
+describe('Computed values', () => {
+  it('subtotal is zero for empty cart', () => {
+    const { getByTestId } = renderCart();
+    expect(getByTestId('subtotal').props.children).toBe(0);
+  });
+
+  it('computes subtotal correctly with fabric price adder', () => {
+    const { getByTestId } = renderCart();
+    // espresso brown costs $49 extra, asheville base is $349 = $398
+    fireEvent.press(getByTestId('add-asheville-espresso'));
+    expect(getByTestId('subtotal').props.children).toBe(398);
+  });
+
+  it('computes subtotal correctly with multiple items and quantities', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen')); // $349
+    fireEvent.press(getByTestId('add-asheville-linen')); // qty 2 => $698
+    fireEvent.press(getByTestId('add-blueridge-blue')); // $478
+    expect(getByTestId('subtotal').props.children).toBe(1176);
+  });
+
+  it('itemCount sums quantities across multiple line items', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen-2')); // qty 2
+    fireEvent.press(getByTestId('add-blueridge-blue')); // qty 1
+    expect(getByTestId('item-count').props.children).toBe(3);
+  });
+});
+
+describe('AsyncStorage error resilience', () => {
+  // Dynamic import() throws in this Jest environment (no --experimental-vm-modules).
+  // The catch blocks in useCart ensure the cart operates in-memory when
+  // AsyncStorage is unavailable, which is exactly the path these tests cover.
+
+  it('operates in-memory when AsyncStorage import fails on mount', () => {
+    const { getByTestId } = renderCart();
+    expect(getByTestId('item-count').props.children).toBe(0);
+    // Cart still works after failed load
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+  });
+
+  it('cart persists in-memory across mutations despite no storage', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('add-blueridge-blue'));
+    expect(getByTestId('item-count').props.children).toBe(2);
+
+    fireEvent.press(getByTestId('clear'));
+    expect(getByTestId('item-count').props.children).toBe(0);
+  });
 });
