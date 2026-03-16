@@ -18,7 +18,6 @@ import {
   Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/theme';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { formatPrice } from '@/utils';
@@ -40,14 +39,11 @@ interface Props {
 
 export function WixProductDetail({ product, isLoading, onBack, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
-  const navigation = useNavigation();
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const galleryRef = useRef<FlatList>(null);
 
-  const images = product.images.length > 0
-    ? product.images
-    : [{ uri: '', alt: product.name }];
+  const images = product.images.length > 0 ? product.images : [{ uri: '', alt: product.name }];
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -57,9 +53,7 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
   const handleShare = useCallback(async () => {
     const message = `Check out ${product.name} from Carolina Futons`;
     try {
-      await Share.share(
-        Platform.OS === 'ios' ? { message } : { message },
-      );
+      await Share.share(Platform.OS === 'ios' ? { message } : { message });
     } catch {
       // User cancelled
     }
@@ -123,7 +117,10 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => setFullscreenVisible(true)}
-                style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: colors.espresso }]}
+                style={[
+                  styles.gallerySlide,
+                  { width: SCREEN_WIDTH, backgroundColor: colors.espresso },
+                ]}
                 testID={`gallery-slide-${index}`}
                 accessibilityLabel={`${item.alt || product.name} image ${index + 1}. Tap to view fullscreen`}
                 accessibilityRole="imagebutton"
@@ -250,7 +247,10 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
               About This Product
             </Text>
             <Text
-              style={[styles.description, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.description,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
               testID="product-description"
             >
               {product.description}
@@ -260,7 +260,12 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
 
         {/* Stock status */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <View style={[styles.stockBadge, { backgroundColor: product.inStock ? '#E8F5E9' : '#FFEBEE' }]}>
+          <View
+            style={[
+              styles.stockBadge,
+              { backgroundColor: product.inStock ? '#E8F5E9' : '#FFEBEE' },
+            ]}
+          >
             <Text style={[styles.stockText, { color: product.inStock ? '#2E7D32' : '#C62828' }]}>
               {product.inStock ? 'In Stock' : 'Out of Stock'}
             </Text>
@@ -280,7 +285,10 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
             </Text>
             <View style={styles.fabricList}>
               {product.fabricOptions.map((fabric) => (
-                <View key={fabric} style={[styles.fabricChip, { backgroundColor: colors.sandDark + '30' }]}>
+                <View
+                  key={fabric}
+                  style={[styles.fabricChip, { backgroundColor: colors.sandDark + '30' }]}
+                >
                   <Text style={[styles.fabricChipText, { color: colors.espresso }]}>{fabric}</Text>
                 </View>
               ))}
@@ -301,7 +309,9 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
       {/* Fullscreen gallery modal */}
       <ImageGalleryModal
         visible={fullscreenVisible}
-        images={images.filter((img) => !!img.uri).map((img, i) => ({ uri: img.uri, alt: img.alt, label: img.alt || `Image ${i + 1}` }))}
+        images={images
+          .filter((img) => !!img.uri)
+          .map((img, i) => ({ uri: img.uri, alt: img.alt, label: img.alt || `Image ${i + 1}` }))}
         initialIndex={activeIndex}
         onClose={() => {
           setFullscreenVisible(false);
