@@ -12,6 +12,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
 }));
 
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
 // Mock the product fetcher
 jest.mock('@/data/products', () => ({
   PRODUCTS: [
@@ -63,6 +68,7 @@ const mockSetItem = AsyncStorage.setItem as jest.MockedFunction<typeof AsyncStor
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockCaptureException.mockClear();
   resetPrefetchState();
   mockGetItem.mockResolvedValue(null);
   mockSetItem.mockResolvedValue(undefined);
@@ -142,15 +148,17 @@ describe('prefetchCriticalData', () => {
     expect(getPrefetchStatus()).toBe('complete');
   });
 
-  it('sets status to "error" and logs warning when AsyncStorage write fails', async () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+  it('sets status to "error" and reports to crash reporting when AsyncStorage write fails', async () => {
     mockSetItem.mockRejectedValue(new Error('Storage full'));
 
     await prefetchCriticalData();
 
     expect(getPrefetchStatus()).toBe('error');
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[prefetch]'), expect.any(Error));
-    warnSpy.mockRestore();
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'warning',
+      expect.objectContaining({ action: 'prefetch-cache-prime' }),
+    );
   });
 
   it('does not throw when AsyncStorage write fails', async () => {

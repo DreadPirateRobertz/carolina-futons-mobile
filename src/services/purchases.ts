@@ -10,6 +10,7 @@
 import Purchases from 'react-native-purchases';
 import type { PurchasesPackage, CustomerInfo } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import { captureMessage } from '@/services/crashReporting';
 
 export const ENTITLEMENT_ID = 'cf_plus';
 
@@ -29,7 +30,7 @@ export async function initializePurchases(): Promise<void> {
       ? process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY
       : process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY;
   if (!apiKey) {
-    console.warn('RevenueCat API key not set — skipping purchases init');
+    captureMessage('RevenueCat API key not set — skipping purchases init', 'warning');
     return;
   }
   Purchases.configure({ apiKey });

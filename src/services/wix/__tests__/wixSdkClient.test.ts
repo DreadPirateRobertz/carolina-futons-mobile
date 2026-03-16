@@ -4,6 +4,11 @@
 
 export {}; // Force module scope for TypeScript
 
+const mockCaptureMessage = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
+}));
+
 jest.mock('@wix/sdk', () => ({
   createClient: jest.fn(() => ({ fake: 'client' })),
   OAuthStrategy: jest.fn((opts: { clientId: string }) => ({ strategy: 'oauth', ...opts })),
@@ -17,6 +22,7 @@ const originalEnv = { ...process.env };
 
 beforeEach(() => {
   jest.resetModules();
+  mockCaptureMessage.mockClear();
   jest.spyOn(console, 'warn').mockImplementation(() => {});
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -47,14 +53,20 @@ describe('getWixSdkClient', () => {
     process.env.EXPO_PUBLIC_WIX_CLIENT_ID = '';
     const { getWixSdkClient } = require('../wixSdkClient');
     getWixSdkClient();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'));
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'),
+      'warning',
+    );
   });
 
   it('warns when CLIENT_ID is not set', () => {
     delete process.env.EXPO_PUBLIC_WIX_CLIENT_ID;
     const { getWixSdkClient } = require('../wixSdkClient');
     getWixSdkClient();
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'));
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('EXPO_PUBLIC_WIX_CLIENT_ID'),
+      'warning',
+    );
   });
 
   it('resetWixSdkClient clears the singleton', () => {

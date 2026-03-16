@@ -6,6 +6,7 @@ import { useOfflineSync } from './useOfflineSync';
 import { CartSyncService } from '@/services/cartSyncService';
 import type { WixClient } from '@/services/wix/wixClient';
 import type { FutonModel, Fabric } from '@/data/futons';
+import { captureMessage, captureException } from '@/services/crashReporting';
 
 interface UseSyncedCartOptions {
   client: WixClient | null;
@@ -83,14 +84,12 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
         if (result.source === 'server') {
           const validItems = validateServerCartItems(result.items);
           if (validItems === null) {
-            console.warn('[useSyncedCart] Server returned malformed items, keeping local state');
+            captureMessage('[useSyncedCart] Server returned malformed items, keeping local state', 'warning');
             return;
           }
           // Empty server cart with local items = keep local (don't silently wipe)
           if (validItems.length === 0 && cart.items.length > 0) {
-            console.warn(
-              '[useSyncedCart] Server cart is empty but local has items, keeping local state',
-            );
+            captureMessage('[useSyncedCart] Server cart is empty but local has items, keeping local state', 'warning');
             return;
           }
           if (cancelled) return;
@@ -98,7 +97,7 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
           cart.loadItems(validItems);
         }
       } catch (err) {
-        console.warn('[useSyncedCart] Server pull failed, continuing with local state:', err);
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-pull' });
       }
     })();
 
@@ -118,7 +117,7 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
             lastServerTimestamp.current = serverTs;
           })
           .catch((err) => {
-            console.warn('[useSyncedCart] Push failed, will retry on next sync:', err);
+            captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-push' });
           });
       } else {
         queueAction('cart', 'SYNC', { items });
@@ -162,7 +161,7 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
           lastServerTimestamp.current = serverTs;
         })
         .catch((err) => {
-          console.warn('[useSyncedCart] Clear push failed:', err);
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'cart-clear' });
         });
     } else if (user?.id) {
       queueAction('cart', 'SYNC', { items: [] });

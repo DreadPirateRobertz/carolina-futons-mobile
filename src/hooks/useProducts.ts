@@ -28,6 +28,7 @@ import { fuzzySearch, getSuggestions } from '@/utils/fuzzySearch';
 import { useDataCache } from '@/hooks/useDataCache';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { isWixConfigured } from '@/services/wix/config';
+import { captureException } from '@/services/crashReporting';
 
 export type { Product, ProductCategory, ProductSize, SortOption, CategoryInfo, StockStatus };
 export { getStockStatus, LOW_STOCK_THRESHOLD };
@@ -184,7 +185,7 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
         setWixIsInitialLoading(false);
         const error = err instanceof Error ? err : new Error(String(err));
         setWixFetchError(error);
-        console.error('[useProducts] Wix fetch error:', error);
+        captureException(error, 'error', { action: 'wix-product-fetch' });
       })
       .finally(() => {
         if (!controller.signal.aborted) setWixIsLoading(false);

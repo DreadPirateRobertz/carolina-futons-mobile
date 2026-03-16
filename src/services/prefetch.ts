@@ -11,6 +11,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRODUCTS } from '@/data/products';
 import { COLLECTIONS } from '@/data/collections';
+import { captureException } from '@/services/crashReporting';
 
 /** Must match the keys used by useDataCache('products', ...) and useDataCache('editorial-collections', ...) */
 export const PREFETCH_CACHE_KEY = '@cfutons/cache/products';
@@ -65,7 +66,7 @@ export function prefetchCriticalData(): Promise<void> {
 
       status = 'complete';
     } catch (err) {
-      console.warn('[prefetch] Failed to prime cache — screens will fetch on mount:', err);
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'prefetch-cache-prime' });
       status = 'error';
     }
   })();

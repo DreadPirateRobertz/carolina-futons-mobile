@@ -7,6 +7,7 @@
 
 import { createClient, OAuthStrategy } from '@wix/sdk';
 import { members } from '@wix/members';
+import { captureMessage } from '@/services/crashReporting';
 
 type WixSdkClient = ReturnType<typeof createClient>;
 
@@ -21,7 +22,7 @@ export function getWixSdkClient(): WixSdkClient {
     const key = 'EXPO_PUBLIC_WIX_CLIENT_ID';
     const clientId = process.env[key] ?? '';
     if (!clientId) {
-      console.warn('EXPO_PUBLIC_WIX_CLIENT_ID is not set — Wix auth will fail at runtime.');
+      captureMessage('EXPO_PUBLIC_WIX_CLIENT_ID is not set — Wix auth will fail at runtime.', 'warning');
     }
     client = createClient({
       modules: { members },
