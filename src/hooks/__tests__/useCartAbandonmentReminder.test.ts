@@ -14,6 +14,7 @@ jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: jest.fn().mockResolvedValue('notif-id-1'),
   cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
   cancelAllScheduledNotificationsAsync: jest.fn().mockResolvedValue(undefined),
+  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({

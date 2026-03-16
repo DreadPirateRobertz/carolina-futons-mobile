@@ -10,6 +10,7 @@
 import { useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
+import { SchedulableTriggerInputTypes } from 'expo-notifications';
 
 const STORAGE_KEY = '@cart_abandonment_state';
 const ONE_DAY_SECONDS = 24 * 60 * 60;
@@ -113,7 +114,7 @@ export function useCartAbandonmentReminder({
           body: `You have ${count} ${itemWord} in your cart. Complete your order before ${sellWord} out!`,
           data: { type: 'cart_reminder', deepLink: 'carolinafutons://cart' },
         },
-        trigger: { type: 'timeInterval', seconds: ONE_DAY_SECONDS, repeats: false },
+        trigger: { type: SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: ONE_DAY_SECONDS, repeats: false },
       });
 
       await saveState({
