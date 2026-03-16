@@ -1,11 +1,12 @@
 /**
  * @module useReviews
  *
- * Product review management: listing, sorting, local submission with optimistic
- * UI, and "helpful" voting. Reviews are mock-backed today but the interface
- * is designed for direct API replacement.
+ * Product review management: listing, sorting, submission with optimistic UI,
+ * and "helpful" voting. When a WixClient is available via context, submissions
+ * go through the Wix Data CMS API with optimistic insert + rollback on failure.
+ * Falls back to local-only mock submission when no client is configured.
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import {
   type Review,
   type ReviewSummary,
@@ -14,6 +15,7 @@ import {
   sortReviews,
   MOCK_REVIEWS,
 } from '@/data/reviews';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { events } from '@/services/analytics';
 
 type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest';
@@ -36,11 +38,14 @@ interface UseReviewsReturn {
   showForm: boolean;
   setShowForm: (show: boolean) => void;
   hasReviews: boolean;
+  submitError: string | null;
+  submitSuccess: boolean;
+  clearSubmitStatus: () => void;
 }
 
 /**
  * Hook for managing product reviews: listing, sorting, submission, and helpful votes.
- * Uses mock data with simulated submission; designed for API integration later.
+ * Wires to the Wix CMS API when a client is available; falls back to mock data otherwise.
  */
 export function useReviews(productId: string): UseReviewsReturn {
   const [sort, setSort] = useState<ReviewSort>('helpful');
@@ -48,6 +53,12 @@ export function useReviews(productId: string): UseReviewsReturn {
   const [showForm, setShowForm] = useState(false);
   const [localReviews, setLocalReviews] = useState<Review[]>([]);
   const [helpfulVotes, setHelpfulVotes] = useState<Set<string>>(new Set());
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  const wixClient = useOptionalWixClient();
+  const localReviewsRef = useRef(localReviews);
+  localReviewsRef.current = localReviews;
 
   const allReviews = useMemo(() => {
     const existing = getReviewsForProduct(productId);
@@ -58,7 +69,6 @@ export function useReviews(productId: string): UseReviewsReturn {
 
   const summary = useMemo((): ReviewSummary => {
     const base = getReviewSummary(productId);
-    // Add local reviews to summary
     for (const review of localReviews) {
       base.distribution[review.rating - 1] += 1;
       base.totalReviews += 1;
@@ -73,41 +83,87 @@ export function useReviews(productId: string): UseReviewsReturn {
   const submitReview = useCallback(
     async (data: SubmitReviewData): Promise<boolean> => {
       setIsSubmitting(true);
-      try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
+      setSubmitError(null);
+      setSubmitSuccess(false);
 
-        const newReview: Review = {
-          id: `rev-local-${Date.now()}`,
-          productId,
-          authorName: 'You',
-          rating: data.rating,
-          title: data.title,
-          body: data.body,
-          createdAt: new Date().toISOString(),
-          helpful: 0,
-          verified: true,
-          photos: data.photos.length > 0 ? data.photos : undefined,
-        };
+      const optimisticId = `rev-local-${Date.now()}`;
+      const optimisticReview: Review = {
+        id: optimisticId,
+        productId,
+        authorName: 'You',
+        rating: data.rating,
+        title: data.title,
+        body: data.body,
+        createdAt: new Date().toISOString(),
+        helpful: 0,
+        verified: true,
+        photos: data.photos.length > 0 ? data.photos : undefined,
+      };
 
-        setLocalReviews((prev) => [newReview, ...prev]);
-        setShowForm(false);
-        events.submitReview(productId, data.rating);
-        return true;
-      } catch {
-        return false;
-      } finally {
-        setIsSubmitting(false);
+      // Add optimistic review immediately
+      setLocalReviews((prev) => [optimisticReview, ...prev]);
+
+      if (wixClient) {
+        // ── Wix API path ──
+        try {
+          const serverReview = await wixClient.createReview({
+            productId,
+            authorName: 'You',
+            rating: data.rating,
+            title: data.title,
+            body: data.body,
+            photos: data.photos,
+          });
+
+          // Replace optimistic entry with server response
+          setLocalReviews((prev) =>
+            prev.map((r) =>
+              r.id === optimisticId
+                ? {
+                    ...serverReview,
+                    // Normalize to our Review shape
+                    verified: serverReview.verified ?? true,
+                  }
+                : r,
+            ),
+          );
+
+          setShowForm(false);
+          setSubmitSuccess(true);
+          events.submitReview(productId, data.rating);
+          return true;
+        } catch {
+          // Roll back optimistic review
+          setLocalReviews((prev) => prev.filter((r) => r.id !== optimisticId));
+          setSubmitError('Failed to submit review. Please try again.');
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
+      } else {
+        // ── Mock fallback path ──
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          setShowForm(false);
+          setSubmitSuccess(true);
+          events.submitReview(productId, data.rating);
+          return true;
+        } catch {
+          setLocalReviews((prev) => prev.filter((r) => r.id !== optimisticId));
+          setSubmitError('Failed to submit review. Please try again.');
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
       }
     },
-    [productId],
+    [productId, wixClient],
   );
 
   const markHelpful = useCallback(
     (reviewId: string) => {
-      if (helpfulVotes.has(reviewId)) return; // Already voted
+      if (helpfulVotes.has(reviewId)) return;
       setHelpfulVotes((prev) => new Set(prev).add(reviewId));
-      // Update the helpful count in mock data (in-memory only)
       const review = MOCK_REVIEWS.find((r) => r.id === reviewId);
       if (review) review.helpful += 1;
       const localReview = localReviews.find((r) => r.id === reviewId);
@@ -116,6 +172,11 @@ export function useReviews(productId: string): UseReviewsReturn {
     },
     [productId, helpfulVotes, localReviews],
   );
+
+  const clearSubmitStatus = useCallback(() => {
+    setSubmitError(null);
+    setSubmitSuccess(false);
+  }, []);
 
   return {
     reviews,
@@ -128,5 +189,8 @@ export function useReviews(productId: string): UseReviewsReturn {
     showForm,
     setShowForm,
     hasReviews: reviews.length > 0,
+    submitError,
+    submitSuccess,
+    clearSubmitStatus,
   };
 }
