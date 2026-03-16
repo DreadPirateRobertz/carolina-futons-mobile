@@ -5,7 +5,7 @@
  * provide a shipping address to receive physical swatches. Persists request
  * history to AsyncStorage for rate-limiting (one request per product per 24h).
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { events } from '@/services/analytics';
@@ -60,6 +60,7 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
   const [status, setStatus] = useState<SwatchStatus>('idle');
   const [hasRecentRequest, setHasRecentRequest] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const submittingRef = useRef(false);
 
   // Check for recent requests on mount
   useEffect(() => {
@@ -94,6 +95,9 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
 
   const submitRequest = useCallback(
     async (address: SwatchAddress): Promise<boolean> => {
+      // Prevent double-tap race condition
+      if (submittingRef.current) return false;
+
       // Validate fabrics
       if (selectedFabrics.length === 0) {
         setValidationErrors(['fabrics']);
@@ -117,6 +121,7 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
         return false;
       }
 
+      submittingRef.current = true;
       setStatus('submitting');
       setValidationErrors([]);
 
@@ -153,9 +158,11 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
 
         setStatus('submitted');
         setHasRecentRequest(true);
+        submittingRef.current = false;
         return true;
       } catch {
         setStatus('error');
+        submittingRef.current = false;
         return false;
       }
     },
@@ -166,6 +173,7 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
     setSelectedFabrics([]);
     setStatus('idle');
     setValidationErrors([]);
+    submittingRef.current = false;
   }, []);
 
   return {
