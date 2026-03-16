@@ -7,6 +7,8 @@
 
 import type { CartItem } from '@/hooks/useCart';
 import { WixApiError, type WixClient } from '@/services/wix';
+import { calculateTax } from '@/services/taxService';
+import { calculateShipping } from '@/services/shippingService';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -47,6 +49,33 @@ export function calculateTotals(subtotal: number, isPremium = false): OrderTotal
   const tax = Math.round(subtotal * TAX_RATE * 100) / 100;
   const total = Math.round((subtotal + shipping + tax) * 100) / 100;
   return { subtotal, shipping, tax, total };
+}
+
+/**
+ * Precise totals for checkout — uses real tax rates + shipping calculation.
+ * Use this at checkout time. Use calculateTotals() for quick cart estimates.
+ */
+export async function calculateCheckoutTotals(
+  subtotal: number,
+  isPremium: boolean,
+  shippingAddress: { state: string; zip: string; country: string },
+): Promise<OrderTotals & { taxJurisdiction: string; freeShippingApplied: boolean }> {
+  const [taxResult, shippingResult] = await Promise.all([
+    calculateTax({ subtotal, shippingAddress }),
+    calculateShipping({ subtotal, shippingZip: shippingAddress.zip, isPremium }),
+  ]);
+
+  const total =
+    Math.round((subtotal + shippingResult.shippingCost + taxResult.taxAmount) * 100) / 100;
+
+  return {
+    subtotal,
+    shipping: shippingResult.shippingCost,
+    tax: taxResult.taxAmount,
+    total,
+    taxJurisdiction: taxResult.jurisdiction,
+    freeShippingApplied: shippingResult.freeShippingApplied,
+  };
 }
 
 /**
