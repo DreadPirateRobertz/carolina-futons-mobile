@@ -16,7 +16,9 @@
       "channel": "preview",
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_placeholder_for_sandbox_testing"
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_placeholder_for_sandbox_testing",
+        "EXPO_PUBLIC_WIX_SITE_ID": "3af610bf-06fb-410d-a406-c1258fa84372",
+        "EXPO_PUBLIC_WIX_API_KEY": "${EXPO_PUBLIC_WIX_API_KEY}"
       },
       "ios": {
         "simulator": false
@@ -30,7 +32,9 @@
       "channel": "preview",
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
-        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_placeholder_for_sandbox_testing"
+        "EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY": "pk_test_placeholder_for_sandbox_testing",
+        "EXPO_PUBLIC_WIX_SITE_ID": "3af610bf-06fb-410d-a406-c1258fa84372",
+        "EXPO_PUBLIC_WIX_API_KEY": "${EXPO_PUBLIC_WIX_API_KEY}"
       },
       "ios": {
         "simulator": true

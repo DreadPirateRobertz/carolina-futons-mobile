@@ -39,6 +39,8 @@ export {
 
 export { getWixConfig, isWixConfigured } from './config';
 
+export { getWixClientSingleton, resetWixClientSingleton } from './wixClientSingleton';
+
 export { getWixSdkClient, resetWixSdkClient } from './wixSdkClient';
 
 export { WixAuthService, type AuthResult, type AuthUser } from './wixAuth';
