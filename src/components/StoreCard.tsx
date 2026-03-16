@@ -7,7 +7,7 @@
  * (e.g. "Mattress Gallery", "Free Delivery").
  */
 
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
 import { type Store, isStoreOpen, formatPhone } from '@/data/stores';
@@ -20,9 +20,10 @@ interface Props {
 }
 
 /** Tappable store location card with open/closed status, address, phone, and feature tags. */
-export function StoreCard({ store, distance, onPress, testID }: Props) {
+export const StoreCard = memo(function StoreCard({ store, distance, onPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const open = isStoreOpen(store);
+  const handlePress = useCallback(() => onPress?.(store), [onPress, store]);
 
   return (
     <TouchableOpacity
@@ -31,7 +32,7 @@ export function StoreCard({ store, distance, onPress, testID }: Props) {
         shadows.card,
         { backgroundColor: colors.white, borderRadius: borderRadius.card },
       ]}
-      onPress={() => onPress?.(store)}
+      onPress={handlePress}
       testID={testID ?? `store-card-${store.id}`}
       accessibilityLabel={`${store.name}, ${store.city}, ${open ? 'Open' : 'Closed'}`}
       accessibilityRole="button"
@@ -85,7 +86,7 @@ export function StoreCard({ store, distance, onPress, testID }: Props) {
       )}
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {

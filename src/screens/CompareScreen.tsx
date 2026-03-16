@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import type { Product } from '@/data/products';
@@ -154,6 +155,9 @@ export function CompareScreen({
                   source={{ uri: product.images[0].uri }}
                   style={[styles.productImage, { borderRadius: borderRadius.md }]}
                   accessibilityLabel={product.images[0].alt}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  transition={200}
                 />
               )}
               <TouchableOpacity

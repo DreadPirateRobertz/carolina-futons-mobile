@@ -198,6 +198,10 @@ export function OrderHistoryScreen({
           />
         }
         testID="order-list"
+        windowSize={5}
+        maxToRenderPerBatch={8}
+        removeClippedSubviews
+        initialNumToRender={6}
       />
     </View>
   );
