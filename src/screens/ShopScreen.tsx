@@ -10,6 +10,7 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
+import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -68,6 +69,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     selectedCategory,
     sortBy,
     isLoading,
+    isInitialLoading,
     suggestions,
     setSearchQuery,
     setSelectedCategory,
@@ -204,7 +206,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
 
   const renderEmpty = useCallback(
     () =>
-      searchQuery ? (
+      isInitialLoading ? (
+        <SkeletonProductGrid count={6} />
+      ) : searchQuery ? (
         <SearchEmptyState
           query={searchQuery}
           categories={categories.map((c) => ({ id: c.id, label: c.label }))}
@@ -238,7 +242,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           </Text>
         </View>
       ),
-    [searchQuery, colors, categories, handleEmptyCategoryPress, handleTrendingPress],
+    [
+      isInitialLoading,
+      searchQuery,
+      colors,
+      categories,
+      handleEmptyCategoryPress,
+      handleTrendingPress,
+    ],
   );
 
   const renderFooter = useCallback(

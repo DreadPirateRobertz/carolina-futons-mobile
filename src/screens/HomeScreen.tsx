@@ -20,6 +20,7 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
+import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
@@ -52,7 +53,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { featured } = useCollections();
+  const { featured, isLoading: collectionsLoading } = useCollections();
   const { recentProducts } = useRecentlyViewed();
 
   const handleOpenAR = useCallback(() => {
@@ -261,7 +262,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       </GlassCard>
 
       {/* Collection Carousel */}
-      {featured.length > 0 && (
+      {(collectionsLoading || featured.length > 0) && (
         <View style={styles.carouselSection}>
           <Text
             style={[
@@ -277,27 +278,31 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           >
             Shop the Look
           </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.carouselContent,
-              { paddingHorizontal: spacing.lg, gap: spacing.md },
-            ]}
-            testID="collection-carousel"
-            accessibilityRole="adjustable"
-            accessibilityLabel="Shop the Look collections"
-            accessibilityHint="Swipe left or right to browse collections"
-          >
-            {featured.map((collection) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                onPress={handleCollectionPress}
-                variant="compact"
-              />
-            ))}
-          </ScrollView>
+          {collectionsLoading && featured.length === 0 ? (
+            <SkeletonCarouselRow count={3} />
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={[
+                styles.carouselContent,
+                { paddingHorizontal: spacing.lg, gap: spacing.md },
+              ]}
+              testID="collection-carousel"
+              accessibilityRole="adjustable"
+              accessibilityLabel="Shop the Look collections"
+              accessibilityHint="Swipe left or right to browse collections"
+            >
+              {featured.map((collection) => (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  onPress={handleCollectionPress}
+                  variant="compact"
+                />
+              ))}
+            </ScrollView>
+          )}
         </View>
       )}
 
