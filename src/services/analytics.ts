@@ -379,7 +379,11 @@ export const events = {
     trackEvent('helpful_vote', { review_id: reviewId, product_id: productId });
   },
   fabricSampleRequest(productName: string, fabricCount: number, fabricIds: string) {
-    trackEvent('fabric_sample_request', { product_name: productName, fabric_count: fabricCount, fabrics: fabricIds });
+    trackEvent('fabric_sample_request', {
+      product_name: productName,
+      fabric_count: fabricCount,
+      fabrics: fabricIds,
+    });
   },
   beginCheckout(itemCount: number, total: number) {
     trackEvent('begin_checkout', { item_count: itemCount, total });

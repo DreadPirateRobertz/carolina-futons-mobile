@@ -6,15 +6,7 @@
  * Uses AnimatedPressable with haptic feedback for the CTA button.
  */
 import React, { useState, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Platform,
-} from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { events } from '@/services/analytics';
@@ -31,7 +23,7 @@ interface Props {
 }
 
 export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
-  const { colors, spacing, borderRadius, typography } = useTheme();
+  const { colors, borderRadius, typography } = useTheme();
   const wixClient = useWixClient();
   const [expanded, setExpanded] = useState(false);
   const [selectedFabricIds, setSelectedFabricIds] = useState<Set<string>>(new Set());
@@ -40,22 +32,17 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  if (fabrics.length === 0) return null;
-
-  const toggleFabric = useCallback(
-    (fabricId: string) => {
-      setSelectedFabricIds((prev) => {
-        const next = new Set(prev);
-        if (next.has(fabricId)) {
-          next.delete(fabricId);
-        } else if (next.size < MAX_SWATCHES) {
-          next.add(fabricId);
-        }
-        return next;
-      });
-    },
-    [],
-  );
+  const toggleFabric = useCallback((fabricId: string) => {
+    setSelectedFabricIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(fabricId)) {
+        next.delete(fabricId);
+      } else if (next.size < MAX_SWATCHES) {
+        next.add(fabricId);
+      }
+      return next;
+    });
+  }, []);
 
   const handleExpand = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -99,7 +86,9 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         events.fabricSampleRequest(productName, selectedFabricIds.size, fabricIdArray.join(','));
       } catch (analyticsError) {
         captureException(
-          analyticsError instanceof Error ? analyticsError : new Error('Fabric sample analytics failed'),
+          analyticsError instanceof Error
+            ? analyticsError
+            : new Error('Fabric sample analytics failed'),
         );
       }
     } catch (error) {
@@ -113,6 +102,8 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
     }
   }, [name, address, selectedFabricIds, productName, fabrics, wixClient]);
 
+  if (fabrics.length === 0) return null;
+
   if (submitted) {
     return (
       <View
@@ -123,8 +114,8 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
           Swatches are on the way!
         </Text>
         <Text style={[styles.confirmationText, { color: colors.espressoLight }]}>
-          {selectedFabricIds.size} fabric {selectedFabricIds.size === 1 ? 'swatch' : 'swatches'} will
-          arrive in 5-7 business days.
+          {selectedFabricIds.size} fabric {selectedFabricIds.size === 1 ? 'swatch' : 'swatches'}{' '}
+          will arrive in 5-7 business days.
         </Text>
       </View>
     );
@@ -133,25 +124,34 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
   if (!expanded) {
     return (
       <TouchableOpacity
-        style={[styles.ctaButton, { borderColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+        style={[
+          styles.ctaButton,
+          { borderColor: colors.mountainBlue, borderRadius: borderRadius.button },
+        ]}
         onPress={handleExpand}
         testID={testID ?? 'request-swatches-btn'}
         accessibilityLabel="Request free fabric swatches"
         accessibilityRole="button"
       >
-        <Text style={[styles.ctaText, { color: colors.mountainBlue }]}>
-          Request Free Swatches
-        </Text>
+        <Text style={[styles.ctaText, { color: colors.mountainBlue }]}>Request Free Swatches</Text>
       </TouchableOpacity>
     );
   }
 
   return (
     <View
-      style={[styles.formContainer, { borderColor: colors.sandDark, borderRadius: borderRadius.card }]}
+      style={[
+        styles.formContainer,
+        { borderColor: colors.sandDark, borderRadius: borderRadius.card },
+      ]}
       testID="swatch-form"
     >
-      <Text style={[styles.formTitle, { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold }]}>
+      <Text
+        style={[
+          styles.formTitle,
+          { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+        ]}
+      >
         Select up to {MAX_SWATCHES} swatches
       </Text>
 
@@ -189,10 +189,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         })}
       </View>
 
-      <Text
-        style={[styles.selectedCount, { color: colors.espressoLight }]}
-        testID="swatch-count"
-      >
+      <Text style={[styles.selectedCount, { color: colors.espressoLight }]} testID="swatch-count">
         {selectedFabricIds.size}/{MAX_SWATCHES} selected
       </Text>
 
@@ -209,7 +206,11 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
       />
 
       <TextInput
-        style={[styles.input, styles.addressInput, { borderColor: colors.sandDark, color: colors.espresso }]}
+        style={[
+          styles.input,
+          styles.addressInput,
+          { borderColor: colors.sandDark, color: colors.espresso },
+        ]}
         placeholder="Shipping address"
         placeholderTextColor={colors.muted}
         value={address}
@@ -235,9 +236,7 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         accessibilityLabel="Submit swatch request"
         accessibilityRole="button"
       >
-        <Text style={styles.submitText}>
-          {submitting ? 'Sending...' : 'Send My Free Swatches'}
-        </Text>
+        <Text style={styles.submitText}>{submitting ? 'Sending...' : 'Send My Free Swatches'}</Text>
       </TouchableOpacity>
     </View>
   );
