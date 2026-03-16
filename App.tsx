@@ -16,6 +16,7 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
 import { PremiumProvider } from '@/hooks/usePremium';
 import { RecommendationsProvider } from '@/hooks/useRecommendations';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
 import { WixProvider } from '@/services/wix/wixProvider';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
@@ -116,6 +117,7 @@ function App() {
                     <CartAbandonmentBridge />
                     <PremiumProvider>
                       <RecommendationsProvider>
+                      <CompareProvider>
                       <ErrorBoundary>
                         <NavigationContainer
                           ref={navigationRef}
@@ -143,6 +145,7 @@ function App() {
                           </DeepLinkProvider>
                         </NavigationContainer>
                       </ErrorBoundary>
+                      </CompareProvider>
                       </RecommendationsProvider>
                     </PremiumProvider>
                   </NotificationProvider>
