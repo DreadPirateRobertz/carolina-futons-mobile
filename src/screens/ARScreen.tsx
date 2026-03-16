@@ -13,7 +13,16 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  Alert,
+  Share,
+  Image,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -48,6 +57,7 @@ import { useAROnboarding } from '@/hooks/useAROnboarding';
 import { useModelLoader } from '@/hooks/useModelLoader';
 import { ModelLoadingOverlay } from '@/components/ModelLoadingOverlay';
 import { useStagedItems } from '@/hooks/useStagedItems';
+import { useGalleryFallback } from '@/hooks/useGalleryFallback';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -122,6 +132,9 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
 
   // Multi-product staging for room planning
   const staged = useStagedItems();
+
+  // Gallery fallback for when camera is unavailable
+  const galleryFallback = useGalleryFallback();
 
   // 3D model download with progress tracking
   const modelLoader = useModelLoader();
@@ -430,6 +443,145 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Determine product category for snap-to-wall behavior
   const productCategory = currentProduct?.category;
 
+  // Gallery mode — show picked photo as background with AR overlays
+  if (galleryFallback.isGalleryMode && galleryFallback.imageUri) {
+    // Skip permission and model-loading gates — render AR overlay on photo
+    if (!selectedModel || !selectedFabric) {
+      return (
+        <View style={styles.permissionContainer} testID="ar-loading">
+          <Text style={styles.permissionText}>Loading...</Text>
+        </View>
+      );
+    }
+
+    const showModelLoading =
+      modelLoader.status.state === 'downloading' || modelLoader.status.state === 'checking-cache';
+
+    return (
+      <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
+        {showModelLoading && <ModelLoadingOverlay status={modelLoader.status} />}
+        {modelLoader.status.state === 'error' && (
+          <ModelLoadingOverlay status={modelLoader.status}>
+            <TouchableOpacity
+              testID="model-loading-retry"
+              style={styles.retryButton}
+              onPress={() => {
+                const productId = modelIdToProductId(selectedModel.id);
+                if (productId) modelLoader.load(productId);
+              }}
+              accessibilityLabel="Retry download"
+              accessibilityRole="button"
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </ModelLoadingOverlay>
+        )}
+        <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
+          <Image
+            source={{ uri: galleryFallback.imageUri }}
+            style={styles.camera}
+            resizeMode="cover"
+            testID="ar-gallery-background"
+          />
+          <View style={styles.overlayContainer}>
+            <ARFutonOverlay
+              model={selectedModel}
+              fabric={selectedFabric}
+              showDimensions={showDimensions}
+              isPlaced={true}
+              category={productCategory}
+              testID="ar-futon-overlay"
+            />
+          </View>
+          <View style={styles.watermarkContainer} testID="ar-watermark">
+            <Text style={styles.watermarkText}>Carolina Futons</Text>
+            <Text style={styles.watermarkSubtext}>carolinafutons.com</Text>
+          </View>
+        </ViewShot>
+
+        {cameraPermission.granted && (
+          <TouchableOpacity
+            style={styles.switchModeButton}
+            onPress={galleryFallback.clearImage}
+            testID="ar-switch-to-camera"
+            accessibilityLabel="Switch to camera"
+            accessibilityRole="button"
+          >
+            <Text style={styles.switchModeText}>Switch to Camera</Text>
+          </TouchableOpacity>
+        )}
+
+        <ARControls
+          models={futonModels}
+          selectedModel={selectedModel}
+          selectedFabric={selectedFabric}
+          showDimensions={showDimensions}
+          onSelectModel={handleSelectModel}
+          onSelectFabric={handleSelectFabric}
+          onToggleDimensions={handleToggleDimensions}
+          onClose={handleClose}
+          onAddToCart={handleAddToCart}
+          onShare={handleShare}
+          onSaveToGallery={handleSaveToGallery}
+          onToggleWishlist={currentProduct ? handleToggleWishlist : undefined}
+          onBrowseProducts={handleOpenProductPicker}
+          isInWishlist={isInWishlist}
+          wishlistSaved={wishlistSaved}
+          isCapturing={isCapturing}
+          isComparing={false}
+          onToggleCompare={handleToggleCompare}
+          onToggleMaterialSelector={handleToggleMaterialSelector}
+          isMeasuring={false}
+          onToggleMeasure={() => {}}
+          onResetMeasure={() => {}}
+          testID="ar-controls"
+        />
+
+        {showProductPicker && (
+          <ARProductPicker
+            selectedProductId={currentProduct?.id}
+            onSelectProduct={handlePickProduct}
+            onClose={() => setShowProductPicker(false)}
+          />
+        )}
+      </GestureHandlerRootView>
+    );
+  }
+
+  // Camera unavailable (simulator) — show fallback prompt
+  if (galleryFallback.cameraUnavailable && !galleryFallback.isGalleryMode) {
+    return (
+      <View style={styles.permissionContainer} testID="ar-camera-unavailable">
+        <View style={styles.permissionCard}>
+          <Text style={styles.permissionIcon}>{'\u{1F4F1}'}</Text>
+          <Text style={styles.permissionTitle}>Camera Not Available</Text>
+          <Text style={styles.permissionDescription}>
+            The camera is not available on this device. You can still try furniture in your room
+            using a photo from your gallery.
+          </Text>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={galleryFallback.pickImage}
+            testID="ar-gallery-fallback"
+            accessibilityLabel="Use a photo from your gallery"
+            accessibilityRole="button"
+          >
+            <Text style={styles.permissionButtonText}>Use a Photo Instead</Text>
+          </TouchableOpacity>
+          {(onClose || navigation) && (
+            <TouchableOpacity
+              style={styles.permissionDismiss}
+              onPress={handleClose}
+              testID="ar-permission-dismiss"
+            >
+              <Text style={styles.permissionDismissText}>Go Back</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  }
+
   // Permission not yet determined — show priming screen
   if (cameraPermission.state === 'undetermined') {
     return (
@@ -446,6 +598,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.switchModeButton}
+            onPress={galleryFallback.pickImage}
+            testID="ar-gallery-fallback"
+            accessibilityLabel="Use a photo from your gallery"
+            accessibilityRole="button"
+          >
+            <Text style={styles.switchModeText}>Use a Photo Instead</Text>
           </TouchableOpacity>
           {(onClose || navigation) && (
             <TouchableOpacity
@@ -477,6 +638,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.permissionButtonText}>Allow Camera Access</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.switchModeButton}
+            onPress={galleryFallback.pickImage}
+            testID="ar-gallery-fallback"
+            accessibilityLabel="Use a photo from your gallery"
+            accessibilityRole="button"
+          >
+            <Text style={styles.switchModeText}>Use a Photo Instead</Text>
           </TouchableOpacity>
           {(onClose || navigation) && (
             <TouchableOpacity
@@ -514,6 +684,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.permissionButtonText}>Open Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.switchModeButton}
+            onPress={galleryFallback.pickImage}
+            testID="ar-gallery-fallback"
+            accessibilityLabel="Use a photo from your gallery"
+            accessibilityRole="button"
+          >
+            <Text style={styles.switchModeText}>Use a Photo Instead</Text>
           </TouchableOpacity>
           {(onClose || navigation) && (
             <TouchableOpacity
@@ -566,6 +745,22 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   return (
     <GestureHandlerRootView style={styles.root} testID={testID ?? 'ar-screen'}>
       {showModelLoading && <ModelLoadingOverlay status={modelLoader.status} />}
+      {modelLoader.status.state === 'error' && (
+        <ModelLoadingOverlay status={modelLoader.status}>
+          <TouchableOpacity
+            testID="model-loading-retry"
+            style={styles.retryButton}
+            onPress={() => {
+              const productId = modelIdToProductId(selectedModel.id);
+              if (productId) modelLoader.load(productId);
+            }}
+            accessibilityLabel="Retry download"
+            accessibilityRole="button"
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </ModelLoadingOverlay>
+      )}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
         <CameraView style={styles.camera} facing="back" testID="ar-camera">
           {/* Surface plane indicators */}
@@ -1059,5 +1254,29 @@ const styles = StyleSheet.create({
     color: '#E8845C',
     fontSize: 12,
     fontWeight: '600',
+  },
+  retryButton: {
+    backgroundColor: '#E8845C',
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  switchModeButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  switchModeText: {
+    color: 'rgba(242, 232, 213, 0.7)',
+    fontSize: 14,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

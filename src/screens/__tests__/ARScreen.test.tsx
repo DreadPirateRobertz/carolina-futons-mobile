@@ -157,6 +157,29 @@ jest.mock('@/hooks/useCameraPermission', () => ({
   useCameraPermission: () => mockCameraPermission,
 }));
 
+// Mock useGalleryFallback hook
+const mockGalleryFallback = {
+  imageUri: null as string | null,
+  isGalleryMode: false,
+  cameraUnavailable: false,
+  pickImage: jest.fn(),
+  clearImage: jest.fn(),
+};
+jest.mock('@/hooks/useGalleryFallback', () => ({
+  useGalleryFallback: () => mockGalleryFallback,
+}));
+
+// Mock useModelLoader hook
+const mockModelLoader: { status: any; load: jest.Mock; reset: jest.Mock; prefetch: jest.Mock } = {
+  status: { state: 'idle' },
+  load: jest.fn(),
+  reset: jest.fn(),
+  prefetch: jest.fn(),
+};
+jest.mock('@/hooks/useModelLoader', () => ({
+  useModelLoader: () => mockModelLoader,
+}));
+
 // Mock useAROnboarding hook
 const mockAROnboarding = {
   isLoading: false,
@@ -195,6 +218,10 @@ describe('ARScreen', () => {
     mockCameraPermission.settingsInstructions = null;
     mockAROnboarding.hasSeenAROnboarding = true;
     mockAROnboarding.isLoading = false;
+    mockGalleryFallback.imageUri = null;
+    mockGalleryFallback.isGalleryMode = false;
+    mockGalleryFallback.cameraUnavailable = false;
+    mockModelLoader.status = { state: 'idle' };
   });
 
   // =========================================================================
@@ -941,6 +968,131 @@ describe('ARScreen', () => {
         fireEvent.press(getByTestId('ar-share'));
       });
       expect(Sharing.shareAsync).not.toHaveBeenCalled();
+    });
+  });
+
+  // =========================================================================
+  // Gallery Fallback
+  // =========================================================================
+  describe('Gallery Fallback', () => {
+    it('shows "Use a Photo Instead" button when permission is denied', () => {
+      mockCameraPermission.state = 'denied';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-gallery-fallback')).toBeTruthy();
+    });
+
+    it('shows "Use a Photo Instead" button when permission is denied permanently', () => {
+      mockCameraPermission.state = 'denied-permanently';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-gallery-fallback')).toBeTruthy();
+    });
+
+    it('shows "Use a Photo Instead" button on undetermined permission screen', () => {
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-gallery-fallback')).toBeTruthy();
+    });
+
+    it('calls pickImage when gallery fallback button pressed', () => {
+      mockCameraPermission.state = 'denied';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-gallery-fallback'));
+      expect(mockGalleryFallback.pickImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows gallery mode when image is picked (camera denied)', () => {
+      mockCameraPermission.state = 'denied';
+      mockCameraPermission.granted = false;
+      mockGalleryFallback.isGalleryMode = true;
+      mockGalleryFallback.imageUri = 'file:///room.jpg';
+      const { getByTestId } = renderARScreen();
+      // Should show the AR view with gallery background instead of permission screen
+      expect(getByTestId('ar-gallery-background')).toBeTruthy();
+      expect(getByTestId('ar-futon-overlay')).toBeTruthy();
+    });
+
+    it('shows "Switch to Camera" button in gallery mode when camera is granted', () => {
+      mockCameraPermission.state = 'granted';
+      mockCameraPermission.granted = true;
+      mockGalleryFallback.isGalleryMode = true;
+      mockGalleryFallback.imageUri = 'file:///room.jpg';
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-switch-to-camera')).toBeTruthy();
+    });
+
+    it('calls clearImage when "Switch to Camera" pressed', () => {
+      mockCameraPermission.state = 'granted';
+      mockCameraPermission.granted = true;
+      mockGalleryFallback.isGalleryMode = true;
+      mockGalleryFallback.imageUri = 'file:///room.jpg';
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-switch-to-camera'));
+      expect(mockGalleryFallback.clearImage).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows camera unavailable message on simulator', () => {
+      mockCameraPermission.state = 'granted';
+      mockCameraPermission.granted = true;
+      mockGalleryFallback.cameraUnavailable = true;
+      const { getByText, getByTestId } = renderARScreen();
+      expect(getByText(/camera is not available/i)).toBeTruthy();
+      expect(getByTestId('ar-gallery-fallback')).toBeTruthy();
+    });
+
+    it('gallery fallback button has correct accessibility', () => {
+      mockCameraPermission.state = 'denied';
+      mockCameraPermission.granted = false;
+      const { getByTestId } = renderARScreen();
+      const btn = getByTestId('ar-gallery-fallback');
+      expect(btn.props.accessibilityLabel).toBe('Use a photo from your gallery');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+  });
+
+  // =========================================================================
+  // Model Loading Error and Retry
+  // =========================================================================
+  describe('Model Loading Error and Retry', () => {
+    it('shows error message when model download fails', () => {
+      mockModelLoader.status = { state: 'error', message: 'Network error' };
+      const { getByText } = renderARScreen();
+      expect(getByText('Network error')).toBeTruthy();
+    });
+
+    it('shows retry button when model download fails', () => {
+      mockModelLoader.status = { state: 'error', message: 'Download failed' };
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('model-loading-retry')).toBeTruthy();
+    });
+
+    it('retry button triggers model reload', () => {
+      mockModelLoader.status = { state: 'error', message: 'Download failed' };
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('model-loading-retry'));
+      expect(mockModelLoader.load).toHaveBeenCalled();
+    });
+
+    it('shows progress bar during model download', () => {
+      mockModelLoader.status = { state: 'downloading', progress: 0.45 };
+      const { getByTestId, getByText } = renderARScreen();
+      expect(getByTestId('model-loading-overlay')).toBeTruthy();
+      expect(getByText(/45%/)).toBeTruthy();
+    });
+
+    it('shows checking cache state', () => {
+      mockModelLoader.status = { state: 'checking-cache' };
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('model-loading-overlay')).toBeTruthy();
+    });
+
+    it('hides overlay when model is ready', () => {
+      mockModelLoader.status = { state: 'ready', localUri: '/path/to/model.usdz' };
+      const { queryByTestId } = renderARScreen();
+      expect(queryByTestId('model-loading-overlay')).toBeNull();
     });
   });
 });

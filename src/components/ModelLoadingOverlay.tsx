@@ -16,6 +16,7 @@ import type { ModelLoadStatus } from '@/services/modelLoader';
 interface Props {
   status: ModelLoadStatus;
   testID?: string;
+  children?: React.ReactNode;
 }
 
 function statusLabel(status: ModelLoadStatus): string {
@@ -31,7 +32,7 @@ function statusLabel(status: ModelLoadStatus): string {
   }
 }
 
-export function ModelLoadingOverlay({ status, testID }: Props) {
+export function ModelLoadingOverlay({ status, testID, children }: Props) {
   const progress = status.state === 'downloading' ? status.progress : 0;
   const isError = status.state === 'error';
 
@@ -52,6 +53,8 @@ export function ModelLoadingOverlay({ status, testID }: Props) {
             <Animated.View style={[styles.progressFill, barStyle]} />
           </View>
         )}
+
+        {children}
       </View>
     </View>
   );
