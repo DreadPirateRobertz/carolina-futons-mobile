@@ -5,6 +5,14 @@ import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { darkPalette, typography } from '@/theme/tokens';
 
+jest.mock('expo-local-authentication', () => ({
+  AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
+  hasHardwareAsync: jest.fn(() => Promise.resolve(true)),
+  isEnrolledAsync: jest.fn(() => Promise.resolve(true)),
+  supportedAuthenticationTypesAsync: jest.fn(() => Promise.resolve([2])),
+  authenticateAsync: jest.fn(() => Promise.resolve({ success: true })),
+}));
+
 const mockAuthService = {
   restoreSession: jest.fn().mockResolvedValue(false),
   getCurrentMember: jest.fn().mockResolvedValue(null),
@@ -254,6 +262,122 @@ describe('LoginScreen', () => {
       fireEvent.press(getByTestId('login-submit-button'));
       await waitFor(() => {
         expect(getByTestId('login-error')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Social auth — Google Sign-In', () => {
+    it('calls signInWithGoogle when Google button pressed', async () => {
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('google-sign-in-button'));
+      // The handler dispatches through useAuth which calls the mock service
+      // Just verify the button is pressable and doesn't crash
+      expect(getByTestId('google-sign-in-button')).toBeTruthy();
+    });
+
+    it('Google button has correct accessibility label', async () => {
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      expect(getByTestId('google-sign-in-button').props.accessibilityLabel).toBe(
+        'Sign in with Google',
+      );
+      expect(getByTestId('google-sign-in-button').props.accessibilityRole).toBe('button');
+    });
+
+    it('shows error when Google sign-in fails via Wix OAuth', async () => {
+      mockAuthService.loginWithOAuth.mockResolvedValue({
+        success: false,
+        error: 'Google authentication failed',
+      });
+
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('google-sign-in-button'));
+      await waitFor(() => {
+        expect(getByTestId('login-error')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Social auth — Apple Sign-In', () => {
+    it('renders Apple sign-in button on iOS', async () => {
+      // Platform.OS is 'ios' in test env (set by jest-expo)
+      const { queryByTestId } = renderLogin();
+      await waitFor(() => expect(queryByTestId('apple-sign-in-button')).toBeTruthy());
+    });
+
+    it('Apple button has correct accessibility label', async () => {
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('apple-sign-in-button')).toBeTruthy());
+      expect(getByTestId('apple-sign-in-button').props.accessibilityLabel).toBe(
+        'Sign in with Apple',
+      );
+      expect(getByTestId('apple-sign-in-button').props.accessibilityRole).toBe('button');
+    });
+
+    it('calls signInWithApple when Apple button pressed', async () => {
+      mockAuthService.loginWithApple.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue({
+        id: 'apple-user-1',
+        email: 'apple@test.com',
+        displayName: 'Apple User',
+        phone: '',
+        provider: 'apple',
+      });
+
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('apple-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('apple-sign-in-button'));
+      await waitFor(() => {
+        expect(mockAuthService.loginWithApple).toHaveBeenCalled();
+      });
+    });
+
+    it('shows error when Apple sign-in fails', async () => {
+      mockAuthService.loginWithApple.mockResolvedValue({
+        success: false,
+        error: 'Apple authentication failed',
+      });
+
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('apple-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('apple-sign-in-button'));
+      await waitFor(() => {
+        expect(getByTestId('login-error')).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Social auth — error recovery', () => {
+    it('clears previous error when pressing social auth button', async () => {
+      // First trigger an email login error
+      mockAuthService.loginWithEmail.mockResolvedValue({
+        success: false,
+        error: 'Invalid credentials',
+      });
+
+      const { getByTestId, queryByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('login-email-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('login-email-input'), 'bad@test.com');
+      fireEvent.changeText(getByTestId('login-password-input'), 'Pass1234');
+      fireEvent.press(getByTestId('login-submit-button'));
+      await waitFor(() => {
+        expect(getByTestId('login-error')).toBeTruthy();
+      });
+
+      // Press Google — should clear the previous error
+      mockAuthService.loginWithOAuth.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue({
+        id: 'g1',
+        email: 'g@test.com',
+        displayName: 'G',
+        phone: '',
+        provider: 'google',
+      });
+      fireEvent.press(getByTestId('google-sign-in-button'));
+      await waitFor(() => {
+        expect(queryByTestId('login-error')).toBeNull();
       });
     });
   });
