@@ -4,6 +4,7 @@ import { Platform, Dimensions } from 'react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 
@@ -80,9 +81,11 @@ const mountainBlue = FABRICS.find((f) => f.id === 'mountain-blue')!; // $29
 function renderDetail(props: Partial<React.ComponentProps<typeof ProductDetailScreen>> = {}) {
   return render(
     <ThemeProvider>
-      <WishlistProvider>
-        <ProductDetailScreen {...props} />
-      </WishlistProvider>
+      <CompareProvider>
+        <WishlistProvider>
+          <ProductDetailScreen {...props} />
+        </WishlistProvider>
+      </CompareProvider>
     </ThemeProvider>,
   );
 }

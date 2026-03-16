@@ -39,6 +39,7 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { formatPrice, openARViewer, inchesToFeetDisplay } from '@/utils';
 import { type FutonModel, type Fabric } from '@/hooks/useFutonModels';
 import { WishlistButton } from '@/components/WishlistButton';
+import { CompareButton } from '@/components/CompareButton';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import { useProduct } from '@/hooks/useProduct';
 import { ReviewCard } from '@/components/ReviewCard';
@@ -371,10 +372,13 @@ export function ProductDetailScreen({
         </TouchableOpacity>
       </Animated.View>
 
-      {/* Floating wishlist button — above scroll */}
+      {/* Floating wishlist + compare buttons — above scroll */}
       {catalogProduct && (
         <Animated.View style={[styles.floatingWishlistButton, floatingButtonBgStyle]}>
           <WishlistButton product={catalogProduct} size="lg" testID="detail-wishlist-button" />
+          <View style={styles.compareButtonSpacer}>
+            <CompareButton product={catalogProduct} testID="detail-compare-button" />
+          </View>
         </Animated.View>
       )}
 
@@ -1346,6 +1350,10 @@ const styles = StyleSheet.create({
     top: 52,
     right: 16,
     zIndex: 20,
+    alignItems: 'flex-end',
+  },
+  compareButtonSpacer: {
+    marginTop: 8,
   },
   backButton: {
     width: 36,

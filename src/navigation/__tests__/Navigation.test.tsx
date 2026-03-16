@@ -64,6 +64,10 @@ const mockCartState = {
   updateQuantity: jest.fn(),
   clearCart: jest.fn(),
 };
+jest.mock('@/components/CompareFAB', () => ({
+  CompareFAB: () => null,
+}));
+
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => mockCartState,
 }));

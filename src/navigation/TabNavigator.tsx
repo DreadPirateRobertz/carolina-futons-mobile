@@ -6,7 +6,7 @@
  * AnimatedTabBar for spring-press feedback.
  */
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -16,6 +16,7 @@ import { HomeScreen } from '@/screens/HomeScreen';
 import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
+import { CompareFAB } from '@/components/CompareFAB';
 import { AnimatedTabBar } from './AnimatedTabBar';
 import type { RootStackParamList } from './AppNavigator';
 
@@ -57,53 +58,62 @@ export function TabNavigator() {
   const { itemCount } = useCart();
 
   return (
-    <Tab.Navigator
-      tabBar={(props) => <AnimatedTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.sunsetCoral,
-        tabBarInactiveTintColor: colors.espressoLight,
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon label="Home" focused={focused} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Shop"
-        component={ShopScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon label="Shop" focused={focused} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Cart"
-        component={CartScreen}
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon label="Cart" focused={focused} color={color} />
-          ),
-          tabBarBadge: itemCount > 0 ? itemCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: colors.sunsetCoral },
-        }}
-      />
-      <Tab.Screen
-        name="Account"
-        options={{
-          tabBarIcon: ({ focused, color }) => (
-            <TabIcon label="Account" focused={focused} color={color} />
-          ),
+    <View style={tabStyles.container}>
+      <Tab.Navigator
+        tabBar={(props) => <AnimatedTabBar {...props} />}
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.sunsetCoral,
+          tabBarInactiveTintColor: colors.espressoLight,
         }}
       >
-        {() => <AccountScreenWithNav />}
-      </Tab.Screen>
-    </Tab.Navigator>
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon label="Home" focused={focused} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Shop"
+          component={ShopScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon label="Shop" focused={focused} color={color} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Cart"
+          component={CartScreen}
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon label="Cart" focused={focused} color={color} />
+            ),
+            tabBarBadge: itemCount > 0 ? itemCount : undefined,
+            tabBarBadgeStyle: { backgroundColor: colors.sunsetCoral },
+          }}
+        />
+        <Tab.Screen
+          name="Account"
+          options={{
+            tabBarIcon: ({ focused, color }) => (
+              <TabIcon label="Account" focused={focused} color={color} />
+            ),
+          }}
+        >
+          {() => <AccountScreenWithNav />}
+        </Tab.Screen>
+      </Tab.Navigator>
+      <CompareFAB testID="compare-fab" />
+    </View>
   );
 }
+
+const tabStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
