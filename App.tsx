@@ -16,6 +16,8 @@ import { NotificationProvider } from '@/hooks/useNotifications';
 import { DeepLinkProvider } from '@/hooks/DeepLinkProvider';
 import { PremiumProvider } from '@/hooks/usePremium';
 import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
+import { WixProvider } from '@/services/wix/wixProvider';
+import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 
 import { AppNavigator, linkingConfig } from '@/navigation';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -30,6 +32,17 @@ import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
+const wixConfig = getWixConfig();
+const wixEnabled = isWixConfigured();
+
+function MaybeWixProvider({ children }: { children: React.ReactNode }) {
+  if (!wixEnabled) return <>{children}</>;
+  return (
+    <WixProvider apiKey={wixConfig.apiKey} siteId={wixConfig.siteId} baseUrl={wixConfig.baseUrl}>
+      {children}
+    </WixProvider>
+  );
+}
 
 // Initialize crash reporting before anything else can throw
 initCrashReporting({
@@ -94,6 +107,7 @@ function App() {
       <StripeProvider publishableKey={stripeKey} merchantIdentifier={STRIPE_MERCHANT_ID}>
         <ThemeProvider>
           <ConnectivityProvider>
+            <MaybeWixProvider>
             <AuthProvider>
               <CartProvider>
                 <WishlistProvider>
@@ -132,6 +146,7 @@ function App() {
                 </WishlistProvider>
               </CartProvider>
             </AuthProvider>
+          </MaybeWixProvider>
           </ConnectivityProvider>
         </ThemeProvider>
       </StripeProvider>
