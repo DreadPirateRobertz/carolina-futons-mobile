@@ -13,7 +13,16 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Share, Image } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  Alert,
+  Share,
+  Image,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
