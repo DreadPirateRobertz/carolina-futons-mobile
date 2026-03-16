@@ -31,8 +31,6 @@
     "catalog:check": "npx tsx scripts/sync-3d-catalog.ts --check"
   },
   "dependencies": {
-    "@expo-google-fonts/playfair-display": "^0.4.2",
-    "@expo-google-fonts/source-sans-3": "^0.4.1",
     "@expo/metro-runtime": "~4.0.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/netinfo": "11.4.1",
