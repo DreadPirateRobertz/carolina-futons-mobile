@@ -92,20 +92,15 @@ describe('console cleanup — production console calls replaced with crashReport
     it('uses crashReporting.captureMessage instead of console.warn for missing API key', () => {
       const fs = require('fs');
       const path = require('path');
-      const source = fs.readFileSync(
-        path.join(__dirname, '../purchases.ts'),
-        'utf8',
-      );
+      const source = fs.readFileSync(path.join(__dirname, '../purchases.ts'), 'utf8');
 
       // Should NOT have bare console.warn (outside __DEV__ guard)
       const lines = source.split('\n');
-      const consoleWarnLines = lines.filter(
-        (line: string, idx: number) => {
-          if (!line.includes('console.warn')) return false;
-          const prevLine = idx > 0 ? lines[idx - 1] : '';
-          return !prevLine.includes('__DEV__') && !line.includes('__DEV__');
-        },
-      );
+      const consoleWarnLines = lines.filter((line: string, idx: number) => {
+        if (!line.includes('console.warn')) return false;
+        const prevLine = idx > 0 ? lines[idx - 1] : '';
+        return !prevLine.includes('__DEV__') && !line.includes('__DEV__');
+      });
       expect(consoleWarnLines).toHaveLength(0);
 
       // Should import and use crashReporting
@@ -120,21 +115,16 @@ describe('console cleanup — production console calls replaced with crashReport
       // We verify by reading the source and checking for the pattern.
       const fs = require('fs');
       const path = require('path');
-      const source = fs.readFileSync(
-        path.join(__dirname, '../../hooks/useProducts.ts'),
-        'utf8',
-      );
+      const source = fs.readFileSync(path.join(__dirname, '../../hooks/useProducts.ts'), 'utf8');
 
       // Should NOT have bare console.error (outside __DEV__ guard)
       const lines = source.split('\n');
-      const consoleErrorLines = lines.filter(
-        (line: string, idx: number) => {
-          if (!line.includes('console.error')) return false;
-          // Check if previous line has __DEV__ guard
-          const prevLine = idx > 0 ? lines[idx - 1] : '';
-          return !prevLine.includes('__DEV__') && !line.includes('__DEV__');
-        },
-      );
+      const consoleErrorLines = lines.filter((line: string, idx: number) => {
+        if (!line.includes('console.error')) return false;
+        // Check if previous line has __DEV__ guard
+        const prevLine = idx > 0 ? lines[idx - 1] : '';
+        return !prevLine.includes('__DEV__') && !line.includes('__DEV__');
+      });
       expect(consoleErrorLines).toHaveLength(0);
 
       // Should import and use crashReporting

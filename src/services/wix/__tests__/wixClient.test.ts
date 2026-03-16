@@ -317,7 +317,7 @@ describe('WixClient', () => {
       const product = await client.getProductBySlug('asheville-full-futon');
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
-      expect(body.query.filter).toEqual({ slug: { $eq: 'asheville-full-futon' } });
+      expect(body.query.filter).toBe(JSON.stringify({ slug: 'asheville-full-futon' }));
       expect(body.query.paging.limit).toBe(1);
       expect(product.name).toBe('The Asheville Full Futon');
     });

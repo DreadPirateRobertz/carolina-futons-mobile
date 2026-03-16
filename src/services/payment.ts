@@ -112,7 +112,12 @@ export async function confirmOrder(
   }
 }
 
-export type PaymentErrorCode = 'INTENT_FAILED' | 'CONFIRM_FAILED' | 'CANCELLED' | 'STRIPE_ERROR';
+export type PaymentErrorCode =
+  | 'INTENT_FAILED'
+  | 'CONFIRM_FAILED'
+  | 'CANCELLED'
+  | 'STRIPE_ERROR'
+  | 'NETWORK_ERROR';
 
 /**
  * Typed error for payment failures, carrying a machine-readable code

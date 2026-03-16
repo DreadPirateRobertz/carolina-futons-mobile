@@ -31,7 +31,7 @@ jest.mock('expo-file-system', () => ({
   deleteAsync: jest.fn(() => Promise.resolve()),
   createDownloadResumable: jest.fn(() => ({
     downloadAsync: jest.fn(() =>
-      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 })
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),
     ),
   })),
 }));
@@ -40,19 +40,37 @@ jest.mock('expo-file-system', () => ({
 jest.mock('react-native-svg', () => {
   const React = require('react');
   const mockComponent = (name) => {
-    const component = ({ children, ...props }) =>
-      React.createElement(name, props, children);
+    const component = ({ children, ...props }) => React.createElement(name, props, children);
     component.displayName = name;
     return component;
   };
   const namedExports = [
-    'Circle', 'Ellipse', 'G', 'Text', 'TSpan', 'TextPath', 'Path',
-    'Polygon', 'Polyline', 'Line', 'Rect', 'Use', 'Image', 'Symbol',
-    'Defs', 'LinearGradient', 'RadialGradient', 'Stop', 'ClipPath', 'Pattern',
+    'Circle',
+    'Ellipse',
+    'G',
+    'Text',
+    'TSpan',
+    'TextPath',
+    'Path',
+    'Polygon',
+    'Polyline',
+    'Line',
+    'Rect',
+    'Use',
+    'Image',
+    'Symbol',
+    'Defs',
+    'LinearGradient',
+    'RadialGradient',
+    'Stop',
+    'ClipPath',
+    'Pattern',
     'Mask',
   ];
   const mock = { __esModule: true, default: mockComponent('Svg') };
-  namedExports.forEach((el) => { mock[el] = mockComponent(el); });
+  namedExports.forEach((el) => {
+    mock[el] = mockComponent(el);
+  });
   return mock;
 });
 
@@ -74,9 +92,7 @@ jest.mock('react-native-purchases', () => ({
     getOfferings: jest.fn(() => Promise.resolve({ current: null })),
     purchasePackage: jest.fn(),
     restorePurchases: jest.fn(),
-    getCustomerInfo: jest.fn(() =>
-      Promise.resolve({ entitlements: { active: {} } }),
-    ),
+    getCustomerInfo: jest.fn(() => Promise.resolve({ entitlements: { active: {} } })),
     setLogLevel: jest.fn(),
     LOG_LEVEL: { DEBUG: 'DEBUG' },
   },
