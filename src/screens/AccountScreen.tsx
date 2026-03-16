@@ -45,6 +45,8 @@ interface Props {
   onOrderHistory?: () => void;
   /** Callback to navigate to the premium subscription screen. */
   onPremium?: () => void;
+  /** Callback to navigate to the style quiz screen. */
+  onStyleQuiz?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -56,7 +58,7 @@ interface Props {
  * @param props - {@link Props}
  * @returns The account screen view.
  */
-export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Props) {
+export function AccountScreen({ onLogin, onOrderHistory, onPremium, onStyleQuiz, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { user, isAuthenticated, loading, error, signOut, updateProfile, clearError } = useAuth();
   const { isPremium, restore } = usePremium();
@@ -491,6 +493,14 @@ export function AccountScreen({ onLogin, onOrderHistory, onPremium, testID }: Pr
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-notifications"
+          />
+          <MenuItem
+            label="Style Preferences"
+            onPress={onStyleQuiz}
+            colors={colors}
+            borderRadius={borderRadius}
+            shadows={shadows}
+            testID="account-style-quiz"
           />
           {showBiometricToggle && (
             <GlassCard intensity="light">
