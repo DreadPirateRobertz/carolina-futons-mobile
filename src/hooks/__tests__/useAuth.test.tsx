@@ -368,7 +368,7 @@ describe('useAuth', () => {
     });
 
     it('catches unexpected error during Google OAuth', async () => {
-      mockAuthService.loginWithOAuth.mockRejectedValue(new Error('OAuth crash'));
+      mockGooglePromptAsync.mockRejectedValue(new Error('OAuth crash'));
 
       const { getByTestId } = await renderAuth();
 
@@ -380,7 +380,7 @@ describe('useAuth', () => {
     });
 
     it('catches unexpected error during Apple OAuth', async () => {
-      mockAuthService.loginWithOAuth.mockRejectedValue(new Error('Apple crash'));
+      mockAuthService.loginWithApple.mockRejectedValue(new Error('Apple crash'));
 
       const { getByTestId } = await renderAuth();
 

@@ -638,7 +638,7 @@ describe('useNotifications', () => {
 
       renderNotif();
       await waitFor(() => {
-        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError, 'warning', { action: 'registerPushToken' });
       });
     });
 
@@ -650,7 +650,7 @@ describe('useNotifications', () => {
       fireEvent.press(getByTestId('request'));
 
       await waitFor(() => {
-        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError, 'warning', { action: 'registerPushToken' });
       });
     });
 
@@ -669,7 +669,7 @@ describe('useNotifications', () => {
       fireEvent.press(getByTestId('request'));
 
       await waitFor(() => {
-        expect(mockCaptureException).toHaveBeenCalledWith(registrationError);
+        expect(mockCaptureException).toHaveBeenCalledWith(registrationError, 'warning', { action: 'registerPushToken' });
       });
     });
   });
