@@ -123,6 +123,8 @@ interface CartContextValue {
   pendingSync: number;
   /** Whether offline cart mutations are currently being replayed. */
   isSyncing: boolean;
+  /** Replace all cart items atomically (used by sync to load server state). */
+  loadItems: (items: CartItem[]) => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -372,6 +374,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'CLEAR' });
   }, []);
 
+  const loadItems = useCallback((items: CartItem[]) => {
+    dispatch({ type: 'LOAD', items });
+  }, []);
+
   const itemCount = useMemo(
     () => state.items.reduce((sum, i) => sum + i.quantity, 0),
     [state.items],
@@ -394,6 +400,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       pendingSync: pendingCount,
       isSyncing,
+      loadItems,
     }),
     [
       state.items,
@@ -406,6 +413,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       pendingCount,
       isSyncing,
+      loadItems,
     ],
   );
 

@@ -56,13 +56,15 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
         );
 
         if (result.source === 'server') {
+          if (!Array.isArray(result.items)) {
+            console.warn('[useSyncedCart] Server returned malformed items, keeping local state');
+            return;
+          }
           lastServerTimestamp.current = serverState.serverTimestamp;
-          cart.clearCart();
-          // Re-hydrate would need a LOAD dispatch — for now we use the items directly
-          // This is a limitation we'll address when modifying CartProvider
+          cart.loadItems(result.items);
         }
-      } catch {
-        // Server pull failed — continue with local state
+      } catch (err) {
+        console.warn('[useSyncedCart] Server pull failed, continuing with local state:', err);
       }
     })();
   }, [isAuthenticated, isOnline, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -74,8 +76,8 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
       if (isOnline) {
         syncService.current.pushCart(user.id, items).then((serverTs) => {
           lastServerTimestamp.current = serverTs;
-        }).catch(() => {
-          // Push failed — will be caught on next sync
+        }).catch((err) => {
+          console.warn('[useSyncedCart] Push failed, will retry on next sync:', err);
         });
       } else {
         queueAction('cart', 'SYNC', { items });
@@ -115,7 +117,9 @@ export function useSyncedCart({ client }: UseSyncedCartOptions) {
     if (syncService.current && user?.id && isOnline) {
       syncService.current.pushCart(user.id, []).then((serverTs) => {
         lastServerTimestamp.current = serverTs;
-      }).catch(() => {});
+      }).catch((err) => {
+        console.warn('[useSyncedCart] Clear push failed:', err);
+      });
     } else if (user?.id) {
       queueAction('cart', 'SYNC', { items: [] });
     }

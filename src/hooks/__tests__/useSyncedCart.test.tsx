@@ -61,8 +61,10 @@ function SyncedCartHarness({ client }: { client: WixClient }) {
   return (
     <View>
       <Text testID="item-count">{synced.itemCount}</Text>
+      <Text testID="subtotal">{synced.subtotal}</Text>
       <Text testID="pending">{synced.pendingCount}</Text>
       <Text testID="syncing">{String(synced.isSyncing)}</Text>
+      <Text testID="items-json">{JSON.stringify(synced.items)}</Text>
       <TouchableOpacity
         testID="add-item"
         onPress={() => synced.addItem(asheville, naturalLinen, 1)}
@@ -144,5 +146,106 @@ describe('useSyncedCart', () => {
 
     // Should have queued the sync action
     expect(getByTestId('pending').props.children).toBeGreaterThanOrEqual(0);
+  });
+
+  describe('server-win conflict resolution', () => {
+    const SERVER_CART_ITEM = {
+      id: 'model-2:fabric-2',
+      model: { id: 'model-2', name: 'Boone', basePrice: 399, description: 'Server futon', images: [], fabrics: [] },
+      fabric: { id: 'fabric-2', name: 'Charcoal', hex: '#333', price: 60, swatch: 'swatch2.jpg' },
+      quantity: 3,
+      unitPrice: 459,
+    };
+
+    function mockQueryWithServerCart() {
+      // Server returns a cart with newer timestamp than local (local starts at 0)
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          dataItems: [{
+            id: 'doc-1',
+            data: { userId: 'user-1', items: [SERVER_CART_ITEM] },
+            _updatedDate: '2026-03-10T12:00:00.000Z',
+          }],
+          pagingMetadata: { total: 1 },
+        }),
+      });
+    }
+
+    it('loads server items into cart when server wins conflict', async () => {
+      mockQueryWithServerCart();
+
+      const client = new WixClient(TEST_CONFIG);
+      const { getByTestId } = render(
+        <ConnectivityProvider initialOnline={true}>
+          <CartProvider>
+            <SyncedCartHarness client={client} />
+          </CartProvider>
+        </ConnectivityProvider>,
+      );
+
+      await waitFor(() => {
+        const items = JSON.parse(getByTestId('items-json').props.children);
+        expect(items).toHaveLength(1);
+        expect(items[0].id).toBe('model-2:fabric-2');
+        expect(items[0].quantity).toBe(3);
+      });
+    });
+
+    it('does not wipe cart when server response is malformed', async () => {
+      // Server returns non-array items
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({
+          dataItems: [{
+            id: 'doc-1',
+            data: { userId: 'user-1', items: 'not-an-array' },
+            _updatedDate: '2026-03-10T12:00:00.000Z',
+          }],
+          pagingMetadata: { total: 1 },
+        }),
+      });
+
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const client = new WixClient(TEST_CONFIG);
+      const { getByTestId } = render(
+        <ConnectivityProvider initialOnline={true}>
+          <CartProvider>
+            <SyncedCartHarness client={client} />
+          </CartProvider>
+        </ConnectivityProvider>,
+      );
+
+      // Should not crash and cart should remain empty (initial state)
+      await waitFor(() => {
+        expect(getByTestId('item-count').props.children).toBe(0);
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[useSyncedCart]'),
+      );
+      warnSpy.mockRestore();
+    });
+
+    it('keeps local cart when server pull fails', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      jest.spyOn(console, 'warn').mockImplementation();
+      const client = new WixClient(TEST_CONFIG);
+      const { getByTestId } = render(
+        <ConnectivityProvider initialOnline={true}>
+          <CartProvider>
+            <SyncedCartHarness client={client} />
+          </CartProvider>
+        </ConnectivityProvider>,
+      );
+
+      // Should not crash — cart stays at initial state after failed pull
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 50));
+      });
+      expect(getByTestId('item-count').props.children).toBe(0);
+      jest.restoreAllMocks();
+    });
   });
 });
