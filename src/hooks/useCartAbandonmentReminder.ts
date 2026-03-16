@@ -114,7 +114,11 @@ export function useCartAbandonmentReminder({
           body: `You have ${count} ${itemWord} in your cart. Complete your order before ${sellWord} out!`,
           data: { type: 'cart_reminder', deepLink: 'carolinafutons://cart' },
         },
-        trigger: { type: SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: ONE_DAY_SECONDS, repeats: false },
+        trigger: {
+          type: SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: ONE_DAY_SECONDS,
+          repeats: false,
+        },
       });
 
       await saveState({
