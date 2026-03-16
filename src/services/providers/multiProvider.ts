@@ -5,6 +5,7 @@
  * provider doesn't break the others.
  */
 import type { AnalyticsProvider, AnalyticsEventName, UserProperties } from '../analytics';
+import { captureException } from '../crashReporting';
 
 export class MultiProvider implements AnalyticsProvider {
   private providers: AnalyticsProvider[];
@@ -21,7 +22,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.trackEvent(name, properties);
       } catch (e) {
-        if (__DEV__) console.warn('[MultiProvider] trackEvent error:', e);
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.trackEvent',
+        });
       }
     }
   }
@@ -34,7 +37,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.trackScreenView(screenName, properties);
       } catch (e) {
-        if (__DEV__) console.warn('[MultiProvider] trackScreenView error:', e);
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.trackScreenView',
+        });
       }
     }
   }
@@ -44,7 +49,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.identify(userId, properties);
       } catch (e) {
-        if (__DEV__) console.warn('[MultiProvider] identify error:', e);
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.identify',
+        });
       }
     }
   }
@@ -54,7 +61,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.reset();
       } catch (e) {
-        if (__DEV__) console.warn('[MultiProvider] reset error:', e);
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.reset',
+        });
       }
     }
   }
@@ -64,7 +73,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.setEnabled(enabled);
       } catch (e) {
-        if (__DEV__) console.warn('[MultiProvider] setEnabled error:', e);
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.setEnabled',
+        });
       }
     }
   }
