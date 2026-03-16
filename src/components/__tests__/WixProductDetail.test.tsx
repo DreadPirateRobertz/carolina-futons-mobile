@@ -8,7 +8,7 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
-import { Share, Platform } from 'react-native';
+import { Share } from 'react-native';
 import { WixProductDetail } from '../WixProductDetail';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -83,9 +83,7 @@ describe('WixProductDetail', () => {
 
     it('displays product description', () => {
       const { getByTestId } = renderComponent();
-      expect(getByTestId('product-description').props.children).toContain(
-        'handcrafted futon',
-      );
+      expect(getByTestId('product-description').props.children).toContain('handcrafted futon');
     });
 
     it('omits tagline when shortDescription is empty', () => {
@@ -185,7 +183,7 @@ describe('WixProductDetail', () => {
 
   describe('Fullscreen modal', () => {
     it('opens fullscreen modal when gallery slide is pressed', () => {
-      const { getByTestId, queryByTestId } = renderComponent();
+      const { getByTestId } = renderComponent();
       fireEvent.press(getByTestId('gallery-slide-0'));
       // ImageGalleryModal should become visible
       // The modal renders with testID from ImageGalleryModal — check it appears
