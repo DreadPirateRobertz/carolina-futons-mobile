@@ -256,6 +256,10 @@ export function CollectionDetailScreen() {
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
+        initialNumToRender={4}
       />
     </View>
   );

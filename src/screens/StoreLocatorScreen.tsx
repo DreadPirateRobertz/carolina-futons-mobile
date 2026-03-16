@@ -171,6 +171,10 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         testID="store-list"
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
+        initialNumToRender={4}
       />
     </View>
   );
