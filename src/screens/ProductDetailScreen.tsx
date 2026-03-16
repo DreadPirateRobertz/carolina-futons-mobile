@@ -109,7 +109,7 @@ export function ProductDetailScreen({
 
   // When Wix is configured and no local model matches, fetch from Wix API
   const isWixProduct = !localModel && isWixConfigured();
-  const { product: wixProduct, isLoading: isWixLoading, error: wixError } = useProductBySlug(
+  const { product: wixProduct, isLoading: isWixLoading } = useProductBySlug(
     isWixProduct ? resolvedId : '',
   );
 
@@ -351,13 +351,7 @@ export function ProductDetailScreen({
       return <SkeletonProductDetail testID="product-detail-skeleton" />;
     }
     if (wixProduct) {
-      return (
-        <WixProductDetail
-          product={wixProduct}
-          onBack={onBack}
-          testID={testID}
-        />
-      );
+      return <WixProductDetail product={wixProduct} onBack={onBack} testID={testID} />;
     }
     // Wix fetch failed or product not found — fall through to local model
   }
