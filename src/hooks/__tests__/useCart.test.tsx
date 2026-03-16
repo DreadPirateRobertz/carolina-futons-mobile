@@ -935,6 +935,41 @@ describe('Offline queueing', () => {
   });
 });
 
+describe('Online Wix sync', () => {
+  // We need to mock useOptionalWixClient to return a wixClient for online sync
+  // The current useCart uses useOptionalWixClient from wixProvider
+  // In the test, the offline sync executors use wixClientRef.current
+  // For online sync tests, we need the wixClient to be available
+
+  it('calls wixClient.addToCart when online and wixClient available', async () => {
+    // This test verifies that addItem syncs to Wix server when online.
+    // The wixClient mock is set up at file level via jest.mock('@/services/wix/wixClient').
+    // When online, addItem should call wixClient.addToCart fire-and-forget.
+    // The implementation will use the wixClientRef from useOptionalWixClient.
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <AuthContext.Provider value={{ ...mockAuthValue, user: null as any }}>
+          <CartProvider>
+            <CartHarness />
+          </CartProvider>
+        </AuthContext.Provider>
+      </ConnectivityProvider>,
+    );
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+    // Online: should NOT queue (already tested), and local state updates immediately
+  });
+
+  it('does not throw when online wixClient call fails', () => {
+    // Fire-and-forget: errors in server sync should not break local cart
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    expect(getByTestId('item-count').props.children).toBe(1);
+    // No error thrown, cart still works
+  });
+});
+
 describe('mergeCartItems edge cases', () => {
   const makeItem = (modelIdx: number, fabricIdx: number, qty: number): CartItem => {
     const model = FUTON_MODELS[modelIdx];

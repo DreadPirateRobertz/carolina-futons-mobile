@@ -336,7 +336,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
-      if (!isOnlineRef.current) {
+      if (isOnlineRef.current) {
+        const client = wixClientRef.current;
+        if (client) {
+          client.addToCart(model.id, quantity, fabric.id).catch(() => {
+            // Fire-and-forget: local cart is source of truth
+          });
+        }
+      } else {
         queueAction('cart', 'CART_ADD_ITEM', {
           productId: model.id,
           quantity,
@@ -350,7 +357,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const removeItem = useCallback(
     (itemId: string) => {
       dispatch({ type: 'REMOVE_ITEM', itemId });
-      if (!isOnlineRef.current) {
+      if (isOnlineRef.current) {
+        const client = wixClientRef.current;
+        if (client) {
+          client.removeFromCart(itemId).catch(() => {});
+        }
+      } else {
         queueAction('cart', 'CART_REMOVE_ITEM', { productId: itemId });
       }
     },
@@ -360,7 +372,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = useCallback(
     (itemId: string, quantity: number) => {
       dispatch({ type: 'UPDATE_QUANTITY', itemId, quantity });
-      if (!isOnlineRef.current) {
+      if (isOnlineRef.current) {
+        const client = wixClientRef.current;
+        if (client) {
+          client.updateCartItemQuantity(itemId, quantity).catch(() => {});
+        }
+      } else {
         queueAction('cart', 'CART_UPDATE_QUANTITY', {
           productId: itemId,
           quantity,
