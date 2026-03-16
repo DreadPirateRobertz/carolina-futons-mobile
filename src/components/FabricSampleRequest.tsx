@@ -133,7 +133,9 @@ export function FabricSampleRequest({ fabrics, productName, testID }: Props) {
         accessibilityLabel="Request free fabric swatches"
         accessibilityRole="button"
       >
-        <Text style={[styles.ctaText, { color: colors.mountainBlueDark }]}>Request Free Swatches</Text>
+        <Text style={[styles.ctaText, { color: colors.mountainBlueDark }]}>
+          Request Free Swatches
+        </Text>
       </TouchableOpacity>
     );
   }

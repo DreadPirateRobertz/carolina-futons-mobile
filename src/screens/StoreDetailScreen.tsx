@@ -275,8 +275,6 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
                 accessibilityRole="radio"
                 accessibilityLabel={type.label}
                 accessibilityState={{ selected: selectedAppointment === type.value }}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: selectedAppointment === type.value }}
               >
                 <Text
                   style={[
