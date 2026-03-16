@@ -98,6 +98,8 @@ interface WishlistContextValue {
   add: (product: Product) => void;
   remove: (productId: string) => void;
   clear: () => void;
+  /** Replace all wishlist items atomically (used by sync to load server state). */
+  loadItems: (items: WishlistItem[]) => void;
   getProducts: () => (Product & { savedPrice: number; priceDrop: number })[];
   getShareText: () => string;
   /** Number of wishlist actions pending in the offline queue. */
@@ -327,6 +329,10 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
     dispatch({ type: 'CLEAR' });
   }, [state.items, syncRemove]);
 
+  const loadItems = useCallback((items: WishlistItem[]) => {
+    dispatch({ type: 'LOAD', items });
+  }, []);
+
   const getProducts = useCallback(() => {
     return state.items
       .map((item) => {
@@ -355,6 +361,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       add,
       remove,
       clear,
+      loadItems,
       getProducts,
       getShareText,
       pendingSync,
@@ -368,6 +375,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       add,
       remove,
       clear,
+      loadItems,
       getProducts,
       getShareText,
       pendingSync,
