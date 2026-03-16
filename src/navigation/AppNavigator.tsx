@@ -106,6 +106,11 @@ const PremiumScreen = lazy(() =>
     default: withScreenErrorBoundary(m.PremiumScreen, 'Premium'),
   })),
 );
+const StyleQuizScreen = lazy(() =>
+  import('@/screens/StyleQuizScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.StyleQuizScreen, 'StyleQuiz'),
+  })),
+);
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
     default: m.OrderConfirmationScreen,
@@ -148,6 +153,7 @@ export type RootStackParamList = {
   Collections: undefined;
   CollectionDetail: { slug: string };
   Premium: undefined;
+  StyleQuiz: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -294,6 +300,11 @@ export function AppNavigator() {
         />
         <Stack.Screen name="Premium">
           {({ navigation: nav }) => <PremiumScreen onBack={() => nav.goBack()} />}
+        </Stack.Screen>
+        <Stack.Screen name="StyleQuiz">
+          {({ navigation: nav }) => (
+            <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>

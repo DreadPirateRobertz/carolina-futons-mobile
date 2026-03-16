@@ -284,5 +284,9 @@ describe('deep link route resolution (getStateFromPath)', () => {
     it('passes slug param to CollectionDetail', () => {
       expect(getParams('collections/mattresses')).toEqual({ slug: 'mattresses' });
     });
+
+    it('resolves /style-quiz', () => {
+      expect(getScreen('style-quiz')).toBe('StyleQuiz');
+    });
   });
 });
