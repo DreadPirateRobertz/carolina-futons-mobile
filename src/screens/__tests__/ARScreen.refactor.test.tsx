@@ -139,6 +139,48 @@ jest.mock('expo-sharing', () => ({
   shareAsync: jest.fn(() => Promise.resolve()),
 }));
 
+// Mock camera permission hook
+jest.mock('@/hooks/useCameraPermission', () => ({
+  useCameraPermission: () => ({
+    state: 'granted',
+    granted: true,
+    explanation: '',
+    settingsInstructions: null,
+    request: jest.fn(),
+    openSettings: jest.fn(),
+  }),
+}));
+
+// Mock AR onboarding hook
+jest.mock('@/hooks/useAROnboarding', () => ({
+  useAROnboarding: () => ({
+    hasSeenAROnboarding: true,
+    isLoading: false,
+    completeAROnboarding: jest.fn(),
+  }),
+}));
+
+// Mock gallery fallback hook
+jest.mock('@/hooks/useGalleryFallback', () => ({
+  useGalleryFallback: () => ({
+    imageUri: null,
+    isGalleryMode: false,
+    cameraUnavailable: false,
+    pickImage: jest.fn(),
+    clearImage: jest.fn(),
+  }),
+}));
+
+// Mock model loader hook
+jest.mock('@/hooks/useModelLoader', () => ({
+  useModelLoader: () => ({
+    status: { state: 'idle' },
+    load: jest.fn(),
+    reset: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+}));
+
 // Mock the hooks to verify ARScreen uses them
 const mockUseFutonModels = jest.fn();
 const mockUseProductByModelId = jest.fn();

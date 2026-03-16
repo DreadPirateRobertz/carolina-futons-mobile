@@ -170,8 +170,8 @@ jest.mock('@/hooks/useGalleryFallback', () => ({
 }));
 
 // Mock useModelLoader hook
-const mockModelLoader = {
-  status: { state: 'idle' as string },
+const mockModelLoader: { status: any; load: jest.Mock; reset: jest.Mock; prefetch: jest.Mock } = {
+  status: { state: 'idle' },
   load: jest.fn(),
   reset: jest.fn(),
   prefetch: jest.fn(),

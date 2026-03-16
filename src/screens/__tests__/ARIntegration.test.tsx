@@ -133,6 +133,27 @@ jest.mock('@/hooks/useAROnboarding', () => ({
   }),
 }));
 
+// Mock gallery fallback hook
+jest.mock('@/hooks/useGalleryFallback', () => ({
+  useGalleryFallback: () => ({
+    imageUri: null,
+    isGalleryMode: false,
+    cameraUnavailable: false,
+    pickImage: jest.fn(),
+    clearImage: jest.fn(),
+  }),
+}));
+
+// Mock model loader hook
+jest.mock('@/hooks/useModelLoader', () => ({
+  useModelLoader: () => ({
+    status: { state: 'idle' },
+    load: jest.fn(),
+    reset: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+}));
+
 // --- Test Fixtures ---
 
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
