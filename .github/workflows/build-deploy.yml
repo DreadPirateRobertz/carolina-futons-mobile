@@ -88,7 +88,7 @@ jobs:
               fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
             "
           fi
-          eas init --non-interactive
+          eas init --non-interactive --force
 
       - name: Determine build profile
         id: profile
@@ -162,7 +162,7 @@ jobs:
               fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
             "
           fi
-          eas init --non-interactive
+          eas init --non-interactive --force
 
       - name: Build Android
         env:
