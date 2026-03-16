@@ -156,13 +156,80 @@ describe('LoginScreen', () => {
   });
 
   describe('Social sign-in', () => {
+    it('renders Google sign-in button with correct accessibility', async () => {
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      const btn = getByTestId('google-sign-in-button');
+      expect(btn.props.accessibilityLabel).toBe('Sign in with Google');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
     it('pressing Google button does not crash', async () => {
       mockAuthService.loginWithOAuth.mockResolvedValue({ success: false, error: 'cancelled' });
       const { getByTestId } = renderLogin();
       await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
       fireEvent.press(getByTestId('google-sign-in-button'));
-      // Should not throw — just verifying the button press triggers without error
       await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+    });
+
+    it('Google button has dark surface styling', async () => {
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      const btn = getByTestId('google-sign-in-button');
+      const styles = Array.isArray(btn.props.style)
+        ? Object.assign({}, ...btn.props.style)
+        : btn.props.style;
+      expect(styles.backgroundColor).toBe(darkPalette.surfaceElevated);
+    });
+
+    it('shows auth error when Google sign-in fails', async () => {
+      mockAuthService.loginWithOAuth.mockResolvedValue({
+        success: false,
+        error: 'Google login failed',
+      });
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('google-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('google-sign-in-button'));
+      await waitFor(() => {
+        expect(getByTestId('login-error')).toBeTruthy();
+      });
+    });
+
+    it('shows auth error when Apple sign-in fails', async () => {
+      mockAuthService.loginWithApple.mockResolvedValue({
+        success: false,
+        error: 'Apple sign-in cancelled',
+      });
+      // Apple button only renders on iOS — mock Platform
+      const origOS = require('react-native').Platform.OS;
+      require('react-native').Platform.OS = 'ios';
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('apple-sign-in-button')).toBeTruthy());
+      fireEvent.press(getByTestId('apple-sign-in-button'));
+      await waitFor(() => {
+        expect(getByTestId('login-error')).toBeTruthy();
+      });
+      require('react-native').Platform.OS = origOS;
+    });
+
+    it('Apple button only renders on iOS', async () => {
+      const origOS = require('react-native').Platform.OS;
+      require('react-native').Platform.OS = 'android';
+      const { queryByTestId } = renderLogin();
+      await waitFor(() => expect(queryByTestId('google-sign-in-button')).toBeTruthy());
+      expect(queryByTestId('apple-sign-in-button')).toBeNull();
+      require('react-native').Platform.OS = origOS;
+    });
+
+    it('Apple button renders on iOS with correct accessibility', async () => {
+      const origOS = require('react-native').Platform.OS;
+      require('react-native').Platform.OS = 'ios';
+      const { getByTestId } = renderLogin();
+      await waitFor(() => expect(getByTestId('apple-sign-in-button')).toBeTruthy());
+      const btn = getByTestId('apple-sign-in-button');
+      expect(btn.props.accessibilityLabel).toBe('Sign in with Apple');
+      expect(btn.props.accessibilityRole).toBe('button');
+      require('react-native').Platform.OS = origOS;
     });
   });
 
