@@ -139,7 +139,7 @@ interface AuthContextValue {
   signInWithApple: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (data: UpdateProfileData) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   clearError: () => void;
 }
 
@@ -221,16 +221,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(
     async (email: string, password: string) => {
       dispatch({ type: 'AUTH_START' });
-      const result = await authService.loginWithEmail(email, password);
-      if (!result.success) {
-        dispatch({ type: 'AUTH_ERROR', error: result.error });
-        return;
-      }
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-      } else {
-        dispatch({ type: 'AUTH_ERROR', error: 'Login failed' });
+      try {
+        const result = await authService.loginWithEmail(email, password);
+        if (!result.success) {
+          dispatch({ type: 'AUTH_ERROR', error: result.error });
+          return;
+        }
+        const member = await authService.getCurrentMember();
+        if (member) {
+          dispatch({ type: 'AUTH_SUCCESS', user: member });
+        } else {
+          dispatch({ type: 'AUTH_ERROR', error: 'Login failed' });
+        }
+      } catch (err) {
+        dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
       }
     },
     [authService],
@@ -239,16 +243,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = useCallback(
     async (email: string, password: string, displayName: string) => {
       dispatch({ type: 'AUTH_START' });
-      const result = await authService.register(email, password, displayName);
-      if (!result.success) {
-        dispatch({ type: 'AUTH_ERROR', error: result.error });
-        return;
-      }
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'AUTH_SUCCESS', user: member });
-      } else {
-        dispatch({ type: 'AUTH_ERROR', error: 'Registration failed' });
+      try {
+        const result = await authService.register(email, password, displayName);
+        if (!result.success) {
+          dispatch({ type: 'AUTH_ERROR', error: result.error });
+          return;
+        }
+        const member = await authService.getCurrentMember();
+        if (member) {
+          dispatch({ type: 'AUTH_SUCCESS', user: member });
+        } else {
+          dispatch({ type: 'AUTH_ERROR', error: 'Registration failed' });
+        }
+      } catch (err) {
+        dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
       }
     },
     [authService],
@@ -291,39 +299,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Fallback to Wix OAuth when Google client IDs are not configured
-    const result = await authService.loginWithOAuth();
-    if (!result.success) {
-      dispatch({ type: 'AUTH_ERROR', error: result.error });
-      return;
-    }
-    const member = await authService.getCurrentMember();
-    if (member) {
-      dispatch({ type: 'AUTH_SUCCESS', user: member });
-    } else {
-      dispatch({ type: 'AUTH_ERROR', error: 'Google login failed' });
+    try {
+      const result = await authService.loginWithOAuth();
+      if (!result.success) {
+        dispatch({ type: 'AUTH_ERROR', error: result.error });
+        return;
+      }
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+      } else {
+        dispatch({ type: 'AUTH_ERROR', error: 'Google login failed' });
+      }
+    } catch (err) {
+      dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
     }
   }, [googleConfigured, googlePromptAsync, authService]);
 
   const signInWithApple = useCallback(async () => {
     dispatch({ type: 'AUTH_START' });
-    const result = await authService.loginWithApple();
-    if (!result.success) {
-      dispatch({ type: 'AUTH_ERROR', error: result.error });
-      return;
-    }
-    const member = await authService.getCurrentMember();
-    if (member) {
-      dispatch({ type: 'AUTH_SUCCESS', user: member });
-    } else {
-      dispatch({ type: 'AUTH_ERROR', error: 'Apple login failed' });
+    try {
+      const result = await authService.loginWithApple();
+      if (!result.success) {
+        dispatch({ type: 'AUTH_ERROR', error: result.error });
+        return;
+      }
+      const member = await authService.getCurrentMember();
+      if (member) {
+        dispatch({ type: 'AUTH_SUCCESS', user: member });
+      } else {
+        dispatch({ type: 'AUTH_ERROR', error: 'Apple login failed' });
+      }
+    } catch (err) {
+      dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
     }
   }, [authService]);
 
   const resetPassword = useCallback(
     async (email: string) => {
       dispatch({ type: 'AUTH_START' });
-      await authService.sendPasswordReset(email);
-      dispatch({ type: 'CLEAR_ERROR' });
+      try {
+        await authService.sendPasswordReset(email);
+        dispatch({ type: 'CLEAR_ERROR' });
+      } catch (err) {
+        dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
+      }
     },
     [authService],
   );
@@ -332,24 +352,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (data: UpdateProfileData) => {
       if (!state.user) return;
       dispatch({ type: 'AUTH_START' });
-      const result = await authService.updateMember(state.user.id, data);
-      if (!result.success) {
-        dispatch({ type: 'AUTH_ERROR', error: result.error });
-        return;
-      }
-      const member = await authService.getCurrentMember();
-      if (member) {
-        dispatch({ type: 'UPDATE_USER', user: member });
-      } else {
-        dispatch({ type: 'CLEAR_ERROR' });
+      try {
+        const result = await authService.updateMember(state.user.id, data);
+        if (!result.success) {
+          dispatch({ type: 'AUTH_ERROR', error: result.error });
+          return;
+        }
+        const member = await authService.getCurrentMember();
+        if (member) {
+          dispatch({ type: 'UPDATE_USER', user: member });
+        } else {
+          dispatch({ type: 'CLEAR_ERROR' });
+        }
+      } catch (err) {
+        dispatch({ type: 'AUTH_ERROR', error: (err as Error).message });
       }
     },
     [authService, state.user],
   );
 
-  const signOut = useCallback(() => {
-    authService.logout();
-    clearGoogleSession();
+  const signOut = useCallback(async () => {
+    try {
+      await authService.logout();
+      await clearGoogleSession();
+    } catch {
+      // Best-effort cleanup — proceed with local sign-out regardless
+    }
     dispatch({ type: 'SIGN_OUT' });
   }, [authService]);
 
