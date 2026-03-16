@@ -10,6 +10,9 @@ const mockApplyCoupon = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => ({
     applyCoupon: mockApplyCoupon,
+    addToCart: jest.fn().mockResolvedValue(undefined),
+    removeFromCart: jest.fn().mockResolvedValue(undefined),
+    updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
   }),
 }));
 

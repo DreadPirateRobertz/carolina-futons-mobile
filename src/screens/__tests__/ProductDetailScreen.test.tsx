@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
-import { Platform, Dimensions } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { Alert, Platform, Dimensions } from 'react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -74,6 +74,29 @@ jest.mock('@/services/wix/wixProvider', () => ({
   WixProvider: ({ children }: any) => children,
 }));
 
+const mockAddItem = jest.fn();
+const mockCartValue = {
+  items: [],
+  itemCount: 0,
+  subtotal: 0,
+  syncing: false,
+  addItem: mockAddItem,
+  removeItem: jest.fn(),
+  updateQuantity: jest.fn(),
+  clearCart: jest.fn(),
+  pendingSync: 0,
+  isSyncing: false,
+  loadItems: jest.fn(),
+};
+
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => mockCartValue,
+  CartProvider: ({ children }: any) => children,
+}));
+
+const mockAlert = jest.fn();
+Alert.alert = mockAlert;
+
 const asheville = FUTON_MODELS[0]; // The Asheville, $349
 const blueRidge = FUTON_MODELS[1]; // The Blue Ridge, $449
 const naturalLinen = FABRICS[0]; // Natural Linen, $0
@@ -89,6 +112,12 @@ function renderDetail(props: Partial<React.ComponentProps<typeof ProductDetailSc
     </ThemeProvider>,
   );
 }
+
+beforeEach(() => {
+  mockAddItem.mockClear();
+  mockAlert.mockClear();
+  mockNavigate.mockClear();
+});
 
 describe('ProductDetailScreen', () => {
   describe('Rendering', () => {
@@ -1044,6 +1073,67 @@ describe('ProductDetailScreen', () => {
     it('does not show notify-back-in-stock button for in-stock products', () => {
       const { queryByTestId } = renderDetail();
       expect(queryByTestId('notify-back-in-stock-button')).toBeNull();
+    });
+  });
+
+  describe('Cart integration', () => {
+    it('calls useCart addItem when add to cart is pressed', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      expect(mockAddItem).toHaveBeenCalledTimes(1);
+      expect(mockAddItem).toHaveBeenCalledWith(asheville, naturalLinen, 1);
+    });
+
+    it('calls addItem with selected fabric and quantity', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('fabric-swatch-mountain-blue'));
+      fireEvent.press(getByTestId('quantity-increment')); // qty 2
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      expect(mockAddItem).toHaveBeenCalledWith(asheville, mountainBlue, 2);
+    });
+
+    it('shows success alert after adding to cart', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      expect(mockAlert).toHaveBeenCalledWith(
+        'Added to Cart',
+        expect.stringContaining('The Asheville'),
+        expect.arrayContaining([
+          expect.objectContaining({ text: 'Continue Shopping' }),
+          expect.objectContaining({ text: 'View Cart' }),
+        ]),
+      );
+    });
+
+    it('navigates to cart when View Cart is pressed in success alert', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      // Get the View Cart button callback from Alert.alert
+      const alertCall = mockAlert.mock.calls[0];
+      const viewCartButton = alertCall[2].find((b: any) => b.text === 'View Cart');
+      viewCartButton.onPress();
+      expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Cart' });
+    });
+
+    it('still calls onAddToCart prop when provided', () => {
+      const onAddToCart = jest.fn();
+      const { getByTestId } = renderDetail({
+        productId: 'asheville-full',
+        onAddToCart,
+      });
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      // Both useCart.addItem and onAddToCart should be called
+      expect(mockAddItem).toHaveBeenCalledTimes(1);
+      expect(onAddToCart).toHaveBeenCalledTimes(1);
+    });
+
+    it('resets quantity to 1 after successful add to cart', () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('quantity-increment')); // qty 2
+      expect(getByText('Add to Cart — $698.00')).toBeTruthy();
+      fireEvent.press(getByTestId('add-to-cart-button'));
+      // Quantity should reset to 1
+      expect(getByText('Add to Cart — $349.00')).toBeTruthy();
     });
   });
 });

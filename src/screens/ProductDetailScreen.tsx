@@ -47,6 +47,7 @@ import { ReviewSummary } from '@/components/ReviewSummary';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import { EmptyState } from '@/components/EmptyState';
 import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
@@ -136,6 +137,7 @@ export function ProductDetailScreen({
   const galleryRef = useRef<FlatList>(null);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { isAuthenticated } = useAuth();
+  const cart = useCart();
   const { similarItems, trackView } = useRecommendations();
   const {
     reviews,
@@ -248,9 +250,19 @@ export function ProductDetailScreen({
   );
 
   const handleAddToCart = useCallback(() => {
+    cart.addItem(model, selectedFabric, quantity);
     onAddToCart?.(model, selectedFabric, quantity);
     events.addToCart(model.id, totalPrice, quantity);
-  }, [model, selectedFabric, quantity, totalPrice, onAddToCart]);
+    setQuantity(1);
+    Alert.alert(
+      'Added to Cart',
+      `${quantity}× ${model.name} in ${selectedFabric.name} added to your cart.`,
+      [
+        { text: 'Continue Shopping', style: 'cancel' },
+        { text: 'View Cart', onPress: () => navigation.navigate('Tabs', { screen: 'Cart' }) },
+      ],
+    );
+  }, [model, selectedFabric, quantity, totalPrice, onAddToCart, cart, navigation]);
 
   const handleIncrement = useCallback(() => {
     setQuantity((prev) => Math.min(10, prev + 1));
