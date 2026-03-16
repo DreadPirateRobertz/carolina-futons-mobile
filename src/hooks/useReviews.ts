@@ -56,8 +56,8 @@ export function useReviews(productId: string): UseReviewsReturn {
           if (mounted.current && result.reviews.length > 0) {
             setApiReviews(result.reviews);
           }
-        } catch {
-          // Keep mock data on failure
+        } catch (err) {
+          console.warn('Wix reviews fetch failed, keeping mock data:', err);
         }
       })();
     }
@@ -129,7 +129,8 @@ export function useReviews(productId: string): UseReviewsReturn {
         setShowForm(false);
         events.submitReview(productId, data.rating);
         return true;
-      } catch {
+      } catch (err) {
+        console.warn('Review submission failed:', err);
         return false;
       } finally {
         setIsSubmitting(false);

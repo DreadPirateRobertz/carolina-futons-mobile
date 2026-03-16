@@ -101,8 +101,8 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
             setIsInitialLoading(false);
             saveCatalog(result.products);
           }
-        } catch {
-          // Fall back to mock on API error
+        } catch (err) {
+          console.warn('Wix product fetch failed, falling back to mock data:', err);
           if (!cancelled) {
             freshLoaded.current = true;
             setAllProducts(PRODUCTS);
@@ -209,7 +209,8 @@ export function useProducts(options?: UseProductsOptions): UseProductsReturn {
           setAllProducts(result.products);
           setIsFromCache(false);
           saveCatalog(result.products);
-        } catch {
+        } catch (err) {
+          console.warn('Wix product refresh failed, falling back to mock data:', err);
           freshLoaded.current = true;
           setAllProducts(PRODUCTS);
           setIsFromCache(false);

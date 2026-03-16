@@ -55,8 +55,8 @@ export function useCollections() {
           if (mounted.current && result.items.length > 0) {
             setCollections(result.items.map(transformCmsCollection));
           }
-        } catch {
-          // Keep mock data on failure
+        } catch (err) {
+          console.warn('Wix collections fetch failed, keeping mock data:', err);
         }
       })();
     }
@@ -93,8 +93,8 @@ export function useCollection(slug: string): {
         const result = await client.queryProducts({ limit: 100 });
         const map = new Map(result.products.map((p) => [p.id, p]));
         setWixProducts(map);
-      } catch {
-        // Keep using mock product map
+      } catch (err) {
+        console.warn('Wix collection products fetch failed, keeping mock data:', err);
       }
     })();
   }, []);
