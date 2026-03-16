@@ -136,6 +136,9 @@ export function ProductDetailScreen({
     showForm: showReviewForm,
     setShowForm: setShowReviewForm,
     hasReviews,
+    submitError: reviewSubmitError,
+    submitSuccess: reviewSubmitSuccess,
+    clearSubmitStatus: clearReviewSubmitStatus,
   } = useReviews(model.id);
   const previewReviews = reviews.slice(0, 3);
 
@@ -760,6 +763,29 @@ export function ProductDetailScreen({
           {/* Write a Review — authenticated users only */}
           {isAuthenticated && (
             <>
+              {/* Success banner */}
+              {reviewSubmitSuccess && !showReviewForm && (
+                <View
+                  style={[
+                    styles.reviewFeedback,
+                    { backgroundColor: colors.success + '1A', borderColor: colors.success },
+                  ]}
+                  testID="review-submit-success"
+                  accessibilityRole="alert"
+                >
+                  <Text style={[styles.reviewFeedbackText, { color: colors.success }]}>
+                    Thank you! Your review has been submitted.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={clearReviewSubmitStatus}
+                    testID="dismiss-review-success"
+                    accessibilityLabel="Dismiss success message"
+                  >
+                    <Text style={[styles.dismissText, { color: colors.success }]}>×</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
               {!showReviewForm ? (
                 <TouchableOpacity
                   style={[
@@ -769,7 +795,10 @@ export function ProductDetailScreen({
                       borderRadius: borderRadius.button,
                     },
                   ]}
-                  onPress={() => setShowReviewForm(true)}
+                  onPress={() => {
+                    clearReviewSubmitStatus();
+                    setShowReviewForm(true);
+                  }}
                   testID="write-review-button"
                   accessibilityLabel="Write a review"
                   accessibilityRole="button"
@@ -795,6 +824,23 @@ export function ProductDetailScreen({
                       <Text style={[styles.cancelText, { color: colors.muted }]}>Cancel</Text>
                     </TouchableOpacity>
                   </View>
+
+                  {/* Error banner */}
+                  {reviewSubmitError && (
+                    <View
+                      style={[
+                        styles.reviewFeedback,
+                        { backgroundColor: colors.error + '1A', borderColor: colors.error },
+                      ]}
+                      testID="review-submit-error"
+                      accessibilityRole="alert"
+                    >
+                      <Text style={[styles.reviewFeedbackText, { color: colors.error }]}>
+                        {reviewSubmitError}
+                      </Text>
+                    </View>
+                  )}
+
                   <ReviewForm
                     onSubmit={submitReview}
                     isSubmitting={isReviewSubmitting}
@@ -1597,6 +1643,25 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  reviewFeedback: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  reviewFeedbackText: {
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  dismissText: {
+    fontSize: 20,
+    fontWeight: '700',
+    paddingLeft: 8,
   },
   // Size Guide
   sizeGuideToggle: {

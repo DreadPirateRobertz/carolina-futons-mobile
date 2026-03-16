@@ -2,10 +2,21 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useReviews } from '../useReviews';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
+// ── Wix client mock ────────────────────────────────────────────
+const mockCreateReview = jest.fn();
+const mockQueryReviews = jest.fn();
+let mockWixClient: any = null;
+
+jest.mock('@/services/wix/wixProvider', () => ({
+  useOptionalWixClient: () => mockWixClient,
+}));
+
 jest.useFakeTimers();
 
 beforeEach(() => {
   clearEventBuffer();
+  jest.clearAllMocks();
+  mockWixClient = null; // Default: no Wix client (mock-data mode)
 });
 
 afterAll(() => {
@@ -42,6 +53,16 @@ describe('useReviews', () => {
     it('form is hidden initially', () => {
       const { result } = renderHook(() => useReviews(productId));
       expect(result.current.showForm).toBe(false);
+    });
+
+    it('has no submit error initially', () => {
+      const { result } = renderHook(() => useReviews(productId));
+      expect(result.current.submitError).toBeNull();
+    });
+
+    it('submitSuccess is false initially', () => {
+      const { result } = renderHook(() => useReviews(productId));
+      expect(result.current.submitSuccess).toBe(false);
     });
   });
 
@@ -83,7 +104,7 @@ describe('useReviews', () => {
     });
   });
 
-  describe('submit review', () => {
+  describe('submit review (mock-data fallback, no Wix client)', () => {
     it('adds review to the list after submission', async () => {
       const { result } = renderHook(() => useReviews(productId));
       const initialCount = result.current.reviews.length;
@@ -181,6 +202,252 @@ describe('useReviews', () => {
       });
 
       expect(result.current.summary.totalReviews).toBe(initialTotal + 1);
+    });
+
+    it('sets submitSuccess=true after successful submission', async () => {
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        const promise = result.current.submitReview({
+          rating: 5,
+          title: 'Great',
+          body: 'Loved it.',
+          photos: [],
+        });
+        jest.advanceTimersByTime(600);
+        await promise;
+      });
+
+      expect(result.current.submitSuccess).toBe(true);
+    });
+  });
+
+  describe('submit review (Wix client connected)', () => {
+    beforeEach(() => {
+      mockWixClient = {
+        createReview: mockCreateReview,
+        queryReviews: mockQueryReviews,
+      };
+    });
+
+    it('calls wixClient.createReview with correct payload', async () => {
+      mockCreateReview.mockResolvedValue({
+        id: 'wix-rev-1',
+        productId,
+        authorName: 'Test User',
+        rating: 5,
+        title: 'Wix review',
+        body: 'Submitted via API.',
+        createdAt: new Date().toISOString(),
+        helpful: 0,
+        verified: false,
+        photos: [],
+      });
+
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 5,
+          title: 'Wix review',
+          body: 'Submitted via API.',
+          photos: ['file:///photo1.jpg'],
+        });
+      });
+
+      expect(mockCreateReview).toHaveBeenCalledWith({
+        productId,
+        authorName: expect.any(String),
+        rating: 5,
+        title: 'Wix review',
+        body: 'Submitted via API.',
+        photos: ['file:///photo1.jpg'],
+      });
+    });
+
+    it('adds optimistic review immediately before API resolves', async () => {
+      let resolveApi: (val: any) => void;
+      const apiPromise = new Promise((resolve) => {
+        resolveApi = resolve;
+      });
+      mockCreateReview.mockReturnValue(apiPromise);
+
+      const { result } = renderHook(() => useReviews(productId));
+      const initialCount = result.current.reviews.length;
+
+      // Start submit — should add optimistic review
+      let submitPromise: Promise<boolean>;
+      act(() => {
+        submitPromise = result.current.submitReview({
+          rating: 5,
+          title: 'Optimistic review',
+          body: 'Should appear immediately.',
+          photos: [],
+        });
+      });
+
+      // Review should appear optimistically
+      expect(result.current.reviews.length).toBe(initialCount + 1);
+      const optimistic = result.current.reviews.find((r) => r.title === 'Optimistic review');
+      expect(optimistic).toBeDefined();
+
+      // Resolve API
+      await act(async () => {
+        resolveApi!({
+          id: 'wix-rev-99',
+          productId,
+          authorName: 'You',
+          rating: 5,
+          title: 'Optimistic review',
+          body: 'Should appear immediately.',
+          createdAt: new Date().toISOString(),
+          helpful: 0,
+          verified: false,
+        });
+        await submitPromise!;
+      });
+
+      // Review should still be there with server ID
+      expect(result.current.reviews.length).toBe(initialCount + 1);
+    });
+
+    it('rolls back optimistic review on API failure', async () => {
+      mockCreateReview.mockRejectedValue(new Error('Network error'));
+
+      const { result } = renderHook(() => useReviews(productId));
+      const initialCount = result.current.reviews.length;
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 5,
+          title: 'Doomed review',
+          body: 'This will fail.',
+          photos: [],
+        });
+      });
+
+      // Review should be rolled back
+      expect(result.current.reviews.length).toBe(initialCount);
+      expect(result.current.reviews.find((r) => r.title === 'Doomed review')).toBeUndefined();
+    });
+
+    it('sets submitError on API failure', async () => {
+      mockCreateReview.mockRejectedValue(new Error('Server error'));
+
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 4,
+          title: 'Will fail',
+          body: 'Error test.',
+          photos: [],
+        });
+      });
+
+      expect(result.current.submitError).toBe('Failed to submit review. Please try again.');
+    });
+
+    it('returns false on API failure', async () => {
+      mockCreateReview.mockRejectedValue(new Error('Server error'));
+
+      const { result } = renderHook(() => useReviews(productId));
+
+      let success: boolean | undefined;
+      await act(async () => {
+        success = await result.current.submitReview({
+          rating: 4,
+          title: 'Will fail',
+          body: 'Error test.',
+          photos: [],
+        });
+      });
+
+      expect(success).toBe(false);
+    });
+
+    it('clears submitError on next successful submission', async () => {
+      // First: fail
+      mockCreateReview.mockRejectedValueOnce(new Error('Server error'));
+
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 4,
+          title: 'Will fail',
+          body: 'Error test.',
+          photos: [],
+        });
+      });
+      expect(result.current.submitError).not.toBeNull();
+
+      // Second: succeed
+      mockCreateReview.mockResolvedValueOnce({
+        id: 'wix-rev-2',
+        productId,
+        authorName: 'You',
+        rating: 5,
+        title: 'Will succeed',
+        body: 'Success test.',
+        createdAt: new Date().toISOString(),
+        helpful: 0,
+        verified: false,
+      });
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 5,
+          title: 'Will succeed',
+          body: 'Success test.',
+          photos: [],
+        });
+      });
+
+      expect(result.current.submitError).toBeNull();
+      expect(result.current.submitSuccess).toBe(true);
+    });
+
+    it('keeps form open on API failure', async () => {
+      mockCreateReview.mockRejectedValue(new Error('Network error'));
+
+      const { result } = renderHook(() => useReviews(productId));
+      act(() => result.current.setShowForm(true));
+
+      await act(async () => {
+        await result.current.submitReview({
+          rating: 4,
+          title: 'Will fail',
+          body: 'Keeps form open.',
+          photos: [],
+        });
+      });
+
+      expect(result.current.showForm).toBe(true);
+    });
+  });
+
+  describe('clearSubmitStatus', () => {
+    it('clears both submitError and submitSuccess', async () => {
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        const promise = result.current.submitReview({
+          rating: 5,
+          title: 'Test',
+          body: 'Test body',
+          photos: [],
+        });
+        jest.advanceTimersByTime(600);
+        await promise;
+      });
+
+      expect(result.current.submitSuccess).toBe(true);
+
+      act(() => result.current.clearSubmitStatus());
+
+      expect(result.current.submitSuccess).toBe(false);
+      expect(result.current.submitError).toBeNull();
     });
   });
 
