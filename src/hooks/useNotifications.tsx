@@ -163,7 +163,9 @@ async function registerForPushToken(): Promise<string | null> {
     const { data } = await Notifications.getExpoPushTokenAsync({ projectId });
     return data;
   } catch (err) {
-    captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getExpoPushToken' });
+    captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+      action: 'getExpoPushToken',
+    });
     return null;
   }
 }
@@ -194,7 +196,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           dispatch({ type: 'SET_PREFERENCES', prefs: JSON.parse(saved) });
         }
       } catch (err) {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'restorePreferences' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'restorePreferences',
+        });
       }
 
       // Restore persisted badge count
@@ -207,7 +211,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           }
         }
       } catch (err) {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'restoreBadgeCount' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'restoreBadgeCount',
+        });
       }
 
       // Sync permission status with OS
@@ -219,14 +225,18 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           if (token) {
             dispatch({ type: 'SET_TOKEN', token });
             registerPushToken(token).catch((e) => {
-              captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'registerPushToken' });
+              captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+                action: 'registerPushToken',
+              });
             });
           }
         } else if (status === 'denied') {
           dispatch({ type: 'SET_PERMISSION', status: 'denied' });
         }
       } catch (err) {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'getPermissionsAsync' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'getPermissionsAsync',
+        });
       }
     })();
   }, []);
@@ -241,7 +251,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
         registerPushToken(token).catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            action: 'registerPushToken',
+          });
         });
       }
       return;
@@ -257,7 +269,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
         registerPushToken(token).catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'registerPushToken' });
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            action: 'registerPushToken',
+          });
         });
       }
     }

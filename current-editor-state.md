@@ -1,0 +1,430 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - iframe [ref=e40]:
+      - generic [active] [ref=f23e1]:
+        - generic:
+          - generic:
+            - region "top of page"
+            - region "bottom of page"
+    - generic [ref=e6]:
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - img "Logo" [ref=e49] [cursor=pointer]
+          - generic [ref=e2712] [cursor=pointer]:
+            - generic [ref=e2718]: Admin Returns
+            - img [ref=e2720]
+          - generic [ref=e70]:
+            - img [ref=e4344]
+            - generic [ref=e4346]: Autosave on
+        - generic [ref=e79]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - img [ref=e88] [cursor=pointer]
+              - img [ref=e3818] [cursor=pointer]
+              - img [ref=e3825] [cursor=pointer]
+            - button [ref=e109] [cursor=pointer]:
+              - img [ref=e111]
+            - button "1280px" [ref=e118] [cursor=pointer]:
+              - generic [ref=e121]: 1280px
+              - img [ref=e124]
+          - generic [ref=e132] [cursor=pointer]:
+            - generic [ref=e5020]: 100%
+            - img [ref=e5021]
+          - generic [ref=e141]:
+            - button "Upgrade":
+              - generic: Upgrade
+        - generic [ref=e142]:
+          - img "Avatar" [ref=e150] [cursor=pointer]
+          - generic [ref=e152]:
+            - generic [ref=e4349] [cursor=pointer]:
+              - img [ref=e4351]
+              - img "Avatar" [ref=e4355]
+            - img "Avatar" [ref=e170] [cursor=pointer]
+            - img "Avatar" [ref=e4361] [cursor=pointer]
+            - img "Avatar" [ref=e176] [cursor=pointer]
+            - generic [ref=e4364] [cursor=pointer]: "+1"
+          - generic [ref=e182]:
+            - button [disabled]:
+              - generic:
+                - generic:
+                  - img
+          - generic [ref=e185]:
+            - button [disabled]:
+              - generic:
+                - generic:
+                  - img
+          - generic [ref=e194] [cursor=pointer]:
+            - img [ref=e195]
+            - generic [ref=e199]: "3"
+          - generic [ref=e204]:
+            - button [ref=e205] [cursor=pointer]:
+              - img [ref=e207]
+            - button [ref=e209] [cursor=pointer]:
+              - img [ref=e214]
+          - button "Publish" [ref=e218] [cursor=pointer]:
+            - generic [ref=e220]: Publish
+      - generic [ref=e7]:
+        - generic [ref=e226]:
+          - generic [ref=e227]:
+            - button [ref=e234] [cursor=pointer]:
+              - img [ref=e239]
+            - button [ref=e247] [cursor=pointer]:
+              - img [ref=e252]
+            - button [ref=e260] [cursor=pointer]:
+              - img [ref=e265]
+            - button [ref=e273] [cursor=pointer]:
+              - img [ref=e278]
+            - button [ref=e287] [cursor=pointer]:
+              - img [ref=e292]
+            - button [ref=e300] [cursor=pointer]:
+              - img [ref=e305]
+            - button [ref=e313] [cursor=pointer]:
+              - img [ref=e318]
+            - button [ref=e326] [cursor=pointer]:
+              - img [ref=e332]
+            - button [ref=e340] [cursor=pointer]:
+              - img [ref=e345]
+            - button [ref=e353] [cursor=pointer]:
+              - img [ref=e358]
+            - button [ref=e366] [cursor=pointer]:
+              - img [ref=e371]
+          - generic [ref=e374]:
+            - button [ref=e381] [cursor=pointer]:
+              - img [ref=e386]
+            - button [ref=e394] [cursor=pointer]:
+              - img [ref=e399]
+            - button [ref=e407] [cursor=pointer]:
+              - img [ref=e412]
+            - button [ref=e420] [cursor=pointer]:
+              - img [ref=e426]
+        - generic [ref=e10]:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img
+                            - text: Desktop
+                            - generic: (Primary)
+          - iframe [ref=e17]:
+            - generic [active] [ref=f17e1]:
+              - generic [ref=f17e3]:
+                - region "top of page"
+                - generic [ref=f17e1808]:
+                  - generic:
+                    - banner:
+                      - generic [ref=f17e1809]:
+                        - paragraph [ref=f17e1816]: "Visit Our Showroom: Wed-Sat 10-5, Hendersonville NC"
+                        - generic [ref=f17e1817]:
+                          - generic:
+                            - generic [ref=f17e1819]:
+                              - link "Shop" [ref=f17e1822] [cursor=pointer]:
+                                - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category/all-products
+                                - generic [ref=f17e1824]: Shop
+                              - search [ref=f17e1826]:
+                                - button "Search" [ref=f17e1828] [cursor=pointer]:
+                                  - img [ref=f17e1832]
+                              - generic [ref=f17e1837]:
+                                - navigation [ref=f17e1839]:
+                                  - link "Notifications" [ref=f17e1841] [cursor=pointer]:
+                                    - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/members-area/my/notifications
+                                    - img [ref=f17e1843]
+                                - button "Hal Worker account" [ref=f17e1846] [cursor=pointer]
+                              - link [ref=f17e1853] [cursor=pointer]:
+                                - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/members-area/my/my-wishlist
+                                - img [ref=f17e1855]
+                              - button "Cart with 0 items" [ref=f17e1861] [cursor=pointer]:
+                                - img [ref=f17e1863]:
+                                  - generic [ref=f17e1864]: "0"
+                              - navigation "Site" [ref=f17e1869]:
+                                - list [ref=f17e1870]:
+                                  - listitem [ref=f17e1871]:
+                                    - link "Home" [ref=f17e1873] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287
+                                      - generic [ref=f17e1875]: Home
+                                  - listitem [ref=f17e1876]:
+                                    - generic [ref=f17e1877]:
+                                      - link "Shop" [ref=f17e1878] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category-page
+                                        - generic [ref=f17e1880]: Shop
+                                      - generic:
+                                        - button "Toggle Shop":
+                                          - img
+                                  - listitem [ref=f17e1882]:
+                                    - link "Sale" [ref=f17e1884] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category/sales
+                                      - generic [ref=f17e1886]: Sale
+                                  - listitem [ref=f17e1887]:
+                                    - link "Getting it Home" [ref=f17e1889] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/shipping-policy
+                                      - generic [ref=f17e1891]: Getting it Home
+                                  - listitem [ref=f17e1892]:
+                                    - link "Contact" [ref=f17e1894] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/contact
+                                      - generic [ref=f17e1896]: Contact
+                                  - listitem [ref=f17e1897]:
+                                    - link "FAQ" [ref=f17e1899] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/faq
+                                      - generic [ref=f17e1901]: FAQ
+                                  - listitem [ref=f17e1902]:
+                                    - link "About" [ref=f17e1904] [cursor=pointer]:
+                                      - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/about
+                                      - generic [ref=f17e1906]: About
+                            - heading "Carolina Futons" [level=2] [ref=f17e1908]:
+                              - link "Carolina Futons" [ref=f17e1909] [cursor=pointer]:
+                                - /url: /c1dmp
+                                - img "Carolina Futons" [ref=f17e1910]
+                    - main:
+                      - generic [ref=f17e1911]:
+                        - generic:
+                          - heading "Add a Title" [level=2] [ref=f17e1916]
+                          - paragraph [ref=f17e1918]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1920]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1922]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1924]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1926]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1928]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1930]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1932]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1934]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1936]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1938]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1940]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1942]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1944]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1946]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1948]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1950]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1952]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1954]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - paragraph [ref=f17e1956]: Add paragraph text. Click “Edit Text” to update the font, size and more. To change and reuse text themes, go to Site Styles.
+                          - button "Start Now" [ref=f17e1957]:
+                            - generic "Start Now" [ref=f17e1958] [cursor=pointer]:
+                              - generic [ref=f17e1959]: Start Now
+                          - button "Start Now" [ref=f17e1960]:
+                            - generic "Start Now" [ref=f17e1961] [cursor=pointer]:
+                              - generic [ref=f17e1962]: Start Now
+                          - button "Start Now" [ref=f17e1963]:
+                            - generic "Start Now" [ref=f17e1964] [cursor=pointer]:
+                              - generic [ref=f17e1965]: Start Now
+                          - button "Start Now" [ref=f17e1966]:
+                            - generic "Start Now" [ref=f17e1967] [cursor=pointer]:
+                              - generic [ref=f17e1968]: Start Now
+                          - button "Start Now" [ref=f17e1969]:
+                            - generic "Start Now" [ref=f17e1970] [cursor=pointer]:
+                              - generic [ref=f17e1971]: Start Now
+                          - button "Start Now" [ref=f17e1972]:
+                            - generic "Start Now" [ref=f17e1973] [cursor=pointer]:
+                              - generic [ref=f17e1974]: Start Now
+                          - button "Start Now" [ref=f17e1975]:
+                            - generic "Start Now" [ref=f17e1976] [cursor=pointer]:
+                              - generic [ref=f17e1977]: Start Now
+                          - button "Start Now" [ref=f17e1978]:
+                            - generic "Start Now" [ref=f17e1979] [cursor=pointer]:
+                              - generic [ref=f17e1980]: Start Now
+                          - button "Start Now" [ref=f17e1981]:
+                            - generic "Start Now" [ref=f17e1982] [cursor=pointer]:
+                              - generic [ref=f17e1983]: Start Now
+                          - button "Start Now" [ref=f17e1984]:
+                            - generic "Start Now" [ref=f17e1985] [cursor=pointer]:
+                              - generic [ref=f17e1986]: Start Now
+                          - button "Start Now" [ref=f17e1987]:
+                            - generic "Start Now" [ref=f17e1988] [cursor=pointer]:
+                              - generic [ref=f17e1989]: Start Now
+                          - button "Start Now" [ref=f17e1990]:
+                            - generic "Start Now" [ref=f17e1991] [cursor=pointer]:
+                              - generic [ref=f17e1992]: Start Now
+                          - generic [ref=f17e2001]:
+                            - list:
+                              - listitem [ref=f17e2002]
+                              - listitem [ref=f17e2004]
+                              - listitem [ref=f17e2006]
+                          - img [ref=f17e2010]
+                          - img [ref=f17e2015]
+                          - generic [ref=f17e2018]:
+                            - generic [ref=f17e2019]: Email
+                            - textbox "Email" [ref=f17e2021]:
+                              - /placeholder: example@domain.com
+                          - generic [ref=f17e2022]:
+                            - generic [ref=f17e2023]: Size
+                            - generic [ref=f17e2024]:
+                              - combobox "Size" [ref=f17e2025] [cursor=pointer]:
+                                - option "Small"
+                                - option "Medium"
+                                - option "Large"
+                                - option "Extra Large"
+                              - generic:
+                                - generic:
+                                  - img
+                    - contentinfo:
+                      - generic [ref=f17e2030]:
+                        - generic [ref=f17e2034]:
+                          - generic:
+                            - paragraph [ref=f17e2037]: © 2026 Carolina Futons. All rights reserved.
+                            - paragraph [ref=f17e2039]: Carolina Futons
+                        - generic [ref=f17e2042]:
+                          - generic [ref=f17e2044]:
+                            - generic [ref=f17e2046]:
+                              - paragraph [ref=f17e2049]:
+                                - link "Futon Frames" [ref=f17e2050] [cursor=pointer]:
+                                  - /url: /category/futon-frames
+                              - paragraph [ref=f17e2052]:
+                                - link "Murphy Cabinet Beds" [ref=f17e2053] [cursor=pointer]:
+                                  - /url: /category/murphy-cabinet-beds
+                              - paragraph [ref=f17e2055]:
+                                - link "Platform Beds" [ref=f17e2056] [cursor=pointer]:
+                                  - /url: /category/platform-beds
+                              - paragraph [ref=f17e2058]:
+                                - link "Mattresses" [ref=f17e2059] [cursor=pointer]:
+                                  - /url: /category/mattresses
+                              - paragraph [ref=f17e2061]:
+                                - link "Contact" [ref=f17e2062] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/contact
+                            - generic [ref=f17e2063]:
+                              - paragraph [ref=f17e2066]:
+                                - link "Terms & Conditions" [ref=f17e2067] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/terms-and-conditions
+                              - paragraph [ref=f17e2069]:
+                                - link "Privacy Policy" [ref=f17e2070] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/privacy-policy
+                              - paragraph [ref=f17e2072]:
+                                - link "Refund Policy" [ref=f17e2073] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/refund-policy
+                              - paragraph [ref=f17e2075]:
+                                - link "Shipping policy" [ref=f17e2076] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/shipping-policy
+                              - paragraph [ref=f17e2078]:
+                                - link "Accessibility statement" [ref=f17e2079] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/accessibility-statement
+                              - paragraph [ref=f17e2081]:
+                                - link "FAQ" [ref=f17e2082] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/faq
+                          - generic [ref=f17e2083]:
+                            - paragraph [ref=f17e2086]:
+                              - link "Facebook" [ref=f17e2087] [cursor=pointer]:
+                                - /url: https://www.facebook.com/carolinafutons
+                            - paragraph [ref=f17e2089]:
+                              - link "Instagram" [ref=f17e2090] [cursor=pointer]:
+                                - /url: https://www.instagram.com/carolinafutons
+                            - paragraph [ref=f17e2092]:
+                              - link "TikTok" [ref=f17e2093] [cursor=pointer]:
+                                - /url: https://www.tiktok.com/@carolinafutons
+                            - paragraph [ref=f17e2095]:
+                              - link "Pinterest" [ref=f17e2096] [cursor=pointer]:
+                                - /url: https://www.pinterest.com/carolinafutons
+                        - generic [ref=f17e2099]:
+                          - paragraph [ref=f17e2102]: Stay Inspired
+                          - paragraph [ref=f17e2104]: Receive the latest trends to your inbox
+                          - form "Contact us" [ref=f17e2111]:
+                            - group [ref=f17e2112]:
+                              - generic [ref=f17e2113]:
+                                - generic [ref=f17e2114]:
+                                  - generic [ref=f17e2116]:
+                                    - generic [ref=f17e2118]:
+                                      - text: Email address
+                                      - generic [ref=f17e2119]: "*"
+                                    - textbox "Email address" [ref=f17e2124]:
+                                      - /placeholder: Enter Email
+                                  - generic [ref=f17e2131] [cursor=pointer]:
+                                    - checkbox "Yes, subscribe me to your newsletter."
+                                    - paragraph [ref=f17e2140]:
+                                      - generic [ref=f17e2141]: Yes, subscribe me to your newsletter.
+                                  - button "Submit" [ref=f17e2146] [cursor=pointer]:
+                                    - generic [ref=f17e2147]: Submit
+                                - region
+                        - generic [ref=f17e2148]:
+                          - generic:
+                            - generic [ref=f17e2150]:
+                              - paragraph [ref=f17e2153]: Contact
+                              - paragraph [ref=f17e2155]:
+                                - link "carolinafutons@gmail.com" [ref=f17e2156] [cursor=pointer]:
+                                  - /url: mailto:carolinafutons@gmail.com
+                              - paragraph [ref=f17e2158]: (828) 252-9449
+                              - paragraph [ref=f17e2160]: 824 Locust St, Hendersonville, NC 28792
+                              - paragraph [ref=f17e2162]: Wed–Fri 10–5 | Sat 10–4
+                            - link "Send" [ref=f17e2164] [cursor=pointer]:
+                              - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287
+                              - img [ref=f17e2168]
+                        - paragraph [ref=f17e2175]: Carolina Futons
+                - region "bottom of page"
+              - iframe [ref=f17e641]:
+                
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Hal Worker
+          - generic [ref=e431]:
+            - link "https://halworker85.wixstudio.com/my-site" [ref=e432] [cursor=pointer]:
+              - /url: https://halworker85.wixstudio.com/my-site
+            - button "Connect Domain" [ref=e434] [cursor=pointer]
+        - img [ref=e439] [cursor=pointer]
+      - generic [ref=e441]:
+        - generic [ref=e449]:
+          - generic [ref=e451]:
+            - region "scrollable content" [ref=e456]:
+              - generic [ref=e2956] [cursor=pointer]:
+                - img [ref=e5049]
+                - generic [ref=e2960]: Admin Returns.qoc25.js
+                - img [ref=e2964]
+            - generic [ref=e471]:
+              - button "Run" [ref=e473] [cursor=pointer]:
+                - generic [ref=e474]:
+                  - img [ref=e475]
+                  - text: Run
+              - generic [ref=e477]:
+                - button [disabled]:
+                  - generic:
+                    - img
+              - button [ref=e478] [cursor=pointer]:
+                - img [ref=e479]
+              - generic [ref=e481]:
+                - button [ref=e5051] [cursor=pointer]:
+                  - img [ref=e5052]
+                - button [ref=e5054] [cursor=pointer]:
+                  - img [ref=e5055]
+              - img [ref=e492] [cursor=pointer]
+          - generic:
+            - generic:
+              - generic:
+                - code [ref=e2974]:
+                  - generic [ref=e2975]:
+                    - generic [ref=e2981]: "1"
+                    - generic [ref=e2987]: "// Velo API Reference: https://www.wix.com/velo/reference/api-overview/introduction"
+                    - textbox "Editor content;Press Alt+F1 for Accessibility Options." [ref=e2989]
+                - generic [ref=e2992]:
+                  - img [ref=e2993]
+                  - generic [ref=e2995]: You're viewing the latest code from origin/main as read-only.
+                  - button "Local Dev Setup" [ref=e2996] [cursor=pointer]:
+                    - generic [ref=e2997]:
+                      - text: Local Dev Setup
+                      - img [ref=e2999]
+            - generic:
+              - generic:
+                - generic:
+                  - generic [ref=e608]:
+                    - generic [ref=e613] [cursor=pointer]: Properties & Events
+                    - generic [ref=e618] [cursor=pointer]: CSS Classes
+                  - generic [ref=e620]:
+                    - generic:
+                      - generic:
+                        - img [ref=e5040]
+                        - generic [ref=e5046]:
+                          - paragraph [ref=e5047]: Select an element to add events, edit its ID, and more.
+                          - text: Learn more
+        - generic [ref=e5027]:
+          - button "Page":
+            - generic: Page
+  - application "Rich Text Editor, editor1":
+    - iframe
+  - generic [ref=e636]:
+    - alert
+    - alert

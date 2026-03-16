@@ -1,0 +1,30 @@
+[    1492ms] [WARNING] react-i18next:: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour. @ https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:52
+[    1504ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.en.PCvl17LujMs.O/m=auth2/rt=j/sv=1/d=1/ed=1/rs=AHpOoo-sAn5Asuf3MvShXCH_dsg8tE46Tw/cb=gapi.loaded_0?le=scs:191
+[    1651ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://accounts.google.com/_/IdpIFrameHttp/cspreport/fine-allowlist:0
+[    1792ms] [WARNING] Your client application uses libraries for user authentication or authorization that are deprecated. See the [Migration Guide](https://developers.google.com/identity/gsi/web/guides/gis-migration) for more information. @ https://apis.google.com/_/scs/abc-static/_/js/k=gapi.lb.en.PCvl17LujMs.O/m=auth2/rt=j/sv=1/d=1/ed=1/rs=AHpOoo-sAn5Asuf3MvShXCH_dsg8tE46Tw/cb=gapi.loaded_0?le=scs:171
+[    5018ms] [ERROR] Attestation check for Attribution Reporting on https://www.facebook.com failed. @ https://users.wix.com/signin?forceRender=true:0
+[   13098ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://users.wix.com/authentication/v2/login/webauthn-challenge?loginId.email=halworker85%40gmail.com:0
+[   13099ms] [ERROR] [WebAuthn] Challenge API failed: Lpe: Request failed with status code 404
+    at https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:581731
+    at Fpe.handleRequestError (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:581745)
+    at Fpe.request (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:580363)
+    at async Tme.createWebAuthnChallenge (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:726569)
+    at async Tme.authenticateWithWebAuthn (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:728047)
+    at async Tme.loginWithPasskey (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:729072)
+    at async Bhe.handleEmailSubmit (https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:58:647258) @ https://static.parastorage.com/services/login-react-app/1.2606.0/app.bundle.min.js:57
+[   13170ms] [ERROR] Attestation check for Attribution Reporting on https://www.facebook.com failed. @ https://users.wix.com/signin/login?forceRender=true:0
+[   26670ms] [ERROR] Failed to load resource: the server responded with a status of 400 () @ https://users.wix.com/authentication/v2/login:0
+[   40271ms] [ERROR] Attestation check for Attribution Reporting on https://www.facebook.com failed. @ https://users.wix.com/signin/post-login?forceRender=true:0
+[   42968ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/update-center/lastViewedArticlesDate:0
+[   43054ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/sites-list-client/studio-modal-was-shown:0
+[   43070ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/experts-resources-ng/join_betas:0
+[   43117ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/sites-list-client/studio-modal-was-shown:0
+[   43201ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/experts-resources-ng/join_betas:0
+[   43250ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/sites-list-client/studio-modal-was-shown:0
+[   43447ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForKey/sites-list-client/studio-modal-was-shown:0
+[   43527ms] [ERROR] Access to fetch at 'https://sentry.wixpress.com/api/4028/envelope/?sentry_key=794e2f8a4d8d41d6b4b75cad40c5af51&sentry_version=7&sentry_client=sentry.javascript.browser%2F7.120.3' from origin 'https://manage.wix.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://manage.wix.com/studio/sites:0
+[   43527ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://sentry.wixpress.com/api/4028/envelope/?sentry_key=794e2f8a4d8d41d6b4b75cad40c5af51&sentry_version=7&sentry_client=sentry.javascript.browser%2F7.120.3:0
+[   43569ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/app-settings-service/v1/accountPreferences/getVolatilePrefForKey/1e54454f-8546-4aae-82fc-b3b16921cb18.cairo/sites_list_sites:0
+[   43719ms] [WARNING] Error while loading message draft data from persistence Error: Key was not found in capsule @ https://static.parastorage.com/unpkg/@wix/sentry-browser@7.121.5/dist/statics/sentry-browser.umd.min.js:0
+[   43778ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/_api/wix-user-preferences-webapp/getVolatilePrefForSite/cairo/1e54454f-8546-4aae-82fc-b3b16921cb18/sites_list_sites.defaultViewId:0
+[   43954ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ https://manage.wix.com/marketplace-provider-state/v1/provider-states:0

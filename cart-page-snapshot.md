@@ -1,0 +1,349 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - iframe [ref=e7]:
+      - generic [active] [ref=f8e1]:
+        - generic:
+          - generic:
+            - region "top of page"
+            - region "bottom of page"
+    - generic [ref=e8]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - img "Logo" [ref=e17] [cursor=pointer]
+          - generic [ref=e2190] [cursor=pointer]:
+            - generic [ref=e2196]: Cart Page
+            - img [ref=e2198]
+          - generic [ref=e38]:
+            - img [ref=e451]
+            - generic [ref=e453]: Autosave on
+        - generic [ref=e43]:
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - img [ref=e52] [cursor=pointer]
+              - img [ref=e2242] [cursor=pointer]
+              - img [ref=e2249] [cursor=pointer]
+            - button [ref=e73] [cursor=pointer]:
+              - img [ref=e75]
+            - button "1280px" [ref=e82] [cursor=pointer]:
+              - generic [ref=e85]: 1280px
+              - img [ref=e88]
+          - generic [ref=e96] [cursor=pointer]:
+            - generic [ref=e2202]: 100%
+            - img [ref=e2203]
+          - generic [ref=e105]:
+            - button "Upgrade":
+              - generic: Upgrade
+        - generic [ref=e106]:
+          - img "Avatar" [ref=e114] [cursor=pointer]
+          - generic [ref=e454]:
+            - generic [ref=e1232] [cursor=pointer]:
+              - img [ref=e1234]
+              - img "Avatar" [ref=e1238]
+            - img "Avatar" [ref=e460] [cursor=pointer]
+            - img "Avatar" [ref=e466] [cursor=pointer]
+            - img "Avatar" [ref=e1209] [cursor=pointer]
+          - generic [ref=e118]:
+            - button [disabled]:
+              - generic:
+                - generic:
+                  - img
+          - generic [ref=e121]:
+            - button [disabled]:
+              - generic:
+                - generic:
+                  - img
+          - generic [ref=e130] [cursor=pointer]:
+            - img [ref=e131]
+            - generic [ref=e135]: "3"
+          - generic [ref=e140]:
+            - button [ref=e141] [cursor=pointer]:
+              - img [ref=e143]
+            - button [ref=e145] [cursor=pointer]:
+              - img [ref=e150]
+          - button "Publish" [ref=e154] [cursor=pointer]:
+            - generic [ref=e156]: Publish
+      - generic [ref=e159]:
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - button [ref=e171] [cursor=pointer]:
+              - img [ref=e176]
+            - button [ref=e184] [cursor=pointer]:
+              - img [ref=e189]
+            - button [ref=e197] [cursor=pointer]:
+              - img [ref=e202]
+            - button [ref=e210] [cursor=pointer]:
+              - img [ref=e215]
+            - button [ref=e224] [cursor=pointer]:
+              - img [ref=e229]
+            - button [ref=e237] [cursor=pointer]:
+              - img [ref=e242]
+            - button [ref=e250] [cursor=pointer]:
+              - img [ref=e255]
+            - button [ref=e263] [cursor=pointer]:
+              - img [ref=e269]
+            - button [ref=e277] [cursor=pointer]:
+              - img [ref=e282]
+            - button [ref=e290] [cursor=pointer]:
+              - img [ref=e295]
+            - button [ref=e303] [cursor=pointer]:
+              - img [ref=e308]
+          - generic [ref=e311]:
+            - button [ref=e318] [cursor=pointer]:
+              - img [ref=e323]
+            - button [ref=e331] [cursor=pointer]:
+              - img [ref=e336]
+            - button [ref=e344] [cursor=pointer]:
+              - img [ref=e349]
+            - button [ref=e357] [cursor=pointer]:
+              - img [ref=e363]
+        - generic [ref=e367]:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img
+                            - text: Desktop
+                            - generic: (Primary)
+          - iframe [ref=e377]:
+            - generic [active] [ref=f2e1]:
+              - generic [ref=f2e3]:
+                - region "top of page"
+                - generic [ref=f2e1668]:
+                  - generic:
+                    - generic:
+                      - banner:
+                        - generic [ref=f2e1669]:
+                          - paragraph [ref=f2e1676]: "Visit Our Showroom: Wed-Sat 10-5, Hendersonville NC"
+                          - generic [ref=f2e1677]:
+                            - generic:
+                              - generic [ref=f2e1679]:
+                                - link "Shop" [ref=f2e1682] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category/all-products
+                                  - generic [ref=f2e1684]: Shop
+                                - search [ref=f2e1686]:
+                                  - button "Search" [ref=f2e1688] [cursor=pointer]:
+                                    - img [ref=f2e1692]
+                                - button "Hal Worker account" [ref=f2e1698] [cursor=pointer]
+                                - link [ref=f2e1705] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/members-area/my/my-wishlist
+                                  - img [ref=f2e1707]
+                                - button "Cart with 0 items" [ref=f2e1713] [cursor=pointer]:
+                                  - img [ref=f2e1715]:
+                                    - generic [ref=f2e1716]: "0"
+                                - navigation "Site" [ref=f2e1721]:
+                                  - list [ref=f2e1722]:
+                                    - listitem [ref=f2e1723]:
+                                      - link "Home" [ref=f2e1725] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287
+                                        - generic [ref=f2e1727]: Home
+                                    - listitem [ref=f2e1728]:
+                                      - generic [ref=f2e1729]:
+                                        - link "Shop" [ref=f2e1730] [cursor=pointer]:
+                                          - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category-page
+                                          - generic [ref=f2e1732]: Shop
+                                        - generic:
+                                          - button "Toggle Shop":
+                                            - img
+                                    - listitem [ref=f2e1734]:
+                                      - link "Sale" [ref=f2e1736] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/category/sales
+                                        - generic [ref=f2e1738]: Sale
+                                    - listitem [ref=f2e1739]:
+                                      - link "Getting it Home" [ref=f2e1741] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/shipping-policy
+                                        - generic [ref=f2e1743]: Getting it Home
+                                    - listitem [ref=f2e1744]:
+                                      - link "Contact" [ref=f2e1746] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/contact
+                                        - generic [ref=f2e1748]: Contact
+                                    - listitem [ref=f2e1749]:
+                                      - link "FAQ" [ref=f2e1751] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/faq
+                                        - generic [ref=f2e1753]: FAQ
+                                    - listitem [ref=f2e1754]:
+                                      - link "About" [ref=f2e1756] [cursor=pointer]:
+                                        - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/about
+                                        - generic [ref=f2e1758]: About
+                              - heading "Carolina Futons" [level=2] [ref=f2e1760]:
+                                - link "Carolina Futons" [ref=f2e1761] [cursor=pointer]:
+                                  - /url: /c1dmp
+                                  - img "Carolina Futons" [ref=f2e1762]
+                    - main:
+                      - iframe [ref=f2e1768]:
+                        - main [ref=f11e7]:
+                          - main [ref=f11e8]:
+                            - generic [ref=f11e9]:
+                              - heading "My cart" [level=1] [ref=f11e11]
+                              - generic [ref=f11e12]:
+                                - heading "Cart is empty" [level=2] [ref=f11e13]
+                                - link "Continue Browsing" [ref=f11e15] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287
+                                  - generic [ref=f11e16]: Continue Browsing
+                    - contentinfo:
+                      - generic [ref=f2e1769]:
+                        - generic [ref=f2e1773]:
+                          - generic:
+                            - paragraph [ref=f2e1776]: © 2026 Carolina Futons. All rights reserved.
+                            - paragraph [ref=f2e1778]: Carolina Futons
+                        - generic [ref=f2e1781]:
+                          - generic [ref=f2e1783]:
+                            - generic [ref=f2e1785]:
+                              - paragraph [ref=f2e1788]:
+                                - link "Futon Frames" [ref=f2e1789] [cursor=pointer]:
+                                  - /url: /category/futon-frames
+                              - paragraph [ref=f2e1791]:
+                                - link "Murphy Cabinet Beds" [ref=f2e1792] [cursor=pointer]:
+                                  - /url: /category/murphy-cabinet-beds
+                              - paragraph [ref=f2e1794]:
+                                - link "Platform Beds" [ref=f2e1795] [cursor=pointer]:
+                                  - /url: /category/platform-beds
+                              - paragraph [ref=f2e1797]:
+                                - link "Mattresses" [ref=f2e1798] [cursor=pointer]:
+                                  - /url: /category/mattresses
+                              - paragraph [ref=f2e1800]:
+                                - link "Contact" [ref=f2e1801] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/contact
+                            - generic [ref=f2e1802]:
+                              - paragraph [ref=f2e1805]:
+                                - link "Terms & Conditions" [ref=f2e1806] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/terms-and-conditions
+                              - paragraph [ref=f2e1808]:
+                                - link "Privacy Policy" [ref=f2e1809] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/privacy-policy
+                              - paragraph [ref=f2e1811]:
+                                - link "Refund Policy" [ref=f2e1812] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/refund-policy
+                              - paragraph [ref=f2e1814]:
+                                - link "Shipping policy" [ref=f2e1815] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/shipping-policy
+                              - paragraph [ref=f2e1817]:
+                                - link "Accessibility statement" [ref=f2e1818] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/accessibility-statement
+                              - paragraph [ref=f2e1820]:
+                                - link "FAQ" [ref=f2e1821] [cursor=pointer]:
+                                  - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287/faq
+                          - generic [ref=f2e1822]:
+                            - paragraph [ref=f2e1825]:
+                              - link "Facebook" [ref=f2e1826] [cursor=pointer]:
+                                - /url: https://www.facebook.com/carolinafutons
+                            - paragraph [ref=f2e1828]:
+                              - link "Instagram" [ref=f2e1829] [cursor=pointer]:
+                                - /url: https://www.instagram.com/carolinafutons
+                            - paragraph [ref=f2e1831]:
+                              - link "TikTok" [ref=f2e1832] [cursor=pointer]:
+                                - /url: https://www.tiktok.com/@carolinafutons
+                            - paragraph [ref=f2e1834]:
+                              - link "Pinterest" [ref=f2e1835] [cursor=pointer]:
+                                - /url: https://www.pinterest.com/carolinafutons
+                        - generic [ref=f2e1838]:
+                          - paragraph [ref=f2e1841]: Stay Inspired
+                          - paragraph [ref=f2e1843]: Receive the latest trends to your inbox
+                          - form "Contact us" [ref=f2e1850]:
+                            - group [ref=f2e1851]:
+                              - generic [ref=f2e1852]:
+                                - generic [ref=f2e1853]:
+                                  - generic [ref=f2e1855]:
+                                    - generic [ref=f2e1857]:
+                                      - text: Email address
+                                      - generic [ref=f2e1858]: "*"
+                                    - textbox "Email address" [ref=f2e1863]:
+                                      - /placeholder: Enter Email
+                                  - generic [ref=f2e1870] [cursor=pointer]:
+                                    - checkbox "Yes, subscribe me to your newsletter."
+                                    - paragraph [ref=f2e1879]:
+                                      - generic [ref=f2e1880]: Yes, subscribe me to your newsletter.
+                                  - button "Submit" [ref=f2e1885] [cursor=pointer]:
+                                    - generic [ref=f2e1886]: Submit
+                                - region
+                        - generic [ref=f2e1887]:
+                          - generic:
+                            - generic [ref=f2e1889]:
+                              - paragraph [ref=f2e1892]: Contact
+                              - paragraph [ref=f2e1894]:
+                                - link "carolinafutons@gmail.com" [ref=f2e1895] [cursor=pointer]:
+                                  - /url: mailto:carolinafutons@gmail.com
+                              - paragraph [ref=f2e1897]: (828) 252-9449
+                              - paragraph [ref=f2e1899]: 824 Locust St, Hendersonville, NC 28792
+                              - paragraph [ref=f2e1901]: Wed–Fri 10–5 | Sat 10–4
+                            - link "Send" [ref=f2e1903] [cursor=pointer]:
+                              - /url: https://editor.wix.com/html/editor/web/renderer/render/document/47bd7d06-bee1-4723-8fe4-5508a0aed287
+                              - img [ref=f2e1907]
+                        - paragraph [ref=f2e1914]: Carolina Futons
+                - region "bottom of page"
+              - iframe [ref=f2e641]:
+                
+              - log [ref=f2e1532]
+          - generic [ref=e378]:
+            - link "https://halworker85.wixstudio.com/my-site" [ref=e379] [cursor=pointer]:
+              - /url: https://halworker85.wixstudio.com/my-site
+            - button "Connect Domain" [ref=e381] [cursor=pointer]
+        - generic:
+          - img [ref=e386] [cursor=pointer]
+          - generic [ref=e2206]:
+            - img [ref=e2208]
+            - generic [ref=e2211]: Select an element to see and edit its properties here.
+      - generic [ref=e388]:
+        - generic [ref=e396]:
+          - generic [ref=e398]:
+            - region "scrollable content" [ref=e403]:
+              - generic [ref=e2252] [cursor=pointer]:
+                - img [ref=e2254]
+                - generic [ref=e2256]: Cart Page.mqi5m.js
+                - img [ref=e2260]
+            - generic [ref=e414]:
+              - button "Run" [ref=e416] [cursor=pointer]:
+                - generic [ref=e417]:
+                  - img [ref=e418]
+                  - text: Run
+              - generic [ref=e420]:
+                - button [disabled]:
+                  - generic:
+                    - img
+              - button [ref=e425] [cursor=pointer]:
+                - img [ref=e426]
+              - generic [ref=e427]:
+                - button [ref=e2264] [cursor=pointer]:
+                  - img [ref=e2265]
+                - button [ref=e2267] [cursor=pointer]:
+                  - img [ref=e2268]
+              - img [ref=e436] [cursor=pointer]
+          - generic:
+            - generic:
+              - generic:
+                - code [ref=e2270]:
+                  - textbox "Editor content;Press Alt+F1 for Accessibility Options." [ref=e2274]
+                - generic [ref=e1220]:
+                  - img [ref=e1221]
+                  - generic [ref=e1223]: You're viewing the latest code from origin/main as read-only.
+                  - button "Local Dev Setup" [ref=e1224] [cursor=pointer]:
+                    - generic [ref=e1225]:
+                      - text: Local Dev Setup
+                      - img [ref=e1227]
+            - generic:
+              - generic:
+                - generic:
+                  - generic [ref=e589]:
+                    - generic [ref=e594] [cursor=pointer]: Properties & Events
+                    - generic [ref=e599] [cursor=pointer]: CSS Classes
+                  - generic:
+                    - generic:
+                      - generic:
+                        - img [ref=e2222]
+                        - generic [ref=e2230]:
+                          - generic [ref=e2231]: Select an element to view its classes, create new ones and style them with CSS.
+                          - button "Learn more about CSS" [ref=e2232] [cursor=pointer]:
+                            - generic [ref=e2235]: Learn more about CSS
+        - generic [ref=e2236]:
+          - button "Page":
+            - generic: Page
+  - application "Rich Text Editor, editor1":
+    - iframe
+  - generic [ref=e612]:
+    - alert
+    - alert

@@ -22,7 +22,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.trackEvent(name, properties);
       } catch (e) {
-        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'MultiProvider.trackEvent' });
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.trackEvent',
+        });
       }
     }
   }
@@ -35,7 +37,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.trackScreenView(screenName, properties);
       } catch (e) {
-        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'MultiProvider.trackScreenView' });
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.trackScreenView',
+        });
       }
     }
   }
@@ -45,7 +49,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.identify(userId, properties);
       } catch (e) {
-        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'MultiProvider.identify' });
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.identify',
+        });
       }
     }
   }
@@ -55,7 +61,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.reset();
       } catch (e) {
-        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'MultiProvider.reset' });
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.reset',
+        });
       }
     }
   }
@@ -65,7 +73,9 @@ export class MultiProvider implements AnalyticsProvider {
       try {
         p.setEnabled(enabled);
       } catch (e) {
-        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', { action: 'MultiProvider.setEnabled' });
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'MultiProvider.setEnabled',
+        });
       }
     }
   }

@@ -28,7 +28,9 @@ export function useOnboarding(): UseOnboardingReturn {
         setHasSeenOnboarding(value === 'true');
       })
       .catch((err) => {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'onboarding_read' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'onboarding_read',
+        });
         setHasSeenOnboarding(false);
       })
       .finally(() => {
@@ -40,7 +42,9 @@ export function useOnboarding(): UseOnboardingReturn {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, 'true');
     } catch (err) {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'onboarding_write' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'onboarding_write',
+      });
     }
     setHasSeenOnboarding(true);
   }, []);

@@ -40,7 +40,9 @@ export class FirebaseAnalyticsProvider implements AnalyticsProvider {
   ): void {
     if (!this.enabled || !firebaseAnalytics) return;
     firebaseAnalytics.logEvent(name, properties ?? {}).catch((err) => {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_logEvent' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'firebase_logEvent',
+      });
     });
   }
 
@@ -52,14 +54,18 @@ export class FirebaseAnalyticsProvider implements AnalyticsProvider {
     firebaseAnalytics
       .logScreenView({ screen_name: screenName, screen_class: screenName, ...properties })
       .catch((err) => {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_logScreenView' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'firebase_logScreenView',
+        });
       });
   }
 
   identify(userId: string, _properties?: UserProperties): void {
     if (!this.enabled || !firebaseAnalytics) return;
     firebaseAnalytics.setUserId(userId).catch((err) => {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_setUserId' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'firebase_setUserId',
+      });
     });
     if (_properties) {
       const userProps: Record<string, string | null> = {};
@@ -67,7 +73,9 @@ export class FirebaseAnalyticsProvider implements AnalyticsProvider {
         userProps[key] = value != null ? String(value) : null;
       }
       firebaseAnalytics.setUserProperties(userProps).catch((err) => {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_setUserProperties' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'firebase_setUserProperties',
+        });
       });
     }
   }
@@ -75,10 +83,14 @@ export class FirebaseAnalyticsProvider implements AnalyticsProvider {
   reset(): void {
     if (!firebaseAnalytics) return;
     firebaseAnalytics.setUserId(null).catch((err) => {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_resetUserId' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'firebase_resetUserId',
+      });
     });
     firebaseAnalytics.resetAnalyticsData().catch((err) => {
-      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_resetAnalyticsData' });
+      captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+        action: 'firebase_resetAnalyticsData',
+      });
     });
   }
 
@@ -86,7 +98,9 @@ export class FirebaseAnalyticsProvider implements AnalyticsProvider {
     this.enabled = enabled;
     if (firebaseAnalytics) {
       firebaseAnalytics.setAnalyticsCollectionEnabled(enabled).catch((err) => {
-        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', { action: 'firebase_setAnalyticsCollectionEnabled' });
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'firebase_setAnalyticsCollectionEnabled',
+        });
       });
     }
   }
