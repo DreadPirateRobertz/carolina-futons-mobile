@@ -978,7 +978,6 @@ describe('mergeCartItems edge cases', () => {
   });
 });
 
-
 describe('Computed values', () => {
   it('subtotal is zero for empty cart', () => {
     const { getByTestId } = renderCart();

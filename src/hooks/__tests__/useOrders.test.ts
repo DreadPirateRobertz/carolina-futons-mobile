@@ -516,9 +516,7 @@ describe('useOrders', () => {
     });
 
     it('handles shippingInfo with no logistics', () => {
-      const order = transformWixOrder(
-        makeWixOrder({ shippingInfo: { logistics: undefined } }),
-      );
+      const order = transformWixOrder(makeWixOrder({ shippingInfo: { logistics: undefined } }));
       expect(order.shippingAddress.name).toBe('');
       expect(order.tracking).toBeUndefined();
     });
@@ -633,9 +631,7 @@ describe('useOrders', () => {
           },
         }),
       );
-      expect(order.tracking!.url).toBe(
-        'https://www.ups.com/track?tracknum=1Z999AA10123456784',
-      );
+      expect(order.tracking!.url).toBe('https://www.ups.com/track?tracknum=1Z999AA10123456784');
     });
 
     it('promotes status to shipped when tracking exists and status is processing', () => {

@@ -159,7 +159,11 @@ describe('AccountScreen', () => {
     mockAddressBook.addresses = [];
     mockAddressBook.defaultAddress = null;
     mockPremiumValue.isPremium = false;
-    mockBiometricAuth.status = { isAvailable: false, isEnrolled: false, biometricType: 'none' as const };
+    mockBiometricAuth.status = {
+      isAvailable: false,
+      isEnrolled: false,
+      biometricType: 'none' as const,
+    };
     mockBiometricAuth.isEnabled = false;
     mockBiometricAuth.loading = false;
   });
@@ -463,7 +467,11 @@ describe('AccountScreen', () => {
 
   describe('Biometric toggle', () => {
     it('shows biometric toggle when available, enrolled, and not loading', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       mockBiometricAuth.loading = false;
       const { getByTestId } = renderAccount({}, true);
       await waitFor(() => {
@@ -473,7 +481,11 @@ describe('AccountScreen', () => {
     });
 
     it('hides biometric toggle when not available', async () => {
-      mockBiometricAuth.status = { isAvailable: false, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: false,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       const { queryByTestId, getByTestId } = renderAccount({}, true);
       await waitFor(() => {
         expect(getByTestId('user-display-name')).toBeTruthy();
@@ -482,7 +494,11 @@ describe('AccountScreen', () => {
     });
 
     it('hides biometric toggle when not enrolled', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: false, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: false,
+        biometricType: 'fingerprint',
+      };
       const { queryByTestId, getByTestId } = renderAccount({}, true);
       await waitFor(() => {
         expect(getByTestId('user-display-name')).toBeTruthy();
@@ -491,7 +507,11 @@ describe('AccountScreen', () => {
     });
 
     it('hides biometric toggle when loading', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       mockBiometricAuth.loading = true;
       const { queryByTestId, getByTestId } = renderAccount({}, true);
       await waitFor(() => {
@@ -510,7 +530,11 @@ describe('AccountScreen', () => {
     });
 
     it('shows "Touch ID Sign-In" label for fingerprint biometric', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       const { getByTestId, getByText } = renderAccount({}, true);
       await waitFor(() => {
         expect(getByTestId('account-biometric-toggle')).toBeTruthy();
@@ -519,7 +543,11 @@ describe('AccountScreen', () => {
     });
 
     it('calls enableBiometric when toggle switched on', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       mockBiometricAuth.isEnabled = false;
       const { getByTestId } = renderAccount({}, true);
       await waitFor(() => {
@@ -532,7 +560,11 @@ describe('AccountScreen', () => {
     });
 
     it('calls disableBiometric when toggle switched off', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       mockBiometricAuth.isEnabled = true;
       const { getByTestId } = renderAccount({}, true);
       await waitFor(() => {
@@ -545,7 +577,11 @@ describe('AccountScreen', () => {
     });
 
     it('does not show biometric toggle for guests', async () => {
-      mockBiometricAuth.status = { isAvailable: true, isEnrolled: true, biometricType: 'fingerprint' };
+      mockBiometricAuth.status = {
+        isAvailable: true,
+        isEnrolled: true,
+        biometricType: 'fingerprint',
+      };
       const { queryByTestId } = renderAccount();
       await waitFor(() => {
         expect(queryByTestId('account-biometric-toggle')).toBeNull();
