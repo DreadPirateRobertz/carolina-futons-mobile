@@ -309,7 +309,7 @@ describe('useOrders', () => {
   it('fetches orders from Wix client when available', async () => {
     const wixOrder = makeWixOrder();
     mockQueryOrders.mockResolvedValue({ orders: [wixOrder], totalResults: 1 });
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -323,7 +323,7 @@ describe('useOrders', () => {
 
   it('sets error when Wix API call fails', async () => {
     mockQueryOrders.mockRejectedValue(new Error('Network timeout'));
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -334,7 +334,7 @@ describe('useOrders', () => {
 
   it('wraps non-Error API failures in Error', async () => {
     mockQueryOrders.mockRejectedValue('string error from API');
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -346,7 +346,7 @@ describe('useOrders', () => {
   it('caches Wix orders after successful API fetch', async () => {
     const wixOrder = makeWixOrder();
     mockQueryOrders.mockResolvedValue({ orders: [wixOrder], totalResults: 1 });
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -359,7 +359,7 @@ describe('useOrders', () => {
   it('refresh clears error and re-fetches from Wix', async () => {
     // First load fails
     mockQueryOrders.mockRejectedValueOnce(new Error('First failure'));
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -400,7 +400,7 @@ describe('useOrders', () => {
         resolveQuery = r;
       }),
     );
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result, unmount } = renderHook(() => useOrders());
 
@@ -472,7 +472,7 @@ describe('useOrders', () => {
     it('defaults price to 0 when amount is missing', () => {
       const wix = makeWixOrder();
       // Remove priceSummary to test fallback
-      (wix as Record<string, unknown>).priceSummary = undefined;
+      (wix as unknown as Record<string, unknown>).priceSummary = undefined;
       const order = transformWixOrder(wix);
       expect(order.subtotal).toBe(0);
       expect(order.shipping).toBe(0);
@@ -698,7 +698,7 @@ describe('useOrders', () => {
 
     it('defaults paymentMethod to empty string when billingInfo is missing', () => {
       const wix = makeWixOrder();
-      (wix as Record<string, unknown>).billingInfo = undefined;
+      (wix as unknown as Record<string, unknown>).billingInfo = undefined;
       const order = transformWixOrder(wix);
       expect(order.paymentMethod).toBe('');
     });
@@ -731,7 +731,7 @@ describe('useOrders', () => {
 
     const wixOrder = makeWixOrder();
     mockQueryOrders.mockResolvedValue({ orders: [wixOrder], totalResults: 1 });
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -746,7 +746,7 @@ describe('useOrders', () => {
       JSON.stringify({ orders: cachedOrders, cachedAt: new Date().toISOString() }),
     );
     mockQueryOrders.mockRejectedValue(new Error('Server error'));
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -758,7 +758,7 @@ describe('useOrders', () => {
 
   it('handles Wix API returning empty orders array', async () => {
     mockQueryOrders.mockResolvedValue({ orders: [], totalResults: 0 });
-    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders });
+    mockUseOptionalWixClient.mockReturnValue({ queryOrders: mockQueryOrders } as any);
 
     const { result } = renderHook(() => useOrders());
     await waitFor(() => expect(result.current.isLoading).toBe(false));

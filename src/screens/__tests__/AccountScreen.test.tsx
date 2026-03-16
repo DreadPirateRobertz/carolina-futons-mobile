@@ -19,8 +19,20 @@ jest.mock('expo-haptics', () => ({
   NotificationFeedbackType: { Success: 'Success', Warning: 'Warning', Error: 'Error' },
 }));
 
-const mockBiometricAuth = {
-  status: { isAvailable: false, isEnrolled: false, biometricType: 'none' as const },
+const mockBiometricAuth: {
+  status: {
+    isAvailable: boolean;
+    isEnrolled: boolean;
+    biometricType: 'none' | 'fingerprint' | 'facial' | 'iris';
+  };
+  isEnabled: boolean;
+  loading: boolean;
+  authenticating: boolean;
+  enableBiometric: jest.Mock;
+  disableBiometric: jest.Mock;
+  promptBiometric: jest.Mock;
+} = {
+  status: { isAvailable: false, isEnrolled: false, biometricType: 'none' },
   isEnabled: false,
   loading: false,
   authenticating: false,
@@ -766,7 +778,7 @@ describe('AccountScreen', () => {
     });
 
     it('pre-fills phone as empty string when user has no phone', async () => {
-      const noPhoneMember = { ...mockMember, phone: undefined };
+      const noPhoneMember = { ...mockMember, phone: '' };
       mockAuthService.getCurrentMember.mockResolvedValue(noPhoneMember);
       const { getByTestId } = render(
         <ThemeProvider>
@@ -784,7 +796,7 @@ describe('AccountScreen', () => {
     });
 
     it('does not show phone text when user has no phone', async () => {
-      const noPhoneMember = { ...mockMember, phone: undefined };
+      const noPhoneMember = { ...mockMember, phone: '' };
       mockAuthService.getCurrentMember.mockResolvedValue(noPhoneMember);
       const { queryByTestId, getByTestId } = render(
         <ThemeProvider>
