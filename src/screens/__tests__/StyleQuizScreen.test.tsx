@@ -206,11 +206,7 @@ describe('StyleQuizScreen', () => {
 
   it('renders with custom testID', () => {
     const { getByTestId } = render(
-      <StyleQuizScreen
-        onComplete={mockOnComplete}
-        onBack={mockOnBack}
-        testID="custom-quiz"
-      />,
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} testID="custom-quiz" />,
     );
     expect(getByTestId('custom-quiz')).toBeTruthy();
   });
