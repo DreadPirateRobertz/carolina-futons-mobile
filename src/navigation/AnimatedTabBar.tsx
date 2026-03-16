@@ -72,6 +72,7 @@ function TabButton({
     <Pressable
       testID={`tab-${route.name}`}
       accessibilityRole="tab"
+      accessibilityLabel={label}
       accessibilityState={isFocused ? { selected: true } : {}}
       onPress={handlePress}
       onPressIn={handlePressIn}

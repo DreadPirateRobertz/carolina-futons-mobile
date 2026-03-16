@@ -105,6 +105,7 @@ export function RecommendationCarousel({
             testID="see-all-link"
             onPress={onSeeAll}
             accessibilityLabel={`See all ${title}`}
+            accessibilityRole="link"
           >
             <Text style={[styles.seeAll, { color: colors.mountainBlue }]}>See All</Text>
           </TouchableOpacity>

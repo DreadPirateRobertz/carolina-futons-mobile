@@ -223,7 +223,7 @@ function PremiumScreenInner({ onBack, testID }: Props) {
             accessibilityRole="button"
             accessibilityLabel="Restore previous purchases"
           >
-            <Text style={[styles.restoreText, { color: colors.mountainBlue }]}>
+            <Text style={[styles.restoreText, { color: colors.mountainBlueDark }]}>
               Restore Purchases
             </Text>
           </TouchableOpacity>

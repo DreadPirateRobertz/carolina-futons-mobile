@@ -249,6 +249,8 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
                   onSubmitEditing={handleApplyPromo}
                   editable={promo.status !== 'validating'}
                   testID="promo-input"
+                  accessibilityLabel="Promo code"
+                  accessibilityHint="Enter a promotional code for a discount"
                 />
                 <TouchableOpacity
                   style={[

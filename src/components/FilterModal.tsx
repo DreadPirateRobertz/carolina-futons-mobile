@@ -109,7 +109,7 @@ export function FilterModal({
                 accessibilityRole="button"
                 accessibilityLabel="Clear all filters"
               >
-                <Text style={[styles.clearText, { color: colors.mountainBlue }]}>Clear All</Text>
+                <Text style={[styles.clearText, { color: colors.mountainBlueDark }]}>Clear All</Text>
               </TouchableOpacity>
             </View>
 

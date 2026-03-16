@@ -273,6 +273,9 @@ export function StoreDetailScreen({ storeId, store: storeProp, testID }: Props) 
                 onPress={() => setSelectedAppointment(type.value)}
                 testID={`appointment-${type.value}`}
                 accessibilityRole="radio"
+                accessibilityLabel={type.label}
+                accessibilityState={{ selected: selectedAppointment === type.value }}
+                accessibilityRole="radio"
                 accessibilityState={{ selected: selectedAppointment === type.value }}
               >
                 <Text
