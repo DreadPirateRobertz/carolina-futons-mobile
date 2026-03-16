@@ -91,8 +91,7 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
     (value: string) => {
       if (step === 0) setPreferences((prev) => ({ ...prev, room: value as RoomType }));
       else if (step === 1) setPreferences((prev) => ({ ...prev, style: value as StylePreference }));
-      else if (step === 2)
-        setPreferences((prev) => ({ ...prev, primaryUse: value as PrimaryUse }));
+      else if (step === 2) setPreferences((prev) => ({ ...prev, primaryUse: value as PrimaryUse }));
       setStep((s) => s + 1);
     },
     [step],
