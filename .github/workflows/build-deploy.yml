@@ -78,7 +78,17 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Initialize EAS project
-        run: eas init --non-interactive || true
+        run: |
+          if grep -q 'YOUR_PROJECT_ID' app.json; then
+            node -e "
+              const fs = require('fs');
+              const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+              delete app.expo.extra.eas.projectId;
+              delete app.expo.updates;
+              fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
+            "
+          fi
+          eas init --non-interactive
 
       - name: Determine build profile
         id: profile
@@ -142,7 +152,17 @@ jobs:
           fi
 
       - name: Initialize EAS project
-        run: eas init --non-interactive || true
+        run: |
+          if grep -q 'YOUR_PROJECT_ID' app.json; then
+            node -e "
+              const fs = require('fs');
+              const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+              delete app.expo.extra.eas.projectId;
+              delete app.expo.updates;
+              fs.writeFileSync('app.json', JSON.stringify(app, null, 2));
+            "
+          fi
+          eas init --non-interactive
 
       - name: Build Android
         env:
