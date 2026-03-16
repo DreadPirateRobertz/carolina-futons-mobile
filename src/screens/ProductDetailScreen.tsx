@@ -248,7 +248,7 @@ export function ProductDetailScreen({
       `${quantity}× ${model.name} in ${selectedFabric.name} added to your cart.`,
       [
         { text: 'Continue Shopping', style: 'cancel' },
-        { text: 'View Cart', onPress: () => navigation.navigate('Cart') },
+        { text: 'View Cart', onPress: () => navigation.navigate('Tabs', { screen: 'Cart' }) },
       ],
     );
   }, [model, selectedFabric, quantity, totalPrice, onAddToCart, cart, navigation]);

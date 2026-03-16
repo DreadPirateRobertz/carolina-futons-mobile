@@ -12,8 +12,8 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
-import { CommonActions } from '@react-navigation/native';
-import { TabNavigator } from './TabNavigator';
+import { CommonActions, type NavigatorScreenParams } from '@react-navigation/native';
+import { TabNavigator, type TabParamList } from './TabNavigator';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
@@ -149,7 +149,7 @@ function LazyFallback() {
 
 export type RootStackParamList = {
   Onboarding: undefined;
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<TabParamList> | undefined;
   AR: { initialModelId?: string } | undefined;
   ProductDetail: { slug: string };
   Category: { slug: string };
