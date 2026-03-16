@@ -34,7 +34,11 @@ import { SortPicker } from '@/components/SortPicker';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { SearchEmptyState } from '@/components/SearchEmptyState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+
+/** Estimated height of a product row for getItemLayout optimization */
+const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -181,34 +185,60 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ],
   );
 
+  const handleEmptyCategoryPress = useCallback(
+    (category: ProductCategory) => {
+      setSearchQuery('');
+      setSelectedCategory(category);
+    },
+    [setSearchQuery, setSelectedCategory],
+  );
+
+  const handleTrendingPress = useCallback(
+    (term: string) => {
+      setSearchQuery(term);
+      addSearch(term);
+      events.search(term, 0);
+    },
+    [setSearchQuery, addSearch],
+  );
+
   const renderEmpty = useCallback(
-    () => (
-      <View
-        style={[styles.emptyContainer, { backgroundColor: darkPalette.surface, borderRadius: 16 }]}
-        testID="shop-empty"
-      >
-        <Text style={[styles.emptyIcon]}>🔍</Text>
-        <Text
+    () =>
+      searchQuery ? (
+        <SearchEmptyState
+          query={searchQuery}
+          categories={categories.map((c) => ({ id: c.id, label: c.label }))}
+          onCategoryPress={handleEmptyCategoryPress}
+          onTrendingPress={handleTrendingPress}
+        />
+      ) : (
+        <View
           style={[
-            styles.emptyTitle,
-            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            styles.emptyContainer,
+            { backgroundColor: darkPalette.surface, borderRadius: 16 },
           ]}
+          testID="shop-empty"
         >
-          No products found
-        </Text>
-        <Text
-          style={[
-            styles.emptyMessage,
-            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-          ]}
-        >
-          {searchQuery
-            ? `No results for "${searchQuery}". Try a different search.`
-            : 'No products in this category yet.'}
-        </Text>
-      </View>
-    ),
-    [searchQuery, colors],
+          <Text style={[styles.emptyIcon]}>🔍</Text>
+          <Text
+            style={[
+              styles.emptyTitle,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
+          >
+            No products found
+          </Text>
+          <Text
+            style={[
+              styles.emptyMessage,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            No products in this category yet.
+          </Text>
+        </View>
+      ),
+    [searchQuery, colors, categories, handleEmptyCategoryPress, handleTrendingPress],
   );
 
   const renderFooter = useCallback(
@@ -235,6 +265,11 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
+        getItemLayout={(_data, index) => ({
+          length: ESTIMATED_PRODUCT_ROW_HEIGHT,
+          offset: ESTIMATED_PRODUCT_ROW_HEIGHT * index,
+          index,
+        })}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         refreshControl={

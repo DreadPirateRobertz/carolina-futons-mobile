@@ -265,10 +265,7 @@ export function OrderDetailScreen({
 
   if (!ordersProp && error && !order) {
     return (
-      <View
-        style={[styles.root, { backgroundColor: colors.sandBase }]}
-        testID="order-detail-error"
-      >
+      <View style={[styles.root, { backgroundColor: colors.sandBase }]} testID="order-detail-error">
         <Text style={[styles.notFound, { color: colors.espressoLight }]}>
           Failed to load order. Pull down to retry.
         </Text>

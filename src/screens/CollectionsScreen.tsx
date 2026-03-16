@@ -18,8 +18,11 @@ import { usePremium } from '@/hooks/usePremium';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
+import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
+
+const ESTIMATED_COLLECTION_CARD_HEIGHT = 280;
 
 /** FlatList key extractor using the collection id. */
 const keyExtractor = (item: EditorialCollection) => item.id;
@@ -36,6 +39,7 @@ export function CollectionsScreen() {
   const insets = useSafeAreaInsets();
   const { collections } = useCollections();
   const { isPremium } = usePremium();
+  const scrollPerf = useScrollPerformance('CollectionsScreen');
 
   const handleCollectionPress = useCallback(
     (collection: EditorialCollection) => {
@@ -114,6 +118,7 @@ export function CollectionsScreen() {
     >
       <Header title="Curated Looks" showBack />
       <FlatList
+        testID="collections-list"
         data={collections}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
@@ -124,6 +129,16 @@ export function CollectionsScreen() {
           paddingBottom: insets.bottom + spacing.xl,
         }}
         showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
+        getItemLayout={(_data, index) => ({
+          length: ESTIMATED_COLLECTION_CARD_HEIGHT,
+          offset: ESTIMATED_COLLECTION_CARD_HEIGHT * index,
+          index,
+        })}
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
       />
     </View>
   );

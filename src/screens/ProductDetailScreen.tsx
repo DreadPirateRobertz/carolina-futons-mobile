@@ -615,7 +615,11 @@ export function ProductDetailScreen({
             onPress={() => {
               const next = !sizeGuideExpanded;
               setSizeGuideExpanded(next);
-              sizeGuideHeight.value = reduceMotion ? (next ? 280 : 0) : withTiming(next ? 280 : 0, { duration: 300 });
+              sizeGuideHeight.value = reduceMotion
+                ? next
+                  ? 280
+                  : 0
+                : withTiming(next ? 280 : 0, { duration: 300 });
             }}
             testID="size-guide-toggle"
             accessibilityRole="button"

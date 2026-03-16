@@ -51,7 +51,9 @@ describe('Accessibility: Contrast Ratios (WCAG 2.1 AA)', () => {
   });
 
   it('espressoLight on offWhite meets 4.5:1', () => {
-    expect(contrastRatio(colors.espressoLight, colors.offWhite)).toBeGreaterThanOrEqual(WCAG_AA_TEXT);
+    expect(contrastRatio(colors.espressoLight, colors.offWhite)).toBeGreaterThanOrEqual(
+      WCAG_AA_TEXT,
+    );
   });
 
   it('muted on offWhite meets 4.5:1', () => {
