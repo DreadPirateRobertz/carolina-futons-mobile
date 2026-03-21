@@ -276,4 +276,24 @@ describe('SearchBar recent searches', () => {
     fireEvent(getByTestId('search-input'), 'focus');
     expect(queryByTestId('search-recent')).toBeNull();
   });
+
+  it('calls onCameraPress when camera icon is pressed', () => {
+    const onCameraPress = jest.fn();
+    const { getByTestId } = render(
+      <ThemeProvider>
+        <SearchBar value="" onChangeText={jest.fn()} onCameraPress={onCameraPress} />
+      </ThemeProvider>,
+    );
+    fireEvent.press(getByTestId('camera-icon-btn'));
+    expect(onCameraPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not render camera icon when onCameraPress is not provided', () => {
+    const { queryByTestId } = render(
+      <ThemeProvider>
+        <SearchBar value="" onChangeText={jest.fn()} />
+      </ThemeProvider>,
+    );
+    expect(queryByTestId('camera-icon-btn')).toBeNull();
+  });
 });
