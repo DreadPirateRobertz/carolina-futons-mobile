@@ -425,10 +425,12 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
 
   const handleAffirmCheckout = useCallback(async () => {
-    if (isProcessing || !affirmEligible) return;
+    if (isProcessing) return;
 
     setSubmitAttempted(true);
     if (!validateForm()) return;
+
+    if (!affirmEligible) return;
 
     setAffirmError(null);
 
