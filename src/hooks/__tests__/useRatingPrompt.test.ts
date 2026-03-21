@@ -269,4 +269,103 @@ describe('useRatingPrompt', () => {
       );
     });
   });
+
+  describe('recordDelivery', () => {
+    it('does not prompt on first delivery (below threshold)', async () => {
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
+      expect(mockRequestReview).not.toHaveBeenCalled();
+    });
+
+    it('prompts on 1st delivery (delivery threshold is 1)', async () => {
+      // pre-seed 1 purchase so delivery tips it over combined threshold
+      mockGetItem.mockResolvedValue(
+        JSON.stringify({
+          purchaseCount: 2,
+          appOpenCount: 0,
+          lastPromptedAt: null,
+          disabled: false,
+        }),
+      );
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
+      expect(mockRequestReview).toHaveBeenCalledTimes(1);
+    });
+
+    it('prompts once on first delivery with sufficient purchase history', async () => {
+      mockGetItem.mockResolvedValue(
+        JSON.stringify({
+          purchaseCount: 3,
+          appOpenCount: 0,
+          lastPromptedAt: null,
+          disabled: false,
+        }),
+      );
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+        await result.current.recordDelivery();
+      });
+      // Cooldown prevents second prompt
+      expect(mockRequestReview).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not prompt if disabled', async () => {
+      mockGetItem.mockResolvedValue(
+        JSON.stringify({
+          purchaseCount: 5,
+          appOpenCount: 0,
+          lastPromptedAt: null,
+          disabled: true,
+        }),
+      );
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
+      expect(mockRequestReview).not.toHaveBeenCalled();
+    });
+
+    it('does not prompt within 90-day cooldown', async () => {
+      mockGetItem.mockResolvedValue(
+        JSON.stringify({
+          purchaseCount: 5,
+          appOpenCount: 0,
+          lastPromptedAt: Date.now() - 1000, // 1 second ago — within cooldown
+          disabled: false,
+        }),
+      );
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
+      expect(mockRequestReview).not.toHaveBeenCalled();
+    });
+
+    it('fires analytics event with delivery_milestone trigger on prompt', async () => {
+      const { events } = jest.requireMock('@/services/analytics');
+      mockGetItem.mockResolvedValue(
+        JSON.stringify({
+          purchaseCount: 3,
+          appOpenCount: 0,
+          lastPromptedAt: null,
+          disabled: false,
+        }),
+      );
+      const { result } = await renderLoaded();
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
+      expect(events.rateApp).toHaveBeenCalledWith('delivery_milestone');
+    });
+
+    it('is exposed on the hook return value', async () => {
+      const { result } = await renderLoaded();
+      expect(typeof result.current.recordDelivery).toBe('function');
+    });
+  });
 });

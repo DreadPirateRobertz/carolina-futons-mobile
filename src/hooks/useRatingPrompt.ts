@@ -126,6 +126,28 @@ export function useRatingPrompt() {
     }
   }, [requestPrompt]);
 
+  /**
+   * Call when an order is marked as delivered. Counts toward the purchase
+   * milestone and triggers a review prompt with the 'delivery_milestone'
+   * trigger when the threshold is reached.
+   */
+  const recordDelivery = useCallback(async () => {
+    if (Platform.OS === 'web') return;
+
+    const current = stateRef.current;
+    const updated = { ...current, purchaseCount: current.purchaseCount + 1 };
+    setState(updated);
+    await persistState(updated);
+
+    if (
+      updated.purchaseCount >= PURCHASE_THRESHOLD &&
+      !updated.disabled &&
+      !isWithinCooldown(updated.lastPromptedAt)
+    ) {
+      await requestPrompt(updated, 'delivery_milestone');
+    }
+  }, [requestPrompt]);
+
   /** Toggle the disabled state for rating prompts. */
   const toggleDisabled = useCallback(async () => {
     const current = stateRef.current;
@@ -139,6 +161,8 @@ export function useRatingPrompt() {
     disabled: state.disabled,
     /** Call after a successful purchase to track milestones. */
     recordPurchase,
+    /** Call when an order delivery is confirmed. */
+    recordDelivery,
     /** Toggle the disabled setting. */
     toggleDisabled,
   };
