@@ -24,7 +24,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Type check
         run: npx tsc --noEmit
@@ -60,7 +60,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: ESLint
         run: npx eslint src/ --ext .ts,.tsx
@@ -77,7 +77,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Verify 3D catalog sync
         run: npx tsx scripts/sync-3d-catalog.ts --check
