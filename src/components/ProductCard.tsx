@@ -79,9 +79,7 @@ export const ProductCard = memo(function ProductCard({
           identical tag in ProductDetailScreen, enabling Reanimated to pair
           the source and destination elements for the shared-element transition. */}
       <Animated.View
-        sharedTransitionTag={sharedTransitionTag(
-          `product-image-${productIdToModelId(product.id)}`,
-        )}
+        sharedTransitionTag={sharedTransitionTag(`product-image-${productIdToModelId(product.id)}`)}
         testID={`product-image-container-${product.id}`}
         style={[
           styles.imageContainer,

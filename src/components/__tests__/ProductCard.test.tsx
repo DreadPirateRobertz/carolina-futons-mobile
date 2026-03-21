@@ -4,7 +4,7 @@ import { ProductCard } from '../ProductCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS, type Product } from '@/data/products';
-import { productId, productIdToModelId } from '@/data/productId';
+import { productId } from '@/data/productId';
 
 const futon = PRODUCTS.find((p) => p.category === 'futons')!;
 const saleProduct = PRODUCTS.find((p) => p.originalPrice !== undefined)!;
