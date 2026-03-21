@@ -65,11 +65,7 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
   const a11yLabel = `${item.model.name}, ${fabricLabel}, ${formatPrice(item.unitPrice)}, quantity ${item.quantity}`;
 
   return (
-    <View
-      style={itemStyles.row}
-      testID={`cartItemRow-${item.id}`}
-      accessibilityLabel={a11yLabel}
-    >
+    <View style={itemStyles.row} testID={`cartItemRow-${item.id}`} accessibilityLabel={a11yLabel}>
       {/* Image / color swatch */}
       {item.imageUrl ? (
         <Image

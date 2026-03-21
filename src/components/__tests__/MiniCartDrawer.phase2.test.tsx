@@ -61,7 +61,7 @@ const ITEM_A = {
   fabric: { name: 'Natural Linen', color: '#D4C5A9' },
   quantity: 2,
   unitPrice: 349,
-  thumbnailUrl: 'https://media.wix.com/asheville-thumb.jpg',
+  imageUrl: 'https://media.wix.com/asheville-thumb.jpg',
 };
 
 const ITEM_B = {
@@ -70,7 +70,7 @@ const ITEM_B = {
   fabric: { name: 'Slate Gray', color: '#6B7B8D' },
   quantity: 1,
   unitPrice: 449,
-  thumbnailUrl: undefined,
+  imageUrl: undefined,
 };
 
 const CART_WITH_ITEMS = {
@@ -150,7 +150,7 @@ describe('item list — CF-gsza schema rendering', () => {
     expect(getByTestId('mini-cart-empty')).toBeTruthy();
   });
 
-  it('image shows thumbnailUrl when available', () => {
+  it('image shows imageUrl when available', () => {
     const { getByTestId } = renderDrawer();
     const img = getByTestId(`cartItemImage-${ITEM_A.id}`);
     expect(img.props.source?.uri ?? img.props.source).toEqual(
@@ -158,7 +158,7 @@ describe('item list — CF-gsza schema rendering', () => {
     );
   });
 
-  it('image shows fabric color swatch when thumbnailUrl is absent', () => {
+  it('image shows fabric color swatch when imageUrl is absent', () => {
     const { getByTestId } = renderDrawer();
     const img = getByTestId(`cartItemImage-${ITEM_B.id}`);
     // When no image URL, fallback element (View) uses fabric color — style is an array
