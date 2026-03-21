@@ -6,9 +6,10 @@
  * and a "Helpful" voting button. Memoized for efficient rendering in review lists.
  */
 
-import React, { useCallback, useMemo, memo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { useCallback, useMemo, memo, useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Modal, StatusBar } from 'react-native';
 import { Image } from 'expo-image';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { type Review } from '@/data/reviews';
 import { StarRating } from '@/components/StarRating';
@@ -44,10 +45,20 @@ function relativeDate(iso: string): string {
 /** Memoized review card with star rating, author, body, photos, and helpful vote button. */
 export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }: ReviewCardProps) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
+  const insets = useSafeAreaInsets();
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const handleHelpful = useCallback(() => {
     onHelpful?.(review.id);
   }, [onHelpful, review.id]);
+
+  const handlePhotoPress = useCallback((index: number) => {
+    setLightboxIndex(index);
+  }, []);
+
+  const handleLightboxClose = useCallback(() => {
+    setLightboxIndex(null);
+  }, []);
 
   const timeAgo = useMemo(() => relativeDate(review.createdAt), [review.createdAt]);
 
@@ -106,12 +117,17 @@ export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }
         {review.body}
       </Text>
 
-      {/* Photo thumbnails */}
+      {/* Photo thumbnails — tappable, open lightbox */}
       {review.photos && review.photos.length > 0 && (
         <View style={styles.photosRow}>
           {review.photos.map((photo, index) => (
-            <View
+            <TouchableOpacity
               key={`${review.id}-photo-${index}`}
+              testID={`review-photo-${index}`}
+              onPress={() => handlePhotoPress(index)}
+              accessibilityLabel={`View review photo ${index + 1} full screen`}
+              accessibilityRole="button"
+              activeOpacity={0.85}
               style={[
                 styles.photoThumbnail,
                 { backgroundColor: colors.sandLight, borderRadius: borderRadius.image },
@@ -125,9 +141,47 @@ export const ReviewCard = memo(function ReviewCard({ review, onHelpful, testID }
                 accessibilityLabel={`Review photo ${index + 1}`}
                 cachePolicy="memory-disk"
               />
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
+      )}
+
+      {/* Photo lightbox */}
+      {lightboxIndex !== null && review.photos && review.photos.length > 0 && (
+        <Modal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={handleLightboxClose}
+          testID="review-lightbox"
+        >
+          <StatusBar hidden />
+          <View
+            style={[
+              styles.lightboxOverlay,
+              { paddingTop: insets.top, paddingBottom: insets.bottom },
+            ]}
+          >
+            <Image
+              source={{ uri: review.photos[lightboxIndex] }}
+              style={styles.lightboxImage}
+              contentFit="contain"
+              transition={150}
+              accessibilityLabel={`Review photo ${lightboxIndex + 1} full screen`}
+              cachePolicy="memory-disk"
+            />
+            <TouchableOpacity
+              testID="review-lightbox-close"
+              onPress={handleLightboxClose}
+              style={styles.lightboxCloseButton}
+              accessibilityLabel="Close photo"
+              accessibilityRole="button"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={styles.lightboxCloseText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       )}
 
       {/* Footer row: date + helpful button */}
@@ -205,4 +259,30 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   helpfulText: {},
+  lightboxOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxImage: {
+    width: '100%',
+    height: '80%',
+  },
+  lightboxCloseButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxCloseText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
 });

@@ -25,6 +25,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
+import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { WishlistIllustration } from '@/components/illustrations/WishlistIllustration';
 import { formatPrice } from '@/utils';
@@ -43,10 +44,10 @@ interface Props {
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
-  const { count, getProducts, getShareText, remove, clear, refresh } = useWishlist();
+  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useWishlist();
 
   const scrollPerf = useScrollPerformance('WishlistScreen');
-  const products = getProducts();
+
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -201,6 +202,12 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     ),
     [onBrowse],
   );
+
+  if (isLoading) {
+    return <SkeletonProductGrid count={4} testID="skeleton-wishlist-grid" />;
+  }
+
+  const products = getProducts();
 
   return (
     <View

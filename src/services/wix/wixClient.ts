@@ -816,6 +816,19 @@ export class WixClient {
     return this.get<Record<string, unknown>>('/members/v1/members/' + encodeURIComponent(memberId));
   }
 
+  // ── Loyalty (Phase 2.3 / CF-yq80) ───────────────────────────
+
+  async getLoyaltyData(memberId: string): Promise<{
+    points: number;
+    tier: string;
+    nextTierThreshold: number;
+    progressPercent: number;
+    totalEarned?: number;
+    hasActivity?: boolean;
+  }> {
+    return this.get(`/_functions/loyalty/${encodeURIComponent(memberId)}`);
+  }
+
   // ── Wix Data Mutations ──────────────────────────────────────
 
   async insertDataItem(
