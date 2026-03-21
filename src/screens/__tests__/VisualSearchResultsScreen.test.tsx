@@ -2,23 +2,15 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { VisualSearchResultsScreen } from '../VisualSearchResultsScreen';
 import { PRODUCTS } from '@/data/products';
+import { WishlistProvider } from '@/hooks/useWishlist';
 
 const mockNavigate = jest.fn();
+const mockUseRoute = jest.fn();
+
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
-  useRoute: () => ({
-    params: {
-      productSlugs: [PRODUCTS[0].slug, PRODUCTS[1].slug],
-      query: {
-        category: 'futons',
-        style: 'modern',
-        colorFamily: 'neutral',
-        keywords: ['sofa'],
-        matchType: 'scored',
-      },
-    },
-  }),
+  useRoute: () => mockUseRoute(),
 }));
 
 jest.mock('@/theme', () => ({
@@ -28,81 +20,90 @@ jest.mock('@/theme', () => ({
       espressoLight: '#795548',
       sandBase: '#F5F0E8',
       sunsetCoral: '#FF6B47',
+      mountainBlueDark: '#1565C0',
+      muted: '#9E9E9E',
       white: '#FFF',
     },
-    spacing: { sm: 8, md: 16, lg: 24 },
-    borderRadius: { card: 12, button: 8 },
+    spacing: { xs: 4, sm: 8, md: 16, lg: 24 },
+    borderRadius: { sm: 4, md: 8, lg: 12, card: 12, button: 8 },
+    typography: {},
+    shadows: { card: {}, sm: {}, md: {}, lg: {} },
   }),
 }));
 
+const defaultRoute = {
+  params: {
+    productSlugs: [PRODUCTS[0].slug, PRODUCTS[1].slug],
+    query: {
+      category: 'futons',
+      style: 'modern',
+      colorFamily: 'neutral',
+      keywords: ['sofa'],
+      matchType: 'scored' as const,
+    },
+  },
+};
+
+const emptyRoute = {
+  params: {
+    productSlugs: [],
+    query: {
+      category: 'futons',
+      style: 'modern',
+      colorFamily: 'neutral',
+      keywords: [],
+      matchType: 'fallback' as const,
+    },
+  },
+};
+
+function renderScreen(props: React.ComponentProps<typeof VisualSearchResultsScreen> = {}) {
+  return render(
+    <WishlistProvider>
+      <VisualSearchResultsScreen {...props} />
+    </WishlistProvider>,
+  );
+}
+
 describe('VisualSearchResultsScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseRoute.mockReturnValue(defaultRoute);
+  });
 
   it('renders product cards for each result', () => {
-    const { getAllByTestId } = render(<VisualSearchResultsScreen />);
+    const { getAllByTestId } = renderScreen();
     expect(getAllByTestId(/product-card/i).length).toBeGreaterThan(0);
   });
 
   it('shows match-reason chip under each card', () => {
-    const { getAllByTestId } = render(<VisualSearchResultsScreen />);
+    const { getAllByTestId } = renderScreen();
     expect(getAllByTestId(/match-reason/i).length).toBeGreaterThan(0);
   });
 
   it('shows VisualSearchEmptyState when results is empty', () => {
-    const { useRoute } = require('@react-navigation/native');
-    (useRoute as jest.Mock).mockReturnValueOnce({
-      params: {
-        productSlugs: [],
-        query: {
-          category: 'futons',
-          style: 'modern',
-          colorFamily: 'neutral',
-          keywords: [],
-          matchType: 'fallback',
-        },
-      },
-    });
-    const { getByTestId } = render(<VisualSearchResultsScreen />);
+    mockUseRoute.mockReturnValueOnce(emptyRoute);
+    const { getByTestId } = renderScreen();
     expect(getByTestId('visual-search-empty-state')).toBeTruthy();
   });
 
   it('"Browse All" navigates to Shop tab', () => {
-    const { useRoute } = require('@react-navigation/native');
-    (useRoute as jest.Mock).mockReturnValueOnce({
-      params: {
-        productSlugs: [],
-        query: {
-          category: 'futons',
-          style: 'modern',
-          colorFamily: 'neutral',
-          keywords: [],
-          matchType: 'fallback',
-        },
-      },
-    });
-    const { getByTestId } = render(<VisualSearchResultsScreen />);
+    mockUseRoute.mockReturnValueOnce(emptyRoute);
+    const { getByTestId } = renderScreen();
     fireEvent.press(getByTestId('browse-all-btn'));
     expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Shop' });
   });
 
   it('shows loading indicator when loading prop is true', () => {
-    const { useRoute } = require('@react-navigation/native');
-    (useRoute as jest.Mock).mockReturnValueOnce({
-      params: { productSlugs: [], query: null },
-    });
-    const { getByTestId } = render(<VisualSearchResultsScreen loading />);
+    mockUseRoute.mockReturnValueOnce({ params: { productSlugs: [], query: null } });
+    const { getByTestId } = renderScreen({ loading: true });
     expect(getByTestId('vs-loading')).toBeTruthy();
   });
 
   it('shows retry button when error prop is provided', () => {
-    const { useRoute } = require('@react-navigation/native');
-    (useRoute as jest.Mock).mockReturnValueOnce({
-      params: { productSlugs: [], query: null },
-    });
+    mockUseRoute.mockReturnValueOnce({ params: { productSlugs: [], query: null } });
     const mockRetry = jest.fn();
-    const { getByTestId } = render(
-      <VisualSearchResultsScreen error="Something went wrong" onRetry={mockRetry} />,
-    );
+    const { getByTestId } = renderScreen({ error: 'Something went wrong', onRetry: mockRetry });
     fireEvent.press(getByTestId('vs-retry-btn'));
     expect(mockRetry).toHaveBeenCalled();
   });
