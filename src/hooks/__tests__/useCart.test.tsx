@@ -1,7 +1,13 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { CartProvider, useCart, mergeCartItems, type CartItem } from '../useCart';
+import {
+  CartProvider,
+  useCart,
+  mergeCartItems,
+  serverLineItemToCartItem,
+  type CartItem,
+} from '../useCart';
 import { AuthContext } from '@/hooks/useAuth';
 import { ConnectivityProvider } from '../useConnectivity';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
@@ -1039,6 +1045,88 @@ describe('Computed values', () => {
     fireEvent.press(getByTestId('add-asheville-linen-2')); // qty 2
     fireEvent.press(getByTestId('add-blueridge-blue')); // qty 1
     expect(getByTestId('item-count').props.children).toBe(3);
+  });
+});
+
+describe('CartItem sku + variantId fields (cm-12g)', () => {
+  const { isWixConfigured } = require('@/services/wix/config');
+
+  beforeEach(() => {
+    (isWixConfigured as jest.Mock).mockReturnValue(true);
+    mockGetCart.mockClear();
+  });
+
+  it('serverLineItemToCartItem preserves variantId from catalogReference.options', () => {
+    const variantId = FABRICS[2].id;
+    const item = serverLineItemToCartItem({
+      _id: 'wix-variant',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId },
+      },
+      quantity: 1,
+    });
+    expect(item).not.toBeNull();
+    expect(item?.variantId).toBe(variantId);
+  });
+
+  it('serverLineItemToCartItem sets variantId to undefined when options has no variantId', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-no-variant',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: {},
+      },
+      quantity: 1,
+    });
+    expect(item).not.toBeNull();
+    expect(item?.variantId).toBeUndefined();
+  });
+
+  it('serverLineItemToCartItem populates sku from lineItem.sku when present', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-sku',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+      sku: 'CF-ASH-LIN-001',
+    });
+    expect(item).not.toBeNull();
+    expect(item?.sku).toBe('CF-ASH-LIN-001');
+  });
+
+  it('serverLineItemToCartItem leaves sku undefined when lineItem.sku is absent', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-no-sku',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+    });
+    expect(item).not.toBeNull();
+    expect(item?.sku).toBeUndefined();
+  });
+
+  it('CartItem interface accepts sku and variantId fields without TypeScript error', () => {
+    // Compile-time check: constructing a CartItem with sku+variantId is valid
+    const item: import('@/hooks/useCart').CartItem = {
+      id: `${FUTON_MODELS[0].id}:${FABRICS[0].id}`,
+      model: FUTON_MODELS[0],
+      fabric: FABRICS[0],
+      quantity: 1,
+      unitPrice: FUTON_MODELS[0].basePrice,
+      sku: 'CF-TEST-001',
+      variantId: FABRICS[0].id,
+    };
+    expect(item.sku).toBe('CF-TEST-001');
+    expect(item.variantId).toBe(FABRICS[0].id);
   });
 });
 
