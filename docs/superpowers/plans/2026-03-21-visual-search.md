@@ -17,7 +17,7 @@
 | Path | Responsibility |
 |------|---------------|
 | `src/hooks/useVisualSearch.ts` | State machine + image picker + backend call + local scoring |
-| `src/hooks/__tests__/useVisualSearch.test.ts` | 11 unit tests (TDD) |
+| `src/hooks/__tests__/useVisualSearch.test.ts` | 12 unit tests (TDD) |
 | `src/components/VisualSearchEmptyState.tsx` | Zero-result empty state (distinct from SearchEmptyState) |
 | `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Render + "Browse All" CTA tests |
 | `src/screens/VisualSearchResultsScreen.tsx` | "Find Similar" results with match-reason chips |
@@ -40,7 +40,7 @@
 | Path | Responsibility |
 |------|---------------|
 | `src/public/visualSearch.js` | POST `/_functions/visualSearch` — SSRF-guarded OpenAI call |
-| `tests/unit/visualSearch.test.js` | 12 SSRF + API error tests (TDD) |
+| `tests/unit/visualSearch.test.js` | 13 SSRF + API error tests (TDD) |
 
 ---
 
@@ -300,7 +300,7 @@ cd /Users/hal/gt/cfutons_mobile
 npx jest src/hooks/__tests__/useVisualSearch.test.ts --no-coverage 2>&1 | tail -5
 ```
 
-Expected: `Tests: 11 failed, 0 passed`
+Expected: `Tests: 12 failed, 0 passed`
 
 - [ ] **Step 3: Commit failing tests**
 
@@ -380,9 +380,10 @@ export function useVisualSearch(): UseVisualSearchReturn {
 
   const wixClient = useOptionalWixClient();
 
-  const trigger = useCallback(async () => {
+  const trigger = useCallback(async (opts?: { useCamera?: boolean }) => {
     // Launch picker with EXIF stripped (zhora security requirement)
-    const picked = await ImagePicker.launchImageLibraryAsync({
+    const launcher = opts?.useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
+    const picked = await launcher({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       base64: true,
       exif: false,
@@ -993,7 +994,7 @@ Expected: FAIL (module not found)
 ```bash
 cd /Users/hal/gt/cfutons_mobile
 git add src/screens/__tests__/VisualSearchResultsScreen.test.tsx
-git commit -m "test(cm-21k): VisualSearchResultsScreen — 4 TDD tests (failing)"
+git commit -m "test(cm-21k): VisualSearchResultsScreen — 6 TDD tests (failing)"
 ```
 
 - [ ] **Step 4: Create VisualSearchResultsScreen**
