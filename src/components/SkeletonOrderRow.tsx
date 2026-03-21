@@ -16,7 +16,10 @@ import { Shimmer } from './Shimmer';
 export const SkeletonOrderRow = memo(function SkeletonOrderRow({ testID }: { testID?: string }) {
   return (
     <View
-      style={[styles.row, { backgroundColor: darkPalette.surface, borderColor: darkPalette.borderSubtle }]}
+      style={[
+        styles.row,
+        { backgroundColor: darkPalette.surface, borderColor: darkPalette.borderSubtle },
+      ]}
       testID={testID ?? 'skeleton-order-row'}
       accessibilityLabel="Loading order"
     >
