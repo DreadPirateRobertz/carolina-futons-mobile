@@ -97,6 +97,8 @@ jest.mock('react-native-reanimated', () => {
     withSequence: (...vals: any[]) => vals[vals.length - 1],
     interpolate: (val: any) => val,
     Extrapolation: { CLAMP: 'clamp' },
+    SlideInDown: { springify: () => ({ damping: () => ({}) }), duration: () => ({}) },
+    SlideOutDown: { springify: () => ({ damping: () => ({}) }), duration: () => ({}) },
     Easing: {
       ease: 0,
       inOut: () => 0,

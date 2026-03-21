@@ -115,45 +115,45 @@ function App() {
               <AuthProvider>
                 <CartProvider>
                   <MiniCartDrawerProvider>
-                  <WishlistProvider>
-                    <NotificationProvider>
-                      <CartAbandonmentBridge />
-                      <PremiumProvider>
-                        <RecommendationsProvider>
-                          <CompareProvider>
-                            <ErrorBoundary>
-                              <NavigationContainer
-                                ref={navigationRef}
-                                linking={linkingConfig}
-                                onStateChange={onStateChange}
-                                onReady={() => {
-                                  onScreenTrackingReady();
-                                  if (sentryNavigationIntegration && navigationRef.current) {
-                                    (
-                                      sentryNavigationIntegration as {
-                                        registerNavigationContainer: (ref: unknown) => void;
-                                      }
-                                    ).registerNavigationContainer(navigationRef);
-                                  }
-                                }}
-                              >
-                                <DeepLinkProvider>
-                                  <OfflineBanner />
-                                  <AppNavigator />
-                                  <MiniCartDrawerHost />
-                                  <ForceUpdateModal
-                                    visible={forceUpdate.visible}
-                                    required={forceUpdate.required}
-                                    onDismiss={forceUpdate.dismiss}
-                                  />
-                                </DeepLinkProvider>
-                              </NavigationContainer>
-                            </ErrorBoundary>
-                          </CompareProvider>
-                        </RecommendationsProvider>
-                      </PremiumProvider>
-                    </NotificationProvider>
-                  </WishlistProvider>
+                    <WishlistProvider>
+                      <NotificationProvider>
+                        <CartAbandonmentBridge />
+                        <PremiumProvider>
+                          <RecommendationsProvider>
+                            <CompareProvider>
+                              <ErrorBoundary>
+                                <NavigationContainer
+                                  ref={navigationRef}
+                                  linking={linkingConfig}
+                                  onStateChange={onStateChange}
+                                  onReady={() => {
+                                    onScreenTrackingReady();
+                                    if (sentryNavigationIntegration && navigationRef.current) {
+                                      (
+                                        sentryNavigationIntegration as {
+                                          registerNavigationContainer: (ref: unknown) => void;
+                                        }
+                                      ).registerNavigationContainer(navigationRef);
+                                    }
+                                  }}
+                                >
+                                  <DeepLinkProvider>
+                                    <OfflineBanner />
+                                    <AppNavigator />
+                                    <MiniCartDrawerHost navigationRef={navigationRef} />
+                                    <ForceUpdateModal
+                                      visible={forceUpdate.visible}
+                                      required={forceUpdate.required}
+                                      onDismiss={forceUpdate.dismiss}
+                                    />
+                                  </DeepLinkProvider>
+                                </NavigationContainer>
+                              </ErrorBoundary>
+                            </CompareProvider>
+                          </RecommendationsProvider>
+                        </PremiumProvider>
+                      </NotificationProvider>
+                    </WishlistProvider>
                   </MiniCartDrawerProvider>
                 </CartProvider>
               </AuthProvider>
