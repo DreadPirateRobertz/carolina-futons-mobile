@@ -129,6 +129,39 @@ describe('RoomGalleryScreen', () => {
       fireEvent.press(getByTestId('room-gallery-retry'));
       expect(mockRefresh).toHaveBeenCalledTimes(1);
     });
+
+    it('shows branded mountain illustration on error', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: false,
+        error: new Error('Network error'),
+        refresh: mockRefresh,
+      });
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-error-illustration')).toBeTruthy();
+    });
+
+    it('does not show raw error string in error state', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: false,
+        error: new Error('Network error'),
+        refresh: mockRefresh,
+      });
+      const { queryByText } = renderGallery();
+      expect(queryByText('Unable to load gallery. Check your connection.')).toBeNull();
+    });
+
+    it('shows friendly error copy in error state', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: false,
+        error: new Error('Network error'),
+        refresh: mockRefresh,
+      });
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-error')).toBeTruthy();
+    });
   });
 
   describe('Grid with rooms', () => {

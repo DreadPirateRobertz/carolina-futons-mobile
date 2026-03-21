@@ -54,18 +54,14 @@ function transformCmsCollection(item: WixEditorialItem): EditorialCollection {
 
 function createFetcher(client: WixClient | null) {
   return async (): Promise<EditorialCollection[]> => {
-    if (client) {
-      try {
-        const result = await client.queryData<WixEditorialItem>(CMS_COLLECTION_ID, {
-          limit: 50,
-          sort: [{ fieldName: 'featured', order: 'DESC' }],
-        });
-        if (result.items.length > 0) {
-          return result.items.map(transformCmsCollection);
-        }
-      } catch {
-        // CMS fetch failed — fall back to static data
-      }
+    if (!client) return COLLECTIONS;
+
+    const result = await client.queryData<WixEditorialItem>(CMS_COLLECTION_ID, {
+      limit: 50,
+      sort: [{ fieldName: 'featured', order: 'DESC' }],
+    });
+    if (result.items.length > 0) {
+      return result.items.map(transformCmsCollection);
     }
     return COLLECTIONS;
   };
@@ -76,7 +72,7 @@ export function useCollections() {
   const client = useOptionalWixClient();
   const fetcher = useCallback(() => createFetcher(client)(), [client]);
 
-  const { data, isLoading, isStale, refresh } = useDataCache<EditorialCollection[]>(
+  const { data, isLoading, isStale, error, refresh } = useDataCache<EditorialCollection[]>(
     'editorial-collections',
     fetcher,
     { maxAge: COLLECTION_CACHE_MAX_AGE },
@@ -90,9 +86,10 @@ export function useCollections() {
       featured: collections.filter((c) => c.featured),
       isLoading,
       isStale,
+      error,
       refresh,
     }),
-    [collections, isLoading, isStale, refresh],
+    [collections, isLoading, isStale, error, refresh],
   );
 }
 
