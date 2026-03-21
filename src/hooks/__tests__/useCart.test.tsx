@@ -1130,6 +1130,79 @@ describe('CartItem sku + variantId fields (cm-12g)', () => {
   });
 });
 
+describe('CartItem imageUrl from Wix lineItem.media (cm-j6b)', () => {
+  it('serverLineItemToCartItem populates imageUrl from lineItem.media.mediaItem.url when present', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-img-1',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+      media: { mediaItem: { url: 'https://cdn.wix.com/media/abc.jpg' } },
+    });
+    expect(item).not.toBeNull();
+    expect(item!.imageUrl).toBe('https://cdn.wix.com/media/abc.jpg');
+  });
+
+  it('serverLineItemToCartItem leaves imageUrl undefined when media is absent', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-img-2',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+    });
+    expect(item).not.toBeNull();
+    expect(item!.imageUrl).toBeUndefined();
+  });
+
+  it('serverLineItemToCartItem leaves imageUrl undefined when media.mediaItem is absent', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-img-3',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+      media: {},
+    });
+    expect(item).not.toBeNull();
+    expect(item!.imageUrl).toBeUndefined();
+  });
+
+  it('serverLineItemToCartItem leaves imageUrl undefined when media.mediaItem.url is empty string', () => {
+    const item = serverLineItemToCartItem({
+      _id: 'wix-img-4',
+      catalogReference: {
+        catalogItemId: FUTON_MODELS[0].id,
+        appId: 'wix-stores',
+        options: { variantId: FABRICS[0].id },
+      },
+      quantity: 1,
+      media: { mediaItem: { url: '' } },
+    });
+    expect(item).not.toBeNull();
+    expect(item!.imageUrl).toBeUndefined();
+  });
+
+  it('CartItem interface accepts imageUrl field without TypeScript error', () => {
+    const item: import('@/hooks/useCart').CartItem = {
+      id: `${FUTON_MODELS[0].id}:${FABRICS[0].id}`,
+      model: FUTON_MODELS[0],
+      fabric: FABRICS[0],
+      quantity: 1,
+      unitPrice: FUTON_MODELS[0].basePrice,
+      imageUrl: 'https://cdn.wix.com/media/abc.jpg',
+    };
+    expect(item.imageUrl).toBe('https://cdn.wix.com/media/abc.jpg');
+  });
+});
+
 describe('AsyncStorage error resilience', () => {
   // Dynamic import() throws in this Jest environment (no --experimental-vm-modules).
   // The catch blocks in useCart ensure the cart operates in-memory when

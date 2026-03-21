@@ -160,6 +160,9 @@ export interface WixCartLineItem {
   };
   quantity: number;
   sku?: string; // Wix catalog SKU for the line item (may be absent for older catalog items)
+  media?: {
+    mediaItem?: { url: string }; // CDN image URL for the line item (~150px thumbnail)
+  };
 }
 
 export interface WixCart {

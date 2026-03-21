@@ -154,6 +154,8 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
   const fabric = variantId ? FABRICS.find((f) => f.id === variantId) : FABRICS[0];
   if (!fabric) return null;
 
+  const imageUrl = lineItem.media?.mediaItem?.url || undefined;
+
   return {
     id: `${model.id}:${fabric.id}`,
     model,
@@ -161,6 +163,7 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
     fabricName: fabric.name,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
+    ...(imageUrl ? { imageUrl } : {}),
     ...(lineItem.sku !== undefined ? { sku: lineItem.sku } : {}),
     ...(variantId !== undefined ? { variantId } : {}),
   };
