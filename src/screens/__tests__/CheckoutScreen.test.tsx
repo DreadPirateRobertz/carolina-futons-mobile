@@ -135,6 +135,17 @@ jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({ createPaymentIntent: jest.fn(), confirmOrder: jest.fn() }),
 }));
 
+// Mock Affirm hooks/service so the full Affirm module tree doesn't load
+jest.mock('@/hooks/useAffirmPrequalification', () => ({
+  useAffirmPrequalification: () => ({ isEligible: false, isLoading: false, error: null }),
+}));
+jest.mock('@/services/affirmService', () => ({
+  checkAffirmPrequalification: jest.fn().mockResolvedValue({ eligible: false }),
+  initiateAffirmCheckout: jest.fn().mockResolvedValue({ checkoutUrl: '', checkoutToken: '' }),
+  AFFIRM_MIN_AMOUNT: 50,
+  AFFIRM_MAX_AMOUNT: 30000,
+}));
+
 const mockCreatePaymentIntent = jest.fn().mockResolvedValue({
   clientSecret: 'pi_test_secret',
   ephemeralKey: 'ek_test',
