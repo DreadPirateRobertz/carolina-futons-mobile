@@ -11,7 +11,6 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
-import { darkPalette } from '@/theme/tokens';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 
 export interface AddressFormValues {
@@ -60,7 +59,7 @@ function validate(values: AddressFormValues): FieldErrors {
 
 /** Add or edit address form with validation and accessibility. */
 export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props) {
-  const { borderRadius } = useTheme();
+  const { borderRadius, colors } = useTheme();
   const [fullName, setFullName] = useState(initialValues?.fullName ?? '');
   const [line1, setLine1] = useState(initialValues?.line1 ?? '');
   const [line2, setLine2] = useState(initialValues?.line2 ?? '');
@@ -92,10 +91,10 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
   const inputStyle = [
     styles.input,
     {
-      backgroundColor: darkPalette.surfaceElevated,
-      color: darkPalette.textPrimary,
+      backgroundColor: colors.surfaceElevated,
+      color: colors.textPrimary,
       borderRadius: borderRadius.md,
-      borderColor: darkPalette.borderSubtle,
+      borderColor: colors.borderSubtle,
     },
   ];
 
@@ -103,14 +102,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
     <View style={styles.container} testID="address-form">
       {/* Full Name */}
       <View style={styles.field}>
-        <Text style={styles.label}>Full Name *</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>Full Name *</Text>
         <TextInput
           testID="address-full-name-input"
           value={fullName}
           onChangeText={setFullName}
           style={inputStyle}
           placeholder="Full name"
-          placeholderTextColor={darkPalette.textMuted}
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           autoComplete="name"
           accessibilityLabel="Full name"
@@ -124,14 +123,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* Street Address */}
       <View style={styles.field}>
-        <Text style={styles.label}>Street Address *</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>Street Address *</Text>
         <TextInput
           testID="address-line1-input"
           value={line1}
           onChangeText={setLine1}
           style={inputStyle}
           placeholder="Street address"
-          placeholderTextColor={darkPalette.textMuted}
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           autoComplete="street-address"
           accessibilityLabel="Street address"
@@ -145,14 +144,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* Apt / Suite */}
       <View style={styles.field}>
-        <Text style={styles.label}>Apt / Suite</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>Apt / Suite</Text>
         <TextInput
           testID="address-line2-input"
           value={line2}
           onChangeText={setLine2}
           style={inputStyle}
           placeholder="Apt, suite, unit (optional)"
-          placeholderTextColor={darkPalette.textMuted}
+          placeholderTextColor={colors.textMuted}
           autoCapitalize="words"
           accessibilityLabel="Apartment or suite number"
         />
@@ -161,14 +160,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
       {/* City / State row */}
       <View style={styles.row}>
         <View style={[styles.field, { flex: 2 }]}>
-          <Text style={styles.label}>City *</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>City *</Text>
           <TextInput
             testID="address-city-input"
             value={city}
             onChangeText={setCity}
             style={inputStyle}
             placeholder="City"
-            placeholderTextColor={darkPalette.textMuted}
+            placeholderTextColor={colors.textMuted}
             autoCapitalize="words"
             autoComplete="postal-address-locality"
             accessibilityLabel="City"
@@ -181,14 +180,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
         </View>
 
         <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
-          <Text style={styles.label}>State *</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>State *</Text>
           <TextInput
             testID="address-state-input"
             value={state}
             onChangeText={setState}
             style={inputStyle}
             placeholder="NC"
-            placeholderTextColor={darkPalette.textMuted}
+            placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
             maxLength={2}
             autoComplete="postal-address-region"
@@ -204,14 +203,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* ZIP */}
       <View style={styles.field}>
-        <Text style={styles.label}>ZIP Code *</Text>
+        <Text style={[styles.label, { color: colors.textMuted }]}>ZIP Code *</Text>
         <TextInput
           testID="address-zip-input"
           value={zip}
           onChangeText={setZip}
           style={inputStyle}
           placeholder="12345"
-          placeholderTextColor={darkPalette.textMuted}
+          placeholderTextColor={colors.textMuted}
           keyboardType="number-pad"
           maxLength={5}
           autoComplete="postal-code"
@@ -229,18 +228,18 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
         <TouchableOpacity
           testID="address-cancel-button"
           onPress={onCancel}
-          style={[styles.cancelBtn, { borderRadius: borderRadius.button }]}
+          style={[styles.cancelBtn, { borderRadius: borderRadius.button, borderColor: colors.borderSubtle }]}
           accessibilityRole="button"
           accessibilityLabel="Cancel"
         >
-          <Text style={[styles.cancelText, { color: darkPalette.textMuted }]}>Cancel</Text>
+          <Text style={[styles.cancelText, { color: colors.textMuted }]}>Cancel</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           testID="address-save-button"
           onPress={handleSubmit}
           disabled={!!saving}
-          style={[styles.saveBtn, { borderRadius: borderRadius.button }]}
+          style={[styles.saveBtn, { borderRadius: borderRadius.button, backgroundColor: colors.sunsetCoral }]}
           accessibilityRole="button"
           accessibilityLabel="Save address"
           accessibilityState={{ disabled: !!saving }}
@@ -270,7 +269,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: darkPalette.textMuted,
     marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
@@ -296,7 +294,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: darkPalette.borderSubtle,
   },
   cancelText: {
     fontSize: 15,
@@ -306,7 +303,6 @@ const styles = StyleSheet.create({
     flex: 2,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#5B7FA6',
   },
   saveText: {
     color: '#FFFFFF',

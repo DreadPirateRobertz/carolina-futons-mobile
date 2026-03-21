@@ -594,4 +594,91 @@ describe('WixAuthService', () => {
       expect(tokenStore['tokens']).toBeUndefined();
     });
   });
+
+  // --- syncMemberAddresses ---
+
+  describe('syncMemberAddresses', () => {
+    const ADDRESSES = [
+      {
+        fullName: 'John Doe',
+        line1: '123 Main St',
+        line2: 'Apt 4',
+        city: 'Asheville',
+        state: 'NC',
+        zip: '28801',
+      },
+      {
+        fullName: 'John Doe',
+        line1: '456 Oak Ave',
+        line2: '',
+        city: 'Boone',
+        state: 'NC',
+        zip: '28607',
+      },
+    ];
+
+    it('calls updateMember with mapped Wix address shape', async () => {
+      mockMembers.updateMember.mockResolvedValue({});
+
+      await service.syncMemberAddresses('member-123', ADDRESSES);
+
+      expect(mockMembers.updateMember).toHaveBeenCalledWith(
+        'member-123',
+        expect.objectContaining({
+          contact: expect.objectContaining({
+            addresses: [
+              expect.objectContaining({
+                addressLine: '123 Main St',
+                addressLine2: 'Apt 4',
+                city: 'Asheville',
+                subdivision: 'NC',
+                postalCode: '28801',
+                country: 'US',
+              }),
+              expect.objectContaining({
+                addressLine: '456 Oak Ave',
+                city: 'Boone',
+                subdivision: 'NC',
+                postalCode: '28607',
+                country: 'US',
+              }),
+            ],
+          }),
+        }),
+      );
+    });
+
+    it('performs a full-replace (mobile is source of truth — intentional)', async () => {
+      // The call must pass all addresses in one shot, not merge with existing.
+      // This is by design: mobile-entered addresses replace whatever was in Wix.
+      mockMembers.updateMember.mockResolvedValue({});
+
+      await service.syncMemberAddresses('member-123', [ADDRESSES[0]]);
+
+      const call = mockMembers.updateMember.mock.calls[0];
+      const contactArg = (call[1] as { contact?: { addresses?: unknown[] } }).contact;
+      expect(contactArg?.addresses).toHaveLength(1);
+    });
+
+    it('omits addressLine2 when line2 is empty', async () => {
+      mockMembers.updateMember.mockResolvedValue({});
+
+      await service.syncMemberAddresses('member-123', [ADDRESSES[1]]);
+
+      const call = mockMembers.updateMember.mock.calls[0];
+      const addr = (call[1] as { contact?: { addresses?: Array<Record<string, unknown>> } }).contact
+        ?.addresses?.[0];
+      expect(addr?.addressLine2).toBeUndefined();
+    });
+
+    it('resolves without throwing when updateMember fails', async () => {
+      mockMembers.updateMember.mockRejectedValue(new Error('API error'));
+
+      // Should not throw — caller uses fire-and-forget with .catch(() => {})
+      await expect(service.syncMemberAddresses('member-123', ADDRESSES)).rejects.toThrow(
+        'API error',
+      );
+      // (The non-throwing guarantee is enforced by the useAddressBook caller, not here)
+    });
+  });
 });

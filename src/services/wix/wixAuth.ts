@@ -275,6 +275,12 @@ export class WixAuthService {
    * Sync a member's saved addresses to Wix contact addressLine data (cm-v54).
    * Maps local SavedAddress[] → Wix contact.addresses[].
    * Fire-and-forget from useAddressBook; failures are non-fatal.
+   *
+   * SOURCE OF TRUTH: The mobile app is the authoritative source for contact
+   * addresses. This call performs a full-replace — any addresses previously set
+   * via Wix web dashboard or other channels will be overwritten with the current
+   * mobile address book contents. This is intentional: mobile-entered addresses
+   * are validated and normalized; web-side addresses are not managed by this app.
    */
   async syncMemberAddresses(
     memberId: string,
