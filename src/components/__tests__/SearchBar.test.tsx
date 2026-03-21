@@ -13,6 +13,7 @@ function renderSearchBar(
     onSubmitSearch?: jest.Mock;
     onRemoveRecent?: jest.Mock;
     onClearRecent?: jest.Mock;
+    onCameraPress?: jest.Mock;
   } = {},
 ) {
   const onChangeText = props.onChangeText ?? jest.fn();
@@ -28,6 +29,7 @@ function renderSearchBar(
           onSubmitSearch={props.onSubmitSearch}
           onRemoveRecent={props.onRemoveRecent}
           onClearRecent={props.onClearRecent}
+          onCameraPress={props.onCameraPress}
         />
       </ThemeProvider>,
     ),
