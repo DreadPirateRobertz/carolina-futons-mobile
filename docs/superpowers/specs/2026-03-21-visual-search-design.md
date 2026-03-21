@@ -135,9 +135,13 @@ All five controls are required in the Wix backend function before implementation
 2. **HTTPS + port 443 only:** Enforce `scheme === 'https'` AND `port === 443` (or absent). Reject anything else with 400 — this prevents `https://api.openai.com:22/` and similar bypass attempts.
 3. **No redirect-following:** If the AI service returns a 3xx response, the function must reject it immediately and return 502 — the HTTP client must be configured with `maxRedirects: 0`. This prevents both direct and chained redirect-based SSRF.
 4. **Block RFC-1918 / link-local ranges:** After hostname resolves, reject if the resolved IP falls in: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`.
-5. **DNS rebinding protection:** Resolve the hostname **exactly once** before making the HTTP request. Pass the resolved IP address directly to the HTTP client and set the `Host` header manually to `api.openai.com`. Never allow the HTTP client to re-resolve the hostname after the block check passes — otherwise an attacker can flip DNS (TTL=0) between check and request to bypass the RFC-1918 block.
+5. **DNS rebinding protection:** Resolve the hostname **exactly once** before making the HTTP request. Use the resolved IP as the TCP connection target (not the hostname — this prevents re-resolution). Keep TLS SNI and the `Host` header set to `api.openai.com` so TLS certificate validation and server-side routing still work. Never allow the HTTP client to re-resolve the hostname after the block check passes — otherwise an attacker can flip DNS (TTL=0) between check and request to bypass the RFC-1918 block.
 
-**Dutch pre-implementation review is a hard gate.** Tag `predator/dutch` with the spec before writing any backend code.
+**Dutch full sign-off received 2026-03-21 (hq-eehh). Implementation is go.**
+
+### Server-side trust (D38 + D16 — mayor directive)
+
+Any cfutons backend function involved in visual search (including `/_functions/visualSearch`) **must NOT accept `role`, `membership`, `is_admin`, or any similar privilege field from the caller.** These fields must be verified exclusively server-side from session context. Never trust client-asserted identity or permission claims, even if they pass schema validation.
 
 ### Future personalization / IDOR note
 
