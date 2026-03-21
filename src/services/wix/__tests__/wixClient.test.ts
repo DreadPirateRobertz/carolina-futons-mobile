@@ -1255,7 +1255,8 @@ describe('WixClient eCommerce Cart', () => {
     it('POSTs amountCents and items to the Klarna checkout endpoint', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ redirectUrl: 'https://pay.klarna.com/abc', orderId: 'kord-001' }),
+        json: () =>
+          Promise.resolve({ redirectUrl: 'https://pay.klarna.com/abc', orderId: 'kord-001' }),
       });
 
       const result = await client.createKlarnaSession({
@@ -1295,8 +1296,7 @@ describe('WixClient eCommerce Cart', () => {
     it('POSTs orderId to the Klarna confirm endpoint', async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () =>
-          Promise.resolve({ orderId: 'kord-001', total: 49900, currency: 'USD' }),
+        json: () => Promise.resolve({ orderId: 'kord-001', total: 49900, currency: 'USD' }),
       });
 
       const result = await client.confirmKlarnaOrder({ orderId: 'kord-001' });
