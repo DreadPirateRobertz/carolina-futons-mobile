@@ -1,7 +1,7 @@
 /**
  * useLoyalty TDD tests — cm-elo
  *
- * 8 tests for the useLoyalty hook.
+ * 11 tests for the useLoyalty hook.
  * memberId comes from WixAuthService.getCurrentMember() (session-based, no IDOR risk).
  * Wix Data pattern: wix.queryData<T>('CollectionName', { filter, limit })
  *
@@ -16,9 +16,10 @@ import { useLoyalty } from '../useLoyalty';
 // ---------------------------------------------------------------------------
 
 const mockQueryData = jest.fn();
+const mockGetWixClientSingleton = jest.fn();
 
 jest.mock('@/services/wix/wixClientSingleton', () => ({
-  getWixClientSingleton: () => ({ queryData: mockQueryData }),
+  getWixClientSingleton: () => mockGetWixClientSingleton(),
 }));
 
 const mockGetCurrentMember = jest.fn();
@@ -59,6 +60,7 @@ function makeTxRecord(overrides = {}) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockGetCurrentMember.mockResolvedValue(DEFAULT_MEMBER);
+  mockGetWixClientSingleton.mockReturnValue({ queryData: mockQueryData });
   mockQueryData.mockImplementation((collection: string) => {
     if (collection === 'LoyaltyPoints') return Promise.resolve(EMPTY_POINTS);
     if (collection === 'LoyaltyTransactions') return Promise.resolve(EMPTY_TX);
@@ -67,7 +69,7 @@ beforeEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// useLoyalty hook — 8 tests
+// useLoyalty hook — 11 tests
 // ---------------------------------------------------------------------------
 
 describe('useLoyalty hook', () => {
@@ -98,7 +100,6 @@ describe('useLoyalty hook', () => {
   });
 
   it('derives tier from points: 0→bronze, 1000→silver, 5000→gold', async () => {
-    // Test bronze boundary
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
         return Promise.resolve({ items: [makePointsRecord({ points: 999 })], totalResults: 1 });
@@ -108,7 +109,6 @@ describe('useLoyalty hook', () => {
     await waitFor(() => expect(bronze.current.loading).toBe(false));
     expect(bronze.current.tier).toBe('bronze');
 
-    // Test silver boundary
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
         return Promise.resolve({
@@ -121,7 +121,6 @@ describe('useLoyalty hook', () => {
     await waitFor(() => expect(silver.current.loading).toBe(false));
     expect(silver.current.tier).toBe('silver');
 
-    // Test gold boundary
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
         return Promise.resolve({
@@ -135,8 +134,22 @@ describe('useLoyalty hook', () => {
     expect(gold.current.tier).toBe('gold');
   });
 
+  it('always derives tier client-side — ignores stale stored tier', async () => {
+    // Stored tier says gold but points are only 500 (bronze). Must use deriveTier.
+    mockQueryData.mockImplementation((collection: string) => {
+      if (collection === 'LoyaltyPoints')
+        return Promise.resolve({
+          items: [makePointsRecord({ points: 500, tier: 'gold' })],
+          totalResults: 1,
+        });
+      return Promise.resolve(EMPTY_TX);
+    });
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.tier).toBe('bronze');
+  });
+
   it('shows loading state during fetch', () => {
-    // Never-resolving promise keeps loading=true
     mockQueryData.mockImplementation(() => new Promise(() => {}));
     const { result } = renderHook(() => useLoyalty());
     expect(result.current.loading).toBe(true);
@@ -156,6 +169,24 @@ describe('useLoyalty hook', () => {
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).not.toBeNull();
+  });
+
+  it('returns default state when getCurrentMember() returns null (unauthenticated)', async () => {
+    mockGetCurrentMember.mockResolvedValue(null);
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.points).toBe(0);
+    expect(result.current.tier).toBe('bronze');
+    expect(result.current.totalEarned).toBe(0);
+    expect(result.current.transactions).toHaveLength(0);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('sets error when getWixClientSingleton() returns null', async () => {
+    mockGetWixClientSingleton.mockReturnValue(null);
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.error).toBe('Wix service unavailable');
   });
 
   it('refreshPoints re-fetches and updates state', async () => {

@@ -66,11 +66,16 @@ export function useLoyalty(): UseLoyaltyResult {
       }
 
       const wixClient = getWixClientSingleton();
+      if (!wixClient) {
+        setError('Wix service unavailable');
+        return;
+      }
+
       const filter = { memberId: { $eq: memberId } };
 
       const [pointsResult, txResult] = await Promise.all([
-        wixClient!.queryData('LoyaltyPoints', { filter, limit: 1 }),
-        wixClient!.queryData('LoyaltyTransactions', {
+        wixClient.queryData('LoyaltyPoints', { filter, limit: 1 }),
+        wixClient.queryData('LoyaltyTransactions', {
           filter,
           sort: [{ fieldName: 'createdDate', order: 'DESC' }],
           limit: 50,
@@ -79,8 +84,9 @@ export function useLoyalty(): UseLoyaltyResult {
 
       if (pointsResult.items.length > 0) {
         const record = pointsResult.items[0] as Record<string, unknown>;
-        setPoints((record.points as number) ?? 0);
-        setTier((record.tier as LoyaltyTier) ?? deriveTier((record.points as number) ?? 0));
+        const pts = (record.points as number) ?? 0;
+        setPoints(pts);
+        setTier(deriveTier(pts));
         setTotalEarned((record.totalEarned as number) ?? 0);
       } else {
         setPoints(0);
