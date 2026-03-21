@@ -32,7 +32,12 @@ export function OrderSuccessScreen({
       testID={testID ?? 'order-success-screen'}
     >
       {/* Success icon */}
-      <View style={[styles.iconContainer, { backgroundColor: colors.success + '20', borderRadius: 999 }]}>
+      <View
+        style={[
+          styles.iconContainer,
+          { backgroundColor: colors.success + '20', borderRadius: 999 },
+        ]}
+      >
         <Text style={styles.checkmark}>✓</Text>
       </View>
 
@@ -43,7 +48,12 @@ export function OrderSuccessScreen({
       </Text>
 
       {/* Order number */}
-      <View style={[styles.orderBadge, { backgroundColor: colors.white, borderRadius: borderRadius.card }]}>
+      <View
+        style={[
+          styles.orderBadge,
+          { backgroundColor: colors.white, borderRadius: borderRadius.card },
+        ]}
+      >
         <Text style={[styles.orderLabel, { color: colors.espressoLight }]}>Order Number</Text>
         <Text style={[styles.orderNumber, { color: colors.espresso }]}>{orderNumber}</Text>
       </View>
@@ -52,7 +62,10 @@ export function OrderSuccessScreen({
       <View style={styles.actions}>
         <TouchableOpacity
           testID="continue-shopping-btn"
-          style={[styles.primaryBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
+          style={[
+            styles.primaryBtn,
+            { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button },
+          ]}
           onPress={onContinueShopping}
           accessibilityRole="button"
           accessibilityLabel="Continue shopping"
@@ -63,7 +76,10 @@ export function OrderSuccessScreen({
         {onViewOrders && (
           <TouchableOpacity
             testID="view-orders-btn"
-            style={[styles.secondaryBtn, { borderColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
+            style={[
+              styles.secondaryBtn,
+              { borderColor: colors.sunsetCoral, borderRadius: borderRadius.button },
+            ]}
             onPress={onViewOrders}
             accessibilityRole="button"
             accessibilityLabel="View your orders"

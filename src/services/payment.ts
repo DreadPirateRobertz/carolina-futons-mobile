@@ -116,10 +116,7 @@ export async function createPaymentIntent(
   // Client-side validation before submitting to payment API.
   // Server MUST re-validate independently — these are defence-in-depth guards.
   if (!validateCheckoutAmount(totals.total)) {
-    throw new PaymentError(
-      `Invalid checkout amount: ${totals.total}`,
-      'INTENT_FAILED',
-    );
+    throw new PaymentError(`Invalid checkout amount: ${totals.total}`, 'INTENT_FAILED');
   }
   if (!validateProductIds(items.map((i) => i.id))) {
     throw new PaymentError('Invalid product IDs in cart', 'INTENT_FAILED');

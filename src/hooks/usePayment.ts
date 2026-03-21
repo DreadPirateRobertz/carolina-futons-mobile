@@ -22,10 +22,12 @@ function uuid4(): string {
 
 /** Stable fingerprint of the current cart for idempotency key reset detection. */
 function cartFingerprint(items: { id: string; quantity: number }[], total: number): string {
-  return items
-    .map((i) => `${i.id}:${i.quantity}`)
-    .sort()
-    .join('|') + `|${total.toFixed(2)}`;
+  return (
+    items
+      .map((i) => `${i.id}:${i.quantity}`)
+      .sort()
+      .join('|') + `|${total.toFixed(2)}`
+  );
 }
 import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';

@@ -136,7 +136,12 @@ describe('payment service', () => {
 
     it('omits idempotencyKey from body when not provided', async () => {
       mockFetch.mockReturnValue(
-        mockJsonResponse({ clientSecret: 's', paymentIntentId: 'p', ephemeralKey: 'e', customerId: 'c' }),
+        mockJsonResponse({
+          clientSecret: 's',
+          paymentIntentId: 'p',
+          ephemeralKey: 'e',
+          customerId: 'c',
+        }),
       );
       const totals = calculateTotals(349);
       await createPaymentIntent(client, [mockCartItem], totals);
