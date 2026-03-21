@@ -436,4 +436,15 @@ describe('submitReferral', () => {
       expect.objectContaining({ refereeEmail: 'friend@example.com' }),
     );
   });
+
+  it('throws if refereeEmail is empty or whitespace-only', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await expect(
+      act(async () => {
+        await result.current.submitReferral('   ');
+      }),
+    ).rejects.toThrow();
+    expect(mockInsertDataItem).not.toHaveBeenCalled();
+  });
 });

@@ -86,6 +86,10 @@ export interface UseReferralResult {
 }
 
 function rawToReferralRecord(item: WixReferralRecord): ReferralRecord {
+  const knownStatuses = ['pending', 'completed', 'expired'];
+  if (!knownStatuses.includes(item.status)) {
+    console.warn(`[useReferral] Unexpected referral status: "${item.status}"`);
+  }
   const status =
     item.status === 'completed' || item.status === 'expired' ? item.status : 'pending';
   return {
@@ -176,6 +180,8 @@ export function useReferral(): UseReferralResult {
       // Handle Referrals result — failures don't block code display
       if (referralsResult.status === 'fulfilled') {
         setReferrals(referralsResult.value.items.map(rawToReferralRecord));
+      } else {
+        console.warn('[useReferral] Referrals fetch failed:', referralsResult.reason);
       }
 
       setLoading(false);
@@ -202,10 +208,13 @@ export function useReferral(): UseReferralResult {
       if (!memberId) throw new Error('Must be signed in to submit a referral');
       if (!code) throw new Error('Referral code not yet loaded');
 
+      const trimmedEmail = refereeEmail.trim();
+      if (!trimmedEmail) throw new Error('Referee email is required');
+
       const payload = {
         referralCode: code,
         referrerMemberId: memberId,
-        refereeEmail: refereeEmail.trim(),
+        refereeEmail: trimmedEmail,
         referrerCredit: REFERRER_CREDIT,
         refereeCredit: REFEREE_CREDIT,
         status: 'pending' as const,
