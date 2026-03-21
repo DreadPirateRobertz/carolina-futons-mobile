@@ -118,6 +118,11 @@ const PrivacyPolicyScreen = lazy(() =>
     default: withScreenErrorBoundary(m.PrivacyPolicyScreen, 'PrivacyPolicy'),
   })),
 );
+const ReferralLandingScreen = lazy(() =>
+  import('@/screens/ReferralLandingScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ReferralLandingScreen, 'ReferralLanding'),
+  })),
+);
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
     default: withScreenErrorBoundary(m.OrderConfirmationScreen, 'OrderConfirmation'),
@@ -198,6 +203,7 @@ export type RootStackParamList = {
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
   Loyalty: undefined;
+  ReferralLanding: { code: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -452,6 +458,7 @@ export function AppNavigator() {
         <Stack.Screen name="Loyalty" options={modalTransition}>
           {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
         </Stack.Screen>
+        <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
       </Stack.Navigator>
     </Suspense>
   );
