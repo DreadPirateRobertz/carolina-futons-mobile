@@ -125,6 +125,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [compareModel, setCompareModel] = useState<FutonModel | null>(null);
   const [showComparePicker, setShowComparePicker] = useState(false);
   const [showMaterialSelector, setShowMaterialSelector] = useState(false);
+  const [cameraError, setCameraError] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
   const wishlist = useWishlist();
@@ -738,6 +739,38 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     );
   }
 
+  // Camera mount failed (e.g. simulator with no camera feed) — reuse unavailable fallback
+  if (cameraError) {
+    return (
+      <View style={styles.permissionContainer} testID="ar-camera-unavailable">
+        <View style={styles.permissionCard}>
+          <Text style={styles.permissionIcon}>{'\u{1F4F1}'}</Text>
+          <Text style={styles.permissionTitle}>Camera Not Available</Text>
+          <Text style={styles.permissionDescription}>
+            The camera is not available on this device. You can still try furniture in your room
+            using a photo from your gallery.
+          </Text>
+          <TouchableOpacity
+            style={styles.permissionButton}
+            onPress={galleryFallback.pickImage}
+            testID="ar-gallery-fallback"
+            accessibilityLabel="Use a photo from your gallery"
+            accessibilityRole="button"
+          >
+            <Text style={styles.permissionButtonText}>Use a Photo Instead</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.permissionDismiss}
+            onPress={handleClose}
+            testID="ar-permission-dismiss"
+          >
+            <Text style={styles.permissionDismissText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   // Camera granted — show AR view with surface detection
   const showModelLoading =
     modelLoader.status.state === 'downloading' || modelLoader.status.state === 'checking-cache';
@@ -762,7 +795,12 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         </ModelLoadingOverlay>
       )}
       <ViewShot ref={viewShotRef} style={styles.camera} options={{ format: 'png', quality: 1 }}>
-        <CameraView style={styles.camera} facing="back" testID="ar-camera">
+        <CameraView
+          style={styles.camera}
+          facing="back"
+          onMountError={() => setCameraError(true)}
+          testID="ar-camera"
+        >
           {/* Surface plane indicators */}
           <PlaneIndicator
             planes={planes}
