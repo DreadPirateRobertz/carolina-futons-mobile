@@ -129,11 +129,13 @@ Single CTA: "Browse All" → `navigation.navigate('Shop')`. No category chips, n
 
 ### Backend egress path (dutch — SECURITY GATE)
 
-All three controls are required in the Wix backend function before implementation ships:
+All five controls are required in the Wix backend function before implementation ships:
 
-1. **Domain allowlist:** Only requests to `api.openai.com` are permitted. Any other hostname in the constructed URL must return a 400 error.
-2. **No redirect-following:** If the AI service returns a 3xx response, the function must reject it immediately and return 502 — the HTTP client must be configured with `maxRedirects: 0`. This prevents both direct and chained redirect-based SSRF.
-3. **Block RFC-1918 / link-local ranges:** Resolve the target hostname and reject requests if the resolved IP falls in: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`.
+1. **Domain allowlist:** Only requests to `api.openai.com` are permitted. Any other hostname must return a 400 error.
+2. **HTTPS + port 443 only:** Enforce `scheme === 'https'` AND `port === 443` (or absent). Reject anything else with 400 — this prevents `https://api.openai.com:22/` and similar bypass attempts.
+3. **No redirect-following:** If the AI service returns a 3xx response, the function must reject it immediately and return 502 — the HTTP client must be configured with `maxRedirects: 0`. This prevents both direct and chained redirect-based SSRF.
+4. **Block RFC-1918 / link-local ranges:** After hostname resolves, reject if the resolved IP falls in: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`.
+5. **DNS rebinding protection:** Resolve the hostname **exactly once** before making the HTTP request. Pass the resolved IP address directly to the HTTP client and set the `Host` header manually to `api.openai.com`. Never allow the HTTP client to re-resolve the hostname after the block check passes — otherwise an attacker can flip DNS (TTL=0) between check and request to bypass the RFC-1918 block.
 
 **Dutch pre-implementation review is a hard gate.** Tag `predator/dutch` with the spec before writing any backend code.
 
@@ -204,9 +206,12 @@ export interface UseVisualSearchReturn {
 |------|-----------|
 | allowlist: non-openai host rejected | returns 400 |
 | allowlist: `api.openai.com` permitted | passes through |
+| non-https scheme rejected (`http://api.openai.com`) | returns 400 |
+| non-443 port rejected (`https://api.openai.com:22`) | returns 400 |
 | 3xx from OpenAI rejected | returns 502, no redirect followed |
 | RFC-1918 target blocked (10.x.x.x) | returns 400 |
 | link-local blocked (169.254.x.x) | returns 400 |
+| DNS rebinding: resolved IP used in request, Host header set to `api.openai.com` | single DNS resolution, no re-resolve |
 | malformed image body → 400 | validation error returned |
 | OpenAI returns structured JSON | 200 with `{ category, style, colorFamily, keywords }` |
 | OpenAI returns malformed JSON | 502 with safe error message |
