@@ -39,15 +39,20 @@ const CART_WITH_ITEMS = {
     {
       id: 'asheville:natural-linen',
       model: { name: 'Asheville' },
-      fabric: { name: 'Natural Linen' },
+      fabric: { name: 'Natural Linen', color: '#D4C5A9' },
+      fabricName: 'Natural Linen',
       quantity: 1,
+      unitPrice: 349,
       price: 349,
+      imageUrl: 'https://cdn.wix.com/asheville-150.jpg',
     },
     {
       id: 'blue-ridge:natural-linen',
       model: { name: 'Blue Ridge' },
-      fabric: { name: 'Natural Linen' },
+      fabric: { name: 'Natural Linen', color: '#D4C5A9' },
+      fabricName: 'Natural Linen',
       quantity: 1,
+      unitPrice: 449,
       price: 449,
     },
   ],
@@ -146,6 +151,37 @@ describe('MiniCartDrawer', () => {
     it('accepts custom testID', () => {
       const { getByTestId } = renderDrawer({ testID: 'my-mini-cart' });
       expect(getByTestId('my-mini-cart')).toBeTruthy();
+    });
+  });
+
+  describe('Item schema — imageUrl + fabricName + a11y', () => {
+    it('shows product image when imageUrl is present', () => {
+      const { getByTestId } = renderDrawer();
+      const img = getByTestId('cartItemImage-asheville:natural-linen');
+      expect(img.props.source?.uri).toBe('https://cdn.wix.com/asheville-150.jpg');
+    });
+
+    it('shows color swatch when imageUrl is absent', () => {
+      const { getByTestId } = renderDrawer();
+      const swatch = getByTestId('cartItemImage-blue-ridge:natural-linen');
+      // No source.uri → it's a View with backgroundColor
+      expect(swatch.props.source).toBeUndefined();
+      expect(swatch.props.style).toBeTruthy();
+    });
+
+    it('each cart item row has accessibilityLabel with name, fabricName, price, qty', () => {
+      const { getByTestId } = renderDrawer();
+      const row = getByTestId('cartItemRow-asheville:natural-linen');
+      expect(row.props.accessibilityLabel).toMatch(/Asheville/i);
+      expect(row.props.accessibilityLabel).toMatch(/Natural Linen/i);
+      expect(row.props.accessibilityLabel).toMatch(/349/);
+      expect(row.props.accessibilityLabel).toMatch(/quantity 1/i);
+    });
+
+    it('accessibilityLabel uses fabricName field when available', () => {
+      const { getByTestId } = renderDrawer();
+      const row = getByTestId('cartItemRow-asheville:natural-linen');
+      expect(row.props.accessibilityLabel).toContain('Natural Linen');
     });
   });
 });
