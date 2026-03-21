@@ -9,7 +9,7 @@
  *   LoyaltyPoints       — { memberId, points, tier, totalEarned }
  *   LoyaltyTransactions — { _id, memberId, delta, reason, createdDate }
  *
- * Tier thresholds: bronze 0–999, silver 1000–4999, gold 5000+
+ * Tier thresholds: bronze 0–499, silver 500–1499, gold 1500+
  */
 
 import { useState, useCallback, useEffect } from 'react';

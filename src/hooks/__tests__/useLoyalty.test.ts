@@ -40,7 +40,7 @@ function makePointsRecord(overrides = {}) {
   return {
     memberId: MEMBER_ID,
     points: 500,
-    tier: 'bronze',
+    tier: 'silver',
     totalEarned: 500,
     ...overrides,
   };
@@ -99,7 +99,7 @@ describe('useLoyalty hook', () => {
     expect(result.current.totalEarned).toBe(2200);
   });
 
-  it('derives tier from points: 0→bronze, 500→silver, 1500→gold', async () => {
+  it('tier boundaries: 499→bronze, 500→silver, 1499→silver, 1500→gold', async () => {
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
         return Promise.resolve({ items: [makePointsRecord({ points: 499 })], totalResults: 1 });
@@ -120,6 +120,18 @@ describe('useLoyalty hook', () => {
     const { result: silver } = renderHook(() => useLoyalty());
     await waitFor(() => expect(silver.current.loading).toBe(false));
     expect(silver.current.tier).toBe('silver');
+
+    mockQueryData.mockImplementation((collection: string) => {
+      if (collection === 'LoyaltyPoints')
+        return Promise.resolve({
+          items: [makePointsRecord({ points: 1499, tier: 'silver' })],
+          totalResults: 1,
+        });
+      return Promise.resolve(EMPTY_TX);
+    });
+    const { result: silverHigh } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(silverHigh.current.loading).toBe(false));
+    expect(silverHigh.current.tier).toBe('silver');
 
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
