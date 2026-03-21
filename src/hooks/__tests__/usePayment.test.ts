@@ -5,6 +5,11 @@ import { CartProvider, useCart } from '../useCart';
 import { ConnectivityProvider } from '../useConnectivity';
 import { createPaymentIntent, confirmOrder, PaymentError } from '@/services/payment';
 
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
 // Mock Stripe
 const mockInitPaymentSheet = jest.fn();
 const mockPresentPaymentSheet = jest.fn();
@@ -88,6 +93,7 @@ function addCartItem(result: any) {
 describe('usePayment', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockCaptureException.mockReset();
     mockInitPaymentSheet.mockResolvedValue({ error: null });
     mockPresentPaymentSheet.mockResolvedValue({ error: null });
     mockIsPlatformPaySupported.mockResolvedValue(true);
@@ -157,9 +163,9 @@ describe('usePayment', () => {
       await result.current.payment.processPayment('card');
     });
 
-    const idempotencyKey = mockedCreatePaymentIntent.mock.calls[0][3];
+    const idempotencyKey: unknown = mockedCreatePaymentIntent.mock.calls[0][3];
     expect(typeof idempotencyKey).toBe('string');
-    expect(idempotencyKey.length).toBeGreaterThan(0);
+    expect((idempotencyKey as string).length).toBeGreaterThan(0);
   });
 
   it('uses the same idempotency key on retry with the same cart', async () => {
@@ -309,6 +315,39 @@ describe('usePayment', () => {
     expect(order).toBeNull();
     expect(result.current.payment.status).toBe('error');
     expect(result.current.payment.error).toBe('Card declined');
+  });
+
+  it('sends a sanitised Error to captureException — never the raw Stripe error object', async () => {
+    // Stripe errors can include PII (card data) in the error payload. We must
+    // never pass the raw error object to Sentry — only a new Error with a
+    // scrubbed message string.
+    const rawStripeError = new PaymentError(
+      'Card 4111111111111111 was declined',
+      'STRIPE_ERROR',
+    );
+    mockedCreatePaymentIntent.mockRejectedValue(rawStripeError);
+
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
+    await addCartItem(result);
+
+    await act(async () => {
+      await result.current.payment.processPayment('card');
+    });
+
+    // captureException must have been called at least once (from the catch block)
+    expect(mockCaptureException).toHaveBeenCalled();
+
+    // Security invariant: NO call to captureException may include the raw error
+    // object or the unredacted card number — regardless of how many calls occur.
+    mockCaptureException.mock.calls.forEach(([err]: [unknown]) => {
+      expect(err).not.toBe(rawStripeError);
+      if (err instanceof Error) {
+        expect(err.message).not.toContain('4111111111111111');
+      } else {
+        // If not an Error, the string form must also not contain the card number
+        expect(String(err)).not.toContain('4111111111111111');
+      }
+    });
   });
 
   it('prevents concurrent double-submit', async () => {

@@ -251,7 +251,9 @@ export function usePayment() {
             : 'An unexpected error occurred. Please try again.';
         const message = scrubPiiFromError(rawMessage);
         setState({ status: 'error', error: message, order: null });
-        captureException(err instanceof Error ? err : new Error(message), 'error', {
+        // Always construct a new sanitised Error — never pass the raw err object
+        // (Stripe SDK errors can embed card data in the payload).
+        captureException(new Error(message), 'error', {
           action: 'processPayment',
           method,
         });

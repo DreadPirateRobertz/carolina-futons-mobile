@@ -271,6 +271,12 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="PaymentConfirmation">
           {({ route, navigation: nav }) => {
+            // Guard against malformed deep-links or push notification payloads
+            // that arrive without the required params — crash-safe fallback.
+            if (!route.params?.order) {
+              nav.goBack();
+              return null;
+            }
             const { order } = route.params as { order: OrderConfirmation };
             return (
               <Suspense fallback={<LazyFallback />}>
@@ -290,6 +296,11 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="OrderSuccess">
           {({ route, navigation: nav }) => {
+            // Guard against malformed deep-links or push notification payloads.
+            if (!route.params?.orderId) {
+              nav.goBack();
+              return null;
+            }
             const { orderId, orderNumber } = route.params as {
               orderId: string;
               orderNumber: string;
