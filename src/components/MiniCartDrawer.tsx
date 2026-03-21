@@ -53,8 +53,8 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
       {/* Backdrop */}
-      <TouchableWithoutFeedback onPress={onClose} testID="mini-cart-backdrop">
-        <View style={styles.backdrop} />
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.backdrop} testID="mini-cart-backdrop" />
       </TouchableWithoutFeedback>
 
       {/* Drawer panel */}
