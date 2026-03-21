@@ -28,6 +28,7 @@ import { SortPicker } from '@/components/SortPicker';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
@@ -259,8 +260,13 @@ export function SearchScreen({ testID }: Props) {
         </View>
       )}
 
+      {/* Search results skeleton while loading */}
+      {showResults && isLoading && (
+        <SkeletonProductGrid count={4} />
+      )}
+
       {/* Search results grid */}
-      {showResults && (
+      {showResults && !isLoading && (
         <FlatList
           data={products}
           renderItem={renderProduct}
