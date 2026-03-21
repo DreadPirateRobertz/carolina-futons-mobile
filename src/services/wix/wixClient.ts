@@ -483,13 +483,18 @@ export class WixClient {
   async createPaymentIntent(
     lineItems: { id: string; name: string; fabric: string; quantity: number; unitPrice: number }[],
     totals: { subtotal: number; shipping: number; tax: number; total: number },
+    idempotencyKey?: string,
   ): Promise<{
     clientSecret: string;
     paymentIntentId: string;
     ephemeralKey: string;
     customerId: string;
   }> {
-    return this.post('/ecom/v1/payments/create-intent', { lineItems, totals });
+    return this.post('/ecom/v1/payments/create-intent', {
+      lineItems,
+      totals,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
   }
 
   async confirmOrder(

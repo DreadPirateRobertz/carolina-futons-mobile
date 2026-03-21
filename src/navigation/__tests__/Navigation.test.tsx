@@ -53,6 +53,30 @@ jest.mock('@/screens/AccountScreen', () => ({
   AccountScreen: () => <MockScreen testID="account-screen" label="AccountContent" />,
 }));
 
+jest.mock('@/screens/PaymentConfirmationScreen', () => {
+  const React = require('react');
+  const { View, TouchableOpacity } = require('react-native');
+  return {
+    PaymentConfirmationScreen: ({
+      onRetry,
+      onSuccess,
+    }: {
+      onRetry?: () => void;
+      onSuccess: () => void;
+    }) =>
+      React.createElement(
+        View,
+        { testID: 'payment-confirmation-screen' },
+        React.createElement(TouchableOpacity, { testID: 'retry-btn', onPress: onRetry }),
+        React.createElement(TouchableOpacity, { testID: 'continue-btn', onPress: onSuccess }),
+      ),
+  };
+});
+
+jest.mock('@/screens/OrderSuccessScreen', () => ({
+  OrderSuccessScreen: () => <MockScreen testID="order-success-screen" label="OrderSuccess" />,
+}));
+
 // --- Hook mocks ---
 
 const mockCartState = {
@@ -349,5 +373,114 @@ describe('Deep Linking', () => {
     await waitFor(() => {
       expect(getByTestId('home-screen')).toBeTruthy();
     });
+  });
+});
+
+// Mirror the AppNavigator PaymentConfirmation screen wiring so we can test
+// that onRetry is actually passed (the prop was missing in production — PR #120 issue #1).
+const mockOrder = {
+  orderId: 'ord-001',
+  orderNumber: 'CF-20260320-001',
+  items: [],
+  totals: { subtotal: 349, shipping: 0, tax: 24.43, total: 373.43 },
+  paymentMethod: 'card' as const,
+  createdAt: '2026-03-20T22:00:00Z',
+  estimatedDelivery: 'Mar 25–28, 2026',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { PaymentConfirmationScreen } = require('@/screens/PaymentConfirmationScreen');
+
+function TestCheckoutNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Tabs">
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen name="PaymentConfirmation">
+        {({ route, navigation: nav }: any) => {
+          const { order } = route.params as { order: typeof mockOrder };
+          return (
+            <PaymentConfirmationScreen
+              order={order}
+              onSuccess={() =>
+                nav.replace('OrderSuccess', {
+                  orderId: order.orderId,
+                  orderNumber: order.orderNumber,
+                })
+              }
+              onRetry={() => nav.goBack()}
+            />
+          );
+        }}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
+describe('PaymentConfirmation navigator wiring', () => {
+  it('passes onRetry wired to nav.goBack() so retry returns to previous screen', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId, queryByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestCheckoutNavigator />
+      </NavigationContainer>,
+    );
+
+    // Start on tabs
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+
+    // Navigate to PaymentConfirmation (simulating Checkout handing off after payment)
+    act(() => {
+      ref.current?.navigate('PaymentConfirmation', { order: mockOrder });
+    });
+    await waitFor(() => expect(getByTestId('payment-confirmation-screen')).toBeTruthy());
+
+    // Pressing retry must call nav.goBack() — screen should disappear and home returns
+    fireEvent.press(getByTestId('retry-btn'));
+    await waitFor(() => {
+      expect(queryByTestId('payment-confirmation-screen')).toBeFalsy();
+      expect(getByTestId('home-screen')).toBeTruthy();
+    });
+  });
+
+  it('onSuccess navigates to OrderSuccess (replace, not goBack)', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Tabs">
+          <Stack.Screen name="Tabs" component={TabNavigator} />
+          <Stack.Screen name="PaymentConfirmation">
+            {({ route, navigation: nav }: any) => {
+              const { order } = route.params as { order: typeof mockOrder };
+              return (
+                <PaymentConfirmationScreen
+                  order={order}
+                  onSuccess={() =>
+                    nav.replace('OrderSuccess', {
+                      orderId: order.orderId,
+                      orderNumber: order.orderNumber,
+                    })
+                  }
+                  onRetry={() => nav.goBack()}
+                />
+              );
+            }}
+          </Stack.Screen>
+          <Stack.Screen
+            name="OrderSuccess"
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            component={require('@/screens/OrderSuccessScreen').OrderSuccessScreen}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>,
+    );
+
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('PaymentConfirmation', { order: mockOrder });
+    });
+    await waitFor(() => expect(getByTestId('payment-confirmation-screen')).toBeTruthy());
+
+    fireEvent.press(getByTestId('continue-btn'));
+    await waitFor(() => expect(getByTestId('order-success-screen')).toBeTruthy());
   });
 });

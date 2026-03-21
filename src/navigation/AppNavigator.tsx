@@ -121,6 +121,16 @@ const OrderConfirmationScreen = lazy(() =>
     default: m.OrderConfirmationScreen,
   })),
 );
+const PaymentConfirmationScreen = lazy(() =>
+  import('@/screens/PaymentConfirmationScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.PaymentConfirmationScreen, 'PaymentConfirmation'),
+  })),
+);
+const OrderSuccessScreen = lazy(() =>
+  import('@/screens/OrderSuccessScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.OrderSuccessScreen, 'OrderSuccess'),
+  })),
+);
 const SearchScreen = lazy(() =>
   import('@/screens/SearchScreen').then((m) => ({
     default: withScreenErrorBoundary(m.SearchScreen, 'Search'),
@@ -155,6 +165,8 @@ export type RootStackParamList = {
   Category: { slug: string };
   Checkout: undefined;
   OrderConfirmation: { order: OrderConfirmation };
+  PaymentConfirmation: { order: OrderConfirmation };
+  OrderSuccess: { orderId: string; orderNumber: string };
   OrderHistory: undefined;
   OrderDetail: { orderId: string };
   Login: undefined;
@@ -246,13 +258,73 @@ export function AppNavigator() {
                 nav.dispatch(
                   CommonActions.reset({
                     index: 0,
-                    routes: [{ name: 'Tabs' }, { name: 'OrderConfirmation', params: { order } }],
+                    routes: [
+                      { name: 'Tabs' },
+                      { name: 'PaymentConfirmation', params: { order } },
+                    ],
                   }),
                 );
               }}
               onBack={() => nav.goBack()}
             />
           )}
+        </Stack.Screen>
+        <Stack.Screen name="PaymentConfirmation">
+          {({ route, navigation: nav }) => {
+            // Guard against malformed deep-links or push notification payloads
+            // that arrive without the required params — crash-safe fallback.
+            if (!route.params?.order) {
+              nav.goBack();
+              return null;
+            }
+            const { order } = route.params as { order: OrderConfirmation };
+            return (
+              <Suspense fallback={<LazyFallback />}>
+                <PaymentConfirmationScreen
+                  order={order}
+                  onSuccess={() =>
+                    nav.replace('OrderSuccess', {
+                      orderId: order.orderId,
+                      orderNumber: order.orderNumber,
+                    })
+                  }
+                  onRetry={() => nav.goBack()}
+                />
+              </Suspense>
+            );
+          }}
+        </Stack.Screen>
+        <Stack.Screen name="OrderSuccess">
+          {({ route, navigation: nav }) => {
+            // Guard against malformed deep-links or push notification payloads.
+            if (!route.params?.orderId) {
+              nav.goBack();
+              return null;
+            }
+            const { orderId, orderNumber } = route.params as {
+              orderId: string;
+              orderNumber: string;
+            };
+            return (
+              <Suspense fallback={<LazyFallback />}>
+                <OrderSuccessScreen
+                  orderId={orderId}
+                  orderNumber={orderNumber}
+                  onContinueShopping={() =>
+                    nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }))
+                  }
+                  onViewOrders={() =>
+                    nav.dispatch(
+                      CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
+                      }),
+                    )
+                  }
+                />
+              </Suspense>
+            );
+          }}
         </Stack.Screen>
         <Stack.Screen name="OrderConfirmation">
           {({ route, navigation: nav }) => (

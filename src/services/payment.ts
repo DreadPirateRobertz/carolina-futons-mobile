@@ -2,13 +2,32 @@
  * Payment service — handles Stripe payment intent creation and order submission.
  *
  * All calls go through the WixClient which handles auth, retry, and
- * base URL resolution. The mobile app never touches the Stripe secret key.
+ * base URL resolution.
+ *
+ * Security boundary (CLIENT ↔ SERVER):
+ *
+ *  CLIENT (this module + usePayment):
+ *   - Amount and product-ID validation (defence-in-depth before API call)
+ *   - Idempotency key generation — passed to the Wix backend so it can forward
+ *     to Stripe, preventing duplicate charges on network-error retries
+ *   - PII scrubbing before crash reporting
+ *   - Post-checkout navigation allowlist
+ *   - Stripe publishable key only — the secret key NEVER appears client-side
+ *
+ *  SERVER (Wix eCommerce backend) — NOT this module's responsibility:
+ *   1. Re-validate amount and currency server-side; never trust client values
+ *   3. Confirm payment intent status === 'succeeded' before order fulfilment
+ *   4. Verify Stripe-Signature on webhook payloads; reject unverified events
+ *   5. Store payment intent ID; check for replay attacks before confirmation
+ *
+ * The server MUST perform items 1, 3, 4, 5 independently of the client.
  */
 
 import type { CartItem } from '@/hooks/useCart';
 import { WixApiError, type WixClient } from '@/services/wix';
 import { calculateTax } from '@/services/taxService';
 import { calculateShipping } from '@/services/shippingService';
+import { validateCheckoutAmount, validateProductIds } from '@/services/checkoutSecurity';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -81,12 +100,31 @@ export async function calculateCheckoutTotals(
 /**
  * Create a Stripe PaymentIntent via the Wix eCommerce Payments API.
  * Returns the client secret needed by the Stripe SDK to confirm payment.
+ *
+ * @param idempotencyKey - Client-generated stable key (UUID v4) for this
+ *   checkout session. Passed to the Wix backend which forwards it to Stripe
+ *   as `Idempotency-Key`, preventing duplicate charges on network retries.
+ *   Should remain constant across retries of the same cart; change it when
+ *   the cart contents change.
  */
 export async function createPaymentIntent(
   client: WixClient,
   items: CartItem[],
   totals: OrderTotals,
+  idempotencyKey?: string,
 ): Promise<PaymentIntentResponse> {
+  // Client-side validation before submitting to payment API.
+  // Server MUST re-validate independently — these are defence-in-depth guards.
+  if (!validateCheckoutAmount(totals.total)) {
+    throw new PaymentError(
+      `Invalid checkout amount: ${totals.total}`,
+      'INTENT_FAILED',
+    );
+  }
+  if (!validateProductIds(items.map((i) => i.id))) {
+    throw new PaymentError('Invalid product IDs in cart', 'INTENT_FAILED');
+  }
+
   try {
     return await client.createPaymentIntent(
       items.map((item) => ({
@@ -97,6 +135,7 @@ export async function createPaymentIntent(
         unitPrice: item.unitPrice,
       })),
       totals,
+      idempotencyKey,
     );
   } catch (err) {
     if (err instanceof WixApiError) {

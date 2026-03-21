@@ -118,6 +118,33 @@ describe('payment service', () => {
       expect(result).toEqual(mockResponse);
     });
 
+    it('includes idempotency key in request body when provided', async () => {
+      const mockResponse = {
+        clientSecret: 'pi_123_secret_abc',
+        paymentIntentId: 'pi_123',
+        ephemeralKey: 'ek_123',
+        customerId: 'cus_123',
+      };
+      mockFetch.mockReturnValue(mockJsonResponse(mockResponse));
+
+      const totals = calculateTotals(349);
+      await createPaymentIntent(client, [mockCartItem], totals, 'idem-key-abc123');
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.idempotencyKey).toBe('idem-key-abc123');
+    });
+
+    it('omits idempotencyKey from body when not provided', async () => {
+      mockFetch.mockReturnValue(
+        mockJsonResponse({ clientSecret: 's', paymentIntentId: 'p', ephemeralKey: 'e', customerId: 'c' }),
+      );
+      const totals = calculateTotals(349);
+      await createPaymentIntent(client, [mockCartItem], totals);
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.idempotencyKey).toBeUndefined();
+    });
+
     it('throws PaymentError with INTENT_FAILED code on API failure', async () => {
       mockFetch.mockReturnValue(mockJsonResponse({ message: 'Card declined' }, 400));
 
