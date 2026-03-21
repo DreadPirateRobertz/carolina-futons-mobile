@@ -10,6 +10,7 @@ import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { ThemeProvider } from '@/theme';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
+import { MiniCartDrawerProvider } from '@/hooks/useMiniCartDrawer';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { NotificationProvider } from '@/hooks/useNotifications';
@@ -22,6 +23,7 @@ import { WixProvider } from '@/services/wix/wixProvider';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 
 import { AppNavigator, linkingConfig } from '@/navigation';
+import { MiniCartDrawerHost } from '@/navigation/MiniCartDrawerHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
@@ -112,6 +114,7 @@ function App() {
             <MaybeWixProvider>
               <AuthProvider>
                 <CartProvider>
+                  <MiniCartDrawerProvider>
                   <WishlistProvider>
                     <NotificationProvider>
                       <CartAbandonmentBridge />
@@ -137,6 +140,7 @@ function App() {
                                 <DeepLinkProvider>
                                   <OfflineBanner />
                                   <AppNavigator />
+                                  <MiniCartDrawerHost />
                                   <ForceUpdateModal
                                     visible={forceUpdate.visible}
                                     required={forceUpdate.required}
@@ -150,6 +154,7 @@ function App() {
                       </PremiumProvider>
                     </NotificationProvider>
                   </WishlistProvider>
+                  </MiniCartDrawerProvider>
                 </CartProvider>
               </AuthProvider>
             </MaybeWixProvider>

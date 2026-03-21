@@ -115,7 +115,9 @@ jest.mock('./src/utils/sharedTransitionTag', () => ({
 }));
 
 // Mock @react-navigation/native for components that use useNavigation
-// outside of a NavigationContainer (e.g. ShopScreen in unit tests)
+// outside of a NavigationContainer (e.g. ShopScreen in unit tests).
+// Also mock useNavigationState so MiniCartDrawerHost (rendered inside App)
+// does not subscribe to real navigation state and hang async tests.
 jest.mock('@react-navigation/native', () => {
   const actual = jest.requireActual('@react-navigation/native');
   return {
@@ -127,6 +129,10 @@ jest.mock('@react-navigation/native', () => {
       setOptions: jest.fn(),
       addListener: jest.fn(() => jest.fn()),
     }),
+    useNavigationState: (selector) => {
+      const state = { routes: [{ name: 'Home', key: 'Home-mock' }], index: 0 };
+      return selector(state);
+    },
   };
 });
 
