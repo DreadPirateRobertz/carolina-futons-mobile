@@ -32,7 +32,6 @@ import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
 import { compactByLWW } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
-import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -41,12 +40,8 @@ export interface CartItem {
   id: string; // `${model.id}:${fabric.id}`
   model: FutonModel;
   fabric: Fabric;
-  fabricName?: string; // fabric.name, explicit for web schema alignment
   quantity: number;
   unitPrice: number; // basePrice + fabric.price
-  imageUrl?: string; // CDN image URL (~150px); absent for local-only items
-  sku?: string; // Wix catalog SKU; absent for local-only items
-  variantId?: string; // Wix variant ID (from catalogReference.options.variantId); absent for local-only items
 }
 
 /** Internal state managed by the cart reducer. */
@@ -133,10 +128,6 @@ interface CartContextValue {
   isSyncing: boolean;
   /** Replace all cart items atomically (used by sync to load server state). */
   loadItems: (items: CartItem[]) => void;
-  /** Non-null when a cart sync to the server failed (online path). Cleared by clearSyncError. */
-  syncError: string | null;
-  /** Clear the sync error banner. */
-  clearSyncError: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -146,39 +137,29 @@ const CART_STORAGE_KEY = 'cfutons_cart';
 /**
  * Convert a Wix server cart line item to a local CartItem, if the
  * referenced product and variant exist in the local catalog.
- *
- * @internal Exported for unit testing only.
  */
-export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
+function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
   const modelId = lineItem.catalogReference.catalogItemId;
-  const variantId = lineItem.catalogReference.options?.variantId;
+  const fabricId = lineItem.catalogReference.options?.variantId;
 
   const model = FUTON_MODELS.find((m) => m.id === modelId);
   if (!model) return null;
 
-  const fabric = variantId ? FABRICS.find((f) => f.id === variantId) : FABRICS[0];
+  const fabric = fabricId ? FABRICS.find((f) => f.id === fabricId) : FABRICS[0];
   if (!fabric) return null;
-
-  // Wix can return '' when no image is set — coerce to undefined to prevent broken Image renders.
-  const imageUrl = lineItem.media?.mediaItem?.url || undefined;
 
   return {
     id: `${model.id}:${fabric.id}`,
     model,
     fabric,
-    fabricName: fabric.name,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
-    ...(imageUrl ? { imageUrl } : {}),
-    ...(lineItem.physicalProperties?.sku ? { sku: lineItem.physicalProperties.sku } : {}),
-    ...(variantId !== undefined ? { variantId } : {}),
   };
 }
 
 /**
  * Merge local cart items with server cart items.
- * For items present in both, keeps the higher quantity (capped at 10) and
- * fills in server-side metadata (imageUrl, sku) that may be absent locally.
+ * For items present in both, keeps the higher quantity (capped at 10).
  * Items unique to either side are included in the result.
  */
 export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[] {
@@ -189,9 +170,6 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
       merged[existingIdx] = {
         ...merged[existingIdx],
         quantity: Math.min(10, Math.max(merged[existingIdx].quantity, serverItem.quantity)),
-        // Backfill server-side metadata absent from offline/local items
-        ...(serverItem.imageUrl ? { imageUrl: serverItem.imageUrl } : {}),
-        ...(serverItem.sku ? { sku: serverItem.sku } : {}),
       };
     } else {
       merged.push(serverItem);
@@ -216,7 +194,6 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const [syncing, setSyncing] = useState(false);
-  const [syncError, setSyncError] = useState<string | null>(null);
   const authCtx = useContext(AuthContext);
   const user = authCtx?.user ?? null;
   const prevUserRef = useRef<typeof user>(null);
@@ -264,8 +241,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     executors: cartExecutors,
     preSync: () => compactByLWW('cart', 'productId'),
   });
-
-  const gamificationEvents = useGamificationEvents();
 
   // ── AsyncStorage persistence ──────────────────────────────────
 
@@ -369,18 +344,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
-      gamificationEvents.addToCart(model.id, model.basePrice + fabric.price);
       if (Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
       if (isOnlineRef.current) {
         const client = wixClientRef.current;
         if (client) {
-          const itemId = `${model.id}:${fabric.id}`;
           client.addToCart(model.id, quantity, fabric.id).catch(() => {
-            // Optimistic rollback: remove item from local cart if server sync failed
-            dispatch({ type: 'REMOVE_ITEM', itemId });
-            setSyncError("Couldn't add item to cart. Please try again.");
+            // Fire-and-forget: local cart is source of truth
           });
         }
       } else {
@@ -392,7 +363,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         });
       }
     },
-    [queueAction, gamificationEvents],
+    [queueAction],
   );
 
   const removeItem = useCallback(
@@ -446,8 +417,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [state.items],
   );
 
-  const clearSyncError = useCallback(() => setSyncError(null), []);
-
   const value = useMemo<CartContextValue>(
     () => ({
       items: state.items,
@@ -461,8 +430,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingSync: pendingCount,
       isSyncing,
       loadItems,
-      syncError,
-      clearSyncError,
     }),
     [
       state.items,
@@ -476,8 +443,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingCount,
       isSyncing,
       loadItems,
-      syncError,
-      clearSyncError,
     ],
   );
 
