@@ -11,7 +11,8 @@ describe('parseWixImageUrl', () => {
     });
 
     it('handles mediaId with e04e89_ prefix', () => {
-      const url = 'wix:image://v1/e04e89_ff00aa11bb22cc33dd44ee55ff66aa77/photo.jpg#originWidth=800&originHeight=600';
+      const url =
+        'wix:image://v1/e04e89_ff00aa11bb22cc33dd44ee55ff66aa77/photo.jpg#originWidth=800&originHeight=600';
       expect(parseWixImageUrl(url)).toBe(
         'https://static.wixstatic.com/media/e04e89_ff00aa11bb22cc33dd44ee55ff66aa77',
       );
@@ -19,9 +20,7 @@ describe('parseWixImageUrl', () => {
 
     it('handles URL without hash fragment', () => {
       const url = 'wix:image://v1/e04e89_abc123/room.jpg';
-      expect(parseWixImageUrl(url)).toBe(
-        'https://static.wixstatic.com/media/e04e89_abc123',
-      );
+      expect(parseWixImageUrl(url)).toBe('https://static.wixstatic.com/media/e04e89_abc123');
     });
 
     it('handles URL without filename (bare mediaId)', () => {
@@ -33,9 +32,7 @@ describe('parseWixImageUrl', () => {
 
     it('handles different v1 path structures', () => {
       const url = 'wix:image://v1/11062b_someid/myimage.png#originWidth=400&originHeight=300';
-      expect(parseWixImageUrl(url)).toBe(
-        'https://static.wixstatic.com/media/11062b_someid',
-      );
+      expect(parseWixImageUrl(url)).toBe('https://static.wixstatic.com/media/11062b_someid');
     });
   });
 
