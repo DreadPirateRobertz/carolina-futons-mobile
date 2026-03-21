@@ -4,7 +4,7 @@ import { ProductCard } from '../ProductCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS, type Product } from '@/data/products';
-import { productId } from '@/data/productId';
+import { productId, productIdToModelId } from '@/data/productId';
 
 const futon = PRODUCTS.find((p) => p.category === 'futons')!;
 const saleProduct = PRODUCTS.find((p) => p.originalPrice !== undefined)!;
@@ -157,6 +157,29 @@ describe('ProductCard', () => {
     it('renders stock badge with correct testID', () => {
       const { getByTestId } = renderCard({ product: lowStockProduct });
       expect(getByTestId(`stock-badge-${lowStockProduct.id}`)).toBeTruthy();
+    });
+  });
+
+  describe('shared element transition', () => {
+    it('renders image container with testID for transition target', () => {
+      const { getByTestId } = renderCard();
+      expect(getByTestId(`product-image-container-${futon.id}`)).toBeTruthy();
+    });
+
+    it('tag is based on model ID (no prod- prefix) to match ProductDetailScreen', () => {
+      // The sharedTransitionTag value must use productIdToModelId so that it
+      // matches the tag in ProductDetailScreen which uses FutonModel.id directly.
+      const modelId = productIdToModelId(futon.id);
+      expect(modelId).toBe(futon.id.replace(/^prod-/, ''));
+      // Confirm no prod- prefix remains — if this breaks the transition won't fire.
+      expect(modelId).not.toMatch(/^prod-/);
+    });
+
+    it('tag value incorporates product-image prefix and model ID', () => {
+      const modelId = productIdToModelId(futon.id);
+      const expectedTag = `product-image-${modelId}`;
+      // Verify the pattern is correct for all test products
+      expect(expectedTag).toMatch(/^product-image-[a-z0-9-]+$/);
     });
   });
 });

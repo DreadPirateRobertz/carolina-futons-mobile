@@ -422,9 +422,12 @@ export function ProductDetailScreen({
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       >
-        {/* Parallax Image Gallery — shared element matches ProductCard image */}
+        {/* Parallax Image Gallery — shared element matches ProductCard image.
+            Tag uses FutonModel.id (no 'prod-' prefix), matching the normalized
+            tag in ProductCard so Reanimated can pair the transition elements. */}
         <Animated.View
           sharedTransitionTag={sharedTransitionTag(`product-image-${model.id}`)}
+          testID={`product-image-gallery-${model.id}`}
           style={[styles.galleryContainer, galleryParallaxStyle]}
         >
           <FlatList

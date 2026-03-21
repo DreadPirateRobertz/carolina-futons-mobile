@@ -288,6 +288,26 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  describe('shared element transition', () => {
+    it('renders gallery container with transition testID for the default model', () => {
+      const { getByTestId } = renderDetail();
+      // asheville-full is the default model (FUTON_MODELS[0])
+      expect(getByTestId(`product-image-gallery-${asheville.id}`)).toBeTruthy();
+    });
+
+    it('renders gallery container with transition testID for a specific model', () => {
+      const { getByTestId } = renderDetail({ productId: blueRidge.id });
+      expect(getByTestId(`product-image-gallery-${blueRidge.id}`)).toBeTruthy();
+    });
+
+    it('tag does not contain prod- prefix (must match ProductCard normalized tag)', () => {
+      // FutonModel.id never has the prod- prefix — this ensures the tag format
+      // matches the normalized tag produced by ProductCard.
+      expect(asheville.id).not.toMatch(/^prod-/);
+      expect(blueRidge.id).not.toMatch(/^prod-/);
+    });
+  });
+
   describe('Share Button', () => {
     it('renders share button', () => {
       const { getByTestId } = renderDetail();
