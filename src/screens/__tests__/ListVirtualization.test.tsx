@@ -11,6 +11,7 @@ import { render, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 import { ShopScreen } from '../ShopScreen';
 import { CategoryScreen } from '../CategoryScreen';
@@ -48,7 +49,9 @@ async function renderShop() {
   const result = render(
     <ThemeProvider>
       <WishlistProvider>
-        <ShopScreen onProductPress={jest.fn()} />
+        <CompareProvider>
+          <ShopScreen onProductPress={jest.fn()} />
+        </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );
@@ -61,7 +64,9 @@ function renderCategory() {
   return render(
     <ThemeProvider>
       <WishlistProvider>
-        <CategoryScreen categoryId="futons" onProductPress={jest.fn()} />
+        <CompareProvider>
+          <CategoryScreen categoryId="futons" onProductPress={jest.fn()} />
+        </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );
@@ -88,7 +93,9 @@ function renderWishlist(items?: WishlistItem[]) {
           ]
         }
       >
-        <WishlistScreen onProductPress={jest.fn()} />
+        <CompareProvider>
+          <WishlistScreen onProductPress={jest.fn()} />
+        </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );

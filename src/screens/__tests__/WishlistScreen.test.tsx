@@ -4,6 +4,7 @@ import { Alert, Share } from 'react-native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
 const product1 = PRODUCTS[0];
@@ -30,7 +31,9 @@ function renderScreen(
     ...render(
       <ThemeProvider>
         <WishlistProvider initialItems={opts.items ?? []}>
-          <WishlistScreen onProductPress={onProductPress} onBrowse={onBrowse} />
+          <CompareProvider>
+            <WishlistScreen onProductPress={onProductPress} onBrowse={onBrowse} />
+          </CompareProvider>
         </WishlistProvider>
       </ThemeProvider>,
     ),
