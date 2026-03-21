@@ -15,10 +15,10 @@ Single flow: `SwatchRequestModal` → `useSwatchRequest` hook → Wix data colle
 ```
 ProductDetailScreen
   └── "Request Free Swatches" button (testID: request-swatches-button)
-        └── SwatchRequestModal (modal)
-              └── useSwatchRequest(productId, wixClient)
+        └── SwatchRequestModal (modal, has productName + productId props)
+              └── useSwatchRequest(productId, productName, wixClient?)
                     ├── validateFabrics + validateAddress
-                    ├── wixClient.submitFabricSampleRequest(...)  ← NEW
+                    ├── wixClient.submitFabricSampleRequest(...)  ← NEW (skipped if null)
                     ├── AsyncStorage.setItem(rate-limit record)
                     └── analytics.requestSwatches(...)
 ```
@@ -34,6 +34,22 @@ ProductDetailScreen
 | `src/components/SwatchRequestModal.tsx` | **Modify** — pass `wixClient` to hook, verify a11y: 44pt targets + accessibilityLiveRegion on errors |
 | `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** — verify Wix error display, a11y attributes |
 
+## Hook Signature Change
+
+```ts
+// Before
+export function useSwatchRequest(productId: string): SwatchRequestState
+
+// After (wixClient and productName are optional for backward-compat; existing callers without Wix work as before)
+export function useSwatchRequest(
+  productId: string,
+  productName?: string,
+  wixClient?: WixClient | null,
+): SwatchRequestState
+```
+
+All existing tests that call `useSwatchRequest('prod-id')` without additional args continue to pass — they exercise the null/no-Wix path, which writes to AsyncStorage only (same as current behavior).
+
 ## Data Flow
 
 ### submitRequest (updated)
@@ -42,26 +58,34 @@ ProductDetailScreen
 3. Validate address (all required fields, ZIP regex)
 4. If validation fails → set errors, haptic error, return false
 5. `setStatus('submitting')`
-6. Call `await wixClient.submitFabricSampleRequest({customerName, shippingAddress, productName, fabricIds, fabricNames})`
-   - `shippingAddress`: formatted as `"${line1}${line2 ? ', ' + line2 : ''}, ${city}, ${state} ${zip}"`
-   - `fabricIds`: comma-joined IDs
-   - `fabricNames`: comma-joined names
-7. On Wix success → write rate-limit record to AsyncStorage, fire analytics, haptic success, `setStatus('submitted')`
-8. On Wix failure → `setStatus('error')`, do NOT write AsyncStorage (allow retry), haptic error
-9. If wixClient unavailable (null) → fall back to AsyncStorage-only path (offline / no Wix config)
+6. **If `wixClient` is non-null:**
+   - Call `await wixClient.submitFabricSampleRequest({customerName, shippingAddress, productName, fabricIds, fabricNames})`
+     - `shippingAddress`: `"${line1}${line2 ? ', ' + line2 : ''}, ${city}, ${state} ${zip}"`
+     - `fabricIds`: comma-joined fabric IDs
+     - `fabricNames`: comma-joined fabric names
+     - `productName`: passed-in param (defaults to `''` if omitted)
+   - On Wix failure → `setStatus('error')`, do NOT write AsyncStorage (user can retry without being rate-limited), haptic error, `return false`
+7. **Write rate-limit record to AsyncStorage** (both Wix success path and null-wixClient path)
+8. Fire `analytics.requestSwatches(...)`
+9. Haptic success, `setStatus('submitted')`, `setHasRecentRequest(true)`, `return true`
+
+### Null wixClient fallback (offline / no Wix config)
+- Skip step 6 entirely
+- Continue to steps 7-9: write AsyncStorage, fire analytics, show success
+- Behavior is identical to current implementation — no regression for environments without Wix
 
 ### Error states
-- `status === 'error'` with Wix failure → modal shows error message + Retry button
-- Network offline (wixClient throws) → same `status === 'error'` path
-- AsyncStorage write failure → log, don't block submission success (non-critical)
+- `status === 'error'` with Wix failure → modal shows error message (`testID="swatch-error-message"`) + Retry button (`testID="swatch-retry-button"`)
+- Network offline (wixClient throws network error) → same `status === 'error'` path
+- AsyncStorage write failure after Wix success → catch, call `captureException`, do NOT block success state (non-critical)
 
 ## Accessibility Requirements (burke specialty, §1.4)
 
-- All `TextInput` fields: `accessibilityLabel` (already present in most, verify complete)
-- Error field containers: `accessibilityLiveRegion="polite"` so screen readers announce validation errors
-- All touchable buttons: minimum `minHeight: 44` and `minWidth: 44` (verify existing styles)
+- All `TextInput` fields: `accessibilityLabel` (already present in most, verify all 6 address fields are covered)
+- Error `<Text>` elements (e.g. `testID="swatch-error-name"`): add `accessibilityLiveRegion="polite"` directly on the `<Text>` node (not a wrapper View) — screen readers announce when error text appears
+- All touchable buttons: minimum `minHeight: 44` and `minWidth: 44` in styles (verify Submit, Cancel, fabric toggles, Retry)
 - Submit button: `accessibilityState={{ busy: isSubmitting, disabled: isSubmitting }}`
-- Success state: `accessibilityLiveRegion="polite"` on confirmation message
+- Success/error state messages: `accessibilityLiveRegion="polite"` on the container `<Text>`
 
 ## Wix API Contract
 
@@ -90,18 +114,22 @@ ProductDetailScreen
 
 ### useSwatchRequest additions
 - calls `wixClient.submitFabricSampleRequest` with correct payload on valid submission
-- does NOT write AsyncStorage when Wix call fails
+- does NOT write AsyncStorage when Wix call fails (allows retry)
 - sets status to 'error' when Wix throws
-- falls back to AsyncStorage-only when wixClient is null
-- formats shippingAddress correctly (with and without line2)
-- formats fabricIds and fabricNames as comma-joined strings
+- falls back to AsyncStorage-only path when wixClient is null (existing tests cover this)
+- formats `shippingAddress` correctly with line2 present
+- formats `shippingAddress` correctly without line2 (no trailing comma)
+- formats `fabricIds` as comma-joined ID string
+- formats `fabricNames` as comma-joined name string
+- passes `productName` to Wix payload
 
 ### SwatchRequestModal additions
-- shows error message when status is 'error'
-- shows retry button when status is 'error'
-- error fields have accessibilityLiveRegion="polite"
-- submit button has accessibilityState.busy during submission
-- all touch targets meet 44pt minimum
+- shows error message (`testID="swatch-error-message"`) when status is 'error'
+- shows retry button (`testID="swatch-retry-button"`) when status is 'error'
+- pressing retry re-triggers submission and succeeds on second attempt
+- error `<Text>` nodes have `accessibilityLiveRegion="polite"`
+- submit button has `accessibilityState.busy === true` while submitting
+- all touch targets (Submit, Cancel, fabric toggles, Retry) have minHeight/minWidth ≥ 44
 
 ## Acceptance Criteria
 
