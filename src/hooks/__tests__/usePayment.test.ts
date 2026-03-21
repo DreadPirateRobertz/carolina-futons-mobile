@@ -134,6 +134,7 @@ describe('usePayment', () => {
       mockWixClient,
       expect.any(Array),
       expect.any(Object),
+      expect.any(String), // idempotency key
     );
     expect(mockedConfirmOrder).toHaveBeenCalledWith(
       mockWixClient,
@@ -142,6 +143,52 @@ describe('usePayment', () => {
       expect.any(Object),
       'card',
     );
+  });
+
+  it('passes an idempotency key string to createPaymentIntent', async () => {
+    mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+    mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
+
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
+
+    await addCartItem(result);
+
+    await act(async () => {
+      await result.current.payment.processPayment('card');
+    });
+
+    const idempotencyKey = mockedCreatePaymentIntent.mock.calls[0][3];
+    expect(typeof idempotencyKey).toBe('string');
+    expect(idempotencyKey.length).toBeGreaterThan(0);
+  });
+
+  it('uses the same idempotency key on retry with the same cart', async () => {
+    mockedCreatePaymentIntent
+      .mockRejectedValueOnce(new PaymentError('Network error', 'NETWORK_ERROR'))
+      .mockResolvedValue(INTENT_RESPONSE);
+    mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
+
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
+
+    await addCartItem(result);
+
+    // First attempt — fails
+    await act(async () => {
+      await result.current.payment.processPayment('card');
+    });
+    expect(result.current.payment.status).toBe('error');
+
+    // Reset error state to allow retry
+    act(() => result.current.payment.resetPayment());
+
+    // Second attempt — same cart, should use same key
+    await act(async () => {
+      await result.current.payment.processPayment('card');
+    });
+
+    const key1 = mockedCreatePaymentIntent.mock.calls[0][3];
+    const key2 = mockedCreatePaymentIntent.mock.calls[1][3];
+    expect(key1).toBe(key2);
   });
 
   it('completes full success path: intent → sheet → confirm → cart cleared → success', async () => {

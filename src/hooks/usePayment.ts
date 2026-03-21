@@ -8,6 +8,25 @@
  * submission via a processing ref.
  */
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+
+/**
+ * UUID v4 without relying on crypto.randomUUID() (not universally available
+ * in all Hermes/RN environments).
+ */
+function uuid4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+/** Stable fingerprint of the current cart for idempotency key reset detection. */
+function cartFingerprint(items: { id: string; quantity: number }[], total: number): string {
+  return items
+    .map((i) => `${i.id}:${i.quantity}`)
+    .sort()
+    .join('|') + `|${total.toFixed(2)}`;
+}
 import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
 import { useOptionalWixClient } from '@/services/wix';
@@ -93,7 +112,23 @@ export function usePayment() {
   const [googlePaySupported, setGooglePaySupported] = useState(false);
   const processingRef = useRef(false);
 
+  // Idempotency key — stable across retries for the same cart, reset when
+  // cart changes. The Wix backend forwards this to Stripe as Idempotency-Key,
+  // preventing duplicate charges if the network fails and the user retries.
+  const idempotencyKeyRef = useRef<string>(uuid4());
+  const cartFingerprintRef = useRef<string>('');
+
   const totals = useMemo(() => calculateTotals(subtotal, isPremium), [subtotal, isPremium]);
+
+  // Reset idempotency key whenever the cart changes (different items or total)
+  // so a modified cart can never accidentally reuse a key from a previous attempt.
+  useEffect(() => {
+    const fp = cartFingerprint(items, totals.total);
+    if (fp !== cartFingerprintRef.current) {
+      cartFingerprintRef.current = fp;
+      idempotencyKeyRef.current = uuid4();
+    }
+  }, [items, totals.total]);
 
   // Check Apple Pay support on mount (iOS)
   useEffect(() => {
@@ -126,7 +161,7 @@ export function usePayment() {
           throw new PaymentError('Payment service unavailable', 'NETWORK_ERROR');
         }
         const { clientSecret, ephemeralKey, customerId, paymentIntentId } =
-          await createPaymentIntent(wixClient, items, totals);
+          await createPaymentIntent(wixClient, items, totals, idempotencyKeyRef.current);
 
         if (method === 'apple-pay') {
           // 2a. Apple Pay flow via confirmPlatformPayPayment
