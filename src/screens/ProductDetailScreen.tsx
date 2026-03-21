@@ -19,6 +19,7 @@ import {
   ScrollView,
   Alert,
   Share,
+  TextInput,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -70,6 +71,8 @@ import { SwatchRequestModal } from '@/components/SwatchRequestModal';
 import { WixProductDetail } from '@/components/WixProductDetail';
 import { isWixConfigured } from '@/services/wix/config';
 import { useOptionalWixClient } from '@/services/wix';
+import { useProductQA } from '@/hooks/useProductQA';
+import { QuestionCard } from '@/components/QuestionCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -159,6 +162,18 @@ export function ProductDetailScreen({
     clearSubmitStatus: clearReviewSubmitStatus,
   } = useReviews(model.id);
   const previewReviews = reviews.slice(0, 3);
+
+  const {
+    questions,
+    loading: qaLoading,
+    fetchError: qaFetchError,
+    isSubmitting: qaIsSubmitting,
+    submitError: qaSubmitError,
+    submitSuccess: qaSubmitSuccess,
+    submitQuestion,
+  } = useProductQA(model.id);
+
+  const [qaInput, setQaInput] = useState('');
 
   const totalPrice = model.basePrice + selectedFabric.price;
 
@@ -1085,6 +1100,73 @@ export function ProductDetailScreen({
           </View>
         ) : null}
 
+        {/* Q&A Section */}
+        <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="product-qa-section">
+          <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Questions & Answers</Text>
+
+          {qaLoading ? (
+            <View testID="product-qa-loading" style={styles.qaLoadingPlaceholder}>
+              <View style={[styles.qaSkeletonLine, { backgroundColor: colors.overlay }]} />
+              <View style={[styles.qaSkeletonLine, { backgroundColor: colors.overlay, width: '70%' }]} />
+            </View>
+          ) : qaFetchError ? (
+            <View testID="product-qa-error" style={styles.qaMessageBox}>
+              <Text style={[styles.qaMessageText, { color: colors.espressoLight }]}>
+                {qaFetchError}
+              </Text>
+            </View>
+          ) : questions.length === 0 ? (
+            <View testID="product-qa-empty" style={styles.qaMessageBox}>
+              <Text style={[styles.qaMessageText, { color: colors.espressoLight }]}>
+                No questions yet. Be the first to ask!
+              </Text>
+            </View>
+          ) : (
+            questions.map((q) => (
+              <QuestionCard key={q.id ?? q.question} question={q} testID={`question-card-${q.id}`} />
+            ))
+          )}
+
+          {/* Submit error / success banners */}
+          {qaSubmitError ? (
+            <View testID="product-qa-submit-error" style={styles.qaMessageBox}>
+              <Text style={[styles.qaMessageText, { color: colors.espressoLight }]}>{qaSubmitError}</Text>
+            </View>
+          ) : null}
+          {qaSubmitSuccess ? (
+            <View testID="product-qa-submit-success" style={styles.qaMessageBox}>
+              <Text style={[styles.qaMessageText, { color: colors.espresso }]}>
+                Your question has been submitted!
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Submit form */}
+          <TextInput
+            testID="product-qa-input"
+            value={qaInput}
+            onChangeText={setQaInput}
+            placeholder="Ask a question about this product…"
+            placeholderTextColor={colors.espressoLight}
+            style={[styles.qaInput, { color: colors.espresso, borderColor: colors.overlay, backgroundColor: colors.sandDark }]}
+            multiline
+            maxLength={500}
+            editable={!qaIsSubmitting}
+          />
+          <TouchableOpacity
+            testID="product-qa-submit-btn"
+            style={[styles.qaSubmitBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
+            onPress={() => {
+              submitQuestion(qaInput);
+              setQaInput('');
+            }}
+            disabled={qaIsSubmitting}
+            accessibilityLabel="Submit question"
+          >
+            <Text style={styles.qaSubmitBtnText}>{qaIsSubmitting ? 'Submitting…' : 'Submit Question'}</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />
       </Animated.ScrollView>
@@ -1799,5 +1881,40 @@ const styles = StyleSheet.create({
   roomLabel: {
     fontSize: 12,
     fontWeight: '500',
+  },
+  qaLoadingPlaceholder: {
+    gap: 8,
+    paddingVertical: 12,
+  },
+  qaSkeletonLine: {
+    height: 16,
+    borderRadius: 8,
+  },
+  qaMessageBox: {
+    paddingVertical: 12,
+  },
+  qaMessageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  qaInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    lineHeight: 20,
+    minHeight: 72,
+    marginTop: 12,
+    textAlignVertical: 'top',
+  },
+  qaSubmitBtn: {
+    marginTop: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  qaSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
