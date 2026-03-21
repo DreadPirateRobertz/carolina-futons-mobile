@@ -112,7 +112,11 @@ function renderCart() {
   let triggerAdd: (() => void) | null = null;
   const { getByTestId } = render(
     <CartProvider>
-      <CartHarness onAddItem={(fn) => { triggerAdd = fn; }} />
+      <CartHarness
+        onAddItem={(fn) => {
+          triggerAdd = fn;
+        }}
+      />
     </CartProvider>,
   );
   return { triggerAdd: () => triggerAdd!() };
@@ -128,14 +132,20 @@ describe('useCart addItem — haptic', () => {
 
   it('fires Impact.Medium when an item is added to the cart', async () => {
     const { triggerAdd } = renderCart();
-    await act(async () => { triggerAdd(); });
+    await act(async () => {
+      triggerAdd();
+    });
     expect(mockImpact).toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Medium);
   });
 
   it('fires Impact.Medium on every addItem call', async () => {
     const { triggerAdd } = renderCart();
-    await act(async () => { triggerAdd(); });
-    await act(async () => { triggerAdd(); });
+    await act(async () => {
+      triggerAdd();
+    });
+    await act(async () => {
+      triggerAdd();
+    });
     expect(mockImpact).toHaveBeenCalledTimes(2);
     expect(mockImpact).toHaveBeenNthCalledWith(1, Haptics.ImpactFeedbackStyle.Medium);
     expect(mockImpact).toHaveBeenNthCalledWith(2, Haptics.ImpactFeedbackStyle.Medium);
@@ -143,7 +153,9 @@ describe('useCart addItem — haptic', () => {
 
   it('does NOT fire Notification.Success on addItem', async () => {
     const { triggerAdd } = renderCart();
-    await act(async () => { triggerAdd(); });
+    await act(async () => {
+      triggerAdd();
+    });
     expect(mockNotification).not.toHaveBeenCalled();
   });
 });
