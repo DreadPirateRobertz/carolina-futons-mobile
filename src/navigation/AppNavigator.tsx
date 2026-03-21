@@ -15,11 +15,12 @@ import {
 import { CommonActions, type NavigatorScreenParams } from '@react-navigation/native';
 import { TabNavigator, type TabParamList } from './TabNavigator';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
-import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
+
+const OnboardingScreenWithBoundary = withScreenErrorBoundary(OnboardingScreen, 'Onboarding');
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
 const ARScreen = lazy(() =>
@@ -244,14 +245,12 @@ export function AppNavigator() {
       >
         <Stack.Screen name="Onboarding">
           {({ navigation: nav }) => (
-            <ScreenErrorBoundary screenName="Onboarding">
-              <OnboardingScreen
-                onComplete={() => {
-                  handleOnboardingComplete();
-                  nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
-                }}
-              />
-            </ScreenErrorBoundary>
+            <OnboardingScreenWithBoundary
+              onComplete={() => {
+                handleOnboardingComplete();
+                nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
+              }}
+            />
           )}
         </Stack.Screen>
         <Stack.Screen name="Tabs" component={TabNavigator} />
