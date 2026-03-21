@@ -1,12 +1,23 @@
 /**
  * @module useReferral
  *
- * Referral program hook — cm-z0x.
+ * Referral program hook — cm-z0x + cm-9sa.
  *
  * Fetches the current member's referral code from the Wix ReferralCodes CMS
  * collection, exposes credit/count stats, generates a shareable URL, and
  * provides utilities for storing/reading a referred-by code in AsyncStorage
  * (written when the user lands via a referral deep link).
+ *
+ * Also reads individual referral events from the Wix Referrals collection
+ * (cm-9sa) and exposes submitReferral() to write a new referral record on
+ * share acceptance.
+ *
+ * Collections:
+ *   ReferralCodes — { memberId, code, creditsEarned, referralCount }
+ *   Referrals     — { referralCode, referrerMemberId, refereeEmail,
+ *                     referrerCredit, refereeCredit, status }
+ *
+ * Credits: referrer $25, referee $25.
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,12 +26,36 @@ import { useAuth } from '@/hooks/useAuth';
 
 const REFERRED_BY_KEY = 'cfutons_referral_referred_by_code';
 const SHARE_BASE_URL = 'https://carolinafutons.com/referral';
+const REFERRER_CREDIT = 25;
+const REFEREE_CREDIT = 25;
 
-interface WixReferralItem {
+interface WixReferralCodeItem {
   memberId: string;
   code: string;
   creditsEarned: number;
   referralCount: number;
+}
+
+interface WixReferralRecord {
+  _id: string;
+  referralCode: string;
+  referrerMemberId: string;
+  refereeEmail: string;
+  referrerCredit: number;
+  refereeCredit: number;
+  status: string;
+}
+
+export interface ReferralRecord {
+  _id: string;
+  referralCode: string;
+  referrerMemberId: string;
+  refereeEmail: string;
+  /** Store credit amount awarded to the referrer on completion. */
+  referrerCredit: number;
+  /** Store credit amount awarded to the referee on first purchase. */
+  refereeCredit: number;
+  status: 'pending' | 'completed' | 'expired';
 }
 
 export interface UseReferralResult {
@@ -38,18 +73,34 @@ export interface UseReferralResult {
   error: string | null;
   /** Referral code of whoever referred this user (from deep link), or null. */
   referredByCode: string | null;
+  /** Individual referral event records for this member as referrer. */
+  referrals: ReferralRecord[];
   /** Persist a referred-by code to AsyncStorage (called from deep link handler). */
   storeReferredByCode: (code: string) => Promise<void>;
+  /**
+   * Write a new referral record to the Wix Referrals collection.
+   * Called when the referee accepts the referral share.
+   * Throws if wixClient unavailable, member not authenticated, or code not loaded.
+   */
+  submitReferral: (refereeEmail: string) => Promise<void>;
+}
+
+function rawToReferralRecord(item: WixReferralRecord): ReferralRecord {
+  const status =
+    item.status === 'completed' || item.status === 'expired' ? item.status : 'pending';
+  return {
+    _id: item._id,
+    referralCode: item.referralCode,
+    referrerMemberId: item.referrerMemberId,
+    refereeEmail: item.refereeEmail,
+    referrerCredit: item.referrerCredit ?? REFERRER_CREDIT,
+    refereeCredit: item.refereeCredit ?? REFEREE_CREDIT,
+    status,
+  };
 }
 
 export function useReferral(): UseReferralResult {
-  const wixClient = useOptionalWixClient() as {
-    queryData: <T>(
-      collectionId: string,
-      options?: { filter?: Record<string, unknown>; limit?: number },
-    ) => Promise<{ items: T[]; totalResults: number }>;
-  } | null;
-
+  const wixClient = useOptionalWixClient();
   const { user } = useAuth();
   const memberId = user?.id ?? null;
 
@@ -59,6 +110,7 @@ export function useReferral(): UseReferralResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [referredByCode, setReferredByCode] = useState<string | null>(null);
+  const [referrals, setReferrals] = useState<ReferralRecord[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,32 +140,45 @@ export function useReferral(): UseReferralResult {
         return;
       }
 
-      try {
-        const result = await wixClient.queryData<WixReferralItem>('ReferralCodes', {
+      // Fetch ReferralCodes and Referrals in parallel
+      const [codesResult, referralsResult] = await Promise.allSettled([
+        wixClient.queryData<WixReferralCodeItem>('ReferralCodes', {
           filter: { memberId },
           limit: 1,
-        });
+        }),
+        wixClient.queryData<WixReferralRecord>('Referrals', {
+          filter: { referrerMemberId: memberId },
+          limit: 100,
+        }),
+      ]);
 
-        if (cancelled) return;
+      if (cancelled) return;
 
-        if (result.items.length === 0) {
+      // Handle ReferralCodes result
+      if (codesResult.status === 'fulfilled') {
+        if (codesResult.value.items.length === 0) {
           setError('Referral code not available yet');
-          setLoading(false);
-          return;
+        } else {
+          const item = codesResult.value.items[0];
+          setCode(item.code);
+          setCreditsEarned(item.creditsEarned ?? 0);
+          setReferralCount(item.referralCount ?? 0);
+          setError(null);
         }
-
-        const item = result.items[0];
-        setCode(item.code);
-        setCreditsEarned(item.creditsEarned ?? 0);
-        setReferralCount(item.referralCount ?? 0);
-        setError(null);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load referral code');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      } else {
+        setError(
+          codesResult.reason instanceof Error
+            ? codesResult.reason.message
+            : 'Failed to load referral code',
+        );
       }
+
+      // Handle Referrals result — failures don't block code display
+      if (referralsResult.status === 'fulfilled') {
+        setReferrals(referralsResult.value.items.map(rawToReferralRecord));
+      }
+
+      setLoading(false);
     })();
 
     return () => {
@@ -131,6 +196,34 @@ export function useReferral(): UseReferralResult {
     }
   }, []);
 
+  const submitReferral = useCallback(
+    async (refereeEmail: string) => {
+      if (!wixClient) throw new Error('Referral service unavailable');
+      if (!memberId) throw new Error('Must be signed in to submit a referral');
+      if (!code) throw new Error('Referral code not yet loaded');
+
+      const payload = {
+        referralCode: code,
+        referrerMemberId: memberId,
+        refereeEmail: refereeEmail.trim(),
+        referrerCredit: REFERRER_CREDIT,
+        refereeCredit: REFEREE_CREDIT,
+        status: 'pending' as const,
+      };
+
+      const inserted = await wixClient.insertDataItem('Referrals', payload);
+
+      setReferrals((prev) => [
+        ...prev,
+        {
+          _id: inserted.id,
+          ...payload,
+        },
+      ]);
+    },
+    [wixClient, memberId, code],
+  );
+
   return {
     code,
     creditsEarned,
@@ -139,6 +232,8 @@ export function useReferral(): UseReferralResult {
     loading,
     error,
     referredByCode,
+    referrals,
     storeReferredByCode,
+    submitReferral,
   };
 }

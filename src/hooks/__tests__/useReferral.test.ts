@@ -282,3 +282,158 @@ describe('referredByCode', () => {
     expect(result.current.referredByCode).toBeNull();
   });
 });
+
+// ── Section 9: Referrals collection reads (cm-9sa) ──────────────────────────
+
+describe('referrals list', () => {
+  it('returns empty referrals array by default', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.referrals).toEqual([]);
+  });
+
+  it('queries Referrals collection filtered by referrerMemberId', async () => {
+    renderHook(() => useReferral());
+    await waitFor(() => expect(mockQueryData).toHaveBeenCalledWith('Referrals', expect.anything()));
+    expect(mockQueryData).toHaveBeenCalledWith(
+      'Referrals',
+      expect.objectContaining({ filter: expect.objectContaining({ referrerMemberId: MEMBER_ID }) }),
+    );
+  });
+
+  it('returns mapped referral records with all fields', async () => {
+    mockQueryData.mockImplementation((collection: string) => {
+      if (collection === 'ReferralCodes')
+        return Promise.resolve({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
+      if (collection === 'Referrals')
+        return Promise.resolve({ items: [WIX_REFERRALS_RECORD], totalResults: 1 });
+      return Promise.resolve({ items: [], totalResults: 0 });
+    });
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.referrals).toHaveLength(1);
+    const rec = result.current.referrals[0];
+    expect(rec._id).toBe('ref-record-001');
+    expect(rec.referralCode).toBe(REFERRAL_CODE);
+    expect(rec.referrerMemberId).toBe(MEMBER_ID);
+    expect(rec.refereeEmail).toBe(REFEREE_EMAIL);
+    expect(rec.referrerCredit).toBe(25);
+    expect(rec.refereeCredit).toBe(25);
+    expect(rec.status).toBe('pending');
+  });
+
+  it('returns empty referrals when unauthenticated', async () => {
+    mockUseAuth.mockReturnValue(makeAuth(null));
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.referrals).toEqual([]);
+  });
+
+  it('returns empty referrals on Referrals query failure without blocking code load', async () => {
+    mockQueryData.mockImplementation((collection: string) => {
+      if (collection === 'ReferralCodes')
+        return Promise.resolve({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
+      if (collection === 'Referrals') return Promise.reject(new Error('Referrals API error'));
+      return Promise.resolve({ items: [], totalResults: 0 });
+    });
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.referrals).toEqual([]);
+    // ReferralCodes fetch still succeeds
+    expect(result.current.code).toBe(REFERRAL_CODE);
+  });
+});
+
+// ── Section 10: submitReferral (cm-9sa) ──────────────────────────────────────
+
+describe('submitReferral', () => {
+  it('calls insertDataItem with correct Referrals payload', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.submitReferral(REFEREE_EMAIL);
+    });
+    expect(mockInsertDataItem).toHaveBeenCalledWith(
+      'Referrals',
+      expect.objectContaining({
+        referralCode: REFERRAL_CODE,
+        referrerMemberId: MEMBER_ID,
+        refereeEmail: REFEREE_EMAIL,
+        referrerCredit: 25,
+        refereeCredit: 25,
+        status: 'pending',
+      }),
+    );
+  });
+
+  it('optimistically adds the new record to referrals list', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.referrals).toHaveLength(0);
+    await act(async () => {
+      await result.current.submitReferral(REFEREE_EMAIL);
+    });
+    expect(result.current.referrals).toHaveLength(1);
+    expect(result.current.referrals[0].refereeEmail).toBe(REFEREE_EMAIL);
+    expect(result.current.referrals[0].status).toBe('pending');
+  });
+
+  it('throws if wix client is unavailable', async () => {
+    mockUseOptionalWixClient.mockReturnValue(null);
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await expect(
+      act(async () => {
+        await result.current.submitReferral(REFEREE_EMAIL);
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('throws if member is not authenticated', async () => {
+    mockUseAuth.mockReturnValue(makeAuth(null));
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await expect(
+      act(async () => {
+        await result.current.submitReferral(REFEREE_EMAIL);
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('throws if referral code is not yet loaded', async () => {
+    mockQueryData.mockImplementation((collection: string) => {
+      if (collection === 'ReferralCodes') return Promise.resolve({ items: [], totalResults: 0 });
+      return Promise.resolve({ items: [], totalResults: 0 });
+    });
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await expect(
+      act(async () => {
+        await result.current.submitReferral(REFEREE_EMAIL);
+      }),
+    ).rejects.toThrow();
+  });
+
+  it('propagates API error from insertDataItem', async () => {
+    mockInsertDataItem.mockRejectedValue(new Error('Insert failed'));
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await expect(
+      act(async () => {
+        await result.current.submitReferral(REFEREE_EMAIL);
+      }),
+    ).rejects.toThrow('Insert failed');
+  });
+
+  it('trims whitespace from refereeEmail before submitting', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await act(async () => {
+      await result.current.submitReferral('  friend@example.com  ');
+    });
+    expect(mockInsertDataItem).toHaveBeenCalledWith(
+      'Referrals',
+      expect.objectContaining({ refereeEmail: 'friend@example.com' }),
+    );
+  });
+});
