@@ -34,12 +34,7 @@ export function ProductContextMenu({
   if (!visible) return null;
 
   return (
-    <Modal
-      transparent
-      animationType="fade"
-      visible={visible}
-      onRequestClose={onClose}
-    >
+    <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <View
         style={StyleSheet.absoluteFillObject}
         testID="product-context-menu"
