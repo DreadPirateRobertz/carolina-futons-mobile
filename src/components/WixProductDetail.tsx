@@ -25,6 +25,8 @@ import { WishlistButton } from '@/components/WishlistButton';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import type { Product } from '@/data/products';
+import { InventoryBadge } from '@/components/InventoryBadge';
+import { useInventoryBadge } from '@/hooks/useInventoryBadge';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -39,6 +41,7 @@ interface Props {
 
 export function WixProductDetail({ product, isLoading, onBack, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
+  const { badge: inventoryBadge, quantity: inventoryQuantity } = useInventoryBadge(product.id);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const galleryRef = useRef<FlatList>(null);
@@ -233,6 +236,13 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
               </Text>
             )}
           </View>
+
+          {/* Live inventory urgency badge */}
+          <InventoryBadge
+            badge={inventoryBadge}
+            quantity={inventoryQuantity}
+            testID="detail-inventory-badge"
+          />
         </View>
 
         {/* Description */}
