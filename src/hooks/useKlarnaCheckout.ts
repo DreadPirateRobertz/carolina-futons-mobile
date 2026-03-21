@@ -18,7 +18,11 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { useOptionalWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
-import { validateCheckoutAmount, validateKlarnaRedirectUrl, amountToCents } from '@/services/checkoutSecurity';
+import {
+  validateCheckoutAmount,
+  validateKlarnaRedirectUrl,
+  amountToCents,
+} from '@/services/checkoutSecurity';
 import { useCart } from './useCart';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -43,7 +47,12 @@ export interface KlarnaOrderConfirmation {
   currency: string;
 }
 
-export type KlarnaCheckoutStatus = 'idle' | 'processing' | 'awaiting_redirect' | 'success' | 'error';
+export type KlarnaCheckoutStatus =
+  | 'idle'
+  | 'processing'
+  | 'awaiting_redirect'
+  | 'success'
+  | 'error';
 
 type KlarnaState =
   | { status: 'idle'; error: null; order: null }
@@ -116,14 +125,12 @@ export function useKlarnaCheckout() {
           setState({ status: 'success', error: null, order: confirmation });
         } catch (err) {
           processingRef.current = false;
-          const message =
-            err instanceof Error ? err.message : 'Order confirmation failed';
+          const message = err instanceof Error ? err.message : 'Order confirmation failed';
           setState({ status: 'error', error: message, order: null });
-          captureException(
-            err instanceof Error ? err : new Error(message),
-            'error',
-            { action: 'confirmKlarnaOrder', orderId },
-          );
+          captureException(err instanceof Error ? err : new Error(message), 'error', {
+            action: 'confirmKlarnaOrder',
+            orderId,
+          });
         }
         return;
       }
@@ -136,7 +143,10 @@ export function useKlarnaCheckout() {
   );
 
   const startCheckout = useCallback(
-    async (items: KlarnaCartItem[], totals: KlarnaTotals): Promise<KlarnaOrderConfirmation | null> => {
+    async (
+      items: KlarnaCartItem[],
+      totals: KlarnaTotals,
+    ): Promise<KlarnaOrderConfirmation | null> => {
       if (processingRef.current) return null;
 
       // Client-side amount guard
@@ -178,11 +188,9 @@ export function useKlarnaCheckout() {
         processingRef.current = false;
         const message = err instanceof Error ? err.message : 'Klarna checkout failed';
         setState({ status: 'error', error: message, order: null });
-        captureException(
-          err instanceof Error ? err : new Error(message),
-          'error',
-          { action: 'startKlarnaCheckout' },
-        );
+        captureException(err instanceof Error ? err : new Error(message), 'error', {
+          action: 'startKlarnaCheckout',
+        });
         return null;
       }
     },
