@@ -300,11 +300,14 @@ describe('ProductDetailScreen', () => {
       expect(getByTestId(`product-image-gallery-${blueRidge.id}`)).toBeTruthy();
     });
 
-    it('tag does not contain prod- prefix (must match ProductCard normalized tag)', () => {
-      // FutonModel.id never has the prod- prefix — this ensures the tag format
-      // matches the normalized tag produced by ProductCard.
-      expect(asheville.id).not.toMatch(/^prod-/);
-      expect(blueRidge.id).not.toMatch(/^prod-/);
+    it('gallery testID does not contain prod- prefix (must match ProductCard normalized tag)', () => {
+      // The gallery testID is keyed on model.id (no prod- prefix), matching the
+      // format of the sharedTransitionTag used by ProductCard after normalization.
+      const { getByTestId } = renderDetail();
+      const gallery = getByTestId(`product-image-gallery-${asheville.id}`);
+      // testID must NOT have the prod- prefix — if it did, the naming would diverge
+      // from the sharedTransitionTag (which is also prefix-free).
+      expect(gallery.props.testID).not.toMatch(/prod-/);
     });
   });
 
