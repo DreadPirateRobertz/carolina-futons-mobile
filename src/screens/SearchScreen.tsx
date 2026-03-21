@@ -261,9 +261,7 @@ export function SearchScreen({ testID }: Props) {
       )}
 
       {/* Search results skeleton while loading */}
-      {showResults && isLoading && (
-        <SkeletonProductGrid count={4} />
-      )}
+      {showResults && isLoading && <SkeletonProductGrid count={4} />}
 
       {/* Search results grid */}
       {showResults && !isLoading && (
