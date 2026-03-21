@@ -1,5 +1,5 @@
 // Configure @testing-library/react-native globals.
-// Must run in setupFilesAfterFramework so RNTL is fully initialized.
+// Must run in setupFilesAfterEnv so RNTL is fully initialized.
 const { configure } = require('@testing-library/react-native');
 
 // Increase waitFor / findBy* timeout to accommodate parallel test execution.
