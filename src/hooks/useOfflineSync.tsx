@@ -92,8 +92,14 @@ interface UseOfflineSyncResult {
  * });
  */
 export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineSyncResult {
-  const { onSync, autoLoad = true, executors: executorMap, maxRetries, baseDelayMs, preSync } =
-    options;
+  const {
+    onSync,
+    autoLoad = true,
+    executors: executorMap,
+    maxRetries,
+    baseDelayMs,
+    preSync,
+  } = options;
   const { isOnline } = useConnectivity();
   const wasOnline = useRef(isOnline);
   const [pendingCount, setPendingCount] = useState(0);
