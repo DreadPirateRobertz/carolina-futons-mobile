@@ -39,8 +39,8 @@ export interface Product {
     depth: number;
     height: number;
   };
-  tags?: string[];          // style keywords: "modern", "rustic", "mid-century", etc.
-  colorFamily?: string;     // "neutral" | "warm" | "cool" | "dark" | "light"
+  tags?: string[]; // style keywords: "modern", "rustic", "mid-century", etc.
+  colorFamily?: string; // "neutral" | "warm" | "cool" | "dark" | "light"
 }
 
 export type ProductCategory =

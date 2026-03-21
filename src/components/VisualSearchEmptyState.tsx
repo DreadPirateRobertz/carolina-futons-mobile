@@ -17,9 +17,7 @@ export function VisualSearchEmptyState({ onBrowseAll, testID }: Props) {
   return (
     <View style={styles.root} testID={testID ?? 'visual-search-empty-state'}>
       <Text style={styles.icon}>🔍</Text>
-      <Text style={[styles.heading, { color: colors.espresso }]}>
-        No similar products found
-      </Text>
+      <Text style={[styles.heading, { color: colors.espresso }]}>No similar products found</Text>
       <Text style={[styles.body, { color: colors.espressoLight }]}>
         Try a clearer photo showing the furniture directly.
       </Text>

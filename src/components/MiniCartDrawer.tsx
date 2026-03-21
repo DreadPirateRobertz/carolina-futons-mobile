@@ -17,13 +17,7 @@
  */
 
 import React, { useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
@@ -95,12 +89,18 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
         <View style={[styles.summaryRow, { borderTopColor: colors.sandDark }]}>
           <View style={styles.countWrap}>
             <Text
-              style={[styles.countLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.countLabel,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
             >
               Items
             </Text>
             <Text
-              style={[styles.countValue, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+              style={[
+                styles.countValue,
+                { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+              ]}
               testID="mini-cart-item-count"
             >
               {itemCount}
@@ -108,12 +108,18 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
           </View>
           <View style={styles.subtotalWrap}>
             <Text
-              style={[styles.subtotalLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.subtotalLabel,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
             >
               Subtotal
             </Text>
             <Text
-              style={[styles.subtotalValue, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+              style={[
+                styles.subtotalValue,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
               testID="mini-cart-subtotal"
             >
               {formatPrice(subtotal)}
@@ -136,7 +142,9 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
           disabled={checkoutDisabled}
           testID="mini-cart-checkout-btn"
           accessibilityRole="button"
-          accessibilityLabel={checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`}
+          accessibilityLabel={
+            checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`
+          }
           accessibilityState={{ disabled: checkoutDisabled }}
         >
           <Text style={[styles.checkoutBtnText, { fontFamily: typography.bodyFamilyBold }]}>

@@ -9,7 +9,12 @@ jest.mock('@react-navigation/native', () => ({
 
 jest.mock('@/theme', () => ({
   useTheme: () => ({
-    colors: { espresso: '#3E2723', espressoLight: '#795548', sandBase: '#F5F0E8', sunsetCoral: '#FF6B47' },
+    colors: {
+      espresso: '#3E2723',
+      espressoLight: '#795548',
+      sandBase: '#F5F0E8',
+      sunsetCoral: '#FF6B47',
+    },
     spacing: { md: 16, lg: 24 },
     borderRadius: { button: 8 },
   }),
