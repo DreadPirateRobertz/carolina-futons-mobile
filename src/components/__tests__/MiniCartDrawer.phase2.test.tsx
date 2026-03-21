@@ -15,9 +15,15 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 // ── Gesture handler mock — captures Pan onEnd for swipe tests ────────────────
 let capturedPanOnEnd: ((e: { translationY: number; velocityY: number }) => void) | null = null;
 
+type PanBuilder = {
+  minDistance: jest.Mock<PanBuilder>;
+  onUpdate: jest.Mock<PanBuilder>;
+  onEnd: jest.Mock<PanBuilder>;
+};
+
 jest.mock('react-native-gesture-handler', () => {
   const { View } = require('react-native');
-  const panBuilder = {
+  const panBuilder: PanBuilder = {
     minDistance: jest.fn(() => panBuilder),
     onUpdate: jest.fn(() => panBuilder),
     onEnd: jest.fn((cb: (e: { translationY: number; velocityY: number }) => void) => {
