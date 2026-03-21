@@ -35,7 +35,9 @@ import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
+import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
+import { WixAuthService } from '@/services/wix/wixAuth';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -73,7 +75,15 @@ export function AccountScreen({
   const { isPremium, restore } = usePremium();
   const deletion = useAccountDeletion();
   const dataExport = useDataExport();
-  const addressBook = useAddressBook();
+  const wixAuthService = React.useMemo(() => new WixAuthService(), []);
+  const wixSync = React.useCallback(
+    async (addresses: SavedAddress[]) => {
+      if (!user?.id) return;
+      await wixAuthService.syncMemberAddresses(user.id, addresses);
+    },
+    [user?.id, wixAuthService],
+  );
+  const addressBook = useAddressBook({ wixSync });
   const [restoring, setRestoring] = useState(false);
   const {
     status: bioStatus,
@@ -88,6 +98,11 @@ export function AccountScreen({
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   const [showDebugMenu, setShowDebugMenu] = useState(false);
+
+  // Address form state
+  const [addressFormMode, setAddressFormMode] = useState<'none' | 'add' | 'edit'>('none');
+  const [editingAddress, setEditingAddress] = useState<SavedAddress | null>(null);
+  const [addressSaving, setAddressSaving] = useState(false);
   const versionTapCount = useRef(0);
   const versionTapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -138,6 +153,42 @@ export function AccountScreen({
     });
     setEditing(false);
   }, [updateProfile, firstName, lastName, phone]);
+
+  const handleAddAddress = useCallback(() => {
+    if (addressBook.addresses.length >= 5) return;
+    setEditingAddress(null);
+    setAddressFormMode('add');
+  }, [addressBook.addresses.length]);
+
+  const handleEditAddress = useCallback((addr: SavedAddress) => {
+    setEditingAddress(addr);
+    setAddressFormMode('edit');
+  }, []);
+
+  const handleAddressFormCancel = useCallback(() => {
+    setAddressFormMode('none');
+    setEditingAddress(null);
+  }, []);
+
+  const handleAddressFormSubmit = useCallback(
+    async (values: AddressFormValues) => {
+      setAddressSaving(true);
+      try {
+        if (addressFormMode === 'add') {
+          await addressBook.addAddress(values);
+        } else if (addressFormMode === 'edit' && editingAddress) {
+          await addressBook.updateAddress(editingAddress.id, values);
+        }
+        setAddressFormMode('none');
+        setEditingAddress(null);
+      } catch {
+        // Keep form open on error — user can retry
+      } finally {
+        setAddressSaving(false);
+      }
+    },
+    [addressFormMode, editingAddress, addressBook],
+  );
 
   const showBiometricToggle =
     isAuthenticated && bioStatus.isAvailable && bioStatus.isEnrolled && !bioLoading;
@@ -415,6 +466,7 @@ export function AccountScreen({
           />
           <MenuItem
             label={`Saved Addresses${addressBook.addresses.length > 0 ? ` (${addressBook.addresses.length})` : ''}`}
+            onPress={addressBook.addresses.length < 5 ? handleAddAddress : undefined}
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}
@@ -441,6 +493,16 @@ export function AccountScreen({
                       </Text>
                     </View>
                     <View style={styles.addressActions}>
+                      <TouchableOpacity
+                        onPress={() => handleEditAddress(addr)}
+                        testID={`edit-address-${addr.id}`}
+                        accessibilityLabel={`Edit address ${addr.line1}`}
+                        accessibilityRole="button"
+                      >
+                        <Text style={[styles.addressAction, { color: colors.mountainBlue }]}>
+                          Edit
+                        </Text>
+                      </TouchableOpacity>
                       {!addr.isDefault && (
                         <TouchableOpacity
                           onPress={() => addressBook.setDefault(addr.id)}
@@ -449,7 +511,7 @@ export function AccountScreen({
                           accessibilityRole="button"
                         >
                           <Text style={[styles.addressAction, { color: colors.mountainBlue }]}>
-                            Set Default
+                            Default
                           </Text>
                         </TouchableOpacity>
                       )}
@@ -476,7 +538,36 @@ export function AccountScreen({
                   </View>
                 </GlassCard>
               ))}
+              {addressBook.addresses.length >= 5 && (
+                <Text
+                  testID="address-max-notice"
+                  style={[styles.addressLine, { color: darkPalette.textMuted, textAlign: 'center', paddingVertical: 4 }]}
+                  accessibilityLabel="Maximum of 5 addresses reached"
+                >
+                  Maximum of 5 saved addresses reached
+                </Text>
+              )}
             </View>
+          )}
+          {addressFormMode !== 'none' && (
+            <GlassCard intensity="light">
+              <View style={{ padding: 16 }}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: darkPalette.textPrimary, marginBottom: 12 },
+                  ]}
+                >
+                  {addressFormMode === 'add' ? 'Add Address' : 'Edit Address'}
+                </Text>
+                <AddressForm
+                  initialValues={editingAddress ?? undefined}
+                  onSubmit={handleAddressFormSubmit}
+                  onCancel={handleAddressFormCancel}
+                  saving={addressSaving}
+                />
+              </View>
+            </GlassCard>
           )}
           <MenuItem
             label="Payment Methods"

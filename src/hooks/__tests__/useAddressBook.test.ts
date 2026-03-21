@@ -153,3 +153,85 @@ describe('useAddressBook', () => {
     expect(result.current.addresses[0].fullName).toBe('Updated Name');
   });
 });
+
+// ── Wix sync integration (cm-v54) ────────────────────────────────────────────
+
+describe('useAddressBook — Wix sync', () => {
+  const mockWixSync = jest.fn();
+
+  it('calls wixSync after addAddress when syncFn provided', async () => {
+    mockWixSync.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.addAddress(TEST_ADDRESS);
+    });
+
+    expect(mockWixSync).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ fullName: TEST_ADDRESS.fullName })]),
+    );
+  });
+
+  it('calls wixSync after updateAddress when syncFn provided', async () => {
+    const saved: SavedAddress[] = [{ ...TEST_ADDRESS, id: 'addr-1', isDefault: true }];
+    mockGetItem.mockResolvedValue(JSON.stringify(saved));
+    mockWixSync.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.updateAddress('addr-1', { fullName: 'Updated Name' });
+    });
+
+    expect(mockWixSync).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ fullName: 'Updated Name' })]),
+    );
+  });
+
+  it('calls wixSync after deleteAddress when syncFn provided', async () => {
+    const saved: SavedAddress[] = [
+      { ...TEST_ADDRESS, id: 'addr-1', isDefault: true },
+      { ...TEST_ADDRESS, id: 'addr-2', fullName: 'Jane', line1: '456 Oak', isDefault: false },
+    ];
+    mockGetItem.mockResolvedValue(JSON.stringify(saved));
+    mockWixSync.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.deleteAddress('addr-1');
+    });
+
+    expect(mockWixSync).toHaveBeenCalledWith(
+      expect.not.arrayContaining([expect.objectContaining({ id: 'addr-1' })]),
+    );
+  });
+
+  it('does not call wixSync when no syncFn provided', async () => {
+    const { result } = renderHook(() => useAddressBook());
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.addAddress(TEST_ADDRESS);
+    });
+
+    expect(mockWixSync).not.toHaveBeenCalled();
+  });
+
+  it('proceeds with local update even if wixSync throws', async () => {
+    mockWixSync.mockRejectedValue(new Error('Network error'));
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+
+    // Should not throw
+    await act(async () => {
+      await result.current.addAddress(TEST_ADDRESS);
+    });
+
+    expect(result.current.addresses).toHaveLength(1);
+    expect(result.current.addresses[0].fullName).toBe(TEST_ADDRESS.fullName);
+  });
+});

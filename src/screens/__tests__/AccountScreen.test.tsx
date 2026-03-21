@@ -1005,4 +1005,133 @@ describe('AccountScreen', () => {
       expect(() => fireEvent.press(getByTestId('account-sign-in-button'))).not.toThrow();
     });
   });
+
+  describe('Address form — add flow (cm-v54)', () => {
+    it('tapping Saved Addresses opens add-address form when below max', async () => {
+      mockAddressBook.addresses = [];
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('account-addresses')).toBeTruthy());
+      fireEvent.press(getByTestId('account-addresses'));
+      await waitFor(() => expect(getByTestId('address-form')).toBeTruthy());
+    });
+
+    it('shows add-address form title', async () => {
+      mockAddressBook.addresses = [];
+      const { getByTestId, getByText } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('account-addresses')).toBeTruthy());
+      fireEvent.press(getByTestId('account-addresses'));
+      await waitFor(() => expect(getByText('Add Address')).toBeTruthy());
+    });
+
+    it('submitting valid add form calls addAddress', async () => {
+      mockAddressBook.addresses = [];
+      mockAddressBook.addAddress.mockResolvedValue(undefined);
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('account-addresses')).toBeTruthy());
+      fireEvent.press(getByTestId('account-addresses'));
+      await waitFor(() => expect(getByTestId('address-full-name-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('address-full-name-input'), 'Jane Smith');
+      fireEvent.changeText(getByTestId('address-line1-input'), '789 Pine Rd');
+      fireEvent.changeText(getByTestId('address-line2-input'), '');
+      fireEvent.changeText(getByTestId('address-city-input'), 'Durham');
+      fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+      fireEvent.changeText(getByTestId('address-zip-input'), '27701');
+      fireEvent.press(getByTestId('address-save-button'));
+      await waitFor(() => {
+        expect(mockAddressBook.addAddress).toHaveBeenCalledWith(
+          expect.objectContaining({ fullName: 'Jane Smith', line1: '789 Pine Rd' }),
+        );
+      });
+    });
+
+    it('cancel in add form hides the form', async () => {
+      mockAddressBook.addresses = [];
+      const { getByTestId, queryByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('account-addresses')).toBeTruthy());
+      fireEvent.press(getByTestId('account-addresses'));
+      await waitFor(() => expect(getByTestId('address-form')).toBeTruthy());
+      fireEvent.press(getByTestId('address-cancel-button'));
+      await waitFor(() => expect(queryByTestId('address-form')).toBeNull());
+    });
+
+    it('shows max-addresses notice when 5 addresses exist', async () => {
+      mockAddressBook.addresses = [
+        { id: 'a1', fullName: 'A', line1: '1 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: true },
+        { id: 'a2', fullName: 'B', line1: '2 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
+        { id: 'a3', fullName: 'C', line1: '3 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
+        { id: 'a4', fullName: 'D', line1: '4 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
+        { id: 'a5', fullName: 'E', line1: '5 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
+      ];
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('address-list')).toBeTruthy());
+      expect(getByTestId('address-max-notice')).toBeTruthy();
+    });
+  });
+
+  describe('Address form — edit flow (cm-v54)', () => {
+    const mockAddresses = [
+      {
+        id: 'addr-1',
+        fullName: 'John Doe',
+        line1: '123 Main St',
+        line2: '',
+        city: 'Raleigh',
+        state: 'NC',
+        zip: '27601',
+        isDefault: true,
+      },
+    ];
+
+    it('each address row has an edit button', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('edit-address-addr-1')).toBeTruthy());
+    });
+
+    it('tapping edit button opens form pre-filled with address data', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('edit-address-addr-1')).toBeTruthy());
+      fireEvent.press(getByTestId('edit-address-addr-1'));
+      await waitFor(() => expect(getByTestId('address-form')).toBeTruthy());
+      expect(getByTestId('address-full-name-input').props.value).toBe('John Doe');
+      expect(getByTestId('address-line1-input').props.value).toBe('123 Main St');
+      expect(getByTestId('address-city-input').props.value).toBe('Raleigh');
+    });
+
+    it('shows edit-address form title', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId, getByText } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('edit-address-addr-1')).toBeTruthy());
+      fireEvent.press(getByTestId('edit-address-addr-1'));
+      await waitFor(() => expect(getByText('Edit Address')).toBeTruthy());
+    });
+
+    it('submitting edit form calls updateAddress with id', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      mockAddressBook.updateAddress.mockResolvedValue(undefined);
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('edit-address-addr-1')).toBeTruthy());
+      fireEvent.press(getByTestId('edit-address-addr-1'));
+      await waitFor(() => expect(getByTestId('address-full-name-input')).toBeTruthy());
+      fireEvent.changeText(getByTestId('address-full-name-input'), 'John Updated');
+      fireEvent.press(getByTestId('address-save-button'));
+      await waitFor(() => {
+        expect(mockAddressBook.updateAddress).toHaveBeenCalledWith(
+          'addr-1',
+          expect.objectContaining({ fullName: 'John Updated' }),
+        );
+      });
+    });
+
+    it('cancel in edit form hides the form', async () => {
+      mockAddressBook.addresses = mockAddresses;
+      const { getByTestId, queryByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('edit-address-addr-1')).toBeTruthy());
+      fireEvent.press(getByTestId('edit-address-addr-1'));
+      await waitFor(() => expect(getByTestId('address-form')).toBeTruthy());
+      fireEvent.press(getByTestId('address-cancel-button'));
+      await waitFor(() => expect(queryByTestId('address-form')).toBeNull());
+    });
+  });
 });
