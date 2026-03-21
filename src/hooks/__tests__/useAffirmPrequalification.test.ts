@@ -191,4 +191,14 @@ describe('useAffirmPrequalification', () => {
     expect(result.current.isEligible).toBe(true);
     expect(mockCheckPrequal).toHaveBeenCalledTimes(1);
   });
+
+  it('sets isLoading=false and error when checkAffirmPrequalification throws unexpectedly', async () => {
+    mockCheckPrequal.mockRejectedValue(new Error('Unexpected crash'));
+    const { result } = renderHook(() => useAffirmPrequalification(499));
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+    expect(result.current.isEligible).toBe(false);
+    expect(result.current.error).toBeTruthy();
+  });
 });

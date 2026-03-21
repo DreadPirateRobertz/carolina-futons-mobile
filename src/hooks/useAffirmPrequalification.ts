@@ -57,14 +57,23 @@ export function useAffirmPrequalification(amountDollars: number): AffirmPrequalS
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-    checkAffirmPrequalification(wixClient, amountDollars).then((result) => {
-      if (cancelled) return;
-      setState({
-        isEligible: result.eligible,
-        isLoading: false,
-        error: result.error ?? null,
+    checkAffirmPrequalification(wixClient, amountDollars)
+      .then((result) => {
+        if (cancelled) return;
+        setState({
+          isEligible: result.eligible,
+          isLoading: false,
+          error: result.error ?? null,
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setState({
+          isEligible: false,
+          isLoading: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
       });
-    });
 
     return () => {
       cancelled = true;
