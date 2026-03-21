@@ -8,10 +8,18 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/theme';
+import { uploadReviewPhoto } from '@/services/uploadReviewPhoto';
 
 interface ReviewFormProps {
   onSubmit: (data: { rating: number; title: string; body: string; photos: string[] }) => void;
@@ -36,6 +44,8 @@ export function ReviewForm({
   const [body, setBody] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [showRatingError, setShowRatingError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(false);
 
   const handleStarPress = useCallback((star: number) => {
     setRating(star);
@@ -51,7 +61,18 @@ export function ReviewForm({
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
-      setPhotos((prev) => [...prev, result.assets[0].uri]);
+      const localUri = result.assets[0].uri;
+      setIsUploading(true);
+      setUploadError(false);
+      try {
+        const { mediaUrl } = await uploadReviewPhoto(localUri);
+        setPhotos((prev) => [...prev, mediaUrl]);
+      } catch (e) {
+        console.error('[ReviewForm] photo upload failed:', e);
+        setUploadError(true);
+      } finally {
+        setIsUploading(false);
+      }
     }
   }, [photos.length]);
 
@@ -165,6 +186,23 @@ export function ReviewForm({
         </View>
       )}
 
+      {/* Upload in progress indicator */}
+      {isUploading && (
+        <ActivityIndicator
+          testID="photo-uploading"
+          size="small"
+          color={colors.mountainBlue}
+          style={styles.uploadIndicator}
+        />
+      )}
+
+      {/* Upload error message */}
+      {uploadError && (
+        <Text testID="photo-upload-error" style={[styles.errorText, { color: colors.error }]}>
+          Photo upload failed. Your review can still be submitted without the photo.
+        </Text>
+      )}
+
       {/* Add photo button */}
       <TouchableOpacity
         testID="add-photo-button"
@@ -172,6 +210,7 @@ export function ReviewForm({
         onPress={handleAddPhoto}
         accessibilityRole="button"
         accessibilityLabel={`Add photo${photos.length >= MAX_PHOTOS ? ' (limit reached)' : ''}`}
+        disabled={isUploading}
       >
         <Text style={[styles.photoButtonText, { color: colors.espresso }]}>
           + Add Photo ({photos.length}/{MAX_PHOTOS})
@@ -263,6 +302,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     lineHeight: 16,
+  },
+  uploadIndicator: {
+    marginBottom: 8,
   },
   photoButton: {
     borderWidth: 1,
