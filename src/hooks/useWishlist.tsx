@@ -140,7 +140,11 @@ interface WishlistProviderProps {
  *   </WishlistProvider>
  * </ConnectivityProvider>
  */
-export function WishlistProvider({ children, initialItems, isLoading: isLoadingProp }: WishlistProviderProps) {
+export function WishlistProvider({
+  children,
+  initialItems,
+  isLoading: isLoadingProp,
+}: WishlistProviderProps) {
   const [state, dispatch] = useReducer(wishlistReducer, {
     items: initialItems ?? [],
   });

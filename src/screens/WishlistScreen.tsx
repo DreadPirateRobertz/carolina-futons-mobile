@@ -48,11 +48,6 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
 
   const scrollPerf = useScrollPerformance('WishlistScreen');
 
-  if (isLoading) {
-    return <SkeletonProductGrid count={4} testID="skeleton-wishlist-grid" />;
-  }
-
-  const products = getProducts();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(() => {
@@ -207,6 +202,12 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     ),
     [onBrowse],
   );
+
+  if (isLoading) {
+    return <SkeletonProductGrid count={4} testID="skeleton-wishlist-grid" />;
+  }
+
+  const products = getProducts();
 
   return (
     <View

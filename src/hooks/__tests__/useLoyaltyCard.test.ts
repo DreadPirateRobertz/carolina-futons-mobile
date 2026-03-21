@@ -27,13 +27,23 @@ describe('useLoyaltyCard', () => {
   });
 
   it('starts in loading state', () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 0, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 0 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 0,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 0,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     expect(result.current.isLoading).toBe(true);
   });
 
   it('returns loyalty data after fetch', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 250, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 50 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 250,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 50,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.points).toBe(250);
@@ -42,28 +52,50 @@ describe('useLoyaltyCard', () => {
   });
 
   it('normalizes tier to lowercase', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 750, tier: 'Silver', nextTierThreshold: 1500, progressPercent: 50 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 750,
+      tier: 'Silver',
+      nextTierThreshold: 1500,
+      progressPercent: 50,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.tier).toBe('silver');
   });
 
   it('hasActivity=false when points=0 and totalEarned=0', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 0, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 0, totalEarned: 0 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 0,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 0,
+      totalEarned: 0,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.hasActivity).toBe(false);
   });
 
   it('hasActivity=true when points=0 but totalEarned>0', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 0, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 0, totalEarned: 100 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 0,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 0,
+      totalEarned: 100,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.hasActivity).toBe(true);
   });
 
   it('hasActivity=true when points>0', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 250, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 50 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 250,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 50,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.hasActivity).toBe(true);
@@ -88,25 +120,41 @@ describe('useLoyaltyCard', () => {
   });
 
   it('handles null/missing points field gracefully', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ tier: 'Bronze', nextTierThreshold: 500, progressPercent: 0 });
+    mockGetLoyaltyData.mockResolvedValue({
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 0,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.points).toBe(0);
   });
 
   it('clamps progressPercent to 0-100', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 200, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 150 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 200,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 150,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.progressPercent).toBe(100);
   });
 
   it('refresh re-fetches data', async () => {
-    mockGetLoyaltyData.mockResolvedValue({ points: 250, tier: 'Bronze', nextTierThreshold: 500, progressPercent: 50 });
+    mockGetLoyaltyData.mockResolvedValue({
+      points: 250,
+      tier: 'Bronze',
+      nextTierThreshold: 500,
+      progressPercent: 50,
+    });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(mockGetLoyaltyData).toHaveBeenCalledTimes(1);
-    await act(async () => { await result.current.refresh(); });
+    await act(async () => {
+      await result.current.refresh();
+    });
     expect(mockGetLoyaltyData).toHaveBeenCalledTimes(2);
   });
 });

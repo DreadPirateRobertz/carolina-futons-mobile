@@ -78,9 +78,10 @@ export function useLoyaltyCard(): UseLoyaltyCardResult {
         points,
         tier: normalizeTier(raw.tier),
         nextTierThreshold: typeof raw.nextTierThreshold === 'number' ? raw.nextTierThreshold : 500,
-        progressPercent: typeof raw.progressPercent === 'number'
-          ? Math.min(100, Math.max(0, raw.progressPercent))
-          : 0,
+        progressPercent:
+          typeof raw.progressPercent === 'number'
+            ? Math.min(100, Math.max(0, raw.progressPercent))
+            : 0,
         hasActivity,
       });
     } catch (err) {

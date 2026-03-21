@@ -33,7 +33,14 @@ const NEXT_TIER_LABEL: Record<string, string | null> = {
 };
 
 /** Loyalty points card with tier badge, progress bar, and next-tier prompt. */
-export function LoyaltyCard({ points, tier, nextTierThreshold, progressPercent, hasActivity, testID }: Props) {
+export function LoyaltyCard({
+  points,
+  tier,
+  nextTierThreshold,
+  progressPercent,
+  hasActivity,
+  testID,
+}: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
 
   // Hide if no points and no prior activity
@@ -63,12 +70,18 @@ export function LoyaltyCard({ points, tier, nextTierThreshold, progressPercent, 
       <View style={styles.header}>
         <View>
           <Text
-            style={[styles.pointsLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.pointsLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
           >
             Your Points
           </Text>
           <Text
-            style={[styles.pointsValue, { color: colors.espresso, fontFamily: typography.headingFamily }]}
+            style={[
+              styles.pointsValue,
+              { color: colors.espresso, fontFamily: typography.headingFamily },
+            ]}
             testID="loyalty-points"
           >
             {points.toLocaleString()}
@@ -78,13 +91,20 @@ export function LoyaltyCard({ points, tier, nextTierThreshold, progressPercent, 
       </View>
 
       {/* Progress bar */}
-      <View style={[styles.progressTrack, { backgroundColor: colors.sandDark, borderRadius: borderRadius.pill }]} testID="loyalty-progress-track">
+      <View
+        style={[
+          styles.progressTrack,
+          { backgroundColor: colors.sandDark, borderRadius: borderRadius.pill },
+        ]}
+        testID="loyalty-progress-track"
+      >
         <View
           style={[
             styles.progressFill,
             {
               width: `${progressPercent}%`,
-              backgroundColor: tier === 'gold' ? '#D4AF37' : tier === 'silver' ? '#A8A9AD' : '#CD7F32',
+              backgroundColor:
+                tier === 'gold' ? '#D4AF37' : tier === 'silver' ? '#A8A9AD' : '#CD7F32',
               borderRadius: borderRadius.pill,
             },
           ]}
@@ -94,7 +114,10 @@ export function LoyaltyCard({ points, tier, nextTierThreshold, progressPercent, 
 
       {/* Next-tier text */}
       <Text
-        style={[styles.nextTierText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+        style={[
+          styles.nextTierText,
+          { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+        ]}
         testID="loyalty-next-tier-text"
       >
         {nextTierText}
