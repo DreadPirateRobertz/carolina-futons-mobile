@@ -52,7 +52,9 @@ import { EmptyState } from '@/components/EmptyState';
 import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
 import { useRecommendations } from '@/hooks/useRecommendations';
+import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
+import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId, productId as toProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
@@ -139,6 +141,8 @@ export function ProductDetailScreen({
   const { isAuthenticated } = useAuth();
   const cart = useCart();
   const { similarItems, trackView } = useRecommendations();
+  const { recommendations: alsoBought, isLoading: isAlsoBoughtLoading } =
+    useProductRecommendations(catalogProductId);
   const {
     reviews,
     summary: reviewSummary,
@@ -1072,6 +1076,22 @@ export function ProductDetailScreen({
             />
           </View>
         )}
+
+        {/* Customers also bought */}
+        {isAlsoBoughtLoading ? (
+          <View style={[styles.section, { marginTop: spacing.md }]} testID="skeleton-also-bought">
+            <SkeletonCarouselRow />
+          </View>
+        ) : alsoBought.length > 0 ? (
+          <View style={[styles.section, { marginTop: spacing.md }]}>
+            <RecommendationCarousel
+              title="Customers also bought"
+              products={alsoBought}
+              onProductPress={onRelatedProductPress}
+              testID="also-bought-carousel"
+            />
+          </View>
+        ) : null}
 
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />

@@ -64,6 +64,11 @@ jest.mock('@/hooks/useRecommendations', () => ({
   RecommendationsProvider: ({ children }: any) => children,
 }));
 
+jest.mock('@/hooks/useProductRecommendations', () => ({
+  useProductRecommendations: () => ({ isLoading: false, recommendations: [], error: null }),
+  clearRecommendationsCache: jest.fn(),
+}));
+
 jest.mock('@/services/wix/wixProvider', () => ({
   useWixClient: () => ({
     queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
