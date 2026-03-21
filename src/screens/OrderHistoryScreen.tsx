@@ -14,6 +14,7 @@ import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import {
   MountainRefreshControl,
@@ -37,7 +38,7 @@ export function OrderHistoryScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
-  const { orders: hookOrders, error: hookError, refresh: hookRefresh } = useOrders();
+  const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
 
   // Use prop orders or fall back to hook data (already sorted newest-first)
   const orders = ordersProp
@@ -144,6 +145,17 @@ export function OrderHistoryScreen({
     },
     [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate],
   );
+
+  if (isLoading && !ordersProp) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
+        testID={testID ?? 'order-history-screen'}
+      >
+        <SkeletonOrderList count={5} />
+      </View>
+    );
+  }
 
   if (hookError && !ordersProp) {
     return (

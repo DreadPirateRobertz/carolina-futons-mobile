@@ -21,6 +21,7 @@ import {
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
