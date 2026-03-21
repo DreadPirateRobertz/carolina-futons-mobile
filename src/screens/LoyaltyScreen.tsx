@@ -82,7 +82,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
         testID={testID ?? 'loyalty-screen'}
       >
         <Text
-          style={[styles.errorText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.errorText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
           testID="loyalty-error"
         >
           {error}
@@ -117,7 +120,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
           {points}
         </Text>
         <Text
-          style={[styles.pointsLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.pointsLabel,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
         >
           points
         </Text>
@@ -128,19 +134,28 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
               <View
                 style={[
                   styles.progressFill,
-                  { backgroundColor: colors.mountainBlue, width: `${progressPct}%` as `${number}%` },
+                  {
+                    backgroundColor: colors.mountainBlue,
+                    width: `${progressPct}%` as `${number}%`,
+                  },
                 ]}
               />
             </View>
             <Text
-              style={[styles.progressLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+              style={[
+                styles.progressLabel,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
             >
               {points} / {nextTier.threshold} to {nextTier.label}
             </Text>
           </View>
         )}
         <Text
-          style={[styles.totalEarned, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.totalEarned,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
           testID="loyalty-total-earned"
         >
           {totalEarned} pts total earned
@@ -149,7 +164,11 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       <Text
         style={[
           styles.sectionTitle,
-          { color: colors.espressoLight, fontFamily: typography.bodyFamilyBold, paddingHorizontal: spacing.lg },
+          {
+            color: colors.espressoLight,
+            fontFamily: typography.bodyFamilyBold,
+            paddingHorizontal: spacing.lg,
+          },
         ]}
       >
         Activity
@@ -157,7 +176,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       {transactions.length === 0 ? (
         <View style={styles.emptyTx}>
           <Text
-            style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.emptyText,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
             testID="loyalty-no-transactions"
           >
             No transactions yet. Earn points by shopping!

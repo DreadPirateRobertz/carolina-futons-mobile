@@ -84,7 +84,10 @@ describe('useLoyalty hook', () => {
   it('returns correct points and tier for an existing member', async () => {
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
-        return Promise.resolve({ items: [makePointsRecord({ points: 1500, tier: 'silver', totalEarned: 2200 })], totalResults: 1 });
+        return Promise.resolve({
+          items: [makePointsRecord({ points: 1500, tier: 'silver', totalEarned: 2200 })],
+          totalResults: 1,
+        });
       return Promise.resolve(EMPTY_TX);
     });
     const { result } = renderHook(() => useLoyalty());
@@ -108,7 +111,10 @@ describe('useLoyalty hook', () => {
     // Test silver boundary
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
-        return Promise.resolve({ items: [makePointsRecord({ points: 1000, tier: 'silver' })], totalResults: 1 });
+        return Promise.resolve({
+          items: [makePointsRecord({ points: 1000, tier: 'silver' })],
+          totalResults: 1,
+        });
       return Promise.resolve(EMPTY_TX);
     });
     const { result: silver } = renderHook(() => useLoyalty());
@@ -118,7 +124,10 @@ describe('useLoyalty hook', () => {
     // Test gold boundary
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'LoyaltyPoints')
-        return Promise.resolve({ items: [makePointsRecord({ points: 5000, tier: 'gold' })], totalResults: 1 });
+        return Promise.resolve({
+          items: [makePointsRecord({ points: 5000, tier: 'gold' })],
+          totalResults: 1,
+        });
       return Promise.resolve(EMPTY_TX);
     });
     const { result: gold } = renderHook(() => useLoyalty());
@@ -155,7 +164,10 @@ describe('useLoyalty hook', () => {
       if (collection === 'LoyaltyPoints') {
         callCount++;
         const pts = callCount === 1 ? 500 : 600;
-        return Promise.resolve({ items: [makePointsRecord({ points: pts, totalEarned: pts })], totalResults: 1 });
+        return Promise.resolve({
+          items: [makePointsRecord({ points: pts, totalEarned: pts })],
+          totalResults: 1,
+        });
       }
       return Promise.resolve(EMPTY_TX);
     });
