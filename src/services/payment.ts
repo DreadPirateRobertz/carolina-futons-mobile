@@ -9,6 +9,7 @@ import type { CartItem } from '@/hooks/useCart';
 import { WixApiError, type WixClient } from '@/services/wix';
 import { calculateTax } from '@/services/taxService';
 import { calculateShipping } from '@/services/shippingService';
+import { validateCheckoutAmount, validateProductIds } from '@/services/checkoutSecurity';
 
 const SHIPPING_THRESHOLD = 499;
 const SHIPPING_COST = 49;
@@ -87,6 +88,18 @@ export async function createPaymentIntent(
   items: CartItem[],
   totals: OrderTotals,
 ): Promise<PaymentIntentResponse> {
+  // Client-side validation before submitting to payment API.
+  // Server MUST re-validate independently — these are defence-in-depth guards.
+  if (!validateCheckoutAmount(totals.total)) {
+    throw new PaymentError(
+      `Invalid checkout amount: ${totals.total}`,
+      'INTENT_FAILED',
+    );
+  }
+  if (!validateProductIds(items.map((i) => i.id))) {
+    throw new PaymentError('Invalid product IDs in cart', 'INTENT_FAILED');
+  }
+
   try {
     return await client.createPaymentIntent(
       items.map((item) => ({

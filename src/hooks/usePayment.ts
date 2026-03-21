@@ -12,6 +12,7 @@ import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
 import { useOptionalWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
+import { scrubPiiFromError } from '@/services/checkoutSecurity';
 import { useCart } from './useCart';
 import { usePremium } from './usePremium';
 import {
@@ -209,10 +210,11 @@ export function usePayment() {
         return confirmation;
       } catch (err) {
         processingRef.current = false;
-        const message =
+        const rawMessage =
           err instanceof PaymentError
             ? err.message
             : 'An unexpected error occurred. Please try again.';
+        const message = scrubPiiFromError(rawMessage);
         setState({ status: 'error', error: message, order: null });
         captureException(err instanceof Error ? err : new Error(message), 'error', {
           action: 'processPayment',
