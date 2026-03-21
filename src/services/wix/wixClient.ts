@@ -917,24 +917,6 @@ export class WixClient {
     });
   }
 
-  // ── Visual Search ──────────────────────────────────────────
-
-  /**
-   * Classify a photo via the Wix visualSearch backend function.
-   * Image is sent as a base64-encoded string. The backend strips EXIF,
-   * calls OpenAI vision API (SSRF-guarded), and returns attribute JSON.
-   *
-   * @param imageBase64 - base64-encoded image (no data URI prefix)
-   */
-  async callVisualSearch(imageBase64: string): Promise<{
-    category: string;
-    style: string;
-    colorFamily: string;
-    keywords: string[];
-  }> {
-    return this.post('/_functions/visualSearch', { image: imageBase64 });
-  }
-
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {

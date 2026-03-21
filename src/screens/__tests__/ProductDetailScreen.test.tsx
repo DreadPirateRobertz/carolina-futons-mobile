@@ -94,13 +94,6 @@ jest.mock('@/hooks/useCart', () => ({
   CartProvider: ({ children }: any) => children,
 }));
 
-jest.mock('@/hooks/useVisualSearch', () => ({
-  useVisualSearch: jest.fn(),
-}));
-
-import { useVisualSearch } from '@/hooks/useVisualSearch';
-const mockUseVisualSearch = useVisualSearch as jest.MockedFunction<typeof useVisualSearch>;
-
 const mockAlert = jest.fn();
 Alert.alert = mockAlert;
 
@@ -124,14 +117,6 @@ beforeEach(() => {
   mockAddItem.mockClear();
   mockAlert.mockClear();
   mockNavigate.mockClear();
-  mockUseVisualSearch.mockReturnValue({
-    trigger: jest.fn(),
-    status: 'idle',
-    results: [],
-    query: null,
-    error: null,
-    reset: jest.fn(),
-  });
 });
 
 describe('ProductDetailScreen', () => {
@@ -1112,6 +1097,99 @@ describe('ProductDetailScreen', () => {
       const { queryByTestId } = renderDetail();
       expect(queryByTestId('notify-back-in-stock-button')).toBeNull();
     });
+
+    it('shows notify-back-in-stock button for OOS products', async () => {
+      // prod-grip-strips has inStock: false, stockCount: 0
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      expect(getByTestId('notify-back-in-stock-button')).toBeTruthy();
+    });
+
+    it('hides add-to-cart button for OOS products', async () => {
+      const { queryByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      expect(queryByTestId('add-to-cart-button')).toBeNull();
+    });
+
+    it('shows out-of-stock alert for OOS products', async () => {
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      expect(getByTestId('out-of-stock-alert')).toBeTruthy();
+    });
+  });
+
+  describe('Notify Me / Back In Stock', () => {
+    it('shows "Notify Me When Available" as default button text', async () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      expect(getByTestId('notify-back-in-stock-button')).toBeTruthy();
+      expect(getByText('Notify Me When Available')).toBeTruthy();
+    });
+
+    it('has correct accessibility label when unsubscribed', async () => {
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      const btn = getByTestId('notify-back-in-stock-button');
+      expect(btn.props.accessibilityLabel).toBe('Notify me when back in stock');
+    });
+
+    it('has button accessibility role', async () => {
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      const btn = getByTestId('notify-back-in-stock-button');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('toggles to subscribed state when pressed', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.setItem.mockClear();
+      const { getByTestId, getByText } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      await act(async () => {
+        fireEvent.press(getByTestId('notify-back-in-stock-button'));
+      });
+      expect(getByText('Subscribed \u2713')).toBeTruthy();
+    });
+
+    it('has "Cancel" accessibility label after subscribing', async () => {
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      await act(async () => {
+        fireEvent.press(getByTestId('notify-back-in-stock-button'));
+      });
+      expect(getByTestId('notify-back-in-stock-button').props.accessibilityLabel).toBe(
+        'Cancel back in stock notification',
+      );
+    });
+
+    it('toggles back to unsubscribed on second press', async () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      // Subscribe
+      await act(async () => {
+        fireEvent.press(getByTestId('notify-back-in-stock-button'));
+      });
+      expect(getByText('Subscribed \u2713')).toBeTruthy();
+      // Unsubscribe
+      await act(async () => {
+        fireEvent.press(getByTestId('notify-back-in-stock-button'));
+      });
+      expect(getByText('Notify Me When Available')).toBeTruthy();
+    });
+
+    it('persists subscription to AsyncStorage on subscribe', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.setItem.mockClear();
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      await act(async () => {
+        fireEvent.press(getByTestId('notify-back-in-stock-button'));
+      });
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        '@back_in_stock_subscriptions',
+        expect.stringContaining('prod-grip-strips'),
+      );
+    });
   });
 
   describe('Cart integration', () => {
@@ -1173,54 +1251,5 @@ describe('ProductDetailScreen', () => {
       // Quantity should reset to 1
       expect(getByText('Add to Cart — $349.00')).toBeTruthy();
     });
-  });
-});
-
-describe('ProductDetailScreen Find Similar', () => {
-  const mockTrigger = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'idle',
-      results: [],
-      query: null,
-      error: null,
-      reset: jest.fn(),
-    });
-  });
-
-  it('renders Find Similar button', () => {
-    const { getByTestId } = renderDetail();
-    expect(getByTestId('find-similar-btn')).toBeTruthy();
-  });
-
-  it('calls trigger when Find Similar pressed', () => {
-    const { getByTestId } = renderDetail();
-    fireEvent.press(getByTestId('find-similar-btn'));
-    expect(mockTrigger).toHaveBeenCalled();
-  });
-
-  it('navigates to VisualSearchResults when success with results', () => {
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'success',
-      results: [PRODUCTS[0]],
-      query: {
-        category: 'futons',
-        style: 'modern',
-        colorFamily: 'neutral',
-        keywords: [],
-        matchType: 'scored',
-      },
-      error: null,
-      reset: jest.fn(),
-    });
-    renderDetail();
-    expect(mockNavigate).toHaveBeenCalledWith(
-      'VisualSearchResults',
-      expect.objectContaining({ productSlugs: [PRODUCTS[0].slug] }),
-    );
   });
 });

@@ -1095,4 +1095,100 @@ describe('ARScreen', () => {
       expect(queryByTestId('model-loading-overlay')).toBeNull();
     });
   });
+
+  // =========================================================================
+  // AR Measurement Mode (cm-7fx)
+  // =========================================================================
+  describe('AR Measurement Mode', () => {
+    it('renders measure toggle button', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-measure-toggle')).toBeTruthy();
+    });
+
+    it('measure toggle has correct accessibility label when inactive', () => {
+      const { getByTestId } = renderARScreen();
+      const btn = getByTestId('ar-measure-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Measure room');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('measurement overlay is hidden by default', () => {
+      const { queryByTestId } = renderARScreen();
+      expect(queryByTestId('ar-measurement-overlay')).toBeNull();
+    });
+
+    it('pressing measure toggle activates measurement mode and shows overlay', () => {
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      expect(getByTestId('ar-measurement-overlay')).toBeTruthy();
+    });
+
+    it('measure toggle label changes to "Exit" when measurement is active', () => {
+      const { getByTestId, getByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      expect(getByText('Exit')).toBeTruthy();
+    });
+
+    it('measure toggle accessibility label updates when active', () => {
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      const btn = getByTestId('ar-measure-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Exit measurement mode');
+    });
+
+    it('pressing measure toggle again deactivates measurement mode', () => {
+      const { getByTestId, queryByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      expect(getByTestId('ar-measurement-overlay')).toBeTruthy();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      expect(queryByTestId('ar-measurement-overlay')).toBeNull();
+    });
+
+    it('reset button appears during measurement mode', () => {
+      const { getByTestId } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      expect(getByTestId('ar-measure-reset')).toBeTruthy();
+    });
+
+    it('reset button is not visible when measurement is inactive', () => {
+      const { queryByTestId } = renderARScreen();
+      expect(queryByTestId('ar-measure-reset')).toBeNull();
+    });
+
+    it('reset button resets measurement state', () => {
+      const { getByTestId, queryByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      // Place first point via camera tap
+      const touchArea = getByTestId('ar-touch-area');
+      fireEvent.press(touchArea, {
+        nativeEvent: { locationX: 195, locationY: 422 },
+      });
+      // Should be in placing-second state now — reset clears it
+      fireEvent.press(getByTestId('ar-measure-reset'));
+      // After reset, overlay should still be visible (still active) but no points
+      expect(getByTestId('ar-measurement-overlay')).toBeTruthy();
+      expect(queryByText('Tap second endpoint')).toBeNull();
+    });
+
+    it('camera tap routes to measurement when measurement is active', () => {
+      const { getByTestId, getByText } = renderARScreen();
+      fireEvent.press(getByTestId('ar-measure-toggle'));
+      // Initial state: placing-first
+      expect(getByText('Tap first endpoint')).toBeTruthy();
+      // Tap to place first point
+      fireEvent.press(getByTestId('ar-touch-area'), {
+        nativeEvent: { locationX: 195, locationY: 422 },
+      });
+      // Advances to placing-second
+      expect(getByText('Tap second endpoint')).toBeTruthy();
+    });
+
+    it('measurement overlay is absent in gallery fallback mode', () => {
+      mockGalleryFallback.isGalleryMode = true;
+      mockGalleryFallback.imageUri = 'file:///photo.jpg';
+      const { queryByTestId } = renderARScreen();
+      // In gallery mode, measure is stubbed as inactive
+      expect(queryByTestId('ar-measurement-overlay')).toBeNull();
+    });
+  });
 });

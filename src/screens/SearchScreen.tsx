@@ -8,14 +8,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -35,8 +28,7 @@ import { SortPicker } from '@/components/SortPicker';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
-import { useVisualSearch } from '@/hooks/useVisualSearch';
-import { VisualSearchEmptyState } from '@/components/VisualSearchEmptyState';
+import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
@@ -75,9 +67,7 @@ export function SearchScreen({ testID }: Props) {
     loadMore,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
-  const { trigger, status: vsStatus, results: vsResults, reset: vsReset } = useVisualSearch();
   const [hasSearched, setHasSearched] = useState(false);
-  const visualSearchActive = vsStatus === 'success' || vsStatus === 'loading';
 
   const handleBack = useCallback(() => {
     navigation.goBack();
@@ -119,13 +109,12 @@ export function SearchScreen({ testID }: Props) {
 
   const handleChangeText = useCallback(
     (text: string) => {
-      if (vsStatus !== 'idle') vsReset();
       setSearchQuery(text);
       if (text.length === 0) {
         setHasSearched(false);
       }
     },
-    [setSearchQuery, vsStatus, vsReset],
+    [setSearchQuery],
   );
 
   const renderProduct = useCallback(
@@ -198,7 +187,6 @@ export function SearchScreen({ testID }: Props) {
             onSubmitSearch={handleSubmitSearch}
             onRemoveRecent={removeSearch}
             onClearRecent={clearAll}
-            onCameraPress={() => trigger({ useCamera: true })}
             placeholder="Search products..."
           />
         </View>
@@ -272,58 +260,11 @@ export function SearchScreen({ testID }: Props) {
         </View>
       )}
 
-      {/* Visual search loading */}
-      {vsStatus === 'loading' && (
-        <View style={styles.vsLoading} testID="visual-search-loading">
-          <ActivityIndicator size="large" color={colors.mountainBlueDark} />
-        </View>
-      )}
-
-      {/* Visual search success — no results */}
-      {vsStatus === 'success' && vsResults.length === 0 && (
-        <VisualSearchEmptyState
-          testID="visual-search-empty-state"
-          onBrowseAll={() => navigation.navigate('Tabs', { screen: 'Shop' })}
-        />
-      )}
-
-      {/* Visual search success — with results */}
-      {vsStatus === 'success' && vsResults.length > 0 && (
-        <>
-          {visualSearchActive && (
-            <View
-              testID="visual-search-badge"
-              style={[styles.vsBadge, { paddingHorizontal: spacing.md }]}
-            >
-              <Text style={[styles.vsBadgeText, { color: colors.mountainBlueDark }]}>
-                📷 Visual Search
-              </Text>
-              <TouchableOpacity onPress={vsReset}>
-                <Text style={[styles.vsBadgeClear, { color: colors.muted }]}>✕</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          <FlatList
-            data={vsResults}
-            renderItem={renderProduct}
-            keyExtractor={keyExtractor}
-            numColumns={2}
-            columnWrapperStyle={vsResults.length > 0 ? styles.row : undefined}
-            contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 16 }]}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="on-drag"
-            windowSize={5}
-            maxToRenderPerBatch={6}
-            initialNumToRender={4}
-            removeClippedSubviews
-            testID="visual-search-results-grid"
-          />
-        </>
-      )}
+      {/* Search results skeleton while loading */}
+      {showResults && isLoading && <SkeletonProductGrid count={4} />}
 
       {/* Search results grid */}
-      {!visualSearchActive && showResults && (
+      {showResults && !isLoading && (
         <FlatList
           data={products}
           renderItem={renderProduct}
@@ -428,25 +369,5 @@ const styles = StyleSheet.create({
   },
   row: {
     paddingHorizontal: 10,
-  },
-  vsLoading: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 60,
-  },
-  vsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  vsBadgeText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  vsBadgeClear: {
-    fontSize: 16,
-    padding: 4,
   },
 });

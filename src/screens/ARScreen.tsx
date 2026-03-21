@@ -274,7 +274,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
       }
       if (selectedModel) events.arFurniturePlaced(selectedModel.id, anchor.planeId);
       if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

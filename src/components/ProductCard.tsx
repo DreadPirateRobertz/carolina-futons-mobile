@@ -25,6 +25,9 @@ import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
 import { FinancingBadge } from './FinancingBadge';
 import { ProductCardVideo } from './ProductCardVideo';
+import { CompareButton } from './CompareButton';
+import { InventoryBadge } from './InventoryBadge';
+import { useInventoryBadge } from '@/hooks/useInventoryBadge';
 
 interface Props {
   product: Product;
@@ -44,6 +47,7 @@ export const ProductCard = memo(function ProductCard({
   const imageTracking = useImageLoadTracking('ProductCard');
 
   const stockStatus = getStockStatus(product);
+  const { badge: inventoryBadge, quantity: inventoryQuantity } = useInventoryBadge(product.id);
 
   const stockBadgeConfig: Record<StockStatus, { label: string; color: string } | null> = {
     in_stock: null,
@@ -155,6 +159,15 @@ export const ProductCard = memo(function ProductCard({
             <Text style={styles.stockBadgeText}>{stockBadge.label}</Text>
           </View>
         )}
+
+        <InventoryBadge
+          badge={inventoryBadge}
+          quantity={inventoryQuantity}
+          compact
+          testID={`inventory-badge-${product.id}`}
+        />
+
+        <CompareButton product={product} testID={`compare-btn-${product.id}`} />
       </View>
     </TouchableOpacity>
   );

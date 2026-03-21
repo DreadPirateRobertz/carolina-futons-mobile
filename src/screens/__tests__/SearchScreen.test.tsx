@@ -3,14 +3,8 @@ import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { SearchScreen } from '../SearchScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
-import { useVisualSearch } from '@/hooks/useVisualSearch';
-
-jest.mock('@/hooks/useVisualSearch', () => ({
-  useVisualSearch: jest.fn(),
-}));
-
-const mockUseVisualSearch = useVisualSearch as jest.MockedFunction<typeof useVisualSearch>;
 
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
@@ -46,7 +40,9 @@ function renderSearchScreen() {
   return render(
     <ThemeProvider>
       <WishlistProvider>
-        <SearchScreen />
+        <CompareProvider>
+          <SearchScreen />
+        </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );
@@ -54,14 +50,6 @@ function renderSearchScreen() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseVisualSearch.mockReturnValue({
-    trigger: jest.fn(),
-    status: 'idle',
-    results: [],
-    query: null,
-    error: null,
-    reset: jest.fn(),
-  });
 });
 
 describe('SearchScreen', () => {
@@ -94,7 +82,9 @@ describe('SearchScreen', () => {
       const { getByTestId } = render(
         <ThemeProvider>
           <WishlistProvider>
-            <SearchScreen testID="custom-search" />
+            <CompareProvider>
+              <SearchScreen testID="custom-search" />
+            </CompareProvider>
           </WishlistProvider>
         </ThemeProvider>,
       );
@@ -359,100 +349,5 @@ describe('SearchScreen', () => {
       });
       expect(getByTestId('sort-picker')).toBeTruthy();
     });
-  });
-});
-
-describe('SearchScreen visual search integration', () => {
-  const mockTrigger = jest.fn();
-  const mockReset = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'idle',
-      results: [],
-      query: null,
-      error: null,
-      reset: mockReset,
-    });
-  });
-
-  it('shows loading spinner when vsStatus is loading', async () => {
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'loading',
-      results: [],
-      query: null,
-      error: null,
-      reset: mockReset,
-    });
-    const { getByTestId } = renderSearchScreen();
-    await act(async () => {
-      jest.advanceTimersByTime(100);
-    });
-    expect(getByTestId('visual-search-loading')).toBeTruthy();
-  });
-
-  it('shows VisualSearchEmptyState when success with no results', async () => {
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'success',
-      results: [],
-      query: {
-        category: 'futons',
-        style: 'modern',
-        colorFamily: 'neutral',
-        keywords: [],
-        matchType: 'scored',
-      },
-      error: null,
-      reset: mockReset,
-    });
-    const { getByTestId } = renderSearchScreen();
-    await act(async () => {
-      jest.advanceTimersByTime(100);
-    });
-    expect(getByTestId('visual-search-empty-state')).toBeTruthy();
-  });
-
-  it('shows visual search results with badge when success with results', async () => {
-    const mockProducts = [PRODUCTS[0]];
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'success',
-      results: mockProducts,
-      query: {
-        category: 'futons',
-        style: 'modern',
-        colorFamily: 'neutral',
-        keywords: [],
-        matchType: 'scored',
-      },
-      error: null,
-      reset: mockReset,
-    });
-    const { getByTestId } = renderSearchScreen();
-    await act(async () => {
-      jest.advanceTimersByTime(100);
-    });
-    expect(getByTestId('visual-search-badge')).toBeTruthy();
-  });
-
-  it('calls vsReset when text changes while visual search is active', async () => {
-    mockUseVisualSearch.mockReturnValue({
-      trigger: mockTrigger,
-      status: 'success',
-      results: [],
-      query: null,
-      error: null,
-      reset: mockReset,
-    });
-    const { getByTestId } = renderSearchScreen();
-    await act(async () => {
-      jest.advanceTimersByTime(100);
-    });
-    fireEvent.changeText(getByTestId('search-input'), 'new text');
-    expect(mockReset).toHaveBeenCalled();
   });
 });

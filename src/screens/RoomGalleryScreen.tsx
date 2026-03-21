@@ -9,17 +9,11 @@
  * and the populated grid.
  */
 import React, { useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
+import { MountainSkyline } from '@/components/MountainSkyline';
+import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
@@ -108,7 +102,7 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'room-gallery-screen'}
       >
-        <ActivityIndicator size="large" color={colors.sunsetCoral} testID="room-gallery-loading" />
+        <SkeletonRoomGrid count={6} />
       </View>
     );
   }
@@ -119,14 +113,25 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'room-gallery-screen'}
       >
+        <View testID="room-gallery-error-illustration" style={styles.illustrationContainer}>
+          <MountainSkyline variant="sunset" height={100} testID="room-gallery-error-skyline" />
+        </View>
+        <Text
+          style={[
+            styles.errorTitle,
+            { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+          ]}
+          testID="room-gallery-error"
+        >
+          Couldn't load the gallery
+        </Text>
         <Text
           style={[
             styles.errorText,
             { color: colors.espressoLight, fontFamily: typography.bodyFamily },
           ]}
-          testID="room-gallery-error"
         >
-          Unable to load gallery. Check your connection.
+          Check your connection and try again.
         </Text>
         <TouchableOpacity
           style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
@@ -240,8 +245,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 2,
   },
+  illustrationContainer: {
+    marginBottom: 16,
+    width: '80%',
+    overflow: 'hidden',
+    borderRadius: 12,
+  },
+  errorTitle: {
+    fontSize: 17,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   errorText: {
-    fontSize: 15,
+    fontSize: 14,
     textAlign: 'center',
     marginHorizontal: 32,
     marginBottom: 20,
