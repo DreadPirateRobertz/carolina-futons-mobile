@@ -99,7 +99,24 @@ function renderSynced(initialOnline = true) {
 
 beforeEach(() => {
   mockFetch.mockReset();
+  // Default: any unhandled fetch resolves successfully so leaked setTimeout
+  // callbacks from add/remove/toggle don't throw and log after tests are done.
+  // mockResolvedValueOnce calls in individual tests take priority over this.
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ dataItems: [], pagingMetadata: { total: 0 } }),
+  });
   _resetForTesting();
+});
+
+afterEach(async () => {
+  // Flush the 0ms timers scheduled by add/remove/toggle callbacks (setTimeout(pushIfOnline, 0)).
+  // Without this, those timers fire after the test suite ends and the fetch mock
+  // is cleared, producing "Cannot log after tests are done" errors attributed to
+  // the next test suite running in the same Jest worker.
+  await act(async () => {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+  });
 });
 
 describe('useSyncedWishlist', () => {
