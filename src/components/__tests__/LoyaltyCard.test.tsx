@@ -45,7 +45,12 @@ describe('LoyaltyCard', () => {
     });
 
     it('renders when points=1500 (Gold)', () => {
-      const { getByTestId } = renderCard({ points: 1500, tier: 'gold', nextTierThreshold: 1500, progressPercent: 100 });
+      const { getByTestId } = renderCard({
+        points: 1500,
+        tier: 'gold',
+        nextTierThreshold: 1500,
+        progressPercent: 100,
+      });
       expect(getByTestId('loyalty-card')).toBeTruthy();
     });
   });
@@ -57,12 +62,22 @@ describe('LoyaltyCard', () => {
     });
 
     it('shows Silver tier badge', () => {
-      const { getByTestId } = renderCard({ tier: 'silver', points: 750, nextTierThreshold: 1500, progressPercent: 50 });
+      const { getByTestId } = renderCard({
+        tier: 'silver',
+        points: 750,
+        nextTierThreshold: 1500,
+        progressPercent: 50,
+      });
       expect(getByTestId('loyalty-badge-silver')).toBeTruthy();
     });
 
     it('shows Gold tier badge', () => {
-      const { getByTestId } = renderCard({ tier: 'gold', points: 1500, nextTierThreshold: 1500, progressPercent: 100 });
+      const { getByTestId } = renderCard({
+        tier: 'gold',
+        points: 1500,
+        nextTierThreshold: 1500,
+        progressPercent: 100,
+      });
       expect(getByTestId('loyalty-badge-gold')).toBeTruthy();
     });
 
@@ -123,7 +138,12 @@ describe('LoyaltyCard', () => {
     });
 
     it('progress bar width is 100% for Gold', () => {
-      const { getByTestId } = renderCard({ tier: 'gold', points: 1500, nextTierThreshold: 1500, progressPercent: 100 });
+      const { getByTestId } = renderCard({
+        tier: 'gold',
+        points: 1500,
+        nextTierThreshold: 1500,
+        progressPercent: 100,
+      });
       const bar = getByTestId('loyalty-progress-bar');
       const width = Array.isArray(bar.props.style)
         ? bar.props.style.find((s: Record<string, unknown>) => s?.width !== undefined)?.width
@@ -149,7 +169,12 @@ describe('LoyaltyCard', () => {
     });
 
     it('shows "You\'ve reached Gold!" for Gold tier', () => {
-      const { getByTestId } = renderCard({ tier: 'gold', points: 1500, nextTierThreshold: 1500, progressPercent: 100 });
+      const { getByTestId } = renderCard({
+        tier: 'gold',
+        points: 1500,
+        nextTierThreshold: 1500,
+        progressPercent: 100,
+      });
       expect(getByTestId('loyalty-next-tier-text').props.children).toBe("You've reached Gold!");
     });
 

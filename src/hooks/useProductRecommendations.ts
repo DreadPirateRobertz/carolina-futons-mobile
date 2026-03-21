@@ -71,7 +71,11 @@ function getStaticRecommendations(source: Product): Product[] {
   const minPrice = source.price * 0.5;
   const maxPrice = source.price * 1.5;
   return PRODUCTS.filter(
-    (p) => p.id !== source.id && p.category === source.category && p.price >= minPrice && p.price <= maxPrice,
+    (p) =>
+      p.id !== source.id &&
+      p.category === source.category &&
+      p.price >= minPrice &&
+      p.price <= maxPrice,
   )
     .sort((a, b) => relevanceScore(source, b) - relevanceScore(source, a))
     .slice(0, MAX_RESULTS);

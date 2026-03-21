@@ -13,10 +13,7 @@
  *   - empty result when no category matches found
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
-import {
-  useProductRecommendations,
-  clearRecommendationsCache,
-} from '../useProductRecommendations';
+import { useProductRecommendations, clearRecommendationsCache } from '../useProductRecommendations';
 import { PRODUCTS } from '@/data/products';
 
 const mockQueryProducts = jest.fn();
@@ -56,9 +53,9 @@ describe('useProductRecommendations', () => {
       const { result } = renderHook(() => useProductRecommendations(product1.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.recommendations.length).toBeGreaterThan(0);
-      expect(
-        result.current.recommendations.every((p) => p.category === product1.category),
-      ).toBe(true);
+      expect(result.current.recommendations.every((p) => p.category === product1.category)).toBe(
+        true,
+      );
     });
 
     it('excludes the source product itself from results', async () => {
@@ -177,9 +174,9 @@ describe('useProductRecommendations', () => {
 
       const { result } = renderHook(() => useProductRecommendations(product1.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(
-        result.current.recommendations.every((p) => p.category === product1.category),
-      ).toBe(true);
+      expect(result.current.recommendations.every((p) => p.category === product1.category)).toBe(
+        true,
+      );
     });
   });
 
