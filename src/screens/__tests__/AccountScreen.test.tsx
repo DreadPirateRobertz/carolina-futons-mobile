@@ -1056,11 +1056,56 @@ describe('AccountScreen', () => {
 
     it('shows max-addresses notice when 5 addresses exist', async () => {
       mockAddressBook.addresses = [
-        { id: 'a1', fullName: 'A', line1: '1 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: true },
-        { id: 'a2', fullName: 'B', line1: '2 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
-        { id: 'a3', fullName: 'C', line1: '3 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
-        { id: 'a4', fullName: 'D', line1: '4 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
-        { id: 'a5', fullName: 'E', line1: '5 St', line2: '', city: 'City', state: 'NC', zip: '27601', isDefault: false },
+        {
+          id: 'a1',
+          fullName: 'A',
+          line1: '1 St',
+          line2: '',
+          city: 'City',
+          state: 'NC',
+          zip: '27601',
+          isDefault: true,
+        },
+        {
+          id: 'a2',
+          fullName: 'B',
+          line1: '2 St',
+          line2: '',
+          city: 'City',
+          state: 'NC',
+          zip: '27601',
+          isDefault: false,
+        },
+        {
+          id: 'a3',
+          fullName: 'C',
+          line1: '3 St',
+          line2: '',
+          city: 'City',
+          state: 'NC',
+          zip: '27601',
+          isDefault: false,
+        },
+        {
+          id: 'a4',
+          fullName: 'D',
+          line1: '4 St',
+          line2: '',
+          city: 'City',
+          state: 'NC',
+          zip: '27601',
+          isDefault: false,
+        },
+        {
+          id: 'a5',
+          fullName: 'E',
+          line1: '5 St',
+          line2: '',
+          city: 'City',
+          state: 'NC',
+          zip: '27601',
+          isDefault: false,
+        },
       ];
       const { getByTestId } = renderAccount({}, true);
       await waitFor(() => expect(getByTestId('address-list')).toBeTruthy());
