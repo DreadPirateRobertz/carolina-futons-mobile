@@ -152,7 +152,13 @@ describe('WixClient request timeout', () => {
     );
 
     const client = new WixClient({ ...TEST_CONFIG, timeoutMs: 50 });
-    await expect(client.queryOrders()).rejects.toThrow(/timeout/i);
+    try {
+      await client.queryOrders();
+      fail('Expected WixApiError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(WixApiError);
+      expect((err as WixApiError).message).toMatch(/timeout/i);
+    }
   }, 10_000);
 
   it('queryOrders passes AbortSignal to fetch', async () => {
@@ -182,7 +188,13 @@ describe('WixClient request timeout', () => {
     );
 
     const client = new WixClient({ ...TEST_CONFIG, timeoutMs: 50 });
-    await expect(client.getOrder('ord-001')).rejects.toThrow(/timeout/i);
+    try {
+      await client.getOrder('ord-001');
+      fail('Expected WixApiError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(WixApiError);
+      expect((err as WixApiError).message).toMatch(/timeout/i);
+    }
   }, 10_000);
 
   it('getOrder passes AbortSignal to fetch', async () => {
