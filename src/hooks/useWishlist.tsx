@@ -108,6 +108,8 @@ interface WishlistContextValue {
   isSyncing: boolean;
   /** Re-evaluates wishlist with current product prices (for pull-to-refresh). */
   refresh: () => void;
+  /** Whether the wishlist is loading from AsyncStorage. */
+  isLoading: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
@@ -117,6 +119,8 @@ interface WishlistProviderProps {
   children: React.ReactNode;
   /** Override initial items for testing (bypasses AsyncStorage hydration). */
   initialItems?: WishlistItem[];
+  /** Override the loading state (for testing). */
+  isLoading?: boolean;
 }
 
 /**
@@ -136,10 +140,12 @@ interface WishlistProviderProps {
  *   </WishlistProvider>
  * </ConnectivityProvider>
  */
-export function WishlistProvider({ children, initialItems }: WishlistProviderProps) {
+export function WishlistProvider({ children, initialItems, isLoading: isLoadingProp }: WishlistProviderProps) {
   const [state, dispatch] = useReducer(wishlistReducer, {
     items: initialItems ?? [],
   });
+
+  const [_isLoading, setIsLoading] = useState(initialItems === undefined);
 
   const connectivity = useOptionalConnectivity();
   const isOnline = connectivity?.isOnline ?? true;
@@ -235,6 +241,8 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
         }
       } catch {
         // AsyncStorage not installed or not available — operate in-memory
+      } finally {
+        setIsLoading(false);
       }
     })();
   }, []);
@@ -373,6 +381,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       pendingSync,
       isSyncing,
       refresh,
+      isLoading: isLoadingProp ?? _isLoading,
     }),
     [
       state.items,
@@ -388,6 +397,8 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       pendingSync,
       isSyncing,
       refresh,
+      isLoadingProp,
+      _isLoading,
     ],
   );
 

@@ -66,7 +66,7 @@ export const SkeletonProductCard = memo(function SkeletonProductCard({
 });
 
 /** Grid of skeleton product cards matching ShopScreen 2-column layout. */
-export function SkeletonProductGrid({ count = 4 }: { count?: number }) {
+export function SkeletonProductGrid({ count = 4, testID }: { count?: number; testID?: string }) {
   const rows = [];
   for (let i = 0; i < count; i += 2) {
     rows.push(
@@ -76,7 +76,7 @@ export function SkeletonProductGrid({ count = 4 }: { count?: number }) {
       </View>,
     );
   }
-  return <View testID="skeleton-product-grid">{rows}</View>;
+  return <View testID={testID ?? 'skeleton-product-grid'}>{rows}</View>;
 }
 
 const styles = StyleSheet.create({
