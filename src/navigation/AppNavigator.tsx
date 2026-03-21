@@ -396,7 +396,13 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="StyleQuiz">
           {({ navigation: nav }) => (
-            <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
+            <StyleQuizScreen
+              onComplete={() => nav.goBack()}
+              onBack={() => nav.goBack()}
+              onProductPress={(slug) =>
+                nav.navigate('ProductDetail', { productId: slug, source: 'quiz' })
+              }
+            />
           )}
         </Stack.Screen>
         <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />

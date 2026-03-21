@@ -111,7 +111,7 @@ describe('OnboardingScreen', () => {
     // Answer all quiz questions
     fireEvent.press(getByTestId('quiz-option-bedroom'));
     fireEvent.press(getByTestId('quiz-option-rustic'));
-    fireEvent.press(getByTestId('quiz-option-dual-purpose'));
+    fireEvent.press(getByTestId('quiz-option-both'));
     // Should reach completion
     expect(getByTestId('onboarding-completion')).toBeTruthy();
   });
@@ -124,9 +124,9 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
-    fireEvent.press(getByTestId('quiz-option-studio'));
+    fireEvent.press(getByTestId('quiz-option-dorm'));
     fireEvent.press(getByTestId('quiz-option-modern'));
-    fireEvent.press(getByTestId('quiz-option-seating'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
     expect(getByTestId('onboarding-get-started-button')).toBeTruthy();
     expect(getByText('Start Shopping')).toBeTruthy();
   });
@@ -139,7 +139,7 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('quiz-option-living-room'));
     fireEvent.press(getByTestId('quiz-option-classic'));
-    fireEvent.press(getByTestId('quiz-option-guest-bed'));
+    fireEvent.press(getByTestId('quiz-option-sleeping'));
     fireEvent.press(getByTestId('onboarding-get-started-button'));
     await waitFor(() => {
       expect(mockOnComplete).toHaveBeenCalledTimes(1);
@@ -164,7 +164,7 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('quiz-option-living-room'));
     fireEvent.press(getByTestId('quiz-option-modern'));
-    fireEvent.press(getByTestId('quiz-option-seating'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
     expect(queryByTestId('onboarding-skip-button')).toBeNull();
   });
 

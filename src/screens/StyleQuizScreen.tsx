@@ -2,8 +2,12 @@
  * @module StyleQuizScreen
  *
  * Standalone style-preference quiz accessible from Account settings.
- * Lets users set or update room type, aesthetic preference, and primary
- * use-case. Persists answers via AsyncStorage through the useStyleQuiz hook.
+ * Collects answers matching the Wix getQuizRecommendations() API contract:
+ *   roomType, stylePreference, primaryUse, sizeNeeds, budgetRange
+ *
+ * Shows a personality label and curated product grid on completion.
+ * Persists answers via AsyncStorage through the useStyleQuiz hook.
+ * Error boundary provided by withScreenErrorBoundary in AppNavigator.
  */
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
@@ -12,9 +16,12 @@ import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import {
   useStyleQuiz,
+  getRecommendation,
   type RoomType,
   type StylePreference,
   type PrimaryUse,
+  type SizeNeeds,
+  type BudgetRange,
 } from '@/hooks/useStyleQuiz';
 
 // ── Quiz Questions ────────────────────────────────────────────────
@@ -28,75 +35,111 @@ interface QuizOption<T extends string> {
 const ROOM_OPTIONS: QuizOption<RoomType>[] = [
   { value: 'living-room', label: 'Living Room', icon: '\u{1F6CB}' },
   { value: 'bedroom', label: 'Bedroom', icon: '\u{1F6CF}' },
-  { value: 'studio', label: 'Studio', icon: '\u{1F3E0}' },
   { value: 'guest-room', label: 'Guest Room', icon: '\u{1F6AA}' },
+  { value: 'dorm', label: 'Dorm Room', icon: '\u{1F3E0}' },
+  { value: 'office', label: 'Home Office', icon: '\u{1F4BC}' },
 ];
 
 const STYLE_OPTIONS: QuizOption<StylePreference>[] = [
   { value: 'modern', label: 'Modern & Clean', icon: '\u2728' },
   { value: 'rustic', label: 'Rustic & Warm', icon: '\u{1FAB5}' },
   { value: 'classic', label: 'Classic & Cozy', icon: '\u{1F4D6}' },
-  { value: 'minimalist', label: 'Minimalist', icon: '\u25FB' },
 ];
 
 const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
-  { value: 'seating', label: 'Everyday Seating', icon: '\u{1F9D8}' },
-  { value: 'guest-bed', label: 'Guest Bed', icon: '\u{1F634}' },
-  { value: 'dual-purpose', label: 'Dual-Purpose', icon: '\u{1F504}' },
-  { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
+  { value: 'sitting', label: 'Everyday Seating', icon: '\u{1F9D8}' },
+  { value: 'sleeping', label: 'Guest Bed', icon: '\u{1F634}' },
+  { value: 'both', label: 'Sitting & Sleeping', icon: '\u{1F504}' },
+];
+
+const SIZE_OPTIONS: QuizOption<SizeNeeds>[] = [
+  { value: 'twin', label: 'Twin', icon: '\u{1F6CF}' },
+  { value: 'full', label: 'Full', icon: '\u{1F6CB}' },
+  { value: 'queen', label: 'Queen', icon: '\u{1F451}' },
+];
+
+const BUDGET_OPTIONS: QuizOption<BudgetRange>[] = [
+  { value: 'under-500', label: 'Under $500', icon: '\u{1F4B5}' },
+  { value: '500-1000', label: '$500 – $1,000', icon: '\u{1F4B0}' },
+  { value: '1000-2000', label: '$1,000 – $2,000', icon: '\u{1F48E}' },
+  { value: 'over-2000', label: 'Over $2,000', icon: '\u{1F3C6}' },
 ];
 
 const QUESTIONS: {
   title: string;
   subtitle: string;
   options: QuizOption<string>[];
-  key: 'room' | 'style' | 'primaryUse';
+  key: 'roomType' | 'stylePreference' | 'primaryUse' | 'sizeNeeds' | 'budgetRange';
 }[] = [
   {
     title: 'What room is\nthis for?',
     subtitle: 'Help us find your perfect match',
     options: ROOM_OPTIONS,
-    key: 'room',
+    key: 'roomType',
   },
   {
     title: "What's your\nstyle?",
     subtitle: 'We\u2019ll curate picks that fit',
     options: STYLE_OPTIONS,
-    key: 'style',
+    key: 'stylePreference',
   },
   {
-    title: 'What do you\nneed most?',
+    title: 'How will you\nuse it most?',
     subtitle: 'So we show the right features',
     options: USE_OPTIONS,
     key: 'primaryUse',
   },
+  {
+    title: 'What size\ndo you need?',
+    subtitle: 'We\u2019ll match the right fit',
+    options: SIZE_OPTIONS,
+    key: 'sizeNeeds',
+  },
+  {
+    title: "What's your\nbudget?",
+    subtitle: 'So we highlight the best value',
+    options: BUDGET_OPTIONS,
+    key: 'budgetRange',
+  },
 ];
 
-const TOTAL_STEPS = QUESTIONS.length + 1; // 3 quiz + 1 completion
+const TOTAL_STEPS = QUESTIONS.length + 1; // 5 quiz + 1 completion
 
 // ── Main Component ────────────────────────────────────────────────
 
 interface Props {
   onComplete: () => void;
   onBack: () => void;
+  /** Called with a product slug when a product card in the completion grid is tapped. */
+  onProductPress?: (slug: string) => void;
   testID?: string;
 }
 
-export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
+export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
   const [step, setStep] = useState(0);
-  const { preferences, setRoom, setStyle, setPrimaryUse, savePreferences } = useStyleQuiz();
+  const {
+    preferences,
+    setRoomType,
+    setStylePreference,
+    setPrimaryUse,
+    setSizeNeeds,
+    setBudgetRange,
+    savePreferences,
+  } = useStyleQuiz();
 
   const isCompletion = step === QUESTIONS.length;
 
   const handleSelect = useCallback(
     (value: string) => {
-      if (step === 0) setRoom(value as RoomType);
-      else if (step === 1) setStyle(value as StylePreference);
+      if (step === 0) setRoomType(value as RoomType);
+      else if (step === 1) setStylePreference(value as StylePreference);
       else if (step === 2) setPrimaryUse(value as PrimaryUse);
+      else if (step === 3) setSizeNeeds(value as SizeNeeds);
+      else if (step === 4) setBudgetRange(value as BudgetRange);
       setStep((s) => s + 1);
     },
-    [step, setRoom, setStyle, setPrimaryUse],
+    [step, setRoomType, setStylePreference, setPrimaryUse, setSizeNeeds, setBudgetRange],
   );
 
   const handleBack = useCallback(() => {
@@ -108,7 +151,11 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
   }, [step, onBack]);
 
   const handleSave = useCallback(async () => {
-    await savePreferences();
+    try {
+      await savePreferences();
+    } catch {
+      // savePreferences handles its own errors; this guards unexpected throws
+    }
     onComplete();
   }, [savePreferences, onComplete]);
 
@@ -220,7 +267,10 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
   // ── Completion ──────────────────────────────────────────────────
 
   const renderCompletion = () => {
-    const styleName = STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
+    const styleName =
+      STYLE_OPTIONS.find((o) => o.value === preferences.stylePreference)?.label ?? 'your';
+    const recommendation = getRecommendation(preferences.stylePreference, preferences.sizeNeeds);
+
     return (
       <View style={styles.completionContainer} testID="style-quiz-completion">
         <Text
@@ -241,12 +291,47 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
         </Text>
         <Text
           style={[
+            styles.personalityLabel,
+            { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+          ]}
+          testID="style-quiz-personality-label"
+        >
+          {recommendation.label}
+        </Text>
+        <Text
+          style={[
             styles.completionBody,
             { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
           ]}
         >
           {`We\u2019ll highlight ${styleName.toLowerCase()} picks and features that fit your lifestyle.`}
         </Text>
+
+        {/* Curated product grid */}
+        <View style={styles.productGrid} testID="style-quiz-product-grid">
+          {recommendation.productSlugs.map((slug) => (
+            <TouchableOpacity
+              key={slug}
+              testID={`quiz-product-${slug}`}
+              style={[
+                styles.productCard,
+                { borderRadius: borderRadius.card, backgroundColor: darkPalette.surface },
+              ]}
+              onPress={() => onProductPress?.(slug)}
+              accessibilityRole="button"
+              accessibilityLabel={`View ${slug}`}
+            >
+              <Text
+                style={[
+                  styles.productSlug,
+                  { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily },
+                ]}
+              >
+                {slug}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     );
   };
@@ -422,13 +507,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 39,
     letterSpacing: -0.34,
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  personalityLabel: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   completionBody: {
     fontSize: 17,
     textAlign: 'center',
     lineHeight: 27,
     maxWidth: 300,
+    marginBottom: 24,
+  },
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
+  },
+  productCard: {
+    width: '46%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  productSlug: {
+    fontSize: 13,
+    textAlign: 'center',
   },
   // Bottom action
   buttonContainer: {
