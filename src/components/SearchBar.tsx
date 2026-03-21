@@ -26,6 +26,8 @@ interface Props {
   onRemoveRecent?: (query: string) => void;
   /** Called when user clears all recent searches */
   onClearRecent?: () => void;
+  /** Called when user presses the camera icon for visual search */
+  onCameraPress?: () => void;
 }
 
 /** Search input with autocomplete dropdown and recent search history. */
@@ -39,6 +41,7 @@ export function SearchBar({
   onSubmitSearch,
   onRemoveRecent,
   onClearRecent,
+  onCameraPress,
 }: Props) {
   const { colors, borderRadius } = useTheme();
   const [isFocused, setIsFocused] = useState(false);
@@ -99,6 +102,17 @@ export function SearchBar({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={[styles.clear, { color: colors.muted }]}>✕</Text>
+          </TouchableOpacity>
+        )}
+        {onCameraPress && (
+          <TouchableOpacity
+            testID="camera-icon-btn"
+            onPress={onCameraPress}
+            accessibilityRole="button"
+            accessibilityLabel="Search with camera"
+            style={styles.cameraBtn}
+          >
+            <Text style={styles.cameraIcon}>📷</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -272,5 +286,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 10,
+  },
+  cameraBtn: {
+    padding: 8,
+  },
+  cameraIcon: {
+    fontSize: 20,
   },
 });
