@@ -22,7 +22,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
@@ -53,9 +52,13 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
       {/* Backdrop */}
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.backdrop} testID="mini-cart-backdrop" />
-      </TouchableWithoutFeedback>
+      <TouchableOpacity
+        style={styles.backdrop}
+        onPress={onClose}
+        testID="mini-cart-backdrop"
+        activeOpacity={1}
+        accessibilityLabel="Close cart"
+      />
 
       {/* Drawer panel */}
       <Animated.View
