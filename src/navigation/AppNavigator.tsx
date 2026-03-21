@@ -118,7 +118,7 @@ const PrivacyPolicyScreen = lazy(() =>
 );
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
-    default: m.OrderConfirmationScreen,
+    default: withScreenErrorBoundary(m.OrderConfirmationScreen, 'OrderConfirmation'),
   })),
 );
 const PaymentConfirmationScreen = lazy(() =>

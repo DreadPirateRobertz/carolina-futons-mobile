@@ -18,7 +18,12 @@ import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
 import { CompareFAB } from '@/components/CompareFAB';
 import { AnimatedTabBar } from './AnimatedTabBar';
+import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import type { RootStackParamList } from './AppNavigator';
+
+const HomeScreenWithBoundary = withScreenErrorBoundary(HomeScreen, 'Home');
+const ShopScreenWithBoundary = withScreenErrorBoundary(ShopScreen, 'Shop');
+const CartScreenWithBoundary = withScreenErrorBoundary(CartScreen, 'Cart');
 
 export type TabParamList = {
   Home: undefined;
@@ -52,6 +57,8 @@ function AccountScreenWithNav() {
   );
 }
 
+const AccountScreenWithBoundary = withScreenErrorBoundary(AccountScreenWithNav, 'Account');
+
 /** Bottom tab shell with cart badge count and the custom AnimatedTabBar. */
 export function TabNavigator() {
   const { colors } = useTheme();
@@ -69,7 +76,7 @@ export function TabNavigator() {
       >
         <Tab.Screen
           name="Home"
-          component={HomeScreen}
+          component={HomeScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
               <TabIcon label="Home" focused={focused} color={color} />
@@ -78,7 +85,7 @@ export function TabNavigator() {
         />
         <Tab.Screen
           name="Shop"
-          component={ShopScreen}
+          component={ShopScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
               <TabIcon label="Shop" focused={focused} color={color} />
@@ -87,7 +94,7 @@ export function TabNavigator() {
         />
         <Tab.Screen
           name="Cart"
-          component={CartScreen}
+          component={CartScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
               <TabIcon label="Cart" focused={focused} color={color} />
@@ -98,14 +105,13 @@ export function TabNavigator() {
         />
         <Tab.Screen
           name="Account"
+          component={AccountScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
               <TabIcon label="Account" focused={focused} color={color} />
             ),
           }}
-        >
-          {() => <AccountScreenWithNav />}
-        </Tab.Screen>
+        />
       </Tab.Navigator>
       <CompareFAB testID="compare-fab" />
     </View>
