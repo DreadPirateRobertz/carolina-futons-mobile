@@ -5,8 +5,6 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { PRODUCTS } from '@/data/products';
 
-jest.useFakeTimers();
-
 async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const result = render(
@@ -16,10 +14,8 @@ async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
       </WishlistProvider>
     </ThemeProvider>,
   );
-  // Advance past initial loading skeleton (600ms) and flush async SWR cache
-  await act(async () => {
-    jest.advanceTimersByTime(700);
-  });
+  // Flush async effects: useDataCache AsyncStorage + fetchProducts chain
+  await act(async () => {});
   return { ...result, onProductPress };
 }
 
