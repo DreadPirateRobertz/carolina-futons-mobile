@@ -56,7 +56,7 @@ describe('RoomGalleryScreen', () => {
         refresh: mockRefresh,
       });
       const { getByTestId } = renderGallery();
-      expect(getByTestId('room-gallery-loading')).toBeTruthy();
+      expect(getByTestId('skeleton-room-grid')).toBeTruthy();
     });
 
     it('does not show grid while loading', () => {
