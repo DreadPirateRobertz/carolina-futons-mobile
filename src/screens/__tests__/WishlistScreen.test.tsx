@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
-import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
+import { WishlistProvider, useWishlist, type WishlistItem } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
@@ -58,6 +58,17 @@ describe('WishlistScreen', () => {
       const { getByTestId, onBrowse } = renderScreen();
       fireEvent.press(getByTestId('wishlist-empty-action'));
       expect(onBrowse).toHaveBeenCalled();
+    });
+
+    it('empty state CTA label is "Start shopping"', () => {
+      const { getByTestId } = renderScreen();
+      const cta = getByTestId('wishlist-empty-action');
+      expect(cta.props.accessibilityLabel).toBe('Start shopping');
+    });
+
+    it('empty state renders WishlistIllustration', () => {
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('wishlist-illustration')).toBeTruthy();
     });
 
     it('renders title', () => {
@@ -221,6 +232,14 @@ describe('WishlistScreen', () => {
       const { getByTestId } = renderScreen();
       const flatList = getByTestId('wishlist-list');
       expect(flatList.props.refreshControl).toBeTruthy();
+    });
+
+    it('PTR onRefresh fires without throwing (wishlist.refresh() is wired)', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      const flatList = getByTestId('wishlist-list');
+      const { onRefresh } = flatList.props.refreshControl.props;
+      expect(typeof onRefresh).toBe('function');
+      expect(() => onRefresh()).not.toThrow();
     });
   });
 });

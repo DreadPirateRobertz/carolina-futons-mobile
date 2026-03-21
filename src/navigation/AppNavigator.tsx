@@ -20,6 +20,8 @@ import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
+const OnboardingScreenWithBoundary = withScreenErrorBoundary(OnboardingScreen, 'Onboarding');
+
 // Lazy-load non-critical screens to reduce initial bundle parse time
 const ARScreen = lazy(() =>
   import('@/screens/ARScreen').then((m) => ({
@@ -118,7 +120,7 @@ const PrivacyPolicyScreen = lazy(() =>
 );
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
-    default: m.OrderConfirmationScreen,
+    default: withScreenErrorBoundary(m.OrderConfirmationScreen, 'OrderConfirmation'),
   })),
 );
 const PaymentConfirmationScreen = lazy(() =>
@@ -144,6 +146,11 @@ const CompareScreen = lazy(() =>
 const RoomGalleryScreen = lazy(() =>
   import('@/screens/RoomGalleryScreen').then((m) => ({
     default: withScreenErrorBoundary(m.RoomGalleryScreen, 'RoomGallery'),
+  })),
+);
+const LoyaltyScreen = lazy(() =>
+  import('@/screens/LoyaltyScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LoyaltyScreen, 'Loyalty'),
   })),
 );
 
@@ -190,6 +197,7 @@ export type RootStackParamList = {
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
+  Loyalty: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -237,7 +245,7 @@ export function AppNavigator() {
       >
         <Stack.Screen name="Onboarding">
           {({ navigation: nav }) => (
-            <OnboardingScreen
+            <OnboardingScreenWithBoundary
               onComplete={() => {
                 handleOnboardingComplete();
                 nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
@@ -440,6 +448,9 @@ export function AppNavigator() {
               onProductPress={(productId) => nav.navigate('ProductDetail', { slug: productId })}
             />
           )}
+        </Stack.Screen>
+        <Stack.Screen name="Loyalty" options={modalTransition}>
+          {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>

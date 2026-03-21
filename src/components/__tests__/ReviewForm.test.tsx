@@ -13,6 +13,13 @@ jest.mock('expo-image-picker', () => ({
   MediaTypeOptions: { Images: 'Images' },
 }));
 
+// Upload service — return local URI as mediaUrl so existing photo tests keep working
+jest.mock('@/services/uploadReviewPhoto', () => ({
+  uploadReviewPhoto: jest
+    .fn()
+    .mockImplementation((uri: string) => Promise.resolve({ mediaUrl: uri })),
+}));
+
 function renderForm(props: Partial<React.ComponentProps<typeof ReviewForm>> = {}) {
   const onSubmit = props.onSubmit ?? jest.fn();
   return {

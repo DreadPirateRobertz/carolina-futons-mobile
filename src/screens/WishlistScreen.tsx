@@ -44,7 +44,7 @@ interface Props {
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
-  const { count, getProducts, getShareText, remove, clear, isLoading } = useWishlist();
+  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useWishlist();
 
   const scrollPerf = useScrollPerformance('WishlistScreen');
 
@@ -52,9 +52,9 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    // Wishlist is local state; refresh triggers a re-render for price updates
+    refresh();
     setTimeout(() => setRefreshing(false), 600);
-  }, []);
+  }, [refresh]);
 
   const handleRemove = useCallback(
     (productId: string) => {
@@ -196,7 +196,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         illustration={<WishlistIllustration testID="wishlist-illustration" />}
         title="Your wishlist is empty"
         message="Save products you love and come back to them later."
-        action={onBrowse ? { label: 'Browse Products', onPress: onBrowse } : undefined}
+        action={onBrowse ? { label: 'Start shopping', onPress: onBrowse } : undefined}
         testID="wishlist-empty"
       />
     ),
