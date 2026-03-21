@@ -1085,7 +1085,7 @@ describe('CartItem sku + variantId fields (cm-12g)', () => {
     expect(item?.variantId).toBeUndefined();
   });
 
-  it('serverLineItemToCartItem populates sku from lineItem.sku when present', () => {
+  it('serverLineItemToCartItem populates sku from lineItem.physicalProperties.sku when present', () => {
     const item = serverLineItemToCartItem({
       _id: 'wix-sku',
       catalogReference: {
@@ -1094,13 +1094,13 @@ describe('CartItem sku + variantId fields (cm-12g)', () => {
         options: { variantId: FABRICS[0].id },
       },
       quantity: 1,
-      sku: 'CF-ASH-LIN-001',
+      physicalProperties: { sku: 'CF-ASH-LIN-001' },
     });
     expect(item).not.toBeNull();
     expect(item?.sku).toBe('CF-ASH-LIN-001');
   });
 
-  it('serverLineItemToCartItem leaves sku undefined when lineItem.sku is absent', () => {
+  it('serverLineItemToCartItem leaves sku undefined when physicalProperties is absent', () => {
     const item = serverLineItemToCartItem({
       _id: 'wix-no-sku',
       catalogReference: {

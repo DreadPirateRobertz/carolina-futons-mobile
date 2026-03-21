@@ -164,7 +164,7 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
     ...(imageUrl ? { imageUrl } : {}),
-    ...(lineItem.sku !== undefined ? { sku: lineItem.sku } : {}),
+    ...(lineItem.physicalProperties?.sku ? { sku: lineItem.physicalProperties.sku } : {}),
     ...(variantId !== undefined ? { variantId } : {}),
   };
 }
