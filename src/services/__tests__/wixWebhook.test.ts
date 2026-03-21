@@ -20,10 +20,7 @@
  */
 
 import { createHmac } from 'crypto';
-import {
-  verifyWixWebhookHmac,
-  verifyWixWebhookHmacBase64,
-} from '../wixWebhook';
+import { verifyWixWebhookHmac, verifyWixWebhookHmacBase64 } from '../wixWebhook';
 
 const SECRET = 'test-webhook-secret-abc123';
 

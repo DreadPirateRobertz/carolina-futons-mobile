@@ -34,14 +34,14 @@ describe('getBNPLInstallments', () => {
 
   it('each installment is total/4 for even amounts (Klarna)', () => {
     const result = getBNPLInstallments(200, 'klarna');
-    result.forEach(inst => {
+    result.forEach((inst) => {
       expect(inst.amount).toBe(50);
     });
   });
 
   it('each installment is total/4 for even amounts (Affirm)', () => {
     const result = getBNPLInstallments(200, 'affirm');
-    result.forEach(inst => {
+    result.forEach((inst) => {
       expect(inst.amount).toBe(50);
     });
   });
