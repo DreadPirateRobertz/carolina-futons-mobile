@@ -23,6 +23,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from '@/hooks/useAuth';
+import { captureException } from '@/services/crashReporting';
 
 const REFERRED_BY_KEY = 'cfutons_referral_referred_by_code';
 const SHARE_BASE_URL = 'https://carolinafutons.com/referral';
@@ -125,7 +126,8 @@ export function useReferral(): UseReferralResult {
         const stored = await AsyncStorage.getItem(REFERRED_BY_KEY);
         if (!cancelled) setReferredByCode(stored);
       } catch (e) {
-        console.warn('[useReferral] AsyncStorage read failed:', e);
+        const err = e instanceof Error ? e : new Error(String(e));
+        captureException(err, 'warning', { action: 'useReferral/readReferredByCode' });
       }
 
       if (!memberId) {
@@ -170,22 +172,40 @@ export function useReferral(): UseReferralResult {
           setError(null);
         }
       } else {
-        setError(
+        const err =
           codesResult.reason instanceof Error
-            ? codesResult.reason.message
-            : 'Failed to load referral code',
-        );
+            ? codesResult.reason
+            : new Error(String(codesResult.reason));
+        captureException(err, 'error', {
+          action: 'useReferral/fetchReferralCodes',
+          memberId: memberId ?? undefined,
+        });
+        setError('Could not load your referral code. Please try again later.');
       }
 
       // Handle Referrals result — failures don't block code display
       if (referralsResult.status === 'fulfilled') {
         setReferrals(referralsResult.value.items.map(rawToReferralRecord));
       } else {
-        console.warn('[useReferral] Referrals fetch failed:', referralsResult.reason);
+        const err =
+          referralsResult.reason instanceof Error
+            ? referralsResult.reason
+            : new Error(String(referralsResult.reason));
+        captureException(err, 'error', {
+          action: 'useReferral/fetchReferrals',
+          memberId: memberId ?? undefined,
+        });
+        console.warn('[useReferral] Referrals fetch failed (non-blocking):', err);
       }
 
       setLoading(false);
-    })();
+    })().catch((e) => {
+      if (cancelled) return;
+      const err = e instanceof Error ? e : new Error(String(e));
+      captureException(err, 'error', { action: 'useReferral/effect' });
+      setError('Referral service encountered an unexpected error');
+      setLoading(false);
+    });
 
     return () => {
       cancelled = true;
@@ -198,7 +218,11 @@ export function useReferral(): UseReferralResult {
       await AsyncStorage.setItem(REFERRED_BY_KEY, incomingCode.trim());
       setReferredByCode(incomingCode.trim());
     } catch (e) {
-      console.warn('[useReferral] AsyncStorage write failed:', e);
+      const err = e instanceof Error ? e : new Error(String(e));
+      captureException(err, 'error', {
+        action: 'useReferral/storeReferredByCode',
+        code: incomingCode,
+      });
     }
   }, []);
 
@@ -221,6 +245,10 @@ export function useReferral(): UseReferralResult {
       };
 
       const inserted = await wixClient.insertDataItem('Referrals', payload);
+
+      if (!inserted?.id) {
+        throw new Error('Referrals insert returned no ID');
+      }
 
       setReferrals((prev) => [
         ...prev,
