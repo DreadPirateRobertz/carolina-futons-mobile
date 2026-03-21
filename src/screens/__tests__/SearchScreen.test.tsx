@@ -3,6 +3,7 @@ import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { SearchScreen } from '../SearchScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
 const mockNavigate = jest.fn();
@@ -39,7 +40,9 @@ function renderSearchScreen() {
   return render(
     <ThemeProvider>
       <WishlistProvider>
-        <SearchScreen />
+        <CompareProvider>
+          <SearchScreen />
+        </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );
@@ -79,7 +82,9 @@ describe('SearchScreen', () => {
       const { getByTestId } = render(
         <ThemeProvider>
           <WishlistProvider>
-            <SearchScreen testID="custom-search" />
+            <CompareProvider>
+              <SearchScreen testID="custom-search" />
+            </CompareProvider>
           </WishlistProvider>
         </ThemeProvider>,
       );
