@@ -3,20 +3,22 @@
  *
  * Hook behaviour:
  *  - Fetches reviews from Wix CF-k8hw collection via wixClient.queryData
- *  - Filters by productId
- *  - Sorts by _createdDate DESC (most recent first)
+ *  - Filters by productId with $eq operator
+ *  - Sorts by createdAt DESC, limit 100
  *  - Returns { reviews, aggregate, isLoading, error }
  *  - aggregate: { averageRating, totalReviews }
  *  - isLoading=true during fetch, false when settled
  *  - Falls back to empty reviews when wixClient is null
- *  - error set on API failure
+ *  - error set on API failure; captureException called
  *  - Re-fetches when productId changes
  *  - Handles empty collection (zero reviews)
+ *  - Clamps ratings to [1, 5]; non-numeric stays 0
+ *  - Stale fetch from previous productId does not update state
  *
  * Bead: cm-e0r
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useProductReviews } from '../useProductReviews';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -25,16 +27,22 @@ jest.mock('@/services/wix', () => ({
   useOptionalWixClient: jest.fn(),
 }));
 
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
 import { useOptionalWixClient } from '@/services/wix';
+import { captureException } from '@/services/crashReporting';
 
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
+const mockCaptureException = captureException as jest.Mock;
 
 const mockQueryData = jest.fn();
 const mockWixClient = { queryData: mockQueryData };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function makeWixReviewItem(overrides: {
+function makeItem(overrides: {
   id?: string;
   productId?: string;
   authorName?: string;
@@ -44,6 +52,7 @@ function makeWixReviewItem(overrides: {
   createdAt?: string;
   helpful?: number;
   verified?: boolean;
+  photos?: string[];
 }) {
   return {
     id: overrides.id ?? 'rev-001',
@@ -55,6 +64,7 @@ function makeWixReviewItem(overrides: {
     createdAt: overrides.createdAt ?? '2026-01-15T10:00:00Z',
     helpful: overrides.helpful ?? 0,
     verified: overrides.verified ?? true,
+    ...(overrides.photos !== undefined ? { photos: overrides.photos } : {}),
   };
 }
 
@@ -70,34 +80,39 @@ describe('useProductReviews', () => {
 
   it('starts with isLoading=true before fetch resolves', () => {
     mockQueryData.mockReturnValue(new Promise(() => {})); // never resolves
-    const { result } = renderHook(() => useProductReviews('prod-asheville'));
+    const { result, unmount } = renderHook(() => useProductReviews('prod-asheville'));
     expect(result.current.isLoading).toBe(true);
     expect(result.current.reviews).toEqual([]);
     expect(result.current.error).toBeNull();
+    unmount();
   });
 
   // ── Happy path ─────────────────────────────────────────────────────────────
 
-  it('fetches reviews from CF-k8hw collection with productId filter', async () => {
-    const items = [makeWixReviewItem({ productId: 'prod-asheville', rating: 5 })];
-    mockQueryData.mockResolvedValue({ items, totalResults: 1 });
+  it('fetches from CF-k8hw with $eq filter, createdAt DESC sort, limit 100', async () => {
+    mockQueryData.mockResolvedValue({ items: [makeItem({})], totalResults: 1 });
 
     const { result } = renderHook(() => useProductReviews('prod-asheville'));
-
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(mockQueryData).toHaveBeenCalledWith(
-      'CF-k8hw',
-      expect.objectContaining({
-        filter: expect.objectContaining({ productId: expect.anything() }),
-      }),
-    );
+    expect(mockQueryData).toHaveBeenCalledWith('CF-k8hw', {
+      filter: { productId: { $eq: 'prod-asheville' } },
+      sort: [{ fieldName: 'createdAt', order: 'DESC' }],
+      limit: 100,
+    });
     expect(result.current.reviews).toHaveLength(1);
     expect(result.current.error).toBeNull();
   });
 
+  it('always queries collection ID CF-k8hw', async () => {
+    mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+    renderHook(() => useProductReviews('any-product'));
+    await waitFor(() => expect(mockQueryData).toHaveBeenCalled());
+    expect(mockQueryData).toHaveBeenCalledWith('CF-k8hw', expect.anything());
+  });
+
   it('returns all review fields from queryData items', async () => {
-    const item = makeWixReviewItem({
+    const item = makeItem({
       id: 'rev-99',
       authorName: 'Jane D.',
       rating: 4,
@@ -122,25 +137,20 @@ describe('useProductReviews', () => {
 
   // ── Aggregate ──────────────────────────────────────────────────────────────
 
-  it('calculates aggregate.averageRating from fetched reviews', async () => {
+  it('calculates averageRating from fetched reviews', async () => {
     mockQueryData.mockResolvedValue({
-      items: [
-        makeWixReviewItem({ rating: 4 }),
-        makeWixReviewItem({ id: 'r2', rating: 2 }),
-        makeWixReviewItem({ id: 'r3', rating: 5 }),
-      ],
+      items: [makeItem({ rating: 4 }), makeItem({ id: 'r2', rating: 2 }), makeItem({ id: 'r3', rating: 5 })],
       totalResults: 3,
     });
 
     const { result } = renderHook(() => useProductReviews('prod-x'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // (4 + 2 + 5) / 3 = 3.67, rounded to 1dp
     expect(result.current.aggregate.averageRating).toBeCloseTo(3.7, 1);
     expect(result.current.aggregate.totalReviews).toBe(3);
   });
 
-  it('returns aggregate.averageRating=0 and totalReviews=0 when no reviews', async () => {
+  it('returns averageRating=0 and totalReviews=0 when no reviews', async () => {
     mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
 
     const { result } = renderHook(() => useProductReviews('prod-empty'));
@@ -151,10 +161,7 @@ describe('useProductReviews', () => {
   });
 
   it('calculates exact average for single review', async () => {
-    mockQueryData.mockResolvedValue({
-      items: [makeWixReviewItem({ rating: 3 })],
-      totalResults: 1,
-    });
+    mockQueryData.mockResolvedValue({ items: [makeItem({ rating: 3 })], totalResults: 1 });
 
     const { result } = renderHook(() => useProductReviews('prod-single'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -163,9 +170,102 @@ describe('useProductReviews', () => {
     expect(result.current.aggregate.totalReviews).toBe(1);
   });
 
+  // ── Rating clamping ────────────────────────────────────────────────────────
+
+  it('clamps out-of-range ratings to [1, 5]; non-numeric stays 0', async () => {
+    mockQueryData.mockResolvedValue({
+      items: [
+        makeItem({ id: 'r1', rating: 0 }),   // invalid low => 0
+        makeItem({ id: 'r2', rating: 6 }),   // out of range => clamped to 5
+        makeItem({ id: 'r3', rating: -1 }),  // negative => 0
+        makeItem({ id: 'r4', rating: 4 }),   // valid
+      ],
+      totalResults: 4,
+    });
+
+    const { result } = renderHook(() => useProductReviews('prod-x'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const ratings = result.current.reviews.map((r) => r.rating);
+    expect(ratings).toEqual([0, 5, 0, 4]);
+    // (0 + 5 + 0 + 4) / 4 = 2.25 => 2.3
+    expect(result.current.aggregate.averageRating).toBeCloseTo(2.3, 1);
+    expect(result.current.aggregate.totalReviews).toBe(4);
+  });
+
+  // ── photos field ───────────────────────────────────────────────────────────
+
+  it('includes photos on review when present and non-empty', async () => {
+    const photos = ['https://cdn.wix.com/a.jpg', 'https://cdn.wix.com/b.jpg'];
+    mockQueryData.mockResolvedValue({ items: [makeItem({ photos })], totalResults: 1 });
+
+    const { result } = renderHook(() => useProductReviews('prod-p'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews[0].photos).toEqual(photos);
+  });
+
+  it('omits photos property when photos array is empty', async () => {
+    mockQueryData.mockResolvedValue({ items: [makeItem({ photos: [] })], totalResults: 1 });
+
+    const { result } = renderHook(() => useProductReviews('prod-p'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews[0]).not.toHaveProperty('photos');
+  });
+
+  it('omits photos property when photos field is absent', async () => {
+    mockQueryData.mockResolvedValue({ items: [makeItem({})], totalResults: 1 });
+
+    const { result } = renderHook(() => useProductReviews('prod-p'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews[0]).not.toHaveProperty('photos');
+  });
+
+  it('filters non-string values from photos array', async () => {
+    mockQueryData.mockResolvedValue({
+      items: [{ ...makeItem({}), photos: [null, 'https://cdn.wix.com/a.jpg', 42] }],
+      totalResults: 1,
+    });
+
+    const { result } = renderHook(() => useProductReviews('prod-p'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews[0].photos).toEqual(['https://cdn.wix.com/a.jpg']);
+  });
+
+  // ── Malformed CMS data ─────────────────────────────────────────────────────
+
+  it('handles item with all fields missing without throwing', async () => {
+    mockQueryData.mockResolvedValue({ items: [{}], totalResults: 1 });
+
+    const { result } = renderHook(() => useProductReviews('prod-x'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews).toHaveLength(1);
+    const r = result.current.reviews[0];
+    expect(r.id).toBe('');
+    expect(r.rating).toBe(0);
+    expect(r.helpful).toBe(0);
+    expect(r.verified).toBe(false);
+  });
+
+  it('defaults rating to 0 when rating field is a string', async () => {
+    mockQueryData.mockResolvedValue({
+      items: [{ ...makeItem({}), rating: '4' }],
+      totalResults: 1,
+    });
+
+    const { result } = renderHook(() => useProductReviews('prod-x'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews[0].rating).toBe(0);
+  });
+
   // ── Empty state ────────────────────────────────────────────────────────────
 
-  it('returns empty reviews array when collection has no items for product', async () => {
+  it('returns empty reviews array when collection has no items', async () => {
     mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
 
     const { result } = renderHook(() => useProductReviews('prod-new'));
@@ -177,24 +277,33 @@ describe('useProductReviews', () => {
 
   // ── Error state ────────────────────────────────────────────────────────────
 
-  it('sets error and keeps reviews empty when queryData throws', async () => {
-    mockQueryData.mockRejectedValue(new Error('Network failure'));
+  it('sets error, keeps reviews empty, isLoading=false, and calls captureException', async () => {
+    const err = new Error('Network failure');
+    mockQueryData.mockRejectedValue(err);
 
     const { result } = renderHook(() => useProductReviews('prod-asheville'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.reviews).toEqual([]);
     expect(result.current.error).toBe('Network failure');
+    expect(result.current.isLoading).toBe(false);
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      err,
+      'error',
+      expect.objectContaining({ action: 'useProductReviews/queryData', collection: 'CF-k8hw' }),
+    );
   });
 
-  it('sets a fallback error message when thrown error has no message', async () => {
-    mockQueryData.mockRejectedValue({});
+  it('sets fallback error and calls captureException when thrown value is not an Error', async () => {
+    mockQueryData.mockRejectedValue({ code: 500 });
 
     const { result } = renderHook(() => useProductReviews('prod-asheville'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.error).toBeTruthy();
     expect(typeof result.current.error).toBe('string');
+    expect(result.current.isLoading).toBe(false);
+    expect(mockCaptureException).toHaveBeenCalled();
   });
 
   // ── Null wixClient ─────────────────────────────────────────────────────────
@@ -212,12 +321,9 @@ describe('useProductReviews', () => {
 
   // ── Re-fetch on productId change ───────────────────────────────────────────
 
-  it('re-fetches when productId changes', async () => {
-    const items1 = [makeWixReviewItem({ id: 'r1', productId: 'prod-a', rating: 5 })];
-    const items2 = [
-      makeWixReviewItem({ id: 'r2', productId: 'prod-b', rating: 3 }),
-      makeWixReviewItem({ id: 'r3', productId: 'prod-b', rating: 4 }),
-    ];
+  it('re-fetches when productId changes and updates aggregate', async () => {
+    const items1 = [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })];
+    const items2 = [makeItem({ id: 'r2', productId: 'prod-b', rating: 3 }), makeItem({ id: 'r3', productId: 'prod-b', rating: 4 })];
     mockQueryData
       .mockResolvedValueOnce({ items: items1, totalResults: 1 })
       .mockResolvedValueOnce({ items: items2, totalResults: 2 });
@@ -237,33 +343,31 @@ describe('useProductReviews', () => {
     expect(result.current.aggregate.totalReviews).toBe(2);
   });
 
-  // ── Rating boundary validation ─────────────────────────────────────────────
+  // ── Stale response cancellation ────────────────────────────────────────────
 
-  it('clamps out-of-range ratings to [1, 5] when computing aggregate', async () => {
-    mockQueryData.mockResolvedValue({
-      items: [
-        makeWixReviewItem({ id: 'r1', rating: 0 }), // invalid low
-        makeWixReviewItem({ id: 'r2', rating: 6 }), // invalid high
-        makeWixReviewItem({ id: 'r3', rating: 4 }), // valid
-      ],
-      totalResults: 3,
-    });
+  it('discards stale response when productId changes before first fetch resolves', async () => {
+    type FetchResult = { items: ReturnType<typeof makeItem>[]; totalResults: number };
+    let resolveFirst!: (val: FetchResult) => void;
+    const firstFetch = new Promise<FetchResult>((resolve) => { resolveFirst = resolve; });
+    const secondFetch = Promise.resolve({ items: [makeItem({ id: 'r2', productId: 'prod-b', rating: 3 })], totalResults: 1 });
 
-    const { result } = renderHook(() => useProductReviews('prod-x'));
+    mockQueryData.mockReturnValueOnce(firstFetch).mockReturnValueOnce(secondFetch);
+
+    const { result, rerender } = renderHook(
+      ({ productId }: { productId: string }) => useProductReviews(productId),
+      { initialProps: { productId: 'prod-a' } },
+    );
+
+    rerender({ productId: 'prod-b' });
+
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Should not crash; all 3 items included
-    expect(result.current.aggregate.totalReviews).toBe(3);
-  });
+    act(() => {
+      resolveFirst({ items: [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })], totalResults: 1 });
+    });
 
-  // ── Collection ID ──────────────────────────────────────────────────────────
-
-  it('always queries collection ID CF-k8hw', async () => {
-    mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
-
-    renderHook(() => useProductReviews('any-product'));
-    await waitFor(() => expect(mockQueryData).toHaveBeenCalled());
-
-    expect(mockQueryData).toHaveBeenCalledWith('CF-k8hw', expect.anything());
+    // State must reflect prod-b (rating 3), not the stale prod-a (rating 5)
+    expect(result.current.reviews).toHaveLength(1);
+    expect(result.current.reviews[0].rating).toBe(3);
   });
 });

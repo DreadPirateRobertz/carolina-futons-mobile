@@ -14,9 +14,10 @@
  * Bead: cm-e0r
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useOptionalWixClient } from '@/services/wix';
 import type { Review } from '@/data/reviews';
+import { captureException } from '@/services/crashReporting';
 
 /** CF-k8hw is the Wix CMS collection ID for product reviews. */
 const REVIEWS_COLLECTION = 'CF-k8hw';
@@ -57,17 +58,23 @@ function computeAggregate(reviews: Review[]): ReviewAggregate {
 }
 
 function rawToReview(item: RawReviewItem): Review {
+  // Clamp rating to valid [1, 5] range per Review type contract. Non-numeric => 0.
+  const rawRating = typeof item.rating === 'number' ? item.rating : 0;
+  const rating = rawRating > 0 ? Math.max(1, Math.min(5, rawRating)) : 0;
+
   return {
     id: String(item.id ?? ''),
     productId: String(item.productId ?? ''),
     authorName: String(item.authorName ?? ''),
-    rating: typeof item.rating === 'number' ? item.rating : 0,
+    rating,
     title: String(item.title ?? ''),
     body: String(item.body ?? ''),
     createdAt: String(item.createdAt ?? new Date(0).toISOString()),
     helpful: typeof item.helpful === 'number' ? item.helpful : 0,
     verified: Boolean(item.verified),
-    ...(Array.isArray(item.photos) && item.photos.length > 0 ? { photos: item.photos } : {}),
+    ...(Array.isArray(item.photos) && item.photos.length > 0
+      ? { photos: item.photos.filter((p): p is string => typeof p === 'string') }
+      : {}),
   };
 }
 
@@ -81,6 +88,9 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Derive aggregate from reviews state -- stays in sync without extra state.
+  const aggregate = useMemo(() => computeAggregate(reviews), [reviews]);
 
   useEffect(() => {
     if (!wixClient) {
@@ -106,9 +116,16 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
         setReviews(result.items.map(rawToReview));
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Failed to load reviews');
+        const error = err instanceof Error ? err : new Error('Failed to load reviews');
+        captureException(error, 'error', {
+          action: 'useProductReviews/queryData',
+          collection: REVIEWS_COLLECTION,
+        });
+        setError(error.message);
         setReviews([]);
       } finally {
+        // finally always runs -- even after cancelled return in catch.
+        // Guard here prevents state update on unmounted component.
         if (!cancelled) setIsLoading(false);
       }
     })();
@@ -120,7 +137,7 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
 
   return {
     reviews,
-    aggregate: computeAggregate(reviews),
+    aggregate,
     isLoading,
     error,
   };
