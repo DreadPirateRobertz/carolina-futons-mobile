@@ -438,9 +438,7 @@ describe('useSwatchRequest', () => {
     });
 
     it('sets status to error and does NOT write AsyncStorage when Wix throws', async () => {
-      mockWixClient.submitFabricSampleRequest.mockRejectedValueOnce(
-        new Error('Network error'),
-      );
+      mockWixClient.submitFabricSampleRequest.mockRejectedValueOnce(new Error('Network error'));
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
@@ -456,9 +454,7 @@ describe('useSwatchRequest', () => {
     });
 
     it('returns true and calls captureException (not setStatus error) when AsyncStorage write fails after Wix success', async () => {
-      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(
-        new Error('Storage unavailable'),
-      );
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Storage unavailable'));
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );

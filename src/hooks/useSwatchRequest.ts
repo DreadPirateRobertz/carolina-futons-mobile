@@ -173,11 +173,10 @@ export function useSwatchRequest(
       } catch (err) {
         if (wixClient) {
           // Wix already succeeded — AsyncStorage is non-critical, just log
-          captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            'warning',
-            { screen: 'SwatchRequestModal', action: 'asyncStorageWrite' },
-          );
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            screen: 'SwatchRequestModal',
+            action: 'asyncStorageWrite',
+          });
           // Fall through to success
         } else {
           // No Wix — AsyncStorage is primary persistence; this is a real failure

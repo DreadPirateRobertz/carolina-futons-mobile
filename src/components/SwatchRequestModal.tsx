@@ -41,7 +41,14 @@ const EMPTY_ADDRESS: SwatchAddress = {
   zip: '',
 };
 
-export function SwatchRequestModal({ visible, onClose, productId, productName, fabrics, wixClient }: Props) {
+export function SwatchRequestModal({
+  visible,
+  onClose,
+  productId,
+  productName,
+  fabrics,
+  wixClient,
+}: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const swatch = useSwatchRequest(productId, productName, wixClient);
   const [address, setAddress] = useState<SwatchAddress>(EMPTY_ADDRESS);
@@ -462,7 +469,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                     : `Send ${swatch.selectedFabrics.length} free swatch${swatch.selectedFabrics.length !== 1 ? 'es' : ''} to your address`
                 }
                 accessibilityRole="button"
-                accessibilityState={{ busy: swatch.isSubmitting, disabled: swatch.isSubmitting || swatch.hasRecentRequest }}
+                accessibilityState={{
+                  busy: swatch.isSubmitting,
+                  disabled: swatch.isSubmitting || swatch.hasRecentRequest,
+                }}
               >
                 <Text style={[styles.submitButtonText, { color: colors.offWhite }]}>
                   {swatch.isSubmitting ? 'Sending...' : 'Request Swatches'}

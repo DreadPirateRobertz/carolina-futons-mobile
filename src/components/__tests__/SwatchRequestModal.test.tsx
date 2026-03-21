@@ -10,6 +10,7 @@ import { StyleSheet } from 'react-native';
 import { SwatchRequestModal } from '../SwatchRequestModal';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FABRICS } from '@/data/futons';
+import type { WixClient } from '@/services/wix/wixClient';
 
 jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(),
@@ -36,7 +37,7 @@ jest.mock('@/services/crashReporting', () => ({
 const mockSubmitFabricSampleRequest = jest.fn();
 const mockWixClient = {
   submitFabricSampleRequest: mockSubmitFabricSampleRequest,
-};
+} as unknown as WixClient;
 
 const defaultProps = {
   visible: true,
@@ -375,7 +376,10 @@ describe('SwatchRequestModal', () => {
     it('submit button has accessibilityState.busy=true while submitting', async () => {
       let resolveSubmit: () => void;
       mockSubmitFabricSampleRequest.mockImplementation(
-        () => new Promise<void>((resolve) => { resolveSubmit = resolve; }),
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSubmit = resolve;
+          }),
       );
 
       const { getByTestId } = renderModal({ wixClient: mockWixClient });
@@ -403,8 +407,8 @@ describe('SwatchRequestModal', () => {
 
       targets.forEach((target) => {
         const flat = StyleSheet.flatten(target.props.style);
-        expect(flat.minHeight ?? (flat.height ?? 0)).toBeGreaterThanOrEqual(44);
-        expect(flat.minWidth ?? (flat.width ?? 0)).toBeGreaterThanOrEqual(44);
+        expect(flat.minHeight ?? flat.height ?? 0).toBeGreaterThanOrEqual(44);
+        expect(flat.minWidth ?? flat.width ?? 0).toBeGreaterThanOrEqual(44);
       });
     });
   });
