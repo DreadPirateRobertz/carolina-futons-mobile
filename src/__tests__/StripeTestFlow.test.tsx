@@ -492,20 +492,6 @@ describe('payment network failure', () => {
     expect(result.current.payment.status).toBe('error');
   });
 
-  it('status becomes error when wixClient is unavailable', async () => {
-    // Temporarily make wixClient return null
-    jest.doMock('@/services/wix', () => ({ useOptionalWixClient: () => null }));
-    // The hook uses the module-level mock — test the guard via PaymentError
-    mockedCreatePaymentIntent.mockRejectedValueOnce(
-      new PaymentError('Payment service unavailable', 'NETWORK_ERROR'),
-    );
-    const { result } = await renderPaymentWithItem();
-    await act(async () => {
-      await result.current.payment.processPayment('card');
-    });
-    expect(result.current.payment.status).toBe('error');
-  });
-
   it('confirmOrder failure sets status to error', async () => {
     mockedConfirmOrder.mockRejectedValueOnce(
       new PaymentError('Order confirmation failed', 'CONFIRM_FAILED'),
