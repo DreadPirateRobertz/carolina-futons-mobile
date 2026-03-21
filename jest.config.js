@@ -11,13 +11,12 @@ module.exports = {
   // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
   maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
-  setupFilesAfterEnv: ["./jest.setup.after.js"],
+  setupFilesAfterEnv: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^react-native-reanimated$': '<rootDir>/node_modules/react-native-reanimated/src/mock',
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
