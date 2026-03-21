@@ -21,6 +21,8 @@ interface UseBackInStockReturn {
   isSubscribed: boolean;
   /** Whether the subscription state is still loading */
   loading: boolean;
+  /** Whether an AsyncStorage error occurred (quota exceeded, encryption failure, etc.) */
+  isError: boolean;
   /** Subscribe to back-in-stock notifications for this product */
   subscribe: () => Promise<void>;
   /** Unsubscribe from back-in-stock notifications for this product */
@@ -41,14 +43,24 @@ async function saveSubscriptions(subs: Subscription[]): Promise<void> {
 export function useBackInStockSubscription(productId: string): UseBackInStockReturn {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const subs = await getSubscriptions();
-      if (!cancelled) {
-        setIsSubscribed(subs.some((s) => s.productId === productId));
-        setLoading(false);
+      try {
+        const subs = await getSubscriptions();
+        if (!cancelled) {
+          setIsSubscribed(subs.some((s) => s.productId === productId));
+        }
+      } catch {
+        if (!cancelled) {
+          setIsError(true);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -57,19 +69,27 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
   }, [productId]);
 
   const subscribe = useCallback(async () => {
-    const subs = await getSubscriptions();
-    if (!subs.some((s) => s.productId === productId)) {
-      subs.push({ productId, subscribedAt: new Date().toISOString() });
-      await saveSubscriptions(subs);
+    try {
+      const subs = await getSubscriptions();
+      if (!subs.some((s) => s.productId === productId)) {
+        subs.push({ productId, subscribedAt: new Date().toISOString() });
+        await saveSubscriptions(subs);
+      }
+      setIsSubscribed(true);
+    } catch {
+      setIsError(true);
     }
-    setIsSubscribed(true);
   }, [productId]);
 
   const unsubscribe = useCallback(async () => {
-    const subs = await getSubscriptions();
-    const filtered = subs.filter((s) => s.productId !== productId);
-    await saveSubscriptions(filtered);
-    setIsSubscribed(false);
+    try {
+      const subs = await getSubscriptions();
+      const filtered = subs.filter((s) => s.productId !== productId);
+      await saveSubscriptions(filtered);
+      setIsSubscribed(false);
+    } catch {
+      setIsError(true);
+    }
   }, [productId]);
 
   const toggle = useCallback(async () => {
@@ -80,5 +100,5 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
     }
   }, [isSubscribed, subscribe, unsubscribe]);
 
-  return { isSubscribed, loading, subscribe, unsubscribe, toggle };
+  return { isSubscribed, loading, isError, subscribe, unsubscribe, toggle };
 }
