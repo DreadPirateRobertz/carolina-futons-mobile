@@ -11,6 +11,7 @@ import { useSwatchRequest } from '../useSwatchRequest';
 import type { Fabric } from '@/data/futons';
 import * as Haptics from 'expo-haptics';
 import { events } from '@/services/analytics';
+import { captureException } from '@/services/crashReporting';
 
 // Must mock before importing hook
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -29,6 +30,10 @@ jest.mock('@/services/analytics', () => ({
   },
 }));
 
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
 const mockFabrics: Fabric[] = [
   { id: 'natural-linen', name: 'Natural Linen', color: '#D4C5A9', price: 0 },
   { id: 'slate-gray', name: 'Slate Gray', color: '#6B7B8D', price: 0 },
@@ -45,10 +50,15 @@ const validAddress = {
   zip: '28801',
 };
 
+const mockWixClient = {
+  submitFabricSampleRequest: jest.fn().mockResolvedValue(undefined),
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
   (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
+  mockWixClient.submitFabricSampleRequest.mockResolvedValue(undefined);
 });
 
 describe('useSwatchRequest', () => {
@@ -326,6 +336,171 @@ describe('useSwatchRequest', () => {
       expect(result.current.selectedFabrics).toEqual([]);
       expect(result.current.status).toBe('idle');
       expect(result.current.isSubmitting).toBe(false);
+    });
+  });
+
+  describe('Wix API integration', () => {
+    it('calls wixClient.submitFabricSampleRequest with correct payload', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+      act(() => result.current.toggleFabric(mockFabrics[1]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress);
+      });
+
+      expect(mockWixClient.submitFabricSampleRequest).toHaveBeenCalledWith({
+        customerName: 'Jane Doe',
+        shippingAddress: '123 Main St, Asheville, NC 28801',
+        productName: 'The Asheville',
+        fabricIds: 'natural-linen,slate-gray',
+        fabricNames: 'Natural Linen,Slate Gray',
+      });
+    });
+
+    it('formats shippingAddress correctly when line2 is present', async () => {
+      const addressWithLine2 = { ...validAddress, line2: 'Apt 4B' };
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        await result.current.submitRequest(addressWithLine2);
+      });
+
+      expect(mockWixClient.submitFabricSampleRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          shippingAddress: '123 Main St, Apt 4B, Asheville, NC 28801',
+        }),
+      );
+    });
+
+    it('formats shippingAddress without trailing comma when line2 is empty', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress); // line2: ''
+      });
+
+      const call = mockWixClient.submitFabricSampleRequest.mock.calls[0][0];
+      expect(call.shippingAddress).not.toContain(',,');
+      expect(call.shippingAddress).toBe('123 Main St, Asheville, NC 28801');
+    });
+
+    it('formats fabricIds as comma-joined ID string', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+      act(() => result.current.toggleFabric(mockFabrics[2]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress);
+      });
+
+      const call = mockWixClient.submitFabricSampleRequest.mock.calls[0][0];
+      expect(call.fabricIds).toBe('natural-linen,mountain-blue');
+    });
+
+    it('formats fabricNames as comma-joined name string', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+      act(() => result.current.toggleFabric(mockFabrics[2]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress);
+      });
+
+      const call = mockWixClient.submitFabricSampleRequest.mock.calls[0][0];
+      expect(call.fabricNames).toBe('Natural Linen,Mountain Blue');
+    });
+
+    it('passes productName to Wix payload', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville Deluxe', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress);
+      });
+
+      const call = mockWixClient.submitFabricSampleRequest.mock.calls[0][0];
+      expect(call.productName).toBe('The Asheville Deluxe');
+    });
+
+    it('sets status to error and does NOT write AsyncStorage when Wix throws', async () => {
+      mockWixClient.submitFabricSampleRequest.mockRejectedValueOnce(new Error('Network error'));
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        const success = await result.current.submitRequest(validAddress);
+        expect(success).toBe(false);
+      });
+
+      expect(result.current.status).toBe('error');
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('returns true and calls captureException (not setStatus error) when AsyncStorage write fails after Wix success', async () => {
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Storage unavailable'));
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        const success = await result.current.submitRequest(validAddress);
+        expect(success).toBe(true);
+      });
+
+      expect(result.current.status).toBe('submitted');
+      expect(captureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        'warning',
+        expect.any(Object),
+      );
+    });
+
+    it('falls back to AsyncStorage-only path when wixClient is null', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', 'The Asheville', null),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        const success = await result.current.submitRequest(validAddress);
+        expect(success).toBe(true);
+      });
+
+      expect(mockWixClient.submitFabricSampleRequest).not.toHaveBeenCalled();
+      expect(AsyncStorage.setItem).toHaveBeenCalled();
+      expect(result.current.status).toBe('submitted');
+    });
+
+    it('uses empty string for productName when not provided (backward compat)', async () => {
+      const { result } = renderHook(() =>
+        useSwatchRequest('prod-asheville', undefined, mockWixClient as any),
+      );
+      act(() => result.current.toggleFabric(mockFabrics[0]));
+
+      await act(async () => {
+        await result.current.submitRequest(validAddress);
+      });
+
+      const call = mockWixClient.submitFabricSampleRequest.mock.calls[0][0];
+      expect(call.productName).toBe('');
     });
   });
 });

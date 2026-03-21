@@ -6,9 +6,11 @@
  */
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { SwatchRequestModal } from '../SwatchRequestModal';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FABRICS } from '@/data/futons';
+import type { WixClient } from '@/services/wix/wixClient';
 
 jest.mock('expo-haptics', () => ({
   notificationAsync: jest.fn(),
@@ -28,6 +30,15 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
+const mockSubmitFabricSampleRequest = jest.fn();
+const mockWixClient = {
+  submitFabricSampleRequest: mockSubmitFabricSampleRequest,
+} as unknown as WixClient;
+
 const defaultProps = {
   visible: true,
   onClose: jest.fn(),
@@ -44,8 +55,20 @@ function renderModal(props: Partial<React.ComponentProps<typeof SwatchRequestMod
   );
 }
 
+function fillValidAddress(getByTestId: ReturnType<typeof render>['getByTestId']) {
+  fireEvent.changeText(getByTestId('swatch-address-name'), 'Jane Doe');
+  fireEvent.changeText(getByTestId('swatch-address-line1'), '123 Main St');
+  fireEvent.changeText(getByTestId('swatch-address-city'), 'Asheville');
+  fireEvent.changeText(getByTestId('swatch-address-state'), 'NC');
+  fireEvent.changeText(getByTestId('swatch-address-zip'), '28801');
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSubmitFabricSampleRequest.mockResolvedValue(undefined);
+  const AsyncStorage = require('@react-native-async-storage/async-storage');
+  AsyncStorage.getItem.mockResolvedValue(null);
+  AsyncStorage.setItem.mockResolvedValue(undefined);
 });
 
 describe('SwatchRequestModal', () => {
@@ -282,6 +305,110 @@ describe('SwatchRequestModal', () => {
 
       await waitFor(() => {
         expect(getByText(/already requested/i)).toBeTruthy();
+      });
+    });
+  });
+
+  describe('error state (Wix failure)', () => {
+    it('shows error message when Wix call fails', async () => {
+      mockSubmitFabricSampleRequest.mockRejectedValue(new Error('Network error'));
+
+      const { getByTestId } = renderModal({ wixClient: mockWixClient });
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+      fillValidAddress(getByTestId);
+      fireEvent.press(getByTestId('swatch-submit-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('swatch-error-message')).toBeTruthy();
+      });
+    });
+
+    it('shows retry button when Wix call fails', async () => {
+      mockSubmitFabricSampleRequest.mockRejectedValue(new Error('Network error'));
+
+      const { getByTestId } = renderModal({ wixClient: mockWixClient });
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+      fillValidAddress(getByTestId);
+      fireEvent.press(getByTestId('swatch-submit-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('swatch-retry-button')).toBeTruthy();
+      });
+    });
+
+    it('pressing retry re-triggers submission and succeeds on second attempt', async () => {
+      mockSubmitFabricSampleRequest
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValueOnce(undefined);
+
+      const { getByTestId, getByText } = renderModal({ wixClient: mockWixClient });
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+      fillValidAddress(getByTestId);
+      fireEvent.press(getByTestId('swatch-submit-button'));
+
+      await waitFor(() => {
+        expect(getByTestId('swatch-retry-button')).toBeTruthy();
+      });
+
+      fireEvent.press(getByTestId('swatch-retry-button'));
+
+      await waitFor(() => {
+        expect(getByText(/swatches are on the way/i)).toBeTruthy();
+      });
+    });
+
+    it('error message has accessibilityLiveRegion="polite"', async () => {
+      mockSubmitFabricSampleRequest.mockRejectedValue(new Error('Network error'));
+
+      const { getByTestId } = renderModal({ wixClient: mockWixClient });
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+      fillValidAddress(getByTestId);
+      fireEvent.press(getByTestId('swatch-submit-button'));
+
+      await waitFor(() => {
+        const errorMsg = getByTestId('swatch-error-message');
+        expect(errorMsg.props.accessibilityLiveRegion).toBe('polite');
+      });
+    });
+  });
+
+  describe('submit button a11y', () => {
+    it('submit button has accessibilityState.busy=true while submitting', async () => {
+      let resolveSubmit: () => void;
+      mockSubmitFabricSampleRequest.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveSubmit = resolve;
+          }),
+      );
+
+      const { getByTestId } = renderModal({ wixClient: mockWixClient });
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+      fillValidAddress(getByTestId);
+      fireEvent.press(getByTestId('swatch-submit-button'));
+
+      await waitFor(() => {
+        const btn = getByTestId('swatch-submit-button');
+        expect(btn.props.accessibilityState?.busy).toBe(true);
+      });
+
+      resolveSubmit!();
+    });
+
+    it('all touch targets have minHeight and minWidth >= 44', () => {
+      const { getByTestId } = renderModal();
+      fireEvent.press(getByTestId('swatch-option-natural-linen'));
+
+      const targets = [
+        getByTestId('swatch-submit-button'),
+        getByTestId('swatch-close-button'),
+        getByTestId('swatch-option-natural-linen'),
+      ];
+
+      targets.forEach((target) => {
+        const flat = StyleSheet.flatten(target.props.style);
+        expect(flat.minHeight ?? flat.height ?? 0).toBeGreaterThanOrEqual(44);
+        expect(flat.minWidth ?? flat.width ?? 0).toBeGreaterThanOrEqual(44);
       });
     });
   });

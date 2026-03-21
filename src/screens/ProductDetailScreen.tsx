@@ -66,10 +66,10 @@ import { FinancingBadge } from '@/components/FinancingBadge';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
-import { FabricSampleRequest } from '@/components/FabricSampleRequest';
 import { SwatchRequestModal } from '@/components/SwatchRequestModal';
 import { WixProductDetail } from '@/components/WixProductDetail';
 import { isWixConfigured } from '@/services/wix/config';
+import { useOptionalWixClient } from '@/services/wix';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -128,6 +128,7 @@ export function ProductDetailScreen({
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
+  const wixClient = useOptionalWixClient();
   const sizeGuideHeight = useSharedValue(0);
 
   const sizeGuideAnimStyle = useAnimatedStyle(() => ({
@@ -614,15 +615,6 @@ export function ProductDetailScreen({
               Request Free Swatches
             </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Fabric Sample Request */}
-        <View style={{ paddingHorizontal: spacing.lg }}>
-          <FabricSampleRequest
-            fabrics={model.fabrics}
-            productName={model.name}
-            testID="fabric-sample-request"
-          />
         </View>
 
         {/* Dimensions */}
@@ -1121,6 +1113,7 @@ export function ProductDetailScreen({
         productId={catalogProductId || model.id}
         productName={model.name}
         fabrics={model.fabrics}
+        wixClient={wixClient}
       />
     </View>
   );

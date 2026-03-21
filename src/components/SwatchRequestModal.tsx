@@ -21,6 +21,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { useSwatchRequest, type SwatchAddress } from '@/hooks/useSwatchRequest';
 import type { Fabric } from '@/data/futons';
+import type { WixClient } from '@/services/wix/wixClient';
 
 interface Props {
   visible: boolean;
@@ -28,6 +29,7 @@ interface Props {
   productId: string;
   productName: string;
   fabrics: Fabric[];
+  wixClient?: WixClient | null;
 }
 
 const EMPTY_ADDRESS: SwatchAddress = {
@@ -39,9 +41,16 @@ const EMPTY_ADDRESS: SwatchAddress = {
   zip: '',
 };
 
-export function SwatchRequestModal({ visible, onClose, productId, productName, fabrics }: Props) {
+export function SwatchRequestModal({
+  visible,
+  onClose,
+  productId,
+  productName,
+  fabrics,
+  wixClient,
+}: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
-  const swatch = useSwatchRequest(productId);
+  const swatch = useSwatchRequest(productId, productName, wixClient);
   const [address, setAddress] = useState<SwatchAddress>(EMPTY_ADDRESS);
 
   if (!visible) return null;
@@ -416,9 +425,27 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
 
               {/* Error state */}
               {swatch.status === 'error' && (
-                <Text style={[styles.errorText, { color: '#D32F2F' }]}>
-                  Something went wrong. Please try again.
-                </Text>
+                <View style={styles.errorContainer}>
+                  <Text
+                    testID="swatch-error-message"
+                    style={[styles.errorText, { color: '#D32F2F' }]}
+                    accessibilityLiveRegion="polite"
+                  >
+                    Something went wrong. Please try again.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={handleSubmit}
+                    style={[
+                      styles.retryButton,
+                      { borderColor: '#D32F2F', borderRadius: borderRadius.sm },
+                    ]}
+                    testID="swatch-retry-button"
+                    accessibilityLabel="Retry swatch request"
+                    accessibilityRole="button"
+                  >
+                    <Text style={[styles.retryButtonText, { color: '#D32F2F' }]}>Try Again</Text>
+                  </TouchableOpacity>
+                </View>
               )}
 
               {/* Submit */}
@@ -442,7 +469,10 @@ export function SwatchRequestModal({ visible, onClose, productId, productName, f
                     : `Send ${swatch.selectedFabrics.length} free swatch${swatch.selectedFabrics.length !== 1 ? 'es' : ''} to your address`
                 }
                 accessibilityRole="button"
-                accessibilityState={{ disabled: swatch.isSubmitting || swatch.hasRecentRequest }}
+                accessibilityState={{
+                  busy: swatch.isSubmitting,
+                  disabled: swatch.isSubmitting || swatch.hasRecentRequest,
+                }}
               >
                 <Text style={[styles.submitButtonText, { color: colors.offWhite }]}>
                   {swatch.isSubmitting ? 'Sending...' : 'Request Swatches'}
@@ -476,10 +506,10 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 32,
-    height: 32,
+    top: 8,
+    right: 8,
+    minWidth: 44,
+    minHeight: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -510,6 +540,8 @@ const styles = StyleSheet.create({
   },
   swatchOption: {
     width: '30%',
+    minHeight: 44,
+    minWidth: 44,
     borderWidth: 1,
     padding: 10,
     alignItems: 'center',
@@ -549,7 +581,23 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
+    marginBottom: 8,
+  },
+  errorContainer: {
     marginBottom: 12,
+  },
+  retryButton: {
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   notice: {
     padding: 12,
@@ -560,6 +608,8 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     paddingVertical: 14,
+    minHeight: 44,
+    minWidth: 44,
     alignItems: 'center',
     marginTop: 20,
   },
