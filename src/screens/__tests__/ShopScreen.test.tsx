@@ -3,7 +3,6 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
-import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
 async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
@@ -11,9 +10,7 @@ async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const result = render(
     <ThemeProvider>
       <WishlistProvider>
-        <CompareProvider>
-          <ShopScreen onProductPress={onProductPress} />
-        </CompareProvider>
+        <ShopScreen onProductPress={onProductPress} />
       </WishlistProvider>
     </ThemeProvider>,
   );

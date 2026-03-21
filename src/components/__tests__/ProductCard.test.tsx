@@ -3,7 +3,6 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ProductCard } from '../ProductCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
-import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS, type Product } from '@/data/products';
 import { productId } from '@/data/productId';
 
@@ -17,9 +16,7 @@ function renderCard(overrides: { product?: Product; onPress?: jest.Mock } = {}) 
     ...render(
       <ThemeProvider>
         <WishlistProvider>
-          <CompareProvider>
-            <ProductCard product={overrides.product ?? futon} onPress={onPress} />
-          </CompareProvider>
+          <ProductCard product={overrides.product ?? futon} onPress={onPress} />
         </WishlistProvider>
       </ThemeProvider>,
     ),
@@ -105,9 +102,7 @@ describe('ProductCard', () => {
       const { getByTestId } = render(
         <ThemeProvider>
           <WishlistProvider>
-            <CompareProvider>
-              <ProductCard product={futon} />
-            </CompareProvider>
+            <ProductCard product={futon} />
           </WishlistProvider>
         </ThemeProvider>,
       );
@@ -227,60 +222,6 @@ describe('ProductCard', () => {
       const { getByTestId } = renderCard({ product: videoProduct, onPress });
       fireEvent.press(getByTestId(`product-card-${videoProduct.id}`));
       expect(onPress).toHaveBeenCalledWith(videoProduct);
-    });
-  });
-
-  // =========================================================================
-  // Compare Button (cm-c4w)
-  // =========================================================================
-  describe('compare button', () => {
-    it('renders compare button on each card', () => {
-      const { getByTestId } = renderCard();
-      expect(getByTestId(`compare-btn-${futon.id}`)).toBeTruthy();
-    });
-
-    it('compare button shows "Compare" label by default', () => {
-      const { getByText } = renderCard();
-      expect(getByText('Compare')).toBeTruthy();
-    });
-
-    it('compare button has correct accessibility label when not in compare list', () => {
-      const { getByTestId } = renderCard();
-      const btn = getByTestId(`compare-btn-${futon.id}`);
-      expect(btn.props.accessibilityLabel).toBe('Add to compare');
-    });
-
-    it('compare button has button role', () => {
-      const { getByTestId } = renderCard();
-      const btn = getByTestId(`compare-btn-${futon.id}`);
-      expect(btn.props.accessibilityRole).toBe('button');
-    });
-
-    it('pressing compare button adds product to compare list (shows "Remove")', () => {
-      const { getByTestId, getByText } = renderCard();
-      fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
-      expect(getByText('Remove')).toBeTruthy();
-    });
-
-    it('compare button accessibility label updates when product is in compare list', () => {
-      const { getByTestId } = renderCard();
-      fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
-      const btn = getByTestId(`compare-btn-${futon.id}`);
-      expect(btn.props.accessibilityLabel).toBe('Remove from compare');
-    });
-
-    it('pressing compare button again removes product from compare list', () => {
-      const { getByTestId, getByText } = renderCard();
-      fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
-      fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
-      expect(getByText('Compare')).toBeTruthy();
-    });
-
-    it('tapping compare button does not fire card onPress', () => {
-      const onPress = jest.fn();
-      const { getByTestId } = renderCard({ onPress });
-      fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
-      expect(onPress).not.toHaveBeenCalled();
     });
   });
 });

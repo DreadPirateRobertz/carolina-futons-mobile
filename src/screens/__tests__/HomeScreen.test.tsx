@@ -4,15 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-const mockUseCollections = jest.fn();
-jest.mock('@/hooks/useCollections', () => {
-  const actual = jest.requireActual('@/hooks/useCollections');
-  return {
-    ...actual,
-    useCollections: () => mockUseCollections(),
-  };
-});
-
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({
     queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
@@ -41,65 +32,6 @@ function renderHomeScreen(
 }
 
 describe('HomeScreen', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Default: collections load with realistic featured data matching static COLLECTIONS
-    mockUseCollections.mockReturnValue({
-      collections: [
-        {
-          id: 'c1',
-          slug: 'mountain-lodge-living',
-          title: 'Mountain Lodge Living',
-          subtitle: 'Warm tones, solid wood, peak comfort',
-          description: '',
-          heroImage: { uri: '', alt: '' },
-          mood: [],
-          featured: true,
-          productIds: [],
-        },
-        {
-          id: 'c2',
-          slug: 'guest-room-ready',
-          title: 'Guest Room Ready',
-          subtitle: 'Impress every overnight visitor',
-          description: '',
-          heroImage: { uri: '', alt: '' },
-          mood: [],
-          featured: true,
-          productIds: [],
-        },
-      ],
-      featured: [
-        {
-          id: 'c1',
-          slug: 'mountain-lodge-living',
-          title: 'Mountain Lodge Living',
-          subtitle: 'Warm tones, solid wood, peak comfort',
-          description: '',
-          heroImage: { uri: '', alt: '' },
-          mood: [],
-          featured: true,
-          productIds: [],
-        },
-        {
-          id: 'c2',
-          slug: 'guest-room-ready',
-          title: 'Guest Room Ready',
-          subtitle: 'Impress every overnight visitor',
-          description: '',
-          heroImage: { uri: '', alt: '' },
-          mood: [],
-          featured: true,
-          productIds: [],
-        },
-      ],
-      isLoading: false,
-      isStale: false,
-      error: null,
-      refresh: jest.fn(),
-    });
-  });
-
   it('renders hero content', () => {
     const { getByText } = renderHomeScreen();
     expect(getByText('Handcrafted in NC')).toBeTruthy();
@@ -185,46 +117,5 @@ describe('HomeScreen', () => {
     expect(onCollectionPress).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'mountain-lodge-living' }),
     );
-  });
-
-  describe('Error state (cm-s1y — branded illustration)', () => {
-    it('shows connection error banner when collections fetch fails', () => {
-      mockUseCollections.mockReturnValue({
-        collections: [],
-        featured: [],
-        isLoading: false,
-        isStale: true,
-        error: new Error('Network error'),
-        refresh: jest.fn(),
-      });
-      const { getByTestId } = renderHomeScreen();
-      expect(getByTestId('home-connection-error')).toBeTruthy();
-    });
-
-    it('shows branded mountain illustration in error banner', () => {
-      mockUseCollections.mockReturnValue({
-        collections: [],
-        featured: [],
-        isLoading: false,
-        isStale: true,
-        error: new Error('Network error'),
-        refresh: jest.fn(),
-      });
-      const { getByTestId } = renderHomeScreen();
-      expect(getByTestId('home-connection-error-illustration')).toBeTruthy();
-    });
-
-    it('does not show error banner when collections load successfully', () => {
-      mockUseCollections.mockReturnValue({
-        collections: [],
-        featured: [],
-        isLoading: false,
-        isStale: false,
-        error: null,
-        refresh: jest.fn(),
-      });
-      const { queryByTestId } = renderHomeScreen();
-      expect(queryByTestId('home-connection-error')).toBeNull();
-    });
   });
 });

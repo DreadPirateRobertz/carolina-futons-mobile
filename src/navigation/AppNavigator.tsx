@@ -18,6 +18,7 @@ import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
+import type { VisualSearchQuery } from '@/hooks/useVisualSearch';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
@@ -136,6 +137,11 @@ const SearchScreen = lazy(() =>
     default: withScreenErrorBoundary(m.SearchScreen, 'Search'),
   })),
 );
+const VisualSearchResultsScreen = lazy(() =>
+  import('@/screens/VisualSearchResultsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.VisualSearchResultsScreen, 'VisualSearchResults'),
+  })),
+);
 const CompareScreen = lazy(() =>
   import('@/screens/CompareScreen').then((m) => ({
     default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
@@ -187,6 +193,7 @@ export type RootStackParamList = {
   Premium: undefined;
   StyleQuiz: undefined;
   Search: undefined;
+  VisualSearchResults: { query: VisualSearchQuery; productSlugs: string[] };
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
@@ -396,16 +403,15 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="StyleQuiz">
           {({ navigation: nav }) => (
-            <StyleQuizScreen
-              onComplete={() => nav.goBack()}
-              onBack={() => nav.goBack()}
-              onProductPress={(slug) =>
-                nav.navigate('ProductDetail', { productId: slug, source: 'quiz' })
-              }
-            />
+            <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
           )}
         </Stack.Screen>
         <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />
+        <Stack.Screen
+          name="VisualSearchResults"
+          component={VisualSearchResultsScreen}
+          options={fadeTransition}
+        />
         <Stack.Screen name="Compare" options={fadeTransition}>
           {({ navigation: nav, route }) => {
             const { PRODUCTS } = require('@/data/products');

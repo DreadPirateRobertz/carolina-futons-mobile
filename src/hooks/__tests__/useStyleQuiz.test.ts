@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useStyleQuiz, getRecommendation } from '../useStyleQuiz';
+import { useStyleQuiz } from '../useStyleQuiz';
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
@@ -17,64 +17,44 @@ describe('useStyleQuiz', () => {
   it('starts with null preferences', () => {
     const { result } = renderHook(() => useStyleQuiz());
     expect(result.current.preferences).toEqual({
-      roomType: null,
-      stylePreference: null,
+      room: null,
+      style: null,
       primaryUse: null,
-      sizeNeeds: null,
-      budgetRange: null,
     });
   });
 
-  it('setRoomType updates roomType preference', () => {
+  it('setRoom updates room preference', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setRoomType('living-room');
+      result.current.setRoom('living-room');
     });
-    expect(result.current.preferences.roomType).toBe('living-room');
+    expect(result.current.preferences.room).toBe('living-room');
   });
 
-  it('setStylePreference updates stylePreference', () => {
+  it('setStyle updates style preference', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setStylePreference('rustic');
+      result.current.setStyle('rustic');
     });
-    expect(result.current.preferences.stylePreference).toBe('rustic');
+    expect(result.current.preferences.style).toBe('rustic');
   });
 
-  it('setPrimaryUse updates primaryUse', () => {
+  it('setPrimaryUse updates primary use preference', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setPrimaryUse('both');
+      result.current.setPrimaryUse('dual-purpose');
     });
-    expect(result.current.preferences.primaryUse).toBe('both');
+    expect(result.current.preferences.primaryUse).toBe('dual-purpose');
   });
 
-  it('setSizeNeeds updates sizeNeeds', () => {
-    const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
-      result.current.setSizeNeeds('queen');
-    });
-    expect(result.current.preferences.sizeNeeds).toBe('queen');
-  });
-
-  it('setBudgetRange updates budgetRange', () => {
-    const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
-      result.current.setBudgetRange('500-1000');
-    });
-    expect(result.current.preferences.budgetRange).toBe('500-1000');
-  });
-
-  it('savePreferences writes all 5 fields to AsyncStorage', async () => {
+  it('savePreferences writes to AsyncStorage', async () => {
     mockSetItem.mockResolvedValue(undefined);
     const { result } = renderHook(() => useStyleQuiz());
 
     act(() => {
-      result.current.setRoomType('bedroom');
-      result.current.setStylePreference('modern');
-      result.current.setPrimaryUse('sitting');
-      result.current.setSizeNeeds('full');
-      result.current.setBudgetRange('500-1000');
+      result.current.setRoom('bedroom');
+      result.current.setStyle('modern');
+      result.current.setPrimaryUse('seating');
     });
 
     await act(async () => {
@@ -83,13 +63,7 @@ describe('useStyleQuiz', () => {
 
     expect(mockSetItem).toHaveBeenCalledWith(
       '@carolina_futons_style_preferences',
-      JSON.stringify({
-        roomType: 'bedroom',
-        stylePreference: 'modern',
-        primaryUse: 'sitting',
-        sizeNeeds: 'full',
-        budgetRange: '500-1000',
-      }),
+      JSON.stringify({ room: 'bedroom', style: 'modern', primaryUse: 'seating' }),
     );
   });
 
@@ -101,58 +75,5 @@ describe('useStyleQuiz', () => {
     await act(async () => {
       await result.current.savePreferences();
     });
-  });
-});
-
-describe('getRecommendation', () => {
-  it('returns Coastal Minimalist for modern + full', () => {
-    const rec = getRecommendation('modern', 'full');
-    expect(rec.label).toBe('Coastal Minimalist');
-    expect(rec.productSlugs.length).toBeGreaterThan(0);
-  });
-
-  it('returns Warm Industrial for rustic + full', () => {
-    const rec = getRecommendation('rustic', 'full');
-    expect(rec.label).toBe('Warm Industrial');
-    expect(rec.productSlugs.length).toBeGreaterThan(0);
-  });
-
-  it('returns Classic Comfort for classic + full', () => {
-    const rec = getRecommendation('classic', 'full');
-    expect(rec.label).toBe('Classic Comfort');
-  });
-
-  it('returns Coastal Suite for modern + queen', () => {
-    const rec = getRecommendation('modern', 'queen');
-    expect(rec.label).toBe('Coastal Suite');
-  });
-
-  it('returns a label for every stylePreference×sizeNeeds combination', () => {
-    const styles = ['modern', 'rustic', 'classic'] as const;
-    const sizes = ['twin', 'full', 'queen'] as const;
-    for (const style of styles) {
-      for (const size of sizes) {
-        const rec = getRecommendation(style, size);
-        expect(rec.label).toBeTruthy();
-        expect(rec.productSlugs).toBeDefined();
-      }
-    }
-  });
-
-  it('returns productSlugs as non-empty array', () => {
-    const rec = getRecommendation('modern', 'full');
-    expect(Array.isArray(rec.productSlugs)).toBe(true);
-    expect(rec.productSlugs.length).toBeGreaterThan(0);
-  });
-
-  it('returns fallback for null stylePreference', () => {
-    const rec = getRecommendation(null, 'full');
-    expect(rec.label).toBeTruthy();
-    expect(rec.productSlugs).toBeDefined();
-  });
-
-  it('returns fallback for null sizeNeeds', () => {
-    const rec = getRecommendation('modern', null);
-    expect(rec.label).toBeTruthy();
   });
 });

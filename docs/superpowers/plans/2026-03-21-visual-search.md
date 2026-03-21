@@ -290,6 +290,14 @@ describe('useVisualSearch', () => {
       expect.objectContaining({ exif: false }),
     );
   });
+
+  it('calls launchCameraAsync with exif:false when camera mode requested', async () => {
+    const { result } = renderHook(() => useVisualSearch());
+    await act(async () => { await result.current.trigger({ useCamera: true }); });
+    expect(ImagePicker.launchCameraAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ exif: false }),
+    );
+  });
 });
 ```
 
@@ -850,26 +858,12 @@ In `src/navigation/AppNavigator.tsx`, add to the `RootStackParamList` type:
 
 ```typescript
 VisualSearchResults: {
-  query: {
-    category: string;
-    style: string;
-    colorFamily: string;
-    keywords: string[];
-    matchType: 'scored' | 'fallback';
-  };
-  results: Array<{ id: string; slug: string }>; // product slugs, not full objects (nav params must be serializable)
-};
-```
-
-Note: Pass only `productSlugs: string[]` in route params (serializable). `VisualSearchResultsScreen` will look up the full Product objects from `PRODUCTS` by slug.
-
-Revise the param type to:
-```typescript
-VisualSearchResults: {
   query: VisualSearchQuery; // import from useVisualSearch
   productSlugs: string[];
 };
 ```
+
+Note: Pass only `productSlugs: string[]` in route params (serializable). `VisualSearchResultsScreen` will look up the full Product objects from `PRODUCTS` by slug.
 
 - [ ] **Step 2: Add lazy import and Stack.Screen**
 
@@ -976,6 +970,26 @@ describe('VisualSearchResultsScreen', () => {
     const { getByTestId } = render(<VisualSearchResultsScreen />);
     fireEvent.press(getByTestId('browse-all-btn'));
     expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Shop' });
+  });
+
+  it('shows loading indicator when status is loading', () => {
+    const { useRoute } = require('@react-navigation/native');
+    (useRoute as jest.Mock).mockReturnValueOnce({
+      params: { productSlugs: null, query: null },
+    });
+    const { getByTestId } = render(<VisualSearchResultsScreen loading />);
+    expect(getByTestId('vs-loading')).toBeTruthy();
+  });
+
+  it('shows retry button when status is error', () => {
+    const { useRoute } = require('@react-navigation/native');
+    (useRoute as jest.Mock).mockReturnValueOnce({
+      params: { productSlugs: null, query: null },
+    });
+    const mockRetry = jest.fn();
+    const { getByTestId } = render(<VisualSearchResultsScreen error="Something went wrong" onRetry={mockRetry} />);
+    fireEvent.press(getByTestId('vs-retry-btn'));
+    expect(mockRetry).toHaveBeenCalled();
   });
 });
 ```
@@ -1388,6 +1402,28 @@ describe('visualSearch SSRF controls', () => {
     const res = await handler(makeReq({ image: 'base64data' }));
     expect(res.status).toBe(502);
   });
+
+  it('returns 400 when image field is missing from request body', async () => {
+    const res = await handler(makeReq({}));
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 504 when OpenAI request times out', async () => {
+    dns.promises.lookup.mockResolvedValue({ address: '104.18.7.192' });
+    mockHttpsRequest.mockImplementation((opts, callback) => {
+      // Simulate timeout: call the 'timeout' event on the req object
+      const req = { on: jest.fn(), write: jest.fn(), end: jest.fn(), setTimeout: jest.fn(), destroy: jest.fn() };
+      req.setTimeout.mockImplementation((ms, fn) => { fn(); });
+      req.destroy.mockImplementation(() => {
+        if (req.on.mock.calls.find(([e]) => e === 'error')) {
+          req.on.mock.calls.find(([e]) => e === 'error')[1](new Error('OpenAI request timeout'));
+        }
+      });
+      return req;
+    });
+    const res = await handler(makeReq({ image: 'base64data' }));
+    expect(res.status).toBe(504);
+  });
 });
 ```
 
@@ -1446,7 +1482,7 @@ function respond(status, body) {
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
-export async function post(request) {
+async function post(request) {
   try {
     const body = JSON.parse(request.body.text);
 
@@ -1559,6 +1595,8 @@ export async function post(request) {
     return respond(502, { error: 'Visual search failed' });
   }
 }
+
+module.exports = { post };
 ```
 
 - [ ] **Step 4: Run cfutons backend tests**
@@ -1568,7 +1606,7 @@ cd /Users/hal/gt/cfutons
 npx jest tests/unit/visualSearch.test.js --no-coverage 2>&1 | tail -5
 ```
 
-Fix any failures. The SSRF tests (400/413 responses) should pass. Placeholder tests are expected to pass (they're `expect(true).toBe(true)`).
+Fix any failures. The SSRF tests (400/413 responses) should pass.
 
 - [ ] **Step 5: Commit (cfutons repo)**
 

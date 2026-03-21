@@ -53,7 +53,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { featured, isLoading: collectionsLoading, error: collectionsError } = useCollections();
+  const { featured, isLoading: collectionsLoading } = useCollections();
   const { recentProducts } = useRecentlyViewed();
 
   const handleOpenAR = useCallback(() => {
@@ -364,29 +364,6 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           Since 1985 · Hendersonville, NC
         </Text>
       </View>
-
-      {/* Connection error banner — shows when Wix fetch fails but static content is visible */}
-      {collectionsError ? (
-        <View
-          style={[styles.connectionErrorBanner, { backgroundColor: colors.espresso + 'E6' }]}
-          testID="home-connection-error"
-        >
-          <View
-            testID="home-connection-error-illustration"
-            style={styles.connectionErrorIllustration}
-          >
-            <MountainSkyline variant="sunset" height={40} testID="home-error-skyline" />
-          </View>
-          <Text
-            style={[
-              styles.connectionErrorText,
-              { color: colors.sandBase, fontFamily: typography.bodyFamily },
-            ]}
-          >
-            Couldn't refresh content. Showing saved data.
-          </Text>
-        </View>
-      ) : null}
     </ScrollView>
   );
 }
@@ -485,22 +462,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-  },
-  connectionErrorBanner: {
-    width: '100%',
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 16,
-    paddingBottom: 12,
-    alignItems: 'center',
-  },
-  connectionErrorIllustration: {
-    width: '100%',
-  },
-  connectionErrorText: {
-    fontSize: 13,
-    textAlign: 'center',
-    paddingHorizontal: 16,
-    marginTop: 8,
   },
 });

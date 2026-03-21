@@ -3,7 +3,6 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { CategoryScreen } from '../CategoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
-import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
 jest.useFakeTimers();
@@ -17,9 +16,7 @@ async function renderCategory(props: Partial<React.ComponentProps<typeof Categor
   const result = render(
     <ThemeProvider>
       <WishlistProvider>
-        <CompareProvider>
-          <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
-        </CompareProvider>
+        <CategoryScreen onProductPress={onProductPress} onBack={onBack} {...props} />
       </WishlistProvider>
     </ThemeProvider>,
   );

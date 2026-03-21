@@ -26,8 +26,6 @@ import { AuthContext } from '@/hooks/useAuth';
 import { WixClient } from '@/services/wix/wixClient';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 import type { WixCartLineItem } from '@/services/wix/wixClient';
-import { Platform } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
 import { compactByLWW } from '@/services/offlineQueue';
@@ -344,9 +342,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
-      if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      }
       if (isOnlineRef.current) {
         const client = wixClientRef.current;
         if (client) {

@@ -1,9 +1,8 @@
 /**
  * @module useRatingPrompt
  *
- * Manages in-app rating prompts triggered by purchase milestones (3rd purchase),
- * delivery milestones (3rd delivery), or app open milestones (7th open). Uses
- * expo-store-review for the native
+ * Manages in-app rating prompts triggered by purchase milestones (3rd purchase)
+ * or app open milestones (7th open). Uses expo-store-review for the native
  * store rating dialog. Tracks prompt state in AsyncStorage with a 90-day
  * cooldown between prompts. Users can disable prompts via a settings toggle.
  */
@@ -15,13 +14,11 @@ import { events } from '@/services/analytics';
 
 const STORAGE_KEY = '@cfutons/rating_prompt';
 const PURCHASE_THRESHOLD = 3;
-const DELIVERY_THRESHOLD = 3;
 const APP_OPEN_THRESHOLD = 7;
 const COOLDOWN_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 interface RatingState {
   purchaseCount: number;
-  deliveryCount: number;
   appOpenCount: number;
   lastPromptedAt: number | null;
   disabled: boolean;
@@ -29,7 +26,6 @@ interface RatingState {
 
 const DEFAULT_STATE: RatingState = {
   purchaseCount: 0,
-  deliveryCount: 0,
   appOpenCount: 0,
   lastPromptedAt: null,
   disabled: false,
@@ -130,27 +126,6 @@ export function useRatingPrompt() {
     }
   }, [requestPrompt]);
 
-  /**
-   * Call when an order is marked as delivered. Tracks a separate delivery
-   * counter and triggers a review prompt at the 3rd delivery milestone.
-   */
-  const recordDelivery = useCallback(async () => {
-    if (Platform.OS === 'web') return;
-
-    const current = stateRef.current;
-    const updated = { ...current, deliveryCount: current.deliveryCount + 1 };
-    setState(updated);
-    await persistState(updated);
-
-    if (
-      updated.deliveryCount >= DELIVERY_THRESHOLD &&
-      !updated.disabled &&
-      !isWithinCooldown(updated.lastPromptedAt)
-    ) {
-      await requestPrompt(updated, 'delivery_milestone');
-    }
-  }, [requestPrompt]);
-
   /** Toggle the disabled state for rating prompts. */
   const toggleDisabled = useCallback(async () => {
     const current = stateRef.current;
@@ -164,8 +139,6 @@ export function useRatingPrompt() {
     disabled: state.disabled,
     /** Call after a successful purchase to track milestones. */
     recordPurchase,
-    /** Call when an order delivery is confirmed. */
-    recordDelivery,
     /** Toggle the disabled setting. */
     toggleDisabled,
   };

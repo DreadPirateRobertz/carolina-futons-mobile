@@ -6,13 +6,6 @@ import { MOCK_ORDERS, type Order } from '@/data/orders';
 import { futonModelId } from '@/data/productId';
 import { darkPalette, typography } from '@/theme/tokens';
 
-const mockRefresh = jest.fn();
-const mockUseOrders = jest.fn();
-jest.mock('@/hooks/useOrders', () => ({
-  ...jest.requireActual('@/hooks/useOrders'),
-  useOrders: () => mockUseOrders(),
-}));
-
 function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {}) {
   return render(
     <ThemeProvider>
@@ -22,23 +15,6 @@ function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHist
 }
 
 describe('OrderHistoryScreen', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    // Real useOrders returns orders sorted newest-first
-    const sortedOrders = [...MOCK_ORDERS].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-    mockUseOrders.mockReturnValue({
-      orders: sortedOrders,
-      isLoading: false,
-      error: null,
-      refresh: mockRefresh,
-      statusFilter: null,
-      setStatusFilter: jest.fn(),
-      getOrder: jest.fn(),
-    });
-  });
-
   describe('With orders (default mock data)', () => {
     it('renders with default testID', () => {
       const { getByTestId } = renderOrderHistory();
@@ -254,65 +230,6 @@ describe('OrderHistoryScreen', () => {
       });
       expect(getByTestId('order-card-custom-1')).toBeTruthy();
       expect(queryByTestId('order-card-ord-001')).toBeNull();
-    });
-  });
-
-  describe('Error state (cm-s1y — branded illustration)', () => {
-    it('shows error state when useOrders returns an error', () => {
-      mockUseOrders.mockReturnValue({
-        orders: [],
-        isLoading: false,
-        error: new Error('API unavailable'),
-        refresh: mockRefresh,
-        statusFilter: null,
-        setStatusFilter: jest.fn(),
-        getOrder: jest.fn(),
-      });
-      const { getByTestId } = renderOrderHistory();
-      expect(getByTestId('order-history-error')).toBeTruthy();
-    });
-
-    it('shows branded mountain illustration in error state', () => {
-      mockUseOrders.mockReturnValue({
-        orders: [],
-        isLoading: false,
-        error: new Error('API unavailable'),
-        refresh: mockRefresh,
-        statusFilter: null,
-        setStatusFilter: jest.fn(),
-        getOrder: jest.fn(),
-      });
-      const { getByTestId } = renderOrderHistory();
-      expect(getByTestId('order-history-error-illustration')).toBeTruthy();
-    });
-
-    it('shows retry button in error state', () => {
-      mockUseOrders.mockReturnValue({
-        orders: [],
-        isLoading: false,
-        error: new Error('API unavailable'),
-        refresh: mockRefresh,
-        statusFilter: null,
-        setStatusFilter: jest.fn(),
-        getOrder: jest.fn(),
-      });
-      const { getByTestId } = renderOrderHistory();
-      expect(getByTestId('order-history-retry')).toBeTruthy();
-    });
-
-    it('calls refresh when retry is pressed', () => {
-      mockUseOrders.mockReturnValue({
-        orders: [],
-        isLoading: false,
-        error: new Error('API unavailable'),
-        refresh: mockRefresh,
-        statusFilter: null,
-        setStatusFilter: jest.fn(),
-        getOrder: jest.fn(),
-      });
-      const { getByTestId } = renderOrderHistory();
-      fireEvent.press(getByTestId('order-history-retry'));
-      expect(mockRefresh).toHaveBeenCalledTimes(1);
     });
   });
 });

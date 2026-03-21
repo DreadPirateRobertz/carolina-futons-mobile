@@ -1,6 +1,6 @@
 import React from 'react';
 import { Linking } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { OrderDetailScreen } from '../OrderDetailScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
@@ -9,16 +9,6 @@ import { MOCK_ORDERS } from '@/data/orders';
 import { Text, View } from 'react-native';
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
-
-const mockRecordDelivery = jest.fn();
-jest.mock('@/hooks/useRatingPrompt', () => ({
-  useRatingPrompt: () => ({
-    recordDelivery: mockRecordDelivery,
-    recordPurchase: jest.fn(),
-    toggleDisabled: jest.fn(),
-    disabled: false,
-  }),
-}));
 
 function renderOrderDetail(
   props: Partial<React.ComponentProps<typeof OrderDetailScreen>> & { orderId: string },
@@ -65,7 +55,6 @@ const deliveredOrder = MOCK_ORDERS[0]; // ord-001, delivered, has tracking
 describe('OrderDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRecordDelivery.mockClear();
   });
 
   describe('Rendering', () => {
@@ -320,22 +309,6 @@ describe('OrderDetailScreen', () => {
       fireEvent.press(getByTestId('reorder-button'));
       expect(getByTestId('cart-count').props.children).toBe(1);
       expect(onReorderSuccess).toHaveBeenCalled();
-    });
-  });
-
-  describe('Rating prompt on delivery', () => {
-    it('calls recordDelivery when order status is delivered', async () => {
-      renderOrderDetail({ orderId: 'ord-001' }); // delivered order
-      await waitFor(() => {
-        expect(mockRecordDelivery).toHaveBeenCalledTimes(1);
-      });
-    });
-
-    it('does not call recordDelivery for non-delivered orders', async () => {
-      renderOrderDetail({ orderId: 'ord-003' }); // processing order
-      await waitFor(() => {
-        expect(mockRecordDelivery).not.toHaveBeenCalled();
-      });
     });
   });
 });

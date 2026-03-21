@@ -2,8 +2,7 @@
  * CompareButton — toggle add/remove product from the shared compare list.
  */
 import React from 'react';
-import { Platform, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import * as Haptics from 'expo-haptics';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useCompareContext } from '@/contexts/CompareContext';
 import type { Product } from '@/data/products';
 
@@ -21,9 +20,6 @@ export function CompareButton({ product, testID }: CompareButtonProps) {
       removeFromCompare(product.id);
     } else {
       addToCompare(product);
-    }
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   };
 

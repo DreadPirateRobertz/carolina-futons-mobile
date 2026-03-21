@@ -7,7 +7,7 @@
  * back to the cart for easy repeat purchases.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -22,7 +22,6 @@ import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
 import { useOrders, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useFutonModels } from '@/hooks/useFutonModels';
-import { useRatingPrompt } from '@/hooks/useRatingPrompt';
 import { formatPrice } from '@/utils';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { SkeletonOrderDetail } from '@/components/SkeletonOrderDetail';
@@ -216,16 +215,9 @@ export function OrderDetailScreen({
   const { addItem } = useCart();
   const { orders, getOrder, refresh, isLoading, error } = useOrders();
   const { getModel, getFabric } = useFutonModels();
-  const { recordDelivery } = useRatingPrompt();
   const [refreshing, setRefreshing] = useState(false);
 
   const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);
-
-  useEffect(() => {
-    if (order?.status === 'delivered') {
-      recordDelivery();
-    }
-  }, [order?.status, recordDelivery]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);

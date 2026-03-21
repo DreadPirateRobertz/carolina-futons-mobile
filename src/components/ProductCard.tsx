@@ -25,7 +25,6 @@ import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
 import { FinancingBadge } from './FinancingBadge';
 import { ProductCardVideo } from './ProductCardVideo';
-import { CompareButton } from './CompareButton';
 
 interface Props {
   product: Product;
@@ -156,8 +155,6 @@ export const ProductCard = memo(function ProductCard({
             <Text style={styles.stockBadgeText}>{stockBadge.label}</Text>
           </View>
         )}
-
-        <CompareButton product={product} testID={`compare-btn-${product.id}`} />
       </View>
     </TouchableOpacity>
   );

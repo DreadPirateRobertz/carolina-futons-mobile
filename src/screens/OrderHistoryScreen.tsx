@@ -13,8 +13,6 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
-import { MountainSkyline } from '@/components/MountainSkyline';
-import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import {
   MountainRefreshControl,
@@ -38,7 +36,7 @@ export function OrderHistoryScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
-  const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
+  const { orders: hookOrders } = useOrders();
 
   // Use prop orders or fall back to hook data (already sorted newest-first)
   const orders = ordersProp
@@ -145,55 +143,6 @@ export function OrderHistoryScreen({
     },
     [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate],
   );
-
-  if (isLoading && !ordersProp) {
-    return (
-      <View
-        style={[styles.root, { backgroundColor: darkPalette.background }]}
-        testID={testID ?? 'order-history-screen'}
-      >
-        <SkeletonOrderList count={5} />
-      </View>
-    );
-  }
-
-  if (hookError && !ordersProp) {
-    return (
-      <View
-        style={[styles.root, styles.centered, { backgroundColor: darkPalette.background }]}
-        testID={testID ?? 'order-history-screen'}
-      >
-        <View testID="order-history-error-illustration" style={styles.illustrationContainer}>
-          <MountainSkyline variant="sunset" height={100} testID="order-history-error-skyline" />
-        </View>
-        <Text
-          style={[
-            styles.errorTitle,
-            { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold },
-          ]}
-          testID="order-history-error"
-        >
-          Couldn't load your orders
-        </Text>
-        <Text
-          style={[
-            styles.errorMessage,
-            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-          ]}
-        >
-          Check your connection and try again.
-        </Text>
-        <TouchableOpacity
-          style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
-          onPress={hookRefresh}
-          testID="order-history-retry"
-          accessibilityRole="button"
-        >
-          <Text style={[styles.retryText, { fontFamily: typography.bodyFamilyBold }]}>Retry</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   if (orders.length === 0) {
     return (
@@ -311,37 +260,6 @@ const styles = StyleSheet.create({
   },
   orderTotal: {
     fontSize: 18,
-    fontWeight: '700',
-  },
-  centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  illustrationContainer: {
-    marginBottom: 16,
-    width: '80%',
-    overflow: 'hidden',
-    borderRadius: 12,
-  },
-  errorTitle: {
-    fontSize: 17,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginHorizontal: 32,
-    marginBottom: 20,
-  },
-  retryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-  },
-  retryText: {
-    color: '#FFFFFF',
-    fontSize: 15,
     fontWeight: '700',
   },
 });
