@@ -141,6 +141,11 @@ const CompareScreen = lazy(() =>
     default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
   })),
 );
+const RoomGalleryScreen = lazy(() =>
+  import('@/screens/RoomGalleryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.RoomGalleryScreen, 'RoomGallery'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -184,6 +189,7 @@ export type RootStackParamList = {
   Search: undefined;
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
+  RoomGallery: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -421,6 +427,13 @@ export function AppNavigator() {
         </Stack.Screen>
         <Stack.Screen name="PrivacyPolicy">
           {({ navigation: nav }) => <PrivacyPolicyScreen onBack={() => nav.goBack()} />}
+        </Stack.Screen>
+        <Stack.Screen name="RoomGallery" options={fadeTransition}>
+          {({ navigation: nav }) => (
+            <RoomGalleryScreen
+              onProductPress={(productId) => nav.navigate('ProductDetail', { slug: productId })}
+            />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
