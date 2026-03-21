@@ -91,6 +91,9 @@ const mockCartState = {
 jest.mock('@/components/CompareFAB', () => ({
   CompareFAB: () => null,
 }));
+jest.mock('@/components/CartFAB', () => ({
+  CartFAB: () => null,
+}));
 
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => mockCartState,
