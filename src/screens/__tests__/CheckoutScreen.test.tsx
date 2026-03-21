@@ -146,6 +146,19 @@ jest.mock('@/services/affirmService', () => ({
   AFFIRM_MAX_AMOUNT: 30000,
 }));
 
+// Mock useKlarnaCheckout — Klarna uses redirect flow, not Stripe payment sheet
+const mockKlarnaStartCheckout = jest.fn().mockResolvedValue(null);
+const mockKlarnaReset = jest.fn();
+jest.mock('@/hooks/useKlarnaCheckout', () => ({
+  useKlarnaCheckout: () => ({
+    status: 'idle',
+    error: null,
+    order: null,
+    startCheckout: mockKlarnaStartCheckout,
+    reset: mockKlarnaReset,
+  }),
+}));
+
 const mockCreatePaymentIntent = jest.fn().mockResolvedValue({
   clientSecret: 'pi_test_secret',
   ephemeralKey: 'ek_test',
@@ -785,10 +798,10 @@ describe('CheckoutScreen', () => {
       expect(utils.getByText(/Place Order/)).toBeTruthy();
     });
 
-    it('passes selected payment method through to confirmOrder', async () => {
-      // Affirm uses a redirect flow (not confirmOrder). Klarna goes through
-      // handlePlaceOrder → processPayment → confirmOrder, verifying the
-      // selectedMethod is correctly forwarded.
+    it('Klarna uses redirect flow — calls startCheckout, not confirmOrder', async () => {
+      // Klarna does NOT go through processPayment/confirmOrder. It calls
+      // klarnaCheckout.startCheckout which opens Linking.openURL and waits
+      // for the deep-link return. confirmOrder is called inside the hook.
       const utils = renderCheckout({}, seed);
       fillAndSelectBNPL(utils, 'klarna');
 
@@ -796,13 +809,8 @@ describe('CheckoutScreen', () => {
         fireEvent.press(utils.getByTestId('place-order-button'));
       });
 
-      expect(mockConfirmOrder).toHaveBeenCalledWith(
-        expect.any(Object), // WixClient
-        'pi_test',
-        expect.any(Array),
-        expect.any(Object),
-        'klarna',
-      );
+      expect(mockKlarnaStartCheckout).toHaveBeenCalled();
+      expect(mockConfirmOrder).not.toHaveBeenCalled();
     });
   });
 
