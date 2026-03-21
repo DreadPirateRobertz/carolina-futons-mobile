@@ -154,6 +154,9 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
   const fabric = variantId ? FABRICS.find((f) => f.id === variantId) : FABRICS[0];
   if (!fabric) return null;
 
+  // Wix can return '' when no image is set — coerce to undefined to prevent broken Image renders.
+  const imageUrl = lineItem.media?.mediaItem?.url || undefined;
+
   return {
     id: `${model.id}:${fabric.id}`,
     model,
@@ -161,14 +164,16 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
     fabricName: fabric.name,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
-    ...(lineItem.sku !== undefined ? { sku: lineItem.sku } : {}),
+    ...(imageUrl ? { imageUrl } : {}),
+    ...(lineItem.physicalProperties?.sku ? { sku: lineItem.physicalProperties.sku } : {}),
     ...(variantId !== undefined ? { variantId } : {}),
   };
 }
 
 /**
  * Merge local cart items with server cart items.
- * For items present in both, keeps the higher quantity (capped at 10).
+ * For items present in both, keeps the higher quantity (capped at 10) and
+ * fills in server-side metadata (imageUrl, sku) that may be absent locally.
  * Items unique to either side are included in the result.
  */
 export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[] {
@@ -179,6 +184,9 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
       merged[existingIdx] = {
         ...merged[existingIdx],
         quantity: Math.min(10, Math.max(merged[existingIdx].quantity, serverItem.quantity)),
+        // Backfill server-side metadata absent from offline/local items
+        ...(serverItem.imageUrl ? { imageUrl: serverItem.imageUrl } : {}),
+        ...(serverItem.sku ? { sku: serverItem.sku } : {}),
       };
     } else {
       merged.push(serverItem);

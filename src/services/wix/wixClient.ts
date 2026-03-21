@@ -159,7 +159,11 @@ export interface WixCartLineItem {
     options?: { variantId?: string };
   };
   quantity: number;
-  sku?: string; // Wix catalog SKU for the line item (may be absent for older catalog items)
+  physicalProperties?: { sku?: string }; // Wix physicalProperties.sku — catalog SKU for shipping
+  /** CDN image URL for the line item (~150px thumbnail). */
+  media?: {
+    mediaItem?: { url: string };
+  };
 }
 
 export interface WixCart {
