@@ -61,6 +61,16 @@ const CARD_NUMBER_PATTERNS = [
 ];
 
 /**
+ * Patterns that suggest AmEx card numbers (15 digits, optionally in 4-6-5
+ * format separated by spaces or dashes).
+ */
+const AMEX_NUMBER_PATTERNS = [
+  /\b\d{15}\b/g,
+  /\b\d{4}[\s-]\d{6}[\s-]\d{5}\b/g,
+];
+const AMEX_REPLACEMENT = '[AMEX_REDACTED]';
+
+/**
  * Pattern that suggests a CVV value immediately preceded by "cvv:" label.
  * Matches 3–4 digit values (Amex uses 4).
  */
@@ -80,7 +90,12 @@ export function scrubPiiFromError(message: string): string {
   // Redact CVV patterns first (more specific match)
   scrubbed = scrubbed.replace(CVV_PATTERN, CVV_REPLACEMENT);
 
-  // Redact card number patterns
+  // Redact AmEx card number patterns (15-digit, before generic 16-digit pass)
+  for (const pattern of AMEX_NUMBER_PATTERNS) {
+    scrubbed = scrubbed.replace(pattern, AMEX_REPLACEMENT);
+  }
+
+  // Redact standard 16-digit card number patterns
   for (const pattern of CARD_NUMBER_PATTERNS) {
     scrubbed = scrubbed.replace(pattern, CARD_REPLACEMENT);
   }

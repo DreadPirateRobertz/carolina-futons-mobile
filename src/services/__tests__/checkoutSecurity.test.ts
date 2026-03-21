@@ -148,6 +148,21 @@ describe('scrubPiiFromError', () => {
       const msg = 'cvv: 1234 failed verification';
       expect(scrubPiiFromError(msg)).not.toContain('1234');
     });
+
+    it('masks a 15-digit AmEx card number', () => {
+      const msg = 'Card 378282246310005 was declined';
+      expect(scrubPiiFromError(msg)).not.toContain('378282246310005');
+    });
+
+    it('masks a formatted AmEx card number (4-6-5)', () => {
+      const msg = 'Card 3782-822463-10005 declined';
+      expect(scrubPiiFromError(msg)).not.toMatch(/\d{4}-\d{6}-\d{5}/);
+    });
+
+    it('masks a formatted AmEx card number with spaces (4-6-5)', () => {
+      const msg = 'Card 3782 822463 10005 declined';
+      expect(scrubPiiFromError(msg)).not.toMatch(/\d{4} \d{6} \d{5}/);
+    });
   });
 
   describe('preserves safe content', () => {
