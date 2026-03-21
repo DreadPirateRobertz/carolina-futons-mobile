@@ -32,6 +32,7 @@ export interface Product {
   reviewCount: number;
   inStock: boolean;
   stockCount?: number;
+  videoUri?: string;
   fabricOptions: string[];
   dimensions: {
     width: number;
@@ -113,6 +114,7 @@ export const PRODUCTS: Product[] = [
     rating: 4.8,
     reviewCount: 234,
     inStock: true,
+    videoUri: 'https://assets.carolinafutons.com/videos/asheville-preview.mp4',
     fabricOptions: ['Natural Linen', 'Slate Gray', 'Mountain Blue', 'Sunset Coral'],
     dimensions: { width: 54, depth: 34, height: 33 },
   },

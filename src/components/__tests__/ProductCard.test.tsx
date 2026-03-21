@@ -187,4 +187,41 @@ describe('ProductCard', () => {
       expect(container).toBeTruthy();
     });
   });
+
+  describe('video preview', () => {
+    // Product without a videoUri for "no video" assertions
+    const noVideoProduct: Product = { ...futon, videoUri: undefined };
+    // Product with a videoUri
+    const videoProduct: Product = {
+      ...futon,
+      videoUri: 'https://example.com/preview.mp4',
+    };
+
+    it('renders video container when product has videoUri', () => {
+      const { getByTestId } = renderCard({ product: videoProduct });
+      expect(getByTestId(`product-video-${videoProduct.id}`)).toBeTruthy();
+    });
+
+    it('does not render video container when product has no videoUri', () => {
+      const { queryByTestId } = renderCard({ product: noVideoProduct });
+      expect(queryByTestId(`product-video-${noVideoProduct.id}`)).toBeNull();
+    });
+
+    it('does not render video container when videoUri is undefined', () => {
+      const { queryByTestId } = renderCard({ product: noVideoProduct });
+      expect(queryByTestId(`product-video-${noVideoProduct.id}`)).toBeNull();
+    });
+
+    it('still renders image container when videoUri is absent', () => {
+      const { getByTestId } = renderCard({ product: noVideoProduct });
+      expect(getByTestId(`product-image-container-${noVideoProduct.id}`)).toBeTruthy();
+    });
+
+    it('tapping card with video still fires onPress', () => {
+      const onPress = jest.fn();
+      const { getByTestId } = renderCard({ product: videoProduct, onPress });
+      fireEvent.press(getByTestId(`product-card-${videoProduct.id}`));
+      expect(onPress).toHaveBeenCalledWith(videoProduct);
+    });
+  });
 });
