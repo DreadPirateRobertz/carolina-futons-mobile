@@ -1,0 +1,28 @@
+coverage:
+  status:
+    # Patch coverage: new code added in a PR must have ≥70% coverage.
+    # Project-level gate is informational only (no blocking) to avoid
+    # legacy code holding up new feature work.
+    patch:
+      default:
+        target: 70%
+        threshold: 2%   # Allow up to 2pp drop before failing the check
+        informational: false
+    project:
+      default:
+        informational: true
+
+comment:
+  # Post a coverage delta comment on every PR so reviewers can see the impact.
+  layout: 'reach,diff,flags,files'
+  behavior: default
+  require_changes: false
+  require_base: false
+
+flags:
+  unit:
+    # Carry forward previous unit coverage when a PR only touches files
+    # that aren't exercised by the unit suite (e.g. config, assets).
+    carryforward: true
+    paths:
+      - src/

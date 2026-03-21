@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # Group devDependencies into weekly batches to avoid PR noise.
+  # Security patches are kept separate so they can be fast-tracked.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        # All devDeps bundled in one PR per week
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      production-dependencies:
+        # prod deps individually — easier to review, safer to revert
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+    # Security patches always get their own PR regardless of grouping
+    ignore: []
+    labels:
+      - dependencies
+      - automated
