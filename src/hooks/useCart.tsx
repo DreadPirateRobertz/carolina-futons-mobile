@@ -345,7 +345,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
       if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       }
       if (isOnlineRef.current) {
         const client = wixClientRef.current;

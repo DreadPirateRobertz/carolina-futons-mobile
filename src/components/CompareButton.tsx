@@ -23,7 +23,7 @@ export function CompareButton({ product, testID }: CompareButtonProps) {
       addToCompare(product);
     }
     if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     }
   };
 
