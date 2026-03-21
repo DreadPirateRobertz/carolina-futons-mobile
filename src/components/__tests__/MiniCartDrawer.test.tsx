@@ -36,8 +36,20 @@ const CART_WITH_ITEMS = {
   itemCount: 2,
   subtotal: 798,
   items: [
-    { id: 'asheville:natural-linen', model: { name: 'Asheville' }, fabric: { name: 'Natural Linen' }, quantity: 1, price: 349 },
-    { id: 'blue-ridge:natural-linen', model: { name: 'Blue Ridge' }, fabric: { name: 'Natural Linen' }, quantity: 1, price: 449 },
+    {
+      id: 'asheville:natural-linen',
+      model: { name: 'Asheville' },
+      fabric: { name: 'Natural Linen' },
+      quantity: 1,
+      price: 349,
+    },
+    {
+      id: 'blue-ridge:natural-linen',
+      model: { name: 'Blue Ridge' },
+      fabric: { name: 'Natural Linen' },
+      quantity: 1,
+      price: 449,
+    },
   ],
 };
 
