@@ -7,6 +7,11 @@
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { useSwatchRequest } from '../useSwatchRequest';
+import type { Fabric } from '@/data/futons';
+import * as Haptics from 'expo-haptics';
+import { events } from '@/services/analytics';
+
 // Must mock before importing hook
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -23,11 +28,6 @@ jest.mock('@/services/analytics', () => ({
     requestSwatches: jest.fn(),
   },
 }));
-
-import { useSwatchRequest } from '../useSwatchRequest';
-import type { Fabric } from '@/data/futons';
-import * as Haptics from 'expo-haptics';
-import { events } from '@/services/analytics';
 
 const mockFabrics: Fabric[] = [
   { id: 'natural-linen', name: 'Natural Linen', color: '#D4C5A9', price: 0 },

@@ -8,6 +8,22 @@
  * submission via a processing ref.
  */
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { Platform } from 'react-native';
+import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
+import { useOptionalWixClient } from '@/services/wix';
+import { captureException } from '@/services/crashReporting';
+import { scrubPiiFromError } from '@/services/checkoutSecurity';
+import { useCart } from './useCart';
+import { usePremium } from './usePremium';
+import {
+  createPaymentIntent,
+  confirmOrder,
+  calculateTotals,
+  PaymentError,
+  type PaymentMethod,
+  type OrderConfirmation,
+  type OrderTotals,
+} from '@/services/payment';
 
 /**
  * UUID v4 without relying on crypto.randomUUID() (not universally available
@@ -29,22 +45,6 @@ function cartFingerprint(items: { id: string; quantity: number }[], total: numbe
       .join('|') + `|${total.toFixed(2)}`
   );
 }
-import { Platform } from 'react-native';
-import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
-import { useOptionalWixClient } from '@/services/wix';
-import { captureException } from '@/services/crashReporting';
-import { scrubPiiFromError } from '@/services/checkoutSecurity';
-import { useCart } from './useCart';
-import { usePremium } from './usePremium';
-import {
-  createPaymentIntent,
-  confirmOrder,
-  calculateTotals,
-  PaymentError,
-  type PaymentMethod,
-  type OrderConfirmation,
-  type OrderTotals,
-} from '@/services/payment';
 
 export type PaymentStatus = 'idle' | 'processing' | 'success' | 'error';
 
