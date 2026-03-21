@@ -8,6 +8,10 @@
  * Dismissed by tapping the semi-transparent backdrop or the close button.
  * Should NOT be rendered on the Checkout screen.
  *
+ * Accessibility: the outer container holds testID="mini-cart-drawer" +
+ * accessibilityViewIsModal so VoiceOver ignores background content, while
+ * keeping the backdrop and panel as children (accessible to RNTL queries).
+ *
  * Usage:
  *   <MiniCartDrawer
  *     visible={isOpen}
@@ -51,8 +55,15 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
   const checkoutDisabled = itemCount === 0;
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
-      {/* Backdrop */}
+    // Container holds testID + accessibilityViewIsModal so VoiceOver hides
+    // background content while keeping backdrop and panel as accessible children.
+    <View
+      style={StyleSheet.absoluteFillObject}
+      testID={testID ?? 'mini-cart-drawer'}
+      accessibilityViewIsModal={true}
+      accessibilityRole="none"
+    >
+      {/* Backdrop — child of container, not hidden by accessibilityViewIsModal */}
       <Pressable
         style={styles.backdrop}
         onPress={onClose}
@@ -72,9 +83,6 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
             borderTopRightRadius: borderRadius.lg ?? 20,
           },
         ]}
-        testID={testID ?? 'mini-cart-drawer'}
-        accessibilityViewIsModal={true}
-        accessibilityRole="none"
       >
         {/* Header row */}
         <View style={styles.header}>
