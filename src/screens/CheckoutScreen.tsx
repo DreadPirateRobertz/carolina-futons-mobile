@@ -22,6 +22,7 @@ import {
   LayoutAnimation,
   findNodeHandle,
   UIManager,
+  Linking,
 } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import {
@@ -43,6 +44,9 @@ import { PremiumBadge } from '@/components/PremiumBadge';
 import { usePremium } from '@/hooks/usePremium';
 import { useAddressBook } from '@/hooks/useAddressBook';
 import { cancelCartAbandonmentForOrder } from '@/hooks/useCartAbandonmentReminder';
+import { useAffirmPrequalification } from '@/hooks/useAffirmPrequalification';
+import { initiateAffirmCheckout } from '@/services/affirmService';
+import { useOptionalWixClient } from '@/services/wix';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -210,6 +214,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   } = usePayment();
   const { isPremium } = usePremium();
   const addressBook = useAddressBook();
+  const wixClient = useOptionalWixClient();
+  const { isEligible: affirmEligible, isLoading: affirmPrequalLoading } =
+    useAffirmPrequalification(totals.total);
+  const [affirmError, setAffirmError] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -414,6 +422,28 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       onOrderComplete?.(order);
     }
   }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
+
+  const handleAffirmCheckout = useCallback(async () => {
+    if (isProcessing || !affirmEligible) return;
+
+    setSubmitAttempted(true);
+    if (!validateForm()) return;
+
+    setAffirmError(null);
+
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    try {
+      const orderId = `cf-ord-${Date.now()}`;
+      const { checkoutUrl } = await initiateAffirmCheckout(wixClient, totals.total, orderId, items);
+      await Linking.openURL(checkoutUrl);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to open Affirm checkout';
+      setAffirmError(message);
+    }
+  }, [isProcessing, affirmEligible, validateForm, wixClient, totals.total, items]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 
@@ -969,10 +999,27 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                 )}
               </View>
               <View style={styles.paymentInfo}>
-                <Text style={[styles.paymentLabel, { color: colors.espresso }]}>
-                  {option.icon ? `${option.icon} ` : ''}
-                  {option.label}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Text style={[styles.paymentLabel, { color: colors.espresso }]}>
+                    {option.icon ? `${option.icon} ` : ''}
+                    {option.label}
+                  </Text>
+                  {option.id === 'affirm' && affirmEligible && !affirmPrequalLoading && (
+                    <Text
+                      style={[
+                        styles.prequalBadge,
+                        {
+                          backgroundColor: colors.mountainBlueLight,
+                          color: colors.mountainBlueDark,
+                          borderRadius: borderRadius.sm,
+                        },
+                      ]}
+                      testID="affirm-prequal-badge"
+                    >
+                      Pre-qualified
+                    </Text>
+                  )}
+                </View>
                 <Text style={[styles.paymentDesc, { color: colors.espressoLight }]}>
                   {option.description}
                 </Text>
@@ -1078,6 +1125,20 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </View>
         )}
 
+        {/* Affirm error */}
+        {affirmError && (
+          <View
+            style={[
+              styles.errorCard,
+              { borderRadius: borderRadius.md, marginHorizontal: spacing.lg },
+            ]}
+            testID="affirm-error"
+            accessibilityRole="alert"
+          >
+            <Text style={styles.errorText}>{affirmError}</Text>
+          </View>
+        )}
+
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
           <TouchableOpacity
@@ -1090,7 +1151,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               },
               selectedMethod && !isProcessing ? shadows.button : undefined,
             ]}
-            onPress={handlePlaceOrder}
+            onPress={selectedMethod === 'affirm' ? handleAffirmCheckout : handlePlaceOrder}
             disabled={!selectedMethod || isProcessing}
             testID="place-order-button"
             accessibilityLabel={
@@ -1446,6 +1507,14 @@ const styles = StyleSheet.create({
   paymentDesc: {
     fontSize: 13,
     marginTop: 2,
+  },
+  prequalBadge: {
+    fontSize: 11,
+    fontWeight: '600',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+    overflow: 'hidden',
   },
   // Card field
   cardFieldSection: {
