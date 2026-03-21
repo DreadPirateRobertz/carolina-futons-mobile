@@ -9,6 +9,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { events } from '@/services/analytics';
+import { captureException } from '@/services/crashReporting';
+import type { WixClient } from '@/services/wix/wixClient';
 import type { Fabric } from '@/data/futons';
 
 const STORAGE_KEY = '@carolina_futons_swatch_requests';
@@ -55,7 +57,11 @@ function validateAddress(address: SwatchAddress): string[] {
   return errors;
 }
 
-export function useSwatchRequest(productId: string): SwatchRequestState {
+export function useSwatchRequest(
+  productId: string,
+  productName?: string,
+  wixClient?: WixClient | null,
+): SwatchRequestState {
   const [selectedFabrics, setSelectedFabrics] = useState<Fabric[]>([]);
   const [status, setStatus] = useState<SwatchStatus>('idle');
   const [hasRecentRequest, setHasRecentRequest] = useState(false);
@@ -125,8 +131,31 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
       setStatus('submitting');
       setValidationErrors([]);
 
+      // Step 6: Call Wix API if available
+      if (wixClient) {
+        const shippingAddress = `${address.line1}${address.line2 ? ', ' + address.line2 : ''}, ${address.city}, ${address.state} ${address.zip}`;
+        try {
+          await wixClient.submitFabricSampleRequest({
+            customerName: address.fullName,
+            shippingAddress,
+            productName: productName ?? '',
+            fabricIds: selectedFabrics.map((f) => f.id).join(','),
+            fabricNames: selectedFabrics.map((f) => f.name).join(','),
+          });
+        } catch (err) {
+          setStatus('error');
+          try {
+            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          } catch {
+            // Haptics not available
+          }
+          submittingRef.current = false;
+          return false;
+        }
+      }
+
+      // Step 7: Write rate-limit record to AsyncStorage
       try {
-        // Persist request
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         const requests: StoredRequest[] = stored ? JSON.parse(stored) : [];
 
@@ -141,32 +170,43 @@ export function useSwatchRequest(productId: string): SwatchRequestState {
         updated.push(newRequest);
 
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-
-        // Analytics
-        events.requestSwatches(
-          productId,
-          selectedFabrics.map((f) => f.id),
-          address.state,
-        );
-
-        // Haptic success
-        try {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch {
-          // Haptics not available
+      } catch (err) {
+        if (wixClient) {
+          // Wix already succeeded — AsyncStorage is non-critical, just log
+          captureException(
+            err instanceof Error ? err : new Error(String(err)),
+            'warning',
+            { screen: 'SwatchRequestModal', action: 'asyncStorageWrite' },
+          );
+          // Fall through to success
+        } else {
+          // No Wix — AsyncStorage is primary persistence; this is a real failure
+          setStatus('error');
+          submittingRef.current = false;
+          return false;
         }
-
-        setStatus('submitted');
-        setHasRecentRequest(true);
-        submittingRef.current = false;
-        return true;
-      } catch {
-        setStatus('error');
-        submittingRef.current = false;
-        return false;
       }
+
+      // Step 8: Analytics
+      events.requestSwatches(
+        productId,
+        selectedFabrics.map((f) => f.id),
+        address.state,
+      );
+
+      // Step 9: Haptic success, set submitted state
+      try {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch {
+        // Haptics not available
+      }
+
+      setStatus('submitted');
+      setHasRecentRequest(true);
+      submittingRef.current = false;
+      return true;
     },
-    [productId, selectedFabrics],
+    [productId, productName, wixClient, selectedFabrics],
   );
 
   const reset = useCallback(() => {
