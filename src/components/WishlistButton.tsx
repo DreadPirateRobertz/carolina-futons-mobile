@@ -64,9 +64,8 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
     scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
 
     if (Platform.OS !== 'web') {
-      if (wasActive) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (!wasActive) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     }
