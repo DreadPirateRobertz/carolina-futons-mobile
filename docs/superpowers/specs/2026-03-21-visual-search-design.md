@@ -42,13 +42,23 @@ The Wix backend function is the only egress point to external AI services. The A
 }
 ```
 
-**Local scoring** (applied to `PRODUCTS` array):
+**Product schema additions required** (modify `src/data/products.ts` and `Product` interface):
+```typescript
+// Add to Product interface:
+tags?: string[];           // style keywords: "modern", "rustic", "mid-century", etc.
+colorFamily?: string;      // "neutral" | "warm" | "cool" | "dark" | "light"
+```
+Populate `tags` and `colorFamily` on all existing PRODUCTS mock entries before implementing scoring.
+
+**Local scoring** (applied to `PRODUCTS` array, computed client-side after backend returns attributes):
 | Match | Points |
 |-------|--------|
 | Exact category slug match | +3 |
-| Color family match (product tags) | +2 |
-| Each keyword found in product name/description | +1 |
-| Style keyword match in product tags | +1 |
+| `colorFamily` field matches OpenAI `colorFamily` | +2 |
+| Each OpenAI keyword found in `product.name` or `product.description` | +1 |
+| Style keyword found in `product.tags` | +1 |
+
+**`matchType` is computed client-side** by `useVisualSearch` after local scoring — it is NOT returned by the backend. Value is `'scored'` when any product reaches score ≥ 1, `'fallback'` when all products score 0.
 
 **Result set:** top 6 products with score ≥ 1.
 **Fallback:** if score = 0 for all products, return top 3 by `rating` (same-category preferred) and set `matchType: 'fallback'`.
@@ -60,8 +70,8 @@ The Wix backend function is the only egress point to external AI services. The A
 ### A. SearchScreen — camera icon in SearchBar
 - Camera icon button added to right side of `SearchBar` component
 - Tap → `expo-image-picker` launches (photo library or camera)
-- On selection → results injected into the existing `SearchScreen` product grid
-- Visual search state is local to `SearchScreen`; clears when user types in the text field
+- On selection → `SearchScreen` replaces the `useProducts()` grid with visual search results. The `SearchScreen` holds a `visualSearchResults: Product[] | null` state variable; when non-null it renders that array instead of the text-search results from `useProducts()`. A "Visual Search" badge appears above the grid.
+- Visual search state clears when the user types in the text field (typing implies switching to text search intent)
 - Reuses existing `ProductCard` grid — no new screen required
 
 ### B. ProductDetailScreen — "Find Similar" button
@@ -71,10 +81,10 @@ The Wix backend function is the only egress point to external AI services. The A
 - Results shown with match-reason chip under each card (e.g. "Similar style · Neutral tones")
 
 ### Fallback / empty state
-Both paths: if 0 results returned (including fallback scoring), show `SearchEmptyState` (existing component) with copy:
+Both paths: if 0 results returned (after fallback scoring), show a `VisualSearchEmptyState` component (new, not the existing `SearchEmptyState` — that component requires `query: string` and category chips which don't apply here) with copy:
 > "No similar products found — try a clearer photo showing the furniture."
 
-CTA: "Browse All" → navigates to ShopScreen.
+Single CTA: "Browse All" → `navigation.navigate('Shop')`. No category chips, no trending searches.
 
 ---
 
@@ -86,8 +96,10 @@ CTA: "Browse All" → navigates to ShopScreen.
 |------|---------|
 | `src/hooks/useVisualSearch.ts` | State machine: `idle → loading → success \| error`. Handles image picker, Wix backend call, local scoring. Returns `{ results, query, status, error, trigger }` |
 | `src/screens/VisualSearchResultsScreen.tsx` | "Find Similar" result display with match-reason labels |
+| `src/components/VisualSearchEmptyState.tsx` | Empty state for 0-result visual searches (not the text SearchEmptyState — different props) |
 | `src/hooks/__tests__/useVisualSearch.test.ts` | Unit tests (see Testing section) |
 | `src/screens/__tests__/VisualSearchResultsScreen.test.tsx` | Screen tests (see Testing section) |
+| `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Empty state renders, "Browse All" navigates to Shop |
 
 ### Modified existing files
 
@@ -111,7 +123,7 @@ CTA: "Browse All" → navigates to ShopScreen.
 
 ### User upload path (zhora)
 
-1. **EXIF strip:** `expo-image-picker` called with `exif: false`. No EXIF metadata leaves the device.
+1. **EXIF strip:** Both `launchImageLibraryAsync` and `launchCameraAsync` called with `exif: false`. Applies to both picker entry points — neither library picker nor camera launch may transmit EXIF data. No EXIF metadata leaves the device.
 2. **No photo logging:** The Wix backend function must not write image data to any database, blob storage, or log stream. Image is held in-memory for the duration of the OpenAI API call only.
 3. **No photo retention:** Image data is not persisted anywhere after the response is returned.
 
@@ -120,7 +132,7 @@ CTA: "Browse All" → navigates to ShopScreen.
 All three controls are required in the Wix backend function before implementation ships:
 
 1. **Domain allowlist:** Only requests to `api.openai.com` are permitted. Any other hostname in the constructed URL must return a 400 error.
-2. **No redirect-following:** If the AI service returns a 3xx response, the function must reject it (not follow the redirect). This prevents redirect-based SSRF.
+2. **No redirect-following:** If the AI service returns a 3xx response, the function must reject it immediately and return 502 — the HTTP client must be configured with `maxRedirects: 0`. This prevents both direct and chained redirect-based SSRF.
 3. **Block RFC-1918 / link-local ranges:** Resolve the target hostname and reject requests if the resolved IP falls in: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.0.0/16`, `::1/128`, `fc00::/7`.
 
 **Dutch pre-implementation review is a hard gate.** Tag `predator/dutch` with the spec before writing any backend code.
@@ -171,7 +183,9 @@ export interface UseVisualSearchReturn {
 | error: network timeout | `status === 'error'` |
 | error: wixClient null | `status === 'error'` with guard message |
 | reset() clears results | `status === 'idle'`, `results === []` |
-| EXIF flag: picker called with exif:false | `ImagePicker.launchImageLibraryAsync` called with `exif: false` |
+| EXIF flag: library picker called with exif:false | `ImagePicker.launchImageLibraryAsync` called with `exif: false` |
+| EXIF flag: camera picker called with exif:false | `ImagePicker.launchCameraAsync` called with `exif: false` |
+| SearchBar receives onCameraPress prop | prop wired and called when camera icon tapped |
 
 ### `VisualSearchResultsScreen.test.tsx`
 
@@ -195,7 +209,10 @@ export interface UseVisualSearchReturn {
 | link-local blocked (169.254.x.x) | returns 400 |
 | malformed image body → 400 | validation error returned |
 | OpenAI returns structured JSON | 200 with `{ category, style, colorFamily, keywords }` |
-| OpenAI API error → 502 | error propagated with safe message |
+| OpenAI returns malformed JSON | 502 with safe error message |
+| image body exceeds 10MB | 413 Payload Too Large before forwarding to OpenAI |
+| OpenAI request timeout (>30s) | 504 Gateway Timeout returned to client |
+| OpenAI API error (4xx/5xx) | 502 error propagated with safe message (no raw API error exposed) |
 
 ---
 
