@@ -2,6 +2,23 @@
 // Built-in matchers from @testing-library/react-native v12.4+
 // No need for deprecated @testing-library/jest-native
 
+// Mock expo-av (Video component for product card video previews)
+jest.mock('expo-av', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    Video: React.forwardRef(({ testID, ...props }, ref) =>
+      React.createElement(View, { testID, ref, ...props }),
+    ),
+    ResizeMode: {
+      COVER: 'cover',
+      CONTAIN: 'contain',
+      STRETCH: 'stretch',
+    },
+    AVPlaybackStatus: {},
+  };
+});
+
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');

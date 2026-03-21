@@ -24,6 +24,7 @@ import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
 import { FinancingBadge } from './FinancingBadge';
+import { ProductCardVideo } from './ProductCardVideo';
 
 interface Props {
   product: Product;
@@ -98,6 +99,12 @@ export const ProductCard = memo(function ProductCard({
           onLoadStart={imageTracking.onLoadStart}
           onLoad={imageTracking.onLoad}
         />
+        {product.videoUri && (
+          <ProductCardVideo
+            videoUri={product.videoUri}
+            testID={`product-video-${product.id}`}
+          />
+        )}
         <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
         {product.badge && (
           <View style={[styles.badge, { backgroundColor: badgeColor }]}>
