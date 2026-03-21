@@ -17,52 +17,52 @@ describe('useStyleQuiz', () => {
   it('starts with null preferences', () => {
     const { result } = renderHook(() => useStyleQuiz());
     expect(result.current.preferences).toEqual({
-      room: null,
-      style: null,
+      roomType: null,
+      stylePreference: null,
       primaryUse: null,
-      colorPalette: null,
-      sizePreference: null,
+      sizeNeeds: null,
+      budgetRange: null,
     });
   });
 
-  it('setRoom updates room preference', () => {
+  it('setRoomType updates roomType preference', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setRoom('living-room');
+      result.current.setRoomType('living-room');
     });
-    expect(result.current.preferences.room).toBe('living-room');
+    expect(result.current.preferences.roomType).toBe('living-room');
   });
 
-  it('setStyle updates style preference', () => {
+  it('setStylePreference updates stylePreference', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setStyle('rustic');
+      result.current.setStylePreference('rustic');
     });
-    expect(result.current.preferences.style).toBe('rustic');
+    expect(result.current.preferences.stylePreference).toBe('rustic');
   });
 
-  it('setPrimaryUse updates primary use preference', () => {
+  it('setPrimaryUse updates primaryUse', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setPrimaryUse('dual-purpose');
+      result.current.setPrimaryUse('both');
     });
-    expect(result.current.preferences.primaryUse).toBe('dual-purpose');
+    expect(result.current.preferences.primaryUse).toBe('both');
   });
 
-  it('setColorPalette updates colorPalette preference', () => {
+  it('setSizeNeeds updates sizeNeeds', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setColorPalette('cool');
+      result.current.setSizeNeeds('queen');
     });
-    expect(result.current.preferences.colorPalette).toBe('cool');
+    expect(result.current.preferences.sizeNeeds).toBe('queen');
   });
 
-  it('setSizePreference updates sizePreference preference', () => {
+  it('setBudgetRange updates budgetRange', () => {
     const { result } = renderHook(() => useStyleQuiz());
     act(() => {
-      result.current.setSizePreference('oversized');
+      result.current.setBudgetRange('500-1000');
     });
-    expect(result.current.preferences.sizePreference).toBe('oversized');
+    expect(result.current.preferences.budgetRange).toBe('500-1000');
   });
 
   it('savePreferences writes all 5 fields to AsyncStorage', async () => {
@@ -70,11 +70,11 @@ describe('useStyleQuiz', () => {
     const { result } = renderHook(() => useStyleQuiz());
 
     act(() => {
-      result.current.setRoom('bedroom');
-      result.current.setStyle('modern');
-      result.current.setPrimaryUse('seating');
-      result.current.setColorPalette('cool');
-      result.current.setSizePreference('standard');
+      result.current.setRoomType('bedroom');
+      result.current.setStylePreference('modern');
+      result.current.setPrimaryUse('sitting');
+      result.current.setSizeNeeds('full');
+      result.current.setBudgetRange('500-1000');
     });
 
     await act(async () => {
@@ -84,11 +84,11 @@ describe('useStyleQuiz', () => {
     expect(mockSetItem).toHaveBeenCalledWith(
       '@carolina_futons_style_preferences',
       JSON.stringify({
-        room: 'bedroom',
-        style: 'modern',
-        primaryUse: 'seating',
-        colorPalette: 'cool',
-        sizePreference: 'standard',
+        roomType: 'bedroom',
+        stylePreference: 'modern',
+        primaryUse: 'sitting',
+        sizeNeeds: 'full',
+        budgetRange: '500-1000',
       }),
     );
   });
@@ -105,34 +105,34 @@ describe('useStyleQuiz', () => {
 });
 
 describe('getRecommendation', () => {
-  it('returns Coastal Minimalist for modern + cool', () => {
-    const rec = getRecommendation('modern', 'cool');
+  it('returns Coastal Minimalist for modern + full', () => {
+    const rec = getRecommendation('modern', 'full');
     expect(rec.label).toBe('Coastal Minimalist');
     expect(rec.productSlugs.length).toBeGreaterThan(0);
   });
 
-  it('returns Warm Industrial for rustic + warm', () => {
-    const rec = getRecommendation('rustic', 'warm');
+  it('returns Warm Industrial for rustic + full', () => {
+    const rec = getRecommendation('rustic', 'full');
     expect(rec.label).toBe('Warm Industrial');
     expect(rec.productSlugs.length).toBeGreaterThan(0);
   });
 
-  it('returns Classic Comfort for classic + neutral', () => {
-    const rec = getRecommendation('classic', 'neutral');
+  it('returns Classic Comfort for classic + full', () => {
+    const rec = getRecommendation('classic', 'full');
     expect(rec.label).toBe('Classic Comfort');
   });
 
-  it('returns Nordic Minimalist for minimalist + cool', () => {
-    const rec = getRecommendation('minimalist', 'cool');
-    expect(rec.label).toBe('Nordic Minimalist');
+  it('returns Coastal Suite for modern + queen', () => {
+    const rec = getRecommendation('modern', 'queen');
+    expect(rec.label).toBe('Coastal Suite');
   });
 
-  it('returns a label for every style+colorPalette combination', () => {
-    const styles = ['modern', 'rustic', 'classic', 'minimalist'] as const;
-    const palettes = ['warm', 'cool', 'neutral', 'bold'] as const;
+  it('returns a label for every stylePreference×sizeNeeds combination', () => {
+    const styles = ['modern', 'rustic', 'classic'] as const;
+    const sizes = ['twin', 'full', 'queen'] as const;
     for (const style of styles) {
-      for (const palette of palettes) {
-        const rec = getRecommendation(style, palette);
+      for (const size of sizes) {
+        const rec = getRecommendation(style, size);
         expect(rec.label).toBeTruthy();
         expect(rec.productSlugs).toBeDefined();
       }
@@ -140,18 +140,18 @@ describe('getRecommendation', () => {
   });
 
   it('returns productSlugs as non-empty array', () => {
-    const rec = getRecommendation('modern', 'cool');
+    const rec = getRecommendation('modern', 'full');
     expect(Array.isArray(rec.productSlugs)).toBe(true);
     expect(rec.productSlugs.length).toBeGreaterThan(0);
   });
 
-  it('returns fallback label for null style', () => {
-    const rec = getRecommendation(null, 'cool');
+  it('returns fallback for null stylePreference', () => {
+    const rec = getRecommendation(null, 'full');
     expect(rec.label).toBeTruthy();
     expect(rec.productSlugs).toBeDefined();
   });
 
-  it('returns fallback label for null colorPalette', () => {
+  it('returns fallback for null sizeNeeds', () => {
     const rec = getRecommendation('modern', null);
     expect(rec.label).toBeTruthy();
   });

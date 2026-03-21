@@ -59,7 +59,7 @@ interface QuizOption<T extends string> {
 const ROOM_OPTIONS: QuizOption<RoomType>[] = [
   { value: 'living-room', label: 'Living Room', icon: '\u{1F6CB}' },
   { value: 'bedroom', label: 'Bedroom', icon: '\u{1F6CF}' },
-  { value: 'studio', label: 'Studio', icon: '\u{1F3E0}' },
+  { value: 'dorm', label: 'Dorm Room', icon: '\u{1F3E0}' },
   { value: 'guest-room', label: 'Guest Room', icon: '\u{1F6AA}' },
 ];
 
@@ -67,14 +67,12 @@ const STYLE_OPTIONS: QuizOption<StylePreference>[] = [
   { value: 'modern', label: 'Modern & Clean', icon: '\u2728' },
   { value: 'rustic', label: 'Rustic & Warm', icon: '\u{1FAB5}' },
   { value: 'classic', label: 'Classic & Cozy', icon: '\u{1F4D6}' },
-  { value: 'minimalist', label: 'Minimalist', icon: '\u25FB' },
 ];
 
 const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
-  { value: 'seating', label: 'Everyday Seating', icon: '\u{1F9D8}' },
-  { value: 'guest-bed', label: 'Guest Bed', icon: '\u{1F634}' },
-  { value: 'dual-purpose', label: 'Dual-Purpose', icon: '\u{1F504}' },
-  { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
+  { value: 'sitting', label: 'Everyday Seating', icon: '\u{1F9D8}' },
+  { value: 'sleeping', label: 'Guest Bed', icon: '\u{1F634}' },
+  { value: 'both', label: 'Sitting & Sleeping', icon: '\u{1F504}' },
 ];
 
 // ── Total Steps ─────────────────────────────────────────────────────
@@ -92,7 +90,8 @@ interface Props {
 export function OnboardingScreen({ onComplete, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
   const [step, setStep] = useState(0);
-  const { preferences, setRoom, setStyle, setPrimaryUse, savePreferences } = useStyleQuiz();
+  const { preferences, setRoomType, setStylePreference, setPrimaryUse, savePreferences } =
+    useStyleQuiz();
 
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
@@ -109,13 +108,13 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
 
   const handleQuizSelect = useCallback(
     (value: string) => {
-      if (quizStep === 0) setRoom(value as RoomType);
-      else if (quizStep === 1) setStyle(value as StylePreference);
+      if (quizStep === 0) setRoomType(value as RoomType);
+      else if (quizStep === 1) setStylePreference(value as StylePreference);
       else if (quizStep === 2) setPrimaryUse(value as PrimaryUse);
       // Auto-advance after selection
       setStep((s) => s + 1);
     },
-    [quizStep, setRoom, setStyle, setPrimaryUse],
+    [quizStep, setRoomType, setStylePreference, setPrimaryUse],
   );
 
   const handleFinish = useCallback(async () => {
@@ -212,13 +211,13 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         title: 'What room is\nthis for?',
         subtitle: 'Help us find your perfect match',
         options: ROOM_OPTIONS,
-        selected: preferences.room,
+        selected: preferences.roomType,
       },
       {
         title: "What's your\nstyle?",
         subtitle: 'We\u2019ll curate picks that fit',
         options: STYLE_OPTIONS,
-        selected: preferences.style,
+        selected: preferences.stylePreference,
       },
       {
         title: 'What do you\nneed most?',
@@ -298,7 +297,8 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   // ── Completion ──────────────────────────────────────────────────
 
   const renderCompletion = () => {
-    const styleName = STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
+    const styleName =
+      STYLE_OPTIONS.find((o) => o.value === preferences.stylePreference)?.label ?? 'your';
     return (
       <View style={styles.slideContainer} testID="onboarding-completion">
         <Text
