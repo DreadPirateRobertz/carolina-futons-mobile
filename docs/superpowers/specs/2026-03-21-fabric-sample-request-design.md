@@ -15,7 +15,9 @@ Single flow: `SwatchRequestModal` → `useSwatchRequest` hook → Wix data colle
 ```
 ProductDetailScreen
   └── "Request Free Swatches" button (testID: request-swatches-button)
-        └── SwatchRequestModal (modal, has productName + productId props)
+        └── SwatchRequestModal (modal, props: productId + productName + wixClient?)
+              │   wixClient acquired via useOptionalWixClient() in ProductDetailScreen,
+              │   passed as optional prop; existing tests omit it → exercise null path
               └── useSwatchRequest(productId, productName, wixClient?)
                     ├── validateFabrics + validateAddress
                     ├── wixClient.submitFabricSampleRequest(...)  ← NEW (skipped if null)
@@ -31,7 +33,7 @@ ProductDetailScreen
 | `src/hooks/__tests__/useSwatchRequest.test.ts` | **Modify** — add Wix API call tests, network error tests, offline tests |
 | `src/components/FabricSampleRequest.tsx` | **Delete** — redundant, untested, inferior UX |
 | `src/screens/ProductDetailScreen.tsx` | **Modify** — remove `FabricSampleRequest` import/render |
-| `src/components/SwatchRequestModal.tsx` | **Modify** — pass `wixClient` to hook, verify a11y: 44pt targets + accessibilityLiveRegion on errors |
+| `src/components/SwatchRequestModal.tsx` | **Modify** — add optional `wixClient?: WixClient \| null` prop to Props interface; pass it to `useSwatchRequest`; add error/retry UI; verify a11y: 44pt targets + accessibilityLiveRegion on errors |
 | `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** — verify Wix error display, a11y attributes |
 
 ## Hook Signature Change
@@ -77,14 +79,14 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 ### Error states
 - `status === 'error'` with Wix failure → modal shows error message (`testID="swatch-error-message"`) + Retry button (`testID="swatch-retry-button"`)
 - Network offline (wixClient throws network error) → same `status === 'error'` path
-- AsyncStorage write failure after Wix success → catch, call `captureException`, do NOT block success state (non-critical)
+- AsyncStorage write failure after Wix success → catch, call `captureException` (import from `@/services/crashReporting`), do NOT block success state (non-critical)
 
 ## Accessibility Requirements (burke specialty, §1.4)
 
 - All `TextInput` fields: `accessibilityLabel` (already present in most, verify all 6 address fields are covered)
 - Error `<Text>` elements (e.g. `testID="swatch-error-name"`): add `accessibilityLiveRegion="polite"` directly on the `<Text>` node (not a wrapper View) — screen readers announce when error text appears
 - All touchable buttons: minimum `minHeight: 44` and `minWidth: 44` in styles (verify Submit, Cancel, fabric toggles, Retry)
-- Submit button: `accessibilityState={{ busy: isSubmitting, disabled: isSubmitting }}`
+- Submit button: `accessibilityState={{ busy: isSubmitting, disabled: isSubmitting || hasRecentRequest }}` — preserve existing `hasRecentRequest` in `disabled`, add `busy` flag
 - Success/error state messages: `accessibilityLiveRegion="polite"` on the container `<Text>`
 
 ## Wix API Contract
@@ -122,6 +124,7 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 - formats `fabricIds` as comma-joined ID string
 - formats `fabricNames` as comma-joined name string
 - passes `productName` to Wix payload
+- calls `captureException` (not `setStatus('error')`) when AsyncStorage write fails after successful Wix call, and still returns `true`
 
 ### SwatchRequestModal additions
 - shows error message (`testID="swatch-error-message"`) when status is 'error'
