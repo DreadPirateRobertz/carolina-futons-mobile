@@ -21,6 +21,7 @@ import {
   AFFIRM_MIN_AMOUNT,
   AFFIRM_MAX_AMOUNT,
 } from '../affirmService';
+import type { CartItem } from '@/hooks/useCart';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -110,9 +111,7 @@ describe('checkAffirmPrequalification', () => {
     await checkAffirmPrequalification(mockWixClient as any, 499.0);
 
     // Affirm API expects cents
-    expect(mockPost).toHaveBeenCalledWith(
-      expect.objectContaining({ amount: 49900 }),
-    );
+    expect(mockPost).toHaveBeenCalledWith(expect.objectContaining({ amount: 49900 }));
   });
 });
 
@@ -123,11 +122,11 @@ describe('initiateAffirmCheckout', () => {
     {
       id: 'prod-1',
       model: { id: 'm1', name: 'Asheville Full', size: 'full' as const, priceModifier: 0 },
-      fabric: { id: 'f1', name: 'Black Microfiber', priceModifier: 0 },
+      fabric: { id: 'f1', name: 'Black Microfiber', color: '#1C1C1C', priceModifier: 0 },
       quantity: 1,
       unitPrice: 499,
     },
-  ];
+  ] as unknown as CartItem[];
 
   beforeEach(() => {
     jest.clearAllMocks();

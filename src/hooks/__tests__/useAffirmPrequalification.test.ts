@@ -149,7 +149,11 @@ describe('useAffirmPrequalification', () => {
 
   it('sets isLoading=true while the check is in progress', async () => {
     let resolvePrequal!: (val: any) => void;
-    mockCheckPrequal.mockReturnValue(new Promise((resolve) => { resolvePrequal = resolve; }));
+    mockCheckPrequal.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePrequal = resolve;
+      }),
+    );
 
     const { result } = renderHook(() => useAffirmPrequalification(499));
 
@@ -159,7 +163,9 @@ describe('useAffirmPrequalification', () => {
     });
 
     // Resolve the promise
-    act(() => { resolvePrequal({ eligible: true, error: undefined }); });
+    act(() => {
+      resolvePrequal({ eligible: true, error: undefined });
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);

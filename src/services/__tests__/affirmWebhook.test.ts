@@ -181,18 +181,8 @@ describe('handleAffirmWebhook — idempotency', () => {
     const body2 = JSON.stringify(payload2);
     const onFulfill = jest.fn().mockResolvedValue(undefined);
 
-    await handleAffirmWebhook(
-      Buffer.from(body1),
-      makeHmacSig(body1),
-      SECRET,
-      onFulfill,
-    );
-    await handleAffirmWebhook(
-      Buffer.from(body2),
-      makeHmacSig(body2),
-      SECRET,
-      onFulfill,
-    );
+    await handleAffirmWebhook(Buffer.from(body1), makeHmacSig(body1), SECRET, onFulfill);
+    await handleAffirmWebhook(Buffer.from(body2), makeHmacSig(body2), SECRET, onFulfill);
 
     expect(onFulfill).toHaveBeenCalledTimes(2);
   });
@@ -210,12 +200,7 @@ describe('handleAffirmWebhook — security validation', () => {
     const body = JSON.stringify(payload);
     const onFulfill = jest.fn();
 
-    const result = await handleAffirmWebhook(
-      Buffer.from(body),
-      'bad-signature',
-      SECRET,
-      onFulfill,
-    );
+    const result = await handleAffirmWebhook(Buffer.from(body), 'bad-signature', SECRET, onFulfill);
 
     expect(result.processed).toBe(false);
     expect(result.reason).toBe('invalid_signature');
@@ -241,7 +226,12 @@ describe('handleAffirmWebhook — security validation', () => {
 
   it('rejects order IDs that do not belong to our store (IDOR guard)', async () => {
     const payload = makePayload({
-      data: { charge_id: 'Q3AF-EVIL', order_id: 'other-store-9999', amount: 49900, currency: 'USD' },
+      data: {
+        charge_id: 'Q3AF-EVIL',
+        order_id: 'other-store-9999',
+        amount: 49900,
+        currency: 'USD',
+      },
     });
     const body = JSON.stringify(payload);
     const sig = makeHmacSig(body);
@@ -256,12 +246,7 @@ describe('handleAffirmWebhook — security validation', () => {
 
   it('rejects empty body before HMAC check', async () => {
     const onFulfill = jest.fn();
-    const result = await handleAffirmWebhook(
-      Buffer.from(''),
-      makeHmacSig(''),
-      SECRET,
-      onFulfill,
-    );
+    const result = await handleAffirmWebhook(Buffer.from(''), makeHmacSig(''), SECRET, onFulfill);
 
     expect(result.processed).toBe(false);
     expect(result.reason).toBe('empty_body');

@@ -215,8 +215,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const { isPremium } = usePremium();
   const addressBook = useAddressBook();
   const wixClient = useOptionalWixClient();
-  const { isEligible: affirmEligible, isLoading: affirmPrequalLoading } =
-    useAffirmPrequalification(totals.total);
+  const { isEligible: affirmEligible, isLoading: affirmPrequalLoading } = useAffirmPrequalification(
+    totals.total,
+  );
   const [affirmError, setAffirmError] = useState<string | null>(null);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
