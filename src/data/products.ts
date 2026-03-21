@@ -39,6 +39,8 @@ export interface Product {
     depth: number;
     height: number;
   };
+  tags?: string[];          // style keywords: "modern", "rustic", "mid-century", etc.
+  colorFamily?: string;     // "neutral" | "warm" | "cool" | "dark" | "light"
 }
 
 export type ProductCategory =
@@ -117,6 +119,8 @@ export const PRODUCTS: Product[] = [
     videoUri: 'https://assets.carolinafutons.com/videos/asheville-preview.mp4',
     fabricOptions: ['Natural Linen', 'Slate Gray', 'Mountain Blue', 'Sunset Coral'],
     dimensions: { width: 54, depth: 34, height: 33 },
+    tags: ['modern', 'convertible', 'hardwood'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-blue-ridge-queen'),
@@ -142,6 +146,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural Linen', 'Slate Gray', 'Mountain Blue', 'Espresso Brown', 'Charcoal'],
     dimensions: { width: 60, depth: 36, height: 35 },
+    tags: ['modern', 'luxury', 'convertible'],
+    colorFamily: 'cool',
   },
   {
     id: productId('prod-pisgah-twin'),
@@ -166,6 +172,8 @@ export const PRODUCTS: Product[] = [
     stockCount: 3,
     fabricOptions: ['Natural Linen', 'Slate Gray', 'Forest Green'],
     dimensions: { width: 39, depth: 32, height: 31 },
+    tags: ['compact', 'convertible', 'modern'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-biltmore-loveseat'),
@@ -191,6 +199,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural Linen', 'Mauve Blush', 'Espresso Brown'],
     dimensions: { width: 48, depth: 33, height: 32 },
+    tags: ['traditional', 'elegant', 'loveseat'],
+    colorFamily: 'warm',
   },
   // --- Murphy Cabinet Beds ---
   {
@@ -216,6 +226,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Honey Oak', 'Espresso', 'Natural'],
     dimensions: { width: 64, depth: 24, height: 42 },
+    tags: ['traditional', 'space-saving', 'hardwood'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-murphy-full-horizontal'),
@@ -239,6 +251,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Maple Natural', 'Walnut Stain', 'White'],
     dimensions: { width: 78, depth: 20, height: 44 },
+    tags: ['modern', 'space-saving', 'horizontal'],
+    colorFamily: 'light',
   },
   {
     id: productId('prod-murphy-queen-bookcase'),
@@ -263,6 +277,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Espresso', 'Honey Oak', 'Gray Wash'],
     dimensions: { width: 100, depth: 24, height: 84 },
+    tags: ['traditional', 'storage', 'bookcase'],
+    colorFamily: 'dark',
   },
   {
     id: productId('prod-murphy-twin-cabinet'),
@@ -286,6 +302,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural Birch', 'Espresso', 'White'],
     dimensions: { width: 44, depth: 24, height: 38 },
+    tags: ['compact', 'space-saving', 'modern'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-murphy-queen-desk'),
@@ -311,6 +329,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Espresso', 'Walnut', 'Gray Wash'],
     dimensions: { width: 66, depth: 26, height: 84 },
+    tags: ['modern', 'multifunctional', 'desk'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-murphy-full-storage'),
@@ -334,6 +354,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Honey Oak', 'Espresso', 'Natural'],
     dimensions: { width: 60, depth: 24, height: 82 },
+    tags: ['traditional', 'storage', 'hardwood'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-mountain-cover-full'),
@@ -357,6 +379,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Sand', 'Blue Ridge', 'Forest', 'Coral'],
     dimensions: { width: 54, depth: 34, height: 0 },
+    tags: ['traditional', 'washable', 'cover'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-sunset-cover-queen'),
@@ -382,6 +406,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Coral', 'Terracotta', 'Amber'],
     dimensions: { width: 60, depth: 36, height: 0 },
+    tags: ['organic', 'washable', 'cover'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-premium-innerspring'),
@@ -405,6 +431,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural', 'Gray'],
     dimensions: { width: 54, depth: 75, height: 8 },
+    tags: ['innerspring', 'support', 'mattress'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-memory-foam'),
@@ -429,6 +457,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['White', 'Gray'],
     dimensions: { width: 54, depth: 75, height: 6 },
+    tags: ['modern', 'cooling', 'mattress'],
+    colorFamily: 'cool',
   },
   {
     id: productId('prod-hardwood-frame'),
@@ -452,6 +482,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Honey Oak', 'Espresso', 'Natural'],
     dimensions: { width: 54, depth: 38, height: 33 },
+    tags: ['traditional', 'hardwood', 'frame'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-arm-pillows'),
@@ -473,6 +505,8 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: ['Natural', 'Gray', 'Blue', 'Coral'],
     dimensions: { width: 24, depth: 8, height: 8 },
+    tags: ['accent', 'pillow', 'accessory'],
+    colorFamily: 'warm',
   },
   {
     id: productId('prod-grip-strips'),
@@ -496,6 +530,8 @@ export const PRODUCTS: Product[] = [
     stockCount: 0,
     fabricOptions: [],
     dimensions: { width: 12, depth: 2, height: 0 },
+    tags: ['accessory', 'non-slip', 'utility'],
+    colorFamily: 'neutral',
   },
   {
     id: productId('prod-furniture-polish'),
@@ -517,5 +553,7 @@ export const PRODUCTS: Product[] = [
     inStock: true,
     fabricOptions: [],
     dimensions: { width: 3, depth: 3, height: 6 },
+    tags: ['natural', 'care', 'accessory'],
+    colorFamily: 'warm',
   },
 ];
