@@ -18,6 +18,7 @@
  *   carolinafutons://stores             → StoreLocatorScreen
  *   carolinafutons://store-locator      → StoreLocatorScreen (alias)
  *   carolinafutons://ar                → ARScreen (modal)
+ *   carolinafutons://referral/{code}   → ReferralLanding (stores code, then goes to Account)
  */
 
 import type { LinkingOptions } from '@react-navigation/native';
@@ -67,6 +68,10 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       CollectionDetail: 'collections/:slug',
       ForgotPassword: 'forgot-password',
       StyleQuiz: 'style-quiz',
+      ReferralLanding: {
+        path: 'referral/:code',
+        parse: { code: (code: string) => code },
+      },
     },
   },
   getStateFromPath: normalizePathForLinking,
@@ -90,4 +95,5 @@ export const SUPPORTED_PATHS = [
   'collections',
   'forgot-password',
   'style-quiz',
+  'referral',
 ] as const;

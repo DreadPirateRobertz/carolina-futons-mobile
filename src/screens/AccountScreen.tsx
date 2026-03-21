@@ -19,6 +19,7 @@ import {
   Switch,
   Alert,
   Platform,
+  Share,
 } from 'react-native';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
@@ -34,6 +35,7 @@ import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
+import { useReferral } from '@/hooks/useReferral';
 import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
@@ -92,6 +94,20 @@ export function AccountScreen({
     enableBiometric,
     disableBiometric,
   } = useBiometricAuth();
+
+  const referral = useReferral();
+
+  const handleShareReferral = useCallback(async () => {
+    if (!referral.shareUrl) return;
+    try {
+      await Share.share({
+        message: `Get $20 off your first Carolina Futons order! Use my referral link: ${referral.shareUrl}`,
+        url: referral.shareUrl,
+      });
+    } catch (e) {
+      console.warn('[AccountScreen] Share.share failed or cancelled:', e);
+    }
+  }, [referral.shareUrl]);
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -590,6 +606,58 @@ export function AccountScreen({
               isPremium ? <PremiumBadge size="sm" testID="menu-premium-badge" /> : undefined
             }
           />
+          {/* Referral program section */}
+          <GlassCard intensity="light" testID="account-referral-section">
+            <View style={styles.referralCard}>
+              <Text style={[styles.referralTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}>
+                Refer a Friend
+              </Text>
+              <Text style={[styles.referralSubtitle, { color: colors.espressoLight }]}>
+                Earn $20 store credit for each confirmed referral
+              </Text>
+              {referral.loading ? (
+                <BrandedSpinner size={24} testID="account-referral-loading" />
+              ) : referral.error ? (
+                <Text style={[styles.referralError, { color: colors.espressoLight }]} testID="account-referral-error">
+                  {referral.error}
+                </Text>
+              ) : (
+                <>
+                  <View style={styles.referralStats}>
+                    <View style={styles.referralStat}>
+                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>Credits Earned</Text>
+                      <Text style={[styles.referralStatValue, { color: colors.espresso }]} testID="account-referral-credits">
+                        {'$'}{referral.creditsEarned}
+                      </Text>
+                    </View>
+                    <View style={styles.referralStat}>
+                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>Referrals</Text>
+                      <Text style={[styles.referralStatValue, { color: colors.espresso }]} testID="account-referral-count">
+                        {''}{referral.referralCount}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.referralCodeRow, { borderColor: colors.overlay }]}>
+                    <Text style={[styles.referralCode, { color: colors.espresso, fontFamily: typography.headingFamily }]} testID="account-referral-code">
+                      {referral.code}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.referralShareBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill ?? 28 }]}
+                    onPress={handleShareReferral}
+                    testID="account-referral-share-btn"
+                    accessibilityRole="button"
+                    accessibilityLabel="Share referral link"
+                  >
+                    <Text style={[styles.referralShareBtnText, { fontFamily: typography.bodyFamilyBold }]}>
+                      Share Your Link
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </GlassCard>
+
           <MenuItem
             label="Notification Preferences"
             colors={colors}
@@ -1026,5 +1094,58 @@ const styles = StyleSheet.create({
   debugLine: {
     fontSize: 12,
     lineHeight: 18,
+  },
+  referralCard: {
+    padding: 16,
+    gap: 12,
+  },
+  referralTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  referralSubtitle: {
+    fontSize: 13,
+  },
+  referralStats: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  referralStat: {
+    gap: 2,
+  },
+  referralStatLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  referralStatValue: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  referralCodeRow: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+  },
+  referralCode: {
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 2,
+  },
+  referralError: {
+    fontSize: 13,
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  referralShareBtn: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  referralShareBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
