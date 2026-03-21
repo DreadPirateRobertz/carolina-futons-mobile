@@ -1,9 +1,11 @@
 /**
- * Tests for useReferral hook — cm-z0x referral program.
+ * Tests for useReferral hook — cm-z0x + cm-9sa referral program.
  *
  * Covers:
  * - Fetches referral code from Wix ReferralCodes CMS by memberId
+ * - Fetches individual referral records from Wix Referrals collection
  * - Stores referred-by code from deep link in AsyncStorage
+ * - submitReferral writes a new record to the Referrals collection
  * - Error states: unauthenticated, no code yet, API failure
  * - Share URL generation
  */
@@ -13,6 +15,7 @@ import { useReferral } from '../useReferral';
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 const mockQueryData = jest.fn();
+const mockInsertDataItem = jest.fn();
 const mockUseOptionalWixClient = jest.fn();
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => mockUseOptionalWixClient(),
@@ -42,8 +45,20 @@ const WIX_REFERRAL_ITEM = {
   referralCount: 2,
 };
 
+const REFEREE_EMAIL = 'friend@example.com';
+
+const WIX_REFERRALS_RECORD = {
+  _id: 'ref-record-001',
+  referralCode: REFERRAL_CODE,
+  referrerMemberId: MEMBER_ID,
+  refereeEmail: REFEREE_EMAIL,
+  referrerCredit: 25,
+  refereeCredit: 25,
+  status: 'pending',
+};
+
 function makeClient() {
-  return { queryData: mockQueryData };
+  return { queryData: mockQueryData, insertDataItem: mockInsertDataItem };
 }
 
 function makeAuth(memberId: string | null = MEMBER_ID) {
@@ -56,7 +71,17 @@ beforeEach(() => {
   mockUseAuth.mockReturnValue(makeAuth());
   mockGetItem.mockResolvedValue(null);
   mockSetItem.mockResolvedValue(undefined);
-  mockQueryData.mockResolvedValue({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
+  mockInsertDataItem.mockResolvedValue({
+    id: 'new-ref-id',
+    data: { ...WIX_REFERRALS_RECORD, _id: 'new-ref-id' },
+  });
+  mockQueryData.mockImplementation((collection: string) => {
+    if (collection === 'ReferralCodes')
+      return Promise.resolve({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
+    if (collection === 'Referrals')
+      return Promise.resolve({ items: [], totalResults: 0 });
+    return Promise.resolve({ items: [], totalResults: 0 });
+  });
 });
 
 // ── Section 1: Loading state ───────────────────────────────────────────────────
