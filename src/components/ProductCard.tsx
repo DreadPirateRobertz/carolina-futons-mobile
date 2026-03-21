@@ -114,7 +114,7 @@ export const ProductCard = memo(function ProductCard({
           the source and destination elements for the shared-element transition. */}
         <Animated.View
           sharedTransitionTag={sharedTransitionTag(
-            `product-image-${productIdToModelId(product.id)}`,
+            `product-image-${product.slug || productIdToModelId(product.id)}`,
           )}
           testID={`product-image-container-${product.id}`}
           style={[

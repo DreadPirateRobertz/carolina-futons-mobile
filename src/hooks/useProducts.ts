@@ -39,7 +39,7 @@ export interface ProductFilters {
   priceRange: [number, number] | null;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE = 24;
 const PRODUCT_CACHE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 const getSearchableText = (p: Product) => [p.name, p.shortDescription, p.category];

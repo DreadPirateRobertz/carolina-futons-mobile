@@ -56,9 +56,9 @@ describe('useProducts', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('returns first page of products (max 8)', async () => {
+    it('returns first page of products (max 24)', async () => {
       const { result } = await renderLoaded();
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
@@ -141,7 +141,7 @@ describe('useProducts', () => {
       act(() => jest.advanceTimersByTime(400));
       // Now search — should reset pagination
       act(() => result.current.setSearchQuery('futon'));
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
@@ -166,7 +166,7 @@ describe('useProducts', () => {
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.setSelectedCategory('futons'));
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
@@ -212,7 +212,7 @@ describe('useProducts', () => {
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.setSortBy('price-asc'));
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
@@ -223,7 +223,7 @@ describe('useProducts', () => {
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       // If there are more products than PAGE_SIZE, we should see more
-      if (PRODUCTS.length > 8) {
+      if (PRODUCTS.length > 24) {
         expect(result.current.products.length).toBeGreaterThan(initialCount);
       }
     });
@@ -259,7 +259,7 @@ describe('useProducts', () => {
       act(() => result.current.loadMore());
       act(() => jest.advanceTimersByTime(400));
       act(() => result.current.refresh());
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
@@ -376,7 +376,7 @@ describe('useProducts', () => {
         const resultIds = result.current.products.map((p) => p.id);
         sizelessProducts.forEach((p) => {
           // Sizeless products should still appear (within pagination)
-          if (PRODUCTS.indexOf(p) < 8) {
+          if (PRODUCTS.indexOf(p) < 24) {
             expect(resultIds).toContain(p.id);
           }
         });
@@ -475,7 +475,7 @@ describe('useProducts', () => {
       const _pageCount = result.current.products.length;
       // Apply filter — should reset to page 1
       act(() => result.current.setFilters({ sizes: ['twin'], fabrics: [], priceRange: null }));
-      expect(result.current.products.length).toBeLessThanOrEqual(8);
+      expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
 
