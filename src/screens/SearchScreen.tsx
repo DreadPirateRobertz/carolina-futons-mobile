@@ -198,7 +198,7 @@ export function SearchScreen({ testID }: Props) {
             onSubmitSearch={handleSubmitSearch}
             onRemoveRecent={removeSearch}
             onClearRecent={clearAll}
-            onCameraPress={trigger}
+            onCameraPress={() => trigger({ useCamera: true })}
             placeholder="Search products..."
           />
         </View>
