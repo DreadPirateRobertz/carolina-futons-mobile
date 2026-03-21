@@ -24,10 +24,17 @@ export function ReferralLandingScreen({ route, navigation }: Props) {
   useEffect(() => {
     let active = true;
     (async () => {
-      await storeReferredByCode(code);
-      if (active) {
-        // Navigate to Account tab — the user can sign up there
-        navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+      try {
+        await storeReferredByCode(code);
+        if (active) {
+          // Navigate to Account tab — the user can sign up there
+          navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+        }
+      } catch (e) {
+        console.warn('[ReferralLandingScreen] Failed to store referral code:', e);
+        if (active) {
+          navigation.reset({ index: 0, routes: [{ name: 'Tabs' }] });
+        }
       }
     })();
     return () => {

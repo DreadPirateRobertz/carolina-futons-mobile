@@ -68,8 +68,8 @@ export function useReferral(): UseReferralResult {
       try {
         const stored = await AsyncStorage.getItem(REFERRED_BY_KEY);
         if (!cancelled) setReferredByCode(stored);
-      } catch {
-        // AsyncStorage unavailable — operate in-memory
+      } catch (e) {
+        console.warn('[useReferral] AsyncStorage read failed:', e);
       }
 
       if (!memberId) {
@@ -126,8 +126,8 @@ export function useReferral(): UseReferralResult {
     try {
       await AsyncStorage.setItem(REFERRED_BY_KEY, incomingCode.trim());
       setReferredByCode(incomingCode.trim());
-    } catch {
-      // AsyncStorage unavailable — state still updated in-memory
+    } catch (e) {
+      console.warn('[useReferral] AsyncStorage write failed:', e);
     }
   }, []);
 

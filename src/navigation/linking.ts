@@ -95,4 +95,5 @@ export const SUPPORTED_PATHS = [
   'collections',
   'forgot-password',
   'style-quiz',
+  'referral',
 ] as const;

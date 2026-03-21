@@ -104,8 +104,8 @@ export function AccountScreen({
         message: `Get $20 off your first Carolina Futons order! Use my referral link: ${referral.shareUrl}`,
         url: referral.shareUrl,
       });
-    } catch {
-      // user cancelled or share failed — no-op
+    } catch (e) {
+      console.warn('[AccountScreen] Share.share failed or cancelled:', e);
     }
   }, [referral.shareUrl]);
 
