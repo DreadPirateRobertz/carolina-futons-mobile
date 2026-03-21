@@ -282,6 +282,7 @@ export function AppNavigator() {
                       orderNumber: order.orderNumber,
                     })
                   }
+                  onRetry={() => nav.goBack()}
                 />
               </Suspense>
             );

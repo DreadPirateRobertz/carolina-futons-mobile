@@ -52,7 +52,7 @@ export function OrderSuccessScreen({
       <View style={styles.actions}>
         <TouchableOpacity
           testID="continue-shopping-btn"
-          style={[styles.primaryBtn, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+          style={[styles.primaryBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
           onPress={onContinueShopping}
           accessibilityRole="button"
           accessibilityLabel="Continue shopping"
@@ -63,12 +63,12 @@ export function OrderSuccessScreen({
         {onViewOrders && (
           <TouchableOpacity
             testID="view-orders-btn"
-            style={[styles.secondaryBtn, { borderColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+            style={[styles.secondaryBtn, { borderColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
             onPress={onViewOrders}
             accessibilityRole="button"
             accessibilityLabel="View your orders"
           >
-            <Text style={[styles.secondaryBtnText, { color: colors.mountainBlue }]}>
+            <Text style={[styles.secondaryBtnText, { color: colors.sunsetCoral }]}>
               View My Orders
             </Text>
           </TouchableOpacity>

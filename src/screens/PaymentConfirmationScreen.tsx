@@ -163,7 +163,7 @@ export function PaymentConfirmationScreen({
           <Text style={[styles.errorMessage, { color: colors.error }]}>{error}</Text>
           <TouchableOpacity
             testID="retry-btn"
-            style={[styles.retryButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+            style={[styles.retryButton, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
             onPress={onRetry}
             accessibilityRole="button"
             accessibilityLabel="Retry payment"
@@ -177,7 +177,7 @@ export function PaymentConfirmationScreen({
       {!isLoading && !error ? (
         <TouchableOpacity
           testID="continue-btn"
-          style={[styles.continueButton, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button }]}
+          style={[styles.continueButton, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
           onPress={onSuccess}
           accessibilityRole="button"
           accessibilityLabel="Continue to order confirmation"
