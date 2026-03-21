@@ -247,6 +247,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       onOrderComplete?.(order);
     }
     if (klarnaCheckout.status === 'idle' || klarnaCheckout.status === 'error') {
+      // Reset fired guard if user retries after cancel/error
       klarnaFiredRef.current = false;
     }
   }, [klarnaCheckout.status, klarnaCheckout.order, onOrderComplete, addressBook]);
@@ -391,6 +392,13 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     }
 
     if (selectedMethod === 'klarna') {
+      // Capture current values into refs before handing off to the redirect flow.
+      // The success useEffect will read these after the app returns from Klarna,
+      // at which point the closure values in handlePlaceOrder may be stale.
+      klarnaShippingRef.current = shippingAddress;
+      klarnaTotalRef.current = totals.total;
+      klarnaItemCountRef.current = items.length;
+      klarnaFiredRef.current = false;
       // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
       await klarnaCheckout.startCheckout(items, totals);
       return;
