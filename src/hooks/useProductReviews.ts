@@ -6,8 +6,10 @@
  * WixClient is available (unauthenticated / not configured).
  *
  * Returns:
- *  - reviews: Review[] — fetched items, most recent first
+ *  - reviews: Review[] — fetched items, most recent first (up to 100)
  *  - aggregate: { averageRating, totalReviews }
+ *      averageRating — computed from fetched items
+ *      totalReviews  — server-reported total (may exceed 100 if paginated)
  *  - isLoading: boolean — true while the initial fetch is in-flight
  *  - error: string | null — error message on API failure, null otherwise
  *
@@ -24,6 +26,7 @@ const REVIEWS_COLLECTION = 'CF-k8hw';
 
 export interface ReviewAggregate {
   averageRating: number;
+  /** Server-reported total, may exceed the number of fetched reviews. */
   totalReviews: number;
 }
 
@@ -49,11 +52,11 @@ interface RawReviewItem {
   [key: string]: unknown;
 }
 
-function computeAggregate(reviews: Review[]): ReviewAggregate {
-  const totalReviews = reviews.length;
-  if (totalReviews === 0) return { averageRating: 0, totalReviews: 0 };
+/** Compute average rating from fetched reviews; count comes from the server total. */
+function computeAggregate(reviews: Review[], totalReviews: number): ReviewAggregate {
+  if (totalReviews === 0 || reviews.length === 0) return { averageRating: 0, totalReviews };
   const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-  const averageRating = Math.round((sum / totalReviews) * 10) / 10;
+  const averageRating = Math.round((sum / reviews.length) * 10) / 10;
   return { averageRating, totalReviews };
 }
 
@@ -86,15 +89,18 @@ function rawToReview(item: RawReviewItem): Review {
 export function useProductReviews(productId: string): UseProductReviewsResult {
   const wixClient = useOptionalWixClient();
   const [reviews, setReviews] = useState<Review[]>([]);
+  // Server-reported total — may exceed reviews.length when there are >100 reviews.
+  const [totalReviews, setTotalReviews] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Derive aggregate from reviews state -- stays in sync without extra state.
-  const aggregate = useMemo(() => computeAggregate(reviews), [reviews]);
+  // Derive aggregate from current state — stays in sync without extra state.
+  const aggregate = useMemo(() => computeAggregate(reviews, totalReviews), [reviews, totalReviews]);
 
   useEffect(() => {
     if (!wixClient) {
       setReviews([]);
+      setTotalReviews(0);
       setIsLoading(false);
       setError(null);
       return;
@@ -114,6 +120,7 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
 
         if (cancelled) return;
         setReviews(result.items.map(rawToReview));
+        setTotalReviews(result.totalResults);
       } catch (err) {
         if (cancelled) return;
         const error = err instanceof Error ? err : new Error('Failed to load reviews');
@@ -123,6 +130,7 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
         });
         setError(error.message);
         setReviews([]);
+        setTotalReviews(0);
       } finally {
         // finally always runs -- even after cancelled return in catch.
         // Guard here prevents state update on unmounted component.

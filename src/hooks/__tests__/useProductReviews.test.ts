@@ -371,3 +371,32 @@ describe('useProductReviews', () => {
     expect(result.current.reviews[0].rating).toBe(3);
   });
 });
+
+  // ── totalReviews from server totalResults ─────────────────────────────────
+
+  it('uses server totalResults for aggregate.totalReviews, not reviews.length', async () => {
+    // Simulate: server has 247 reviews but we only fetch 100
+    const fetchedItems = Array.from({ length: 100 }, (_, i) =>
+      makeItem({ id: `r${i}`, rating: 5 }),
+    );
+    mockQueryData.mockResolvedValue({ items: fetchedItems, totalResults: 247 });
+
+    const { result } = renderHook(() => useProductReviews('prod-popular'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews).toHaveLength(100);
+    // totalReviews must reflect the server total, not the fetched count
+    expect(result.current.aggregate.totalReviews).toBe(247);
+    // averageRating is computed from the 100 fetched items
+    expect(result.current.aggregate.averageRating).toBe(5.0);
+  });
+
+  it('uses totalResults=0 for aggregate when API returns empty results', async () => {
+    mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+    const { result } = renderHook(() => useProductReviews('prod-new'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.aggregate.totalReviews).toBe(0);
+    expect(result.current.aggregate.averageRating).toBe(0);
+  });
