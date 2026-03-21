@@ -1,31 +1,29 @@
 /**
  * @module MiniCartDrawer
  *
- * Slide-up mini-cart drawer — cm-2us.
+ * Slide-up mini-cart drawer — cm-2us / cm-9sr.
  *
- * Shows a summary of the current cart (item count + subtotal) with a
- * "Checkout" CTA. Slides up from the bottom of the screen over any content.
- * Dismissed by tapping the semi-transparent backdrop or the close button.
- * Should NOT be rendered on the Checkout screen.
+ * Phase 1 (cm-2us): item count + subtotal summary, checkout CTA.
+ * Phase 2 (cm-9sr): CF-gsza item list (image, name, price, qty ± controls,
+ *   remove), swipe-down gesture dismiss, overlay tap dismiss.
  *
- * Accessibility: the outer container holds testID="mini-cart-drawer" +
- * accessibilityViewIsModal so VoiceOver ignores background content, while
- * keeping the backdrop and panel as children (accessible to RNTL queries).
+ * Dismissed by: close button, backdrop tap, or swipe-down gesture
+ * (translation > 100px OR velocity > 500).
  *
- * Usage:
- *   <MiniCartDrawer
- *     visible={isOpen}
- *     onClose={close}
- *     onCheckout={() => navigation.navigate('Checkout')}
- *   />
+ * Should NOT be rendered on the Checkout screen (suppressed by MiniCartDrawerHost).
  */
 
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useTheme } from '@/theme';
-import { useCart } from '@/hooks/useCart';
+import { useCart, type CartItem } from '@/hooks/useCart';
 import { formatPrice } from '@/utils';
+
+const SWIPE_DISMISS_TRANSLATION = 100;
+const SWIPE_DISMISS_VELOCITY = 500;
 
 interface Props {
   visible: boolean;
@@ -34,30 +32,201 @@ interface Props {
   testID?: string;
 }
 
-/** Slide-up mini-cart summary drawer with checkout CTA. */
+// ── MiniCartItem ─────────────────────────────────────────────────────────────
+
+interface MiniCartItemProps {
+  item: CartItem;
+  onRemove: (itemId: string) => void;
+  onUpdateQty: (itemId: string, qty: number) => void;
+}
+
+function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
+  const { colors, borderRadius } = useTheme();
+  const lineTotal = formatPrice(item.unitPrice * item.quantity);
+  const name = `${item.model.name} — ${item.fabric.name}`;
+
+  const handleInc = useCallback(() => {
+    onUpdateQty(item.id, item.quantity + 1);
+  }, [item.id, item.quantity, onUpdateQty]);
+
+  const handleDec = useCallback(() => {
+    if (item.quantity <= 1) {
+      onRemove(item.id);
+    } else {
+      onUpdateQty(item.id, item.quantity - 1);
+    }
+  }, [item.id, item.quantity, onRemove, onUpdateQty]);
+
+  const handleRemove = useCallback(() => {
+    onRemove(item.id);
+  }, [item.id, onRemove]);
+
+  return (
+    <View style={itemStyles.row}>
+      {/* Image / color swatch */}
+      {item.thumbnailUrl ? (
+        <Image
+          testID={`cartItemImage-${item.id}`}
+          source={{ uri: item.thumbnailUrl }}
+          style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
+          contentFit="cover"
+        />
+      ) : (
+        <View
+          testID={`cartItemImage-${item.id}`}
+          style={[
+            itemStyles.thumb,
+            { backgroundColor: item.fabric.color, borderRadius: borderRadius.sm },
+          ]}
+        />
+      )}
+
+      {/* Name + price */}
+      <View style={itemStyles.info}>
+        <Text
+          testID={`cartItemName-${item.id}`}
+          style={[itemStyles.name, { color: colors.espresso }]}
+          numberOfLines={2}
+        >
+          {name}
+        </Text>
+        <Text
+          testID={`cartItemPrice-${item.id}`}
+          style={[itemStyles.price, { color: colors.espresso }]}
+        >
+          {lineTotal}
+        </Text>
+      </View>
+
+      {/* Qty controls */}
+      <View style={itemStyles.qtyRow}>
+        <TouchableOpacity
+          testID={`cartItemQtyDec-${item.id}`}
+          onPress={handleDec}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel={item.quantity <= 1 ? 'Remove item' : 'Decrease quantity'}
+          accessibilityRole="button"
+        >
+          <Text style={[itemStyles.qtyBtn, { color: colors.espresso }]}>−</Text>
+        </TouchableOpacity>
+        <Text
+          testID={`cartItemQty-${item.id}`}
+          style={[itemStyles.qtyVal, { color: colors.espresso }]}
+        >
+          {item.quantity}
+        </Text>
+        <TouchableOpacity
+          testID={`cartItemQtyInc-${item.id}`}
+          onPress={handleInc}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel="Increase quantity"
+          accessibilityRole="button"
+        >
+          <Text style={[itemStyles.qtyBtn, { color: colors.espresso }]}>+</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Remove button */}
+      <TouchableOpacity
+        testID={`cartItemRemove-${item.id}`}
+        onPress={handleRemove}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        accessibilityLabel={`Remove ${item.model.name}`}
+        accessibilityRole="button"
+        style={itemStyles.removeBtn}
+      >
+        <Text style={[itemStyles.removeBtnText, { color: colors.espressoLight }]}>×</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const itemStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    gap: 12,
+  },
+  thumb: {
+    width: 56,
+    height: 56,
+    flexShrink: 0,
+  },
+  info: {
+    flex: 1,
+    gap: 4,
+  },
+  name: {
+    fontSize: 13,
+    fontWeight: '500',
+    lineHeight: 17,
+  },
+  price: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  qtyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  qtyBtn: {
+    fontSize: 18,
+    fontWeight: '400',
+    lineHeight: 22,
+    minWidth: 24,
+    textAlign: 'center',
+  },
+  qtyVal: {
+    fontSize: 14,
+    fontWeight: '600',
+    minWidth: 20,
+    textAlign: 'center',
+  },
+  removeBtn: {
+    paddingLeft: 4,
+  },
+  removeBtnText: {
+    fontSize: 18,
+    fontWeight: '400',
+  },
+});
+
+// ── MiniCartDrawer ───────────────────────────────────────────────────────────
+
+/** Slide-up mini-cart drawer with item list, swipe-dismiss, and checkout CTA. */
 export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
-  const { itemCount, subtotal } = useCart();
+  const { itemCount, subtotal, items, removeItem, updateQuantity } = useCart();
 
   const handleCheckout = useCallback(() => {
     onClose();
     onCheckout();
   }, [onClose, onCheckout]);
 
+  const swipeGesture = Gesture.Pan()
+    .minDistance(10)
+    .onUpdate(() => {})
+    .onEnd((e) => {
+      if (e.translationY > SWIPE_DISMISS_TRANSLATION || e.velocityY > SWIPE_DISMISS_VELOCITY) {
+        onClose();
+      }
+    });
+
   if (!visible) return null;
 
   const checkoutDisabled = itemCount === 0;
 
   return (
-    // Container holds testID + accessibilityViewIsModal so VoiceOver hides
-    // background content while keeping backdrop and panel as accessible children.
     <View
       style={StyleSheet.absoluteFillObject}
       testID={testID ?? 'mini-cart-drawer'}
       accessibilityViewIsModal={true}
       accessibilityRole="none"
     >
-      {/* Backdrop — child of container, not hidden by accessibilityViewIsModal */}
+      {/* Backdrop */}
       <Pressable
         style={styles.backdrop}
         onPress={onClose}
@@ -65,104 +234,129 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
         accessibilityLabel="Close cart"
       />
 
-      {/* Drawer panel */}
-      <Animated.View
-        entering={SlideInDown.springify().damping(20)}
-        exiting={SlideOutDown.duration(220)}
-        style={[
-          styles.drawer,
-          {
-            backgroundColor: colors.sandBase,
-            borderTopLeftRadius: borderRadius.lg ?? 20,
-            borderTopRightRadius: borderRadius.lg ?? 20,
-          },
-        ]}
-      >
-        {/* Header row */}
-        <View style={styles.header}>
-          <Text
-            style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
-          >
-            Your Cart
-          </Text>
-          <TouchableOpacity
-            onPress={onClose}
-            testID="mini-cart-close-btn"
-            accessibilityLabel="Close cart drawer"
-            accessibilityRole="button"
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Text style={[styles.closeIcon, { color: colors.espresso }]}>✕</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Summary row */}
-        <View style={[styles.summaryRow, { borderTopColor: colors.sandDark }]}>
-          <View style={styles.countWrap}>
-            <Text
-              style={[
-                styles.countLabel,
-                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
-              ]}
-            >
-              Items
-            </Text>
-            <Text
-              style={[
-                styles.countValue,
-                { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
-              ]}
-              testID="mini-cart-item-count"
-            >
-              {itemCount}
-            </Text>
-          </View>
-          <View style={styles.subtotalWrap}>
-            <Text
-              style={[
-                styles.subtotalLabel,
-                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
-              ]}
-            >
-              Subtotal
-            </Text>
-            <Text
-              style={[
-                styles.subtotalValue,
-                { color: colors.espresso, fontFamily: typography.headingFamily },
-              ]}
-              testID="mini-cart-subtotal"
-            >
-              {formatPrice(subtotal)}
-            </Text>
-          </View>
-        </View>
-
-        {/* Checkout button */}
-        <TouchableOpacity
+      {/* Drawer panel — wrapped with swipe-down gesture */}
+      <GestureDetector gesture={swipeGesture}>
+        <Animated.View
+          entering={SlideInDown.springify().damping(20)}
+          exiting={SlideOutDown.duration(220)}
           style={[
-            styles.checkoutBtn,
+            styles.drawer,
             {
-              backgroundColor: checkoutDisabled ? colors.sandDark : colors.espresso,
-              borderRadius: borderRadius.pill ?? 28,
-              marginHorizontal: spacing.lg,
-              marginBottom: spacing.lg,
+              backgroundColor: colors.sandBase,
+              borderTopLeftRadius: borderRadius.lg ?? 20,
+              borderTopRightRadius: borderRadius.lg ?? 20,
             },
           ]}
-          onPress={handleCheckout}
-          disabled={checkoutDisabled}
-          testID="mini-cart-checkout-btn"
-          accessibilityRole="button"
-          accessibilityLabel={
-            checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`
-          }
-          accessibilityState={{ disabled: checkoutDisabled }}
         >
-          <Text style={[styles.checkoutBtnText, { fontFamily: typography.bodyFamilyBold }]}>
-            {checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`}
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
+          {/* Header row */}
+          <View style={styles.header}>
+            <Text
+              style={[
+                styles.title,
+                { color: colors.espresso, fontFamily: typography.headingFamily },
+              ]}
+            >
+              Your Cart
+            </Text>
+            <TouchableOpacity
+              onPress={onClose}
+              testID="mini-cart-close-btn"
+              accessibilityLabel="Close cart drawer"
+              accessibilityRole="button"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={[styles.closeIcon, { color: colors.espresso }]}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Item list */}
+          {items.length === 0 ? (
+            <View testID="mini-cart-empty" style={styles.emptyWrap}>
+              <Text style={[styles.emptyText, { color: colors.espressoLight }]}>
+                Your cart is empty
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.itemList}>
+              {items.map((item) => (
+                <MiniCartItem
+                  key={item.id}
+                  item={item}
+                  onRemove={removeItem}
+                  onUpdateQty={updateQuantity}
+                />
+              ))}
+            </View>
+          )}
+
+          {/* Summary row */}
+          <View style={[styles.summaryRow, { borderTopColor: colors.sandDark }]}>
+            <View style={styles.countWrap}>
+              <Text
+                style={[
+                  styles.countLabel,
+                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                ]}
+              >
+                Items
+              </Text>
+              <Text
+                style={[
+                  styles.countValue,
+                  { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                ]}
+                testID="mini-cart-item-count"
+              >
+                {itemCount}
+              </Text>
+            </View>
+            <View style={styles.subtotalWrap}>
+              <Text
+                style={[
+                  styles.subtotalLabel,
+                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                ]}
+              >
+                Subtotal
+              </Text>
+              <Text
+                style={[
+                  styles.subtotalValue,
+                  { color: colors.espresso, fontFamily: typography.headingFamily },
+                ]}
+                testID="mini-cart-subtotal"
+              >
+                {formatPrice(subtotal)}
+              </Text>
+            </View>
+          </View>
+
+          {/* Checkout button */}
+          <TouchableOpacity
+            style={[
+              styles.checkoutBtn,
+              {
+                backgroundColor: checkoutDisabled ? colors.sandDark : colors.espresso,
+                borderRadius: borderRadius.pill ?? 28,
+                marginHorizontal: spacing.lg,
+                marginBottom: spacing.lg,
+              },
+            ]}
+            onPress={handleCheckout}
+            disabled={checkoutDisabled}
+            testID="mini-cart-checkout-btn"
+            accessibilityRole="button"
+            accessibilityLabel={
+              checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`
+            }
+            accessibilityState={{ disabled: checkoutDisabled }}
+          >
+            <Text style={[styles.checkoutBtnText, { fontFamily: typography.bodyFamilyBold }]}>
+              {checkoutDisabled ? 'Cart is empty' : `Checkout — ${formatPrice(subtotal)}`}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }
@@ -198,6 +392,17 @@ const styles = StyleSheet.create({
   closeIcon: {
     fontSize: 18,
     fontWeight: '400',
+  },
+  itemList: {
+    maxHeight: 280,
+  },
+  emptyWrap: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 15,
   },
   summaryRow: {
     flexDirection: 'row',

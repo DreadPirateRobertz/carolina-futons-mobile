@@ -42,6 +42,7 @@ export interface CartItem {
   fabric: Fabric;
   quantity: number;
   unitPrice: number; // basePrice + fabric.price
+  thumbnailUrl?: string; // product image URL (from Wix catalog; absent for local-only items)
 }
 
 /** Internal state managed by the cart reducer. */
