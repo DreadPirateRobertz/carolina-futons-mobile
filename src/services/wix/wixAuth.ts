@@ -271,6 +271,42 @@ export class WixAuthService {
     }
   }
 
+  /**
+   * Sync a member's saved addresses to Wix contact addressLine data (cm-v54).
+   * Maps local SavedAddress[] → Wix contact.addresses[].
+   * Fire-and-forget from useAddressBook; failures are non-fatal.
+   *
+   * SOURCE OF TRUTH: The mobile app is the authoritative source for contact
+   * addresses. This call performs a full-replace — any addresses previously set
+   * via Wix web dashboard or other channels will be overwritten with the current
+   * mobile address book contents. This is intentional: mobile-entered addresses
+   * are validated and normalized; web-side addresses are not managed by this app.
+   */
+  async syncMemberAddresses(
+    memberId: string,
+    addresses: Array<{
+      fullName: string;
+      line1: string;
+      line2: string;
+      city: string;
+      state: string;
+      zip: string;
+    }>,
+  ): Promise<void> {
+    const client = getWixSdkClient();
+    const wixAddresses = addresses.map((a) => ({
+      addressLine: a.line1,
+      addressLine2: a.line2 || undefined,
+      city: a.city,
+      subdivision: a.state,
+      postalCode: a.zip,
+      country: 'US',
+    }));
+    await client.members.updateMember(memberId, {
+      contact: { addresses: wixAddresses },
+    } as Record<string, unknown>);
+  }
+
   isLoggedIn(): boolean {
     return this.auth.loggedIn();
   }

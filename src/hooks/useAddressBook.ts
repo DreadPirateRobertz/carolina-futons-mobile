@@ -4,6 +4,9 @@
  * Manages saved shipping addresses for returning customers.
  * Persists to AsyncStorage. Supports add, edit, delete, and set-default.
  * Max 5 saved addresses. Auto-saves addresses from successful checkouts.
+ *
+ * Optional wixSync callback (cm-v54): when provided, fire-and-forget syncs
+ * the full address array to Wix member contact after each local mutation.
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,6 +23,15 @@ export interface SavedAddress {
   state: string;
   zip: string;
   isDefault: boolean;
+}
+
+export interface AddressBookOptions {
+  /**
+   * Optional callback to sync the full address list with an external store
+   * (e.g., Wix member contacts API). Called fire-and-forget after each
+   * local mutation. Failures are swallowed to keep local state authoritative.
+   */
+  wixSync?: (addresses: SavedAddress[]) => Promise<void>;
 }
 
 export interface AddressBookState {
@@ -44,7 +56,8 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-export function useAddressBook(): AddressBookState {
+export function useAddressBook(options?: AddressBookOptions): AddressBookState {
+  const { wixSync } = options ?? {};
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,38 +82,65 @@ export function useAddressBook(): AddressBookState {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, []);
 
-  const addAddress = useCallback(async (address: Omit<SavedAddress, 'id' | 'isDefault'>) => {
-    setAddresses((prev) => {
-      const isFirst = prev.length === 0;
-      const newAddr: SavedAddress = { ...address, id: generateId(), isDefault: isFirst };
-      const updated = [...prev, newAddr].slice(-MAX_ADDRESSES);
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+  const addAddress = useCallback(
+    async (address: Omit<SavedAddress, 'id' | 'isDefault'>) => {
+      const newAddr: SavedAddress = {
+        ...address,
+        id: generateId(),
+        isDefault: false, // will be corrected by setAddresses below
+      };
+      // Use a ref-based pattern: capture computed result via closure
+      let computed: SavedAddress[] = [];
+      setAddresses((prev) => {
+        const isFirst = prev.length === 0;
+        const withDefault = { ...newAddr, isDefault: isFirst };
+        computed = [...prev, withDefault].slice(-MAX_ADDRESSES);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
+        return computed;
+      });
+      // Yield to allow state updater to run, then sync
+      await Promise.resolve();
+      if (wixSync) {
+        wixSync(computed).catch(() => {});
+      }
+    },
+    [wixSync],
+  );
 
   const updateAddress = useCallback(
     async (id: string, updates: Partial<Omit<SavedAddress, 'id'>>) => {
+      let computed: SavedAddress[] = [];
       setAddresses((prev) => {
-        const updated = prev.map((a) => (a.id === id ? { ...a, ...updates } : a));
+        computed = prev.map((a) => (a.id === id ? { ...a, ...updates } : a));
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
+        return computed;
+      });
+      await Promise.resolve();
+      if (wixSync) {
+        wixSync(computed).catch(() => {});
+      }
+    },
+    [wixSync],
+  );
+
+  const deleteAddress = useCallback(
+    async (id: string) => {
+      let updated: SavedAddress[] = [];
+      setAddresses((prev) => {
+        updated = prev.filter((a) => a.id !== id);
+        // If deleted was default and others remain, promote first
+        if (updated.length > 0 && !updated.some((a) => a.isDefault)) {
+          updated = [{ ...updated[0], isDefault: true }, ...updated.slice(1)];
+        }
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         return updated;
       });
-    },
-    [],
-  );
-
-  const deleteAddress = useCallback(async (id: string) => {
-    setAddresses((prev) => {
-      let updated = prev.filter((a) => a.id !== id);
-      // If deleted was default and others remain, promote first
-      if (updated.length > 0 && !updated.some((a) => a.isDefault)) {
-        updated = [{ ...updated[0], isDefault: true }, ...updated.slice(1)];
+      if (wixSync) {
+        wixSync(updated).catch(() => {});
       }
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+    },
+    [wixSync],
+  );
 
   const setDefault = useCallback(async (id: string) => {
     setAddresses((prev) => {
