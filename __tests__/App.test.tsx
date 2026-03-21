@@ -69,13 +69,33 @@ jest.mock('expo-haptics', () => ({
 jest.mock('react-native-gesture-handler', () => {
   const { View } = require('react-native');
   const { createElement } = require('react');
+  // Fluent builder — every method returns the same builder so any chain works
+  function makeGestureBuilder() {
+    const builder: Record<string, (...args: any[]) => any> = {};
+    const methods = [
+      'onStart',
+      'onUpdate',
+      'onEnd',
+      'onFinalize',
+      'onBegin',
+      'minDistance',
+      'minPointers',
+      'numberOfTaps',
+      'simultaneousWithExternalGesture',
+    ];
+    methods.forEach((m) => {
+      builder[m] = () => builder;
+    });
+    return builder;
+  }
   return {
     GestureHandlerRootView: ({ children, ...props }: any) => createElement(View, props, children),
     Gesture: {
-      Pan: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
-      Pinch: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
-      Rotation: () => ({ onStart: () => ({ onUpdate: () => ({ onEnd: () => ({}) }) }) }),
-      Simultaneous: () => ({}),
+      Pan: makeGestureBuilder,
+      Pinch: makeGestureBuilder,
+      Rotation: makeGestureBuilder,
+      Tap: makeGestureBuilder,
+      Simultaneous: () => makeGestureBuilder(),
     },
     GestureDetector: ({ children }: any) => children,
   };
