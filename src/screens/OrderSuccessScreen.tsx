@@ -5,8 +5,9 @@
  * "View Order Confirmation" on PaymentConfirmationScreen. Displays a success
  * state with order number and CTAs to continue shopping or view orders.
  */
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { Platform, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 
 interface Props {
@@ -25,6 +26,12 @@ export function OrderSuccessScreen({
   testID,
 }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, []);
 
   return (
     <View
