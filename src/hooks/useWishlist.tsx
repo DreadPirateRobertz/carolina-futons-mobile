@@ -106,6 +106,8 @@ interface WishlistContextValue {
   pendingSync: number;
   /** Whether a sync replay is currently in progress. */
   isSyncing: boolean;
+  /** Re-evaluates wishlist with current product prices (for pull-to-refresh). */
+  refresh: () => void;
 }
 
 const WishlistContext = createContext<WishlistContextValue | null>(null);
@@ -351,6 +353,10 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
     return `Check out my Carolina Futons wishlist!\n\n${lines.join('\n')}\n\nShop at carolinafutons.com`;
   }, [getProducts]);
 
+  const refresh = useCallback(() => {
+    dispatch({ type: 'LOAD', items: state.items });
+  }, [state.items]);
+
   const count = state.items.length;
   const value = useMemo<WishlistContextValue>(
     () => ({
@@ -366,6 +372,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       getShareText,
       pendingSync,
       isSyncing,
+      refresh,
     }),
     [
       state.items,
@@ -380,6 +387,7 @@ export function WishlistProvider({ children, initialItems }: WishlistProviderPro
       getShareText,
       pendingSync,
       isSyncing,
+      refresh,
     ],
   );
 
