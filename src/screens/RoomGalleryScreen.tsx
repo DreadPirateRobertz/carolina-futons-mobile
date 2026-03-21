@@ -9,15 +9,7 @@
  * and the populated grid.
  */
 import React, { useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -110,7 +102,7 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'room-gallery-screen'}
       >
-        <ActivityIndicator size="large" color={colors.sunsetCoral} testID="room-gallery-loading" />
+        <SkeletonRoomGrid count={6} />
       </View>
     );
   }
