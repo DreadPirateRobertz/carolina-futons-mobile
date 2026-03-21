@@ -76,12 +76,9 @@ describe('tag format contract: ProductCard ↔ ProductDetailScreen', () => {
     ['prod-biltmore-loveseat', 'biltmore-loveseat'],
   ];
 
-  it.each(pairs)(
-    'tags match for product "%s" / model "%s"',
-    (prodId, modelId) => {
-      expect(cardTag(prodId)).toBe(detailTag(modelId));
-    },
-  );
+  it.each(pairs)('tags match for product "%s" / model "%s"', (prodId, modelId) => {
+    expect(cardTag(prodId)).toBe(detailTag(modelId));
+  });
 
   it('tag never contains the "prod-" prefix', () => {
     for (const [prodId] of pairs) {
