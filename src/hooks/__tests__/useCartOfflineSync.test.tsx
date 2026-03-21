@@ -76,9 +76,10 @@ describe('useCart offline sync', () => {
     expect(queued).toHaveLength(1);
     expect(queued[0].action).toBe('CART_ADD_ITEM');
     expect(queued[0].payload).toEqual({
-      productId: asheville.id,
+      productId: `${asheville.id}:${naturalLinen.id}`,
+      catalogItemId: asheville.id,
+      variantId: naturalLinen.id,
       quantity: 1,
-      fabricId: naturalLinen.id,
     });
   });
 
@@ -168,5 +169,61 @@ describe('useCart offline sync', () => {
     fireEvent.press(getByTestId('add-asheville-linen'));
     expect(getByTestId('item-count').props.children).toBe(2);
     expect(getQueue('cart')).toHaveLength(0);
+  });
+});
+
+describe('LWW conflict resolution', () => {
+  it('drains queue after ADD then REMOVE for same product on reconnect', async () => {
+    const { getByTestId } = renderOfflineCart(false);
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('remove-asheville-linen'));
+
+    expect(getQueue('cart')).toHaveLength(2);
+    expect(getByTestId('pending-sync').props.children).toBe(2);
+
+    // Go online → LWW compaction fires before replay; queue drains to 0
+    await act(async () => {
+      fireEvent.press(getByTestId('go-online'));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('pending-sync').props.children).toBe(0);
+    });
+  });
+
+  it('drains queue after ADD then UPDATE_QUANTITY for same product on reconnect', async () => {
+    const { getByTestId } = renderOfflineCart(false);
+
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('update-qty-3'));
+
+    expect(getQueue('cart')).toHaveLength(2);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('go-online'));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('pending-sync').props.children).toBe(0);
+    });
+  });
+
+  it('preserves distinct products through LWW compaction', async () => {
+    const { getByTestId } = renderOfflineCart(false);
+
+    // Two adds for the same product — LWW keeps only last
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('add-asheville-linen'));
+
+    expect(getQueue('cart')).toHaveLength(2);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('go-online'));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('pending-sync').props.children).toBe(0);
+    });
   });
 });

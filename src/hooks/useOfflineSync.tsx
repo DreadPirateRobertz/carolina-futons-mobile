@@ -49,6 +49,8 @@ interface UseOfflineSyncOptions {
   maxRetries?: number;
   /** Base delay in ms for exponential backoff (default: 1000). */
   baseDelayMs?: number;
+  /** Called synchronously before replay begins (e.g., for LWW compaction). */
+  preSync?: () => void;
 }
 
 /** Return value of the `useOfflineSync` hook. */
@@ -90,7 +92,8 @@ interface UseOfflineSyncResult {
  * });
  */
 export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineSyncResult {
-  const { onSync, autoLoad = true, executors: executorMap, maxRetries, baseDelayMs } = options;
+  const { onSync, autoLoad = true, executors: executorMap, maxRetries, baseDelayMs, preSync } =
+    options;
   const { isOnline } = useConnectivity();
   const wasOnline = useRef(isOnline);
   const [pendingCount, setPendingCount] = useState(0);
@@ -118,11 +121,17 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
     }
   }, [autoLoad]);
 
+  const preSyncRef = useRef(preSync);
+  preSyncRef.current = preSync;
+
   const syncNow = useCallback(async () => {
     if (getQueueLength() === 0) return;
 
     setIsSyncing(true);
     try {
+      // Run pre-sync hook (e.g., LWW compaction) before replaying.
+      preSyncRef.current?.();
+
       // Replay via executor registry with exponential backoff.
       // replay() dequeues successful actions internally; failed actions stay in queue.
       const result = await replay({ maxRetries, baseDelayMs });

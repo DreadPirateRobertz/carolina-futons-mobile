@@ -28,6 +28,7 @@ import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 import type { WixCartLineItem } from '@/services/wix/wixClient';
 import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
+import { compactByLWW } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 /**
@@ -211,7 +212,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       CART_ADD_ITEM: async (payload: Record<string, unknown>) => {
         const client = wixClientRef.current;
         if (!client) return;
-        await client.addToCart(payload.productId as string, payload.quantity as number);
+        await client.addToCart(
+          payload.catalogItemId as string,
+          payload.quantity as number,
+          payload.variantId as string | undefined,
+        );
       },
       CART_REMOVE_ITEM: async (payload: Record<string, unknown>) => {
         const client = wixClientRef.current;
@@ -232,6 +237,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const { queueAction, pendingCount, isSyncing } = useOfflineSync({
     executors: cartExecutors,
+    preSync: () => compactByLWW('cart', 'productId'),
   });
 
   // ── AsyncStorage persistence ──────────────────────────────────
@@ -345,9 +351,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         queueAction('cart', 'CART_ADD_ITEM', {
-          productId: model.id,
+          productId: `${model.id}:${fabric.id}`,
+          catalogItemId: model.id,
+          variantId: fabric.id,
           quantity,
-          fabricId: fabric.id,
         });
       }
     },
