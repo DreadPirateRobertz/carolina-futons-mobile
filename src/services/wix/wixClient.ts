@@ -529,9 +529,12 @@ export class WixClient {
 
   // ── Affirm BNPL (proxied through Wix backend) ─────────────
 
-  async callAffirmPrequal(request: {
-    amount: number;
-  }): Promise<{ eligible: boolean; financing_program?: string; min_loan_amount?: number; max_loan_amount?: number }> {
+  async callAffirmPrequal(request: { amount: number }): Promise<{
+    eligible: boolean;
+    financing_program?: string;
+    min_loan_amount?: number;
+    max_loan_amount?: number;
+  }> {
     return this.post('/ecom/v1/affirm/prequal', request);
   }
 

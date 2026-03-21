@@ -92,8 +92,7 @@ export async function checkAffirmPrequalification(
     const response: AffirmPrequalResponse = await wixClient.callAffirmPrequal(request);
     return { eligible: !!response.eligible };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : 'Affirm prequalification check failed';
+    const message = err instanceof Error ? err.message : 'Affirm prequalification check failed';
     return { eligible: false, error: message };
   }
 }
