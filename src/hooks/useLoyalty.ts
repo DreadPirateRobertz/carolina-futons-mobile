@@ -37,8 +37,8 @@ export interface UseLoyaltyResult {
 }
 
 function deriveTier(points: number): LoyaltyTier {
-  if (points >= 5000) return 'gold';
-  if (points >= 1000) return 'silver';
+  if (points >= 1500) return 'gold';
+  if (points >= 500) return 'silver';
   return 'bronze';
 }
 
