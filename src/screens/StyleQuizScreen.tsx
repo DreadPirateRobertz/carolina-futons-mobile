@@ -2,8 +2,9 @@
  * @module StyleQuizScreen
  *
  * Standalone style-preference quiz accessible from Account settings.
- * Lets users set or update room type, aesthetic preference, and primary
- * use-case. Persists answers via AsyncStorage through the useStyleQuiz hook.
+ * Collects room type, aesthetic preference, primary use-case, color palette,
+ * and size preference. Shows a personality label and curated product grid on
+ * completion. Persists answers via AsyncStorage through the useStyleQuiz hook.
  */
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
@@ -12,9 +13,12 @@ import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import {
   useStyleQuiz,
+  getRecommendation,
   type RoomType,
   type StylePreference,
   type PrimaryUse,
+  type ColorPalette,
+  type SizePreference,
 } from '@/hooks/useStyleQuiz';
 
 // ── Quiz Questions ────────────────────────────────────────────────
@@ -46,11 +50,25 @@ const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
   { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
 ];
 
+const COLOR_OPTIONS: QuizOption<ColorPalette>[] = [
+  { value: 'warm', label: 'Warm Tones', icon: '\u{1F9E1}' },
+  { value: 'cool', label: 'Cool & Calm', icon: '\u{1F4AB}' },
+  { value: 'neutral', label: 'Natural Neutrals', icon: '\u{1FAA8}' },
+  { value: 'bold', label: 'Bold Accents', icon: '\u{1F3A8}' },
+];
+
+const SIZE_OPTIONS: QuizOption<SizePreference>[] = [
+  { value: 'apartment', label: 'Apartment-Sized', icon: '\u{1F3D9}' },
+  { value: 'standard', label: 'Standard Room', icon: '\u{1F4CF}' },
+  { value: 'oversized', label: 'Oversized & Roomy', icon: '\u{1F6CB}' },
+  { value: 'custom', label: 'Custom Sizing', icon: '\u{1F4D0}' },
+];
+
 const QUESTIONS: {
   title: string;
   subtitle: string;
   options: QuizOption<string>[];
-  key: 'room' | 'style' | 'primaryUse';
+  key: 'room' | 'style' | 'primaryUse' | 'colorPalette' | 'sizePreference';
 }[] = [
   {
     title: 'What room is\nthis for?',
@@ -70,22 +88,44 @@ const QUESTIONS: {
     options: USE_OPTIONS,
     key: 'primaryUse',
   },
+  {
+    title: 'What\u2019s your\ncolor vibe?',
+    subtitle: 'We\u2019ll match fabrics to your palette',
+    options: COLOR_OPTIONS,
+    key: 'colorPalette',
+  },
+  {
+    title: 'How much\nroom do you have?',
+    subtitle: 'So we recommend the right fit',
+    options: SIZE_OPTIONS,
+    key: 'sizePreference',
+  },
 ];
 
-const TOTAL_STEPS = QUESTIONS.length + 1; // 3 quiz + 1 completion
+const TOTAL_STEPS = QUESTIONS.length + 1; // 5 quiz + 1 completion
 
 // ── Main Component ────────────────────────────────────────────────
 
 interface Props {
   onComplete: () => void;
   onBack: () => void;
+  /** Called with a product slug when a product card in the completion grid is tapped. */
+  onProductPress?: (slug: string) => void;
   testID?: string;
 }
 
-export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
+export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
   const [step, setStep] = useState(0);
-  const { preferences, setRoom, setStyle, setPrimaryUse, savePreferences } = useStyleQuiz();
+  const {
+    preferences,
+    setRoom,
+    setStyle,
+    setPrimaryUse,
+    setColorPalette,
+    setSizePreference,
+    savePreferences,
+  } = useStyleQuiz();
 
   const isCompletion = step === QUESTIONS.length;
 
@@ -94,9 +134,11 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
       if (step === 0) setRoom(value as RoomType);
       else if (step === 1) setStyle(value as StylePreference);
       else if (step === 2) setPrimaryUse(value as PrimaryUse);
+      else if (step === 3) setColorPalette(value as ColorPalette);
+      else if (step === 4) setSizePreference(value as SizePreference);
       setStep((s) => s + 1);
     },
-    [step, setRoom, setStyle, setPrimaryUse],
+    [step, setRoom, setStyle, setPrimaryUse, setColorPalette, setSizePreference],
   );
 
   const handleBack = useCallback(() => {
@@ -221,6 +263,8 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
 
   const renderCompletion = () => {
     const styleName = STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
+    const recommendation = getRecommendation(preferences.style, preferences.colorPalette);
+
     return (
       <View style={styles.completionContainer} testID="style-quiz-completion">
         <Text
@@ -241,12 +285,47 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
         </Text>
         <Text
           style={[
+            styles.personalityLabel,
+            { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+          ]}
+          testID="style-quiz-personality-label"
+        >
+          {recommendation.label}
+        </Text>
+        <Text
+          style={[
             styles.completionBody,
             { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
           ]}
         >
           {`We\u2019ll highlight ${styleName.toLowerCase()} picks and features that fit your lifestyle.`}
         </Text>
+
+        {/* Curated product grid */}
+        <View style={styles.productGrid} testID="style-quiz-product-grid">
+          {recommendation.productSlugs.map((slug) => (
+            <TouchableOpacity
+              key={slug}
+              testID={`quiz-product-${slug}`}
+              style={[
+                styles.productCard,
+                { borderRadius: borderRadius.card, backgroundColor: darkPalette.surface },
+              ]}
+              onPress={() => onProductPress?.(slug)}
+              accessibilityRole="button"
+              accessibilityLabel={`View ${slug}`}
+            >
+              <Text
+                style={[
+                  styles.productSlug,
+                  { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily },
+                ]}
+              >
+                {slug}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     );
   };
@@ -422,13 +501,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 39,
     letterSpacing: -0.34,
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  personalityLabel: {
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   completionBody: {
     fontSize: 17,
     textAlign: 'center',
     lineHeight: 27,
     maxWidth: 300,
+    marginBottom: 24,
+  },
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    width: '100%',
+  },
+  productCard: {
+    width: '46%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  productSlug: {
+    fontSize: 13,
+    textAlign: 'center',
   },
   // Bottom action
   buttonContainer: {

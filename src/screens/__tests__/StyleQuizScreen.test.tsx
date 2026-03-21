@@ -35,6 +35,15 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
+/** Press through all 5 quiz steps to reach the completion screen. */
+function completeQuiz(getByTestId: ReturnType<typeof render>['getByTestId']) {
+  fireEvent.press(getByTestId('quiz-option-living-room')); // room
+  fireEvent.press(getByTestId('quiz-option-modern')); // style
+  fireEvent.press(getByTestId('quiz-option-seating')); // primaryUse
+  fireEvent.press(getByTestId('quiz-option-cool')); // colorPalette
+  fireEvent.press(getByTestId('quiz-option-standard')); // sizePreference
+}
+
 describe('StyleQuizScreen', () => {
   const mockOnComplete = jest.fn();
   const mockOnBack = jest.fn();
@@ -97,13 +106,59 @@ describe('StyleQuizScreen', () => {
     expect(getByTestId('style-quiz-step-2')).toBeTruthy();
   });
 
-  it('shows completion after all questions answered', () => {
+  it('auto-advances to color palette step after primary use selection', () => {
     const { getByTestId } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
     fireEvent.press(getByTestId('quiz-option-studio'));
     fireEvent.press(getByTestId('quiz-option-modern'));
     fireEvent.press(getByTestId('quiz-option-dual-purpose'));
+    expect(getByTestId('style-quiz-step-3')).toBeTruthy();
+  });
+
+  it('renders color palette options on step 3', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-seating'));
+    expect(getByTestId('quiz-option-warm')).toBeTruthy();
+    expect(getByTestId('quiz-option-cool')).toBeTruthy();
+    expect(getByTestId('quiz-option-neutral')).toBeTruthy();
+    expect(getByTestId('quiz-option-bold')).toBeTruthy();
+  });
+
+  it('auto-advances to size preference step after color palette selection', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-seating'));
+    fireEvent.press(getByTestId('quiz-option-cool'));
+    expect(getByTestId('style-quiz-step-4')).toBeTruthy();
+  });
+
+  it('renders size preference options on step 4', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-seating'));
+    fireEvent.press(getByTestId('quiz-option-cool'));
+    expect(getByTestId('quiz-option-apartment')).toBeTruthy();
+    expect(getByTestId('quiz-option-standard')).toBeTruthy();
+    expect(getByTestId('quiz-option-oversized')).toBeTruthy();
+    expect(getByTestId('quiz-option-custom')).toBeTruthy();
+  });
+
+  it('shows completion after all 5 questions answered', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
     expect(getByTestId('style-quiz-completion')).toBeTruthy();
   });
 
@@ -132,9 +187,7 @@ describe('StyleQuizScreen', () => {
     const { getByTestId, getByText } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
-    fireEvent.press(getByTestId('quiz-option-guest-room'));
-    fireEvent.press(getByTestId('quiz-option-classic'));
-    fireEvent.press(getByTestId('quiz-option-kid-friendly'));
+    completeQuiz(getByTestId);
     expect(getByText('Save Preferences')).toBeTruthy();
     expect(getByTestId('style-quiz-save-button')).toBeTruthy();
   });
@@ -146,14 +199,98 @@ describe('StyleQuizScreen', () => {
     fireEvent.press(getByTestId('quiz-option-bedroom'));
     fireEvent.press(getByTestId('quiz-option-minimalist'));
     fireEvent.press(getByTestId('quiz-option-seating'));
+    fireEvent.press(getByTestId('quiz-option-neutral'));
+    fireEvent.press(getByTestId('quiz-option-apartment'));
     fireEvent.press(getByTestId('style-quiz-save-button'));
     await waitFor(() => {
       expect(mockSetItem).toHaveBeenCalledWith(
         '@carolina_futons_style_preferences',
-        JSON.stringify({ room: 'bedroom', style: 'minimalist', primaryUse: 'seating' }),
+        JSON.stringify({
+          room: 'bedroom',
+          style: 'minimalist',
+          primaryUse: 'seating',
+          colorPalette: 'neutral',
+          sizePreference: 'apartment',
+        }),
       );
       expect(mockOnComplete).toHaveBeenCalledTimes(1);
     });
+  });
+
+  // ── Personality label ────────────────────────────────────────────
+
+  it('shows personality label on completion', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId); // modern + cool → Coastal Minimalist
+    expect(getByTestId('style-quiz-personality-label')).toBeTruthy();
+  });
+
+  it('personality label shows Coastal Minimalist for modern + cool', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId); // living-room, modern, seating, cool, standard
+    const label = getByTestId('style-quiz-personality-label');
+    expect(label.props.children).toContain('Coastal Minimalist');
+  });
+
+  it('personality label shows Warm Industrial for rustic + warm', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-rustic'));
+    fireEvent.press(getByTestId('quiz-option-guest-bed'));
+    fireEvent.press(getByTestId('quiz-option-warm'));
+    fireEvent.press(getByTestId('quiz-option-standard'));
+    const label = getByTestId('style-quiz-personality-label');
+    expect(label.props.children).toContain('Warm Industrial');
+  });
+
+  // ── Product grid ─────────────────────────────────────────────────
+
+  it('renders curated product grid on completion', () => {
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    expect(getByTestId('style-quiz-product-grid')).toBeTruthy();
+  });
+
+  it('product grid has at least one product card', () => {
+    const { getByTestId, getAllByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    const cards = getAllByTestId(/^quiz-product-/);
+    expect(cards.length).toBeGreaterThan(0);
+  });
+
+  it('calls onProductPress with slug when product card tapped', () => {
+    const onProductPress = jest.fn();
+    const { getByTestId, getAllByTestId } = render(
+      <StyleQuizScreen
+        onComplete={mockOnComplete}
+        onBack={mockOnBack}
+        onProductPress={onProductPress}
+      />,
+    );
+    completeQuiz(getByTestId);
+    const cards = getAllByTestId(/^quiz-product-/);
+    fireEvent.press(cards[0]);
+    expect(onProductPress).toHaveBeenCalledTimes(1);
+    expect(typeof onProductPress.mock.calls[0][0]).toBe('string');
+  });
+
+  it('does not throw when onProductPress not provided and product tapped', () => {
+    const { getByTestId, getAllByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    const cards = getAllByTestId(/^quiz-product-/);
+    expect(() => fireEvent.press(cards[0])).not.toThrow();
   });
 
   // ── Accessibility ───────────────────────────────────────────────
@@ -183,9 +320,7 @@ describe('StyleQuizScreen', () => {
     const { getByTestId } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
-    fireEvent.press(getByTestId('quiz-option-living-room'));
-    fireEvent.press(getByTestId('quiz-option-modern'));
-    fireEvent.press(getByTestId('quiz-option-seating'));
+    completeQuiz(getByTestId);
     fireEvent.press(getByTestId('style-quiz-save-button'));
     // Should still complete even if storage fails
     await waitFor(() => {
@@ -200,6 +335,8 @@ describe('StyleQuizScreen', () => {
     fireEvent.press(getByTestId('quiz-option-living-room'));
     fireEvent.press(getByTestId('quiz-option-rustic'));
     fireEvent.press(getByTestId('quiz-option-guest-bed'));
+    fireEvent.press(getByTestId('quiz-option-warm'));
+    fireEvent.press(getByTestId('quiz-option-standard'));
     expect(getByTestId('style-quiz-completion')).toBeTruthy();
     expect(getByText(/rustic/i)).toBeTruthy();
   });
