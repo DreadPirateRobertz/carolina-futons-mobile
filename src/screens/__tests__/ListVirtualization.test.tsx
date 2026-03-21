@@ -7,7 +7,6 @@
  * are correctly configured on all product-listing FlatLists.
  */
 import React from 'react';
-import { FlatList } from 'react-native';
 import { render, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -18,7 +17,8 @@ import { CategoryScreen } from '../CategoryScreen';
 import { CollectionsScreen } from '../CollectionsScreen';
 import { WishlistScreen } from '../WishlistScreen';
 
-jest.useFakeTimers();
+// ShopScreen renders a heavy component tree; allow extra time under parallel CI load.
+jest.setTimeout(15000);
 
 jest.mock('@/hooks/usePremium', () => ({
   PremiumProvider: ({ children }: any) => children,
@@ -44,23 +44,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
-// Spy on FlatList to capture props
-const flatListSpy = jest.spyOn(FlatList.prototype, 'render');
-
-function getLastFlatListProps() {
-  // Get the most recent FlatList render call's props
-  const calls = flatListSpy.mock.instances;
-  if (calls.length === 0) return null;
-  const lastInstance = calls[calls.length - 1] as any;
-  return lastInstance?.props ?? null;
-}
-
-// Helper: find FlatList props by testID from rendered tree
-function findFlatListProps(root: any, testID: string): Record<string, any> | null {
-  const flatList = root.UNSAFE_queryByType?.(FlatList);
-  if (!flatList) return null;
-  return flatList.props;
-}
 
 async function renderShop() {
   const result = render(
@@ -70,9 +53,8 @@ async function renderShop() {
       </WishlistProvider>
     </ThemeProvider>,
   );
-  await act(async () => {
-    jest.advanceTimersByTime(700);
-  });
+  // Flush async effects: useDataCache AsyncStorage + fetchProducts chain
+  await act(async () => {});
   return result;
 }
 

@@ -7,7 +7,11 @@ process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = 'test-google-web-client-id';
 
 module.exports = {
   preset: 'jest-expo',
+  // Cap workers at 50% of CPUs to reduce resource contention under parallel load.
+  // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
+  maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
+  setupFilesAfterFramework: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)',
   ],
