@@ -139,7 +139,10 @@ describe('useQuizRecommendations', () => {
     const expensiveProduct = mockProduct({ id: 'exp-1', price: 1499 });
 
     beforeEach(() => {
-      mockQueryProducts.mockResolvedValue({ products: [cheapProduct, midProduct, expensiveProduct], totalResults: 3 });
+      mockQueryProducts.mockResolvedValue({
+        products: [cheapProduct, midProduct, expensiveProduct],
+        totalResults: 3,
+      });
       mockUseOptionalWixClient.mockReturnValue({ queryProducts: mockQueryProducts });
     });
 

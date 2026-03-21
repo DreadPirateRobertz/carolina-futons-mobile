@@ -14,7 +14,10 @@ import { CompareProvider } from '@/contexts/CompareContext';
 
 jest.mock('expo-image', () => ({ Image: 'Image' }));
 jest.mock('expo-av', () => ({}));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Light: 'light' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));
 jest.mock('react-native-reanimated', () => {
   const RN = require('react-native');
   return {
@@ -29,7 +32,13 @@ jest.mock('react-native-reanimated', () => {
       Value: jest.fn(() => ({ setValue: jest.fn(), interpolate: jest.fn(() => 0) })),
     },
     useSharedValue: (v: any) => ({ value: v }),
-    useAnimatedStyle: (fn: any) => { try { return fn(); } catch { return {}; } },
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     useAnimatedScrollHandler: () => () => {},
     useAnimatedRef: () => ({ current: null }),
     withSpring: (v: any) => v,
@@ -52,16 +61,40 @@ jest.mock('@react-navigation/native', () => ({
 }));
 jest.mock('@/hooks/usePremium', () => ({
   PremiumProvider: ({ children }: any) => children,
-  usePremium: () => ({ isPremium: false, isLoading: false, offerings: [], error: null, purchase: jest.fn(), restore: jest.fn(), refreshStatus: jest.fn() }),
+  usePremium: () => ({
+    isPremium: false,
+    isLoading: false,
+    offerings: [],
+    error: null,
+    purchase: jest.fn(),
+    restore: jest.fn(),
+    refreshStatus: jest.fn(),
+  }),
 }));
 jest.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: false, user: null, loading: false, error: null, signIn: jest.fn(), signUp: jest.fn(), signInWithGoogle: jest.fn(), signInWithApple: jest.fn(), resetPassword: jest.fn(), signOut: jest.fn(), clearError: jest.fn() }),
+  useAuth: () => ({
+    isAuthenticated: false,
+    user: null,
+    loading: false,
+    error: null,
+    signIn: jest.fn(),
+    signUp: jest.fn(),
+    signInWithGoogle: jest.fn(),
+    signInWithApple: jest.fn(),
+    resetPassword: jest.fn(),
+    signOut: jest.fn(),
+    clearError: jest.fn(),
+  }),
   AuthProvider: ({ children }: any) => children,
 }));
 const mockTrackView = jest.fn();
 const mockTrackPurchase = jest.fn();
 jest.mock('@/hooks/useRecommendations', () => ({
-  useRecommendations: () => ({ similarItems: [], trackView: mockTrackView, trackPurchase: mockTrackPurchase }),
+  useRecommendations: () => ({
+    similarItems: [],
+    trackView: mockTrackView,
+    trackPurchase: mockTrackPurchase,
+  }),
   RecommendationsProvider: ({ children }: any) => children,
 }));
 jest.mock('@/services/wix/wixProvider', () => ({
@@ -70,7 +103,19 @@ jest.mock('@/services/wix/wixProvider', () => ({
   WixProvider: ({ children }: any) => children,
 }));
 jest.mock('@/hooks/useCart', () => ({
-  useCart: () => ({ addItem: jest.fn(), itemCount: 0, items: [], subtotal: 0, syncing: false, removeItem: jest.fn(), updateQuantity: jest.fn(), clearCart: jest.fn(), pendingSync: 0, isSyncing: false, loadItems: jest.fn() }),
+  useCart: () => ({
+    addItem: jest.fn(),
+    itemCount: 0,
+    items: [],
+    subtotal: 0,
+    syncing: false,
+    removeItem: jest.fn(),
+    updateQuantity: jest.fn(),
+    clearCart: jest.fn(),
+    pendingSync: 0,
+    isSyncing: false,
+    loadItems: jest.fn(),
+  }),
   CartProvider: ({ children }: any) => children,
 }));
 
@@ -127,7 +172,11 @@ describe('ProductDetailScreen — "Customers also bought" section', () => {
 
   describe('loaded with recommendations', () => {
     beforeEach(() => {
-      mockProductRecs.mockReturnValue({ isLoading: false, recommendations: [mockRec], error: null });
+      mockProductRecs.mockReturnValue({
+        isLoading: false,
+        recommendations: [mockRec],
+        error: null,
+      });
     });
 
     it('shows "Customers also bought" carousel after load', () => {

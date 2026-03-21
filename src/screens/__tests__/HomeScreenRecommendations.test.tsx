@@ -13,7 +13,10 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // Minimal mocks — only what HomeScreen transitively requires
 jest.mock('expo-image', () => ({ Image: 'Image' }));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Light: 'light' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
@@ -25,7 +28,12 @@ jest.mock('@/hooks/useCollections', () => ({
   useCollections: () => ({ featured: [], collections: [], isLoading: false, error: null }),
 }));
 jest.mock('@/hooks/useRecentlyViewed', () => ({
-  useRecentlyViewed: () => ({ recentProducts: [], addViewed: jest.fn(), clearAll: jest.fn(), count: 0 }),
+  useRecentlyViewed: () => ({
+    recentProducts: [],
+    addViewed: jest.fn(),
+    clearAll: jest.fn(),
+    count: 0,
+  }),
 }));
 jest.mock('@/components/PromoBannerCarousel', () => ({ PromoBannerCarousel: () => null }));
 jest.mock('@/components/CompareFAB', () => ({ CompareFAB: () => null }));
@@ -66,7 +74,13 @@ function renderHome() {
 describe('HomeScreen — personalized recommendations section', () => {
   describe('quiz not taken', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({ isLoading: false, recommendations: [], quizTaken: false, label: '', error: null });
+      mockQuizRecs.mockReturnValue({
+        isLoading: false,
+        recommendations: [],
+        quizTaken: false,
+        label: '',
+        error: null,
+      });
     });
 
     it('does not show personalized picks section when quiz not taken', () => {
@@ -82,7 +96,13 @@ describe('HomeScreen — personalized recommendations section', () => {
 
   describe('loading state (quiz taken)', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({ isLoading: true, recommendations: [], quizTaken: true, label: 'Coastal Minimalist', error: null });
+      mockQuizRecs.mockReturnValue({
+        isLoading: true,
+        recommendations: [],
+        quizTaken: true,
+        label: 'Coastal Minimalist',
+        error: null,
+      });
     });
 
     it('shows skeleton while loading quiz recommendations', () => {

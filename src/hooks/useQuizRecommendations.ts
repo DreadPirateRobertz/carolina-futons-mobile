@@ -186,7 +186,11 @@ export function useQuizRecommendations(): QuizRecommendationsResult {
         fetchError = '[useQuizRecommendations] Wix fetch failed — showing local recommendations';
       }
 
-      const entry: CacheEntry = { data: recs, label: rec.label, expiresAt: Date.now() + CACHE_TTL_MS };
+      const entry: CacheEntry = {
+        data: recs,
+        label: rec.label,
+        expiresAt: Date.now() + CACHE_TTL_MS,
+      };
       quizRecsCache.set(cacheKey, entry);
       lastCacheKey = cacheKey;
 
