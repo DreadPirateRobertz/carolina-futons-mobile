@@ -180,7 +180,6 @@ export async function confirmOrder(
 export type PaymentErrorCode =
   | 'INTENT_FAILED'
   | 'CONFIRM_FAILED'
-  | 'NETWORK_ERROR'
   | 'CANCELLED'
   | 'STRIPE_ERROR'
   | 'NETWORK_ERROR';
