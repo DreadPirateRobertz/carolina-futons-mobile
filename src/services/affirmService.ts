@@ -132,7 +132,7 @@ export async function initiateAffirmCheckout(
     order_id: orderId,
     amount: Math.round(amountDollars * 100),
     items: items.map((item) => ({
-      sku: item.id,
+      sku: item.sku ?? item.id,
       display_name: `${item.model.name} — ${item.fabric.name}`,
       quantity: item.quantity,
       unit_price: Math.round(item.unitPrice * 100),

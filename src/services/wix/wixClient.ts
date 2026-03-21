@@ -159,6 +159,7 @@ export interface WixCartLineItem {
     options?: { variantId?: string };
   };
   quantity: number;
+  sku?: string; // Wix catalog SKU for the line item (may be absent for older catalog items)
 }
 
 export interface WixCart {

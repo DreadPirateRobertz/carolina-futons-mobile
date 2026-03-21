@@ -44,6 +44,8 @@ export interface CartItem {
   quantity: number;
   unitPrice: number; // basePrice + fabric.price
   imageUrl?: string; // CDN image URL (~150px); absent for local-only items
+  sku?: string; // Wix catalog SKU; absent for local-only items
+  variantId?: string; // Wix variant ID (from catalogReference.options.variantId); absent for local-only items
 }
 
 /** Internal state managed by the cart reducer. */
@@ -139,15 +141,17 @@ const CART_STORAGE_KEY = 'cfutons_cart';
 /**
  * Convert a Wix server cart line item to a local CartItem, if the
  * referenced product and variant exist in the local catalog.
+ *
+ * @internal Exported for unit testing only.
  */
-function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
+export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
   const modelId = lineItem.catalogReference.catalogItemId;
-  const fabricId = lineItem.catalogReference.options?.variantId;
+  const variantId = lineItem.catalogReference.options?.variantId;
 
   const model = FUTON_MODELS.find((m) => m.id === modelId);
   if (!model) return null;
 
-  const fabric = fabricId ? FABRICS.find((f) => f.id === fabricId) : FABRICS[0];
+  const fabric = variantId ? FABRICS.find((f) => f.id === variantId) : FABRICS[0];
   if (!fabric) return null;
 
   return {
@@ -157,6 +161,8 @@ function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
     fabricName: fabric.name,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
+    ...(lineItem.sku !== undefined ? { sku: lineItem.sku } : {}),
+    ...(variantId !== undefined ? { variantId } : {}),
   };
 }
 
