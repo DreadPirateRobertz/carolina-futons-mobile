@@ -5,10 +5,11 @@
  * EXIF stripping is a zhora security requirement — user location and device
  * metadata must never be sent to the server.
  *
- * Uses expo-file-system to read/write files. The EXIF strip re-encodes the
- * image via a write+read round-trip, dropping all metadata segments.
+ * Uses expo-image-manipulator to re-encode the JPEG, which drops all metadata
+ * segments (EXIF APP1, GPS, device model, timestamps).
  */
 import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export interface ReviewPhotoUploadResult {
   mediaUrl: string;
@@ -21,24 +22,18 @@ export interface ReviewPhotoUploadResult {
 export type WixUploadFn = (blob: Blob, filename: string) => Promise<string>;
 
 /**
- * Strips EXIF metadata from a local JPEG URI by re-encoding the image
- * through a base64 round-trip, which drops all metadata segments.
- * Returns a new local URI pointing to the stripped copy.
+ * Strips EXIF metadata from a local JPEG URI by re-encoding the image via
+ * expo-image-manipulator. The re-encode decodes the pixel data and writes a
+ * fresh JPEG, dropping all metadata segments (EXIF APP1, GPS, device info,
+ * timestamps). Returns a new local URI pointing to the stripped copy.
  */
 export async function stripExifFromUri(localUri: string): Promise<string> {
-  const base64 = await FileSystem.readAsStringAsync(localUri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-
-  // Write to a temp file — the round-trip drops EXIF markers
-  const filename = `stripped_${Date.now()}.jpg`;
-  const destUri = `${FileSystem.cacheDirectory}${filename}`;
-
-  await FileSystem.writeAsStringAsync(destUri, base64, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-
-  return destUri;
+  const result = await ImageManipulator.manipulateAsync(
+    localUri,
+    [], // no geometric transforms — re-encode only
+    { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG },
+  );
+  return result.uri;
 }
 
 /**
