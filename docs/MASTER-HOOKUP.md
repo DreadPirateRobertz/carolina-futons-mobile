@@ -120,6 +120,33 @@ To configure: set `EXPO_PUBLIC_MIXPANEL_TOKEN` in `.env`. Firebase is enabled by
 
 ---
 
+## APK Testing Artifacts (for overseer testing)
+
+Latest preview builds — install directly on Android device or emulator:
+
+| Build | Date | Artifact URL | Notes |
+|-------|------|-------------|-------|
+| Android Preview (v0.2.x, post-session-16) | 2026-03-16 | https://expo.dev/artifacts/eas/dF3a4xX84P9Z8wwrFRSHda.apk | Last stable pre-Klarna/saved-addresses |
+
+**Rebuild protocol** — trigger after each sprint/epic close:
+```bash
+npx eas build --profile preview --platform android
+```
+Then update the table above with the new artifact URL from `expo.dev/accounts/carolinafutons/projects/carolina-futons/builds`.
+
+**Pending rebuild**: Required after PR #153 (saved addresses) + PR #155 (Klarna BNPL) merge. Will contain:
+- Klarna BNPL checkout flow
+- Saved shipping addresses
+- CartItem imageUrl from Wix media (once cm-j6b lands)
+
+**Install on Android**:
+```bash
+adb install <downloaded-apk-file>
+```
+Or open the artifact URL in the device browser to install directly.
+
+---
+
 ## 8. App Identity
 
 Already configured in `app.json`:
