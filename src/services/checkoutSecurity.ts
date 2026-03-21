@@ -121,3 +121,55 @@ export function isAllowedPostCheckoutScreen(screenName: string): boolean {
   if (!/^[A-Za-z]+$/.test(screenName)) return false;
   return POST_CHECKOUT_ALLOWLIST.has(screenName);
 }
+
+/**
+ * SSRF guard for Klarna redirect URLs (cm-g2o).
+ *
+ * Only HTTPS URLs whose hostname is `klarna.com` or a subdomain of `klarna.com`
+ * are accepted.  Everything else — non-HTTPS schemes, other domains, internal
+ * IPs, embedded credentials — is rejected.
+ *
+ * LIMITATION — redirect chains: this guard validates the *initial* URL only.
+ * In React Native, `Linking.openURL` hands off to the system browser; we cannot
+ * pre-resolve a redirect chain without fetching the URL ourselves (which would
+ * introduce latency and its own SSRF risk). A 302 from a valid klarna.com URL
+ * to an internal/malicious destination is therefore not caught here.
+ *
+ * The Wix backend is the authoritative enforcement point for final redirect
+ * destinations — `createKlarnaSession` must validate that the session URL it
+ * returns is a terminal klarna.com endpoint, not a redirect chain. See tracking
+ * bead: cm-g2o-followup — server-side redirect chain validation for Klarna URLs.
+ */
+export function validateKlarnaRedirectUrl(url: string): boolean {
+  if (!url) return false;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+
+  // Must be HTTPS
+  if (parsed.protocol !== 'https:') return false;
+
+  // Reject embedded credentials (user:password@host)
+  if (parsed.username || parsed.password) return false;
+
+  // Hostname must be klarna.com or end with .klarna.com
+  const host = parsed.hostname.toLowerCase();
+  if (host !== 'klarna.com' && !host.endsWith('.klarna.com')) return false;
+
+  // Reject internal/loopback IPs that could sneak through as hostnames
+  if (/^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return false;
+
+  return true;
+}
+
+/**
+ * Convert a dollar amount to integer cents for the Klarna API.
+ * Uses Math.round to handle floating-point representation edge cases.
+ */
+export function amountToCents(amount: number): number {
+  return Math.round((amount + Number.EPSILON) * 100);
+}
