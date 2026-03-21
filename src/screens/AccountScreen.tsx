@@ -541,7 +541,10 @@ export function AccountScreen({
               {addressBook.addresses.length >= 5 && (
                 <Text
                   testID="address-max-notice"
-                  style={[styles.addressLine, { color: darkPalette.textMuted, textAlign: 'center', paddingVertical: 4 }]}
+                  style={[
+                    styles.addressLine,
+                    { color: darkPalette.textMuted, textAlign: 'center', paddingVertical: 4 },
+                  ]}
                   accessibilityLabel="Maximum of 5 addresses reached"
                 >
                   Maximum of 5 saved addresses reached

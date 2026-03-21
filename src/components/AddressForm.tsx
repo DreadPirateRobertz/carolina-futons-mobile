@@ -91,10 +91,10 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
   const inputStyle = [
     styles.input,
     {
-      backgroundColor: colors.surfaceElevated,
-      color: colors.textPrimary,
+      backgroundColor: colors.sandDark,
+      color: colors.espresso,
       borderRadius: borderRadius.md,
-      borderColor: colors.borderSubtle,
+      borderColor: colors.overlay,
     },
   ];
 
@@ -102,14 +102,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
     <View style={styles.container} testID="address-form">
       {/* Full Name */}
       <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>Full Name *</Text>
+        <Text style={[styles.label, { color: colors.espressoLight }]}>Full Name *</Text>
         <TextInput
           testID="address-full-name-input"
           value={fullName}
           onChangeText={setFullName}
           style={inputStyle}
           placeholder="Full name"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.espressoLight}
           autoCapitalize="words"
           autoComplete="name"
           accessibilityLabel="Full name"
@@ -123,14 +123,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* Street Address */}
       <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>Street Address *</Text>
+        <Text style={[styles.label, { color: colors.espressoLight }]}>Street Address *</Text>
         <TextInput
           testID="address-line1-input"
           value={line1}
           onChangeText={setLine1}
           style={inputStyle}
           placeholder="Street address"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.espressoLight}
           autoCapitalize="words"
           autoComplete="street-address"
           accessibilityLabel="Street address"
@@ -144,14 +144,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* Apt / Suite */}
       <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>Apt / Suite</Text>
+        <Text style={[styles.label, { color: colors.espressoLight }]}>Apt / Suite</Text>
         <TextInput
           testID="address-line2-input"
           value={line2}
           onChangeText={setLine2}
           style={inputStyle}
           placeholder="Apt, suite, unit (optional)"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.espressoLight}
           autoCapitalize="words"
           accessibilityLabel="Apartment or suite number"
         />
@@ -160,14 +160,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
       {/* City / State row */}
       <View style={styles.row}>
         <View style={[styles.field, { flex: 2 }]}>
-          <Text style={[styles.label, { color: colors.textMuted }]}>City *</Text>
+          <Text style={[styles.label, { color: colors.espressoLight }]}>City *</Text>
           <TextInput
             testID="address-city-input"
             value={city}
             onChangeText={setCity}
             style={inputStyle}
             placeholder="City"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.espressoLight}
             autoCapitalize="words"
             autoComplete="postal-address-locality"
             accessibilityLabel="City"
@@ -180,14 +180,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
         </View>
 
         <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
-          <Text style={[styles.label, { color: colors.textMuted }]}>State *</Text>
+          <Text style={[styles.label, { color: colors.espressoLight }]}>State *</Text>
           <TextInput
             testID="address-state-input"
             value={state}
             onChangeText={setState}
             style={inputStyle}
             placeholder="NC"
-            placeholderTextColor={colors.textMuted}
+            placeholderTextColor={colors.espressoLight}
             autoCapitalize="characters"
             maxLength={2}
             autoComplete="postal-address-region"
@@ -203,14 +203,14 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
 
       {/* ZIP */}
       <View style={styles.field}>
-        <Text style={[styles.label, { color: colors.textMuted }]}>ZIP Code *</Text>
+        <Text style={[styles.label, { color: colors.espressoLight }]}>ZIP Code *</Text>
         <TextInput
           testID="address-zip-input"
           value={zip}
           onChangeText={setZip}
           style={inputStyle}
           placeholder="12345"
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.espressoLight}
           keyboardType="number-pad"
           maxLength={5}
           autoComplete="postal-code"
@@ -228,18 +228,24 @@ export function AddressForm({ onSubmit, onCancel, initialValues, saving }: Props
         <TouchableOpacity
           testID="address-cancel-button"
           onPress={onCancel}
-          style={[styles.cancelBtn, { borderRadius: borderRadius.button, borderColor: colors.borderSubtle }]}
+          style={[
+            styles.cancelBtn,
+            { borderRadius: borderRadius.button, borderColor: colors.overlay },
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Cancel"
         >
-          <Text style={[styles.cancelText, { color: colors.textMuted }]}>Cancel</Text>
+          <Text style={[styles.cancelText, { color: colors.espressoLight }]}>Cancel</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           testID="address-save-button"
           onPress={handleSubmit}
           disabled={!!saving}
-          style={[styles.saveBtn, { borderRadius: borderRadius.button, backgroundColor: colors.sunsetCoral }]}
+          style={[
+            styles.saveBtn,
+            { borderRadius: borderRadius.button, backgroundColor: colors.sunsetCoral },
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Save address"
           accessibilityState={{ disabled: !!saving }}
