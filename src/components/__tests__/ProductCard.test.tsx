@@ -300,11 +300,7 @@ describe('ProductCard', () => {
         <ThemeProvider>
           <WishlistProvider>
             <CompareProvider>
-              <ProductCard
-                product={futon}
-                onPress={jest.fn()}
-                contextMenu={contextMenu}
-              />
+              <ProductCard product={futon} onPress={jest.fn()} contextMenu={contextMenu} />
             </CompareProvider>
           </WishlistProvider>
         </ThemeProvider>,
@@ -328,9 +324,7 @@ describe('ProductCard', () => {
     it('fires haptic on long press when contextMenu provided', () => {
       const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
       fireEvent(getByTestId(`product-card-${futon.id}`), 'longPress');
-      expect(Haptics.impactAsync).toHaveBeenCalledWith(
-        Haptics.ImpactFeedbackStyle.Medium,
-      );
+      expect(Haptics.impactAsync).toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Medium);
     });
 
     it('shows context menu after long press', () => {

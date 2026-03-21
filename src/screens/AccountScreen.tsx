@@ -609,47 +609,84 @@ export function AccountScreen({
           {/* Referral program section */}
           <GlassCard intensity="light" testID="account-referral-section">
             <View style={styles.referralCard}>
-              <Text style={[styles.referralTitle, { color: colors.espresso, fontFamily: typography.headingFamily }]}>
+              <Text
+                style={[
+                  styles.referralTitle,
+                  { color: colors.espresso, fontFamily: typography.headingFamily },
+                ]}
+              >
                 Refer a Friend
               </Text>
               <Text style={[styles.referralSubtitle, { color: colors.espressoLight }]}>
                 Earn $20 store credit for each confirmed referral
               </Text>
               {referral.loading ? (
-                <BrandedSpinner size={24} testID="account-referral-loading" />
+                <BrandedSpinner size="small" testID="account-referral-loading" />
               ) : referral.error ? (
-                <Text style={[styles.referralError, { color: colors.espressoLight }]} testID="account-referral-error">
+                <Text
+                  style={[styles.referralError, { color: colors.espressoLight }]}
+                  testID="account-referral-error"
+                >
                   {referral.error}
                 </Text>
               ) : (
                 <>
                   <View style={styles.referralStats}>
                     <View style={styles.referralStat}>
-                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>Credits Earned</Text>
-                      <Text style={[styles.referralStatValue, { color: colors.espresso }]} testID="account-referral-credits">
-                        {'$'}{referral.creditsEarned}
+                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>
+                        Credits Earned
+                      </Text>
+                      <Text
+                        style={[styles.referralStatValue, { color: colors.espresso }]}
+                        testID="account-referral-credits"
+                      >
+                        {'$'}
+                        {referral.creditsEarned}
                       </Text>
                     </View>
                     <View style={styles.referralStat}>
-                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>Referrals</Text>
-                      <Text style={[styles.referralStatValue, { color: colors.espresso }]} testID="account-referral-count">
-                        {''}{referral.referralCount}
+                      <Text style={[styles.referralStatLabel, { color: colors.espressoLight }]}>
+                        Referrals
+                      </Text>
+                      <Text
+                        style={[styles.referralStatValue, { color: colors.espresso }]}
+                        testID="account-referral-count"
+                      >
+                        {''}
+                        {referral.referralCount}
                       </Text>
                     </View>
                   </View>
                   <View style={[styles.referralCodeRow, { borderColor: colors.overlay }]}>
-                    <Text style={[styles.referralCode, { color: colors.espresso, fontFamily: typography.headingFamily }]} testID="account-referral-code">
+                    <Text
+                      style={[
+                        styles.referralCode,
+                        { color: colors.espresso, fontFamily: typography.headingFamily },
+                      ]}
+                      testID="account-referral-code"
+                    >
                       {referral.code}
                     </Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.referralShareBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill ?? 28 }]}
+                    style={[
+                      styles.referralShareBtn,
+                      {
+                        backgroundColor: colors.sunsetCoral,
+                        borderRadius: borderRadius.pill ?? 28,
+                      },
+                    ]}
                     onPress={handleShareReferral}
                     testID="account-referral-share-btn"
                     accessibilityRole="button"
                     accessibilityLabel="Share referral link"
                   >
-                    <Text style={[styles.referralShareBtnText, { fontFamily: typography.bodyFamilyBold }]}>
+                    <Text
+                      style={[
+                        styles.referralShareBtnText,
+                        { fontFamily: typography.bodyFamilyBold },
+                      ]}
+                    >
                       Share Your Link
                     </Text>
                   </TouchableOpacity>

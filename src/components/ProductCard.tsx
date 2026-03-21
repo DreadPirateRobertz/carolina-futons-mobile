@@ -95,135 +95,144 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <>
-    <TouchableOpacity
-      style={[
-        styles.card,
-        shadows.card,
-        { backgroundColor: colors.white, borderRadius: borderRadius.card },
-      ]}
-      onPress={() => onPress?.(product)}
-      onLongPress={contextMenu || onLongPress ? handleLongPress : undefined}
-      testID={testID ?? `product-card-${product.id}`}
-      accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
-      accessibilityRole="button"
-      activeOpacity={0.7}
-    >
-      {/* Image with shared element transition tag.
+      <TouchableOpacity
+        style={[
+          styles.card,
+          shadows.card,
+          { backgroundColor: colors.white, borderRadius: borderRadius.card },
+        ]}
+        onPress={() => onPress?.(product)}
+        onLongPress={contextMenu || onLongPress ? handleLongPress : undefined}
+        testID={testID ?? `product-card-${product.id}`}
+        accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
+        accessibilityRole="button"
+        activeOpacity={0.7}
+      >
+        {/* Image with shared element transition tag.
           Tag uses the FutonModel ID (no 'prod-' prefix) so it matches the
           identical tag in ProductDetailScreen, enabling Reanimated to pair
           the source and destination elements for the shared-element transition. */}
-      <Animated.View
-        sharedTransitionTag={sharedTransitionTag(`product-image-${productIdToModelId(product.id)}`)}
-        testID={`product-image-container-${product.id}`}
-        style={[
-          styles.imageContainer,
-          { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
-        ]}
-      >
-        <Image
-          source={{ uri: product.images[0]?.uri }}
-          style={styles.image}
-          contentFit="cover"
-          transition={200}
-          recyclingKey={product.id}
-          accessibilityLabel={product.images[0]?.alt}
-          cachePolicy="memory-disk"
-          placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
-          onLoadStart={imageTracking.onLoadStart}
-          onLoad={imageTracking.onLoad}
-        />
-        {product.videoUri && (
-          <ProductCardVideo videoUri={product.videoUri} testID={`product-video-${product.id}`} />
-        )}
-        <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
-        {product.badge && (
-          <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-            <Text style={styles.badgeText}>{product.badge}</Text>
-          </View>
-        )}
-        {!product.inStock && (
-          <View style={styles.outOfStockOverlay}>
-            <Text style={styles.outOfStockText}>Out of Stock</Text>
-          </View>
-        )}
-      </Animated.View>
-
-      {/* Info */}
-      <View style={[styles.info, { padding: spacing.sm }]}>
-        <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
-          {product.name}
-        </Text>
-        <Text style={[styles.description, { color: colors.espressoLight }]} numberOfLines={1}>
-          {product.shortDescription}
-        </Text>
-
-        {/* Rating */}
-        <View style={styles.ratingRow}>
-          <Text style={[styles.ratingStars, { color: colors.sunsetCoral }]}>
-            {'★'.repeat(Math.round(product.rating))}
-            {'☆'.repeat(5 - Math.round(product.rating))}
-          </Text>
-          <Text style={[styles.reviewCount, { color: colors.muted }]}>({product.reviewCount})</Text>
-        </View>
-
-        {/* Price */}
-        <View style={styles.priceRow}>
-          <Text style={[styles.price, { color: colors.espresso }]}>
-            {formatPrice(product.price)}
-          </Text>
-          {product.originalPrice && (
-            <Text style={[styles.originalPrice, { color: colors.muted }]}>
-              {formatPrice(product.originalPrice)}
-            </Text>
+        <Animated.View
+          sharedTransitionTag={sharedTransitionTag(
+            `product-image-${productIdToModelId(product.id)}`,
           )}
-        </View>
+          testID={`product-image-container-${product.id}`}
+          style={[
+            styles.imageContainer,
+            { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
+          ]}
+        >
+          <Image
+            source={{ uri: product.images[0]?.uri }}
+            style={styles.image}
+            contentFit="cover"
+            transition={200}
+            recyclingKey={product.id}
+            accessibilityLabel={product.images[0]?.alt}
+            cachePolicy="memory-disk"
+            placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
+            onLoadStart={imageTracking.onLoadStart}
+            onLoad={imageTracking.onLoad}
+          />
+          {product.videoUri && (
+            <ProductCardVideo videoUri={product.videoUri} testID={`product-video-${product.id}`} />
+          )}
+          <WishlistButton
+            product={product}
+            size="sm"
+            overlay
+            testID={`wishlist-btn-${product.id}`}
+          />
+          {product.badge && (
+            <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+              <Text style={styles.badgeText}>{product.badge}</Text>
+            </View>
+          )}
+          {!product.inStock && (
+            <View style={styles.outOfStockOverlay}>
+              <Text style={styles.outOfStockText}>Out of Stock</Text>
+            </View>
+          )}
+        </Animated.View>
 
-        <FinancingBadge price={product.price} variant="compact" />
+        {/* Info */}
+        <View style={[styles.info, { padding: spacing.sm }]}>
+          <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
+            {product.name}
+          </Text>
+          <Text style={[styles.description, { color: colors.espressoLight }]} numberOfLines={1}>
+            {product.shortDescription}
+          </Text>
 
-        {stockBadge && (
-          <View
-            style={[styles.stockBadge, { backgroundColor: stockBadge.color }]}
-            testID={`stock-badge-${product.id}`}
-          >
-            <Text style={styles.stockBadgeText}>{stockBadge.label}</Text>
+          {/* Rating */}
+          <View style={styles.ratingRow}>
+            <Text style={[styles.ratingStars, { color: colors.sunsetCoral }]}>
+              {'★'.repeat(Math.round(product.rating))}
+              {'☆'.repeat(5 - Math.round(product.rating))}
+            </Text>
+            <Text style={[styles.reviewCount, { color: colors.muted }]}>
+              ({product.reviewCount})
+            </Text>
           </View>
-        )}
 
-        <InventoryBadge
-          badge={inventoryBadge}
-          quantity={inventoryQuantity}
-          compact
-          testID={`inventory-badge-${product.id}`}
-        />
+          {/* Price */}
+          <View style={styles.priceRow}>
+            <Text style={[styles.price, { color: colors.espresso }]}>
+              {formatPrice(product.price)}
+            </Text>
+            {product.originalPrice && (
+              <Text style={[styles.originalPrice, { color: colors.muted }]}>
+                {formatPrice(product.originalPrice)}
+              </Text>
+            )}
+          </View>
 
-        <CompareButton product={product} testID={`compare-btn-${product.id}`} />
-      </View>
-    </TouchableOpacity>
+          <FinancingBadge price={product.price} variant="compact" />
 
-    {/* ⋮ context menu trigger — tap-accessible fallback for long-press */}
-    {contextMenu && (
-      <TouchableOpacity
-        testID={`product-context-trigger-${product.id}`}
-        style={styles.contextTrigger}
-        onPress={() => setContextMenuVisible(true)}
-        accessibilityRole="button"
-        accessibilityLabel={`More options for ${product.name}`}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      >
-        <Text style={[styles.contextTriggerText, { color: colors.espresso }]}>⋮</Text>
+          {stockBadge && (
+            <View
+              style={[styles.stockBadge, { backgroundColor: stockBadge.color }]}
+              testID={`stock-badge-${product.id}`}
+            >
+              <Text style={styles.stockBadgeText}>{stockBadge.label}</Text>
+            </View>
+          )}
+
+          <InventoryBadge
+            badge={inventoryBadge}
+            quantity={inventoryQuantity}
+            compact
+            testID={`inventory-badge-${product.id}`}
+          />
+
+          <CompareButton product={product} testID={`compare-btn-${product.id}`} />
+        </View>
       </TouchableOpacity>
-    )}
 
-    {contextMenu && (
-      <ProductContextMenu
-        visible={contextMenuVisible}
-        product={product}
-        onClose={handleContextMenuClose}
-        onAddToCart={contextMenu.onAddToCart}
-        onAddToWishlist={contextMenu.onAddToWishlist}
-        onShare={contextMenu.onShare}
-      />
-    )}
+      {/* ⋮ context menu trigger — tap-accessible fallback for long-press */}
+      {contextMenu && (
+        <TouchableOpacity
+          testID={`product-context-trigger-${product.id}`}
+          style={styles.contextTrigger}
+          onPress={() => setContextMenuVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`More options for ${product.name}`}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={[styles.contextTriggerText, { color: colors.espresso }]}>⋮</Text>
+        </TouchableOpacity>
+      )}
+
+      {contextMenu && (
+        <ProductContextMenu
+          visible={contextMenuVisible}
+          product={product}
+          onClose={handleContextMenuClose}
+          onAddToCart={contextMenu.onAddToCart}
+          onAddToWishlist={contextMenu.onAddToWishlist}
+          onShare={contextMenu.onShare}
+        />
+      )}
     </>
   );
 });

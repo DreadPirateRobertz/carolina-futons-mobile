@@ -43,7 +43,10 @@ export function ReferralLandingScreen({ route, navigation }: Props) {
   }, [code, storeReferredByCode, navigation]);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.sandBase }]} testID="referral-landing">
+    <View
+      style={[styles.container, { backgroundColor: colors.sandBase }]}
+      testID="referral-landing"
+    >
       <Text
         style={[styles.title, { color: colors.espresso, fontFamily: typography.headingFamily }]}
         testID="referral-landing-title"

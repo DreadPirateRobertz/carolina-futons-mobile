@@ -139,7 +139,11 @@ describe('useProductReviews', () => {
 
   it('calculates averageRating from fetched reviews', async () => {
     mockQueryData.mockResolvedValue({
-      items: [makeItem({ rating: 4 }), makeItem({ id: 'r2', rating: 2 }), makeItem({ id: 'r3', rating: 5 })],
+      items: [
+        makeItem({ rating: 4 }),
+        makeItem({ id: 'r2', rating: 2 }),
+        makeItem({ id: 'r3', rating: 5 }),
+      ],
       totalResults: 3,
     });
 
@@ -175,10 +179,10 @@ describe('useProductReviews', () => {
   it('clamps out-of-range ratings to [1, 5]; non-numeric stays 0', async () => {
     mockQueryData.mockResolvedValue({
       items: [
-        makeItem({ id: 'r1', rating: 0 }),   // invalid low => 0
-        makeItem({ id: 'r2', rating: 6 }),   // out of range => clamped to 5
-        makeItem({ id: 'r3', rating: -1 }),  // negative => 0
-        makeItem({ id: 'r4', rating: 4 }),   // valid
+        makeItem({ id: 'r1', rating: 0 }), // invalid low => 0
+        makeItem({ id: 'r2', rating: 6 }), // out of range => clamped to 5
+        makeItem({ id: 'r3', rating: -1 }), // negative => 0
+        makeItem({ id: 'r4', rating: 4 }), // valid
       ],
       totalResults: 4,
     });
@@ -323,7 +327,10 @@ describe('useProductReviews', () => {
 
   it('re-fetches when productId changes and updates aggregate', async () => {
     const items1 = [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })];
-    const items2 = [makeItem({ id: 'r2', productId: 'prod-b', rating: 3 }), makeItem({ id: 'r3', productId: 'prod-b', rating: 4 })];
+    const items2 = [
+      makeItem({ id: 'r2', productId: 'prod-b', rating: 3 }),
+      makeItem({ id: 'r3', productId: 'prod-b', rating: 4 }),
+    ];
     mockQueryData
       .mockResolvedValueOnce({ items: items1, totalResults: 1 })
       .mockResolvedValueOnce({ items: items2, totalResults: 2 });
@@ -348,8 +355,13 @@ describe('useProductReviews', () => {
   it('discards stale response when productId changes before first fetch resolves', async () => {
     type FetchResult = { items: ReturnType<typeof makeItem>[]; totalResults: number };
     let resolveFirst!: (val: FetchResult) => void;
-    const firstFetch = new Promise<FetchResult>((resolve) => { resolveFirst = resolve; });
-    const secondFetch = Promise.resolve({ items: [makeItem({ id: 'r2', productId: 'prod-b', rating: 3 })], totalResults: 1 });
+    const firstFetch = new Promise<FetchResult>((resolve) => {
+      resolveFirst = resolve;
+    });
+    const secondFetch = Promise.resolve({
+      items: [makeItem({ id: 'r2', productId: 'prod-b', rating: 3 })],
+      totalResults: 1,
+    });
 
     mockQueryData.mockReturnValueOnce(firstFetch).mockReturnValueOnce(secondFetch);
 
@@ -363,7 +375,10 @@ describe('useProductReviews', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     act(() => {
-      resolveFirst({ items: [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })], totalResults: 1 });
+      resolveFirst({
+        items: [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })],
+        totalResults: 1,
+      });
     });
 
     // State must reflect prod-b (rating 3), not the stale prod-a (rating 5)
@@ -372,31 +387,29 @@ describe('useProductReviews', () => {
   });
 });
 
-  // ── totalReviews from server totalResults ─────────────────────────────────
+// ── totalReviews from server totalResults ─────────────────────────────────
 
-  it('uses server totalResults for aggregate.totalReviews, not reviews.length', async () => {
-    // Simulate: server has 247 reviews but we only fetch 100
-    const fetchedItems = Array.from({ length: 100 }, (_, i) =>
-      makeItem({ id: `r${i}`, rating: 5 }),
-    );
-    mockQueryData.mockResolvedValue({ items: fetchedItems, totalResults: 247 });
+it('uses server totalResults for aggregate.totalReviews, not reviews.length', async () => {
+  // Simulate: server has 247 reviews but we only fetch 100
+  const fetchedItems = Array.from({ length: 100 }, (_, i) => makeItem({ id: `r${i}`, rating: 5 }));
+  mockQueryData.mockResolvedValue({ items: fetchedItems, totalResults: 247 });
 
-    const { result } = renderHook(() => useProductReviews('prod-popular'));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  const { result } = renderHook(() => useProductReviews('prod-popular'));
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.reviews).toHaveLength(100);
-    // totalReviews must reflect the server total, not the fetched count
-    expect(result.current.aggregate.totalReviews).toBe(247);
-    // averageRating is computed from the 100 fetched items
-    expect(result.current.aggregate.averageRating).toBe(5.0);
-  });
+  expect(result.current.reviews).toHaveLength(100);
+  // totalReviews must reflect the server total, not the fetched count
+  expect(result.current.aggregate.totalReviews).toBe(247);
+  // averageRating is computed from the 100 fetched items
+  expect(result.current.aggregate.averageRating).toBe(5.0);
+});
 
-  it('uses totalResults=0 for aggregate when API returns empty results', async () => {
-    mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+it('uses totalResults=0 for aggregate when API returns empty results', async () => {
+  mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
 
-    const { result } = renderHook(() => useProductReviews('prod-new'));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  const { result } = renderHook(() => useProductReviews('prod-new'));
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.aggregate.totalReviews).toBe(0);
-    expect(result.current.aggregate.averageRating).toBe(0);
-  });
+  expect(result.current.aggregate.totalReviews).toBe(0);
+  expect(result.current.aggregate.averageRating).toBe(0);
+});

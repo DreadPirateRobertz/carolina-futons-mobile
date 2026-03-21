@@ -218,10 +218,7 @@ describe('storeReferredByCode', () => {
     await act(async () => {
       await result.current.storeReferredByCode('FRIEND-CODE');
     });
-    expect(mockSetItem).toHaveBeenCalledWith(
-      expect.stringContaining('referral'),
-      'FRIEND-CODE',
-    );
+    expect(mockSetItem).toHaveBeenCalledWith(expect.stringContaining('referral'), 'FRIEND-CODE');
   });
 
   it('ignores empty code', async () => {

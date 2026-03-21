@@ -26,28 +26,59 @@ jest.mock('@/hooks/useAuth', () => ({
   AuthContext: { Consumer: ({ children }: any) => children(null) },
 }));
 
-jest.mock('@/hooks/usePremium', () => ({ usePremium: () => ({ isPremium: false, restore: jest.fn() }) }));
-jest.mock('@/hooks/useAccountDeletion', () => ({ useAccountDeletion: () => ({ status: 'idle', requestDeletion: jest.fn(), cancel: jest.fn() }) }));
-jest.mock('@/hooks/useDataExport', () => ({ useDataExport: () => ({ exporting: false, exportData: jest.fn() }) }));
+jest.mock('@/hooks/usePremium', () => ({
+  usePremium: () => ({ isPremium: false, restore: jest.fn() }),
+}));
+jest.mock('@/hooks/useAccountDeletion', () => ({
+  useAccountDeletion: () => ({ status: 'idle', requestDeletion: jest.fn(), cancel: jest.fn() }),
+}));
+jest.mock('@/hooks/useDataExport', () => ({
+  useDataExport: () => ({ exporting: false, exportData: jest.fn() }),
+}));
 jest.mock('@/hooks/useAddressBook', () => ({
-  useAddressBook: () => ({ addresses: [], add: jest.fn(), remove: jest.fn(), update: jest.fn(), setDefault: jest.fn(), saving: false }),
+  useAddressBook: () => ({
+    addresses: [],
+    add: jest.fn(),
+    remove: jest.fn(),
+    update: jest.fn(),
+    setDefault: jest.fn(),
+    saving: false,
+  }),
 }));
 jest.mock('@/hooks/useBiometricAuth', () => ({
-  useBiometricAuth: () => ({ status: 'unavailable', isEnabled: false, loading: false, enableBiometric: jest.fn(), disableBiometric: jest.fn() }),
+  useBiometricAuth: () => ({
+    status: 'unavailable',
+    isEnabled: false,
+    loading: false,
+    enableBiometric: jest.fn(),
+    disableBiometric: jest.fn(),
+  }),
 }));
 jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn().mockImplementation(() => ({ syncMemberAddresses: jest.fn() })),
 }));
-jest.mock('expo-application', () => ({ nativeApplicationVersion: '1.0.0', nativeBuildVersion: '100' }));
+jest.mock('expo-application', () => ({
+  nativeApplicationVersion: '1.0.0',
+  nativeBuildVersion: '100',
+}));
 jest.mock('expo-constants', () => ({ default: { expoConfig: { version: '1.0.0' } } }));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Light: 'light' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 
 const mockShareShare = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
-const AUTH_USER = { id: 'member-1', email: 'test@example.com', displayName: 'Test User', phone: '', provider: 'wix' as const };
+const AUTH_USER = {
+  id: 'member-1',
+  email: 'test@example.com',
+  displayName: 'Test User',
+  phone: '',
+  provider: 'wix' as const,
+};
 
 const REFERRAL_LOADED = {
   code: 'FUTON-XK7P',
@@ -61,8 +92,18 @@ const REFERRAL_LOADED = {
 };
 
 const REFERRAL_LOADING = { ...REFERRAL_LOADED, code: null, loading: true };
-const REFERRAL_NO_CODE = { ...REFERRAL_LOADED, code: null, shareUrl: null, error: 'Referral code not available yet' };
-const REFERRAL_API_ERROR = { ...REFERRAL_LOADED, code: null, shareUrl: null, error: 'Network error' };
+const REFERRAL_NO_CODE = {
+  ...REFERRAL_LOADED,
+  code: null,
+  shareUrl: null,
+  error: 'Referral code not available yet',
+};
+const REFERRAL_API_ERROR = {
+  ...REFERRAL_LOADED,
+  code: null,
+  shareUrl: null,
+  error: 'Network error',
+};
 
 function renderAccountScreen() {
   return render(

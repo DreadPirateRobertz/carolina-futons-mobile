@@ -14,17 +14,10 @@ import { PRODUCTS } from '@/data/products';
 
 const product = PRODUCTS.find((p) => p.category === 'futons')!;
 
-function renderMenu(
-  props: Partial<React.ComponentProps<typeof ProductContextMenu>> = {},
-) {
+function renderMenu(props: Partial<React.ComponentProps<typeof ProductContextMenu>> = {}) {
   return render(
     <ThemeProvider>
-      <ProductContextMenu
-        visible={true}
-        product={product}
-        onClose={jest.fn()}
-        {...props}
-      />
+      <ProductContextMenu visible={true} product={product} onClose={jest.fn()} {...props} />
     </ThemeProvider>,
   );
 }
@@ -45,9 +38,7 @@ describe('ProductContextMenu', () => {
   describe('Content', () => {
     it('shows product name in header', () => {
       const { getByTestId } = renderMenu();
-      expect(getByTestId('context-menu-product-name').props.children).toBe(
-        product.name,
-      );
+      expect(getByTestId('context-menu-product-name').props.children).toBe(product.name);
     });
 
     it('shows Add to Cart button when onAddToCart provided', () => {
