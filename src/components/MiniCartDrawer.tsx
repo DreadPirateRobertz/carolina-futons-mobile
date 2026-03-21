@@ -14,9 +14,9 @@
  */
 
 import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Pressable } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { SlideInDown, SlideOutDown, runOnJS } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';
@@ -211,7 +211,7 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
     .onUpdate(() => {})
     .onEnd((e) => {
       if (e.translationY > SWIPE_DISMISS_TRANSLATION || e.velocityY > SWIPE_DISMISS_VELOCITY) {
-        onClose();
+        runOnJS(onClose)();
       }
     });
 
@@ -277,7 +277,7 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
               </Text>
             </View>
           ) : (
-            <View style={styles.itemList}>
+            <ScrollView style={styles.itemList} testID="mini-cart-item-list">
               {items.map((item) => (
                 <MiniCartItem
                   key={item.id}
@@ -286,7 +286,7 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
                   onUpdateQty={updateQuantity}
                 />
               ))}
-            </View>
+            </ScrollView>
           )}
 
           {/* Summary row */}
