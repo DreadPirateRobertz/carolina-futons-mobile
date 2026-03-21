@@ -68,9 +68,7 @@ describe('ProductCardVideo', () => {
 
   describe('edge cases', () => {
     it('renders without crashing when videoUri is an empty string', () => {
-      const { getByTestId } = render(
-        <ProductCardVideo videoUri="" testID="card-video" />,
-      );
+      const { getByTestId } = render(<ProductCardVideo videoUri="" testID="card-video" />);
       expect(getByTestId('card-video')).toBeTruthy();
     });
 
@@ -86,9 +84,7 @@ describe('ProductCardVideo', () => {
 
     it('renders without crashing when videoUri is very long', () => {
       const longUri = 'https://example.com/' + 'a'.repeat(2000) + '.mp4';
-      const { getByTestId } = render(
-        <ProductCardVideo videoUri={longUri} testID="card-video" />,
-      );
+      const { getByTestId } = render(<ProductCardVideo videoUri={longUri} testID="card-video" />);
       expect(getByTestId('card-video')).toBeTruthy();
     });
   });

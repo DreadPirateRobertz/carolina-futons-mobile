@@ -100,10 +100,7 @@ export const ProductCard = memo(function ProductCard({
           onLoad={imageTracking.onLoad}
         />
         {product.videoUri && (
-          <ProductCardVideo
-            videoUri={product.videoUri}
-            testID={`product-video-${product.id}`}
-          />
+          <ProductCardVideo videoUri={product.videoUri} testID={`product-video-${product.id}`} />
         )}
         <WishlistButton product={product} size="sm" overlay testID={`wishlist-btn-${product.id}`} />
         {product.badge && (
