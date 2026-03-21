@@ -49,9 +49,9 @@ export function OrderHistoryScreen({
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    // Simulate network refresh — real implementation will call API
+    hookRefresh();
     setTimeout(() => setRefreshing(false), 800);
-  }, []);
+  }, [hookRefresh]);
 
   const formatDate = useCallback((iso: string) => {
     const d = new Date(iso);
@@ -195,25 +195,6 @@ export function OrderHistoryScreen({
     );
   }
 
-  if (orders.length === 0) {
-    return (
-      <View
-        style={[styles.root, { backgroundColor: darkPalette.background }]}
-        testID={testID ?? 'order-history-screen'}
-      >
-        <EmptyState
-          illustration={<CategoryIllustration testID="orders-illustration" />}
-          title="No orders yet"
-          message="Once you place your first order, it will appear here."
-          action={
-            onStartShopping ? { label: 'Start Shopping', onPress: onStartShopping } : undefined
-          }
-          testID="orders-empty-state"
-        />
-      </View>
-    );
-  }
-
   return (
     <View
       style={[styles.root, { backgroundColor: darkPalette.background }]}
@@ -241,6 +222,17 @@ export function OrderHistoryScreen({
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={<MountainRefreshIndicator refreshing={refreshing} />}
+        ListEmptyComponent={
+          <EmptyState
+            illustration={<CategoryIllustration testID="orders-illustration" />}
+            title="No orders yet"
+            message="Once you place your first order, it will appear here."
+            action={
+              onStartShopping ? { label: 'Start Shopping', onPress: onStartShopping } : undefined
+            }
+            testID="orders-empty-state"
+          />
+        }
         refreshControl={
           <MountainRefreshControl
             refreshing={refreshing}

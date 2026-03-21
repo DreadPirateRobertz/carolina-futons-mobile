@@ -7,10 +7,11 @@
  * to prevent unnecessary re-renders in FlatList/ScrollView contexts.
  */
 
-import React, { memo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { memo, useState, useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import {
   type Product,
@@ -28,11 +29,21 @@ import { ProductCardVideo } from './ProductCardVideo';
 import { CompareButton } from './CompareButton';
 import { InventoryBadge } from './InventoryBadge';
 import { useInventoryBadge } from '@/hooks/useInventoryBadge';
+import { ProductContextMenu } from './ProductContextMenu';
+
+/** Optional context menu actions shown on long-press. */
+export interface ProductContextMenuActions {
+  onAddToCart?: () => void;
+  onAddToWishlist?: () => void;
+  onShare?: () => void;
+}
 
 interface Props {
   product: Product;
   onPress?: (product: Product) => void;
   onLongPress?: (product: Product) => void;
+  /** When provided, long-press shows a context menu with these actions. */
+  contextMenu?: ProductContextMenuActions;
   testID?: string;
 }
 
@@ -41,10 +52,27 @@ export const ProductCard = memo(function ProductCard({
   product,
   onPress,
   onLongPress,
+  contextMenu,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const imageTracking = useImageLoadTracking('ProductCard');
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+
+  const handleLongPress = useCallback(() => {
+    if (contextMenu) {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+      setContextMenuVisible(true);
+    } else if (onLongPress) {
+      onLongPress(product);
+    }
+  }, [contextMenu, onLongPress, product]);
+
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenuVisible(false);
+  }, []);
 
   const stockStatus = getStockStatus(product);
   const { badge: inventoryBadge, quantity: inventoryQuantity } = useInventoryBadge(product.id);
@@ -66,6 +94,7 @@ export const ProductCard = memo(function ProductCard({
           : colors.espressoLight;
 
   return (
+    <>
     <TouchableOpacity
       style={[
         styles.card,
@@ -73,7 +102,7 @@ export const ProductCard = memo(function ProductCard({
         { backgroundColor: colors.white, borderRadius: borderRadius.card },
       ]}
       onPress={() => onPress?.(product)}
-      onLongPress={onLongPress ? () => onLongPress(product) : undefined}
+      onLongPress={contextMenu || onLongPress ? handleLongPress : undefined}
       testID={testID ?? `product-card-${product.id}`}
       accessibilityLabel={`${product.name}, ${formatPrice(product.price)}`}
       accessibilityRole="button"
@@ -170,6 +199,32 @@ export const ProductCard = memo(function ProductCard({
         <CompareButton product={product} testID={`compare-btn-${product.id}`} />
       </View>
     </TouchableOpacity>
+
+    {/* ⋮ context menu trigger — tap-accessible fallback for long-press */}
+    {contextMenu && (
+      <TouchableOpacity
+        testID={`product-context-trigger-${product.id}`}
+        style={styles.contextTrigger}
+        onPress={() => setContextMenuVisible(true)}
+        accessibilityRole="button"
+        accessibilityLabel={`More options for ${product.name}`}
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={[styles.contextTriggerText, { color: colors.espresso }]}>⋮</Text>
+      </TouchableOpacity>
+    )}
+
+    {contextMenu && (
+      <ProductContextMenu
+        visible={contextMenuVisible}
+        product={product}
+        onClose={handleContextMenuClose}
+        onAddToCart={contextMenu.onAddToCart}
+        onAddToWishlist={contextMenu.onAddToWishlist}
+        onShare={contextMenu.onShare}
+      />
+    )}
+    </>
   );
 });
 
@@ -265,5 +320,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  contextTrigger: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    padding: 4,
+    minWidth: 24,
+    minHeight: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  contextTriggerText: {
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 22,
   },
 });
