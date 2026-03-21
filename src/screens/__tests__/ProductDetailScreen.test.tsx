@@ -288,6 +288,29 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  describe('shared element transition', () => {
+    it('renders gallery container with transition testID for the default model', () => {
+      const { getByTestId } = renderDetail();
+      // asheville-full is the default model (FUTON_MODELS[0])
+      expect(getByTestId(`product-image-gallery-${asheville.id}`)).toBeTruthy();
+    });
+
+    it('renders gallery container with transition testID for a specific model', () => {
+      const { getByTestId } = renderDetail({ productId: blueRidge.id });
+      expect(getByTestId(`product-image-gallery-${blueRidge.id}`)).toBeTruthy();
+    });
+
+    it('gallery testID does not contain prod- prefix (must match ProductCard normalized tag)', () => {
+      // The gallery testID is keyed on model.id (no prod- prefix), matching the
+      // format of the sharedTransitionTag used by ProductCard after normalization.
+      const { getByTestId } = renderDetail();
+      const gallery = getByTestId(`product-image-gallery-${asheville.id}`);
+      // testID must NOT have the prod- prefix — if it did, the naming would diverge
+      // from the sharedTransitionTag (which is also prefix-free).
+      expect(gallery.props.testID).not.toMatch(/prod-/);
+    });
+  });
+
   describe('Share Button', () => {
     it('renders share button', () => {
       const { getByTestId } = renderDetail();

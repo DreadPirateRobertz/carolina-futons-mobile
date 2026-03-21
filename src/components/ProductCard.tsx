@@ -18,6 +18,7 @@ import {
   getStockStatus,
   type StockStatus,
 } from '@/data/products';
+import { productIdToModelId } from '@/data/productId';
 import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
@@ -73,9 +74,13 @@ export const ProductCard = memo(function ProductCard({
       accessibilityRole="button"
       activeOpacity={0.7}
     >
-      {/* Image with shared element transition tag */}
+      {/* Image with shared element transition tag.
+          Tag uses the FutonModel ID (no 'prod-' prefix) so it matches the
+          identical tag in ProductDetailScreen, enabling Reanimated to pair
+          the source and destination elements for the shared-element transition. */}
       <Animated.View
-        sharedTransitionTag={sharedTransitionTag(`product-image-${product.id}`)}
+        sharedTransitionTag={sharedTransitionTag(`product-image-${productIdToModelId(product.id)}`)}
+        testID={`product-image-container-${product.id}`}
         style={[
           styles.imageContainer,
           { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },

@@ -958,11 +958,7 @@ export class WixClient {
       });
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new WixApiError(
-          `Request timeout after ${this.timeoutMs}ms`,
-          undefined,
-          path,
-        );
+        throw new WixApiError(`Request timeout after ${this.timeoutMs}ms`, undefined, path);
       }
       throw new WixApiError(
         `Network error: ${err instanceof Error ? err.message : String(err)}`,
