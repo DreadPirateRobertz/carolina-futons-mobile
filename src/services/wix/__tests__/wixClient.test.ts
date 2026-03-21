@@ -1250,4 +1250,82 @@ describe('WixClient eCommerce Cart', () => {
       await expect(client.getOrder('ord-001')).rejects.toBeInstanceOf(WixApiError);
     });
   });
+
+  describe('createKlarnaSession', () => {
+    it('POSTs amountCents and items to the Klarna checkout endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({ redirectUrl: 'https://pay.klarna.com/abc', orderId: 'kord-001' }),
+      });
+
+      const result = await client.createKlarnaSession({
+        amountCents: 49900,
+        items: [{ id: 'asheville-full:natural-linen', quantity: 1, price: 499 }],
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/_functions/klarna/checkout'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(result).toEqual({ redirectUrl: 'https://pay.klarna.com/abc', orderId: 'kord-001' });
+    });
+
+    it('throws WixApiError on non-ok response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: () => Promise.resolve({ message: 'Internal Server Error' }),
+      });
+
+      await expect(
+        client.createKlarnaSession({ amountCents: 49900, items: [] }),
+      ).rejects.toBeInstanceOf(WixApiError);
+    });
+
+    it('throws WixApiError on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      await expect(
+        client.createKlarnaSession({ amountCents: 49900, items: [] }),
+      ).rejects.toBeInstanceOf(WixApiError);
+    });
+  });
+
+  describe('confirmKlarnaOrder', () => {
+    it('POSTs orderId to the Klarna confirm endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orderId: 'kord-001', total: 49900, currency: 'USD' }),
+      });
+
+      const result = await client.confirmKlarnaOrder({ orderId: 'kord-001' });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/_functions/klarna/confirm'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(result).toEqual({ orderId: 'kord-001', total: 49900, currency: 'USD' });
+    });
+
+    it('throws WixApiError on non-ok response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ message: 'Order not found' }),
+      });
+
+      await expect(client.confirmKlarnaOrder({ orderId: 'kord-001' })).rejects.toBeInstanceOf(
+        WixApiError,
+      );
+    });
+
+    it('throws WixApiError on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      await expect(client.confirmKlarnaOrder({ orderId: 'kord-001' })).rejects.toBeInstanceOf(
+        WixApiError,
+      );
+    });
+  });
 });

@@ -547,6 +547,23 @@ export class WixClient {
     return this.post('/ecom/v1/affirm/checkout', request);
   }
 
+  // ── Klarna redirect checkout (proxied through Wix backend) ─
+
+  async createKlarnaSession(request: {
+    amountCents: number;
+    items: Array<{ id: string; quantity: number; price: number }>;
+  }): Promise<{ redirectUrl: string; orderId: string }> {
+    return this.post('/_functions/klarna/checkout', request);
+  }
+
+  async confirmKlarnaOrder(request: { orderId: string }): Promise<{
+    orderId: string;
+    total: number;
+    currency: string;
+  }> {
+    return this.post('/_functions/klarna/confirm', request);
+  }
+
   // ── Orders (eCommerce Orders API) ──────────────────────────
 
   async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{

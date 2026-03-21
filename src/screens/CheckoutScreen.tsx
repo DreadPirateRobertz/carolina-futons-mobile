@@ -47,6 +47,7 @@ import { cancelCartAbandonmentForOrder } from '@/hooks/useCartAbandonmentReminde
 import { useAffirmPrequalification } from '@/hooks/useAffirmPrequalification';
 import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
+import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -219,6 +220,37 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     totals.total,
   );
   const [affirmError, setAffirmError] = useState<string | null>(null);
+  const klarnaCheckout = useKlarnaCheckout();
+
+  // Capture checkout-time values in refs so the success useEffect sees fresh
+  // state even if the parent re-renders while the app is backgrounded between
+  // Linking.openURL and the deep-link return (stale-closure fix).
+  const klarnaShippingRef = useRef<Address | null>(null);
+  const klarnaTotalRef = useRef(0);
+  const klarnaItemCountRef = useRef(0);
+  const klarnaFiredRef = useRef(false);
+
+  // When Klarna redirect flow completes successfully, trigger onOrderComplete.
+  // firedRef prevents double-fire if the component re-renders at status='success'.
+  useEffect(() => {
+    if (klarnaCheckout.status === 'success' && klarnaCheckout.order && !klarnaFiredRef.current) {
+      klarnaFiredRef.current = true;
+      const order = klarnaCheckout.order as unknown as OrderConfirmation;
+      events.purchase(order.orderId, klarnaTotalRef.current, klarnaItemCountRef.current);
+      if (klarnaShippingRef.current) {
+        addressBook.saveFromCheckout(klarnaShippingRef.current);
+      }
+      cancelCartAbandonmentForOrder();
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      onOrderComplete?.(order);
+    }
+    if (klarnaCheckout.status === 'idle' || klarnaCheckout.status === 'error') {
+      // Reset fired guard if user retries after cancel/error
+      klarnaFiredRef.current = false;
+    }
+  }, [klarnaCheckout.status, klarnaCheckout.order, onOrderComplete, addressBook]);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -274,7 +306,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     }, 150);
   }, []);
 
-  const isProcessing = status === 'processing';
+  const isProcessing =
+    status === 'processing' ||
+    klarnaCheckout.status === 'processing' ||
+    klarnaCheckout.status === 'awaiting_redirect';
+  const displayError = error ?? klarnaCheckout.error;
 
   if (!checkoutTracked && items.length > 0) {
     events.beginCheckout(items.length, totals.total);
@@ -355,6 +391,22 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
+    if (selectedMethod === 'klarna') {
+      // Capture current values into refs before handing off to the redirect flow.
+      // The success useEffect will read these after the app returns from Klarna,
+      // at which point the closure values in handlePlaceOrder may be stale.
+      klarnaShippingRef.current = shippingAddress;
+      klarnaTotalRef.current = totals.total;
+      klarnaItemCountRef.current = items.length;
+      klarnaFiredRef.current = false;
+      // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
+      await klarnaCheckout.startCheckout(
+        items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
+        { ...totals, discount: 0 },
+      );
+      return;
+    }
+
     const order = await processPayment(selectedMethod);
 
     if (order) {
@@ -371,9 +423,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     isProcessing,
     validateForm,
     processPayment,
+    klarnaCheckout,
     onOrderComplete,
-    totals.total,
-    items.length,
+    totals,
+    items,
     addressBook,
     shippingAddress,
   ]);
@@ -1112,7 +1165,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         )}
 
         {/* Error message */}
-        {error && (
+        {displayError && (
           <View
             style={[
               styles.errorCard,
@@ -1124,7 +1177,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             testID="payment-error"
             accessibilityRole="alert"
           >
-            <Text style={styles.errorText}>{error}</Text>
+            <Text style={styles.errorText}>{displayError}</Text>
           </View>
         )}
 

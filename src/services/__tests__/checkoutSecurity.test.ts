@@ -15,6 +15,8 @@ import {
   validateProductIds,
   scrubPiiFromError,
   isAllowedPostCheckoutScreen,
+  validateKlarnaRedirectUrl,
+  amountToCents,
 } from '../checkoutSecurity';
 
 describe('validateCheckoutAmount', () => {
@@ -238,5 +240,83 @@ describe('isAllowedPostCheckoutScreen', () => {
     it('is case-sensitive (Tabs ≠ tabs)', () => {
       expect(isAllowedPostCheckoutScreen('tabs')).toBe(false);
     });
+  });
+});
+
+// ── Klarna redirect URL SSRF guard (cm-g2o) ──────────────────────────────────
+
+describe('validateKlarnaRedirectUrl', () => {
+  describe('valid Klarna URLs', () => {
+    it('accepts pay.klarna.com', () => {
+      expect(validateKlarnaRedirectUrl('https://pay.klarna.com/checkout/abc123')).toBe(true);
+    });
+
+    it('accepts checkout.klarna.com', () => {
+      expect(validateKlarnaRedirectUrl('https://checkout.klarna.com/session/xyz')).toBe(true);
+    });
+
+    it('accepts klarna.com subdomains', () => {
+      expect(validateKlarnaRedirectUrl('https://api.klarna.com/payments/v1/sessions')).toBe(true);
+    });
+
+    it('accepts klarna.com staging subdomain', () => {
+      expect(validateKlarnaRedirectUrl('https://pay.playground.klarna.com/checkout/test')).toBe(
+        true,
+      );
+    });
+  });
+
+  describe('rejected URLs (SSRF guard)', () => {
+    it('rejects non-Klarna domain', () => {
+      expect(validateKlarnaRedirectUrl('https://evil.com/phish')).toBe(false);
+    });
+
+    it('rejects klarna.com.evil.com (subdomain confusion)', () => {
+      expect(validateKlarnaRedirectUrl('https://klarna.com.evil.com/checkout')).toBe(false);
+    });
+
+    it('rejects http (non-https)', () => {
+      expect(validateKlarnaRedirectUrl('http://pay.klarna.com/checkout')).toBe(false);
+    });
+
+    it('rejects data: URIs', () => {
+      expect(validateKlarnaRedirectUrl('data:text/html,<script>alert(1)</script>')).toBe(false);
+    });
+
+    it('rejects javascript: URIs', () => {
+      expect(validateKlarnaRedirectUrl('javascript:alert(1)')).toBe(false);
+    });
+
+    it('rejects empty string', () => {
+      expect(validateKlarnaRedirectUrl('')).toBe(false);
+    });
+
+    it('rejects URL with embedded credentials (user@host)', () => {
+      expect(validateKlarnaRedirectUrl('https://user@evil.com@pay.klarna.com/')).toBe(false);
+    });
+
+    it('rejects internal IPs', () => {
+      expect(validateKlarnaRedirectUrl('https://192.168.1.1/checkout')).toBe(false);
+    });
+  });
+});
+
+// ── amountToCents (cm-g2o) ────────────────────────────────────────────────────
+
+describe('amountToCents', () => {
+  it('converts dollar amount to integer cents', () => {
+    expect(amountToCents(422.43)).toBe(42243);
+  });
+
+  it('converts whole dollar amount', () => {
+    expect(amountToCents(100)).toBe(10000);
+  });
+
+  it('rounds correctly for floating-point edge cases', () => {
+    expect(amountToCents(1.005)).toBe(101);
+  });
+
+  it('returns 0 for 0', () => {
+    expect(amountToCents(0)).toBe(0);
   });
 });
