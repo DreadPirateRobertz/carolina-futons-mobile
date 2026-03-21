@@ -15,6 +15,7 @@ import {
 import { CommonActions, type NavigatorScreenParams } from '@react-navigation/native';
 import { TabNavigator, type TabParamList } from './TabNavigator';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
+import { ScreenErrorBoundary } from '@/components/ScreenErrorBoundary';
 import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
@@ -146,6 +147,11 @@ const RoomGalleryScreen = lazy(() =>
     default: withScreenErrorBoundary(m.RoomGalleryScreen, 'RoomGallery'),
   })),
 );
+const LoyaltyScreen = lazy(() =>
+  import('@/screens/LoyaltyScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LoyaltyScreen, 'Loyalty'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -190,6 +196,7 @@ export type RootStackParamList = {
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
+  Loyalty: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -237,12 +244,14 @@ export function AppNavigator() {
       >
         <Stack.Screen name="Onboarding">
           {({ navigation: nav }) => (
-            <OnboardingScreen
-              onComplete={() => {
-                handleOnboardingComplete();
-                nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
-              }}
-            />
+            <ScreenErrorBoundary screenName="Onboarding">
+              <OnboardingScreen
+                onComplete={() => {
+                  handleOnboardingComplete();
+                  nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
+                }}
+              />
+            </ScreenErrorBoundary>
           )}
         </Stack.Screen>
         <Stack.Screen name="Tabs" component={TabNavigator} />
@@ -440,6 +449,9 @@ export function AppNavigator() {
               onProductPress={(productId) => nav.navigate('ProductDetail', { slug: productId })}
             />
           )}
+        </Stack.Screen>
+        <Stack.Screen name="Loyalty" options={modalTransition}>
+          {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
         </Stack.Screen>
       </Stack.Navigator>
     </Suspense>
