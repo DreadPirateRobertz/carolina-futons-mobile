@@ -232,7 +232,10 @@ describe('StripeProvider initialization with pk_test_ key', () => {
   it('renders without crashing when given a pk_test_ publishable key', () => {
     const { getByTestId } = render(
       <ThemeProvider>
-        <StripeProvider publishableKey={TEST_PK_KEY} merchantIdentifier="merchant.com.carolinafutons">
+        <StripeProvider
+          publishableKey={TEST_PK_KEY}
+          merchantIdentifier="merchant.com.carolinafutons"
+        >
           <View />
         </StripeProvider>
       </ThemeProvider>,
@@ -243,7 +246,10 @@ describe('StripeProvider initialization with pk_test_ key', () => {
   it('passes pk_test_ key through to provider (key is present, not empty)', () => {
     const { getByTestId } = render(
       <ThemeProvider>
-        <StripeProvider publishableKey={TEST_PK_KEY} merchantIdentifier="merchant.com.carolinafutons">
+        <StripeProvider
+          publishableKey={TEST_PK_KEY}
+          merchantIdentifier="merchant.com.carolinafutons"
+        >
           <View />
         </StripeProvider>
       </ThemeProvider>,
