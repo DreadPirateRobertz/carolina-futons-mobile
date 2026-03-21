@@ -13,8 +13,8 @@ import { useState, useEffect, useRef } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
-/** Cache TTL: 5 minutes in milliseconds. */
-const CACHE_TTL_MS = 5 * 60 * 1000;
+/** Cache TTL: 1 hour in milliseconds. */
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
 /** Maximum number of recommendations to return. */
 const MAX_RESULTS = 8;

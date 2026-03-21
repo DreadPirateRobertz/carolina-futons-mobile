@@ -25,6 +25,8 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
+import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -55,6 +57,12 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const insets = useSafeAreaInsets();
   const { featured, isLoading: collectionsLoading, error: collectionsError } = useCollections();
   const { recentProducts } = useRecentlyViewed();
+  const {
+    recommendations: quizRecs,
+    label: quizLabel,
+    isLoading: quizLoading,
+    quizTaken,
+  } = useQuizRecommendations();
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -303,6 +311,26 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               ))}
             </ScrollView>
           )}
+        </View>
+      )}
+
+      {/* Personalized Picks (quiz-driven) */}
+      {quizTaken && (
+        <View style={styles.carouselSection}>
+          {quizLoading ? (
+            <View testID="skeleton-personalized-picks">
+              <SkeletonCarouselRow count={3} />
+            </View>
+          ) : quizRecs.length > 0 ? (
+            <View testID="personalized-picks">
+              <RecommendationCarousel
+                title={quizLabel || 'Picked for You'}
+                products={quizRecs}
+                onProductPress={handleProductPress}
+                testID="personalized-picks-carousel"
+              />
+            </View>
+          ) : null}
         </View>
       )}
 
