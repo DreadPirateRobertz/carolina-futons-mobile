@@ -527,6 +527,25 @@ export class WixClient {
     });
   }
 
+  // ── Affirm BNPL (proxied through Wix backend) ─────────────
+
+  async callAffirmPrequal(request: { amount: number }): Promise<{
+    eligible: boolean;
+    financing_program?: string;
+    min_loan_amount?: number;
+    max_loan_amount?: number;
+  }> {
+    return this.post('/ecom/v1/affirm/prequal', request);
+  }
+
+  async initiateAffirmCheckout(request: {
+    order_id: string;
+    amount: number;
+    items: Array<{ sku: string; display_name: string; quantity: number; unit_price: number }>;
+  }): Promise<{ checkout_url: string; checkout_token: string }> {
+    return this.post('/ecom/v1/affirm/checkout', request);
+  }
+
   // ── Orders (eCommerce Orders API) ──────────────────────────
 
   async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{
