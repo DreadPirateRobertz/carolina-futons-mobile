@@ -56,70 +56,73 @@ export function useVisualSearch(): UseVisualSearchReturn {
 
   const wixClient = useOptionalWixClient();
 
-  const trigger = useCallback(async (opts?: { useCamera?: boolean }) => {
-    // Launch picker with EXIF stripped (security requirement)
-    const launcher = opts?.useCamera
-      ? ImagePicker.launchCameraAsync
-      : ImagePicker.launchImageLibraryAsync;
-    const picked = await launcher({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      exif: false,
-      quality: 0.7,
-    });
+  const trigger = useCallback(
+    async (opts?: { useCamera?: boolean }) => {
+      // Launch picker with EXIF stripped (security requirement)
+      const launcher = opts?.useCamera
+        ? ImagePicker.launchCameraAsync
+        : ImagePicker.launchImageLibraryAsync;
+      const picked = await launcher({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        base64: true,
+        exif: false,
+        quality: 0.7,
+      });
 
-    if (picked.canceled || !picked.assets?.[0]?.base64) {
-      return; // user cancelled — stay idle
-    }
-
-    if (!wixClient) {
-      setStatus('error');
-      setError('Wix client unavailable — visual search requires a connected session');
-      return;
-    }
-
-    setStatus('loading');
-    setError(null);
-
-    try {
-      const attrs = await wixClient.callVisualSearch(picked.assets[0].base64);
-      const { category, style, colorFamily, keywords } = attrs;
-
-      // Score all products locally — no additional network call
-      const scored = PRODUCTS.map((p) => ({
-        product: p,
-        score: scoreProduct(p, category, colorFamily, style, keywords ?? []),
-      }));
-
-      const hasScored = scored.some((s) => s.score >= 1);
-      let finalResults: Product[];
-      const matchType: 'scored' | 'fallback' = hasScored ? 'scored' : 'fallback';
-
-      if (hasScored) {
-        finalResults = scored
-          .filter((s) => s.score >= 1)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6)
-          .map((s) => s.product);
-      } else {
-        // Fallback: top 3 by rating, same-category preferred
-        finalResults = [...PRODUCTS]
-          .sort((a, b) => {
-            const catBoost =
-              (a.category === category ? 1 : 0) - (b.category === category ? 1 : 0);
-            return catBoost !== 0 ? -catBoost : b.rating - a.rating;
-          })
-          .slice(0, 3);
+      if (picked.canceled || !picked.assets?.[0]?.base64) {
+        return; // user cancelled — stay idle
       }
 
-      setResults(finalResults);
-      setQuery({ category, style, colorFamily, keywords: keywords ?? [], matchType });
-      setStatus('success');
-    } catch (err) {
-      setStatus('error');
-      setError(err instanceof Error ? err.message : 'Visual search failed');
-    }
-  }, [wixClient]);
+      if (!wixClient) {
+        setStatus('error');
+        setError('Wix client unavailable — visual search requires a connected session');
+        return;
+      }
+
+      setStatus('loading');
+      setError(null);
+
+      try {
+        const attrs = await wixClient.callVisualSearch(picked.assets[0].base64);
+        const { category, style, colorFamily, keywords } = attrs;
+
+        // Score all products locally — no additional network call
+        const scored = PRODUCTS.map((p) => ({
+          product: p,
+          score: scoreProduct(p, category, colorFamily, style, keywords ?? []),
+        }));
+
+        const hasScored = scored.some((s) => s.score >= 1);
+        let finalResults: Product[];
+        const matchType: 'scored' | 'fallback' = hasScored ? 'scored' : 'fallback';
+
+        if (hasScored) {
+          finalResults = scored
+            .filter((s) => s.score >= 1)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 6)
+            .map((s) => s.product);
+        } else {
+          // Fallback: top 3 by rating, same-category preferred
+          finalResults = [...PRODUCTS]
+            .sort((a, b) => {
+              const catBoost =
+                (a.category === category ? 1 : 0) - (b.category === category ? 1 : 0);
+              return catBoost !== 0 ? -catBoost : b.rating - a.rating;
+            })
+            .slice(0, 3);
+        }
+
+        setResults(finalResults);
+        setQuery({ category, style, colorFamily, keywords: keywords ?? [], matchType });
+        setStatus('success');
+      } catch (err) {
+        setStatus('error');
+        setError(err instanceof Error ? err.message : 'Visual search failed');
+      }
+    },
+    [wixClient],
+  );
 
   const reset = useCallback(() => {
     setStatus('idle');

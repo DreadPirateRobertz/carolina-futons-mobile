@@ -407,7 +407,11 @@ export function AppNavigator() {
           )}
         </Stack.Screen>
         <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />
-        <Stack.Screen name="VisualSearchResults" component={VisualSearchResultsScreen} options={fadeTransition} />
+        <Stack.Screen
+          name="VisualSearchResults"
+          component={VisualSearchResultsScreen}
+          options={fadeTransition}
+        />
         <Stack.Screen name="Compare" options={fadeTransition}>
           {({ navigation: nav, route }) => {
             const { PRODUCTS } = require('@/data/products');

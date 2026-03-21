@@ -1207,7 +1207,13 @@ describe('ProductDetailScreen Find Similar', () => {
       trigger: mockTrigger,
       status: 'success',
       results: [PRODUCTS[0]],
-      query: { category: 'futons', style: 'modern', colorFamily: 'neutral', keywords: [], matchType: 'scored' },
+      query: {
+        category: 'futons',
+        style: 'modern',
+        colorFamily: 'neutral',
+        keywords: [],
+        matchType: 'scored',
+      },
       error: null,
       reset: jest.fn(),
     });

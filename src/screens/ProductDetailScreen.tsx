@@ -159,7 +159,12 @@ export function ProductDetailScreen({
   const totalPrice = model.basePrice + selectedFabric.price;
 
   const { addViewed } = useRecentlyViewed();
-  const { trigger: triggerVisualSearch, status: vsStatus, results: vsResults, query: vsQuery } = useVisualSearch();
+  const {
+    trigger: triggerVisualSearch,
+    status: vsStatus,
+    results: vsResults,
+    query: vsQuery,
+  } = useVisualSearch();
 
   // Navigate to VisualSearchResults when visual search completes with results
   useEffect(() => {
@@ -1069,7 +1074,7 @@ export function ProductDetailScreen({
           )}
           <TouchableOpacity
             testID="find-similar-btn"
-            onPress={triggerVisualSearch}
+            onPress={() => triggerVisualSearch()}
             accessibilityRole="button"
             accessibilityLabel="Find similar products with camera"
             style={styles.findSimilarBtn}

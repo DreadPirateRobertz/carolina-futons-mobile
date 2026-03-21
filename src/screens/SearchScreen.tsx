@@ -8,7 +8,14 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -284,8 +291,13 @@ export function SearchScreen({ testID }: Props) {
       {vsStatus === 'success' && vsResults.length > 0 && (
         <>
           {visualSearchActive && (
-            <View testID="visual-search-badge" style={[styles.vsBadge, { paddingHorizontal: spacing.md }]}>
-              <Text style={[styles.vsBadgeText, { color: colors.mountainBlueDark }]}>📷 Visual Search</Text>
+            <View
+              testID="visual-search-badge"
+              style={[styles.vsBadge, { paddingHorizontal: spacing.md }]}
+            >
+              <Text style={[styles.vsBadgeText, { color: colors.mountainBlueDark }]}>
+                📷 Visual Search
+              </Text>
               <TouchableOpacity onPress={vsReset}>
                 <Text style={[styles.vsBadgeClear, { color: colors.muted }]}>✕</Text>
               </TouchableOpacity>

@@ -388,7 +388,9 @@ describe('SearchScreen visual search integration', () => {
       reset: mockReset,
     });
     const { getByTestId } = renderSearchScreen();
-    await act(async () => { jest.advanceTimersByTime(100); });
+    await act(async () => {
+      jest.advanceTimersByTime(100);
+    });
     expect(getByTestId('visual-search-loading')).toBeTruthy();
   });
 
@@ -397,12 +399,20 @@ describe('SearchScreen visual search integration', () => {
       trigger: mockTrigger,
       status: 'success',
       results: [],
-      query: { category: 'futons', style: 'modern', colorFamily: 'neutral', keywords: [], matchType: 'scored' },
+      query: {
+        category: 'futons',
+        style: 'modern',
+        colorFamily: 'neutral',
+        keywords: [],
+        matchType: 'scored',
+      },
       error: null,
       reset: mockReset,
     });
     const { getByTestId } = renderSearchScreen();
-    await act(async () => { jest.advanceTimersByTime(100); });
+    await act(async () => {
+      jest.advanceTimersByTime(100);
+    });
     expect(getByTestId('visual-search-empty-state')).toBeTruthy();
   });
 
@@ -412,12 +422,20 @@ describe('SearchScreen visual search integration', () => {
       trigger: mockTrigger,
       status: 'success',
       results: mockProducts,
-      query: { category: 'futons', style: 'modern', colorFamily: 'neutral', keywords: [], matchType: 'scored' },
+      query: {
+        category: 'futons',
+        style: 'modern',
+        colorFamily: 'neutral',
+        keywords: [],
+        matchType: 'scored',
+      },
       error: null,
       reset: mockReset,
     });
     const { getByTestId } = renderSearchScreen();
-    await act(async () => { jest.advanceTimersByTime(100); });
+    await act(async () => {
+      jest.advanceTimersByTime(100);
+    });
     expect(getByTestId('visual-search-badge')).toBeTruthy();
   });
 
@@ -431,7 +449,9 @@ describe('SearchScreen visual search integration', () => {
       reset: mockReset,
     });
     const { getByTestId } = renderSearchScreen();
-    await act(async () => { jest.advanceTimersByTime(100); });
+    await act(async () => {
+      jest.advanceTimersByTime(100);
+    });
     fireEvent.changeText(getByTestId('search-input'), 'new text');
     expect(mockReset).toHaveBeenCalled();
   });

@@ -74,9 +74,7 @@ export function VisualSearchResultsScreen({ loading, error, onRetry }: Props) {
 
   if (products.length === 0) {
     return (
-      <VisualSearchEmptyState
-        onBrowseAll={() => navigation.navigate('Tabs', { screen: 'Shop' })}
-      />
+      <VisualSearchEmptyState onBrowseAll={() => navigation.navigate('Tabs', { screen: 'Shop' })} />
     );
   }
 

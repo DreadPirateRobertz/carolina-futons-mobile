@@ -60,16 +60,24 @@ describe('useVisualSearch', () => {
   it('stays idle when picker is cancelled', async () => {
     (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(CANCELLED_RESULT);
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('idle');
   });
 
   it('transitions to loading while awaiting backend', async () => {
     let resolveBackend!: (v: typeof AI_RESPONSE) => void;
-    mockCallVisualSearch.mockReturnValue(new Promise((r) => { resolveBackend = r; }));
+    mockCallVisualSearch.mockReturnValue(
+      new Promise((r) => {
+        resolveBackend = r;
+      }),
+    );
 
     const { result } = renderHook(() => useVisualSearch());
-    act(() => { result.current.trigger(); });
+    act(() => {
+      result.current.trigger();
+    });
 
     await waitFor(() => expect(result.current.status).toBe('loading'));
     resolveBackend(AI_RESPONSE);
@@ -77,7 +85,9 @@ describe('useVisualSearch', () => {
 
   it('transitions to success with scored results', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('success');
     expect(result.current.results.length).toBeGreaterThan(0);
   });
@@ -90,20 +100,26 @@ describe('useVisualSearch', () => {
       keywords: [],
     });
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.query?.matchType).toBe('fallback');
   });
 
   it('sets matchType=scored when at least one product scores >= 1', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.query?.matchType).toBe('scored');
   });
 
   it('transitions to error on backend 500', async () => {
     mockCallVisualSearch.mockRejectedValue(new Error('Internal Server Error'));
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
     expect(result.current.error).toBeTruthy();
   });
@@ -111,7 +127,9 @@ describe('useVisualSearch', () => {
   it('transitions to error on network timeout', async () => {
     mockCallVisualSearch.mockRejectedValue(new Error('Network timeout'));
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
   });
 
@@ -119,16 +137,22 @@ describe('useVisualSearch', () => {
     const { useOptionalWixClient } = require('@/services/wix/wixProvider');
     (useOptionalWixClient as jest.Mock).mockReturnValueOnce(null);
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
     expect(result.current.error).toContain('unavailable');
   });
 
   it('reset() returns to idle with empty results', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('success');
-    act(() => { result.current.reset(); });
+    act(() => {
+      result.current.reset();
+    });
     expect(result.current.status).toBe('idle');
     expect(result.current.results).toEqual([]);
     expect(result.current.query).toBeNull();
@@ -136,7 +160,9 @@ describe('useVisualSearch', () => {
 
   it('calls launchImageLibraryAsync with exif:false', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
       expect.objectContaining({ exif: false }),
     );
@@ -145,7 +171,9 @@ describe('useVisualSearch', () => {
   it('calls launchCameraAsync with exif:false when camera mode requested', async () => {
     (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue(IMAGE_RESULT);
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger({ useCamera: true }); });
+    await act(async () => {
+      await result.current.trigger({ useCamera: true });
+    });
     expect(ImagePicker.launchCameraAsync).toHaveBeenCalledWith(
       expect.objectContaining({ exif: false }),
     );

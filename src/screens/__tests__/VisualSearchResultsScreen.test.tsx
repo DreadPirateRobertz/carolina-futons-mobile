@@ -8,7 +8,15 @@ jest.mock('@/components/ProductCard', () => {
   const React = require('react');
   const { TouchableOpacity, Text } = require('react-native');
   return {
-    ProductCard: ({ product, onPress, testID }: { product: { id: string; name: string }; onPress?: () => void; testID?: string }) =>
+    ProductCard: ({
+      product,
+      onPress,
+      testID,
+    }: {
+      product: { id: string; name: string };
+      onPress?: () => void;
+      testID?: string;
+    }) =>
       React.createElement(
         TouchableOpacity,
         { testID: testID || `product-card-${product.id}`, onPress },
