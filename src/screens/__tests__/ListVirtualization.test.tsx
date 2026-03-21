@@ -44,7 +44,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
-
 async function renderShop() {
   const result = render(
     <ThemeProvider>
