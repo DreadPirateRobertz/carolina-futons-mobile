@@ -9,6 +9,7 @@ describe('useBackInStockSubscription', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetItem.mockResolvedValue(null);
+    mockSetItem.mockResolvedValue(undefined);
   });
 
   it('starts as not subscribed when no stored data', async () => {
@@ -85,6 +86,85 @@ describe('useBackInStockSubscription', () => {
     const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.isSubscribed).toBe(true);
+  });
+
+  // ── Error handling ──────────────────────────────────────────────
+
+  it('isError starts as false', async () => {
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.isError).toBe(false);
+  });
+
+  it('isError=true when getSubscriptions fails on initial load', async () => {
+    mockGetItem.mockRejectedValue(new Error('quota exceeded'));
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.isError).toBe(true);
+    expect(result.current.isSubscribed).toBe(false);
+  });
+
+  it('isError=true when getSubscriptions fails inside subscribe', async () => {
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetItem.mockRejectedValue(new Error('storage error'));
+    await act(async () => {
+      await result.current.subscribe();
+    });
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('isError=true when saveSubscriptions fails inside subscribe', async () => {
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetItem.mockResolvedValue('[]');
+    mockSetItem.mockRejectedValue(new Error('disk full'));
+    await act(async () => {
+      await result.current.subscribe();
+    });
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('isError=true when getSubscriptions fails inside unsubscribe', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify([{ productId: 'prod-test', subscribedAt: '2026-01-01T00:00:00.000Z' }]),
+    );
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetItem.mockRejectedValue(new Error('storage error'));
+    await act(async () => {
+      await result.current.unsubscribe();
+    });
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('isError=true when saveSubscriptions fails inside unsubscribe', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify([{ productId: 'prod-test', subscribedAt: '2026-01-01T00:00:00.000Z' }]),
+    );
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetItem.mockResolvedValue('[]');
+    mockSetItem.mockRejectedValue(new Error('encryption error'));
+    await act(async () => {
+      await result.current.unsubscribe();
+    });
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('isError stays false on successful subscribe', async () => {
+    const { result } = renderHook(() => useBackInStockSubscription('prod-test'));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    mockGetItem.mockResolvedValue('[]');
+    await act(async () => {
+      await result.current.subscribe();
+    });
+    expect(result.current.isError).toBe(false);
   });
 
   it('does not duplicate subscriptions on double subscribe', async () => {
