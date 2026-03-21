@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -65,7 +65,13 @@ const preventHidePromise = SplashScreen.preventAutoHideAsync();
 prefetchCriticalData();
 
 function App() {
-  const { navigationRef, onStateChange, onReady: onScreenTrackingReady } = useScreenTracking();
+  const { navigationRef, onStateChange: trackState, onReady: onScreenTrackingReady } = useScreenTracking();
+  const [currentRoute, setCurrentRoute] = useState<string | undefined>();
+
+  const onStateChange = useCallback(() => {
+    trackState();
+    setCurrentRoute(navigationRef.getCurrentRoute()?.name);
+  }, [trackState, navigationRef]);
   const forceUpdate = useForceUpdate();
 
   // Defer non-critical service init to after first render for faster cold start
@@ -140,7 +146,7 @@ function App() {
                                 <DeepLinkProvider>
                                   <OfflineBanner />
                                   <AppNavigator />
-                                  <MiniCartDrawerHost />
+                                  <MiniCartDrawerHost navigationRef={navigationRef} currentRoute={currentRoute} />
                                   <ForceUpdateModal
                                     visible={forceUpdate.visible}
                                     required={forceUpdate.required}

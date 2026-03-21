@@ -1,20 +1,39 @@
 /**
  * @module MiniCartDrawerHost.test
  *
- * Tests for MiniCartDrawerHost navigation integration — cm-jec.
- * Verifies that pressing Checkout calls close() then navigate('Checkout').
+ * Tests for MiniCartDrawerHost navigation integration — cm-3jz.
+ * Verifies checkout navigation, close ordering, and Checkout-screen suppression.
+ * Uses navigationRef prop instead of useNavigation/useNavigationState hooks
+ * to avoid the NavigationStateListenerContext crash outside a navigator (RN v7).
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { MiniCartDrawerHost } from '../MiniCartDrawerHost';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { NavigationContainerRef } from '@react-navigation/native';
+import type { RootStackParamList } from '../AppNavigator';
 
 const mockNavigate = jest.fn();
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: mockNavigate }),
-  useNavigationState: (selector: (state: unknown) => unknown) =>
-    selector({ routes: [{ name: 'Home' }], index: 0 }),
-}));
+
+function makeNavRef(
+  overrides?: Partial<NavigationContainerRef<RootStackParamList>>,
+): NavigationContainerRef<RootStackParamList> {
+  return {
+    navigate: mockNavigate,
+    goBack: jest.fn(),
+    reset: jest.fn(),
+    dispatch: jest.fn(),
+    setParams: jest.fn(),
+    canGoBack: jest.fn(() => false),
+    getState: jest.fn(),
+    getCurrentRoute: jest.fn(() => ({ key: 'Home-1', name: 'Tabs' as const })),
+    getCurrentOptions: jest.fn(),
+    isReady: jest.fn(() => true),
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+    ...overrides,
+  } as unknown as NavigationContainerRef<RootStackParamList>;
+}
 
 const mockClose = jest.fn();
 const mockUseMiniCartDrawer = jest.fn();
@@ -38,10 +57,13 @@ jest.mock('@/components/MiniCartDrawer', () => ({
   },
 }));
 
-function renderHost() {
+function renderHost(
+  navRef: NavigationContainerRef<RootStackParamList> = makeNavRef(),
+  currentRoute?: string,
+) {
   return render(
     <ThemeProvider>
-      <MiniCartDrawerHost />
+      <MiniCartDrawerHost navigationRef={navRef} currentRoute={currentRoute} />
     </ThemeProvider>,
   );
 }
@@ -72,6 +94,33 @@ describe('MiniCartDrawerHost', () => {
       const { getByTestId } = renderHost();
       fireEvent.press(getByTestId('mock-checkout-btn'));
       expect(callOrder).toEqual(['close', 'navigate']);
+    });
+  });
+
+  describe('Checkout screen suppression', () => {
+    it('does not render drawer when currentRoute is Checkout', () => {
+      const { queryByTestId } = renderHost(makeNavRef(), 'Checkout');
+      expect(queryByTestId('mock-mini-cart-drawer')).toBeNull();
+    });
+
+    it('renders drawer when currentRoute is not Checkout', () => {
+      const { getByTestId } = renderHost(makeNavRef(), 'Tabs');
+      expect(getByTestId('mock-mini-cart-drawer')).toBeTruthy();
+    });
+
+    it('renders drawer when currentRoute is undefined', () => {
+      const { getByTestId } = renderHost(makeNavRef(), undefined);
+      expect(getByTestId('mock-mini-cart-drawer')).toBeTruthy();
+    });
+  });
+
+  describe('no navigation hook dependency', () => {
+    it('renders without useNavigation or useNavigationState context (no navigator wrapper needed)', () => {
+      // This test verifies the fix for cm-3jz: the component must render
+      // without NavigationStateListenerContext (i.e., outside a navigator).
+      // The previous implementation crashed here because useNavigationState
+      // threw "Couldn't get the navigation state."
+      expect(() => renderHost()).not.toThrow();
     });
   });
 });
