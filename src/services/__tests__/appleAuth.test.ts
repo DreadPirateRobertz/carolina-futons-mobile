@@ -7,6 +7,9 @@
 
 import { Platform } from 'react-native';
 
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { isAppleAuthAvailable, signInWithApple, type AppleCredential } from '../appleAuth';
+
 jest.mock('expo-apple-authentication', () => ({
   isAvailableAsync: jest.fn(),
   signInAsync: jest.fn(),
@@ -15,9 +18,6 @@ jest.mock('expo-apple-authentication', () => ({
     EMAIL: 1,
   },
 }));
-
-import * as AppleAuthentication from 'expo-apple-authentication';
-import { isAppleAuthAvailable, signInWithApple, type AppleCredential } from '../appleAuth';
 
 const mockIsAvailable = AppleAuthentication.isAvailableAsync as jest.MockedFunction<
   typeof AppleAuthentication.isAvailableAsync

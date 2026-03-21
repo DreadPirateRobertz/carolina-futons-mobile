@@ -6,16 +6,16 @@
 
 import { renderHook, waitFor } from '@testing-library/react-native';
 
+// Need to import AFTER mocks
+import { useStores } from '../useStores';
+import { STORES } from '@/data/stores';
+
 const mockQueryData = jest.fn();
 let mockConfigured = false;
 
 jest.mock('@/services/wix/wixClientSingleton', () => ({
   getWixClientSingleton: () => (mockConfigured ? { queryData: mockQueryData } : null),
 }));
-
-// Need to import AFTER mocks
-import { useStores } from '../useStores';
-import { STORES } from '@/data/stores';
 
 beforeEach(() => {
   jest.clearAllMocks();

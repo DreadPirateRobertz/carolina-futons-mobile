@@ -644,11 +644,11 @@ describe('E2E Smoke Tests — Beta Launch', () => {
   // ================================================================
 
   describe('Flow 4: Deep link routing for all major screens', () => {
-    const deepLinkCases: Array<{
+    const deepLinkCases: {
       url: string;
       expectedScreen: string;
       expectedParams?: Record<string, string>;
-    }> = [
+    }[] = [
       { url: 'carolinafutons://home', expectedScreen: 'Home' },
       { url: 'carolinafutons://shop', expectedScreen: 'Shop' },
       { url: 'carolinafutons://cart', expectedScreen: 'Cart' },

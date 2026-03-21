@@ -886,14 +886,14 @@ export class WixClient {
 
   async addToCartById(
     cartId: string,
-    lineItems: Array<{
+    lineItems: {
       catalogReference: {
         catalogItemId: string;
         appId: string;
         options?: Record<string, unknown>;
       };
       quantity: number;
-    }>,
+    }[],
   ): Promise<{ cart: { id: string } }> {
     return this.post(`/ecom/v1/carts/${cartId}/add-to-cart`, { lineItems });
   }
@@ -907,7 +907,7 @@ export class WixClient {
 
   async updateCartLineItems(
     cartId: string,
-    lineItems: Array<{ id: string; quantity: number }>,
+    lineItems: { id: string; quantity: number }[],
   ): Promise<{ cart: { id: string } }> {
     return this.post(`/ecom/v1/carts/${cartId}/update-line-items`, {
       lineItems: lineItems.map((li) => ({

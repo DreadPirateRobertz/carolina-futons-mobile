@@ -140,4 +140,76 @@ describe('WixClient request timeout', () => {
     expect(clearTimeoutSpy).toHaveBeenCalled();
     clearTimeoutSpy.mockRestore();
   });
+
+  it('queryOrders aborts after timeout', async () => {
+    mockFetch.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          });
+        }),
+    );
+
+    const client = new WixClient({ ...TEST_CONFIG, timeoutMs: 50 });
+    try {
+      await client.queryOrders();
+      fail('Expected WixApiError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(WixApiError);
+      expect((err as WixApiError).message).toMatch(/timeout/i);
+    }
+  }, 10_000);
+
+  it('queryOrders passes AbortSignal to fetch', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ orders: [], totalResults: 0 }),
+    });
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.queryOrders();
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  it('getOrder aborts after timeout', async () => {
+    mockFetch.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          });
+        }),
+    );
+
+    const client = new WixClient({ ...TEST_CONFIG, timeoutMs: 50 });
+    try {
+      await client.getOrder('ord-001');
+      fail('Expected WixApiError');
+    } catch (err) {
+      expect(err).toBeInstanceOf(WixApiError);
+      expect((err as WixApiError).message).toMatch(/timeout/i);
+    }
+  }, 10_000);
+
+  it('getOrder passes AbortSignal to fetch', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ order: { _id: 'ord-001' } }),
+    });
+
+    const client = new WixClient(TEST_CONFIG);
+    await client.getOrder('ord-001');
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
 });

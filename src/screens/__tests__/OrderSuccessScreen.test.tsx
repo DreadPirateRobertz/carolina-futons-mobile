@@ -3,9 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { OrderSuccessScreen } from '../OrderSuccessScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-function renderScreen(
-  props: Partial<React.ComponentProps<typeof OrderSuccessScreen>> = {},
-) {
+function renderScreen(props: Partial<React.ComponentProps<typeof OrderSuccessScreen>> = {}) {
   return render(
     <ThemeProvider>
       <OrderSuccessScreen

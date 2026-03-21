@@ -1,5 +1,8 @@
 import { calculateCheckoutTotals } from '../payment';
 
+import { calculateTax } from '../taxService';
+import { calculateShipping } from '../shippingService';
+
 // Mock the tax and shipping services
 jest.mock('../taxService', () => ({
   calculateTax: jest.fn(),
@@ -7,9 +10,6 @@ jest.mock('../taxService', () => ({
 jest.mock('../shippingService', () => ({
   calculateShipping: jest.fn(),
 }));
-
-import { calculateTax } from '../taxService';
-import { calculateShipping } from '../shippingService';
 
 const mockCalculateTax = calculateTax as jest.MockedFunction<typeof calculateTax>;
 const mockCalculateShipping = calculateShipping as jest.MockedFunction<typeof calculateShipping>;

@@ -36,16 +36,10 @@ const mockOrder: OrderConfirmation = {
   estimatedDelivery: 'March 30 – April 4, 2026',
 };
 
-function renderScreen(
-  props: Partial<React.ComponentProps<typeof PaymentConfirmationScreen>> = {},
-) {
+function renderScreen(props: Partial<React.ComponentProps<typeof PaymentConfirmationScreen>> = {}) {
   return render(
     <ThemeProvider>
-      <PaymentConfirmationScreen
-        order={mockOrder}
-        onSuccess={jest.fn()}
-        {...props}
-      />
+      <PaymentConfirmationScreen order={mockOrder} onSuccess={jest.fn()} {...props} />
     </ThemeProvider>,
   );
 }

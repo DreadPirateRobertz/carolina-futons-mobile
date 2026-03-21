@@ -100,7 +100,7 @@ export function usePushDeepLink({ navigationRef }: UsePushDeepLinkOptions): void
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Background / foreground: listen for notification taps while running
@@ -114,6 +114,6 @@ export function usePushDeepLink({ navigationRef }: UsePushDeepLinkOptions): void
     });
 
     return () => sub.remove();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

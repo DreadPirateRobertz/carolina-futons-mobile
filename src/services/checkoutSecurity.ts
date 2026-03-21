@@ -55,19 +55,13 @@ export function validateProductIds(ids: string[]): boolean {
  * Patterns that suggest card numbers (16 digits, optionally separated by
  * spaces or dashes in groups of 4).
  */
-const CARD_NUMBER_PATTERNS = [
-  /\b\d{16}\b/g,
-  /\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/g,
-];
+const CARD_NUMBER_PATTERNS = [/\b\d{16}\b/g, /\b\d{4}[\s-]\d{4}[\s-]\d{4}[\s-]\d{4}\b/g];
 
 /**
  * Patterns that suggest AmEx card numbers (15 digits, optionally in 4-6-5
  * format separated by spaces or dashes).
  */
-const AMEX_NUMBER_PATTERNS = [
-  /\b\d{15}\b/g,
-  /\b\d{4}[\s-]\d{6}[\s-]\d{5}\b/g,
-];
+const AMEX_NUMBER_PATTERNS = [/\b\d{15}\b/g, /\b\d{4}[\s-]\d{6}[\s-]\d{5}\b/g];
 const AMEX_REPLACEMENT = '[AMEX_REDACTED]';
 
 /**

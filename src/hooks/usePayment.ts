@@ -8,25 +8,6 @@
  * submission via a processing ref.
  */
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-
-/**
- * UUID v4 without relying on crypto.randomUUID() (not universally available
- * in all Hermes/RN environments).
- */
-function uuid4(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-  });
-}
-
-/** Stable fingerprint of the current cart for idempotency key reset detection. */
-function cartFingerprint(items: { id: string; quantity: number }[], total: number): string {
-  return items
-    .map((i) => `${i.id}:${i.quantity}`)
-    .sort()
-    .join('|') + `|${total.toFixed(2)}`;
-}
 import { Platform } from 'react-native';
 import { useStripe, usePlatformPay, PlatformPay } from '@stripe/stripe-react-native';
 import { useOptionalWixClient } from '@/services/wix';
@@ -43,6 +24,27 @@ import {
   type OrderConfirmation,
   type OrderTotals,
 } from '@/services/payment';
+
+/**
+ * UUID v4 without relying on crypto.randomUUID() (not universally available
+ * in all Hermes/RN environments).
+ */
+function uuid4(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+/** Stable fingerprint of the current cart for idempotency key reset detection. */
+function cartFingerprint(items: { id: string; quantity: number }[], total: number): string {
+  return (
+    items
+      .map((i) => `${i.id}:${i.quantity}`)
+      .sort()
+      .join('|') + `|${total.toFixed(2)}`
+  );
+}
 
 export type PaymentStatus = 'idle' | 'processing' | 'success' | 'error';
 

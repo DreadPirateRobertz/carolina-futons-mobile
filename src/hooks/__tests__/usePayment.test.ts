@@ -321,10 +321,7 @@ describe('usePayment', () => {
     // Stripe errors can include PII (card data) in the error payload. We must
     // never pass the raw error object to Sentry — only a new Error with a
     // scrubbed message string.
-    const rawStripeError = new PaymentError(
-      'Card 4111111111111111 was declined',
-      'STRIPE_ERROR',
-    );
+    const rawStripeError = new PaymentError('Card 4111111111111111 was declined', 'STRIPE_ERROR');
     mockedCreatePaymentIntent.mockRejectedValue(rawStripeError);
 
     const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });

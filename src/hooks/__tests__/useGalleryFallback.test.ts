@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useGalleryFallback } from '../useGalleryFallback';
+
 const mockLaunchImageLibraryAsync = jest.fn();
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: (...args: any[]) => mockLaunchImageLibraryAsync(...args),
@@ -12,8 +14,6 @@ jest.mock('expo-device', () => ({
     return mockIsDevice.value;
   },
 }));
-
-import { useGalleryFallback } from '../useGalleryFallback';
 
 describe('useGalleryFallback', () => {
   beforeEach(() => {

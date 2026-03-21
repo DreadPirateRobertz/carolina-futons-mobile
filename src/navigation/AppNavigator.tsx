@@ -258,10 +258,7 @@ export function AppNavigator() {
                 nav.dispatch(
                   CommonActions.reset({
                     index: 0,
-                    routes: [
-                      { name: 'Tabs' },
-                      { name: 'PaymentConfirmation', params: { order } },
-                    ],
+                    routes: [{ name: 'Tabs' }, { name: 'PaymentConfirmation', params: { order } }],
                   }),
                 );
               }}

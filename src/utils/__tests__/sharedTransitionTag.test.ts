@@ -69,7 +69,7 @@ describe('tag format contract: ProductCard ↔ ProductDetailScreen', () => {
     return `product-image-${modelId}`;
   }
 
-  const pairs: Array<[string, string]> = [
+  const pairs: [string, string][] = [
     ['prod-asheville-full', 'asheville-full'],
     ['prod-blue-ridge-queen', 'blue-ridge-queen'],
     ['prod-pisgah-twin', 'pisgah-twin'],

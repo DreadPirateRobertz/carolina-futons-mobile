@@ -1029,4 +1029,225 @@ describe('WixClient eCommerce Cart', () => {
       );
     });
   });
+
+  // ── Orders API ──────────────────────────────────────────────
+
+  describe('queryOrders', () => {
+    const ORDER_FIXTURE = {
+      _id: 'ord-001',
+      number: '4001',
+      status: 'FULFILLED',
+      _createdDate: '2026-03-01T10:00:00Z',
+      _updatedDate: '2026-03-02T10:00:00Z',
+      lineItems: [
+        {
+          _id: 'li-1',
+          catalogReference: { catalogItemId: 'asheville-full', appId: 'app1' },
+          productName: { translated: 'The Asheville' },
+          quantity: 1,
+          price: { amount: '499.00' },
+          totalPrice: { amount: '499.00' },
+        },
+      ],
+      priceSummary: {
+        subtotal: { amount: '499.00' },
+        shipping: { amount: '49.00' },
+        tax: { amount: '39.92' },
+        total: { amount: '587.92' },
+      },
+      billingInfo: { paymentMethod: 'Visa ····4242' },
+      paymentStatus: 'PAID',
+    };
+
+    it('POSTs to the orders query endpoint with default paging', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [ORDER_FIXTURE], totalResults: 1 }),
+      });
+
+      await client.queryOrders();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/orders/query',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            query: {
+              paging: { limit: 50, offset: 0 },
+              sort: [{ fieldName: '_createdDate', order: 'DESC' }],
+            },
+          }),
+        }),
+      );
+    });
+
+    it('returns orders array and totalResults', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [ORDER_FIXTURE], totalResults: 1 }),
+      });
+
+      const result = await client.queryOrders();
+
+      expect(result.orders).toHaveLength(1);
+      expect(result.orders[0]._id).toBe('ord-001');
+      expect(result.totalResults).toBe(1);
+    });
+
+    it('clamps limit to 100 max', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [], totalResults: 0 }),
+      });
+
+      await client.queryOrders({ limit: 999 });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.query.paging.limit).toBe(100);
+    });
+
+    it('clamps limit to 1 min', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [], totalResults: 0 }),
+      });
+
+      await client.queryOrders({ limit: 0 });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.query.paging.limit).toBe(1);
+    });
+
+    it('passes offset through with floor at 0', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [], totalResults: 0 }),
+      });
+
+      await client.queryOrders({ limit: 20, offset: 40 });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.query.paging.offset).toBe(40);
+    });
+
+    it('clamps negative offset to 0', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ orders: [], totalResults: 0 }),
+      });
+
+      await client.queryOrders({ offset: -10 });
+
+      const body = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(body.query.paging.offset).toBe(0);
+    });
+
+    it('returns empty orders array when API returns no orders key', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({}),
+      });
+
+      const result = await client.queryOrders();
+
+      expect(result.orders).toEqual([]);
+      expect(result.totalResults).toBe(0);
+    });
+
+    it('throws WixApiError on non-ok response', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: () => Promise.resolve({ message: 'Forbidden' }),
+      });
+
+      await expect(client.queryOrders()).rejects.toBeInstanceOf(WixApiError);
+    });
+
+    it('throws WixApiError on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network unreachable'));
+
+      await expect(client.queryOrders()).rejects.toBeInstanceOf(WixApiError);
+    });
+  });
+
+  describe('getOrder', () => {
+    const ORDER_FIXTURE = {
+      _id: 'ord-specific-001',
+      number: '5001',
+      status: 'APPROVED',
+      _createdDate: '2026-03-10T08:00:00Z',
+      _updatedDate: '2026-03-10T08:00:00Z',
+      lineItems: [],
+      priceSummary: {
+        subtotal: { amount: '0.00' },
+        shipping: { amount: '0.00' },
+        tax: { amount: '0.00' },
+        total: { amount: '0.00' },
+      },
+      billingInfo: { paymentMethod: 'card' },
+      paymentStatus: 'NOT_PAID',
+    };
+
+    it('GETs the correct order endpoint', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ order: ORDER_FIXTURE }),
+      });
+
+      await client.getOrder('ord-specific-001');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/orders/ord-specific-001',
+        expect.objectContaining({ method: 'GET' }),
+      );
+    });
+
+    it('returns the order object', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ order: ORDER_FIXTURE }),
+      });
+
+      const result = await client.getOrder('ord-specific-001');
+
+      expect(result._id).toBe('ord-specific-001');
+      expect(result.number).toBe('5001');
+    });
+
+    it('URL-encodes the order ID', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ order: ORDER_FIXTURE }),
+      });
+
+      await client.getOrder('ord/with/slashes');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/ecom/v1/orders/ord%2Fwith%2Fslashes',
+        expect.anything(),
+      );
+    });
+
+    it('throws WixApiError when orderId is empty string', async () => {
+      await expect(client.getOrder('')).rejects.toBeInstanceOf(WixApiError);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('throws WixApiError on 404', async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({ message: 'Order not found' }),
+      });
+
+      await expect(client.getOrder('nonexistent')).rejects.toBeInstanceOf(WixApiError);
+    });
+
+    it('throws WixApiError on network failure', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+
+      await expect(client.getOrder('ord-001')).rejects.toBeInstanceOf(WixApiError);
+    });
+  });
 });

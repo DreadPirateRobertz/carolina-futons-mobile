@@ -6,6 +6,14 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {
+  prefetchCriticalData,
+  getPrefetchStatus,
+  resetPrefetchState,
+  PREFETCH_CACHE_KEY,
+  PREFETCH_COLLECTIONS_KEY,
+} from '../prefetch';
+
 // Must mock before importing prefetch module
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -54,14 +62,6 @@ jest.mock('@/data/collections', () => ({
     },
   ],
 }));
-
-import {
-  prefetchCriticalData,
-  getPrefetchStatus,
-  resetPrefetchState,
-  PREFETCH_CACHE_KEY,
-  PREFETCH_COLLECTIONS_KEY,
-} from '../prefetch';
 
 const mockGetItem = AsyncStorage.getItem as jest.MockedFunction<typeof AsyncStorage.getItem>;
 const mockSetItem = AsyncStorage.setItem as jest.MockedFunction<typeof AsyncStorage.setItem>;
@@ -128,7 +128,7 @@ describe('prefetchCriticalData', () => {
 
   it('sets status to "fetching" while in progress', async () => {
     // Use slow setItem calls to observe intermediate state
-    const resolvers: Array<() => void> = [];
+    const resolvers: (() => void)[] = [];
     mockSetItem.mockImplementation(
       () =>
         new Promise<void>((resolve) => {

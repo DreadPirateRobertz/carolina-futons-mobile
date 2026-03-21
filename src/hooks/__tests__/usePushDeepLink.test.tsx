@@ -28,8 +28,9 @@ jest.mock('expo-notifications', () => ({
 }));
 
 // Typed references to the mocked functions for use in tests
-const mockGetLastNotificationResponseAsync =
-  jest.mocked(require('expo-notifications').getLastNotificationResponseAsync);
+const mockGetLastNotificationResponseAsync = jest.mocked(
+  require('expo-notifications').getLastNotificationResponseAsync,
+);
 const mockAddNotificationResponseReceivedListener = jest.mocked(
   require('expo-notifications').addNotificationResponseReceivedListener,
 );
@@ -87,9 +88,7 @@ describe('cold-start deep-link (app was not running)', () => {
   });
 
   it('navigates to OrderHistory on cold-start with order_update and no orderId', async () => {
-    mockGetLastNotificationResponseAsync.mockResolvedValue(
-      makeResponse({ type: 'order_update' }),
-    );
+    mockGetLastNotificationResponseAsync.mockResolvedValue(makeResponse({ type: 'order_update' }));
 
     render(<HookHarness navRef={makeNavRef()} />);
 
@@ -111,9 +110,7 @@ describe('cold-start deep-link (app was not running)', () => {
   });
 
   it('navigates to Cart on cold-start with cart_reminder type', async () => {
-    mockGetLastNotificationResponseAsync.mockResolvedValue(
-      makeResponse({ type: 'cart_reminder' }),
-    );
+    mockGetLastNotificationResponseAsync.mockResolvedValue(makeResponse({ type: 'cart_reminder' }));
 
     render(<HookHarness navRef={makeNavRef()} />);
 
@@ -253,7 +250,9 @@ describe('foreground tap (app was active)', () => {
   it('cleans up listener on unmount', async () => {
     const { unmount } = render(<HookHarness navRef={makeNavRef()} />);
     // Capture remove fn from the subscription returned during this render
-    const sub = mockAddNotificationResponseReceivedListener.mock.results[0].value as { remove: jest.Mock };
+    const sub = mockAddNotificationResponseReceivedListener.mock.results[0].value as {
+      remove: jest.Mock;
+    };
     unmount();
 
     expect(sub.remove).toHaveBeenCalled();
