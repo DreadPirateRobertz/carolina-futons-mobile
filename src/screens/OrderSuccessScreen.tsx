@@ -29,7 +29,7 @@ export function OrderSuccessScreen({
 
   useEffect(() => {
     if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
   }, []);
 
