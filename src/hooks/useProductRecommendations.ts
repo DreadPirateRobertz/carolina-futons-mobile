@@ -7,7 +7,7 @@
  * static PRODUCTS catalog) filtered by same category and ±50% price range,
  * then sorted by relevance score (category + fabric overlap + price proximity).
  *
- * Results are cached in memory for 5 minutes per productId.
+ * Results are cached in memory for 1 hour per productId.
  */
 import { useState, useEffect, useRef } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';

@@ -139,8 +139,8 @@ describe('useProductRecommendations', () => {
         await waitFor(() => expect(mockQueryProducts).toHaveBeenCalledTimes(1));
         unmount();
 
-        // Advance time past TTL
-        Date.now = jest.fn().mockReturnValue(6 * 60 * 1000);
+        // Advance time past TTL (cache TTL is 1 hour)
+        Date.now = jest.fn().mockReturnValue(2 * 60 * 60 * 1000);
         renderHook(() => useProductRecommendations(product1.id));
         await waitFor(() => expect(mockQueryProducts).toHaveBeenCalledTimes(2));
       } finally {
