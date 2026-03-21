@@ -13,6 +13,7 @@ function renderSearchBar(
     onSubmitSearch?: jest.Mock;
     onRemoveRecent?: jest.Mock;
     onClearRecent?: jest.Mock;
+    onCameraPress?: jest.Mock;
   } = {},
 ) {
   const onChangeText = props.onChangeText ?? jest.fn();
@@ -28,6 +29,7 @@ function renderSearchBar(
           onSubmitSearch={props.onSubmitSearch}
           onRemoveRecent={props.onRemoveRecent}
           onClearRecent={props.onClearRecent}
+          onCameraPress={props.onCameraPress}
         />
       </ThemeProvider>,
     ),
@@ -275,5 +277,19 @@ describe('SearchBar recent searches', () => {
     });
     fireEvent(getByTestId('search-input'), 'focus');
     expect(queryByTestId('search-recent')).toBeNull();
+  });
+
+  describe('Camera / visual search', () => {
+    it('calls onCameraPress when camera icon is pressed', () => {
+      const onCameraPress = jest.fn();
+      const { getByTestId } = renderSearchBar({ value: '', onCameraPress });
+      fireEvent.press(getByTestId('camera-icon-btn'));
+      expect(onCameraPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render camera icon when onCameraPress is not provided', () => {
+      const { queryByTestId } = renderSearchBar({ value: '' });
+      expect(queryByTestId('camera-icon-btn')).toBeNull();
+    });
   });
 });
