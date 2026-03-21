@@ -1,8 +1,9 @@
 /**
  * @module useRatingPrompt
  *
- * Manages in-app rating prompts triggered by purchase milestones (3rd purchase)
- * or app open milestones (7th open). Uses expo-store-review for the native
+ * Manages in-app rating prompts triggered by purchase milestones (3rd purchase),
+ * delivery milestones (3rd delivery), or app open milestones (7th open). Uses
+ * expo-store-review for the native
  * store rating dialog. Tracks prompt state in AsyncStorage with a 90-day
  * cooldown between prompts. Users can disable prompts via a settings toggle.
  */
@@ -14,11 +15,13 @@ import { events } from '@/services/analytics';
 
 const STORAGE_KEY = '@cfutons/rating_prompt';
 const PURCHASE_THRESHOLD = 3;
+const DELIVERY_THRESHOLD = 3;
 const APP_OPEN_THRESHOLD = 7;
 const COOLDOWN_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 interface RatingState {
   purchaseCount: number;
+  deliveryCount: number;
   appOpenCount: number;
   lastPromptedAt: number | null;
   disabled: boolean;
@@ -26,6 +29,7 @@ interface RatingState {
 
 const DEFAULT_STATE: RatingState = {
   purchaseCount: 0,
+  deliveryCount: 0,
   appOpenCount: 0,
   lastPromptedAt: null,
   disabled: false,
@@ -127,20 +131,19 @@ export function useRatingPrompt() {
   }, [requestPrompt]);
 
   /**
-   * Call when an order is marked as delivered. Counts toward the purchase
-   * milestone and triggers a review prompt with the 'delivery_milestone'
-   * trigger when the threshold is reached.
+   * Call when an order is marked as delivered. Tracks a separate delivery
+   * counter and triggers a review prompt at the 3rd delivery milestone.
    */
   const recordDelivery = useCallback(async () => {
     if (Platform.OS === 'web') return;
 
     const current = stateRef.current;
-    const updated = { ...current, purchaseCount: current.purchaseCount + 1 };
+    const updated = { ...current, deliveryCount: current.deliveryCount + 1 };
     setState(updated);
     await persistState(updated);
 
     if (
-      updated.purchaseCount >= PURCHASE_THRESHOLD &&
+      updated.deliveryCount >= DELIVERY_THRESHOLD &&
       !updated.disabled &&
       !isWithinCooldown(updated.lastPromptedAt)
     ) {

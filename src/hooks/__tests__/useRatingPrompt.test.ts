@@ -279,11 +279,11 @@ describe('useRatingPrompt', () => {
       expect(mockRequestReview).not.toHaveBeenCalled();
     });
 
-    it('prompts on 1st delivery (delivery threshold is 1)', async () => {
-      // pre-seed 1 purchase so delivery tips it over combined threshold
+    it('prompts on 3rd delivery (delivery threshold is 3)', async () => {
       mockGetItem.mockResolvedValue(
         JSON.stringify({
-          purchaseCount: 2,
+          purchaseCount: 0,
+          deliveryCount: 2,
           appOpenCount: 0,
           lastPromptedAt: null,
           disabled: false,
@@ -296,10 +296,11 @@ describe('useRatingPrompt', () => {
       expect(mockRequestReview).toHaveBeenCalledTimes(1);
     });
 
-    it('prompts once on first delivery with sufficient purchase history', async () => {
+    it('prompts once on first qualifying delivery, cooldown blocks second', async () => {
       mockGetItem.mockResolvedValue(
         JSON.stringify({
-          purchaseCount: 3,
+          purchaseCount: 0,
+          deliveryCount: 3,
           appOpenCount: 0,
           lastPromptedAt: null,
           disabled: false,
@@ -317,7 +318,8 @@ describe('useRatingPrompt', () => {
     it('does not prompt if disabled', async () => {
       mockGetItem.mockResolvedValue(
         JSON.stringify({
-          purchaseCount: 5,
+          purchaseCount: 0,
+          deliveryCount: 5,
           appOpenCount: 0,
           lastPromptedAt: null,
           disabled: true,
@@ -333,7 +335,8 @@ describe('useRatingPrompt', () => {
     it('does not prompt within 90-day cooldown', async () => {
       mockGetItem.mockResolvedValue(
         JSON.stringify({
-          purchaseCount: 5,
+          purchaseCount: 0,
+          deliveryCount: 5,
           appOpenCount: 0,
           lastPromptedAt: Date.now() - 1000, // 1 second ago — within cooldown
           disabled: false,
@@ -350,7 +353,8 @@ describe('useRatingPrompt', () => {
       const { events } = jest.requireMock('@/services/analytics');
       mockGetItem.mockResolvedValue(
         JSON.stringify({
-          purchaseCount: 3,
+          purchaseCount: 0,
+          deliveryCount: 2,
           appOpenCount: 0,
           lastPromptedAt: null,
           disabled: false,

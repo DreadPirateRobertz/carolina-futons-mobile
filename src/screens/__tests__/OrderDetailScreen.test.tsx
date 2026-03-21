@@ -1,6 +1,6 @@
 import React from 'react';
 import { Linking } from 'react-native';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { OrderDetailScreen } from '../OrderDetailScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
@@ -9,6 +9,16 @@ import { MOCK_ORDERS } from '@/data/orders';
 import { Text, View } from 'react-native';
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
+
+const mockRecordDelivery = jest.fn();
+jest.mock('@/hooks/useRatingPrompt', () => ({
+  useRatingPrompt: () => ({
+    recordDelivery: mockRecordDelivery,
+    recordPurchase: jest.fn(),
+    toggleDisabled: jest.fn(),
+    disabled: false,
+  }),
+}));
 
 function renderOrderDetail(
   props: Partial<React.ComponentProps<typeof OrderDetailScreen>> & { orderId: string },
@@ -55,6 +65,7 @@ const deliveredOrder = MOCK_ORDERS[0]; // ord-001, delivered, has tracking
 describe('OrderDetailScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockRecordDelivery.mockClear();
   });
 
   describe('Rendering', () => {
@@ -313,30 +324,18 @@ describe('OrderDetailScreen', () => {
   });
 
   describe('Rating prompt on delivery', () => {
-    const mockRecordDelivery = jest.fn();
-
-    beforeEach(() => {
-      jest.mock('@/hooks/useRatingPrompt', () => ({
-        useRatingPrompt: () => ({
-          recordDelivery: mockRecordDelivery,
-          recordPurchase: jest.fn(),
-          toggleDisabled: jest.fn(),
-          disabled: false,
-        }),
-      }));
+    it('calls recordDelivery when order status is delivered', async () => {
+      renderOrderDetail({ orderId: 'ord-001' }); // delivered order
+      await waitFor(() => {
+        expect(mockRecordDelivery).toHaveBeenCalledTimes(1);
+      });
     });
 
-    it('calls recordDelivery when order status is delivered', () => {
-      // deliveredOrder (ord-001) has status 'delivered'
-      renderOrderDetail({ orderId: deliveredOrder.id });
-      // recordDelivery is called in a useEffect — but we verify the mock was called
-      // by checking the MOCK_ORDERS status aligns with our test expectation
-      expect(deliveredOrder.status).toBe('delivered');
-    });
-
-    it('shows delivered status badge for a delivered order', () => {
-      const { getByTestId } = renderOrderDetail({ orderId: deliveredOrder.id });
-      expect(getByTestId('order-detail-status')).toBeTruthy();
+    it('does not call recordDelivery for non-delivered orders', async () => {
+      renderOrderDetail({ orderId: 'ord-003' }); // processing order
+      await waitFor(() => {
+        expect(mockRecordDelivery).not.toHaveBeenCalled();
+      });
     });
   });
 });
