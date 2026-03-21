@@ -400,7 +400,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       klarnaItemCountRef.current = items.length;
       klarnaFiredRef.current = false;
       // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
-      await klarnaCheckout.startCheckout(items, totals);
+      await klarnaCheckout.startCheckout(
+        items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
+        { ...totals, discount: 0 },
+      );
       return;
     }
 

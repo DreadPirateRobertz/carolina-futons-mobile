@@ -92,7 +92,9 @@ describe('startCheckout — session creation', () => {
     });
 
     expect(result.current.status).toBe('processing');
-    await act(async () => { await promise; });
+    await act(async () => {
+      await promise;
+    });
   });
 
   it('calls createKlarnaSession with amount in cents', async () => {
