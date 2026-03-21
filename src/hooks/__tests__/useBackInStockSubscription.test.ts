@@ -6,10 +6,17 @@ const mockGetItem = AsyncStorage.getItem as jest.Mock;
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 describe('useBackInStockSubscription', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetItem.mockResolvedValue(null);
     mockSetItem.mockResolvedValue(undefined);
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('starts as not subscribed when no stored data', async () => {
@@ -102,6 +109,10 @@ describe('useBackInStockSubscription', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.isError).toBe(true);
     expect(result.current.isSubscribed).toBe(false);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useBackInStockSubscription]'),
+      expect.any(Error),
+    );
   });
 
   it('isError=true when getSubscriptions fails inside subscribe', async () => {
@@ -113,6 +124,10 @@ describe('useBackInStockSubscription', () => {
       await result.current.subscribe();
     });
     expect(result.current.isError).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useBackInStockSubscription]'),
+      expect.any(Error),
+    );
   });
 
   it('isError=true when saveSubscriptions fails inside subscribe', async () => {
@@ -125,6 +140,10 @@ describe('useBackInStockSubscription', () => {
       await result.current.subscribe();
     });
     expect(result.current.isError).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useBackInStockSubscription]'),
+      expect.any(Error),
+    );
   });
 
   it('isError=true when getSubscriptions fails inside unsubscribe', async () => {
@@ -139,6 +158,10 @@ describe('useBackInStockSubscription', () => {
       await result.current.unsubscribe();
     });
     expect(result.current.isError).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useBackInStockSubscription]'),
+      expect.any(Error),
+    );
   });
 
   it('isError=true when saveSubscriptions fails inside unsubscribe', async () => {
@@ -154,6 +177,10 @@ describe('useBackInStockSubscription', () => {
       await result.current.unsubscribe();
     });
     expect(result.current.isError).toBe(true);
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useBackInStockSubscription]'),
+      expect.any(Error),
+    );
   });
 
   it('isError stays false on successful subscribe', async () => {

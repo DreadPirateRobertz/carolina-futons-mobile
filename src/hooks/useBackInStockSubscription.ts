@@ -53,7 +53,8 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
         if (!cancelled) {
           setIsSubscribed(subs.some((s) => s.productId === productId));
         }
-      } catch {
+      } catch (e) {
+        console.error('[useBackInStockSubscription] getSubscriptions failed:', e);
         if (!cancelled) {
           setIsError(true);
         }
@@ -76,7 +77,8 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
         await saveSubscriptions(subs);
       }
       setIsSubscribed(true);
-    } catch {
+    } catch (e) {
+      console.error('[useBackInStockSubscription] subscribe failed:', e);
       setIsError(true);
     }
   }, [productId]);
@@ -87,7 +89,8 @@ export function useBackInStockSubscription(productId: string): UseBackInStockRet
       const filtered = subs.filter((s) => s.productId !== productId);
       await saveSubscriptions(filtered);
       setIsSubscribed(false);
-    } catch {
+    } catch (e) {
+      console.error('[useBackInStockSubscription] unsubscribe failed:', e);
       setIsError(true);
     }
   }, [productId]);
