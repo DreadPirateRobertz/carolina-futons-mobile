@@ -6,6 +6,12 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS, type Product } from '@/data/products';
 import { productId } from '@/data/productId';
+import * as Haptics from 'expo-haptics';
+
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
+}));
 
 const futon = PRODUCTS.find((p) => p.category === 'futons')!;
 const saleProduct = PRODUCTS.find((p) => p.originalPrice !== undefined)!;
@@ -281,6 +287,74 @@ describe('ProductCard', () => {
       const { getByTestId } = renderCard({ onPress });
       fireEvent.press(getByTestId(`compare-btn-${futon.id}`));
       expect(onPress).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Long-press context menu', () => {
+    function renderWithContextMenu(contextMenu: {
+      onAddToCart?: jest.Mock;
+      onAddToWishlist?: jest.Mock;
+      onShare?: jest.Mock;
+    }) {
+      return render(
+        <ThemeProvider>
+          <WishlistProvider>
+            <CompareProvider>
+              <ProductCard
+                product={futon}
+                onPress={jest.fn()}
+                contextMenu={contextMenu}
+              />
+            </CompareProvider>
+          </WishlistProvider>
+        </ThemeProvider>,
+      );
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('shows context menu trigger button when contextMenu prop provided', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      expect(getByTestId(`product-context-trigger-${futon.id}`)).toBeTruthy();
+    });
+
+    it('hides context menu trigger when contextMenu prop absent', () => {
+      const { queryByTestId } = renderCard();
+      expect(queryByTestId(`product-context-trigger-${futon.id}`)).toBeNull();
+    });
+
+    it('fires haptic on long press when contextMenu provided', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      fireEvent(getByTestId(`product-card-${futon.id}`), 'longPress');
+      expect(Haptics.impactAsync).toHaveBeenCalledWith(
+        Haptics.ImpactFeedbackStyle.Medium,
+      );
+    });
+
+    it('shows context menu after long press', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      fireEvent(getByTestId(`product-card-${futon.id}`), 'longPress');
+      expect(getByTestId('product-context-menu')).toBeTruthy();
+    });
+
+    it('shows context menu after pressing trigger button', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      fireEvent.press(getByTestId(`product-context-trigger-${futon.id}`));
+      expect(getByTestId('product-context-menu')).toBeTruthy();
+    });
+
+    it('context menu trigger has accessibilityLabel', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      const trigger = getByTestId(`product-context-trigger-${futon.id}`);
+      expect(trigger.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('context menu trigger has accessibilityRole=button', () => {
+      const { getByTestId } = renderWithContextMenu({ onAddToCart: jest.fn() });
+      const trigger = getByTestId(`product-context-trigger-${futon.id}`);
+      expect(trigger.props.accessibilityRole).toBe('button');
     });
   });
 });

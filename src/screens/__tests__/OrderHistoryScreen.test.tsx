@@ -315,4 +315,35 @@ describe('OrderHistoryScreen', () => {
       expect(mockRefresh).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('pull-to-refresh', () => {
+    it('FlatList has refreshControl configured', () => {
+      const { getByTestId } = renderOrderHistory();
+      const flatList = getByTestId('order-list');
+      expect(flatList.props.refreshControl).toBeTruthy();
+    });
+
+    it('FlatList has refreshControl on empty order list', () => {
+      mockUseOrders.mockReturnValue({
+        orders: [],
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+        statusFilter: null,
+        setStatusFilter: jest.fn(),
+        getOrder: jest.fn(),
+      });
+      const { getByTestId } = renderOrderHistory();
+      const flatList = getByTestId('order-list');
+      expect(flatList.props.refreshControl).toBeTruthy();
+    });
+
+    it('PTR onRefresh calls orders.refresh()', () => {
+      const { getByTestId } = renderOrderHistory();
+      const flatList = getByTestId('order-list');
+      const { onRefresh } = flatList.props.refreshControl.props;
+      onRefresh();
+      expect(mockRefresh).toHaveBeenCalledTimes(1);
+    });
+  });
 });
