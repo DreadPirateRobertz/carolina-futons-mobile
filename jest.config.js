@@ -17,6 +17,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^react-native-reanimated$': '<rootDir>/node_modules/react-native-reanimated/src/mock',
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
