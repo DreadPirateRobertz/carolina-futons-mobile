@@ -106,7 +106,11 @@ export function usePushDeepLink({ navigationRef }: UsePushDeepLinkOptions): void
   // Background / foreground: listen for notification taps while running
   useEffect(() => {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      handleResponse(response, navigationRef);
+      try {
+        handleResponse(response, navigationRef);
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)));
+      }
     });
 
     return () => sub.remove();

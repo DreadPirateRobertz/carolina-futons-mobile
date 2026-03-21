@@ -148,7 +148,6 @@ describe('cold-start deep-link (app was not running)', () => {
 
   it('does nothing when getLastNotificationResponseAsync rejects (graceful error)', async () => {
     mockGetLastNotificationResponseAsync.mockRejectedValue(new Error('Notifications SDK error'));
-    const spy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     render(<HookHarness navRef={makeNavRef()} />);
 
@@ -158,7 +157,9 @@ describe('cold-start deep-link (app was not running)', () => {
 
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(mockGoBack).not.toHaveBeenCalled();
-    spy.mockRestore();
+    expect(require('@/services/crashReporting').captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+    );
   });
 });
 
