@@ -61,13 +61,20 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
     onRemove(item.id);
   }, [item.id, onRemove]);
 
+  const fabricLabel = item.fabricName ?? item.fabric.name;
+  const a11yLabel = `${item.model.name}, ${fabricLabel}, ${formatPrice(item.unitPrice)}, quantity ${item.quantity}`;
+
   return (
-    <View style={itemStyles.row}>
+    <View
+      style={itemStyles.row}
+      testID={`cartItemRow-${item.id}`}
+      accessibilityLabel={a11yLabel}
+    >
       {/* Image / color swatch */}
-      {item.thumbnailUrl ? (
+      {item.imageUrl ? (
         <Image
           testID={`cartItemImage-${item.id}`}
-          source={{ uri: item.thumbnailUrl }}
+          source={{ uri: item.imageUrl }}
           style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
           contentFit="cover"
         />

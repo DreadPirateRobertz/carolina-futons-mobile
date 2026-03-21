@@ -40,9 +40,10 @@ export interface CartItem {
   id: string; // `${model.id}:${fabric.id}`
   model: FutonModel;
   fabric: Fabric;
+  fabricName?: string; // fabric.name, explicit for web schema alignment
   quantity: number;
   unitPrice: number; // basePrice + fabric.price
-  thumbnailUrl?: string; // product image URL (from Wix catalog; absent for local-only items)
+  imageUrl?: string; // CDN image URL (~150px); absent for local-only items
 }
 
 /** Internal state managed by the cart reducer. */
@@ -153,6 +154,7 @@ function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
     id: `${model.id}:${fabric.id}`,
     model,
     fabric,
+    fabricName: fabric.name,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
   };
