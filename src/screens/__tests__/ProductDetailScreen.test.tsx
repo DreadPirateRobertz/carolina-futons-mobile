@@ -94,6 +94,13 @@ jest.mock('@/hooks/useCart', () => ({
   CartProvider: ({ children }: any) => children,
 }));
 
+jest.mock('@/hooks/useVisualSearch', () => ({
+  useVisualSearch: jest.fn(),
+}));
+
+import { useVisualSearch } from '@/hooks/useVisualSearch';
+const mockUseVisualSearch = useVisualSearch as jest.MockedFunction<typeof useVisualSearch>;
+
 const mockAlert = jest.fn();
 Alert.alert = mockAlert;
 
@@ -117,6 +124,14 @@ beforeEach(() => {
   mockAddItem.mockClear();
   mockAlert.mockClear();
   mockNavigate.mockClear();
+  mockUseVisualSearch.mockReturnValue({
+    trigger: jest.fn(),
+    status: 'idle',
+    results: [],
+    query: null,
+    error: null,
+    reset: jest.fn(),
+  });
 });
 
 describe('ProductDetailScreen', () => {
@@ -1158,5 +1173,48 @@ describe('ProductDetailScreen', () => {
       // Quantity should reset to 1
       expect(getByText('Add to Cart — $349.00')).toBeTruthy();
     });
+  });
+});
+
+describe('ProductDetailScreen Find Similar', () => {
+  const mockTrigger = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseVisualSearch.mockReturnValue({
+      trigger: mockTrigger,
+      status: 'idle',
+      results: [],
+      query: null,
+      error: null,
+      reset: jest.fn(),
+    });
+  });
+
+  it('renders Find Similar button', () => {
+    const { getByTestId } = renderDetail();
+    expect(getByTestId('find-similar-btn')).toBeTruthy();
+  });
+
+  it('calls trigger when Find Similar pressed', () => {
+    const { getByTestId } = renderDetail();
+    fireEvent.press(getByTestId('find-similar-btn'));
+    expect(mockTrigger).toHaveBeenCalled();
+  });
+
+  it('navigates to VisualSearchResults when success with results', () => {
+    mockUseVisualSearch.mockReturnValue({
+      trigger: mockTrigger,
+      status: 'success',
+      results: [PRODUCTS[0]],
+      query: { category: 'futons', style: 'modern', colorFamily: 'neutral', keywords: [], matchType: 'scored' },
+      error: null,
+      reset: jest.fn(),
+    });
+    renderDetail();
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'VisualSearchResults',
+      expect.objectContaining({ productSlugs: [PRODUCTS[0].slug] }),
+    );
   });
 });

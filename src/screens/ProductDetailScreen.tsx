@@ -68,6 +68,7 @@ import { FabricSampleRequest } from '@/components/FabricSampleRequest';
 import { SwatchRequestModal } from '@/components/SwatchRequestModal';
 import { WixProductDetail } from '@/components/WixProductDetail';
 import { isWixConfigured } from '@/services/wix/config';
+import { useVisualSearch } from '@/hooks/useVisualSearch';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -158,6 +159,17 @@ export function ProductDetailScreen({
   const totalPrice = model.basePrice + selectedFabric.price;
 
   const { addViewed } = useRecentlyViewed();
+  const { trigger: triggerVisualSearch, status: vsStatus, results: vsResults, query: vsQuery } = useVisualSearch();
+
+  // Navigate to VisualSearchResults when visual search completes with results
+  useEffect(() => {
+    if (vsStatus === 'success' && vsResults.length > 0 && vsQuery) {
+      navigation.navigate('VisualSearchResults', {
+        productSlugs: vsResults.map((p) => p.slug),
+        query: vsQuery,
+      });
+    }
+  }, [vsStatus, vsResults, vsQuery, navigation]);
 
   // Track product view on mount
   useEffect(() => {
@@ -1055,6 +1067,17 @@ export function ProductDetailScreen({
               </AnimatedPressable>
             </>
           )}
+          <TouchableOpacity
+            testID="find-similar-btn"
+            onPress={triggerVisualSearch}
+            accessibilityRole="button"
+            accessibilityLabel="Find similar products with camera"
+            style={styles.findSimilarBtn}
+          >
+            <Text style={[styles.findSimilarText, { color: colors.mountainBlueDark }]}>
+              📷 Find Similar
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* You May Also Like */}
@@ -1626,6 +1649,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 17,
     fontWeight: '700',
+  },
+  findSimilarBtn: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  findSimilarText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
   stockAlert: {
     paddingHorizontal: 12,
