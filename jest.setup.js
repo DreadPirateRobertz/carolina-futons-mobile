@@ -7,8 +7,14 @@ jest.mock('expo-av', () => {
   const React = require('react');
   const { View } = require('react-native');
   return {
-    Video: React.forwardRef(({ testID, ...props }, ref) =>
-      React.createElement(View, { testID, ref, ...props }),
+    Video: React.forwardRef(({ testID, onError, ...props }, ref) =>
+      React.createElement(View, {
+        testID,
+        ref,
+        // Expose onError via testOnly_onError so tests can trigger it
+        testOnly_onError: onError,
+        ...props,
+      }),
     ),
     ResizeMode: {
       COVER: 'cover',
