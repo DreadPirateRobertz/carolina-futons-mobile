@@ -11,6 +11,8 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 
+jest.mock('@/components/ProductCard', () => ({ ProductCard: () => null }));
+
 function renderScreen(isLoading: boolean) {
   return render(
     <ThemeProvider>
