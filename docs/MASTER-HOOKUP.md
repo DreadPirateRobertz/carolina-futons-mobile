@@ -134,10 +134,13 @@ npx eas build --profile preview --platform android
 ```
 Then update the table above with the new artifact URL from `expo.dev/accounts/carolinafutons/projects/carolina-futons/builds`.
 
-**Pending rebuild**: Required after PR #153 (saved addresses) + PR #155 (Klarna BNPL) merge. Will contain:
+**Pending rebuild**: PR #153 (saved addresses) + PR #155 (Klarna BNPL) + PR #156 (loyalty tiers) are now merged. Next APK will contain:
 - Klarna BNPL checkout flow
 - Saved shipping addresses
+- Correct loyalty tier thresholds (Silver 500/Gold 1500)
 - CartItem imageUrl from Wix media (once cm-j6b lands)
+
+**EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
 **Install on Android**:
 ```bash
