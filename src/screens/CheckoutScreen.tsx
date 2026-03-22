@@ -889,9 +889,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                           {option.icon} {option.label}
                         </Text>
                         {option.badge && badgeColor && (
-                          <View
-                            style={[styles.deliveryBadge, { backgroundColor: badgeColor }]}
-                          >
+                          <View style={[styles.deliveryBadge, { backgroundColor: badgeColor }]}>
                             <Text
                               style={styles.deliveryBadgeText}
                               testID={`delivery-badge-${option.id}`}

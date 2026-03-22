@@ -993,7 +993,11 @@ export class WixClient {
    * @param method HTTP method (GET or POST)
    * @param body   Request body for POST calls
    */
-  async callFunction<T = unknown>(path: string, method: 'GET' | 'POST', body?: unknown): Promise<T> {
+  async callFunction<T = unknown>(
+    path: string,
+    method: 'GET' | 'POST',
+    body?: unknown,
+  ): Promise<T> {
     if (method === 'POST') {
       return this.post<T>(path, body ?? {});
     }
