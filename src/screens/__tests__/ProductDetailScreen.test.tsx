@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert, Platform, Dimensions, StyleSheet } from 'react-native';
+import type { ShippingEstimateResult } from '@/hooks/useShippingEstimate';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -11,6 +12,27 @@ import { PRODUCTS } from '@/data/products';
 // Mock uploadReviewPhoto to prevent expo-file-system → expo-modules-core native bridge access
 jest.mock('@/services/uploadReviewPhoto', () => ({
   uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
+}));
+
+// cm-9yn: useShippingEstimate mock — zip input, rate results, isEstimate flag
+const mockShippingEstimateBase: ShippingEstimateResult = {
+  icon: '🚚',
+  label: '5–7 business days',
+  badge: null,
+  badgeStyle: null,
+  options: [],
+  isEstimate: true,
+  isLoading: false,
+  error: null,
+};
+const mockUseShippingEstimate = jest.fn(
+  (_productId: string, _zip?: string): ShippingEstimateResult => ({
+    ...mockShippingEstimateBase,
+  }),
+);
+jest.mock('@/hooks/useShippingEstimate', () => ({
+  useShippingEstimate: (productId: string, zip?: string) => mockUseShippingEstimate(productId, zip),
+  SHIPPING_ZIP_STORAGE_KEY: '@shipping_estimate_zip',
 }));
 
 // CF-wah8: useProductReviews mock — inline star ratings near price
@@ -149,6 +171,7 @@ beforeEach(() => {
   mockAlert.mockClear();
   mockNavigate.mockClear();
   mockUseProductReviews.mockReturnValue(mockProductReviewsResult);
+  mockUseShippingEstimate.mockReturnValue({ ...mockShippingEstimateBase });
 });
 
 describe('ProductDetailScreen', () => {
@@ -1620,6 +1643,227 @@ describe('ProductDetailScreen', () => {
       // Default: isWixConfigured returns false (no env vars in test), local models render fine
       const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
       expect(queryByTestId('wix-network-error')).toBeNull();
+    });
+  });
+
+  describe('Shipping estimate zip input (cm-9yn)', () => {
+    it('renders the shipping zip input', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-zip-input')).toBeTruthy();
+    });
+
+    it('shipping zip input has number-pad keyboard type', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-zip-input').props.keyboardType).toBe('number-pad');
+    });
+
+    it('shipping zip input has maxLength of 5', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-zip-input').props.maxLength).toBe(5);
+    });
+
+    it('passes entered zip to useShippingEstimate as zipOverride', async () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+
+      await act(async () => {
+        fireEvent.changeText(getByTestId('shipping-zip-input'), '90210');
+      });
+
+      expect(mockUseShippingEstimate).toHaveBeenCalledWith(expect.any(String), '90210');
+    });
+
+    it('initializes zip from AsyncStorage on mount', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.getItem.mockImplementation((key: string) => {
+        if (key === '@shipping_estimate_zip') return Promise.resolve('30301');
+        return Promise.resolve(null);
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+
+      await waitFor(() => {
+        expect(getByTestId('shipping-zip-input').props.value).toBe('30301');
+      });
+
+      // Restore default mock so other tests are unaffected
+      AsyncStorage.getItem.mockResolvedValue(null);
+    });
+
+    it('shows isEstimate note when isEstimate is true', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: true,
+        label: '5–7 business days',
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-estimate-note')).toBeTruthy();
+    });
+
+    it('hides isEstimate note when isEstimate is false', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        label: '5–7 business days',
+      });
+
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('shipping-estimate-note')).toBeNull();
+    });
+
+    it('hides isEstimate note when label is null', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: true,
+        label: null,
+      });
+
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('shipping-estimate-note')).toBeNull();
+    });
+  });
+
+  describe('Shipping rate results (cm-9yn)', () => {
+    it('shows rate results list when options are available', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        options: [
+          {
+            code: 'UPS_GROUND',
+            title: 'UPS Ground',
+            price: '0.00',
+            currency: 'USD',
+            deliveryTime: '5–7 business days',
+            badge: null,
+            badgeStyle: null,
+            icon: '📦',
+          },
+          {
+            code: 'UPS_2DAY',
+            title: 'UPS 2-Day Air',
+            price: '29.99',
+            currency: 'USD',
+            deliveryTime: '2 business days',
+            badge: 'Express',
+            badgeStyle: 'premium',
+            icon: '🚀',
+          },
+        ],
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-rate-results')).toBeTruthy();
+    });
+
+    it('hides rate results when options array is empty', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        options: [],
+      });
+
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('shipping-rate-results')).toBeNull();
+    });
+
+    it('renders a row for each rate option', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        options: [
+          {
+            code: 'A',
+            title: 'Option A',
+            price: '0.00',
+            currency: 'USD',
+            deliveryTime: '5–7 days',
+            badge: null,
+            badgeStyle: null,
+            icon: '📦',
+          },
+          {
+            code: 'B',
+            title: 'Option B',
+            price: '9.99',
+            currency: 'USD',
+            deliveryTime: '2–3 days',
+            badge: null,
+            badgeStyle: null,
+            icon: '🚀',
+          },
+        ],
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('shipping-rate-row-A')).toBeTruthy();
+      expect(getByTestId('shipping-rate-row-B')).toBeTruthy();
+    });
+
+    it('shows option title and price in each row', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        options: [
+          {
+            code: 'UPS_GROUND',
+            title: 'UPS Ground',
+            price: '0.00',
+            currency: 'USD',
+            deliveryTime: '5–7 days',
+            badge: null,
+            badgeStyle: null,
+            icon: '📦',
+          },
+        ],
+      });
+
+      const { getByText } = renderDetail({ productId: 'asheville-full' });
+      expect(getByText('UPS Ground')).toBeTruthy();
+      expect(getByText('Free')).toBeTruthy();
+    });
+
+    it('shows formatted price for paid options', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        options: [
+          {
+            code: 'UPS_2DAY',
+            title: 'UPS 2-Day',
+            price: '29.99',
+            currency: 'USD',
+            deliveryTime: '2 days',
+            badge: null,
+            badgeStyle: null,
+            icon: '🚀',
+          },
+        ],
+      });
+
+      const { getByText } = renderDetail({ productId: 'asheville-full' });
+      expect(getByText('$29.99')).toBeTruthy();
+    });
+
+    it('shows delivery time in rate row when available', () => {
+      mockUseShippingEstimate.mockReturnValue({
+        ...mockShippingEstimateBase,
+        isEstimate: false,
+        options: [
+          {
+            code: 'UPS_GROUND',
+            title: 'UPS Ground',
+            price: '0.00',
+            currency: 'USD',
+            deliveryTime: '5–7 business days',
+            badge: null,
+            badgeStyle: null,
+            icon: '📦',
+          },
+        ],
+      });
+
+      const { getByText } = renderDetail({ productId: 'asheville-full' });
+      expect(getByText('5–7 business days')).toBeTruthy();
     });
   });
 });

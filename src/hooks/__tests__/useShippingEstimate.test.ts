@@ -235,4 +235,228 @@ describe('useShippingEstimate', () => {
       await waitFor(() => expect(mockFetchShippingEstimate).toHaveBeenCalledTimes(2));
     });
   });
+
+  describe('zipOverride parameter', () => {
+    it('uses zipOverride instead of defaultAddress when provided', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockUseAddressBook.mockReturnValue({ defaultAddress: { zip: '28801' } });
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [makeWixOption()] });
+
+      renderHook(() => useShippingEstimate(PRODUCT_ID, '90210'));
+      await waitFor(() =>
+        expect(mockFetchShippingEstimate).toHaveBeenCalledWith('90210', expect.any(Array)),
+      );
+    });
+
+    it('ignores empty string zipOverride and falls back to defaultAddress', async () => {
+      mockUseAddressBook.mockReturnValue({ defaultAddress: { zip: '10001' } });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID, ''));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // 10001 (NY) prefix ~100 → 5–7 business days
+      expect(result.current.label).toBe('5–7 business days');
+    });
+
+    it('ignores whitespace-only zipOverride', async () => {
+      mockUseAddressBook.mockReturnValue({ defaultAddress: { zip: '10001' } });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID, '   '));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.label).toBe('5–7 business days');
+    });
+
+    it('persists zipOverride to AsyncStorage when non-empty', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.setItem.mockClear();
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [makeWixOption()] });
+
+      renderHook(() => useShippingEstimate(PRODUCT_ID, '90210'));
+
+      await waitFor(() => {
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith('@shipping_estimate_zip', '90210');
+      });
+    });
+
+    it('does not persist to AsyncStorage when zipOverride is undefined', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.setItem.mockClear();
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('does not persist to AsyncStorage when zipOverride is empty', async () => {
+      const AsyncStorage = require('@react-native-async-storage/async-storage');
+      AsyncStorage.setItem.mockClear();
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID, ''));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it('re-fetches when zipOverride changes', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [makeWixOption()] });
+
+      const { rerender } = renderHook(({ zip }) => useShippingEstimate(PRODUCT_ID, zip), {
+        initialProps: { zip: '28801' },
+      });
+      await waitFor(() => expect(mockFetchShippingEstimate).toHaveBeenCalledTimes(1));
+
+      rerender({ zip: '90210' });
+      await waitFor(() => expect(mockFetchShippingEstimate).toHaveBeenCalledTimes(2));
+      expect(mockFetchShippingEstimate).toHaveBeenLastCalledWith('90210', expect.any(Array));
+    });
+  });
+
+  describe('isEstimate flag', () => {
+    it('returns isEstimate:false when live API returns options', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [makeWixOption()] });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.isEstimate).toBe(false);
+    });
+
+    it('returns isEstimate:true when using local fallback (no wixClient)', async () => {
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.isEstimate).toBe(true);
+    });
+
+    it('returns isEstimate:true when API throws', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockRejectedValue(new Error('Network error'));
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.isEstimate).toBe(true);
+    });
+
+    it('returns isEstimate:true when API returns empty options', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [] });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.isEstimate).toBe(true);
+    });
+
+    it('returns isEstimate:true when API returns success:false', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: false, options: [] });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.isEstimate).toBe(true);
+    });
+  });
+
+  describe('options array', () => {
+    it('returns empty options when using local fallback', async () => {
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.options).toEqual([]);
+    });
+
+    it('returns all API options when live API responds with multiple', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({
+        success: true,
+        options: [
+          makeWixOption({ icon: '📦', deliveryTime: '5–7 business days' }),
+          makeWixOption({
+            icon: '🚀',
+            deliveryTime: '2–3 business days',
+            badge: 'Express',
+            badgeStyle: 'premium',
+          }),
+        ],
+      });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.options).toHaveLength(2);
+      expect(result.current.options[0]).toMatchObject({
+        icon: '📦',
+        deliveryTime: '5–7 business days',
+      });
+      expect(result.current.options[1]).toMatchObject({
+        icon: '🚀',
+        badge: 'Express',
+        badgeStyle: 'premium',
+      });
+    });
+
+    it('normalizes option shape with required fields', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({
+        success: true,
+        options: [makeWixOption()],
+      });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.options[0]).toMatchObject({
+        code: expect.any(String),
+        title: expect.any(String),
+        price: expect.any(String),
+        currency: expect.any(String),
+        deliveryTime: expect.any(String),
+        icon: expect.any(String),
+      });
+    });
+
+    it('returns empty options after API fallback (API returns empty)', async () => {
+      mockUseOptionalWixClient.mockReturnValue({
+        fetchShippingEstimate: mockFetchShippingEstimate,
+      } as any);
+      mockFetchShippingEstimate.mockResolvedValue({ success: true, options: [] });
+
+      const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.options).toEqual([]);
+    });
+
+    it('returns empty options when productId is empty', async () => {
+      const { result } = renderHook(() => useShippingEstimate(''));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.options).toEqual([]);
+    });
+  });
 });

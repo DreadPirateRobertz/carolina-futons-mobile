@@ -64,9 +64,10 @@ import { modelIdToProductId, productIdToModelId, productId as toProductId } from
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { BundleRow } from '@/components/BundleRow';
 import { useBundleDeals } from '@/hooks/useBundleDeals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
 import { DeliveryEstimateWidget } from '@/components/DeliveryEstimateWidget';
-import { useShippingEstimate } from '@/hooks/useShippingEstimate';
+import { useShippingEstimate, SHIPPING_ZIP_STORAGE_KEY } from '@/hooks/useShippingEstimate';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -224,7 +225,18 @@ export function ProductDetailScreen({
     : [...GALLERY_VIEWS];
 
   const { bundleProducts } = useBundleDeals(catalogProductId);
-  const shippingEstimate = useShippingEstimate(catalogProductId);
+
+  // cm-9yn: zip input for live getShippingEstimate — persisted across sessions
+  const [shippingZip, setShippingZip] = useState('');
+  useEffect(() => {
+    AsyncStorage.getItem(SHIPPING_ZIP_STORAGE_KEY)
+      .then((stored) => {
+        if (stored) setShippingZip(stored);
+      })
+      .catch(() => {});
+  }, []);
+
+  const shippingEstimate = useShippingEstimate(catalogProductId, shippingZip);
 
   const { addViewed } = useRecentlyViewed();
 
@@ -758,6 +770,84 @@ export function ProductDetailScreen({
             isLoading={shippingEstimate.isLoading}
             testID="shipping-estimate-badge"
           />
+          {/* cm-9yn: zip input for live getShippingEstimate — rate results + isEstimate flag */}
+          <View style={styles.shippingZipRow}>
+            <TextInput
+              style={[
+                styles.shippingZipInput,
+                {
+                  color: colors.espresso,
+                  fontFamily: typography.bodyFamily,
+                  backgroundColor: colors.sandLight,
+                  borderRadius: borderRadius.md,
+                  borderColor: colors.espressoLight,
+                },
+              ]}
+              value={shippingZip}
+              onChangeText={setShippingZip}
+              placeholder="ZIP for rates"
+              placeholderTextColor={colors.espressoLight}
+              keyboardType="number-pad"
+              maxLength={5}
+              testID="shipping-zip-input"
+              accessibilityLabel="Enter zip code to get shipping rates"
+              returnKeyType="done"
+            />
+          </View>
+          {shippingEstimate.isEstimate && shippingEstimate.label ? (
+            <Text
+              style={[
+                styles.shippingEstimateNote,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
+              testID="shipping-estimate-note"
+            >
+              Estimated — enter ZIP for exact rates
+            </Text>
+          ) : null}
+          {shippingEstimate.options.length > 0 ? (
+            <View style={styles.shippingRateResults} testID="shipping-rate-results">
+              {shippingEstimate.options.map((opt) => (
+                <View
+                  key={opt.code}
+                  style={styles.shippingRateRow}
+                  testID={`shipping-rate-row-${opt.code}`}
+                >
+                  <Text style={[styles.shippingRateIcon, { fontFamily: typography.bodyFamily }]}>
+                    {opt.icon}
+                  </Text>
+                  <View style={styles.shippingRateInfo}>
+                    <Text
+                      style={[
+                        styles.shippingRateTitle,
+                        { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                      ]}
+                    >
+                      {opt.title}
+                    </Text>
+                    {opt.deliveryTime ? (
+                      <Text
+                        style={[
+                          styles.shippingRateDelivery,
+                          { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                        ]}
+                      >
+                        {opt.deliveryTime}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Text
+                    style={[
+                      styles.shippingRatePrice,
+                      { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                    ]}
+                  >
+                    {opt.price === '0.00' ? 'Free' : `$${opt.price}`}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
           {/* Delivery Estimator — cm-uyd: zip input → live delivery window from godfrey's webMethod */}
           <DeliveryEstimateWidget
             productIds={catalogProductId ? [catalogProductId] : []}
@@ -2204,6 +2294,50 @@ const styles = StyleSheet.create({
   },
   wixErrorRetryText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  // cm-9yn: shipping zip input + rate results
+  shippingZipRow: {
+    marginTop: 6,
+  },
+  shippingZipInput: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 14,
+    letterSpacing: 1,
+    borderWidth: 1,
+  },
+  shippingEstimateNote: {
+    fontSize: 11,
+    marginTop: 3,
+    fontStyle: 'italic',
+  },
+  shippingRateResults: {
+    marginTop: 8,
+    gap: 6,
+  },
+  shippingRateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  shippingRateIcon: {
+    fontSize: 14,
+    width: 20,
+  },
+  shippingRateInfo: {
+    flex: 1,
+  },
+  shippingRateTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  shippingRateDelivery: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  shippingRatePrice: {
+    fontSize: 13,
     fontWeight: '600',
   },
 });
