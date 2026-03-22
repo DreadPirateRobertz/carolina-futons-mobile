@@ -28,17 +28,33 @@ export const FreightNoticeBanner = memo(function FreightNoticeBanner({
 
   if (!requiresFreight) return null;
 
+  const label = requiresLiftgate
+    ? 'Freight delivery required — carrier will call to schedule. Liftgate required.'
+    : 'Freight delivery required — carrier will call to schedule.';
+
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.sandLight, borderLeftColor: colors.sunsetCoralDark }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.sandLight, borderLeftColor: colors.sunsetCoralDark },
+      ]}
       testID={testID}
       accessibilityRole="text"
+      accessibilityLabel={label}
     >
       <View style={styles.row}>
-        <Text style={styles.icon}>🚛</Text>
+        <Text
+          style={styles.icon}
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+        >
+          🚛
+        </Text>
         <View style={styles.textBlock}>
           <Text style={[styles.title, { color: colors.errorText }]}>Freight Delivery</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedBrown }]}>Carrier will call to schedule</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedBrown }]}>
+            Carrier will call to schedule
+          </Text>
         </View>
         {requiresLiftgate && (
           <View

@@ -84,6 +84,32 @@ describe('FreightNoticeBanner', () => {
     });
   });
 
+  describe('accessibility (cm-a11y-shipping)', () => {
+    it('banner container has accessibilityLabel summarising freight delivery', () => {
+      const { getByTestId } = renderBanner({ requiresFreight: true });
+      const banner = getByTestId('freight-notice-banner');
+      expect(banner.props.accessibilityLabel).toBeTruthy();
+      expect(banner.props.accessibilityLabel).toMatch(/freight/i);
+    });
+
+    it('emoji icon is hidden from accessibility tree', () => {
+      const { getByTestId } = renderBanner({ requiresFreight: true });
+      // The truck emoji Text should carry accessibilityElementsHidden so VoiceOver skips it
+      const banner = getByTestId('freight-notice-banner');
+      // Find the emoji node among children — it should be hidden
+      const allChildren = banner.findAll((node: { props: { accessibilityElementsHidden?: boolean; children?: unknown } }) =>
+        node.props.accessibilityElementsHidden === true,
+      );
+      expect(allChildren.length).toBeGreaterThan(0);
+    });
+
+    it('banner with liftgate has accessibilityLabel that mentions liftgate', () => {
+      const { getByTestId } = renderBanner({ requiresFreight: true, requiresLiftgate: true });
+      const banner = getByTestId('freight-notice-banner');
+      expect(banner.props.accessibilityLabel).toMatch(/liftgate/i);
+    });
+  });
+
   describe('edge cases', () => {
     it('renders without crash when requiresFreight is null', () => {
       const { queryByTestId } = renderBanner({ requiresFreight: null as unknown as boolean });

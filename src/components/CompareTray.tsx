@@ -86,6 +86,7 @@ function CompareMiniCard({
       style={[{ transform: [{ translateX }] }]}
       {...panResponder.panHandlers}
       testID={`compare-tray-swipeable-${product.id}`}
+      accessibilityHint="Swipe left to remove from compare"
     >
       <View
         style={[
@@ -117,7 +118,7 @@ function CompareMiniCard({
           testID={`compare-tray-remove-${product.id}`}
           accessibilityRole="button"
           accessibilityLabel={`Remove ${product.name} from compare`}
-          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           <Text style={[styles.removeBtnText, { color: colors.espressoLight }]}>✕</Text>
         </TouchableOpacity>
