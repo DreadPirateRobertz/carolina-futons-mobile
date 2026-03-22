@@ -9,14 +9,7 @@
  * Bead: cm-qmr
  */
 import React, { useState, useCallback } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import {
@@ -38,13 +31,7 @@ interface Props {
 
 const PROVIDERS: BNPLProviderKey[] = ['klarna', 'affirm'];
 
-export function BNPLModal({
-  visible,
-  onClose,
-  price,
-  initialProvider = 'klarna',
-  testID,
-}: Props) {
+export function BNPLModal({ visible, onClose, price, initialProvider = 'klarna', testID }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const [provider, setProvider] = useState<BNPLProviderKey>(initialProvider);
   const [deepLinkError, setDeepLinkError] = useState(false);
@@ -87,7 +74,11 @@ export function BNPLModal({
           style={[
             styles.sheet,
             shadows.modal,
-            { backgroundColor: colors.white, borderTopLeftRadius: borderRadius.lg, borderTopRightRadius: borderRadius.lg },
+            {
+              backgroundColor: colors.white,
+              borderTopLeftRadius: borderRadius.lg,
+              borderTopRightRadius: borderRadius.lg,
+            },
           ]}
           onStartShouldSetResponder={() => true}
         >
@@ -119,7 +110,11 @@ export function BNPLModal({
             <View
               style={[
                 styles.tabRow,
-                { backgroundColor: colors.sandLight, borderRadius: borderRadius.pill, marginBottom: spacing.md },
+                {
+                  backgroundColor: colors.sandLight,
+                  borderRadius: borderRadius.pill,
+                  marginBottom: spacing.md,
+                },
               ]}
             >
               {PROVIDERS.map((p) => {
@@ -129,7 +124,10 @@ export function BNPLModal({
                     key={p}
                     style={[
                       styles.tab,
-                      active && [styles.tabActive, { backgroundColor: colors.white, borderRadius: borderRadius.pill }],
+                      active && [
+                        styles.tabActive,
+                        { backgroundColor: colors.white, borderRadius: borderRadius.pill },
+                      ],
                     ]}
                     onPress={() => handleProviderSwitch(p)}
                     testID={`bnpl-tab-${p}`}
@@ -150,7 +148,9 @@ export function BNPLModal({
             </View>
 
             {/* Tagline */}
-            <Text style={[styles.tagline, { color: colors.espressoLight, marginBottom: spacing.sm }]}>
+            <Text
+              style={[styles.tagline, { color: colors.espressoLight, marginBottom: spacing.sm }]}
+            >
               {config.tagline}
             </Text>
 
@@ -205,7 +205,9 @@ export function BNPLModal({
               <Text style={styles.ctaText}>Continue with {config.displayName}</Text>
             </TouchableOpacity>
 
-            <Text style={[styles.disclaimer, { color: colors.espressoLight, marginTop: spacing.sm }]}>
+            <Text
+              style={[styles.disclaimer, { color: colors.espressoLight, marginTop: spacing.sm }]}
+            >
               Subject to credit approval. Rates vary by provider.
             </Text>
           </ScrollView>

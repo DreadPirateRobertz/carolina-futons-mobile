@@ -275,9 +275,7 @@ describe('CompareTray', () => {
       withCompare([PRODUCT_A]);
       const { getByTestId } = renderTray();
       const img = getByTestId(`compare-tray-image-${PRODUCT_A.id}`);
-      expect(img.props.style).toEqual(
-        expect.objectContaining({ height: 140 }),
-      );
+      expect(img.props.style).toEqual(expect.objectContaining({ height: 140 }));
     });
 
     it('mini card image renders at 140px height for all products', () => {
@@ -334,7 +332,7 @@ describe('CompareTray', () => {
       // The static style on the CTA sets marginTop: 16
       const flatStyle = Array.isArray(cta.props.style)
         ? Object.assign({}, ...cta.props.style.filter(Boolean))
-        : cta.props.style ?? {};
+        : (cta.props.style ?? {});
       expect(flatStyle.marginTop).toBeGreaterThanOrEqual(16);
     });
   });
