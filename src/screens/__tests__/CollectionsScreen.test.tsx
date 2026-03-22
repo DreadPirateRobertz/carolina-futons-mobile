@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { CollectionsScreen } from '../CollectionsScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -13,6 +13,15 @@ const mockPremiumValue = {
   restore: jest.fn(),
   refreshStatus: jest.fn(),
 };
+
+const mockMiniCartOpen = jest.fn();
+jest.mock('@/hooks/useMiniCartDrawer', () => ({
+  useMiniCartDrawer: () => ({ open: mockMiniCartOpen, close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+}));
+
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => ({ itemCount: 2, items: [], subtotal: 0 }),
+}));
 
 jest.mock('@/hooks/usePremium', () => ({
   PremiumProvider: ({ children }: any) => children,
@@ -39,6 +48,10 @@ function renderCollectionsScreen() {
     </NavigationContainer>,
   );
 }
+
+beforeEach(() => {
+  jest.clearAllMocks();
+});
 
 describe('CollectionsScreen', () => {
   it('renders screen with testID', () => {
@@ -68,5 +81,23 @@ describe('CollectionsScreen', () => {
     const { queryByTestId } = renderCollectionsScreen();
     expect(queryByTestId('early-access-lock-spring-2026-preview')).toBeNull();
     mockPremiumValue.isPremium = false;
+  });
+});
+
+describe('CollectionsScreen — cart icon opens mini-cart', () => {
+  it('renders a header cart icon', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('collections-header-cart')).toBeTruthy();
+  });
+
+  it('tapping the header cart icon opens the mini-cart drawer', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    fireEvent.press(getByTestId('collections-header-cart'));
+    expect(mockMiniCartOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the item count badge on the header cart icon', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('collections-header-cart-badge')).toBeTruthy();
   });
 });

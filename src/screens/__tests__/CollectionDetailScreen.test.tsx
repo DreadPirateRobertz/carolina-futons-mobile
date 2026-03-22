@@ -1,10 +1,19 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CollectionDetailScreen } from '../CollectionDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+
+const mockMiniCartOpen = jest.fn();
+jest.mock('@/hooks/useMiniCartDrawer', () => ({
+  useMiniCartDrawer: () => ({ open: mockMiniCartOpen, close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+}));
+
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => ({ itemCount: 1, items: [], subtotal: 0 }),
+}));
 
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({
@@ -37,6 +46,10 @@ function renderCollectionDetail(slug: string) {
   );
 }
 
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+
 describe('CollectionDetailScreen', () => {
   it('renders collection detail for valid slug', () => {
     const { getByTestId, getAllByText } = renderCollectionDetail('mountain-lodge-living');
@@ -62,5 +75,18 @@ describe('CollectionDetailScreen', () => {
   it('renders hero image with parallax container', () => {
     const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
     expect(getByTestId('parallax-hero')).toBeTruthy();
+  });
+});
+
+describe('CollectionDetailScreen — cart icon opens mini-cart', () => {
+  it('renders a header cart icon', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    expect(getByTestId('collection-detail-header-cart')).toBeTruthy();
+  });
+
+  it('tapping the header cart icon opens the mini-cart drawer', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    fireEvent.press(getByTestId('collection-detail-header-cart'));
+    expect(mockMiniCartOpen).toHaveBeenCalledTimes(1);
   });
 });

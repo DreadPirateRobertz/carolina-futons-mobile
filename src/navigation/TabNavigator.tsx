@@ -19,7 +19,6 @@ import { AccountScreen } from '@/screens/AccountScreen';
 import { CompareFAB } from '@/components/CompareFAB';
 import { AnimatedTabBar } from './AnimatedTabBar';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
-import { CartFAB } from '@/components/CartFAB';
 import type { RootStackParamList } from './AppNavigator';
 
 const HomeScreenWithBoundary = withScreenErrorBoundary(HomeScreen, 'Home');
@@ -115,7 +114,6 @@ export function TabNavigator() {
         />
       </Tab.Navigator>
       <CompareFAB testID="compare-fab" />
-      <CartFAB />
     </View>
   );
 }

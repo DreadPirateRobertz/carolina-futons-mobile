@@ -57,6 +57,11 @@ jest.mock('@/components/MiniCartDrawer', () => ({
   },
 }));
 
+const mockUseCart = jest.fn();
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => mockUseCart(),
+}));
+
 function renderHost(
   navRef: NavigationContainerRef<RootStackParamList> = makeNavRef(),
   currentRoute?: string,
@@ -72,6 +77,7 @@ describe('MiniCartDrawerHost', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseMiniCartDrawer.mockReturnValue({ isOpen: true, close: mockClose });
+    mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
   });
 
   describe('checkout press', () => {
@@ -111,6 +117,32 @@ describe('MiniCartDrawerHost', () => {
     it('renders drawer when currentRoute is undefined', () => {
       const { getByTestId } = renderHost(makeNavRef(), undefined);
       expect(getByTestId('mock-mini-cart-drawer')).toBeTruthy();
+    });
+  });
+
+  describe('CartFAB global trigger', () => {
+    it('renders CartFAB when cart has items', () => {
+      mockUseCart.mockReturnValue({ itemCount: 3, items: [], subtotal: 0 });
+      const { getByTestId } = renderHost(makeNavRef(), 'Tabs');
+      expect(getByTestId('cart-fab')).toBeTruthy();
+    });
+
+    it('does not render CartFAB when cart is empty', () => {
+      mockUseCart.mockReturnValue({ itemCount: 0, items: [], subtotal: 0 });
+      const { queryByTestId } = renderHost(makeNavRef(), 'Tabs');
+      expect(queryByTestId('cart-fab')).toBeNull();
+    });
+
+    it('does not render CartFAB on Checkout screen', () => {
+      mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
+      const { queryByTestId } = renderHost(makeNavRef(), 'Checkout');
+      expect(queryByTestId('cart-fab')).toBeNull();
+    });
+
+    it('does not render CartFAB on Cart screen', () => {
+      mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
+      const { queryByTestId } = renderHost(makeNavRef(), 'Cart');
+      expect(queryByTestId('cart-fab')).toBeNull();
     });
   });
 
