@@ -7,7 +7,7 @@
  * autocomplete suggestions as the user types.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -68,6 +68,16 @@ export function SearchScreen({ testID }: Props) {
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const [hasSearched, setHasSearched] = useState(false);
+  // cm-c00: local input text for responsive UI; debounced before hitting useProducts
+  const [inputText, setInputText] = useState('');
+
+  // Debounce: propagate to useProducts 300ms after last keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(inputText);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputText, setSearchQuery]);
 
   const handleBack = useCallback(() => {
     navigation.goBack();
@@ -82,6 +92,8 @@ export function SearchScreen({ testID }: Props) {
 
   const handleSubmitSearch = useCallback(
     (query: string) => {
+      // Explicit submit: bypass debounce, update immediately
+      setInputText(query);
       setSearchQuery(query);
       addSearch(query);
       setHasSearched(true);
@@ -99,6 +111,8 @@ export function SearchScreen({ testID }: Props) {
 
   const handleTrendingPress = useCallback(
     (term: string) => {
+      // Trending tap: bypass debounce, update immediately
+      setInputText(term);
       setSearchQuery(term);
       addSearch(term);
       setHasSearched(true);
@@ -107,15 +121,13 @@ export function SearchScreen({ testID }: Props) {
     [setSearchQuery, addSearch],
   );
 
-  const handleChangeText = useCallback(
-    (text: string) => {
-      setSearchQuery(text);
-      if (text.length === 0) {
-        setHasSearched(false);
-      }
-    },
-    [setSearchQuery],
-  );
+  const handleChangeText = useCallback((text: string) => {
+    // Update local input immediately; debounce effect propagates to useProducts
+    setInputText(text);
+    if (text.length === 0) {
+      setHasSearched(false);
+    }
+  }, []);
 
   const renderProduct = useCallback(
     ({ item, index }: { item: Product; index: number }) => (
@@ -180,7 +192,7 @@ export function SearchScreen({ testID }: Props) {
         </TouchableOpacity>
         <View style={styles.searchBarWrap}>
           <SearchBar
-            value={searchQuery}
+            value={inputText}
             onChangeText={handleChangeText}
             suggestions={suggestions}
             recentSearches={recentSearches}
