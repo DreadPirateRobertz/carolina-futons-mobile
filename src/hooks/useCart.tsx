@@ -32,6 +32,7 @@ import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
 import { compactByLWW } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
+import * as gamification from '@/services/gamification';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -361,6 +362,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
+      gamification.addToCart(model.id, model.basePrice + fabric.price);
       if (Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }

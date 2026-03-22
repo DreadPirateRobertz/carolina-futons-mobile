@@ -39,7 +39,10 @@ import { useReferral } from '@/hooks/useReferral';
 import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
+import { LoyaltyTierBadge } from '@/components/LoyaltyTierBadge';
 import { WixAuthService } from '@/services/wix/wixAuth';
+import { useLoyalty } from '@/hooks/useLoyalty';
+import * as gamification from '@/services/gamification';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -96,6 +99,7 @@ export function AccountScreen({
   } = useBiometricAuth();
 
   const referral = useReferral();
+  const loyalty = useLoyalty();
 
   const handleShareReferral = useCallback(async () => {
     if (!referral.shareUrl) return;
@@ -104,10 +108,13 @@ export function AccountScreen({
         message: `Get $20 off your first Carolina Futons order! Use my referral link: ${referral.shareUrl}`,
         url: referral.shareUrl,
       });
+      if (referral.code) {
+        gamification.referralShared(referral.code);
+      }
     } catch (e) {
       console.warn('[AccountScreen] Share.share failed or cancelled:', e);
     }
-  }, [referral.shareUrl]);
+  }, [referral.shareUrl, referral.code]);
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -314,6 +321,7 @@ export function AccountScreen({
                 </Text>
                 {isPremium && <PremiumBadge />}
               </View>
+              <LoyaltyTierBadge points={loyalty.points} />
               <Text
                 style={[styles.userEmail, { color: darkPalette.textMuted }]}
                 testID="user-email"

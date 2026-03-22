@@ -167,6 +167,44 @@ describe('useReviews', () => {
       expect(submitEvents[0].properties?.rating).toBe(5);
     });
 
+    it('fires gamification_submit_review with has_photo=false when no photos', async () => {
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        const promise = result.current.submitReview({
+          rating: 4,
+          title: 'No photo review',
+          body: 'Great futon',
+          photos: [],
+        });
+        jest.advanceTimersByTime(600);
+        await promise;
+      });
+
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_submit_review');
+      expect(ev).toBeDefined();
+      expect(ev?.properties?.has_photo).toBe(false);
+    });
+
+    it('fires gamification_submit_review with has_photo=true when photos present', async () => {
+      const { result } = renderHook(() => useReviews(productId));
+
+      await act(async () => {
+        const promise = result.current.submitReview({
+          rating: 5,
+          title: 'Photo review',
+          body: 'See the photo!',
+          photos: ['https://example.com/photo.jpg'],
+        });
+        jest.advanceTimersByTime(600);
+        await promise;
+      });
+
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_submit_review');
+      expect(ev).toBeDefined();
+      expect(ev?.properties?.has_photo).toBe(true);
+    });
+
     it('hides form after successful submission', async () => {
       const { result } = renderHook(() => useReviews(productId));
       act(() => result.current.setShowForm(true));

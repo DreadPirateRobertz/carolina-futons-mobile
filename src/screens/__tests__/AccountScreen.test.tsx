@@ -119,6 +119,33 @@ jest.mock('@/hooks/useAddressBook', () => ({
   useAddressBook: () => mockAddressBook,
 }));
 
+jest.mock('@/hooks/useLoyalty', () => ({
+  useLoyalty: () => ({
+    points: 0,
+    tier: 'bronze',
+    totalEarned: 0,
+    transactions: [],
+    loading: false,
+    error: null,
+    refreshPoints: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/useReferral', () => ({
+  useReferral: () => ({
+    code: null,
+    creditsEarned: 0,
+    referralCount: 0,
+    shareUrl: null,
+    loading: false,
+    error: null,
+    referredByCode: null,
+    referrals: [],
+    storeReferredByCode: jest.fn(),
+    submitReferral: jest.fn(),
+  }),
+}));
+
 function renderAccount(
   props: Partial<React.ComponentProps<typeof AccountScreen>> = {},
   authenticated = false,
