@@ -153,6 +153,87 @@ describe('Type contracts', () => {
   });
 });
 
+describe('Product video URIs (cm-9g0)', () => {
+  const WIX_VIDEO_BASE = 'https://video.wixstatic.com/video/';
+
+  function findBySlug(slug: string): Product | undefined {
+    return PRODUCTS.find((p) => p.slug === slug);
+  }
+
+  it('existing products have correct video URIs', () => {
+    expect(findBySlug('asheville-full-futon')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_ea16ef6edfe64c03a5bfdd0ee468ab7f/1080p/mp4/file.mp4`,
+    );
+    expect(findBySlug('blue-ridge-queen-futon')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_8483b56d2ef5417c95242c821934e2b2/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('pisgah-twin-futon has Alpine video', () => {
+    expect(findBySlug('pisgah-twin-futon')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_dba4fc2f08ee4a42906dcb76bcb9b31a/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('biltmore-loveseat has Asheville frame video', () => {
+    expect(findBySlug('biltmore-loveseat')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_c2e8bedf07c74b249894fffffc0564b7/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('hendersonville-queen-murphy-cabinet-bed has Northampton video', () => {
+    expect(findBySlug('hendersonville-queen-murphy-cabinet-bed')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_c1969fc88dcb4c829f3840b250f19166/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('appalachian-full-horizontal-murphy-cabinet has Mountainnaire video', () => {
+    expect(findBySlug('appalachian-full-horizontal-murphy-cabinet')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_b6c0b062855d432a91698f3460b74552/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('smoky-mountain-queen-bookcase-murphy has Flagstaff video', () => {
+    expect(findBySlug('smoky-mountain-queen-bookcase-murphy')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_973ed5df7eb34c1d9ad7c1697e8d0f72/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('brevard-twin-cabinet-bed has Maricopa video', () => {
+    expect(findBySlug('brevard-twin-cabinet-bed')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_b10b923982664fa39409244ac93dadcf/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('chimney-rock-queen-desk-murphy has Studio Conversion video', () => {
+    expect(findBySlug('chimney-rock-queen-desk-murphy')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_d9ffa580eb5a4fa784bc6bb6a6105257/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('nantahala-full-storage-murphy has WallHugger Conversion video', () => {
+    expect(findBySlug('nantahala-full-storage-murphy')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_d49b6de8f0b4471bb132c612497fd53c/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('mountain-weave-cover has MoonGlider Conversion video', () => {
+    expect(findBySlug('mountain-weave-cover')?.videoUri).toBe(
+      `${WIX_VIDEO_BASE}e04e89_b8d2371453a0487abf8224d6256bdfe0/1080p/mp4/file.mp4`,
+    );
+  });
+
+  it('all videoUri fields use the correct Wix CDN format', () => {
+    const videoed = PRODUCTS.filter((p) => p.videoUri);
+    expect(videoed.length).toBeGreaterThanOrEqual(11);
+    for (const p of videoed) {
+      expect(p.videoUri).toMatch(
+        /^https:\/\/video\.wixstatic\.com\/video\/e04e89_[a-f0-9]+\/1080p\/mp4\/file\.mp4$/,
+      );
+    }
+  });
+});
+
 describe('getStockStatus', () => {
   const baseProduct: Product = {
     id: productId('test-product'),
