@@ -15,6 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollections } from '@/hooks/useCollections';
 import { usePremium } from '@/hooks/usePremium';
+import { useCart } from '@/hooks/useCart';
+import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
@@ -39,6 +41,8 @@ export function CollectionsScreen() {
   const insets = useSafeAreaInsets();
   const { collections } = useCollections();
   const { isPremium } = usePremium();
+  const { itemCount } = useCart();
+  const { open: openCart } = useMiniCartDrawer();
   const scrollPerf = useScrollPerformance('CollectionsScreen');
 
   const handleCollectionPress = useCallback(
@@ -116,7 +120,13 @@ export function CollectionsScreen() {
       style={[styles.container, { backgroundColor: colors.sandBase }]}
       testID="collections-screen"
     >
-      <Header title="Curated Looks" showBack />
+      <Header
+        title="Curated Looks"
+        showBack
+        cartCount={itemCount}
+        onCartPress={openCart}
+        testID="collections-header"
+      />
       <FlatList
         testID="collections-list"
         data={collections}

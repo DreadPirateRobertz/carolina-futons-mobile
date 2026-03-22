@@ -45,6 +45,21 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => ({ itemCount: 0, items: [], subtotal: 0 }),
+  CartProvider: ({ children }: any) => children,
+}));
+
+jest.mock('@/hooks/useMiniCartDrawer', () => ({
+  useMiniCartDrawer: () => ({
+    open: jest.fn(),
+    close: jest.fn(),
+    toggle: jest.fn(),
+    isOpen: false,
+  }),
+  MiniCartDrawerProvider: ({ children }: any) => children,
+}));
+
 async function renderShop() {
   const result = render(
     <ThemeProvider>
