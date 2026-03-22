@@ -1258,6 +1258,63 @@ describe('ProductDetailScreen', () => {
     });
   });
 
+  // ── cm-xh9: product video gallery slide ────────────────────────────────────
+
+  describe('Video gallery slide', () => {
+    it('renders a video slide tab when product has videoUri', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('gallery-slide-video')).toBeTruthy();
+    });
+
+    it('does not render a video slide when product has no videoUri', () => {
+      // pisgah-twin has no videoUri
+      const { queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
+      expect(queryByTestId('gallery-slide-video')).toBeNull();
+    });
+
+    it('renders a video player inside the video slide', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('product-detail-video')).toBeTruthy();
+    });
+
+    it('video slide shows a Video label', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('gallery-label-video')).toBeTruthy();
+    });
+
+    it('video slide dot indicator appears when product has video', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('gallery-dot-video')).toBeTruthy();
+    });
+
+    it('video slide is last in the gallery', () => {
+      const { getAllByTestId } = renderDetail({ productId: 'asheville-full' });
+      const slides = getAllByTestId(/^gallery-slide-/);
+      const lastSlide = slides[slides.length - 1];
+      expect(lastSlide.props.testID).toBe('gallery-slide-video');
+    });
+
+    it('video slide has an accessible label', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const videoSlide = getByTestId('gallery-slide-video');
+      expect(videoSlide.props.accessibilityLabel).toBeDefined();
+    });
+
+    it('renders an error fallback view on video error', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const video = getByTestId('product-detail-video');
+      video.props.testOnly_onError?.({ error: 'Network failure' });
+      expect(getByTestId('product-detail-video-error')).toBeTruthy();
+    });
+
+    it('hides video player after error', () => {
+      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      const video = getByTestId('product-detail-video');
+      video.props.testOnly_onError?.({ error: 'Decode error' });
+      expect(queryByTestId('product-detail-video')).toBeNull();
+    });
+  });
+
   // ── CF-wah8: Star ratings adjacent to price ─────────────────────────────────
 
   describe('Inline star rating near price', () => {
