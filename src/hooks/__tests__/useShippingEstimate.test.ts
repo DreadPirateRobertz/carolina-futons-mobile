@@ -27,12 +27,14 @@ jest.mock('@/utils/deliveryEstimate', () => ({
 const DEFAULT_ZIP = '28801';
 const PRODUCT_ID = 'prod-asheville-full';
 
-function makeWixOption(overrides: Partial<{
-  icon: string;
-  deliveryTime: string;
-  badge: string | null;
-  badgeStyle: string | null;
-}> = {}) {
+function makeWixOption(
+  overrides: Partial<{
+    icon: string;
+    deliveryTime: string;
+    badge: string | null;
+    badgeStyle: string | null;
+  }> = {},
+) {
   return {
     code: 'UPS_GROUND',
     title: '📦 UPS Ground',
@@ -134,10 +136,7 @@ describe('useShippingEstimate', () => {
       const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(mockFetchShippingEstimate).toHaveBeenCalledWith(
-        '90210',
-        expect.any(Array),
-      );
+      expect(mockFetchShippingEstimate).toHaveBeenCalledWith('90210', expect.any(Array));
     });
 
     it('returns icon, label, badge, badgeStyle from first API option', async () => {
@@ -198,7 +197,11 @@ describe('useShippingEstimate', () => {
 
     it('sets isLoading=true then false', async () => {
       let resolve!: (v: { success: boolean; options: unknown[] }) => void;
-      mockFetchShippingEstimate.mockReturnValue(new Promise((r) => { resolve = r; }));
+      mockFetchShippingEstimate.mockReturnValue(
+        new Promise((r) => {
+          resolve = r;
+        }),
+      );
 
       const { result } = renderHook(() => useShippingEstimate(PRODUCT_ID));
       expect(result.current.isLoading).toBe(true);
