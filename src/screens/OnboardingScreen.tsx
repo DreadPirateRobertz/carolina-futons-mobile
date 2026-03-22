@@ -122,11 +122,9 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
       await savePreferences();
       onComplete();
     } catch (err) {
-      Alert.alert(
-        'Save Failed',
-        'We couldn\u2019t save your preferences. Please try again.',
-        [{ text: 'OK' }],
-      );
+      Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
+        { text: 'OK' },
+      ]);
     }
   }, [savePreferences, onComplete]);
 
