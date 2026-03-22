@@ -569,6 +569,24 @@ export function ProductDetailScreen({
             )}
           </View>
           <FinancingBadge price={totalPrice} variant="detail" testID="financing-detail" />
+          {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
+          <TouchableOpacity
+            style={[
+              styles.arCtaInline,
+              {
+                backgroundColor: colors.mountainBlue,
+                borderRadius: borderRadius.button,
+              },
+            ]}
+            onPress={handleOpenAR}
+            testID="detail-ar-button"
+            accessibilityLabel={`Try ${model.name} in your room with AR camera`}
+            accessibilityRole="button"
+          >
+            <Text style={styles.arCtaIcon}>📷</Text>
+            <Text style={styles.arCtaText}>See It In Your Room</Text>
+            {isPremium && <PremiumBadge size="sm" testID="ar-premium-badge" />}
+          </TouchableOpacity>
         </View>
 
         {/* Fabric Selector */}
@@ -903,26 +921,7 @@ export function ProductDetailScreen({
           )}
         </View>
 
-        {/* Try in AR CTA */}
-        <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
-          <TouchableOpacity
-            style={[
-              styles.arCta,
-              {
-                backgroundColor: colors.mountainBlue,
-                borderRadius: borderRadius.button,
-              },
-            ]}
-            onPress={handleOpenAR}
-            testID="detail-ar-button"
-            accessibilityLabel={`Try ${model.name} in your room with AR camera`}
-            accessibilityRole="button"
-          >
-            <Text style={styles.arCtaIcon}>📷</Text>
-            <Text style={styles.arCtaText}>Try in Your Room</Text>
-            {isPremium && <PremiumBadge size="sm" testID="ar-premium-badge" />}
-          </TouchableOpacity>
-        </View>
+        {/* AR CTA moved up next to price for higher visibility — see arCtaInline above */}
 
         {/* Stock Status */}
         {(isLowStock || isOutOfStock) && (
@@ -1665,6 +1664,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 10,
   },
+  arCtaInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+    marginTop: 12,
+  },
   arCtaIcon: {
     fontSize: 18,
   },
@@ -1672,6 +1679,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   cartSection: {
     paddingBottom: 16,
