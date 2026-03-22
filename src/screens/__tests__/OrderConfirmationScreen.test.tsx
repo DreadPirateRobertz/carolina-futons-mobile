@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { OrderConfirmationScreen } from '../OrderConfirmationScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { OrderConfirmation } from '@/services/payment';
@@ -183,6 +183,67 @@ describe('OrderConfirmationScreen', () => {
       });
       expect(getByTestId('continue-shopping-button').props.accessibilityRole).toBe('button');
       expect(getByTestId('view-orders-button').props.accessibilityRole).toBe('button');
+    });
+  });
+
+  describe('Share Order', () => {
+    let shareSpy: jest.SpyInstance;
+    let shareOrderSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Share } = require('react-native');
+      shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const analytics = require('@/services/analytics');
+      shareOrderSpy = jest.spyOn(analytics.events, 'shareOrder').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      shareSpy.mockRestore();
+      shareOrderSpy.mockRestore();
+    });
+
+    it('renders share order button', () => {
+      const { getByTestId } = renderConfirmation();
+      expect(getByTestId('share-order-button')).toBeTruthy();
+    });
+
+    it('share order button has correct accessibility role and label', () => {
+      const { getByTestId } = renderConfirmation();
+      const btn = getByTestId('share-order-button');
+      expect(btn.props.accessibilityRole).toBe('button');
+      expect(btn.props.accessibilityLabel).toMatch(/share.*order/i);
+    });
+
+    it('calls Share.share with order number on press', async () => {
+      const { getByTestId } = renderConfirmation();
+      fireEvent.press(getByTestId('share-order-button'));
+      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+      const call = shareSpy.mock.calls[0][0] as { message: string };
+      expect(call.message).toContain('CF-20260301-001');
+    });
+
+    it('fires shareOrder analytics event on successful share', async () => {
+      const { getByTestId } = renderConfirmation();
+      fireEvent.press(getByTestId('share-order-button'));
+      await waitFor(() => expect(shareOrderSpy).toHaveBeenCalledWith('ord_123'));
+    });
+
+    it('does not fire analytics when user cancels share', async () => {
+      shareSpy.mockResolvedValueOnce({ action: 'dismissedAction' });
+      const { getByTestId } = renderConfirmation();
+      fireEvent.press(getByTestId('share-order-button'));
+      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+      expect(shareOrderSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when Share.share rejects', async () => {
+      shareSpy.mockRejectedValueOnce(new Error('unavailable'));
+      const { getByTestId } = renderConfirmation();
+      fireEvent.press(getByTestId('share-order-button'));
+      await new Promise((r) => setTimeout(r, 50));
+      // no crash
     });
   });
 });
