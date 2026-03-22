@@ -41,6 +41,10 @@ export interface WixShippingOption {
   terrainSurcharge?: number;
   isLTL?: boolean;
   isEstimate?: boolean;
+  /** Whether a liftgate truck is required for delivery (cm-o4i) */
+  requiresLiftgate?: boolean;
+  /** Carrier name returned by the backend (cm-o4i) */
+  carrier?: string;
 }
 
 export interface WixShippingIntelligenceResult {
@@ -65,6 +69,10 @@ export interface NormalizedShippingOption {
   deliveryTime: string;
   terrainSurcharge?: number;
   isLTL?: boolean;
+  /** Whether a liftgate truck is required for delivery (cm-o4i) */
+  requiresLiftgate?: boolean;
+  /** Carrier name (cm-o4i) */
+  carrier?: string;
 }
 
 export type ShippingCartItem = {
@@ -130,6 +138,12 @@ export function normalizeShippingOption(option: WixShippingOption): NormalizedSh
 
   if (option.terrainSurcharge !== undefined) {
     normalized.terrainSurcharge = option.terrainSurcharge;
+  }
+  if (option.requiresLiftgate !== undefined) {
+    normalized.requiresLiftgate = option.requiresLiftgate;
+  }
+  if (option.carrier !== undefined) {
+    normalized.carrier = option.carrier;
   }
 
   return normalized;

@@ -261,4 +261,31 @@ describe('normalizeShippingOption', () => {
     const norm = normalizeShippingOption(UPS_GROUND_OPTION);
     expect(norm.icon).toBe('📦');
   });
+
+  // ── cm-o4i: requiresLiftgate + carrier fields ──────────────────────────────
+
+  it('maps requiresLiftgate: true', () => {
+    const norm = normalizeShippingOption({ ...LTL_FREIGHT_OPTION, requiresLiftgate: true });
+    expect(norm.requiresLiftgate).toBe(true);
+  });
+
+  it('maps requiresLiftgate: false', () => {
+    const norm = normalizeShippingOption({ ...LTL_FREIGHT_OPTION, requiresLiftgate: false });
+    expect(norm.requiresLiftgate).toBe(false);
+  });
+
+  it('maps requiresLiftgate: undefined → undefined', () => {
+    const norm = normalizeShippingOption(UPS_GROUND_OPTION);
+    expect(norm.requiresLiftgate).toBeUndefined();
+  });
+
+  it('maps carrier field when present', () => {
+    const norm = normalizeShippingOption({ ...LTL_FREIGHT_OPTION, carrier: 'R+L Carriers' });
+    expect(norm.carrier).toBe('R+L Carriers');
+  });
+
+  it('maps carrier field as undefined when absent', () => {
+    const norm = normalizeShippingOption(UPS_GROUND_OPTION);
+    expect(norm.carrier).toBeUndefined();
+  });
 });
