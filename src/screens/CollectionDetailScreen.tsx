@@ -99,7 +99,13 @@ export function CollectionDetailScreen() {
   if (!collection) {
     return (
       <View style={[styles.container, { backgroundColor: colors.sandBase }]}>
-        <Header title="Collection" showBack cartCount={itemCount} onCartPress={openCart} testID="collection-detail-header" />
+        <Header
+          title="Collection"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collection-detail-header"
+        />
         <EmptyState title="Collection not found" message="This collection may have been removed." />
       </View>
     );
@@ -244,7 +250,13 @@ export function CollectionDetailScreen() {
       style={[styles.container, { backgroundColor: colors.sandBase }]}
       testID="collection-detail-screen"
     >
-      <Header title={collection.title} showBack cartCount={itemCount} onCartPress={openCart} testID="collection-detail-header" />
+      <Header
+        title={collection.title}
+        showBack
+        cartCount={itemCount}
+        onCartPress={openCart}
+        testID="collection-detail-header"
+      />
       <AnimatedFlatList
         data={products}
         keyExtractor={keyExtractor}

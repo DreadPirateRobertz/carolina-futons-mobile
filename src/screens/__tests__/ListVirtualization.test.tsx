@@ -51,7 +51,12 @@ jest.mock('@/hooks/useCart', () => ({
 }));
 
 jest.mock('@/hooks/useMiniCartDrawer', () => ({
-  useMiniCartDrawer: () => ({ open: jest.fn(), close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+  useMiniCartDrawer: () => ({
+    open: jest.fn(),
+    close: jest.fn(),
+    toggle: jest.fn(),
+    isOpen: false,
+  }),
   MiniCartDrawerProvider: ({ children }: any) => children,
 }));
 

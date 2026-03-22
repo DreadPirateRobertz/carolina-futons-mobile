@@ -8,7 +8,12 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 
 const mockMiniCartOpen = jest.fn();
 jest.mock('@/hooks/useMiniCartDrawer', () => ({
-  useMiniCartDrawer: () => ({ open: mockMiniCartOpen, close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+  useMiniCartDrawer: () => ({
+    open: mockMiniCartOpen,
+    close: jest.fn(),
+    toggle: jest.fn(),
+    isOpen: false,
+  }),
 }));
 
 jest.mock('@/hooks/useCart', () => ({
