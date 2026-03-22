@@ -9,7 +9,8 @@
  * and the populated grid.
  */
 import React, { useCallback } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -24,6 +25,9 @@ interface Props {
 }
 
 const NUM_COLUMNS = 2;
+
+/** Warm neutral blurhash used while room images load. */
+const DEFAULT_ROOM_BLURHASH = 'LKO2:N%2Tw=w]~RBVZRi};RPxuwH';
 
 function RoomCard({
   item,
@@ -51,7 +55,9 @@ function RoomCard({
       <Image
         source={{ uri: item.imageUrl }}
         style={styles.image}
-        resizeMode="cover"
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        placeholder={{ blurhash: DEFAULT_ROOM_BLURHASH }}
         testID={`room-image-${item.roomId}`}
       />
       <View

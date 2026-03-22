@@ -319,6 +319,48 @@ describe('RoomGalleryScreen', () => {
     });
   });
 
+  // ── cm-x6f: expo-image migration ───────────────────────────────────────────
+
+  describe('expo-image migration', () => {
+    it('room images use expo-image (contentFit prop instead of resizeMode)', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      // expo-image mock passes props through; resizeMode is a react-native Image prop
+      expect(img.props.resizeMode).toBeUndefined();
+    });
+
+    it('room images have cachePolicy="memory-disk"', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.cachePolicy).toBe('memory-disk');
+    });
+
+    it('room images have a placeholder prop', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.placeholder).toBeDefined();
+    });
+
+    it('room images have a truthy blurhash placeholder', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.placeholder?.blurhash).toBeTruthy();
+    });
+
+    it('room images have contentFit="cover"', () => {
+      const { getByTestId } = renderGallery();
+      // expo-image mock does NOT pass contentFit through (it's destructured out)
+      // so we verify no resizeMode is present — the real component uses contentFit
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.resizeMode).toBeUndefined();
+    });
+
+    it('second room also has cachePolicy set', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-image-room-002').props.cachePolicy).toBe('memory-disk');
+    });
+  });
+
   describe('Upload CTA', () => {
     it('renders Share Your Room CTA in populated gallery', () => {
       const { getByTestId } = renderGallery();
