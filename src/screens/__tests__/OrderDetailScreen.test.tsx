@@ -337,5 +337,68 @@ describe('OrderDetailScreen', () => {
         expect(mockRecordDelivery).not.toHaveBeenCalled();
       });
     });
+
+    // cm-tsh: useRef guard — must fire exactly once, not on every render
+    it('calls recordDelivery exactly once even when component re-renders', async () => {
+      const { rerender } = renderOrderDetail({ orderId: 'ord-001' });
+      await waitFor(() => {
+        expect(mockRecordDelivery).toHaveBeenCalledTimes(1);
+      });
+      // Trigger a re-render (e.g. new props ref)
+      rerender(
+        <ConnectivityProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <OrderDetailScreen orderId="ord-001" />
+            </CartProvider>
+          </ThemeProvider>
+        </ConnectivityProvider>,
+      );
+      await waitFor(() => {
+        // Must still be exactly 1, not 2
+        expect(mockRecordDelivery).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    // cm-tsh: try/catch — recordDelivery throwing must not crash the screen
+    it('does not crash when recordDelivery throws', async () => {
+      mockRecordDelivery.mockImplementationOnce(() => {
+        throw new Error('Rating service unavailable');
+      });
+      expect(() => renderOrderDetail({ orderId: 'ord-001' })).not.toThrow();
+    });
+  });
+
+  describe('Tracking link null URL guard (cm-tsh)', () => {
+    it('does not render tracking link when tracking.url is null', () => {
+      const orderWithNullUrl = {
+        ...MOCK_ORDERS[0],
+        tracking: { ...MOCK_ORDERS[0].tracking!, url: null as unknown as string },
+      };
+      const { queryByTestId } = renderOrderDetail({
+        orderId: 'ord-001',
+        orders: [orderWithNullUrl],
+      });
+      expect(queryByTestId('tracking-link')).toBeNull();
+    });
+
+    it('renders tracking number as plain text when tracking.url is null', () => {
+      const orderWithNullUrl = {
+        ...MOCK_ORDERS[0],
+        tracking: { ...MOCK_ORDERS[0].tracking!, url: null as unknown as string },
+      };
+      const { getByTestId } = renderOrderDetail({
+        orderId: 'ord-001',
+        orders: [orderWithNullUrl],
+      });
+      // Tracking card still renders (carrier + number), just not as a link
+      expect(getByTestId('order-tracking-card')).toBeTruthy();
+      expect(getByTestId('tracking-number-text')).toBeTruthy();
+    });
+
+    it('still renders tracking link when tracking.url is present', () => {
+      const { getByTestId } = renderOrderDetail({ orderId: 'ord-001' });
+      expect(getByTestId('tracking-link')).toBeTruthy();
+    });
   });
 });

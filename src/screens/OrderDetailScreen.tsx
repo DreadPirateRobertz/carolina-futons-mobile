@@ -7,7 +7,7 @@
  * back to the cart for easy repeat purchases.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -218,12 +218,19 @@ export function OrderDetailScreen({
   const { getModel, getFabric } = useFutonModels();
   const { recordDelivery } = useRatingPrompt();
   const [refreshing, setRefreshing] = useState(false);
+  // cm-tsh: guard prevents recordDelivery firing on every re-render
+  const deliveryRecordedRef = useRef(false);
 
   const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);
 
   useEffect(() => {
-    if (order?.status === 'delivered') {
-      recordDelivery();
+    if (order?.status === 'delivered' && !deliveryRecordedRef.current) {
+      deliveryRecordedRef.current = true;
+      try {
+        recordDelivery();
+      } catch {
+        // Rating service failure must not crash the order detail screen
+      }
     }
   }, [order?.status, recordDelivery]);
 
@@ -375,16 +382,26 @@ export function OrderDetailScreen({
             <Text style={[styles.trackingLabel, { color: colors.mountainBlueDark }]}>
               {order.tracking.carrier} Tracking
             </Text>
-            <TouchableOpacity
-              onPress={handleTrackingPress}
-              testID="tracking-link"
-              accessibilityLabel={`Track package with ${order.tracking.carrier}, tracking number ${order.tracking.trackingNumber}`}
-              accessibilityRole="link"
-            >
-              <Text style={[styles.trackingNumber, { color: colors.mountainBlueDark }]}>
+            {/* cm-tsh: only render as tappable link when a URL is available */}
+            {order.tracking.url ? (
+              <TouchableOpacity
+                onPress={handleTrackingPress}
+                testID="tracking-link"
+                accessibilityLabel={`Track package with ${order.tracking.carrier}, tracking number ${order.tracking.trackingNumber}`}
+                accessibilityRole="link"
+              >
+                <Text style={[styles.trackingNumber, { color: colors.mountainBlueDark }]}>
+                  {order.tracking.trackingNumber}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text
+                style={[styles.trackingNumber, { color: colors.mountainBlueDark }]}
+                testID="tracking-number-text"
+              >
                 {order.tracking.trackingNumber}
               </Text>
-            </TouchableOpacity>
+            )}
             {order.tracking.estimatedDelivery && (
               <Text
                 style={[styles.trackingEta, { color: colors.espressoLight }]}
