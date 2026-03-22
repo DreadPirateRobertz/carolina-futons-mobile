@@ -40,6 +40,29 @@ jest.mock('@/services/wix', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useCollections', () => ({
+  useCollections: () => ({
+    collections: [
+      {
+        id: 'col-1',
+        slug: 'mountain-lodge-living',
+        title: 'Mountain Lodge Living',
+        subtitle: 'Cozy warmth',
+        description: 'Test',
+        heroImage: { uri: 'https://example.com/img.jpg', alt: 'Lodge' },
+        mood: [],
+        featured: true,
+        productIds: [],
+      },
+    ],
+    featured: [],
+    isLoading: false,
+    isStale: false,
+    error: null,
+    refresh: jest.fn(),
+  }),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),
