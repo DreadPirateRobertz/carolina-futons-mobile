@@ -241,36 +241,38 @@ export function SearchScreen({ testID }: Props) {
 
           {/* Trending searches — sourced from Wix CMS (hq-jc723); hidden when empty */}
           {trendingSearches.length > 0 && (
-          <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-            <Text
-              style={[styles.sectionTitle, { color: colors.espressoLight }]}
-              accessibilityRole="header"
-              testID="trending-section-header"
-            >
-              Trending Searches
-            </Text>
-            <View style={[styles.chipsContainer, { gap: spacing.sm }]}>
-              {trendingSearches.map((term, index) => (
-                <AnimatedPressable
-                  key={term}
-                  style={[
-                    styles.trendingChip,
-                    {
-                      backgroundColor: colors.mountainBlue,
-                      borderRadius: borderRadius.pill,
-                    },
-                  ]}
-                  onPress={() => handleTrendingPress(term)}
-                  testID={`initial-trending-${index}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Search for ${term}`}
-                  haptic="light"
-                >
-                  <Text style={[styles.trendingChipText, { color: colors.offWhite }]}>{term}</Text>
-                </AnimatedPressable>
-              ))}
+            <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
+              <Text
+                style={[styles.sectionTitle, { color: colors.espressoLight }]}
+                accessibilityRole="header"
+                testID="trending-section-header"
+              >
+                Trending Searches
+              </Text>
+              <View style={[styles.chipsContainer, { gap: spacing.sm }]}>
+                {trendingSearches.map((term, index) => (
+                  <AnimatedPressable
+                    key={term}
+                    style={[
+                      styles.trendingChip,
+                      {
+                        backgroundColor: colors.mountainBlue,
+                        borderRadius: borderRadius.pill,
+                      },
+                    ]}
+                    onPress={() => handleTrendingPress(term)}
+                    testID={`initial-trending-${index}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Search for ${term}`}
+                    haptic="light"
+                  >
+                    <Text style={[styles.trendingChipText, { color: colors.offWhite }]}>
+                      {term}
+                    </Text>
+                  </AnimatedPressable>
+                ))}
+              </View>
             </View>
-          </View>
           )}
         </View>
       )}

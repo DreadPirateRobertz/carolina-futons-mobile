@@ -37,10 +37,9 @@ export function useConfig(): ConfigResult {
     if (!wixClient) return [];
 
     try {
-      const result = await wixClient.queryData<RawTrendingRecord>(
-        TRENDING_SEARCHES_COLLECTION,
-        { limit: 1 },
-      );
+      const result = await wixClient.queryData<RawTrendingRecord>(TRENDING_SEARCHES_COLLECTION, {
+        limit: 1,
+      });
 
       if (result.items.length === 0) return [];
 
@@ -53,11 +52,9 @@ export function useConfig(): ConfigResult {
     }
   }, [wixClient]);
 
-  const { data, isLoading } = useDataCache<string[]>(
-    'config-trending-searches',
-    fetcher,
-    { maxAge: CONFIG_CACHE_MAX_AGE },
-  );
+  const { data, isLoading } = useDataCache<string[]>('config-trending-searches', fetcher, {
+    maxAge: CONFIG_CACHE_MAX_AGE,
+  });
 
   return {
     trendingSearches: data ?? [],

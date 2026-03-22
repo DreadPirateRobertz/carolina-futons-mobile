@@ -47,7 +47,11 @@ describe('useConfig — trendingSearches', () => {
 
   it('returns empty array when terms field is missing on the record', async () => {
     mockQueryData.mockResolvedValue({
-      items: [{ /* no terms field */ }],
+      items: [
+        {
+          /* no terms field */
+        },
+      ],
       totalResults: 1,
     });
     const { result } = renderHook(() => useConfig());
