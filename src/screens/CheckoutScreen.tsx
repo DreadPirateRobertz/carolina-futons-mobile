@@ -313,6 +313,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
   const [shippingOptions, setShippingOptions] = useState<NormalizedShippingOption[]>([]);
   const [shippingOptionsLoading, setShippingOptionsLoading] = useState(false);
+  const [shippingOptionsError, setShippingOptionsError] = useState<string | null>(null);
   // White glove upgrade toggle — cm-cqz
   const [whiteGloveUpgrade, setWhiteGloveUpgrade] = useState(false);
 
@@ -323,6 +324,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
     let cancelled = false;
     setShippingOptionsLoading(true);
+    setShippingOptionsError(null);
 
     const cartItems = items.map((item: CartItem) => ({
       productId: item.model.id,
@@ -333,12 +335,16 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     (async () => {
       const result = wixClient
         ? await fetchShippingOptions(wixClient, zip, cartItems)
-        : { success: false, options: [] };
+        : { success: false, options: [], error: 'Shipping unavailable' };
       if (cancelled) return;
       if (result.success && result.options.length > 0) {
         const normalized = result.options.map(normalizeShippingOption);
         setShippingOptions(normalized);
+        setShippingOptionsError(null);
         setSelectedDelivery((prev) => prev ?? normalized[0].id);
+      } else if (!result.success) {
+        setShippingOptionsError(result.error ?? 'Shipping options unavailable');
+        setShippingOptions([]);
       }
       setShippingOptionsLoading(false);
     })();
@@ -844,6 +850,16 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping')}
         </View>
 
+        {/* Shipping options error — cm-o4i */}
+        {shippingOptionsError && !shippingOptionsLoading && (
+          <Text
+            testID="shipping-options-error"
+            style={[styles.shippingOptionsError, { color: colors.error }]}
+          >
+            Unable to load shipping options. Contact us for a freight quote or try again.
+          </Text>
+        )}
+
         {/* Delivery Method — live from shippingIntelligence API (cm-z5f) */}
         {shippingOptions.length > 0 && (
           <View
@@ -946,12 +962,32 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                               ? 'FREE'
                               : formatPrice(option.priceCents)}
                         </Text>
+                        {/* Delivery time — cm-o4i */}
+                        {option.deliveryTime ? (
+                          <Text
+                            style={[styles.deliveryTime, { color: colors.espressoLight }]}
+                            testID={`delivery-time-${option.id}`}
+                          >
+                            {option.deliveryTime}
+                          </Text>
+                        ) : null}
+
                         {option.upsellMessage && (
                           <Text
                             style={[styles.deliveryUpsell, { color: colors.mountainBlue }]}
                             testID={`delivery-upsell-${option.id}`}
                           >
                             {option.upsellMessage}
+                          </Text>
+                        )}
+
+                        {/* Freight scheduling notice — cm-o4i */}
+                        {(option.isLTL || option.requiresLiftgate) && (
+                          <Text
+                            style={[styles.deliveryFreightNotice, { color: colors.espressoLight }]}
+                            testID={`delivery-freight-notice-${option.id}`}
+                          >
+                            Freight delivery — call to schedule
                           </Text>
                         )}
 
@@ -1841,6 +1877,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 3,
     fontStyle: 'italic' as const,
+  },
+  deliveryTime: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  deliveryFreightNotice: {
+    fontSize: 11,
+    marginTop: 4,
+    fontStyle: 'italic' as const,
+  },
+  shippingOptionsError: {
+    fontSize: 13,
+    marginHorizontal: 20,
+    marginTop: 8,
   },
   shippingNote: {
     fontSize: 12,

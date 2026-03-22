@@ -1363,4 +1363,167 @@ describe('CheckoutScreen', () => {
       expect(banner.props.accessibilityLabel).toBeTruthy();
     });
   });
+
+  // ── cm-o4i: LTL/freight display, deliveryTime, error state ──────────────────
+
+  const LTL_OPTION = {
+    code: 'WWEX_LTL_STANDARD',
+    title: '🚛 LTL Freight',
+    price: '299.00',
+    currency: 'USD',
+    deliveryTime: '7–10 business days',
+    badge: null,
+    badgeStyle: 'freight',
+    upsellMessage: null,
+    highlight: false,
+    icon: '🚛',
+    isLTL: true,
+    isEstimate: false,
+    carrier: 'R+L Carriers',
+  };
+
+  const LIFTGATE_OPTION = {
+    code: 'WWEX_LTL_LIFTGATE',
+    title: '🚛 LTL Freight + Liftgate',
+    price: '349.00',
+    currency: 'USD',
+    deliveryTime: '7–10 business days',
+    badge: null,
+    badgeStyle: 'freight',
+    upsellMessage: null,
+    highlight: false,
+    icon: '🚛',
+    isLTL: true,
+    isEstimate: false,
+    requiresLiftgate: true,
+    carrier: 'R+L Carriers',
+  };
+
+  describe('LTL freight display (cm-o4i)', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('shows delivery time text for a parcel option', async () => {
+      mockFetchShippingOptions.mockResolvedValue({
+        success: true,
+        options: [{ ...WIX_OPTIONS[2] }], // UPS_GROUND with deliveryTime '5–7 business days'
+      });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-time-UPS_GROUND')).toBeTruthy();
+      expect(utils.getByTestId('delivery-time-UPS_GROUND').props.children).toContain(
+        '5–7 business days',
+      );
+    });
+
+    it('shows delivery time for an LTL option', async () => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: [LTL_OPTION] });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-time-WWEX_LTL_STANDARD')).toBeTruthy();
+      expect(
+        utils.getByTestId('delivery-time-WWEX_LTL_STANDARD').props.children,
+      ).toContain('7–10 business days');
+    });
+
+    it('shows freight scheduling notice for isLTL option', async () => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: [LTL_OPTION] });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-freight-notice-WWEX_LTL_STANDARD')).toBeTruthy();
+    });
+
+    it('freight notice text mentions scheduling', async () => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: [LTL_OPTION] });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      const notice = utils.getByTestId('delivery-freight-notice-WWEX_LTL_STANDARD');
+      expect(notice.props.children).toMatch(/schedule|freight|call/i);
+    });
+
+    it('shows freight notice for requiresLiftgate option', async () => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: [LIFTGATE_OPTION] });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-freight-notice-WWEX_LTL_LIFTGATE')).toBeTruthy();
+    });
+
+    it('does not show freight notice for a standard parcel option', async () => {
+      mockFetchShippingOptions.mockResolvedValue({
+        success: true,
+        options: [{ ...WIX_OPTIONS[2] }], // UPS_GROUND — no isLTL
+      });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-freight-notice-UPS_GROUND')).toBeNull();
+    });
+  });
+
+  describe('shipping options error state (cm-o4i)', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    afterEach(() => {
+      mockFetchShippingOptions.mockResolvedValue({ success: false, options: [] });
+    });
+
+    it('shows shipping error when fetchShippingOptions returns success:false with error', async () => {
+      mockFetchShippingOptions.mockResolvedValue({
+        success: false,
+        options: [],
+        error: 'Shipping unavailable for this ZIP',
+      });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('shipping-options-error')).toBeTruthy();
+    });
+
+    it('error message contains helpful fallback text', async () => {
+      mockFetchShippingOptions.mockResolvedValue({
+        success: false,
+        options: [],
+        error: 'Service timeout',
+      });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      const errEl = utils.getByTestId('shipping-options-error');
+      expect(errEl.props.children).toMatch(/shipping|contact|unavailable/i);
+    });
+
+    it('does not show delivery method section when error occurs', async () => {
+      mockFetchShippingOptions.mockResolvedValue({
+        success: false,
+        options: [],
+        error: 'Network failure',
+      });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-method-section')).toBeNull();
+    });
+
+    it('does not show error when options load successfully', async () => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: WIX_OPTIONS });
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.queryByTestId('shipping-options-error')).toBeNull();
+    });
+  });
 });
