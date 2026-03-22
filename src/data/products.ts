@@ -114,6 +114,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_1224985805ba4f988eae2d6d93c6270b~mv2.jpg/v1/fit/w_640,h_480,q_90/file.jpg',
         alt: 'The Asheville Full Futon product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Bestseller',
@@ -147,6 +148,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_9fad425eab7b4ca388ed392523e2e8bf~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
         alt: 'The Blue Ridge Queen Futon product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Premium',
@@ -179,6 +181,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_8d58046b50394b18ab17888609e55a91~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
         alt: 'The Pisgah Twin Futon product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     rating: 4.6,
@@ -210,6 +213,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_020cf249fd9d444b899d981c74f1bbfd~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
         alt: 'The Biltmore Loveseat product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Sale',
@@ -241,6 +245,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_4abd23adf72a4ba3a6ee5d1107e98174~mv2.jpg/v1/fit/w_1999,h_1429,q_90/file.jpg',
         alt: 'The Hendersonville Queen Murphy Cabinet Bed product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Bestseller',
@@ -271,6 +276,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_f6b90a06940d41d5895782bf3025eac6~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
         alt: 'The Appalachian Full Horizontal Murphy Cabinet product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     rating: 4.7,
@@ -300,6 +306,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_b1fad63605344fe69eca83037f832fae~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
         alt: 'The Smoky Mountain Queen Bookcase Murphy product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Premium',
@@ -330,6 +337,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_ae3946ea9e884abfb61de5a74bacfad7~mv2.jpg/v1/fit/w_1999,h_1428,q_90/file.jpg',
         alt: 'The Brevard Twin Cabinet Bed product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     rating: 4.6,
@@ -360,6 +368,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_5b1e78ca47dd4f6aa4ad162c09745d34~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
         alt: 'The Chimney Rock Queen Desk Murphy product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     badge: 'Sale',
@@ -390,6 +399,7 @@ export const PRODUCTS: Product[] = [
       {
         uri: 'https://static.wixstatic.com/media/cc389e_fbd55db182574579a2582da2b4c3dca7~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
         alt: 'The Nantahala Full Storage Murphy product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
       },
     ],
     rating: 4.7,
