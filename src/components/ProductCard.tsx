@@ -166,7 +166,8 @@ export const ProductCard = memo(function ProductCard({
           ]}
         >
           <Image
-            source={{ uri: product.images[0]?.uri }}
+            testID={`product-hero-image-${product.id}`}
+            source={{ uri: product.lifestyleImageUri || product.images[0]?.uri }}
             style={styles.image}
             contentFit="cover"
             transition={200}

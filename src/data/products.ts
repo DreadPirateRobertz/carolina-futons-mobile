@@ -48,6 +48,14 @@ export interface Product {
   };
   tags?: string[]; // style keywords: "modern", "rustic", "mid-century", etc.
   colorFamily?: string; // "neutral" | "warm" | "cool" | "dark" | "light"
+  /**
+   * Optional lifestyle/room-context hero image URI shown on the ProductCard.
+   * When set, overrides images[0] as the primary card image.
+   *
+   * TODO(stilgar): Replace all placeholder URLs with real CF lifestyle photos from Wix Media Manager.
+   * SOURCE: Will come from manufacturer image banks + professional shoot (Q2 2026).
+   */
+  lifestyleImageUri?: string;
 }
 
 export type ProductCategory =
@@ -134,6 +142,10 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 54, depth: 34, height: 33 },
     tags: ['modern', 'convertible', 'hardwood'],
     colorFamily: 'neutral',
+    // TODO(stilgar): Replace with real CF lifestyle photo from Wix Media Manager
+    // PLACEHOLDER: https://images.unsplash.com/photo-1555041469-a586c61ea9bc — warm living room with sofa in use
+    // SOURCE: Will come from manufacturer image banks + professional shoot (Q2 2026)
+    lifestyleImageUri: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80',
   },
   {
     id: productId('prod-blue-ridge-queen'),
@@ -168,6 +180,10 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 60, depth: 36, height: 35 },
     tags: ['modern', 'luxury', 'convertible'],
     colorFamily: 'cool',
+    // TODO(stilgar): Replace with real CF lifestyle photo from Wix Media Manager
+    // PLACEHOLDER: https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e — bright airy room with queen sofa
+    // SOURCE: Will come from manufacturer image banks + professional shoot (Q2 2026)
+    lifestyleImageUri: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=800&q=80',
   },
   {
     id: productId('prod-pisgah-twin'),
@@ -199,6 +215,10 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 39, depth: 32, height: 31 },
     tags: ['compact', 'convertible', 'modern'],
     colorFamily: 'neutral',
+    // TODO(stilgar): Replace with real CF lifestyle photo from Wix Media Manager
+    // PLACEHOLDER: https://images.unsplash.com/photo-1586023492125-27b2c045efd7 — compact studio apartment setting
+    // SOURCE: Will come from manufacturer image banks + professional shoot (Q2 2026)
+    lifestyleImageUri: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80',
   },
   {
     id: productId('prod-biltmore-loveseat'),

@@ -404,4 +404,40 @@ describe('ProductCard', () => {
       expect(trigger.props.accessibilityRole).toBe('button');
     });
   });
+
+  describe('lifestyle image', () => {
+    it('uses lifestyleImageUri as hero image when provided', () => {
+      const lifestyleUri = 'https://images.unsplash.com/photo-lifestyle-test';
+      const productWithLifestyle: Product = {
+        ...futon,
+        lifestyleImageUri: lifestyleUri,
+      };
+      const { getByTestId } = renderCard({ product: productWithLifestyle });
+      const heroImage = getByTestId(`product-hero-image-${futon.id}`);
+      expect(heroImage.props.source?.uri).toBe(lifestyleUri);
+    });
+
+    it('falls back to images[0].uri when lifestyleImageUri is not set', () => {
+      const productWithoutLifestyle: Product = { ...futon, lifestyleImageUri: undefined };
+      const { getByTestId } = renderCard({ product: productWithoutLifestyle });
+      const heroImage = getByTestId(`product-hero-image-${futon.id}`);
+      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+    });
+
+    it('falls back to images[0].uri when lifestyleImageUri is empty string', () => {
+      const productWithEmpty: Product = { ...futon, lifestyleImageUri: '' };
+      const { getByTestId } = renderCard({ product: productWithEmpty });
+      const heroImage = getByTestId(`product-hero-image-${futon.id}`);
+      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+    });
+
+    it('top 3 futon products have lifestyleImageUri wired in mock data', () => {
+      const futons = PRODUCTS.filter((p) => p.category === 'futons').slice(0, 3);
+      expect(futons.length).toBe(3);
+      for (const p of futons) {
+        expect(p.lifestyleImageUri).toBeTruthy();
+        expect(p.lifestyleImageUri).toMatch(/^https:\/\//);
+      }
+    });
+  });
 });
