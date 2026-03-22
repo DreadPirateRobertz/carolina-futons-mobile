@@ -904,6 +904,64 @@ export class WixClient {
     return this.get(`/_functions/loyalty/${encodeURIComponent(memberId)}`);
   }
 
+  /**
+   * Fetch the current member's loyalty account from the Wix backend webMethod.
+   * Requires the member's session access token (SiteMember permission).
+   * Server resolves identity from the token — no memberId param needed.
+   */
+  async getLoyaltyAccount(memberToken: string): Promise<{
+    points: number;
+    tier: string;
+    tierDiscount: number;
+    nextTier: string | null;
+    pointsToNext: number;
+    progress: number;
+    accountId: string;
+  }> {
+    const url = `${this.baseUrl}/_functions/getLoyaltyAccount`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: memberToken,
+          'wix-site-id': this.siteId,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new WixApiError(
+          `getLoyaltyAccount failed: ${response.status}`,
+          response.status,
+          '/_functions/getLoyaltyAccount',
+        );
+      }
+      return response.json() as Promise<{
+        points: number;
+        tier: string;
+        tierDiscount: number;
+        nextTier: string | null;
+        pointsToNext: number;
+        progress: number;
+        accountId: string;
+      }>;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new WixApiError(`Request timeout after ${this.timeoutMs}ms`, undefined, '/_functions/getLoyaltyAccount');
+      }
+      if (err instanceof WixApiError) throw err;
+      throw new WixApiError(
+        `Network error: ${err instanceof Error ? err.message : String(err)}`,
+        undefined,
+        '/_functions/getLoyaltyAccount',
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   // ── Wix Data Mutations ──────────────────────────────────────
 
   async insertDataItem(

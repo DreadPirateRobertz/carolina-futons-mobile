@@ -162,6 +162,21 @@ jest.mock('@/services/affirmService', () => ({
 // Mock useKlarnaCheckout — Klarna uses redirect flow, not Stripe payment sheet
 const mockKlarnaStartCheckout = jest.fn().mockResolvedValue(null);
 const mockKlarnaReset = jest.fn();
+// cm-ds5: loyalty tier badge
+const mockLoyaltyValue = {
+  tier: 'bronze' as const,
+  points: 120,
+  nextTier: 'silver' as const,
+  pointsToNext: 380,
+  progress: 24,
+  loading: false,
+  error: null as string | null,
+  refreshPoints: jest.fn(),
+};
+jest.mock('@/hooks/useLoyalty', () => ({
+  useLoyalty: () => mockLoyaltyValue,
+}));
+
 jest.mock('@/hooks/useKlarnaCheckout', () => ({
   useKlarnaCheckout: () => ({
     status: 'idle',
@@ -1305,6 +1320,47 @@ describe('CheckoutScreen', () => {
     it('white glove upgrade section shows WG label', async () => {
       const utils = await renderWithOptions();
       expect(utils.getByTestId('white-glove-upgrade-label')).toBeTruthy();
+    });
+  });
+
+  // ── cm-ds5: Loyalty tier badge in CheckoutScreen ─────────────────────────────
+
+  describe('Loyalty tier badge (cm-ds5)', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('renders loyalty banner near order summary when cart has items', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('checkout-loyalty-banner')).toBeTruthy();
+    });
+
+    it('does not render loyalty banner when cart is empty', async () => {
+      const utils = renderCheckout({});
+      await act(async () => {});
+      expect(utils.queryByTestId('checkout-loyalty-banner')).toBeNull();
+    });
+
+    it('does not render loyalty banner when loyalty is loading', async () => {
+      mockLoyaltyValue.loading = true;
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('checkout-loyalty-banner')).toBeNull();
+      mockLoyaltyValue.loading = false;
+    });
+
+    it('does not render loyalty banner when loyalty returns error', async () => {
+      (mockLoyaltyValue as { error: string | null }).error = 'Service unavailable';
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('checkout-loyalty-banner')).toBeNull();
+      mockLoyaltyValue.error = null;
+    });
+
+    it('banner is accessible with accessibilityLabel', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      const banner = utils.getByTestId('checkout-loyalty-banner');
+      expect(banner.props.accessibilityLabel).toBeTruthy();
     });
   });
 });

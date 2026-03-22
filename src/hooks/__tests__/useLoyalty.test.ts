@@ -1,11 +1,11 @@
 /**
- * useLoyalty TDD tests — cm-elo
+ * useLoyalty TDD tests — cm-elo / cm-ds5
  *
- * 11 tests for the useLoyalty hook.
- * memberId comes from WixAuthService.getCurrentMember() (session-based, no IDOR risk).
- * Wix Data pattern: wix.queryData<T>('CollectionName', { filter, limit })
+ * Updated to mock the webMethod (/_functions/getLoyaltyAccount) via
+ * wixClient.getLoyaltyAccount() instead of direct Wix Data collection queries.
+ * Member token comes from getWixSdkClient().auth.getTokens().accessToken.value.
  *
- * Spec: docs/superpowers/specs/2026-03-21-loyalty-points-design.md
+ * Falls back to Bronze defaults (no error) when unauthenticated.
  */
 
 import { renderHook, waitFor } from '@testing-library/react-native';
@@ -15,57 +15,38 @@ import { useLoyalty } from '../useLoyalty';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockQueryData = jest.fn();
+const mockGetLoyaltyAccount = jest.fn();
 const mockGetWixClientSingleton = jest.fn();
 
 jest.mock('@/services/wix/wixClientSingleton', () => ({
   getWixClientSingleton: () => mockGetWixClientSingleton(),
 }));
 
-const mockGetCurrentMember = jest.fn();
-const mockAuthInstance = { getCurrentMember: () => mockGetCurrentMember() };
-jest.mock('@/services/wix/wixAuth', () => ({
-  WixAuthService: jest.fn().mockImplementation(() => mockAuthInstance),
+const mockGetTokens = jest.fn();
+jest.mock('@/services/wix/wixSdkClient', () => ({
+  getWixSdkClient: () => ({ auth: { getTokens: () => mockGetTokens() } }),
 }));
 
-// Default member fixture
-const MEMBER_ID = 'test-member-abc';
-const DEFAULT_MEMBER = { id: MEMBER_ID };
+const MEMBER_TOKEN = 'test-access-token-abc';
 
-// Default empty responses
-const EMPTY_POINTS = { items: [], totalResults: 0 };
-const EMPTY_TX = { items: [], totalResults: 0 };
-
-function makePointsRecord(overrides = {}) {
+function makeApiResponse(overrides = {}) {
   return {
-    memberId: MEMBER_ID,
     points: 500,
-    tier: 'silver',
-    totalEarned: 500,
-    ...overrides,
-  };
-}
-
-function makeTxRecord(overrides = {}) {
-  return {
-    _id: 'tx-1',
-    memberId: MEMBER_ID,
-    delta: 100,
-    reason: 'purchase',
-    createdDate: '2026-03-01T00:00:00Z',
+    tier: 'Silver',
+    tierDiscount: 5,
+    nextTier: 'Gold',
+    pointsToNext: 1000,
+    progress: 33,
+    accountId: 'acct-1',
     ...overrides,
   };
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGetCurrentMember.mockResolvedValue(DEFAULT_MEMBER);
-  mockGetWixClientSingleton.mockReturnValue({ queryData: mockQueryData });
-  mockQueryData.mockImplementation((collection: string) => {
-    if (collection === 'LoyaltyPoints') return Promise.resolve(EMPTY_POINTS);
-    if (collection === 'LoyaltyTransactions') return Promise.resolve(EMPTY_TX);
-    return Promise.resolve({ items: [], totalResults: 0 });
-  });
+  mockGetTokens.mockReturnValue({ accessToken: { value: MEMBER_TOKEN, expiresAt: 9999999999 } });
+  mockGetWixClientSingleton.mockReturnValue({ getLoyaltyAccount: mockGetLoyaltyAccount });
+  mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse());
 });
 
 // ---------------------------------------------------------------------------
@@ -73,103 +54,60 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('useLoyalty hook', () => {
-  it('returns 0 points and bronze tier for a new member with no LoyaltyPoints record', async () => {
-    mockQueryData.mockResolvedValue(EMPTY_POINTS);
+  it('returns 0 points and bronze tier for a new member with no account', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(
+      makeApiResponse({ points: 0, tier: 'Bronze', nextTier: 'Silver', pointsToNext: 500, progress: 0 }),
+    );
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(0);
     expect(result.current.tier).toBe('bronze');
-    expect(result.current.totalEarned).toBe(0);
+    expect(result.current.nextTier).toBe('silver');
+    expect(result.current.pointsToNext).toBe(500);
     expect(result.current.error).toBeNull();
   });
 
-  it('returns correct points and tier for an existing member', async () => {
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({
-          items: [makePointsRecord({ points: 1500, tier: 'gold', totalEarned: 2200 })],
-          totalResults: 1,
-        });
-      return Promise.resolve(EMPTY_TX);
-    });
+  it('returns correct points, tier, and nextTier for an existing member', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(
+      makeApiResponse({ points: 1500, tier: 'Gold', nextTier: null, pointsToNext: 0, progress: 100 }),
+    );
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(1500);
     expect(result.current.tier).toBe('gold');
-    expect(result.current.totalEarned).toBe(2200);
+    expect(result.current.nextTier).toBeNull();
+    expect(result.current.pointsToNext).toBe(0);
   });
 
-  it('tier boundaries: 499→bronze, 500→silver, 1499→silver, 1500→gold', async () => {
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({ items: [makePointsRecord({ points: 499 })], totalResults: 1 });
-      return Promise.resolve(EMPTY_TX);
-    });
-    const { result: bronze } = renderHook(() => useLoyalty());
-    await waitFor(() => expect(bronze.current.loading).toBe(false));
-    expect(bronze.current.tier).toBe('bronze');
-
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({
-          items: [makePointsRecord({ points: 500, tier: 'silver' })],
-          totalResults: 1,
-        });
-      return Promise.resolve(EMPTY_TX);
-    });
-    const { result: silver } = renderHook(() => useLoyalty());
-    await waitFor(() => expect(silver.current.loading).toBe(false));
-    expect(silver.current.tier).toBe('silver');
-
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({
-          items: [makePointsRecord({ points: 1499, tier: 'silver' })],
-          totalResults: 1,
-        });
-      return Promise.resolve(EMPTY_TX);
-    });
-    const { result: silverHigh } = renderHook(() => useLoyalty());
-    await waitFor(() => expect(silverHigh.current.loading).toBe(false));
-    expect(silverHigh.current.tier).toBe('silver');
-
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({
-          items: [makePointsRecord({ points: 1500, tier: 'gold' })],
-          totalResults: 1,
-        });
-      return Promise.resolve(EMPTY_TX);
-    });
-    const { result: gold } = renderHook(() => useLoyalty());
-    await waitFor(() => expect(gold.current.loading).toBe(false));
-    expect(gold.current.tier).toBe('gold');
+  it('normalizes capitalized tier names from API (Bronze/Silver/Gold → lowercase)', async () => {
+    for (const [apiTier, expected] of [
+      ['Bronze', 'bronze'],
+      ['Silver', 'silver'],
+      ['Gold', 'gold'],
+    ] as const) {
+      mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ tier: apiTier }));
+      const { result } = renderHook(() => useLoyalty());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.tier).toBe(expected);
+    }
   });
 
-  it('always derives tier client-side — ignores stale stored tier', async () => {
-    // Stored tier says gold but points are only 200 (bronze). Must use deriveTier.
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({
-          items: [makePointsRecord({ points: 200, tier: 'gold' })],
-          totalResults: 1,
-        });
-      return Promise.resolve(EMPTY_TX);
-    });
+  it('passes member access token to getLoyaltyAccount', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse());
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.tier).toBe('bronze');
+    expect(mockGetLoyaltyAccount).toHaveBeenCalledWith(MEMBER_TOKEN);
   });
 
   it('shows loading state during fetch', () => {
-    mockQueryData.mockImplementation(() => new Promise(() => {}));
+    mockGetLoyaltyAccount.mockImplementation(() => new Promise(() => {}));
     const { result } = renderHook(() => useLoyalty());
     expect(result.current.loading).toBe(true);
     expect(result.current.points).toBe(0);
   });
 
   it('shows error state on API failure', async () => {
-    mockQueryData.mockRejectedValue(new Error('Wix API error'));
+    mockGetLoyaltyAccount.mockRejectedValue(new Error('Wix API error'));
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).not.toBeNull();
@@ -177,21 +115,33 @@ describe('useLoyalty hook', () => {
   });
 
   it('shows error state on network failure (offline)', async () => {
-    mockQueryData.mockRejectedValue(new TypeError('Network request failed'));
+    mockGetLoyaltyAccount.mockRejectedValue(new TypeError('Network request failed'));
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).not.toBeNull();
   });
 
-  it('returns default state when getCurrentMember() returns null (unauthenticated)', async () => {
-    mockGetCurrentMember.mockResolvedValue(null);
+  it('returns Bronze defaults when getTokens() returns no access token (unauthenticated)', async () => {
+    mockGetTokens.mockReturnValue({ accessToken: null, refreshToken: { value: 'r', role: 'visitor' } });
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(0);
     expect(result.current.tier).toBe('bronze');
-    expect(result.current.totalEarned).toBe(0);
-    expect(result.current.transactions).toHaveLength(0);
+    expect(result.current.nextTier).toBe('silver');
+    expect(result.current.pointsToNext).toBe(500);
     expect(result.current.error).toBeNull();
+    expect(mockGetLoyaltyAccount).not.toHaveBeenCalled();
+  });
+
+  it('returns Bronze defaults when getTokens() throws (SDK not initialized)', async () => {
+    mockGetTokens.mockImplementation(() => {
+      throw new Error('SDK not ready');
+    });
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.tier).toBe('bronze');
+    expect(result.current.error).toBeNull();
+    expect(mockGetLoyaltyAccount).not.toHaveBeenCalled();
   });
 
   it('sets error when getWixClientSingleton() returns null', async () => {
@@ -203,16 +153,9 @@ describe('useLoyalty hook', () => {
 
   it('refreshPoints re-fetches and updates state', async () => {
     let callCount = 0;
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints') {
-        callCount++;
-        const pts = callCount === 1 ? 500 : 600;
-        return Promise.resolve({
-          items: [makePointsRecord({ points: pts, totalEarned: pts })],
-          totalResults: 1,
-        });
-      }
-      return Promise.resolve(EMPTY_TX);
+    mockGetLoyaltyAccount.mockImplementation(() => {
+      callCount++;
+      return Promise.resolve(makeApiResponse({ points: callCount === 1 ? 500 : 600 }));
     });
 
     const { result } = renderHook(() => useLoyalty());
@@ -221,21 +164,5 @@ describe('useLoyalty hook', () => {
 
     await result.current.refreshPoints();
     await waitFor(() => expect(result.current.points).toBe(600));
-  });
-
-  it('returns transactions array for a member with transaction history', async () => {
-    const tx = makeTxRecord({ _id: 'tx-1', delta: 100, reason: 'purchase' });
-    mockQueryData.mockImplementation((collection: string) => {
-      if (collection === 'LoyaltyPoints')
-        return Promise.resolve({ items: [makePointsRecord()], totalResults: 1 });
-      if (collection === 'LoyaltyTransactions')
-        return Promise.resolve({ items: [tx], totalResults: 1 });
-      return Promise.resolve({ items: [], totalResults: 0 });
-    });
-    const { result } = renderHook(() => useLoyalty());
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.transactions).toHaveLength(1);
-    expect(result.current.transactions[0]._id).toBe('tx-1');
-    expect(result.current.transactions[0].delta).toBe(100);
   });
 });

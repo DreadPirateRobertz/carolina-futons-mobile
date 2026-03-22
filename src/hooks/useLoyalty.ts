@@ -1,20 +1,19 @@
 /**
- * useLoyalty — cm-elo
+ * useLoyalty — cm-elo / cm-ds5
  *
- * Fetches the current member's loyalty points balance and transaction history
- * from Wix Data. memberId is resolved via WixAuthService.getCurrentMember()
- * (session-based — no IDOR risk; member can only read their own record).
+ * Fetches the current member's loyalty account from the Wix backend webMethod
+ * (/_functions/getLoyaltyAccount). Uses the member's Wix session access token
+ * for SiteMember-permissioned auth — server resolves identity from session
+ * context (no IDOR risk; member can only read their own record).
  *
- * Collections:
- *   LoyaltyPoints       — { memberId, points, tier, totalEarned }
- *   LoyaltyTransactions — { _id, memberId, delta, reason, createdDate }
+ * Falls back to Bronze defaults when unauthenticated (no error thrown).
  *
- * Tier thresholds: bronze 0–499, silver 500–1499, gold 1500+
+ * Tier thresholds: Bronze(0–499) → Silver(500–1499) → Gold(1500+)
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
-import { WixAuthService } from '@/services/wix/wixAuth';
+import { getWixSdkClient } from '@/services/wix/wixSdkClient';
 
 export type LoyaltyTier = 'bronze' | 'silver' | 'gold';
 
@@ -29,24 +28,35 @@ export interface LoyaltyTransaction {
 export interface UseLoyaltyResult {
   points: number;
   tier: LoyaltyTier;
-  totalEarned: number;
-  transactions: LoyaltyTransaction[];
+  nextTier: LoyaltyTier | null;
+  pointsToNext: number;
+  progress: number;
   loading: boolean;
   error: string | null;
   refreshPoints: () => Promise<void>;
 }
 
-function deriveTier(points: number): LoyaltyTier {
-  if (points >= 1500) return 'gold';
-  if (points >= 500) return 'silver';
+function normalizeTier(raw: string): LoyaltyTier {
+  const lower = raw.toLowerCase();
+  if (lower === 'silver') return 'silver';
+  if (lower === 'gold') return 'gold';
   return 'bronze';
 }
+
+const BRONZE_DEFAULTS = {
+  points: 0,
+  tier: 'bronze' as LoyaltyTier,
+  nextTier: 'silver' as LoyaltyTier,
+  pointsToNext: 500,
+  progress: 0,
+};
 
 export function useLoyalty(): UseLoyaltyResult {
   const [points, setPoints] = useState(0);
   const [tier, setTier] = useState<LoyaltyTier>('bronze');
-  const [totalEarned, setTotalEarned] = useState(0);
-  const [transactions, setTransactions] = useState<LoyaltyTransaction[]>([]);
+  const [nextTier, setNextTier] = useState<LoyaltyTier | null>('silver');
+  const [pointsToNext, setPointsToNext] = useState(500);
+  const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,14 +64,20 @@ export function useLoyalty(): UseLoyaltyResult {
     setLoading(true);
     setError(null);
     try {
-      const auth = new WixAuthService();
-      const member = await auth.getCurrentMember();
-      const memberId = member?.id;
-      if (!memberId) {
-        setPoints(0);
-        setTier('bronze');
-        setTotalEarned(0);
-        setTransactions([]);
+      let memberToken: string | undefined;
+      try {
+        const tokens = getWixSdkClient().auth.getTokens();
+        memberToken = tokens.accessToken?.value;
+      } catch {
+        // SDK not initialized or user not authenticated — use Bronze defaults
+      }
+
+      if (!memberToken) {
+        setPoints(BRONZE_DEFAULTS.points);
+        setTier(BRONZE_DEFAULTS.tier);
+        setNextTier(BRONZE_DEFAULTS.nextTier);
+        setPointsToNext(BRONZE_DEFAULTS.pointsToNext);
+        setProgress(BRONZE_DEFAULTS.progress);
         return;
       }
 
@@ -71,30 +87,12 @@ export function useLoyalty(): UseLoyaltyResult {
         return;
       }
 
-      const filter = { memberId: { $eq: memberId } };
-
-      const [pointsResult, txResult] = await Promise.all([
-        wixClient.queryData('LoyaltyPoints', { filter, limit: 1 }),
-        wixClient.queryData('LoyaltyTransactions', {
-          filter,
-          sort: [{ fieldName: 'createdDate', order: 'DESC' }],
-          limit: 50,
-        }),
-      ]);
-
-      if (pointsResult.items.length > 0) {
-        const record = pointsResult.items[0] as Record<string, unknown>;
-        const pts = (record.points as number) ?? 0;
-        setPoints(pts);
-        setTier(deriveTier(pts));
-        setTotalEarned((record.totalEarned as number) ?? 0);
-      } else {
-        setPoints(0);
-        setTier('bronze');
-        setTotalEarned(0);
-      }
-
-      setTransactions((txResult.items ?? []) as unknown as LoyaltyTransaction[]);
+      const data = await wixClient.getLoyaltyAccount(memberToken);
+      setPoints(data.points ?? 0);
+      setTier(normalizeTier(data.tier));
+      setNextTier(data.nextTier ? normalizeTier(data.nextTier) : null);
+      setPointsToNext(data.pointsToNext ?? 0);
+      setProgress(data.progress ?? 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -110,5 +108,5 @@ export function useLoyalty(): UseLoyaltyResult {
     await fetchData();
   }, [fetchData]);
 
-  return { points, tier, totalEarned, transactions, loading, error, refreshPoints };
+  return { points, tier, nextTier, pointsToNext, progress, loading, error, refreshPoints };
 }
