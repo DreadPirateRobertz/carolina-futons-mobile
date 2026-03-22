@@ -23,8 +23,9 @@ export interface ReviewSummary {
 }
 
 /**
- * Mock review data spread across three products.
- * In production, fetched from Wix CMS API.
+ * Seed/mock review data spread across all five products.
+ * Used as dev fallback when no WixClient is available (cm-c01).
+ * In production, fetched from Wix CMS CF-k8hw collection.
  */
 export const MOCK_REVIEWS: Review[] = [
   // --- asheville-full (7 reviews) ---
@@ -244,6 +245,126 @@ export const MOCK_REVIEWS: Review[] = [
     createdAt: '2026-01-10T16:30:00Z',
     helpful: 7,
     verified: false,
+  },
+
+  // --- pisgah-twin (5 reviews) — seed data for cm-c01 ---
+  {
+    id: 'rev-019',
+    productId: 'pisgah-twin',
+    authorName: 'Tyler R.',
+    rating: 5,
+    title: 'Perfect for a small guest room',
+    body: 'The Pisgah twin fits perfectly in my 10x10 guest room. Solid construction, the Charcoal fabric looks great and is easy to clean. Guests always comment on how comfortable it is as a bed.',
+    createdAt: '2026-02-14T09:15:00Z',
+    helpful: 12,
+    verified: true,
+    photos: ['https://placehold.co/1200x800/3D3D3D/FFFFFF?text=Pisgah+Guest+Room'],
+  },
+  {
+    id: 'rev-020',
+    productId: 'pisgah-twin',
+    authorName: 'Priya S.',
+    rating: 5,
+    title: 'Great college apartment futon',
+    body: 'Bought this for my first apartment and it is the best furniture purchase I have made. Easy to assemble solo, the Natural Linen color brightens up the room, and it converts smoothly between sofa and bed mode.',
+    createdAt: '2026-02-01T13:40:00Z',
+    helpful: 9,
+    verified: true,
+  },
+  {
+    id: 'rev-021',
+    productId: 'pisgah-twin',
+    authorName: 'Owen K.',
+    rating: 3,
+    title: 'Good but mattress runs thin',
+    body: 'The frame is well built and looks nice. However the mattress is on the thinner side — fine for occasional sleeping but I would not want it as my primary bed. Consider upgrading the mattress pad if you plan to use it nightly.',
+    createdAt: '2026-01-22T18:00:00Z',
+    helpful: 14,
+    verified: true,
+  },
+  {
+    id: 'rev-022',
+    productId: 'pisgah-twin',
+    authorName: 'Claire B.',
+    rating: 4,
+    title: 'Stylish and functional',
+    body: 'The Mountain Blue fabric is beautiful and photographs well. Frame is solid hardwood, no wobbling at all. Took about 25 minutes to assemble with two people. Docking one star because the instructions could be clearer on step 4.',
+    createdAt: '2026-01-14T10:30:00Z',
+    helpful: 6,
+    verified: false,
+  },
+  {
+    id: 'rev-023',
+    productId: 'pisgah-twin',
+    authorName: 'Kenji W.',
+    rating: 2,
+    title: 'Smaller than expected',
+    body: 'The dimensions on the website are accurate but the futon looks much smaller in person once assembled. My living room felt cramped. The quality itself is fine — it is just a size mismatch for my space.',
+    createdAt: '2025-12-30T21:10:00Z',
+    helpful: 8,
+    verified: true,
+  },
+
+  // --- biltmore-loveseat (5 reviews) — seed data for cm-c01 ---
+  {
+    id: 'rev-024',
+    productId: 'biltmore-loveseat',
+    authorName: 'Nina F.',
+    rating: 5,
+    title: 'Gorgeous addition to our living room',
+    body: 'The Biltmore loveseat is beautiful. The Sunset Coral fabric is exactly the pop of color our neutral living room needed. Frame is solid, cushions are plush, and it converts to a sleeper effortlessly. Already recommended to three friends.',
+    createdAt: '2026-02-18T11:05:00Z',
+    helpful: 21,
+    verified: true,
+    photos: [
+      'https://placehold.co/1200x800/E8845C/FFFFFF?text=Biltmore+Living+Room',
+      'https://placehold.co/1200x800/E8845C/FFFFFF?text=Biltmore+Closeup',
+    ],
+  },
+  {
+    id: 'rev-025',
+    productId: 'biltmore-loveseat',
+    authorName: 'Aaron D.',
+    rating: 4,
+    title: 'Great for studio apartments',
+    body: 'Compact enough for my 400 sq ft studio but still comfortable for two people sitting. The Espresso Brown is rich and professional-looking. Assembly was straightforward. Loses a star because one of the leg bolts stripped on first assembly.',
+    createdAt: '2026-02-05T15:20:00Z',
+    helpful: 11,
+    verified: true,
+  },
+  {
+    id: 'rev-026',
+    productId: 'biltmore-loveseat',
+    authorName: 'Monique L.',
+    rating: 5,
+    title: 'Excellent quality for the price',
+    body: 'I compared several loveseat futons before choosing the Biltmore. The hardwood frame and innerspring mattress put it above everything else in this price range. The Mauve Blush is subtle and elegant. Very happy with this purchase.',
+    createdAt: '2026-01-28T08:45:00Z',
+    helpful: 17,
+    verified: true,
+  },
+  {
+    id: 'rev-027',
+    productId: 'biltmore-loveseat',
+    authorName: 'Brendan O.',
+    rating: 3,
+    title: 'Comfortable sofa, mediocre sleeper',
+    body: 'As a sofa this loveseat is great — well padded, supportive, and attractive. As a sleeper, it is just passable for one person. The width is too narrow for comfortable sleeping for anyone over 5 feet 8. Would buy again just for sofa use.',
+    createdAt: '2026-01-15T19:55:00Z',
+    helpful: 23,
+    verified: true,
+  },
+  {
+    id: 'rev-028',
+    productId: 'biltmore-loveseat',
+    authorName: 'Yuki T.',
+    rating: 1,
+    title: 'Arrived damaged',
+    body: 'One of the frame slats arrived cracked and the fabric had a small tear on the back panel. Carolina Futons customer service replaced both pieces within a week so I appreciate that, but the initial unboxing was disappointing.',
+    createdAt: '2025-12-20T14:30:00Z',
+    helpful: 31,
+    verified: true,
+    photos: ['https://placehold.co/1200x800/C9A0A0/3A2518?text=Damaged+Slat'],
   },
 ];
 
