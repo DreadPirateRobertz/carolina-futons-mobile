@@ -237,7 +237,7 @@ describe('OrderSuccessScreen — haptic on mount', () => {
   it('fires Notification.Success on mount', () => {
     render(
       <OrderSuccessScreen
-        orderId="ord-001"
+
         orderNumber="CF-12345"
         onContinueShopping={jest.fn()}
       />,
@@ -248,14 +248,14 @@ describe('OrderSuccessScreen — haptic on mount', () => {
   it('fires Notification.Success exactly once (not on every render)', () => {
     const { rerender } = render(
       <OrderSuccessScreen
-        orderId="ord-001"
+
         orderNumber="CF-12345"
         onContinueShopping={jest.fn()}
       />,
     );
     rerender(
       <OrderSuccessScreen
-        orderId="ord-001"
+
         orderNumber="CF-12345"
         onContinueShopping={jest.fn()}
       />,
@@ -266,7 +266,7 @@ describe('OrderSuccessScreen — haptic on mount', () => {
   it('does NOT fire Impact on mount', () => {
     render(
       <OrderSuccessScreen
-        orderId="ord-001"
+
         orderNumber="CF-12345"
         onContinueShopping={jest.fn()}
       />,
