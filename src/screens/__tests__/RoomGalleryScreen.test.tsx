@@ -71,27 +71,102 @@ describe('RoomGalleryScreen', () => {
     });
   });
 
-  describe('Empty state', () => {
-    it('shows empty state when no rooms', () => {
+  describe('Empty state — product fallback', () => {
+    beforeEach(() => {
       mockUseRoomGallery.mockReturnValue({
         rooms: [],
         isLoading: false,
         error: null,
         refresh: mockRefresh,
       });
-      const { getByTestId } = renderGallery();
-      expect(getByTestId('room-gallery-empty')).toBeTruthy();
     });
 
-    it('does not show grid in empty state', () => {
+    it('shows the fallback grid when no rooms', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-fallback-grid')).toBeTruthy();
+    });
+
+    it('shows the fallback section header', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-fallback-header')).toBeTruthy();
+    });
+
+    it('does NOT show room-gallery-grid in fallback mode', () => {
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-grid')).toBeNull();
+    });
+
+    it('does NOT show old plain empty text in fallback mode', () => {
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-empty')).toBeNull();
+    });
+
+    it('renders fallback product cards', () => {
+      const { getByTestId } = renderGallery();
+      // At least one product card from the static catalog
+      expect(getByTestId('fallback-product-card-prod-asheville-full')).toBeTruthy();
+    });
+
+    it('renders multiple fallback product cards', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('fallback-product-card-prod-asheville-full')).toBeTruthy();
+      expect(getByTestId('fallback-product-card-prod-blue-ridge-queen')).toBeTruthy();
+    });
+
+    it('calls onProductPress with product id when fallback card tapped', () => {
+      const onProductPress = jest.fn();
+      const { getByTestId } = renderGallery({ onProductPress });
+      fireEvent.press(getByTestId('fallback-product-card-prod-asheville-full'));
+      expect(onProductPress).toHaveBeenCalledWith('prod-asheville-full');
+    });
+
+    it('does not throw when onProductPress not provided and fallback card tapped', () => {
+      const { getByTestId } = renderGallery();
+      expect(() =>
+        fireEvent.press(getByTestId('fallback-product-card-prod-asheville-full')),
+      ).not.toThrow();
+    });
+
+    it('fallback cards have accessibilityRole="button"', () => {
+      const { getByTestId } = renderGallery();
+      const card = getByTestId('fallback-product-card-prod-asheville-full');
+      expect(card.props.accessibilityRole).toBe('button');
+    });
+
+    it('fallback cards have an accessibilityLabel', () => {
+      const { getByTestId } = renderGallery();
+      const card = getByTestId('fallback-product-card-prod-asheville-full');
+      expect(card.props.accessibilityLabel).toBeTruthy();
+    });
+  });
+
+  describe('Fallback NOT shown when rooms exist or error/loading', () => {
+    it('does not show fallback grid when rooms are loaded', () => {
+      // default beforeEach returns SAMPLE_ROOMS
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-fallback-grid')).toBeNull();
+    });
+
+    it('does not show fallback grid when loading', () => {
       mockUseRoomGallery.mockReturnValue({
         rooms: [],
-        isLoading: false,
+        isLoading: true,
         error: null,
         refresh: mockRefresh,
       });
       const { queryByTestId } = renderGallery();
-      expect(queryByTestId('room-gallery-grid')).toBeNull();
+      expect(queryByTestId('room-gallery-fallback-grid')).toBeNull();
+    });
+
+    it('does not show fallback grid when error', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: false,
+        error: new Error('Network error'),
+        refresh: mockRefresh,
+      });
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-fallback-grid')).toBeNull();
     });
   });
 

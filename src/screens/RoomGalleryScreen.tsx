@@ -14,6 +14,10 @@ import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
+import { PRODUCTS, type Product } from '@/data/products';
+
+const FALLBACK_PRODUCT_COUNT = 12;
+const FALLBACK_PRODUCTS: Product[] = PRODUCTS.slice(0, FALLBACK_PRODUCT_COUNT);
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
@@ -76,6 +80,64 @@ function RoomCard({
           testID={`room-product-count-${item.roomId}`}
         >
           {item.productIds.length} {item.productIds.length === 1 ? 'product' : 'products'}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function FallbackProductCard({
+  product,
+  onProductPress,
+}: {
+  product: Product;
+  onProductPress?: (productId: string) => void;
+}) {
+  const { colors, spacing, borderRadius, typography } = useTheme();
+  const mainImage = product.images[0];
+
+  const handlePress = useCallback(() => {
+    onProductPress?.(product.id);
+  }, [product.id, onProductPress]);
+
+  return (
+    <TouchableOpacity
+      style={[styles.card, { borderRadius: borderRadius.card, margin: spacing.xs }]}
+      onPress={handlePress}
+      testID={`fallback-product-card-${product.id}`}
+      accessibilityLabel={`${product.name}, $${product.price}`}
+      accessibilityRole="button"
+    >
+      {mainImage ? (
+        <Image
+          source={{ uri: mainImage.uri }}
+          style={styles.image}
+          resizeMode="cover"
+          testID={`fallback-product-image-${product.id}`}
+        />
+      ) : null}
+      <View
+        style={[
+          styles.overlay,
+          { backgroundColor: colors.espresso + 'CC', borderRadius: borderRadius.card },
+        ]}
+      >
+        <Text
+          style={[
+            styles.styleLabel,
+            { color: colors.sandBase, fontFamily: typography.bodyFamilyBold },
+          ]}
+          numberOfLines={1}
+        >
+          {product.name}
+        </Text>
+        <Text
+          style={[
+            styles.productCount,
+            { color: colors.sandLight, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          ${product.price}
         </Text>
       </View>
     </TouchableOpacity>
@@ -148,18 +210,34 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
   if (rooms.length === 0) {
     return (
       <View
-        style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'room-gallery-screen'}
       >
         <Text
           style={[
-            styles.emptyText,
-            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            styles.header,
+            {
+              color: colors.espresso,
+              paddingHorizontal: spacing.lg,
+              fontFamily: typography.headingFamily,
+            },
           ]}
-          testID="room-gallery-empty"
+          accessibilityRole="header"
+          testID="room-gallery-fallback-header"
         >
-          No room photos yet. Check back soon!
+          Shop Our Collection
         </Text>
+        <FlatList
+          data={FALLBACK_PRODUCTS}
+          keyExtractor={(item) => item.id}
+          numColumns={NUM_COLUMNS}
+          contentContainerStyle={styles.gridContent}
+          testID="room-gallery-fallback-grid"
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <FallbackProductCard product={item} onProductPress={onProductPress} />
+          )}
+        />
       </View>
     );
   }
