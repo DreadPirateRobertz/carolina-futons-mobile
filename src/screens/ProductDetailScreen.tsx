@@ -76,6 +76,8 @@ import { isWixConfigured } from '@/services/wix/config';
 import { useOptionalWixClient } from '@/services/wix';
 import { useProductQA } from '@/hooks/useProductQA';
 import { QuestionCard } from '@/components/QuestionCard';
+import { Video, ResizeMode } from 'expo-av';
+import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -132,6 +134,7 @@ export function ProductDetailScreen({
   const [quantity, setQuantity] = useState(1);
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
   const [fullscreenVisible, setFullscreenVisible] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
   const wixClient = useOptionalWixClient();
@@ -179,6 +182,19 @@ export function ProductDetailScreen({
   const [qaInput, setQaInput] = useState('');
 
   const totalPrice = model.basePrice + selectedFabric.price;
+
+  // cm-xh9: Resolve videoUri from catalog product; parse wix:video:// if needed.
+  // PLACEHOLDER: Real Wix Media video URIs will come from Wix Studio Media Manager.
+  // TODO(stilgar): Confirm CF product videos exist, then wire real wix:video:// URIs.
+  // SOURCE: Will come from Wix Media Manager once Stilgar confirms video assets are live.
+  const resolvedVideoUri = catalogProduct?.videoUri
+    ? parseWixVideoUrl(catalogProduct.videoUri)
+    : null;
+
+  // Gallery data: standard views + optional video slide at end
+  const galleryData: Array<(typeof GALLERY_VIEWS)[number] | 'Video'> = resolvedVideoUri
+    ? ([...GALLERY_VIEWS, 'Video'] as const)
+    : [...GALLERY_VIEWS];
 
   const { bundleProducts } = useBundleDeals(catalogProductId);
 
@@ -382,22 +398,68 @@ export function ProductDetailScreen({
   }, [model.id, model.name, totalPrice]);
 
   const renderGalleryItem = useCallback(
-    ({ item, index }: { item: (typeof GALLERY_VIEWS)[number]; index: number }) => (
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={handleOpenFullscreen}
-        style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
-        testID={`gallery-slide-${index}`}
-        accessibilityLabel={`${item} of ${model.name}. Tap to view fullscreen`}
-        accessibilityRole="imagebutton"
-      >
-        <FutonPlaceholder model={model} fabric={selectedFabric} viewLabel={item} index={index} />
-        <View style={styles.galleryLabel}>
-          <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>{item}</Text>
-        </View>
-      </TouchableOpacity>
-    ),
-    [model, selectedFabric, colors, handleOpenFullscreen],
+    ({ item, index }: { item: (typeof galleryData)[number]; index: number }) => {
+      // cm-xh9: Video slide — render expo-av player with error fallback
+      if (item === 'Video' && resolvedVideoUri) {
+        return (
+          <View
+            style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
+            testID="gallery-slide-video"
+            accessibilityLabel={`Product video for ${model.name}`}
+            accessibilityRole="none"
+          >
+            {videoError ? (
+              <View style={styles.videoErrorContainer} testID="product-detail-video-error">
+                <Text style={[styles.videoErrorText, { color: colors.espressoLight }]}>
+                  Video unavailable
+                </Text>
+              </View>
+            ) : (
+              <Video
+                testID="product-detail-video"
+                source={{ uri: resolvedVideoUri }}
+                style={StyleSheet.absoluteFillObject}
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay={false}
+                isLooping={false}
+                useNativeControls
+                onError={() => setVideoError(true)}
+              />
+            )}
+            <View style={styles.galleryLabel}>
+              <Text
+                style={[styles.galleryLabelText, { color: colors.espressoLight }]}
+                testID="gallery-label-video"
+              >
+                Video
+              </Text>
+            </View>
+          </View>
+        );
+      }
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={handleOpenFullscreen}
+          style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
+          testID={`gallery-slide-${index}`}
+          accessibilityLabel={`${item} of ${model.name}. Tap to view fullscreen`}
+          accessibilityRole="imagebutton"
+        >
+          <FutonPlaceholder
+            model={model}
+            fabric={selectedFabric}
+            viewLabel={item as (typeof GALLERY_VIEWS)[number]}
+            index={index}
+          />
+          <View style={styles.galleryLabel}>
+            <Text style={[styles.galleryLabelText, { color: colors.espressoLight }]}>{item}</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [model, selectedFabric, colors, handleOpenFullscreen, resolvedVideoUri, videoError],
   );
 
   // Render Wix product detail when no local FutonModel matches
@@ -477,7 +539,7 @@ export function ProductDetailScreen({
         >
           <FlatList
             ref={galleryRef}
-            data={[...GALLERY_VIEWS]}
+            data={galleryData}
             renderItem={renderGalleryItem}
             keyExtractor={(_, i) => `gallery-${i}`}
             horizontal
@@ -534,21 +596,25 @@ export function ProductDetailScreen({
           testID="gallery-pagination"
           accessible={true}
           accessibilityRole="text"
-          accessibilityLabel={`Image ${activeGalleryIndex + 1} of ${GALLERY_VIEWS.length}`}
+          accessibilityLabel={`Image ${activeGalleryIndex + 1} of ${galleryData.length}`}
         >
-          {GALLERY_VIEWS.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.paginationDot,
-                i === activeGalleryIndex && styles.paginationDotActive,
-                {
-                  backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
-                },
-              ]}
-              testID={`gallery-dot-${i}`}
-            />
-          ))}
+          {galleryData.map((item, i) => {
+            const isVideo = item === 'Video';
+            const dotTestID = isVideo ? 'gallery-dot-video' : `gallery-dot-${i}`;
+            return (
+              <View
+                key={i}
+                style={[
+                  styles.paginationDot,
+                  i === activeGalleryIndex && styles.paginationDotActive,
+                  {
+                    backgroundColor: i === activeGalleryIndex ? colors.espresso : colors.sandDark,
+                  },
+                ]}
+                testID={dotTestID}
+              />
+            );
+          })}
         </View>
 
         {/* Product Info */}
@@ -1586,6 +1652,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+  },
+  // cm-xh9: video slide error fallback
+  videoErrorContainer: {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  videoErrorText: {
+    fontSize: 14,
+    opacity: 0.7,
   },
   galleryOverlay: {
     ...StyleSheet.absoluteFillObject,
