@@ -36,6 +36,7 @@ import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
+import { CompareTray } from '@/components/CompareTray';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /** Estimated height of a product row for getItemLayout optimization */
@@ -262,6 +263,10 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     [isLoading, colors],
   );
 
+  const handleNavigateToCompare = useCallback(() => {
+    navigation.navigate('Compare', { productSlugs: [] });
+  }, [navigation]);
+
   return (
     <View
       style={[styles.container, { backgroundColor: colors.sandBase, paddingTop: insets.top }]}
@@ -302,6 +307,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         removeClippedSubviews
         testID="product-list"
       />
+      <CompareTray onNavigateToCompare={handleNavigateToCompare} testID="shop-compare-tray" />
     </View>
   );
 }
