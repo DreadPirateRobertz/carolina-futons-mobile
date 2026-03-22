@@ -14,6 +14,18 @@ import { PRODUCTS } from '@/data/products';
 
 // ── Standard ProductDetailScreen mocks ────────────────────────────────────────
 
+jest.mock('@/services/uploadReviewPhoto', () => ({
+  uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
+}));
+jest.mock('@/hooks/useProductReviews', () => ({
+  useProductReviews: () => ({
+    aggregate: { averageRating: 0, totalReviews: 0 },
+    reviews: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
   useRoute: () => ({ params: {} }),

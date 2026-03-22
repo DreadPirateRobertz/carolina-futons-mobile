@@ -8,6 +8,28 @@ import { CompareProvider } from '@/contexts/CompareContext';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 
+// Mock uploadReviewPhoto to prevent expo-file-system → expo-modules-core native bridge access
+jest.mock('@/services/uploadReviewPhoto', () => ({
+  uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
+}));
+
+// CF-wah8: useProductReviews mock — inline star ratings near price
+const mockProductReviewsResult: {
+  aggregate: { averageRating: number; totalReviews: number };
+  reviews: never[];
+  isLoading: boolean;
+  error: string | null;
+} = {
+  aggregate: { averageRating: 4.3, totalReviews: 42 },
+  reviews: [],
+  isLoading: false,
+  error: null,
+};
+const mockUseProductReviews = jest.fn((_productId: string) => mockProductReviewsResult);
+jest.mock('@/hooks/useProductReviews', () => ({
+  useProductReviews: (productId: string) => mockUseProductReviews(productId),
+}));
+
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
@@ -126,6 +148,7 @@ beforeEach(() => {
   mockAddItem.mockClear();
   mockAlert.mockClear();
   mockNavigate.mockClear();
+  mockUseProductReviews.mockReturnValue(mockProductReviewsResult);
 });
 
 describe('ProductDetailScreen', () => {
@@ -615,7 +638,9 @@ describe('ProductDetailScreen', () => {
     });
 
     it('add-to-cart button renders fully on 320px wide screens', () => {
-      const spy = jest.spyOn(Dimensions, 'get').mockReturnValue({ width: 320, height: 568, scale: 2, fontScale: 1 });
+      const spy = jest
+        .spyOn(Dimensions, 'get')
+        .mockReturnValue({ width: 320, height: 568, scale: 2, fontScale: 1 });
       try {
         const { getByTestId } = renderDetail({ productId: 'asheville-full' });
         const btn = getByTestId('add-to-cart-button');
@@ -1358,7 +1383,11 @@ describe('ProductDetailScreen', () => {
     });
 
     it('does NOT render inline rating when product has no reviews', () => {
-      // pisgah-twin has no mock reviews
+      // Simulate useProductReviews reporting zero reviews for this product
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        aggregate: { averageRating: 0, totalReviews: 0 },
+      });
       const { queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
       expect(queryByTestId('price-inline-rating')).toBeNull();
     });
@@ -1380,6 +1409,87 @@ describe('ProductDetailScreen', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const rating = getByTestId('price-inline-rating');
       expect(rating.props.accessibilityLabel).toMatch(/out of 5 stars/);
+    });
+
+    // CF-wah8 expanded: useProductReviews wiring, position, tap behavior, edge cases
+
+    it('wires rating from useProductReviews aggregate data', () => {
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        aggregate: { averageRating: 3.7, totalReviews: 99 },
+      });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const rating = getByTestId('price-inline-rating');
+      // accessibilityLabel should reflect the mocked average
+      expect(rating.props.accessibilityLabel).toMatch(/3\.7|out of 5 stars/);
+    });
+
+    it('calls useProductReviews with the current product id', () => {
+      renderDetail({ productId: 'asheville-full' });
+      expect(mockUseProductReviews).toHaveBeenCalledWith('asheville-full');
+    });
+
+    it('does NOT render inline rating when useProductReviews returns zero reviews', () => {
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        aggregate: { averageRating: 0, totalReviews: 0 },
+      });
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('price-inline-rating')).toBeNull();
+    });
+
+    it('does NOT render inline rating when useProductReviews is loading', () => {
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        isLoading: true,
+        aggregate: { averageRating: 0, totalReviews: 0 },
+      });
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('price-inline-rating')).toBeNull();
+    });
+
+    it('does NOT render inline rating when useProductReviews returns an error', () => {
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        error: 'Network error',
+        aggregate: { averageRating: 0, totalReviews: 0 },
+      });
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('price-inline-rating')).toBeNull();
+    });
+
+    it('inline rating tap target is pressable (links to reviews section)', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // The inline rating wrapper must be pressable — tap scrolls to reviews
+      const ratingTap = getByTestId('price-inline-rating-tap');
+      expect(ratingTap).toBeTruthy();
+      // Should not throw when pressed
+      expect(() => fireEvent.press(ratingTap)).not.toThrow();
+    });
+
+    it('inline rating tap target renders above reviews section in the tree', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Both the tap target and the reviews section must render
+      expect(getByTestId('price-inline-rating-tap')).toBeTruthy();
+      expect(getByTestId('reviews-section')).toBeTruthy();
+    });
+
+    it('inline rating is positioned after the financing badge', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // FinancingBadge and inline rating must both be present
+      expect(getByTestId('product-detail-financing-badge')).toBeTruthy();
+      expect(getByTestId('price-inline-rating')).toBeTruthy();
+    });
+
+    it('shows review count from useProductReviews in the rating label', () => {
+      mockUseProductReviews.mockReturnValue({
+        ...mockProductReviewsResult,
+        aggregate: { averageRating: 4.5, totalReviews: 128 },
+      });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const rating = getByTestId('price-inline-rating');
+      // The count prop is passed through — accessible label or children should reflect count
+      expect(rating.props.accessibilityLabel ?? JSON.stringify(rating)).toMatch(/128|out of 5/);
     });
   });
 

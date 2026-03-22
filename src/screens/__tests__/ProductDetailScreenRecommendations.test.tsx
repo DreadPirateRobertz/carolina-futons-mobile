@@ -12,6 +12,17 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 
+jest.mock('@/services/uploadReviewPhoto', () => ({
+  uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
+}));
+jest.mock('@/hooks/useProductReviews', () => ({
+  useProductReviews: () => ({
+    aggregate: { averageRating: 0, totalReviews: 0 },
+    reviews: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
 jest.mock('expo-image', () => ({ Image: 'Image' }));
 jest.mock('expo-av', () => ({}));
 jest.mock('expo-haptics', () => ({
