@@ -1,0 +1,59 @@
+# Dependabot — automated dependency updates
+# Mirrored from cfutons (melania) with mobile-specific adjustments
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+      time: "08:00"
+      timezone: America/New_York
+    labels:
+      - dependencies
+    open-pull-requests-limit: 10
+    rebase-strategy: auto
+    groups:
+      # Group dev-dependency bumps into a single PR
+      dev-dependencies:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+      # Group Expo SDK bumps together (they must upgrade in lockstep)
+      expo-sdk:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+        update-types:
+          - minor
+          - patch
+    # Ignore major bumps on packages with known breaking major upgrade paths
+    # or ecosystem coupling requirements (Expo SDK, React Native, Wix)
+    ignore:
+      - dependency-name: "expo"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "expo-*"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@expo/*"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "react-native"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "react"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "react-native-reanimated"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@wix/*"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@stripe/*"
+        update-types:
+          - version-update:semver-major
