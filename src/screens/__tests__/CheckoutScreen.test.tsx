@@ -132,7 +132,19 @@ jest.mock('@stripe/stripe-react-native', () => ({
 
 // Mock useWixClient
 jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => ({ createPaymentIntent: jest.fn(), confirmOrder: jest.fn() }),
+  useOptionalWixClient: () => ({
+    createPaymentIntent: jest.fn(),
+    confirmOrder: jest.fn(),
+    callFunction: jest.fn(),
+  }),
+}));
+
+// Mock shippingIntelligenceService — default: no options (ZIP not yet entered)
+const mockFetchShippingOptions = jest.fn().mockResolvedValue({ success: false, options: [] });
+jest.mock('@/services/shippingIntelligenceService', () => ({
+  fetchShippingOptions: (...args: any[]) => mockFetchShippingOptions(...args),
+  normalizeShippingOption: jest.requireActual('@/services/shippingIntelligenceService')
+    .normalizeShippingOption,
 }));
 
 // Mock Affirm hooks/service so the full Affirm module tree doesn't load
@@ -979,135 +991,211 @@ describe('CheckoutScreen', () => {
     });
   });
 
-  // ── cm-m4w: gamified shipping badge layer ──────────────────────────────────
+  // ── cm-z5f: gamified delivery method section (aligned with Wix shippingIntelligence) ─
 
-  describe('Gamified shipping badges', () => {
+  const WIX_OPTIONS = [
+    {
+      code: 'local-delivery-asheville',
+      title: '🚚 Asheville Area Delivery',
+      price: '0.00',
+      currency: 'USD',
+      deliveryTime: '2–3 business days',
+      badge: 'Local Love',
+      badgeStyle: 'local',
+      upsellMessage: 'Free delivery in Asheville!',
+      highlight: true,
+      icon: '🚚',
+    },
+    {
+      code: 'white-glove-asheville',
+      title: '✨ White Glove Delivery',
+      price: '149.00',
+      currency: 'USD',
+      deliveryTime: '2–3 business days',
+      badge: 'Premium Experience',
+      badgeStyle: 'premium',
+      upsellMessage: null,
+      highlight: false,
+      icon: '✨',
+      terrainSurcharge: 25,
+    },
+    {
+      code: 'UPS_GROUND',
+      title: '📦 UPS Ground',
+      price: '49.00',
+      currency: 'USD',
+      deliveryTime: '5–7 business days',
+      badge: null,
+      badgeStyle: null,
+      upsellMessage: null,
+      highlight: false,
+      icon: '📦',
+    },
+  ];
+
+  describe('gamified delivery method section (cm-z5f)', () => {
     const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
 
-    it('renders the delivery method section', async () => {
+    beforeEach(() => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: WIX_OPTIONS });
+    });
+
+    afterEach(() => {
+      mockFetchShippingOptions.mockResolvedValue({ success: false, options: [] });
+    });
+
+    it('does not show delivery section before a valid ZIP is entered', async () => {
       const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-method-section')).toBeNull();
+    });
+
+    it('shows delivery section after valid ZIP is entered', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
       expect(utils.getByTestId('delivery-method-section')).toBeTruthy();
     });
 
-    it('renders all four delivery option rows', async () => {
+    it('renders delivery method title', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-option-standard')).toBeTruthy();
-      expect(utils.getByTestId('delivery-option-white-glove')).toBeTruthy();
-      expect(utils.getByTestId('delivery-option-local')).toBeTruthy();
-      expect(utils.getByTestId('delivery-option-discounted')).toBeTruthy();
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-method-title')).toBeTruthy();
     });
 
-    it('shows Popular badge on standard shipping option', async () => {
+    it('renders all three options returned by the API', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-badge-standard')).toBeTruthy();
-      expect(utils.getByTestId('delivery-badge-standard').props.children).toBe('Popular');
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-option-local-delivery-asheville')).toBeTruthy();
+      expect(utils.getByTestId('delivery-option-white-glove-asheville')).toBeTruthy();
+      expect(utils.getByTestId('delivery-option-UPS_GROUND')).toBeTruthy();
+    });
+
+    it('auto-selects the first option on load', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(
+        utils.getByTestId('delivery-option-local-delivery-asheville').props.accessibilityState
+          ?.selected,
+      ).toBe(true);
+    });
+
+    it('shows badge text for option with badge', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-local-delivery-asheville')).toBeTruthy();
+      expect(utils.getByTestId('delivery-badge-local-delivery-asheville').props.children).toBe(
+        'Local Love',
+      );
     });
 
     it('shows Premium Experience badge on white glove option', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-badge-white-glove')).toBeTruthy();
-      expect(utils.getByTestId('delivery-badge-white-glove').props.children).toBe(
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-white-glove-asheville').props.children).toBe(
         'Premium Experience',
       );
     });
 
-    it('shows Local Love badge on local delivery option', async () => {
+    it('does not show badge for option with null badge', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-badge-local')).toBeTruthy();
-      expect(utils.getByTestId('delivery-badge-local').props.children).toBe('Local Love');
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-badge-UPS_GROUND')).toBeNull();
     });
 
-    it('shows You save X badge on discounted tier', async () => {
+    it('shows FREE price for zero-cost option', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-badge-discounted')).toBeTruthy();
-      const badgeText = utils.getByTestId('delivery-badge-discounted').props.children;
-      expect(typeof badgeText).toBe('string');
-      expect(badgeText).toMatch(/you save/i);
-    });
-
-    it('standard option is selected by default', async () => {
-      const utils = renderCheckout({}, seed);
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
-      const option = utils.getByTestId('delivery-option-standard');
-      expect(option.props.accessibilityState?.selected).toBe(true);
-    });
-
-    it('selecting another option deselects standard', async () => {
-      const utils = renderCheckout({}, seed);
-      await act(async () => {});
-      fireEvent.press(utils.getByTestId('delivery-option-white-glove'));
-      await act(async () => {});
-      expect(utils.getByTestId('delivery-option-standard').props.accessibilityState?.selected).toBe(
-        false,
+      expect(utils.getByTestId('delivery-price-local-delivery-asheville').props.children).toBe(
+        'FREE',
       );
+    });
+
+    it('shows formatted price for paid option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      const priceText = utils.getByTestId('delivery-price-UPS_GROUND').props.children;
+      expect(priceText).toMatch(/\$?49/);
+    });
+
+    it('shows upsell message for local option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-upsell-local-delivery-asheville').props.children).toBe(
+        'Free delivery in Asheville!',
+      );
+    });
+
+    it('shows terrain surcharge for white glove option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-terrain-white-glove-asheville')).toBeTruthy();
+    });
+
+    it('selecting another option deselects the current one', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      fireEvent.press(utils.getByTestId('delivery-option-white-glove-asheville'));
+      await act(async () => {});
       expect(
-        utils.getByTestId('delivery-option-white-glove').props.accessibilityState?.selected,
+        utils.getByTestId('delivery-option-local-delivery-asheville').props.accessibilityState
+          ?.selected,
+      ).toBe(false);
+      expect(
+        utils.getByTestId('delivery-option-white-glove-asheville').props.accessibilityState
+          ?.selected,
       ).toBe(true);
     });
 
-    it('each delivery option shows its label', async () => {
+    it('options have radio accessibility role', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-label-standard')).toBeTruthy();
-      expect(utils.getByTestId('delivery-label-white-glove')).toBeTruthy();
-      expect(utils.getByTestId('delivery-label-local')).toBeTruthy();
-      expect(utils.getByTestId('delivery-label-discounted')).toBeTruthy();
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(
+        utils.getByTestId('delivery-option-local-delivery-asheville').props.accessibilityRole,
+      ).toBe('radio');
     });
 
-    it('each delivery option shows its price', async () => {
+    it('hides delivery section if API returns no options', async () => {
+      mockFetchShippingOptions.mockResolvedValueOnce({ success: false, options: [] });
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-price-standard')).toBeTruthy();
-      expect(utils.getByTestId('delivery-price-white-glove')).toBeTruthy();
-      expect(utils.getByTestId('delivery-price-local')).toBeTruthy();
-      expect(utils.getByTestId('delivery-price-discounted')).toBeTruthy();
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-method-section')).toBeNull();
     });
 
-    it('standard option shows FREE price', async () => {
+    it('does not call fetchShippingOptions for invalid ZIP', async () => {
+      mockFetchShippingOptions.mockClear();
       const utils = renderCheckout({}, seed);
       await act(async () => {});
-      expect(utils.getByTestId('delivery-price-standard').props.children).toBe('FREE');
-    });
-
-    it('delivery options have button accessibility role', async () => {
-      const utils = renderCheckout({}, seed);
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), 'ABCDE');
       await act(async () => {});
-      expect(utils.getByTestId('delivery-option-standard').props.accessibilityRole).toBe('radio');
-    });
-
-    it('section has a section title', async () => {
-      const utils = renderCheckout({}, seed);
-      await act(async () => {});
-      expect(utils.getByTestId('delivery-method-title')).toBeTruthy();
-    });
-
-    it('badge colors differ by type (placeholder: badge has distinct testID per type)', async () => {
-      const utils = renderCheckout({}, seed);
-      await act(async () => {});
-      // All 4 badge testIDs must be unique and present
-      const ids = [
-        'delivery-badge-standard',
-        'delivery-badge-white-glove',
-        'delivery-badge-local',
-        'delivery-badge-discounted',
-      ];
-      for (const id of ids) {
-        expect(utils.getByTestId(id)).toBeTruthy();
-      }
-    });
-
-    it('does not show delivery section during loading/error', async () => {
-      // Loading state: no items → totals still render, delivery section should appear regardless
-      // (delivery section is always present when form loads)
-      const utils = renderCheckout({}, seed);
-      await act(async () => {});
-      expect(utils.getByTestId('delivery-method-section')).toBeTruthy();
+      expect(mockFetchShippingOptions).not.toHaveBeenCalled();
     });
   });
 });

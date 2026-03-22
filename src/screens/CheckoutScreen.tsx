@@ -49,6 +49,11 @@ import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
+import {
+  fetchShippingOptions,
+  normalizeShippingOption,
+  type NormalizedShippingOption,
+} from '@/services/shippingIntelligenceService';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -195,69 +200,11 @@ const PAYMENT_OPTIONS: PaymentOption[] = [
   },
 ];
 
-// ── cm-m4w: gamified shipping badge layer ─────────────────────────────────────
-// PLACEHOLDER: Badge metadata is hardcoded here while Melania's shipping
-//   intelligence API is being built. Each option maps to a badge type and copy.
-// TODO(stilgar): Replace SHIPPING_DELIVERY_OPTIONS with real API response once
-//   Melania's shipping-intelligence service returns per-ZIP badge + upsell data.
-// SOURCE: Will come from shipping-intelligence service (tier/badge/upsell metadata
-//   keyed by ZIP prefix from cm-mk8 delivery window estimator).
-
-type DeliveryBadgeType = 'popular' | 'premium-experience' | 'local-love' | 'savings';
-
-interface DeliveryBadge {
-  type: DeliveryBadgeType;
-  label: string;
-}
-
-interface DeliveryOption {
-  id: string;
-  label: string;
-  /** 0 = FREE */
-  price: number;
-  badge: DeliveryBadge;
-}
-
-// PLACEHOLDER: Hardcoded 4 shipping tiers with mock badge types.
-// TODO(stilgar): Replace with real shipping-intelligence API response per ZIP.
-const SHIPPING_DELIVERY_OPTIONS: DeliveryOption[] = [
-  {
-    id: 'standard',
-    label: 'Standard Shipping',
-    price: 0,
-    // PLACEHOLDER: 'Popular' badge — most customers choose this; real data from analytics.
-    badge: { type: 'popular', label: 'Popular' },
-  },
-  {
-    id: 'white-glove',
-    label: 'White Glove Delivery',
-    price: 14900,
-    // PLACEHOLDER: 'Premium Experience' badge — concierge setup included.
-    badge: { type: 'premium-experience', label: 'Premium Experience' },
-  },
-  {
-    id: 'local',
-    label: 'Local Delivery',
-    price: 4900,
-    // PLACEHOLDER: 'Local Love' badge — shown for eligible ZIP tiers (NC).
-    badge: { type: 'local-love', label: 'Local Love' },
-  },
-  {
-    id: 'discounted',
-    label: 'Express (On Sale)',
-    price: 7900,
-    // PLACEHOLDER: 'You save X' badge — placeholder savings amount $50.
-    // TODO(stilgar): Wire real discount delta from shipping-intelligence API.
-    badge: { type: 'savings', label: 'You save $50' },
-  },
-];
-
-// Badge background colors keyed by type.
-// PLACEHOLDER: Colors are stand-in — replace with design tokens once finalized.
-const BADGE_COLORS: Record<DeliveryBadgeType, string> = {
-  popular: '#2E7D32',
-  'premium-experience': '#6A1B9A',
-  'local-love': '#E65100',
+/** Badge background colors keyed by badgeStyle from shippingIntelligence API (cm-z5f) */
+const BADGE_STYLE_COLORS: Record<string, string> = {
+  premium: '#6A1B9A',
+  freight: '#E65100',
+  local: '#2E7D32',
   savings: '#1565C0',
 };
 
@@ -347,10 +294,42 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const [shippingErrors, setShippingErrors] = useState<AddressErrors>({});
   const [billingErrors, setBillingErrors] = useState<AddressErrors>({});
 
-  // Delivery method selection — defaults to 'standard' (free shipping)
-  // PLACEHOLDER: Will be driven by ZIP-tier logic from cm-mk8 delivery window estimator.
-  // TODO(stilgar): Filter/rank options via shipping-intelligence API response.
-  const [selectedDelivery, setSelectedDelivery] = useState<string>('standard');
+  // Delivery method selection — driven by shippingIntelligence API (cm-z5f)
+  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
+  const [shippingOptions, setShippingOptions] = useState<NormalizedShippingOption[]>([]);
+  const [shippingOptionsLoading, setShippingOptionsLoading] = useState(false);
+
+  // Fetch shipping options when ZIP changes (cm-z5f)
+  useEffect(() => {
+    const zip = shippingAddress.zip;
+    if (!zip || !/^\d{5}(-\d{4})?$/.test(zip.trim())) return;
+
+    let cancelled = false;
+    setShippingOptionsLoading(true);
+
+    const cartItems = items.map((item: CartItem) => ({
+      productId: item.model.id,
+      quantity: item.quantity,
+      price: Math.round(item.unitPrice * 100),
+    }));
+
+    (async () => {
+      const result = wixClient
+        ? await fetchShippingOptions(wixClient, zip, cartItems)
+        : { success: false, options: [] };
+      if (cancelled) return;
+      if (result.success && result.options.length > 0) {
+        const normalized = result.options.map(normalizeShippingOption);
+        setShippingOptions(normalized);
+        setSelectedDelivery((prev) => prev ?? normalized[0].id);
+      }
+      setShippingOptionsLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [shippingAddress.zip]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Card state
   const [cardComplete, setCardComplete] = useState(false);
@@ -848,84 +827,109 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping')}
         </View>
 
-        {/* Delivery Method — cm-m4w gamified shipping badge layer */}
-        {/* PLACEHOLDER: Options hardcoded; will be driven by shipping-intelligence API. */}
-        {/* TODO(stilgar): Wire to cm-mk8 ZIP tier + Melania's badge/upsell metadata. */}
-        <View
-          style={[styles.section, { paddingHorizontal: spacing.lg }]}
-          testID="delivery-method-section"
-        >
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
-            ]}
-            testID="delivery-method-title"
-            accessibilityRole="header"
+        {/* Delivery Method — live from shippingIntelligence API (cm-z5f) */}
+        {shippingOptions.length > 0 && (
+          <View
+            style={[styles.section, { paddingHorizontal: spacing.lg }]}
+            testID="delivery-method-section"
           >
-            Delivery Method
-          </Text>
-          {SHIPPING_DELIVERY_OPTIONS.map((option) => {
-            const isSelected = selectedDelivery === option.id;
-            return (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.deliveryOption,
-                  {
-                    borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
-                    borderRadius: borderRadius.card,
-                    backgroundColor: isSelected ? colors.sandLight : colors.sandBase,
-                  },
-                ]}
-                onPress={() => setSelectedDelivery(option.id)}
-                testID={`delivery-option-${option.id}`}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${option.label}, ${option.price === 0 ? 'Free' : formatPrice(option.price)}, ${option.badge.label}`}
-              >
-                {/* Selection indicator */}
-                <View
-                  style={[
-                    styles.deliveryRadio,
-                    {
-                      borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
-                      backgroundColor: isSelected ? colors.mountainBlue : 'transparent',
-                    },
-                  ]}
-                />
-                {/* Label + badge */}
-                <View style={styles.deliveryInfo}>
-                  <View style={styles.deliveryLabelRow}>
-                    <Text
-                      style={[styles.deliveryLabel, { color: colors.espresso }]}
-                      testID={`delivery-label-${option.id}`}
-                    >
-                      {option.label}
-                    </Text>
-                    {/* Gamified badge */}
+            <Text
+              style={[
+                styles.sectionTitle,
+                { color: colors.espresso, fontFamily: typography.bodyFamilySemiBold },
+              ]}
+              testID="delivery-method-title"
+              accessibilityRole="header"
+            >
+              Delivery Method
+            </Text>
+            {shippingOptionsLoading ? (
+              <BrandedSpinner testID="delivery-options-loading" />
+            ) : (
+              shippingOptions.map((option) => {
+                const isSelected = selectedDelivery === option.id;
+                const badgeColor = option.badgeStyle
+                  ? (BADGE_STYLE_COLORS[option.badgeStyle] ?? '#555')
+                  : null;
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    style={[
+                      styles.deliveryOption,
+                      option.highlight && styles.deliveryOptionHighlight,
+                      {
+                        borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
+                        borderRadius: borderRadius.card,
+                        backgroundColor: isSelected ? colors.sandLight : colors.sandBase,
+                      },
+                    ]}
+                    onPress={() => setSelectedDelivery(option.id)}
+                    testID={`delivery-option-${option.id}`}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    accessibilityLabel={`${option.label}, ${option.priceCents === 0 ? 'Free' : formatPrice(option.priceCents)}`}
+                  >
+                    {/* Selection indicator */}
                     <View
                       style={[
-                        styles.deliveryBadge,
-                        { backgroundColor: BADGE_COLORS[option.badge.type] },
+                        styles.deliveryRadio,
+                        {
+                          borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
+                          backgroundColor: isSelected ? colors.mountainBlue : 'transparent',
+                        },
                       ]}
-                    >
-                      <Text style={styles.deliveryBadgeText} testID={`delivery-badge-${option.id}`}>
-                        {option.badge.label}
+                    />
+                    {/* Label + badge + upsell */}
+                    <View style={styles.deliveryInfo}>
+                      <View style={styles.deliveryLabelRow}>
+                        <Text
+                          style={[styles.deliveryLabel, { color: colors.espresso }]}
+                          testID={`delivery-label-${option.id}`}
+                        >
+                          {option.icon} {option.label}
+                        </Text>
+                        {option.badge && badgeColor && (
+                          <View
+                            style={[styles.deliveryBadge, { backgroundColor: badgeColor }]}
+                          >
+                            <Text
+                              style={styles.deliveryBadgeText}
+                              testID={`delivery-badge-${option.id}`}
+                            >
+                              {option.badge}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        style={[styles.deliveryPrice, { color: colors.espressoLight }]}
+                        testID={`delivery-price-${option.id}`}
+                      >
+                        {option.priceCents === 0 ? 'FREE' : formatPrice(option.priceCents)}
                       </Text>
+                      {option.upsellMessage && (
+                        <Text
+                          style={[styles.deliveryUpsell, { color: colors.mountainBlue }]}
+                          testID={`delivery-upsell-${option.id}`}
+                        >
+                          {option.upsellMessage}
+                        </Text>
+                      )}
+                      {option.terrainSurcharge !== undefined && option.terrainSurcharge > 0 && (
+                        <Text
+                          style={[styles.deliveryUpsell, { color: colors.espressoLight }]}
+                          testID={`delivery-terrain-${option.id}`}
+                        >
+                          +{formatPrice(option.terrainSurcharge * 100)} mountain surcharge
+                        </Text>
+                      )}
                     </View>
-                  </View>
-                  <Text
-                    style={[styles.deliveryPrice, { color: colors.espressoLight }]}
-                    testID={`delivery-price-${option.id}`}
-                  >
-                    {option.price === 0 ? 'FREE' : formatPrice(option.price)}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
+          </View>
+        )}
 
         {/* Billing / Shipping Toggle */}
         <View
@@ -1686,6 +1690,14 @@ const styles = StyleSheet.create({
   deliveryPrice: {
     fontSize: 12,
     marginTop: 2,
+  },
+  deliveryOptionHighlight: {
+    borderWidth: 2,
+  },
+  deliveryUpsell: {
+    fontSize: 11,
+    marginTop: 3,
+    fontStyle: 'italic' as const,
   },
   shippingNote: {
     fontSize: 12,
