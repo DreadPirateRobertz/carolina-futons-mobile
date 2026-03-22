@@ -27,6 +27,7 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { BNPLModal } from '@/components/BNPLModal';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -64,6 +65,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
   const promo = usePromoCode();
   const [promoInput, setPromoInput] = useState('');
+  const [bnplModalVisible, setBnplModalVisible] = useState(false);
 
   const discount = promo.getDiscount(subtotal);
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
@@ -381,8 +383,8 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           </View>
         </View>
 
-        {/* BNPL teaser */}
-        <View
+        {/* BNPL teaser — tap to open installment breakdown modal */}
+        <TouchableOpacity
           style={[
             styles.bnplTeaser,
             {
@@ -391,13 +393,17 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               marginHorizontal: spacing.lg,
             },
           ]}
+          onPress={() => setBnplModalVisible(true)}
           testID="bnpl-teaser"
+          accessibilityRole="button"
+          accessibilityLabel="View payment options — pay over time with Klarna or Affirm"
+          activeOpacity={0.7}
         >
           <Text style={[styles.bnplText, { color: colors.mountainBlueDark }]}>
             Or 4 interest-free payments of{' '}
             <Text style={styles.bnplAmount}>{formatPrice(total / 4)}</Text> with Klarna or Affirm
           </Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Checkout button */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
@@ -425,6 +431,13 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <BNPLModal
+        visible={bnplModalVisible}
+        onClose={() => setBnplModalVisible(false)}
+        price={total}
+        testID="bnpl-modal"
+      />
     </View>
   );
 }

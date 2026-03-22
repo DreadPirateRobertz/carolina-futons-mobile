@@ -1413,4 +1413,54 @@ describe('ProductDetailScreen', () => {
       expect(getByTestId('quantity-value')).toBeTruthy();
     });
   });
+
+  // ── BNPL modal — financing badge tap (cm-v65) ─────────────────────────────
+
+  describe('BNPL modal — financing badge tap (cm-v65)', () => {
+    // Asheville ($349) is above the financing threshold ($299) and BNPL minimums
+    it('BNPL modal is not visible initially', () => {
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Modal with visible=false renders but hides its content
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+
+    it('tapping financing badge opens BNPL modal', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      expect(getByTestId('bnpl-modal')).toBeTruthy();
+    });
+
+    it('BNPL modal shows installment breakdown after badge tap', () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      expect(getByText('Today')).toBeTruthy();
+      expect(getByText('In 2 weeks')).toBeTruthy();
+    });
+
+    it('BNPL modal shows "Pay over time" header', () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      expect(getByText('Pay over time')).toBeTruthy();
+    });
+
+    it('BNPL modal shows Klarna tab by default', () => {
+      const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      expect(getByText('Continue with Klarna')).toBeTruthy();
+    });
+
+    it('BNPL modal closes when close button pressed', () => {
+      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-modal-close'));
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+
+    it('BNPL modal closes when overlay pressed', () => {
+      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-modal-overlay'));
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+  });
 });

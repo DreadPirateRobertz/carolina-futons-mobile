@@ -405,4 +405,53 @@ describe('CartScreen', () => {
       });
     });
   });
+
+  // ── BNPL modal — teaser tap (cm-v65) ──────────────────────────────────────
+
+  describe('BNPL modal — teaser tap (cm-v65)', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('BNPL teaser is shown when cart has items', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('bnpl-teaser')).toBeTruthy();
+    });
+
+    it('BNPL modal is not visible initially', () => {
+      const { queryByTestId } = renderCartScreen({}, seed);
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+
+    it('tapping BNPL teaser opens the modal', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      fireEvent.press(getByTestId('bnpl-teaser'));
+      expect(getByTestId('bnpl-modal')).toBeTruthy();
+    });
+
+    it('modal shows installment breakdown after teaser tap', () => {
+      const { getByTestId, getByText } = renderCartScreen({}, seed);
+      fireEvent.press(getByTestId('bnpl-teaser'));
+      expect(getByText('Pay over time')).toBeTruthy();
+      expect(getByText('Today')).toBeTruthy();
+    });
+
+    it('modal shows Klarna tab by default', () => {
+      const { getByTestId, getByText } = renderCartScreen({}, seed);
+      fireEvent.press(getByTestId('bnpl-teaser'));
+      expect(getByText('Continue with Klarna')).toBeTruthy();
+    });
+
+    it('modal closes when close button pressed', () => {
+      const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
+      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-modal-close'));
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+
+    it('modal closes when overlay pressed', () => {
+      const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
+      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-modal-overlay'));
+      expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+  });
 });
