@@ -1,8 +1,9 @@
 /**
- * Tests for TabNavigator — CartFAB integration (cm-486).
+ * Tests for TabNavigator — structure and cart badge (cm-486, cm-377).
  *
- * Verifies CartFAB is present in the tab navigator so it's accessible
- * from any tab screen when the cart has items.
+ * CartFAB was moved to MiniCartDrawerHost (cm-377) so it appears on ALL
+ * screens, not just tab screens. TabNavigator tests now verify the tab
+ * structure and cart badge; CartFAB coverage lives in MiniCartDrawerHost.test.tsx.
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
@@ -70,14 +71,16 @@ beforeEach(() => {
   mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
 });
 
-describe('TabNavigator — CartFAB integration', () => {
-  it('renders CartFAB when cart has items', () => {
+describe('TabNavigator — structure', () => {
+  it('renders all four tab screens', () => {
     const { getByTestId } = renderTabs();
-    expect(getByTestId('cart-fab')).toBeTruthy();
+    expect(getByTestId('tab-screen-Home')).toBeTruthy();
+    expect(getByTestId('tab-screen-Shop')).toBeTruthy();
+    expect(getByTestId('tab-screen-Cart')).toBeTruthy();
+    expect(getByTestId('tab-screen-Account')).toBeTruthy();
   });
 
-  it('does not render CartFAB when cart is empty', () => {
-    mockUseCart.mockReturnValue({ itemCount: 0, items: [], subtotal: 0 });
+  it('does not render CartFAB — it lives in MiniCartDrawerHost (cm-377)', () => {
     const { queryByTestId } = renderTabs();
     expect(queryByTestId('cart-fab')).toBeNull();
   });

@@ -23,6 +23,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollection } from '@/hooks/useCollections';
 import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
+import { useCart } from '@/hooks/useCart';
+import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { ProductCard } from '@/components/ProductCard';
 import { Header } from '@/components/Header';
 import { EmptyState } from '@/components/EmptyState';
@@ -53,6 +55,8 @@ export function CollectionDetailScreen() {
   const route = useRoute<RouteParams>();
   const insets = useSafeAreaInsets();
   const { collection, products } = useCollection(route.params.slug);
+  const { itemCount } = useCart();
+  const { open: openCart } = useMiniCartDrawer();
 
   const scrollY = useSharedValue(0);
   const onScroll = useAnimatedScrollHandler({
@@ -95,7 +99,7 @@ export function CollectionDetailScreen() {
   if (!collection) {
     return (
       <View style={[styles.container, { backgroundColor: colors.sandBase }]}>
-        <Header title="Collection" showBack />
+        <Header title="Collection" showBack cartCount={itemCount} onCartPress={openCart} testID="collection-detail-header" />
         <EmptyState title="Collection not found" message="This collection may have been removed." />
       </View>
     );
@@ -240,7 +244,7 @@ export function CollectionDetailScreen() {
       style={[styles.container, { backgroundColor: colors.sandBase }]}
       testID="collection-detail-screen"
     >
-      <Header title={collection.title} showBack />
+      <Header title={collection.title} showBack cartCount={itemCount} onCartPress={openCart} testID="collection-detail-header" />
       <AnimatedFlatList
         data={products}
         keyExtractor={keyExtractor}
