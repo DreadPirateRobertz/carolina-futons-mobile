@@ -18,6 +18,8 @@ import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
   onProductPress?: (productId: string) => void;
+  /** Called when the "Share Your Room!" upload CTA is pressed. */
+  onSharePress?: () => void;
   testID?: string;
 }
 
@@ -83,9 +85,9 @@ function RoomCard({
 }
 
 /** Shoppable customer room photo gallery with error/empty/loading states. */
-export function RoomGalleryScreen({ onProductPress, testID }: Props) {
+export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
-  const { rooms, isLoading, error, refresh } = useRoomGallery();
+  const { rooms, isLoading, error, refresh, isPlaceholder } = useRoomGallery();
 
   const renderItem = useCallback(
     ({ item }: { item: RoomGalleryItem }) => (
@@ -164,6 +166,20 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
     );
   }
 
+  const shareCTA = (
+    <TouchableOpacity
+      style={[styles.shareCTA, { backgroundColor: colors.sunsetCoral }]}
+      onPress={onSharePress}
+      testID="room-gallery-share-cta"
+      accessibilityRole="button"
+      accessibilityLabel="Share a photo of your Carolina Futons room"
+    >
+      <Text style={[styles.shareCTAText, { fontFamily: typography.bodyFamilyBold }]}>
+        Share Your Room!
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View
       style={[styles.root, { backgroundColor: colors.sandBase }]}
@@ -184,6 +200,18 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
         Customer Rooms
       </Text>
 
+      {isPlaceholder && (
+        <Text
+          style={[
+            styles.placeholderBanner,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+          testID="room-gallery-placeholder-banner"
+        >
+          Be the first to share your room!
+        </Text>
+      )}
+
       <FlatList
         data={rooms}
         renderItem={renderItem}
@@ -196,6 +224,7 @@ export function RoomGalleryScreen({ onProductPress, testID }: Props) {
         maxToRenderPerBatch={8}
         removeClippedSubviews
         initialNumToRender={6}
+        ListFooterComponent={shareCTA}
       />
     </View>
   );
@@ -276,5 +305,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     marginHorizontal: 32,
+  },
+  placeholderBanner: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    fontStyle: 'italic',
+  },
+  shareCTA: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 32,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  shareCTAText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
