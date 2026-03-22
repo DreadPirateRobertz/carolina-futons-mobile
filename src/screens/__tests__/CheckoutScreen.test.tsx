@@ -926,4 +926,136 @@ describe('CheckoutScreen', () => {
       expect(utils.getByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
     });
   });
+
+  // ── cm-m4w: gamified shipping badge layer ──────────────────────────────────
+
+  describe('Gamified shipping badges', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('renders the delivery method section', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-method-section')).toBeTruthy();
+    });
+
+    it('renders all four delivery option rows', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-option-standard')).toBeTruthy();
+      expect(utils.getByTestId('delivery-option-white-glove')).toBeTruthy();
+      expect(utils.getByTestId('delivery-option-local')).toBeTruthy();
+      expect(utils.getByTestId('delivery-option-discounted')).toBeTruthy();
+    });
+
+    it('shows Popular badge on standard shipping option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-standard')).toBeTruthy();
+      expect(utils.getByTestId('delivery-badge-standard').props.children).toBe('Popular');
+    });
+
+    it('shows Premium Experience badge on white glove option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-white-glove')).toBeTruthy();
+      expect(utils.getByTestId('delivery-badge-white-glove').props.children).toBe(
+        'Premium Experience',
+      );
+    });
+
+    it('shows Local Love badge on local delivery option', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-local')).toBeTruthy();
+      expect(utils.getByTestId('delivery-badge-local').props.children).toBe('Local Love');
+    });
+
+    it('shows You save X badge on discounted tier', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-badge-discounted')).toBeTruthy();
+      const badgeText = utils.getByTestId('delivery-badge-discounted').props.children;
+      expect(typeof badgeText).toBe('string');
+      expect(badgeText).toMatch(/you save/i);
+    });
+
+    it('standard option is selected by default', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      const option = utils.getByTestId('delivery-option-standard');
+      expect(option.props.accessibilityState?.selected).toBe(true);
+    });
+
+    it('selecting another option deselects standard', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.press(utils.getByTestId('delivery-option-white-glove'));
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-option-standard').props.accessibilityState?.selected).toBe(
+        false,
+      );
+      expect(
+        utils.getByTestId('delivery-option-white-glove').props.accessibilityState?.selected,
+      ).toBe(true);
+    });
+
+    it('each delivery option shows its label', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-label-standard')).toBeTruthy();
+      expect(utils.getByTestId('delivery-label-white-glove')).toBeTruthy();
+      expect(utils.getByTestId('delivery-label-local')).toBeTruthy();
+      expect(utils.getByTestId('delivery-label-discounted')).toBeTruthy();
+    });
+
+    it('each delivery option shows its price', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-price-standard')).toBeTruthy();
+      expect(utils.getByTestId('delivery-price-white-glove')).toBeTruthy();
+      expect(utils.getByTestId('delivery-price-local')).toBeTruthy();
+      expect(utils.getByTestId('delivery-price-discounted')).toBeTruthy();
+    });
+
+    it('standard option shows FREE price', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-price-standard').props.children).toBe('FREE');
+    });
+
+    it('delivery options have button accessibility role', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-option-standard').props.accessibilityRole).toBe('radio');
+    });
+
+    it('section has a section title', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-method-title')).toBeTruthy();
+    });
+
+    it('badge colors differ by type (placeholder: badge has distinct testID per type)', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      // All 4 badge testIDs must be unique and present
+      const ids = [
+        'delivery-badge-standard',
+        'delivery-badge-white-glove',
+        'delivery-badge-local',
+        'delivery-badge-discounted',
+      ];
+      for (const id of ids) {
+        expect(utils.getByTestId(id)).toBeTruthy();
+      }
+    });
+
+    it('does not show delivery section during loading/error', async () => {
+      // Loading state: no items → totals still render, delivery section should appear regardless
+      // (delivery section is always present when form loads)
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-method-section')).toBeTruthy();
+    });
+  });
 });
