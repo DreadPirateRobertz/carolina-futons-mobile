@@ -1067,14 +1067,15 @@ describe('CheckoutScreen', () => {
       expect(utils.getByTestId('delivery-method-title')).toBeTruthy();
     });
 
-    it('renders all three options returned by the API', async () => {
+    it('renders local delivery and UPS_GROUND as peer options (not white glove)', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
       expect(utils.getByTestId('delivery-option-local-delivery-asheville')).toBeTruthy();
-      expect(utils.getByTestId('delivery-option-white-glove-asheville')).toBeTruthy();
       expect(utils.getByTestId('delivery-option-UPS_GROUND')).toBeTruthy();
+      // white glove is NOT a peer card — it's an upgrade within local delivery
+      expect(utils.queryByTestId('delivery-option-white-glove-asheville')).toBeNull();
     });
 
     it('auto-selects the first option on load', async () => {
@@ -1099,12 +1100,12 @@ describe('CheckoutScreen', () => {
       );
     });
 
-    it('shows Premium Experience badge on white glove option', async () => {
+    it('shows Premium Experience badge in white glove upgrade section', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
-      expect(utils.getByTestId('delivery-badge-white-glove-asheville').props.children).toBe(
+      expect(utils.getByTestId('white-glove-upgrade-badge').props.children).toBe(
         'Premium Experience',
       );
     });
@@ -1146,28 +1147,27 @@ describe('CheckoutScreen', () => {
       );
     });
 
-    it('shows terrain surcharge for white glove option', async () => {
+    it('shows terrain surcharge in white glove upgrade section', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
-      expect(utils.getByTestId('delivery-terrain-white-glove-asheville')).toBeTruthy();
+      expect(utils.getByTestId('white-glove-upgrade-terrain')).toBeTruthy();
     });
 
-    it('selecting another option deselects the current one', async () => {
+    it('selecting UPS_GROUND deselects local delivery', async () => {
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
-      fireEvent.press(utils.getByTestId('delivery-option-white-glove-asheville'));
+      fireEvent.press(utils.getByTestId('delivery-option-UPS_GROUND'));
       await act(async () => {});
       expect(
         utils.getByTestId('delivery-option-local-delivery-asheville').props.accessibilityState
           ?.selected,
       ).toBe(false);
       expect(
-        utils.getByTestId('delivery-option-white-glove-asheville').props.accessibilityState
-          ?.selected,
+        utils.getByTestId('delivery-option-UPS_GROUND').props.accessibilityState?.selected,
       ).toBe(true);
     });
 
@@ -1197,6 +1197,114 @@ describe('CheckoutScreen', () => {
       fireEvent.changeText(utils.getByTestId('shipping-zip'), 'ABCDE');
       await act(async () => {});
       expect(mockFetchShippingOptions).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── cm-cqz: white glove as upgrade within local delivery ──────────────────
+
+  describe('white glove upgrade (cm-cqz)', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    beforeEach(() => {
+      mockFetchShippingOptions.mockResolvedValue({ success: true, options: WIX_OPTIONS });
+    });
+
+    afterEach(() => {
+      mockFetchShippingOptions.mockResolvedValue({ success: false, options: [] });
+    });
+
+    async function renderWithOptions() {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      return utils;
+    }
+
+    it('shows white glove upgrade toggle within local delivery card', async () => {
+      const utils = await renderWithOptions();
+      expect(utils.getByTestId('white-glove-upgrade-toggle')).toBeTruthy();
+    });
+
+    it('white glove toggle is unchecked by default', async () => {
+      const utils = await renderWithOptions();
+      const toggle = utils.getByTestId('white-glove-upgrade-toggle');
+      expect(toggle.props.accessibilityState?.checked).toBe(false);
+    });
+
+    it('toggling white glove on checks the toggle', async () => {
+      const utils = await renderWithOptions();
+      fireEvent.press(utils.getByTestId('white-glove-upgrade-toggle'));
+      await act(async () => {});
+      expect(
+        utils.getByTestId('white-glove-upgrade-toggle').props.accessibilityState?.checked,
+      ).toBe(true);
+    });
+
+    it('toggling white glove on shows combined price', async () => {
+      const utils = await renderWithOptions();
+      fireEvent.press(utils.getByTestId('white-glove-upgrade-toggle'));
+      await act(async () => {});
+      // Combined: local (FREE = 0) + WG ($149) = $149
+      const combinedEl = utils.getByTestId('white-glove-combined-price');
+      expect(JSON.stringify(combinedEl.props.children)).toMatch(/149/);
+    });
+
+    it('toggling white glove off restores base local delivery price', async () => {
+      const utils = await renderWithOptions();
+      fireEvent.press(utils.getByTestId('white-glove-upgrade-toggle'));
+      await act(async () => {});
+      fireEvent.press(utils.getByTestId('white-glove-upgrade-toggle'));
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-price-local-delivery-asheville').props.children).toBe(
+        'FREE',
+      );
+    });
+
+    it('local delivery is selectable without white glove upgrade', async () => {
+      const utils = await renderWithOptions();
+      expect(
+        utils.getByTestId('delivery-option-local-delivery-asheville').props.accessibilityState
+          ?.selected,
+      ).toBe(true);
+      // WG toggle unchecked — not selected
+      expect(
+        utils.getByTestId('white-glove-upgrade-toggle').props.accessibilityState?.checked,
+      ).toBe(false);
+    });
+
+    it('white glove upgrade toggle hides when non-local option selected', async () => {
+      const utils = await renderWithOptions();
+      fireEvent.press(utils.getByTestId('delivery-option-UPS_GROUND'));
+      await act(async () => {});
+      expect(utils.queryByTestId('white-glove-upgrade-toggle')).toBeNull();
+    });
+
+    it('switching to non-local resets white glove upgrade to off', async () => {
+      const utils = await renderWithOptions();
+      // Enable WG upgrade
+      fireEvent.press(utils.getByTestId('white-glove-upgrade-toggle'));
+      await act(async () => {});
+      // Switch to UPS Ground
+      fireEvent.press(utils.getByTestId('delivery-option-UPS_GROUND'));
+      await act(async () => {});
+      // Switch back to local delivery
+      fireEvent.press(utils.getByTestId('delivery-option-local-delivery-asheville'));
+      await act(async () => {});
+      // WG should be unchecked again
+      expect(
+        utils.getByTestId('white-glove-upgrade-toggle').props.accessibilityState?.checked,
+      ).toBe(false);
+    });
+
+    it('white glove upgrade shows its fee', async () => {
+      const utils = await renderWithOptions();
+      expect(utils.getByTestId('white-glove-upgrade-fee')).toBeTruthy();
+    });
+
+    it('white glove upgrade section shows WG label', async () => {
+      const utils = await renderWithOptions();
+      expect(utils.getByTestId('white-glove-upgrade-label')).toBeTruthy();
     });
   });
 });
