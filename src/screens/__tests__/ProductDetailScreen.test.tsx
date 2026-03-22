@@ -610,7 +610,7 @@ describe('ProductDetailScreen', () => {
 
     it('shows try in room text', () => {
       const { getByText } = renderDetail();
-      expect(getByText('Try in Your Room')).toBeTruthy();
+      expect(getByText('See It In Your Room')).toBeTruthy();
     });
 
     it('calls onOpenAR with model ID', () => {
