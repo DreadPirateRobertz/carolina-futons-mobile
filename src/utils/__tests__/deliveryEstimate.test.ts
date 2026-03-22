@@ -8,7 +8,7 @@
  * - Empty / whitespace zip → null
  * - Invalid format → null
  */
-import { getDeliveryEstimate } from '../deliveryEstimate';
+import { getDeliveryEstimate, getDeliveryMode } from '../deliveryEstimate';
 
 describe('getDeliveryEstimate', () => {
   describe('returns null for missing or invalid zip', () => {
@@ -96,6 +96,98 @@ describe('getDeliveryEstimate', () => {
 
     it('returns 5-7 days for 40001 (Kentucky)', () => {
       expect(getDeliveryEstimate('40001')).toBe('5–7 business days');
+    });
+  });
+});
+
+// ── getDeliveryMode ────────────────────────────────────────────────────────────
+
+const PARCEL_DIMS = { width: 39, depth: 32, height: 31 }; // Pisgah Twin — parcel
+const FREIGHT_DIMS = { width: 54, depth: 34, height: 33 }; // Asheville Full — freight
+const QUEEN_DIMS = { width: 60, depth: 36, height: 35 }; // Blue Ridge Queen — freight
+
+describe('getDeliveryMode', () => {
+  describe('no-zip state', () => {
+    it('returns no-zip for empty string', () => {
+      expect(getDeliveryMode('', PARCEL_DIMS)).toBe('no-zip');
+    });
+
+    it('returns no-zip for whitespace-only', () => {
+      expect(getDeliveryMode('   ', PARCEL_DIMS)).toBe('no-zip');
+    });
+
+    it('returns no-zip for partial zip (4 digits)', () => {
+      expect(getDeliveryMode('2880', PARCEL_DIMS)).toBe('no-zip');
+    });
+
+    it('returns no-zip for non-numeric', () => {
+      expect(getDeliveryMode('ABCDE', PARCEL_DIMS)).toBe('no-zip');
+    });
+
+    it('returns no-zip when no dimensions passed and zip is invalid', () => {
+      expect(getDeliveryMode('')).toBe('no-zip');
+    });
+  });
+
+  describe('freight state — width >= 54 inches', () => {
+    it('returns freight for full-size item (54") at national zip', () => {
+      expect(getDeliveryMode('10001', FREIGHT_DIMS)).toBe('freight');
+    });
+
+    it('returns freight for queen-size item (60") at national zip', () => {
+      expect(getDeliveryMode('10001', QUEEN_DIMS)).toBe('freight');
+    });
+
+    it('returns freight even for local NC zip when item is freight size', () => {
+      expect(getDeliveryMode('28801', FREIGHT_DIMS)).toBe('freight');
+    });
+
+    it('returns freight for exactly-54-inch width', () => {
+      expect(getDeliveryMode('90210', { width: 54, depth: 30, height: 30 })).toBe('freight');
+    });
+
+    it('returns parcel for 53-inch width (just under threshold)', () => {
+      expect(getDeliveryMode('90210', { width: 53, depth: 30, height: 30 })).toBe('parcel');
+    });
+  });
+
+  describe('local state — NC/SC zip, non-freight item', () => {
+    it('returns local for NC zip (28801) with small item', () => {
+      expect(getDeliveryMode('28801', PARCEL_DIMS)).toBe('local');
+    });
+
+    it('returns local for SC zip (29201) with small item', () => {
+      expect(getDeliveryMode('29201', PARCEL_DIMS)).toBe('local');
+    });
+
+    it('returns local for Raleigh zip (27601)', () => {
+      expect(getDeliveryMode('27601', PARCEL_DIMS)).toBe('local');
+    });
+
+    it('returns local when no dimensions provided and zip is NC', () => {
+      expect(getDeliveryMode('28801')).toBe('local');
+    });
+  });
+
+  describe('parcel state — non-local, non-freight zip', () => {
+    it('returns parcel for NYC zip (10001) with small item', () => {
+      expect(getDeliveryMode('10001', PARCEL_DIMS)).toBe('parcel');
+    });
+
+    it('returns parcel for Chicago zip (60601)', () => {
+      expect(getDeliveryMode('60601', PARCEL_DIMS)).toBe('parcel');
+    });
+
+    it('returns parcel for Southeast zip (30301) — mid tier in getDeliveryEstimate', () => {
+      expect(getDeliveryMode('30301', PARCEL_DIMS)).toBe('parcel');
+    });
+
+    it('returns parcel when no dimensions provided and zip is non-local', () => {
+      expect(getDeliveryMode('10001')).toBe('parcel');
+    });
+
+    it('accepts zip+4 format for parcel', () => {
+      expect(getDeliveryMode('10001-1234', PARCEL_DIMS)).toBe('parcel');
     });
   });
 });
