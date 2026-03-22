@@ -32,7 +32,11 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
       <View
         style={[
           styles.compactBadge,
-          { backgroundColor: `${colors.mountainBlue}18`, borderRadius: borderRadius.sm, borderColor: colors.mountainBlue },
+          {
+            backgroundColor: `${colors.mountainBlue}18`,
+            borderRadius: borderRadius.sm,
+            borderColor: colors.mountainBlue,
+          },
         ]}
         testID={testID ?? 'financing-badge-compact'}
       >
