@@ -58,8 +58,10 @@ import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
-import { modelIdToProductId, productId as toProductId } from '@/utils';
+import { modelIdToProductId, productIdToModelId, productId as toProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
+import { BundleRow } from '@/components/BundleRow';
+import { useBundleDeals } from '@/hooks/useBundleDeals';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -178,6 +180,8 @@ export function ProductDetailScreen({
 
   const totalPrice = model.basePrice + selectedFabric.price;
 
+  const { bundleProducts } = useBundleDeals(catalogProductId);
+
   const { addViewed } = useRecentlyViewed();
 
   // Track product view on mount
@@ -268,6 +272,24 @@ export function ProductDetailScreen({
       }
     },
     [model.id],
+  );
+
+  const handleBundleProductPress = useCallback(
+    (product: import('@/data/products').Product) => {
+      const bundleModelId = productIdToModelId(product.id as import('@/data/productId').ProductId);
+      const bundleModel = getModel(bundleModelId);
+      if (!bundleModel) return;
+      cart.addItem(bundleModel, bundleModel.fabrics[0], 1);
+      Alert.alert(
+        'Added to Cart',
+        `${bundleModel.name} in ${bundleModel.fabrics[0].name} added to your cart.`,
+        [
+          { text: 'Continue Shopping', style: 'cancel' },
+          { text: 'View Cart', onPress: () => navigation.navigate('Tabs', { screen: 'Cart' }) },
+        ],
+      );
+    },
+    [cart, getModel, navigation],
   );
 
   const handleAddToCart = useCallback(() => {
@@ -661,6 +683,13 @@ export function ProductDetailScreen({
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Pairs Well With — bundle deals row */}
+        <BundleRow
+          products={bundleProducts}
+          onProductPress={handleBundleProductPress}
+          testID="bundle-row"
+        />
 
         {/* Dimensions */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
