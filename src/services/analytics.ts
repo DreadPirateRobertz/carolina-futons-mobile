@@ -65,6 +65,7 @@ export type AnalyticsEventName =
   | 'ar_product_picker_open'
   | 'request_swatches'
   | 'share_product'
+  | 'share_order'
   | 'rate_app'
   | 'heatmap_tap'
   | 'scroll_depth'
@@ -322,6 +323,9 @@ export const events = {
   },
   shareProduct(productId: string) {
     trackEvent('share_product', { product_id: productId });
+  },
+  shareOrder(orderId: string) {
+    trackEvent('share_order', { order_id: orderId });
   },
   rateApp(trigger: string) {
     trackEvent('rate_app', { trigger });

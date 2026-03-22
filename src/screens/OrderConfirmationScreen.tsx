@@ -6,12 +6,13 @@
  * estimated delivery window, and CTAs (Call To Action) to continue
  * shopping or view order history.
  */
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Share, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { PointsToast } from '@/components/PointsToast';
 import { useTheme } from '@/theme';
 import { formatPrice } from '@/utils';
 import { useRatingPrompt } from '@/hooks/useRatingPrompt';
+import { events } from '@/services/analytics';
 import type { OrderConfirmation } from '@/services/payment';
 
 interface Props {
@@ -34,6 +35,18 @@ export function OrderConfirmationScreen({
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { recordPurchase } = useRatingPrompt();
   const [toastVisible, setToastVisible] = useState(false);
+
+  const handleShareOrder = useCallback(async () => {
+    const message = `I just ordered from Carolina Futons! Order #${order.orderNumber} is on its way. 🛋️`;
+    try {
+      const result = await Share.share({ message });
+      if (result.action === Share.sharedAction) {
+        events.shareOrder(order.orderId);
+      }
+    } catch (err) {
+      if (__DEV__) console.warn('[OrderConfirmation] Share failed:', err);
+    }
+  }, [order.orderId, order.orderNumber]);
 
   useEffect(() => {
     recordPurchase();
@@ -187,6 +200,20 @@ export function OrderConfirmationScreen({
 
         {/* Actions */}
         <View style={[styles.actions, { paddingHorizontal: spacing.lg }]}>
+          <TouchableOpacity
+            style={[
+              styles.secondaryButton,
+              { borderColor: colors.espressoLight, borderRadius: borderRadius.button },
+            ]}
+            onPress={handleShareOrder}
+            testID="share-order-button"
+            accessibilityLabel="Share your order"
+            accessibilityRole="button"
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.espressoLight }]}>
+              Share Order ↗
+            </Text>
+          </TouchableOpacity>
           {onViewOrders && (
             <TouchableOpacity
               style={[

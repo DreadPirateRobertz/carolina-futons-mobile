@@ -414,17 +414,20 @@ export function ProductDetailScreen({
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    const deepLink = `carolinafutons://product/${model.id}`;
+    const slug = catalogProduct?.slug ?? String(model.id);
+    const deepLink = `carolinafutons://product/${slug}`;
     const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}`;
     try {
-      await Share.share(
+      const result = await Share.share(
         Platform.OS === 'ios' ? { message, url: deepLink } : { message: `${message}\n${deepLink}` },
       );
-      events.shareProduct(model.id);
-    } catch {
-      // User cancelled share sheet
+      if (result.action === Share.sharedAction) {
+        events.shareProduct(String(model.id));
+      }
+    } catch (err) {
+      if (__DEV__) console.warn('[ProductDetail] Share failed:', err);
     }
-  }, [model.id, model.name, totalPrice]);
+  }, [catalogProduct?.slug, model.id, model.name, totalPrice]);
 
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof galleryData)[number]; index: number }) => {

@@ -344,6 +344,23 @@ describe('ProductDetailScreen', () => {
   });
 
   describe('Share Button', () => {
+    let shareSpy: jest.SpyInstance;
+    let shareProductSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Share } = require('react-native');
+      shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const analytics = require('@/services/analytics');
+      shareProductSpy = jest.spyOn(analytics.events, 'shareProduct').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      shareSpy.mockRestore();
+      shareProductSpy.mockRestore();
+    });
+
     it('renders share button', () => {
       const { getByTestId } = renderDetail();
       expect(getByTestId('detail-share-button')).toBeTruthy();
@@ -353,6 +370,37 @@ describe('ProductDetailScreen', () => {
       const { getByTestId } = renderDetail();
       const shareBtn = getByTestId('detail-share-button');
       expect(shareBtn.props.accessibilityLabel).toContain('Share');
+    });
+
+    it('calls Share.share with product slug in deep link on press', async () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+      const call = shareSpy.mock.calls[0][0] as { message: string; url?: string };
+      const payload = call.url ?? call.message;
+      expect(payload).toContain('asheville-full-futon');
+    });
+
+    it('fires shareProduct analytics event on successful share', async () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(shareProductSpy).toHaveBeenCalled());
+    });
+
+    it('does not fire analytics when user cancels share', async () => {
+      shareSpy.mockResolvedValueOnce({ action: 'dismissedAction' });
+      const { getByTestId } = renderDetail();
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+      expect(shareProductSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when Share.share rejects', async () => {
+      shareSpy.mockRejectedValueOnce(new Error('share failed'));
+      const { getByTestId } = renderDetail();
+      fireEvent.press(getByTestId('detail-share-button'));
+      await new Promise((r) => setTimeout(r, 50));
+      // no crash
     });
   });
 
