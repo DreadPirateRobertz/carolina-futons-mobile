@@ -71,7 +71,11 @@ export type AnalyticsEventName =
   | 'share_product'
   | 'rate_app'
   | 'fabric_sample_request'
-  | 'error';
+  | 'error'
+  | 'gamification_add_to_cart'
+  | 'gamification_submit_review'
+  | 'gamification_referral_shared'
+  | 'gamification_track_view';
 
 /** A single buffered analytics event with its metadata. */
 export interface AnalyticsEvent {

@@ -43,6 +43,14 @@ jest.mock('@/theme', () => {
   };
 });
 
+// Gamification — mock to prevent analytics import during module init
+jest.mock('@/services/gamification', () => ({
+  addToCart: jest.fn(),
+  submitReview: jest.fn(),
+  referralShared: jest.fn(),
+  trackView: jest.fn(),
+}));
+
 // Analytics — track all calls
 const mockAnalyticsEvents = {
   viewProduct: jest.fn(),

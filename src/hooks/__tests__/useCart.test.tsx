@@ -12,6 +12,7 @@ import { AuthContext } from '@/hooks/useAuth';
 import { ConnectivityProvider } from '../useConnectivity';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { _resetForTesting } from '@/services/offlineQueue';
+import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 let mockUser: { id: string; email: string; displayName: string; provider: string } | null = null;
 
@@ -1261,5 +1262,43 @@ describe('AsyncStorage error resilience', () => {
 
     fireEvent.press(getByTestId('clear'));
     expect(getByTestId('item-count').props.children).toBe(0);
+  });
+});
+
+// ── Gamification events ──────────────────────────────────────────────────────
+
+describe('gamification events on addItem', () => {
+  beforeEach(() => {
+    clearEventBuffer();
+  });
+
+  it('fires gamification_add_to_cart when a product is added', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_add_to_cart');
+    expect(ev).toBeDefined();
+  });
+
+  it('includes product_id in the gamification event', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_add_to_cart');
+    expect(ev?.properties?.product_id).toBe(asheville.id);
+  });
+
+  it('includes price (basePrice + fabric.price) in the gamification event', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_add_to_cart');
+    // asheville basePrice=349, naturalLinen fabric.price=0 → total 349
+    expect(ev?.properties?.price).toBe(asheville.basePrice + naturalLinen.price);
+  });
+
+  it('fires a separate event for each distinct addItem call', () => {
+    const { getByTestId } = renderCart();
+    fireEvent.press(getByTestId('add-asheville-linen'));
+    fireEvent.press(getByTestId('add-blueridge-blue'));
+    const evts = getEventBuffer().filter((e) => e.name === 'gamification_add_to_cart');
+    expect(evts).toHaveLength(2);
   });
 });

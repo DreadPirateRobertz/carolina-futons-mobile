@@ -17,6 +17,7 @@ import {
 } from '@/data/reviews';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { events } from '@/services/analytics';
+import * as gamification from '@/services/gamification';
 
 type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest';
 
@@ -131,6 +132,7 @@ export function useReviews(productId: string): UseReviewsReturn {
           setShowForm(false);
           setSubmitSuccess(true);
           events.submitReview(productId, data.rating);
+          gamification.submitReview(productId, data.rating, data.photos.length > 0);
           return true;
         } catch {
           // Roll back optimistic review
@@ -147,6 +149,7 @@ export function useReviews(productId: string): UseReviewsReturn {
           setShowForm(false);
           setSubmitSuccess(true);
           events.submitReview(productId, data.rating);
+          gamification.submitReview(productId, data.rating, data.photos.length > 0);
           return true;
         } catch {
           setLocalReviews((prev) => prev.filter((r) => r.id !== optimisticId));

@@ -12,12 +12,18 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Share } from 'react-native';
 import { AccountScreen } from '../AccountScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
 const mockUseReferral = jest.fn();
 jest.mock('@/hooks/useReferral', () => ({
   useReferral: () => mockUseReferral(),
+}));
+
+const mockUseLoyalty = jest.fn();
+jest.mock('@/hooks/useLoyalty', () => ({
+  useLoyalty: () => mockUseLoyalty(),
 }));
 
 const mockUseAuth = jest.fn();
@@ -115,6 +121,7 @@ function renderAccountScreen() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  clearEventBuffer();
   mockUseAuth.mockReturnValue({
     user: AUTH_USER,
     isAuthenticated: true,
@@ -125,6 +132,15 @@ beforeEach(() => {
     clearError: jest.fn(),
   });
   mockUseReferral.mockReturnValue(REFERRAL_LOADED);
+  mockUseLoyalty.mockReturnValue({
+    points: 250,
+    tier: 'bronze',
+    totalEarned: 250,
+    transactions: [],
+    loading: false,
+    error: null,
+    refreshPoints: jest.fn(),
+  });
 });
 
 // ── Section 1: Referral card rendering ────────────────────────────────────────
@@ -176,6 +192,24 @@ describe('share button', () => {
     await waitFor(() => expect(mockShareShare).toHaveBeenCalled());
     const call = mockShareShare.mock.calls[0][0];
     expect(JSON.stringify(call)).toContain('carolinafutons.com/referral/FUTON-XK7P');
+  });
+
+  it('fires gamification_referral_shared event with referral code', async () => {
+    const { getByTestId } = renderAccountScreen();
+    fireEvent.press(getByTestId('account-referral-share-btn'));
+    await waitFor(() => expect(mockShareShare).toHaveBeenCalled());
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_referral_shared');
+    expect(ev).toBeDefined();
+    expect(ev?.properties?.referral_code).toBe('FUTON-XK7P');
+  });
+
+  it('does not fire gamification_referral_shared when share fails', async () => {
+    mockShareShare.mockRejectedValueOnce(new Error('cancelled'));
+    const { getByTestId } = renderAccountScreen();
+    fireEvent.press(getByTestId('account-referral-share-btn'));
+    await waitFor(() => expect(mockShareShare).toHaveBeenCalled());
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_referral_shared');
+    expect(ev).toBeUndefined();
   });
 });
 
