@@ -82,6 +82,7 @@ import { useProductQA } from '@/hooks/useProductQA';
 import { QuestionCard } from '@/components/QuestionCard';
 import { Video, ResizeMode } from 'expo-av';
 import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
+import { useProductReviews } from '@/hooks/useProductReviews';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -174,6 +175,19 @@ export function ProductDetailScreen({
     clearSubmitStatus: clearReviewSubmitStatus,
   } = useReviews(model.id);
   const previewReviews = reviews.slice(0, 3);
+
+  // CF-wah8: server-side aggregate for inline star rating near price
+  const {
+    aggregate: reviewAggregate,
+    isLoading: reviewAggregateLoading,
+    error: reviewAggregateError,
+  } = useProductReviews(model.id);
+  const showInlineRating =
+    !reviewAggregateLoading && !reviewAggregateError && reviewAggregate.totalReviews > 0;
+
+  // Scroll ref + reviews section offset for tap-to-scroll from inline rating
+  const scrollViewRef = useRef<Animated.ScrollView>(null);
+  const reviewsSectionY = useRef<number>(0);
 
   const {
     questions,
@@ -534,6 +548,7 @@ export function ProductDetailScreen({
       )}
 
       <Animated.ScrollView
+        ref={scrollViewRef}
         testID="scroll-view"
         style={styles.scrollView}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom }]}
@@ -673,21 +688,33 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
-          {hasReviews && (
-            <StarRating
-              rating={reviewSummary.averageRating}
-              count={reviewSummary.totalReviews}
-              showValue
-              size="sm"
-              testID="price-inline-rating"
-            />
-          )}
           <FinancingBadge
             price={totalPrice}
             variant="detail"
             onPress={() => setBnplModalVisible(true)}
             testID="product-detail-financing-badge"
           />
+          {showInlineRating && (
+            <TouchableOpacity
+              onPress={() => {
+                scrollViewRef.current?.scrollTo({
+                  y: reviewsSectionY.current,
+                  animated: true,
+                });
+              }}
+              testID="price-inline-rating-tap"
+              accessibilityRole="button"
+              accessibilityLabel="Jump to reviews"
+            >
+              <StarRating
+                rating={reviewAggregate.averageRating}
+                count={reviewAggregate.totalReviews}
+                showValue
+                size="sm"
+                testID="price-inline-rating"
+              />
+            </TouchableOpacity>
+          )}
           <ShippingEstimateBadge
             icon={shippingEstimate.icon}
             label={shippingEstimate.label}
@@ -878,7 +905,13 @@ export function ProductDetailScreen({
         </View>
 
         {/* Reviews Section */}
-        <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="reviews-section">
+        <View
+          style={[styles.section, { paddingHorizontal: spacing.lg }]}
+          testID="reviews-section"
+          onLayout={(e) => {
+            reviewsSectionY.current = e.nativeEvent.layout.y;
+          }}
+        >
           <Text
             style={[
               styles.sectionTitle,
