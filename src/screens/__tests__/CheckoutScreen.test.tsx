@@ -1349,7 +1349,7 @@ describe('CheckoutScreen', () => {
     });
 
     it('does not render loyalty banner when loyalty returns error', async () => {
-      mockLoyaltyValue.error = 'Service unavailable';
+      (mockLoyaltyValue as { error: string | null }).error = 'Service unavailable';
       const utils = renderCheckout({}, seed);
       await act(async () => {});
       expect(utils.queryByTestId('checkout-loyalty-banner')).toBeNull();
