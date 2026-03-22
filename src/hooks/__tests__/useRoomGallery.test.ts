@@ -211,5 +211,39 @@ describe('useRoomGallery', () => {
       // Should not crash; good room should still appear
       expect(result.current.rooms.some((r) => r.roomId === 'room-good')).toBe(true);
     });
+
+    // ── cm-biz: isPlaceholder flag correctness ─────────────────────────────
+
+    it('sets isPlaceholder=false when real rooms are fetched', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.isPlaceholder).toBe(false);
+    });
+
+    it('sets isPlaceholder=false after refresh returns real rooms', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isPlaceholder).toBe(true));
+
+      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      result.current.refresh();
+
+      await waitFor(() => expect(result.current.isPlaceholder).toBe(false));
+      expect(result.current.rooms).toHaveLength(1);
+    });
+
+    it('falls back to PLACEHOLDER_ROOMS when all items fail transform', async () => {
+      // Every item has an empty imageUrl, so transformRoom returns null for all
+      const allBad = [makeRawRoom({ imageUrl: '' }), makeRawRoom({ imageUrl: '' })];
+      mockQueryData.mockResolvedValue({ items: allBad, totalResults: 2 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.rooms).toEqual(PLACEHOLDER_ROOMS);
+      expect(result.current.isPlaceholder).toBe(true);
+    });
   });
 });

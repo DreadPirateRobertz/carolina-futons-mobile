@@ -126,6 +126,7 @@ export function useRoomGallery(): UseRoomGalleryReturn {
     async function fetch() {
       setIsLoading(true);
       setError(null);
+      setIsPlaceholder(false);
 
       if (!wixClient) {
         if (!cancelled) {

@@ -44,6 +44,7 @@ describe('RoomGalleryScreen', () => {
     jest.clearAllMocks();
     mockUseRoomGallery.mockReturnValue({
       rooms: SAMPLE_ROOMS,
+      isPlaceholder: false,
       isLoading: false,
       error: null,
       refresh: mockRefresh,
@@ -198,6 +199,23 @@ describe('RoomGalleryScreen', () => {
       // room-001 has 2 products
       expect(getByTestId('room-product-count-room-001')).toBeTruthy();
     });
+
+    it('does not show placeholder banner when real rooms are displayed', () => {
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-placeholder-banner')).toBeNull();
+    });
+
+    it('does not show CTA in empty state', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isPlaceholder: false,
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-share-cta')).toBeNull();
+    });
   });
 
   describe('Product tap navigation', () => {
@@ -287,6 +305,17 @@ describe('RoomGalleryScreen', () => {
         expect(room.imageUrl).toBeTruthy();
         expect(room.productIds.length).toBeGreaterThan(0);
       }
+    });
+
+    it('PLACEHOLDER_ROOMS contains exactly 4 items', () => {
+      expect(PLACEHOLDER_ROOMS).toHaveLength(4);
+    });
+
+    it('placeholder banner shows expected copy', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-placeholder-banner').props.children).toContain(
+        'Be the first to share your room!',
+      );
     });
   });
 
