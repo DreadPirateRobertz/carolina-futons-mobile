@@ -242,23 +242,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const {
     tier: loyaltyTier,
     points: loyaltyPoints,
+    nextTier: loyaltyNextTier,
+    pointsToNext: loyaltyPointsToNext,
     loading: loyaltyLoading,
     error: loyaltyError,
   } = useLoyalty();
-  const TIER_THRESHOLDS: Record<string, number | null> = {
-    bronze: 500,
-    silver: 1500,
-    gold: null,
-  };
-  const NEXT_TIER_LABELS: Record<string, string | null> = {
-    bronze: 'Silver',
-    silver: 'Gold',
-    gold: null,
-  };
-  const loyaltyNextThreshold = TIER_THRESHOLDS[loyaltyTier] ?? null;
-  const loyaltyPointsToNext =
-    loyaltyNextThreshold !== null ? Math.max(0, loyaltyNextThreshold - loyaltyPoints) : 0;
-  const loyaltyNextTierLabel = NEXT_TIER_LABELS[loyaltyTier] ?? null;
+  const loyaltyNextTierLabel = loyaltyNextTier
+    ? loyaltyNextTier.charAt(0).toUpperCase() + loyaltyNextTier.slice(1)
+    : null;
 
   // Capture checkout-time values in refs so the success useEffect sees fresh
   // state even if the parent re-renders while the app is backgrounded between

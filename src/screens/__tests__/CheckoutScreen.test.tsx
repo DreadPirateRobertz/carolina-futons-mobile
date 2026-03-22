@@ -166,10 +166,11 @@ const mockKlarnaReset = jest.fn();
 const mockLoyaltyValue = {
   tier: 'bronze' as const,
   points: 120,
-  totalEarned: 120,
-  transactions: [],
+  nextTier: 'silver' as const,
+  pointsToNext: 380,
+  progress: 24,
   loading: false,
-  error: null,
+  error: null as string | null,
   refreshPoints: jest.fn(),
 };
 jest.mock('@/hooks/useLoyalty', () => ({
