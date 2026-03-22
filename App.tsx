@@ -1,6 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
@@ -65,7 +66,11 @@ const preventHidePromise = SplashScreen.preventAutoHideAsync();
 prefetchCriticalData();
 
 function App() {
-  const { navigationRef, onStateChange: trackState, onReady: onScreenTrackingReady } = useScreenTracking();
+  const {
+    navigationRef,
+    onStateChange: trackState,
+    onReady: onScreenTrackingReady,
+  } = useScreenTracking();
   const [currentRoute, setCurrentRoute] = useState<string | undefined>();
 
   const onStateChange = useCallback(() => {
@@ -113,61 +118,66 @@ function App() {
   }
 
   return (
-    <SafeAreaProvider onLayout={onLayoutRootView}>
-      <StripeProvider publishableKey={stripeKey} merchantIdentifier={STRIPE_MERCHANT_ID}>
-        <ThemeProvider>
-          <ConnectivityProvider>
-            <MaybeWixProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <MiniCartDrawerProvider>
-                  <WishlistProvider>
-                    <NotificationProvider>
-                      <CartAbandonmentBridge />
-                      <PremiumProvider>
-                        <RecommendationsProvider>
-                          <CompareProvider>
-                            <ErrorBoundary>
-                              <NavigationContainer
-                                ref={navigationRef}
-                                linking={linkingConfig}
-                                onStateChange={onStateChange}
-                                onReady={() => {
-                                  onScreenTrackingReady();
-                                  if (sentryNavigationIntegration && navigationRef.current) {
-                                    (
-                                      sentryNavigationIntegration as {
-                                        registerNavigationContainer: (ref: unknown) => void;
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider onLayout={onLayoutRootView}>
+        <StripeProvider publishableKey={stripeKey} merchantIdentifier={STRIPE_MERCHANT_ID}>
+          <ThemeProvider>
+            <ConnectivityProvider>
+              <MaybeWixProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <MiniCartDrawerProvider>
+                      <WishlistProvider>
+                        <NotificationProvider>
+                          <CartAbandonmentBridge />
+                          <PremiumProvider>
+                            <RecommendationsProvider>
+                              <CompareProvider>
+                                <ErrorBoundary>
+                                  <NavigationContainer
+                                    ref={navigationRef}
+                                    linking={linkingConfig}
+                                    onStateChange={onStateChange}
+                                    onReady={() => {
+                                      onScreenTrackingReady();
+                                      if (sentryNavigationIntegration && navigationRef.current) {
+                                        (
+                                          sentryNavigationIntegration as {
+                                            registerNavigationContainer: (ref: unknown) => void;
+                                          }
+                                        ).registerNavigationContainer(navigationRef);
                                       }
-                                    ).registerNavigationContainer(navigationRef);
-                                  }
-                                }}
-                              >
-                                <DeepLinkProvider>
-                                  <OfflineBanner />
-                                  <AppNavigator />
-                                  <MiniCartDrawerHost navigationRef={navigationRef} currentRoute={currentRoute} />
-                                  <ForceUpdateModal
-                                    visible={forceUpdate.visible}
-                                    required={forceUpdate.required}
-                                    onDismiss={forceUpdate.dismiss}
-                                  />
-                                </DeepLinkProvider>
-                              </NavigationContainer>
-                            </ErrorBoundary>
-                          </CompareProvider>
-                        </RecommendationsProvider>
-                      </PremiumProvider>
-                    </NotificationProvider>
-                  </WishlistProvider>
-                  </MiniCartDrawerProvider>
-                </CartProvider>
-              </AuthProvider>
-            </MaybeWixProvider>
-          </ConnectivityProvider>
-        </ThemeProvider>
-      </StripeProvider>
-    </SafeAreaProvider>
+                                    }}
+                                  >
+                                    <DeepLinkProvider>
+                                      <OfflineBanner />
+                                      <AppNavigator />
+                                      <MiniCartDrawerHost
+                                        navigationRef={navigationRef}
+                                        currentRoute={currentRoute}
+                                      />
+                                      <ForceUpdateModal
+                                        visible={forceUpdate.visible}
+                                        required={forceUpdate.required}
+                                        onDismiss={forceUpdate.dismiss}
+                                      />
+                                    </DeepLinkProvider>
+                                  </NavigationContainer>
+                                </ErrorBoundary>
+                              </CompareProvider>
+                            </RecommendationsProvider>
+                          </PremiumProvider>
+                        </NotificationProvider>
+                      </WishlistProvider>
+                    </MiniCartDrawerProvider>
+                  </CartProvider>
+                </AuthProvider>
+              </MaybeWixProvider>
+            </ConnectivityProvider>
+          </ThemeProvider>
+        </StripeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
