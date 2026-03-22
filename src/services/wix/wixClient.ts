@@ -581,6 +581,27 @@ export class WixClient {
     return this.post('/_functions/shippingIntelligence/calculateBundleQuote', { zip, items });
   }
 
+  /**
+   * Call godfrey's getDeliveryEstimate webMethod (cm-uyd).
+   * Returns a delivery window or fallback "2-5 business days" copy.
+   */
+  async fetchDeliveryEstimate(
+    zip: string,
+    productIds: string[],
+  ): Promise<{
+    success: boolean;
+    estimate?: string | null;
+    minDays?: number | null;
+    maxDays?: number | null;
+    minDate?: string | null;
+    maxDate?: string | null;
+    source?: string | null;
+    service?: string | null;
+    error?: string;
+  }> {
+    return this.post('/_functions/getDeliveryEstimate', { zip, productIds });
+  }
+
   // ── Orders (eCommerce Orders API) ──────────────────────────
 
   async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{

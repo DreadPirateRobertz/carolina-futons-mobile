@@ -65,6 +65,7 @@ import { PremiumBadge } from '@/components/PremiumBadge';
 import { BundleRow } from '@/components/BundleRow';
 import { useBundleDeals } from '@/hooks/useBundleDeals';
 import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
+import { DeliveryEstimateWidget } from '@/components/DeliveryEstimateWidget';
 import { useShippingEstimate } from '@/hooks/useShippingEstimate';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
@@ -751,6 +752,12 @@ export function ProductDetailScreen({
             isLoading={shippingEstimate.isLoading}
             testID="shipping-estimate-badge"
           />
+          {/* Delivery Estimator — cm-uyd: zip input → live delivery window from godfrey's webMethod */}
+          <DeliveryEstimateWidget
+            productIds={catalogProductId ? [catalogProductId] : []}
+            testID="delivery-estimate-widget"
+          />
+
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
           <TouchableOpacity
             style={[
