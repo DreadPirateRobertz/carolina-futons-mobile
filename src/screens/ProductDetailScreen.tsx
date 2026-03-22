@@ -587,6 +587,24 @@ export function ProductDetailScreen({
             <Text style={styles.arCtaText}>See It In Your Room</Text>
             {isPremium && <PremiumBadge size="sm" testID="ar-premium-badge" />}
           </TouchableOpacity>
+          {/* Room Planner CTA — 2D floor plan with this product pre-placed */}
+          <TouchableOpacity
+            style={[
+              styles.arCtaInline,
+              {
+                backgroundColor: colors.espresso,
+                borderRadius: borderRadius.button,
+                marginTop: spacing.sm,
+              },
+            ]}
+            onPress={() => navigation.navigate('RoomPlanner', { productSlug: catalogProduct?.slug ?? slug })}
+            testID="detail-room-planner-button"
+            accessibilityLabel={`Plan your room with ${model.name}`}
+            accessibilityRole="button"
+          >
+            <Text style={styles.arCtaIcon}>📐</Text>
+            <Text style={styles.arCtaText}>Plan Your Room</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Fabric Selector */}

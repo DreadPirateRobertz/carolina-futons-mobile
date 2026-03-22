@@ -412,4 +412,10 @@ export const events = {
       state,
     });
   },
+  roomPlanSave(itemCount: number, roomWidth: number, roomDepth: number) {
+    trackEvent('room_plan_save', { item_count: itemCount, room_width: roomWidth, room_depth: roomDepth });
+  },
+  roomPlanShare(itemCount: number) {
+    trackEvent('room_plan_share', { item_count: itemCount });
+  },
 } as const;

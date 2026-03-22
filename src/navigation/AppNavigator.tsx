@@ -158,6 +158,11 @@ const LoyaltyScreen = lazy(() =>
     default: withScreenErrorBoundary(m.LoyaltyScreen, 'Loyalty'),
   })),
 );
+const RoomPlannerScreen = lazy(() =>
+  import('@/screens/RoomPlannerScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.RoomPlannerScreen, 'RoomPlanner'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -204,6 +209,7 @@ export type RootStackParamList = {
   RoomGallery: undefined;
   Loyalty: undefined;
   ReferralLanding: { code: string };
+  RoomPlanner: { productSlug?: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -459,6 +465,7 @@ export function AppNavigator() {
           {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
         </Stack.Screen>
         <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
+        <Stack.Screen name="RoomPlanner" component={RoomPlannerScreen} options={fadeTransition} />
       </Stack.Navigator>
     </Suspense>
   );
