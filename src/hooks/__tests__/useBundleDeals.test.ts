@@ -14,10 +14,7 @@ const PRODUCT_A = PRODUCTS[0];
 const PRODUCT_B = PRODUCTS[1];
 
 /** A BundleDeals data item for a given productId */
-function makeBundleData(
-  productId: string,
-  relatedProductIds: string[],
-): Record<string, unknown> {
+function makeBundleData(productId: string, relatedProductIds: string[]): Record<string, unknown> {
   return { productId, relatedProductIds };
 }
 

@@ -22,9 +22,7 @@ interface Props {
 export const BundleRow = memo(function BundleRow({ products, onProductPress, testID }: Props) {
   if (products.length === 0) return null;
 
-  return (
-    <BundleRowInner products={products} onProductPress={onProductPress} testID={testID} />
-  );
+  return <BundleRowInner products={products} onProductPress={onProductPress} testID={testID} />;
 });
 
 function BundleRowInner({ products, onProductPress, testID }: Props) {
