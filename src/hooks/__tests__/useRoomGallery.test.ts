@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
-import { useRoomGallery, type RoomGalleryItem } from '../useRoomGallery';
+import { useRoomGallery, PLACEHOLDER_ROOMS, type RoomGalleryItem } from '../useRoomGallery';
 
 // Mock wixProvider
 const mockQueryData = jest.fn();
@@ -28,10 +28,11 @@ describe('useRoomGallery', () => {
   });
 
   describe('without Wix client (no auth)', () => {
-    it('returns empty rooms and isLoading=false when no wix client', async () => {
+    it('returns placeholder rooms and isLoading=false when no wix client', async () => {
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.rooms).toEqual([]);
+      expect(result.current.rooms).toEqual(PLACEHOLDER_ROOMS);
+      expect(result.current.isPlaceholder).toBe(true);
       expect(result.current.error).toBeNull();
     });
   });
@@ -99,12 +100,13 @@ describe('useRoomGallery', () => {
       expect(result.current.error).toBeNull();
     });
 
-    it('returns empty rooms when API returns empty array', async () => {
+    it('returns placeholder rooms when API returns empty array', async () => {
       mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.rooms).toEqual([]);
+      expect(result.current.rooms).toEqual(PLACEHOLDER_ROOMS);
+      expect(result.current.isPlaceholder).toBe(true);
       expect(result.current.error).toBeNull();
     });
 

@@ -3,11 +3,14 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { RoomGalleryScreen } from '../RoomGalleryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { RoomGalleryItem } from '@/hooks/useRoomGallery';
+import { PLACEHOLDER_ROOMS } from '@/hooks/useRoomGallery';
 
-// Mock useRoomGallery so screen tests control the data layer
+// Mock useRoomGallery so screen tests control the data layer.
+// Spread requireActual so PLACEHOLDER_ROOMS constant is available.
 const mockRefresh = jest.fn();
 const mockUseRoomGallery = jest.fn();
 jest.mock('@/hooks/useRoomGallery', () => ({
+  ...jest.requireActual('@/hooks/useRoomGallery'),
   useRoomGallery: () => mockUseRoomGallery(),
 }));
 
@@ -241,6 +244,107 @@ describe('RoomGalleryScreen', () => {
     it('accepts custom testID', () => {
       const { getByTestId } = renderGallery({ testID: 'my-gallery' });
       expect(getByTestId('my-gallery')).toBeTruthy();
+    });
+  });
+
+  // ── cm-biz: placeholder rooms + upload CTA ─────────────────────────────────
+
+  describe('Placeholder state', () => {
+    beforeEach(() => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: PLACEHOLDER_ROOMS,
+        isPlaceholder: true,
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+    });
+
+    it('renders placeholder room photos when no real data', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId(`room-card-${PLACEHOLDER_ROOMS[0].roomId}`)).toBeTruthy();
+    });
+
+    it('renders all placeholder rooms', () => {
+      const { getByTestId } = renderGallery();
+      for (const room of PLACEHOLDER_ROOMS) {
+        expect(getByTestId(`room-card-${room.roomId}`)).toBeTruthy();
+      }
+    });
+
+    it('shows placeholder banner label when isPlaceholder is true', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-placeholder-banner')).toBeTruthy();
+    });
+
+    it('does not show empty state when placeholder rooms present', () => {
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-empty')).toBeNull();
+    });
+
+    it('placeholder rooms have non-empty imageUrl', () => {
+      for (const room of PLACEHOLDER_ROOMS) {
+        expect(room.imageUrl).toBeTruthy();
+        expect(room.productIds.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  describe('Upload CTA', () => {
+    it('renders Share Your Room CTA in populated gallery', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-share-cta')).toBeTruthy();
+    });
+
+    it('renders Share Your Room CTA when placeholder rooms shown', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: PLACEHOLDER_ROOMS,
+        isPlaceholder: true,
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-share-cta')).toBeTruthy();
+    });
+
+    it('calls onSharePress when CTA is tapped', () => {
+      const onSharePress = jest.fn();
+      const { getByTestId } = renderGallery({ onSharePress });
+      fireEvent.press(getByTestId('room-gallery-share-cta'));
+      expect(onSharePress).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not throw when CTA pressed without onSharePress', () => {
+      const { getByTestId } = renderGallery();
+      expect(() => fireEvent.press(getByTestId('room-gallery-share-cta'))).not.toThrow();
+    });
+
+    it('does not show CTA during loading', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: true,
+        error: null,
+        refresh: mockRefresh,
+      });
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-share-cta')).toBeNull();
+    });
+
+    it('does not show CTA during error state', () => {
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [],
+        isLoading: false,
+        error: new Error('Network error'),
+        refresh: mockRefresh,
+      });
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId('room-gallery-share-cta')).toBeNull();
+    });
+
+    it('CTA has accessibility role button', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-gallery-share-cta').props.accessibilityRole).toBe('button');
     });
   });
 });
