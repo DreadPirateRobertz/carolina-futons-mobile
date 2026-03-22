@@ -3,9 +3,11 @@
  *
  * Compact variant for ProductCard, detail variant for ProductDetailScreen
  * with full term breakdown and disclaimer.
+ *
+ * Pass `onPress` to make the badge tappable (opens BNPL modal — cm-qmr).
  */
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/theme';
 import { isFinancingEligible, getFinancingTerms } from '@/utils/financing';
 import { formatPrice } from '@/utils';
@@ -13,10 +15,11 @@ import { formatPrice } from '@/utils';
 interface Props {
   price: number;
   variant?: 'compact' | 'detail';
+  onPress?: () => void;
   testID?: string;
 }
 
-export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
+export function FinancingBadge({ price, variant = 'compact', onPress, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 
   if (!isFinancingEligible(price)) return null;
@@ -28,7 +31,8 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
   const lowestTerm = terms[terms.length - 1];
 
   if (variant === 'compact') {
-    return (
+    const badgeTestID = testID ?? 'financing-badge-compact';
+    const inner = (
       <View
         style={[
           styles.compactBadge,
@@ -38,20 +42,32 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
             borderColor: colors.mountainBlue,
           },
         ]}
-        testID={testID ?? 'financing-badge-compact'}
       >
         <Text style={[styles.compactText, { color: colors.mountainBlue }]}>
           As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
         </Text>
       </View>
     );
+    if (onPress) {
+      return (
+        <TouchableOpacity
+          onPress={onPress}
+          testID={badgeTestID}
+          accessibilityRole="button"
+          accessibilityLabel="View financing options"
+          activeOpacity={0.7}
+        >
+          {inner}
+        </TouchableOpacity>
+      );
+    }
+    return <View testID={badgeTestID}>{inner}</View>;
   }
 
-  return (
-    <View
-      style={[styles.detailContainer, { borderColor: colors.mountainBlue }]}
-      testID={testID ?? 'financing-badge-detail'}
-    >
+  // detail variant
+  const detailTestID = testID ?? 'financing-badge-detail';
+  const detailInner = (
+    <>
       <Text style={[styles.detailTitle, { color: colors.mountainBlue }]}>
         As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
       </Text>
@@ -70,6 +86,31 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
       <Text style={[styles.disclaimer, { color: colors.espressoLight }]}>
         Subject to credit approval. {FINANCING_APR_DISPLAY} APR.
       </Text>
+    </>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        testID={detailTestID}
+        accessibilityRole="button"
+        accessibilityLabel="View financing options"
+        activeOpacity={0.7}
+      >
+        <View style={[styles.detailContainer, { borderColor: colors.mountainBlue }]}>
+          {detailInner}
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View
+      style={[styles.detailContainer, { borderColor: colors.mountainBlue }]}
+      testID={detailTestID}
+    >
+      {detailInner}
     </View>
   );
 }

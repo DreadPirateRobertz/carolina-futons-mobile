@@ -5,8 +5,10 @@
  *
  * Provides:
  *  - BNPL_PROVIDERS: metadata about each provider (limits, display name, tagline)
+ *  - BNPL_DEEPLINKS: app + web URLs for each provider
  *  - isBNPLEligible: whether a given total is within a provider's min/max range
  *  - getBNPLInstallments: calculate a 4-payment installment schedule
+ *  - openBNPLDeeplink: open provider app (if installed) or fall back to web
  *
  * Stripe handles the actual payment presentation via initPaymentSheet with
  * paymentMethodTypes: ['klarna'] or ['afterpay_clearpay']. This module handles
@@ -15,8 +17,9 @@
  * Loyalty points: awarded on order_confirmed, NOT on BNPL authorization.
  * This is per Melania directive — BNPL auth is not a completed purchase.
  *
- * Bead: cm-1s7
+ * Bead: cm-1s7, cm-qmr
  */
+import { Linking } from 'react-native';
 
 export type BNPLProviderKey = 'klarna' | 'affirm';
 
@@ -110,4 +113,41 @@ export function getBNPLInstallments(total: number, provider: BNPLProviderKey): B
       label,
     };
   });
+}
+
+// ── Deeplinks ─────────────────────────────────────────────────────────────────
+
+export interface BNPLDeeplink {
+  /** Native app URL scheme — tried first; falls back to webUrl if unavailable */
+  appUrl: string;
+  /** Web fallback URL — always openable */
+  webUrl: string;
+}
+
+export const BNPL_DEEPLINKS: Record<BNPLProviderKey, BNPLDeeplink> = {
+  klarna: {
+    appUrl: 'klarna://',
+    webUrl: 'https://www.klarna.com/us/klarna-app/',
+  },
+  affirm: {
+    appUrl: 'affirm://',
+    webUrl: 'https://www.affirm.com/apps',
+  },
+};
+
+/**
+ * Opens the BNPL provider's native app if installed, otherwise falls back to
+ * the provider's mobile web URL.
+ *
+ * @throws if both the app URL and web URL fail to open (e.g., no internet)
+ */
+export async function openBNPLDeeplink(provider: BNPLProviderKey): Promise<void> {
+  const { appUrl, webUrl } = BNPL_DEEPLINKS[provider];
+  let canOpenApp = false;
+  try {
+    canOpenApp = await Linking.canOpenURL(appUrl);
+  } catch {
+    // canOpenURL may throw on some Android versions; treat as cannot open
+  }
+  await Linking.openURL(canOpenApp ? appUrl : webUrl);
 }

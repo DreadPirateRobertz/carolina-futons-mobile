@@ -3,7 +3,7 @@
  * CF-lalh: badge prominence — larger compact size + "with Klarna" branding.
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { FinancingBadge } from '../FinancingBadge';
 
 jest.mock('@/theme', () => ({
@@ -122,5 +122,29 @@ describe('FinancingBadge', () => {
   it('detail variant disclaimer includes APR percentage', () => {
     const { getByText } = render(<FinancingBadge price={500} variant="detail" />);
     expect(getByText(/9\.99%/)).toBeTruthy();
+  });
+
+  // ── onPress / tap-to-open (cm-qmr) ────────────────────────────────────────
+
+  it('compact badge calls onPress when tapped', () => {
+    const onPress = jest.fn();
+    const { getByTestId } = render(<FinancingBadge price={500} onPress={onPress} />);
+    fireEvent.press(getByTestId('financing-badge-compact'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('detail badge calls onPress when tapped', () => {
+    const onPress = jest.fn();
+    const { getByTestId } = render(
+      <FinancingBadge price={500} variant="detail" onPress={onPress} />,
+    );
+    fireEvent.press(getByTestId('financing-badge-detail'));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders without onPress — compact badge is still a View (not pressable)', () => {
+    const { getByTestId } = render(<FinancingBadge price={500} />);
+    // Should render without crash; press does nothing
+    expect(getByTestId('financing-badge-compact')).toBeTruthy();
   });
 });

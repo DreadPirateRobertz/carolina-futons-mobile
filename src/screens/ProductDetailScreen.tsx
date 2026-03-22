@@ -69,6 +69,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { FinancingBadge } from '@/components/FinancingBadge';
+import { BNPLModal } from '@/components/BNPLModal';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
@@ -139,6 +140,7 @@ export function ProductDetailScreen({
   const [videoError, setVideoError] = useState(false);
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
+  const [bnplModalVisible, setBnplModalVisible] = useState(false);
   const wixClient = useOptionalWixClient();
   const sizeGuideHeight = useSharedValue(0);
 
@@ -677,7 +679,12 @@ export function ProductDetailScreen({
               testID="price-inline-rating"
             />
           )}
-          <FinancingBadge price={totalPrice} variant="detail" />
+          <FinancingBadge
+            price={totalPrice}
+            variant="detail"
+            onPress={() => setBnplModalVisible(true)}
+            testID="product-detail-financing-badge"
+          />
           <ShippingEstimateBadge
             icon={shippingEstimate.icon}
             label={shippingEstimate.label}
@@ -1342,6 +1349,13 @@ export function ProductDetailScreen({
         productName={model.name}
         fabrics={model.fabrics}
         wixClient={wixClient}
+      />
+
+      <BNPLModal
+        visible={bnplModalVisible}
+        onClose={() => setBnplModalVisible(false)}
+        price={totalPrice}
+        testID="bnpl-modal"
       />
     </View>
   );
