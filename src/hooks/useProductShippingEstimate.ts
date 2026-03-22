@@ -27,6 +27,8 @@ export interface ShippingRate {
   serviceLevel: string;
   isEstimate: boolean;
   isFreight: boolean;
+  /** Bundle incentive copy when itemCount > 1 (cm-bundle-incentive) */
+  upsellMessage: string | null;
 }
 
 export interface UseProductShippingEstimateResult {
@@ -40,11 +42,14 @@ export interface UseProductShippingEstimateResult {
 interface Props {
   productId: string;
   dimensions: ProductDimensions;
+  /** Cart item count — passed to backend to enable bundle incentive upsellMessage (cm-bundle-incentive) */
+  itemCount?: number;
 }
 
 export function useProductShippingEstimate({
   productId,
   dimensions,
+  itemCount,
 }: Props): UseProductShippingEstimateResult {
   const wixClient = useOptionalWixClient();
 
@@ -112,6 +117,7 @@ export function useProductShippingEstimate({
         zip,
         productId,
         dimensions: { width: dimW, depth: dimD, height: dimH },
+        ...(itemCount !== undefined ? { itemCount } : {}),
       });
     } catch (syncErr) {
       if (!cancelled && fetchIdRef.current === fetchId) {
@@ -125,7 +131,7 @@ export function useProductShippingEstimate({
     promise
       .then((res: unknown) => {
         if (cancelled || fetchIdRef.current !== fetchId) return;
-        const r = res as { success: boolean; rate?: string; carrier?: string; serviceLevel?: string; isEstimate?: boolean; isFreight?: boolean; error?: string };
+        const r = res as { success: boolean; rate?: string; carrier?: string; serviceLevel?: string; isEstimate?: boolean; isFreight?: boolean; upsellMessage?: string | null; error?: string };
         if (!r.success) {
           setError(new Error(r.error ?? 'Shipping estimate unavailable'));
           setRate(null);
@@ -136,6 +142,7 @@ export function useProductShippingEstimate({
             serviceLevel: r.serviceLevel ?? 'parcel',
             isEstimate: r.isEstimate ?? false,
             isFreight: r.isFreight ?? false,
+            upsellMessage: r.upsellMessage ?? null,
           });
           setError(null);
         }
@@ -154,7 +161,7 @@ export function useProductShippingEstimate({
   // wixClient intentionally omitted — accessed via wixClientRef to avoid
   // new object identity on every render causing infinite effect re-runs
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zip, productId, dimW, dimD, dimH]);
+  }, [zip, productId, dimW, dimD, dimH, itemCount]);
 
   return { zip, setZip, rate, isLoading, error };
 }

@@ -775,6 +775,7 @@ export function ProductDetailScreen({
           <ShippingEstimatePanel
             productId={catalogProductId ?? model.id}
             dimensions={model.dimensions}
+            itemCount={cart.itemCount}
             testID="shipping-estimate-panel"
           />
 
