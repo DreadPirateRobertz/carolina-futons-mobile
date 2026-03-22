@@ -1207,7 +1207,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               ]}
             >
               <Text
-                style={[styles.deliveryEstimateText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+                style={[
+                  styles.deliveryEstimateText,
+                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                ]}
                 testID="delivery-estimate"
               >
                 {`Ships in ${estimate}`}
