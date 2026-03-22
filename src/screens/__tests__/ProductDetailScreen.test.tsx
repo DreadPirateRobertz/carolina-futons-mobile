@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
-import { Alert, Platform, Dimensions } from 'react-native';
+import { Alert, Platform, Dimensions, StyleSheet } from 'react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -596,6 +596,36 @@ describe('ProductDetailScreen', () => {
       fireEvent.press(getByTestId('quantity-increment'));
       const btn = getByTestId('add-to-cart-button');
       expect(btn.props.accessibilityLabel).toBe('Add 3 The Asheville to cart for $1047.00');
+    });
+
+    it('add-to-cart button has alignSelf stretch so it fills container on small screens', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const btn = getByTestId('add-to-cart-button');
+      const flat = StyleSheet.flatten(btn.props.style);
+      expect(flat.alignSelf).toBe('stretch');
+    });
+
+    it('notify-back-in-stock button has alignSelf stretch so it fills container on small screens', async () => {
+      // grip-strips has inStock: false, stockCount: 0 — renders notify button
+      const { getByTestId } = renderDetail({ productId: 'grip-strips' });
+      await act(async () => {});
+      const btn = getByTestId('notify-back-in-stock-button');
+      const flat = StyleSheet.flatten(btn.props.style);
+      expect(flat.alignSelf).toBe('stretch');
+    });
+
+    it('add-to-cart button renders fully on 320px wide screens', () => {
+      const spy = jest.spyOn(Dimensions, 'get').mockReturnValue({ width: 320, height: 568, scale: 2, fontScale: 1 });
+      try {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        const btn = getByTestId('add-to-cart-button');
+        expect(btn).toBeTruthy();
+        expect(btn.props.accessibilityRole).toBe('button');
+        const flat = StyleSheet.flatten(btn.props.style);
+        expect(flat.alignSelf).toBe('stretch');
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 

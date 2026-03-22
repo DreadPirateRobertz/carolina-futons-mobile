@@ -1895,6 +1895,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addToCartButton: {
+    alignSelf: 'stretch',
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
