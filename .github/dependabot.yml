@@ -15,7 +15,7 @@ updates:
     open-pull-requests-limit: 10
     rebase-strategy: auto
     groups:
-      # Group dev-dependency bumps into a single PR
+      # Group dev-dependency minor/patch bumps into a single PR
       dev-dependencies:
         dependency-type: development
         update-types:
@@ -30,30 +30,13 @@ updates:
         update-types:
           - minor
           - patch
-    # Ignore major bumps on packages with known breaking major upgrade paths
-    # or ecosystem coupling requirements (Expo SDK, React Native, Wix)
+      # Security patches get their own PR for visibility
+      security-patches:
+        applies-to: security-updates
+        patterns:
+          - "*"
+    # Ignore ALL semver-major bumps — major upgrades require manual coordination
     ignore:
-      - dependency-name: "expo"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "expo-*"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "@expo/*"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "react-native"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "react"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "react-native-reanimated"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "@wix/*"
-        update-types:
-          - version-update:semver-major
-      - dependency-name: "@stripe/*"
+      - dependency-name: "*"
         update-types:
           - version-update:semver-major
