@@ -1,7 +1,57 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StyleQuizScreen } from '../StyleQuizScreen';
+
+jest.mock('@/components/ProductCard', () => ({
+  ProductCard: ({ testID, onPress }: { testID?: string; onPress?: () => void }) => {
+    const React = require('react');
+    const { TouchableOpacity } = require('react-native');
+    return React.createElement(TouchableOpacity, { testID, onPress });
+  },
+}));
+
+jest.mock('@/data/products', () => ({
+  PRODUCTS: [
+    {
+      id: 'prod-1',
+      slug: 'asheville-full-futon',
+      name: 'Asheville Full Futon',
+      price: 799,
+      images: [],
+      inStock: true,
+      rating: 4.5,
+      reviewCount: 12,
+      shortDescription: '',
+      badge: null,
+    },
+    {
+      id: 'prod-2',
+      slug: 'blue-ridge-queen-futon',
+      name: 'Blue Ridge Queen Futon',
+      price: 999,
+      images: [],
+      inStock: true,
+      rating: 4.7,
+      reviewCount: 8,
+      shortDescription: '',
+      badge: null,
+    },
+    {
+      id: 'prod-3',
+      slug: 'biltmore-loveseat',
+      name: 'Biltmore Loveseat',
+      price: 649,
+      images: [],
+      inStock: true,
+      rating: 4.3,
+      reviewCount: 5,
+      shortDescription: '',
+      badge: null,
+    },
+  ],
+}));
 
 jest.mock('@/theme', () => ({
   useTheme: () => ({
@@ -319,17 +369,19 @@ describe('StyleQuizScreen', () => {
 
   // ── Edge Cases ──────────────────────────────────────────────────
 
-  it('handles AsyncStorage write failure gracefully', async () => {
-    mockSetItem.mockRejectedValue(new Error('Storage full'));
+  it('shows alert and does not call onComplete when savePreferences fails', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+    mockSetItem.mockRejectedValueOnce(new Error('Storage full'));
     const { getByTestId } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
     completeQuiz(getByTestId);
     fireEvent.press(getByTestId('style-quiz-save-button'));
-    // Should still complete even if storage fails
     await waitFor(() => {
-      expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      expect(alertSpy).toHaveBeenCalledWith('Save Failed', expect.any(String), expect.any(Array));
     });
+    expect(mockOnComplete).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 
   it('shows personalized completion message with selected style', () => {

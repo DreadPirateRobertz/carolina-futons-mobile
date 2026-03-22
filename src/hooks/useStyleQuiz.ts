@@ -48,23 +48,32 @@ const EMPTY_PREFERENCES: StylePreferences = {
 type RecommendationKey = `${StylePreference}:${SizeNeeds}`;
 
 const RECOMMENDATION_MAP: Record<RecommendationKey, QuizRecommendation> = {
-  'modern:twin': { label: 'Coastal Studio', productSlugs: ['asheville-full'] },
+  'modern:twin': { label: 'Coastal Studio', productSlugs: ['asheville-full-futon'] },
   'modern:full': {
     label: 'Coastal Minimalist',
-    productSlugs: ['asheville-full', 'blue-ridge-full'],
+    productSlugs: ['asheville-full-futon', 'blue-ridge-queen-futon'],
   },
-  'modern:queen': { label: 'Coastal Suite', productSlugs: ['biltmore-queen'] },
-  'rustic:twin': { label: 'Warm Retreat', productSlugs: ['asheville-full'] },
-  'rustic:full': { label: 'Warm Industrial', productSlugs: ['biltmore-queen', 'asheville-full'] },
-  'rustic:queen': { label: 'Mountain Lodge', productSlugs: ['biltmore-queen'] },
-  'classic:twin': { label: 'Classic Retreat', productSlugs: ['asheville-full', 'blue-ridge-full'] },
-  'classic:full': { label: 'Classic Comfort', productSlugs: ['biltmore-queen', 'blue-ridge-full'] },
-  'classic:queen': { label: 'Classic Grand', productSlugs: ['biltmore-queen'] },
+  'modern:queen': { label: 'Coastal Suite', productSlugs: ['biltmore-loveseat'] },
+  'rustic:twin': { label: 'Warm Retreat', productSlugs: ['asheville-full-futon'] },
+  'rustic:full': {
+    label: 'Warm Industrial',
+    productSlugs: ['biltmore-loveseat', 'asheville-full-futon'],
+  },
+  'rustic:queen': { label: 'Mountain Lodge', productSlugs: ['biltmore-loveseat'] },
+  'classic:twin': {
+    label: 'Classic Retreat',
+    productSlugs: ['asheville-full-futon', 'blue-ridge-queen-futon'],
+  },
+  'classic:full': {
+    label: 'Classic Comfort',
+    productSlugs: ['biltmore-loveseat', 'blue-ridge-queen-futon'],
+  },
+  'classic:queen': { label: 'Classic Grand', productSlugs: ['biltmore-loveseat'] },
 };
 
 const FALLBACK_RECOMMENDATION: QuizRecommendation = {
   label: 'Classic Comfort',
-  productSlugs: ['asheville-full', 'biltmore-queen', 'blue-ridge-full'],
+  productSlugs: ['asheville-full-futon', 'biltmore-loveseat', 'blue-ridge-queen-futon'],
 };
 
 /** Local fallback: maps stylePreference + sizeNeeds to a personality label and curated product slugs. */
@@ -104,11 +113,7 @@ export function useStyleQuiz() {
   }, []);
 
   const savePreferences = useCallback(async () => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-    } catch {
-      // Storage write failed — preferences lost but onboarding continues
-    }
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
   }, [preferences]);
 
   return {

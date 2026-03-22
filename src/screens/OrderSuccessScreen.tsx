@@ -11,7 +11,6 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 
 interface Props {
-  orderId: string;
   orderNumber: string;
   onContinueShopping: () => void;
   onViewOrders?: () => void;
@@ -45,7 +44,13 @@ export function OrderSuccessScreen({
           { backgroundColor: colors.success + '20', borderRadius: 999 },
         ]}
       >
-        <Text style={styles.checkmark}>✓</Text>
+        <Text
+          style={[styles.checkmark, { color: colors.success }]}
+          accessibilityLabel="Order confirmed"
+          accessibilityRole="text"
+        >
+          ✓
+        </Text>
       </View>
 
       {/* Heading */}
@@ -118,7 +123,6 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 40,
-    color: '#22C55E',
     fontWeight: '700',
   },
   heading: {

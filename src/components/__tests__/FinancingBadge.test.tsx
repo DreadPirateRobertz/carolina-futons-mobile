@@ -58,9 +58,10 @@ describe('FinancingBadge', () => {
 
   // ── CF-lalh: prominence + Klarna branding ──────────────────────────────────
 
-  it('compact variant includes "with Klarna" in text', () => {
+  it('compact variant includes Klarna and Affirm branding', () => {
     const { getByText } = render(<FinancingBadge price={500} variant="compact" />);
-    expect(getByText(/with Klarna/i)).toBeTruthy();
+    expect(getByText(/Klarna/i)).toBeTruthy();
+    expect(getByText(/Affirm/i)).toBeTruthy();
   });
 
   it('detail variant includes "with Klarna" in title', () => {
@@ -68,11 +69,12 @@ describe('FinancingBadge', () => {
     expect(getByText(/with Klarna/i)).toBeTruthy();
   });
 
-  it('compact badge renders with branding text for legibility', () => {
+  it('compact badge renders with monthly amount and branding for legibility', () => {
     const { getByTestId, getByText } = render(<FinancingBadge price={500} variant="compact" />);
     expect(getByTestId('financing-badge-compact')).toBeTruthy();
-    // Verifies text is rendered (font size 12 applied via styles)
-    expect(getByText(/As low as.*\/mo.*with Klarna/i)).toBeTruthy();
+    expect(getByText(/As low as/i)).toBeTruthy();
+    expect(getByText(/\/mo/)).toBeTruthy();
+    expect(getByText(/Klarna/i)).toBeTruthy();
   });
 
   it('compact badge has testID "financing-badge-compact" for ProductCard targeting', () => {
@@ -87,8 +89,9 @@ describe('FinancingBadge', () => {
 
   it('compact badge renders adjacent to price — renders for $500 product', () => {
     const { getByText } = render(<FinancingBadge price={500} variant="compact" />);
-    // Verifies badge renders at card-eligible price with Klarna branding visible
-    expect(getByText(/As low as.*\/mo.*with Klarna/i)).toBeTruthy();
+    // Verifies badge renders at card-eligible price with branding visible
+    expect(getByText(/As low as/i)).toBeTruthy();
+    expect(getByText(/\/mo/)).toBeTruthy();
   });
 
   it('detail badge shows Klarna branding prominently', () => {
@@ -102,7 +105,7 @@ describe('FinancingBadge', () => {
   it('renders badge at exact threshold boundary ($300)', () => {
     const { getByText } = render(<FinancingBadge price={300} />);
     expect(getByText(/As low as/)).toBeTruthy();
-    expect(getByText(/with Klarna/i)).toBeTruthy();
+    expect(getByText(/Klarna/i)).toBeTruthy();
   });
 
   it('accepts custom testID on detail variant', () => {
@@ -146,5 +149,23 @@ describe('FinancingBadge', () => {
     const { getByTestId } = render(<FinancingBadge price={500} />);
     // Should render without crash; press does nothing
     expect(getByTestId('financing-badge-compact')).toBeTruthy();
+  });
+
+  // ── cm-kag: prominent compact badge ────────────────────────────────────────
+
+  it('compact badge shows provider names (Klarna · Affirm) for prominence', () => {
+    const { getByText } = render(<FinancingBadge price={500} variant="compact" />);
+    expect(getByText('Klarna · Affirm')).toBeTruthy();
+  });
+
+  it('compact badge shows CTA tap text', () => {
+    const { getByText } = render(<FinancingBadge price={500} onPress={jest.fn()} />);
+    expect(getByText(/tap to see options/i)).toBeTruthy();
+  });
+
+  it('compact badge with onPress has descriptive accessibilityLabel', () => {
+    const { getByRole } = render(<FinancingBadge price={500} onPress={jest.fn()} />);
+    const btn = getByRole('button');
+    expect(btn.props.accessibilityLabel).toMatch(/Klarna or Affirm/i);
   });
 });

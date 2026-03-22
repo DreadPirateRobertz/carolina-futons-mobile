@@ -183,7 +183,7 @@ export type RootStackParamList = {
   Checkout: undefined;
   OrderConfirmation: { order: OrderConfirmation };
   PaymentConfirmation: { order: OrderConfirmation };
-  OrderSuccess: { orderId: string; orderNumber: string };
+  OrderSuccess: { orderId?: string; orderNumber: string };
   OrderHistory: undefined;
   OrderDetail: { orderId: string };
   Login: undefined;
@@ -314,18 +314,16 @@ export function AppNavigator() {
         <Stack.Screen name="OrderSuccess">
           {({ route, navigation: nav }) => {
             // Guard against malformed deep-links or push notification payloads.
-            if (!route.params?.orderId) {
+            if (!route.params?.orderNumber) {
               nav.goBack();
               return null;
             }
-            const { orderId, orderNumber } = route.params as {
-              orderId: string;
+            const { orderNumber } = route.params as {
               orderNumber: string;
             };
             return (
               <Suspense fallback={<LazyFallback />}>
                 <OrderSuccessScreen
-                  orderId={orderId}
                   orderNumber={orderNumber}
                   onContinueShopping={() =>
                     nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }))

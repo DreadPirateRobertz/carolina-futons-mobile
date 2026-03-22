@@ -24,6 +24,15 @@ jest.mock('../ProductCardVideo', () => {
   };
 });
 
+jest.mock('../BNPLModal', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    BNPLModal: ({ visible, testID }: { visible: boolean; testID?: string }) =>
+      visible ? React.createElement(View, { testID: testID ?? 'bnpl-modal' }) : null,
+  };
+});
+
 // Mock useInventoryBadge so ProductCard tests control live-inventory state
 // without needing a Wix client. Default: no badge (well-stocked).
 const mockUseInventoryBadge = jest.fn();
@@ -593,10 +602,11 @@ describe('ProductCard', () => {
       expect(getByTestId('financing-badge-compact')).toBeTruthy();
     });
 
-    it('shows "with Klarna" in compact badge on card', () => {
+    it('shows Klarna and Affirm branding in compact badge on card', () => {
       const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
       const { getByText } = renderCard({ product: eligibleProduct });
-      expect(getByText(/with Klarna/i)).toBeTruthy();
+      expect(getByText(/Klarna/i)).toBeTruthy();
+      expect(getByText(/Affirm/i)).toBeTruthy();
     });
 
     it('does not render financing badge for ineligible price (<=$299)', () => {
@@ -610,6 +620,29 @@ describe('ProductCard', () => {
       const { getByText } = renderCard({ product: eligibleProduct });
       expect(getByText(/As low as/i)).toBeTruthy();
       expect(getByText(/\/mo/)).toBeTruthy();
+    });
+  });
+
+  // ── cm-kag: BNPL modal wiring via financing badge ────────────────────────────
+  describe('BNPL modal wiring (cm-kag)', () => {
+    it('BNPL modal is not shown by default', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const { queryByTestId } = renderCard({ product: eligibleProduct });
+      expect(queryByTestId('bnpl-modal')).toBeNull();
+    });
+
+    it('pressing financing badge opens BNPL modal', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const { getByTestId } = renderCard({ product: eligibleProduct });
+      fireEvent.press(getByTestId('financing-badge-compact'));
+      expect(getByTestId('bnpl-modal')).toBeTruthy();
+    });
+
+    it('BNPL modal does not appear for ineligible product', () => {
+      const ineligibleProduct = PRODUCTS.find((p) => p.price <= 299)!;
+      const { queryByTestId } = renderCard({ product: ineligibleProduct });
+      expect(queryByTestId('financing-badge-compact')).toBeNull();
+      expect(queryByTestId('bnpl-modal')).toBeNull();
     });
   });
 });

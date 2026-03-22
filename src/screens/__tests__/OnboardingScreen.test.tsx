@@ -1,5 +1,7 @@
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OnboardingScreen } from '../OnboardingScreen';
 
 // Mock useTheme
@@ -144,6 +146,25 @@ describe('OnboardingScreen', () => {
     await waitFor(() => {
       expect(mockOnComplete).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it('shows alert and does not call onComplete when savePreferences fails', async () => {
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+    (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Storage full'));
+    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
+    // Navigate through entire flow to completion
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-classic'));
+    fireEvent.press(getByTestId('quiz-option-sleeping'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith('Save Failed', expect.any(String), expect.any(Array));
+    });
+    expect(mockOnComplete).not.toHaveBeenCalled();
+    alertSpy.mockRestore();
   });
 
   // ── Skip & Back ───────────────────────────────────────────────

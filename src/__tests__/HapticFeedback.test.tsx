@@ -235,42 +235,20 @@ describe('OrderSuccessScreen — haptic on mount', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('fires Notification.Success on mount', () => {
-    render(
-      <OrderSuccessScreen
-        orderId="ord-001"
-        orderNumber="CF-12345"
-        onContinueShopping={jest.fn()}
-      />,
-    );
+    render(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
     expect(mockNotification).toHaveBeenCalledWith(Haptics.NotificationFeedbackType.Success);
   });
 
   it('fires Notification.Success exactly once (not on every render)', () => {
     const { rerender } = render(
-      <OrderSuccessScreen
-        orderId="ord-001"
-        orderNumber="CF-12345"
-        onContinueShopping={jest.fn()}
-      />,
+      <OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />,
     );
-    rerender(
-      <OrderSuccessScreen
-        orderId="ord-001"
-        orderNumber="CF-12345"
-        onContinueShopping={jest.fn()}
-      />,
-    );
+    rerender(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
     expect(mockNotification).toHaveBeenCalledTimes(1);
   });
 
   it('does NOT fire Impact on mount', () => {
-    render(
-      <OrderSuccessScreen
-        orderId="ord-001"
-        orderNumber="CF-12345"
-        onContinueShopping={jest.fn()}
-      />,
-    );
+    render(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
     expect(mockImpact).not.toHaveBeenCalled();
   });
 });

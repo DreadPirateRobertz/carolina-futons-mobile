@@ -24,6 +24,7 @@ import { formatPrice } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
+import { BNPLModal } from './BNPLModal';
 import { FinancingBadge } from './FinancingBadge';
 import { ProductCardVideo } from './ProductCardVideo';
 import { CompareButton } from './CompareButton';
@@ -103,6 +104,7 @@ export const ProductCard = memo(function ProductCard({
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const imageTracking = useImageLoadTracking('ProductCard');
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [bnplModalVisible, setBnplModalVisible] = useState(false);
 
   const handleLongPress = useCallback(() => {
     if (contextMenu) {
@@ -224,7 +226,11 @@ export const ProductCard = memo(function ProductCard({
             )}
           </View>
 
-          <FinancingBadge price={product.price} variant="compact" />
+          <FinancingBadge
+            price={product.price}
+            variant="compact"
+            onPress={() => setBnplModalVisible(true)}
+          />
 
           {stockBadge && (
             <View
@@ -270,6 +276,12 @@ export const ProductCard = memo(function ProductCard({
           onShare={contextMenu.onShare}
         />
       )}
+
+      <BNPLModal
+        visible={bnplModalVisible}
+        onClose={() => setBnplModalVisible(false)}
+        price={product.price}
+      />
     </>
   );
 });
