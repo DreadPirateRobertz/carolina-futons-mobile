@@ -262,7 +262,9 @@ describe('submitQuestion', () => {
       result.current.submitQuestion('What fabric is this?');
     });
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
-    await act(async () => { resolveInsert(); });
+    await act(async () => {
+      resolveInsert();
+    });
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
   });
 });

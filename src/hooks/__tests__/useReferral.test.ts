@@ -83,8 +83,7 @@ beforeEach(() => {
   mockQueryData.mockImplementation((collection: string) => {
     if (collection === 'ReferralCodes')
       return Promise.resolve({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
-    if (collection === 'Referrals')
-      return Promise.resolve({ items: [], totalResults: 0 });
+    if (collection === 'Referrals') return Promise.resolve({ items: [], totalResults: 0 });
     return Promise.resolve({ items: [], totalResults: 0 });
   });
 });

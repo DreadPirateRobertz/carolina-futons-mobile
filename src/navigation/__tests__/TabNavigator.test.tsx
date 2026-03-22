@@ -18,9 +18,7 @@ jest.mock('@react-navigation/bottom-tabs', () => {
     Navigator: ({ children, screenOptions: _so, tabBar: _tb }: any) => (
       <View testID="tab-navigator">{children}</View>
     ),
-    Screen: ({ name, component: Comp }: any) => (
-      <View testID={`tab-screen-${name}`} />
-    ),
+    Screen: ({ name, component: Comp }: any) => <View testID={`tab-screen-${name}`} />,
   });
   return { createBottomTabNavigator };
 });

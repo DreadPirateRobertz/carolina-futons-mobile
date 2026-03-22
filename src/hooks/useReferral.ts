@@ -91,8 +91,7 @@ function rawToReferralRecord(item: WixReferralRecord): ReferralRecord {
   if (!knownStatuses.includes(item.status)) {
     console.warn(`[useReferral] Unexpected referral status: "${item.status}"`);
   }
-  const status =
-    item.status === 'completed' || item.status === 'expired' ? item.status : 'pending';
+  const status = item.status === 'completed' || item.status === 'expired' ? item.status : 'pending';
   return {
     _id: item._id,
     referralCode: item.referralCode,

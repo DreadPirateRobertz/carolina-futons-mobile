@@ -22,23 +22,35 @@ export const QuestionCard = memo(function QuestionCard({ question, testID }: Que
 
   return (
     <View
-      style={[styles.card, { backgroundColor: colors.sandDark, borderRadius: borderRadius.md ?? 12 }]}
+      style={[
+        styles.card,
+        { backgroundColor: colors.sandDark, borderRadius: borderRadius.md ?? 12 },
+      ]}
       testID={base}
     >
       {/* Question row */}
       <View style={styles.row}>
         <Text
-          style={[styles.question, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+          style={[
+            styles.question,
+            { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+          ]}
           testID={`${base}-question`}
         >
           {question.question}
         </Text>
         {question.answered ? (
-          <View style={[styles.badge, { backgroundColor: colors.sunsetCoral }]} testID={`${base}-answered-badge`}>
+          <View
+            style={[styles.badge, { backgroundColor: colors.sunsetCoral }]}
+            testID={`${base}-answered-badge`}
+          >
             <Text style={styles.badgeText}>Answered</Text>
           </View>
         ) : (
-          <View style={[styles.badge, { backgroundColor: colors.overlay }]} testID={`${base}-awaiting`}>
+          <View
+            style={[styles.badge, { backgroundColor: colors.overlay }]}
+            testID={`${base}-awaiting`}
+          >
             <Text style={[styles.badgeText, { color: colors.espressoLight }]}>Awaiting answer</Text>
           </View>
         )}
@@ -46,10 +58,7 @@ export const QuestionCard = memo(function QuestionCard({ question, testID }: Que
 
       {/* Answer body — only when answered */}
       {question.answered && question.answer ? (
-        <Text
-          style={[styles.answer, { color: colors.espresso }]}
-          testID={`${base}-answer`}
-        >
+        <Text style={[styles.answer, { color: colors.espresso }]} testID={`${base}-answer`}>
           {question.answer}
         </Text>
       ) : null}

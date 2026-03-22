@@ -446,7 +446,9 @@ export function ProductDetailScreen({
             Tag uses FutonModel.id (no 'prod-' prefix), matching the normalized
             tag in ProductCard so Reanimated can pair the transition elements. */}
         <Animated.View
-          sharedTransitionTag={sharedTransitionTag(`product-image-${localModel ? model.id : resolvedId}`)}
+          sharedTransitionTag={sharedTransitionTag(
+            `product-image-${localModel ? model.id : resolvedId}`,
+          )}
           testID={`product-image-gallery-${model.id}`}
           style={[styles.galleryContainer, galleryParallaxStyle]}
         >
@@ -1100,13 +1102,18 @@ export function ProductDetailScreen({
         ) : null}
 
         {/* Q&A Section */}
-        <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="product-qa-section">
+        <View
+          style={[styles.section, { paddingHorizontal: spacing.lg }]}
+          testID="product-qa-section"
+        >
           <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Questions & Answers</Text>
 
           {qaLoading ? (
             <View testID="product-qa-loading" style={styles.qaLoadingPlaceholder}>
               <View style={[styles.qaSkeletonLine, { backgroundColor: colors.overlay }]} />
-              <View style={[styles.qaSkeletonLine, { backgroundColor: colors.overlay, width: '70%' }]} />
+              <View
+                style={[styles.qaSkeletonLine, { backgroundColor: colors.overlay, width: '70%' }]}
+              />
             </View>
           ) : qaFetchError ? (
             <View testID="product-qa-error" style={styles.qaMessageBox}>
@@ -1122,14 +1129,20 @@ export function ProductDetailScreen({
             </View>
           ) : (
             questions.map((q) => (
-              <QuestionCard key={q.id ?? q.question} question={q} testID={`question-card-${q.id}`} />
+              <QuestionCard
+                key={q.id ?? q.question}
+                question={q}
+                testID={`question-card-${q.id}`}
+              />
             ))
           )}
 
           {/* Submit error / success banners */}
           {qaSubmitError ? (
             <View testID="product-qa-submit-error" style={styles.qaMessageBox}>
-              <Text style={[styles.qaMessageText, { color: colors.espressoLight }]}>{qaSubmitError}</Text>
+              <Text style={[styles.qaMessageText, { color: colors.espressoLight }]}>
+                {qaSubmitError}
+              </Text>
             </View>
           ) : null}
           {qaSubmitSuccess ? (
@@ -1147,14 +1160,24 @@ export function ProductDetailScreen({
             onChangeText={setQaInput}
             placeholder="Ask a question about this product…"
             placeholderTextColor={colors.espressoLight}
-            style={[styles.qaInput, { color: colors.espresso, borderColor: colors.overlay, backgroundColor: colors.sandDark }]}
+            style={[
+              styles.qaInput,
+              {
+                color: colors.espresso,
+                borderColor: colors.overlay,
+                backgroundColor: colors.sandDark,
+              },
+            ]}
             multiline
             maxLength={500}
             editable={!qaIsSubmitting}
           />
           <TouchableOpacity
             testID="product-qa-submit-btn"
-            style={[styles.qaSubmitBtn, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
+            style={[
+              styles.qaSubmitBtn,
+              { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button },
+            ]}
             onPress={() => {
               submitQuestion(qaInput);
               setQaInput('');
@@ -1162,7 +1185,9 @@ export function ProductDetailScreen({
             disabled={qaIsSubmitting}
             accessibilityLabel="Submit question"
           >
-            <Text style={styles.qaSubmitBtnText}>{qaIsSubmitting ? 'Submitting…' : 'Submit Question'}</Text>
+            <Text style={styles.qaSubmitBtnText}>
+              {qaIsSubmitting ? 'Submitting…' : 'Submit Question'}
+            </Text>
           </TouchableOpacity>
         </View>
 

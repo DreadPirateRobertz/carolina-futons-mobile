@@ -27,7 +27,9 @@ jest.mock('@/hooks/useRecommendations', () => {
   const trackView = jest.fn();
   return { useRecommendations: () => ({ similarItems: [], trackView }) };
 });
-jest.mock('@/hooks/useProductRecommendations', () => ({ useProductRecommendations: () => ({ recommendations: [] }) }));
+jest.mock('@/hooks/useProductRecommendations', () => ({
+  useProductRecommendations: () => ({ recommendations: [] }),
+}));
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => null,
   WixProvider: ({ children }: any) => children,
@@ -50,16 +52,44 @@ jest.mock('@/hooks/useInventoryBadge', () => ({
   useInventoryBadge: () => ({ label: null, color: null }),
 }));
 jest.mock('@/hooks/useReviews', () => ({
-  useReviews: () => ({ reviews: [], summary: { averageRating: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] }, sort: 'helpful', setSort: jest.fn(), isSubmitting: false, submitReview: jest.fn(), markHelpful: jest.fn(), showForm: false, setShowForm: jest.fn(), hasReviews: false, submitError: null, submitSuccess: false, clearSubmitStatus: jest.fn() }),
+  useReviews: () => ({
+    reviews: [],
+    summary: { averageRating: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] },
+    sort: 'helpful',
+    setSort: jest.fn(),
+    isSubmitting: false,
+    submitReview: jest.fn(),
+    markHelpful: jest.fn(),
+    showForm: false,
+    setShowForm: jest.fn(),
+    hasReviews: false,
+    submitError: null,
+    submitSuccess: false,
+    clearSubmitStatus: jest.fn(),
+  }),
 }));
 jest.mock('@/hooks/useReferral', () => ({
-  useReferral: () => ({ code: null, loading: false, error: null, creditsEarned: 0, referralCount: 0, shareUrl: null, referredByCode: null, storeReferredByCode: jest.fn() }),
+  useReferral: () => ({
+    code: null,
+    loading: false,
+    error: null,
+    creditsEarned: 0,
+    referralCount: 0,
+    shareUrl: null,
+    referredByCode: null,
+    storeReferredByCode: jest.fn(),
+  }),
 }));
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
-jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Medium: 'medium' } }));
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: { Medium: 'medium' },
+}));
 jest.mock('@/hooks/useRecentlyViewed', () => {
   const addViewed = jest.fn();
-  return { useRecentlyViewed: () => ({ recentProducts: [], addViewed, clearAll: jest.fn(), count: 0 }) };
+  return {
+    useRecentlyViewed: () => ({ recentProducts: [], addViewed, clearAll: jest.fn(), count: 0 }),
+  };
 });
 
 // ── useProductQA mock ─────────────────────────────────────────────────────────
@@ -107,11 +137,7 @@ function renderScreen() {
     <ThemeProvider>
       <WishlistProvider>
         <CompareProvider>
-          <ProductDetailScreen
-            slug={product.slug}
-            onAddToCart={jest.fn()}
-            onBack={jest.fn()}
-          />
+          <ProductDetailScreen slug={product.slug} onAddToCart={jest.fn()} onBack={jest.fn()} />
         </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
