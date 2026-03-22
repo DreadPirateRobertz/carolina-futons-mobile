@@ -121,13 +121,16 @@ export function SearchScreen({ testID }: Props) {
     [setSearchQuery, addSearch],
   );
 
-  const handleChangeText = useCallback((text: string) => {
-    // Update local input immediately; debounce effect propagates to useProducts
-    setInputText(text);
-    if (text.length === 0) {
-      setHasSearched(false);
-    }
-  }, []);
+  const handleChangeText = useCallback(
+    (text: string) => {
+      // Update local input immediately; debounce effect propagates to useProducts
+      setInputText(text);
+      if (text.length === 0) {
+        setHasSearched(false);
+      }
+    },
+    [],
+  );
 
   const renderProduct = useCallback(
     ({ item, index }: { item: Product; index: number }) => (
