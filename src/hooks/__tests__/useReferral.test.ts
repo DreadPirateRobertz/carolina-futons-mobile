@@ -83,8 +83,7 @@ beforeEach(() => {
   mockQueryData.mockImplementation((collection: string) => {
     if (collection === 'ReferralCodes')
       return Promise.resolve({ items: [WIX_REFERRAL_ITEM], totalResults: 1 });
-    if (collection === 'Referrals')
-      return Promise.resolve({ items: [], totalResults: 0 });
+    if (collection === 'Referrals') return Promise.resolve({ items: [], totalResults: 0 });
     return Promise.resolve({ items: [], totalResults: 0 });
   });
 });
@@ -255,7 +254,9 @@ describe('auto-generates referral code when none exists', () => {
     mockUseAuth.mockReturnValue(makeAuth(null));
     renderHook(() => useReferral());
     await new Promise((r) => setTimeout(r, 50));
-    const referralCodeInserts = mockInsertDataItem.mock.calls.filter(([col]) => col === 'ReferralCodes');
+    const referralCodeInserts = mockInsertDataItem.mock.calls.filter(
+      ([col]) => col === 'ReferralCodes',
+    );
     expect(referralCodeInserts).toHaveLength(0);
   });
 });
