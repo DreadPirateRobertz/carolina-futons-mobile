@@ -33,3 +33,18 @@ screenshots/
 .claude/
 __pycache__/
 android/
+
+# Gas Town infrastructure — never commit these
+.beads/
+.mail/
+.serena/
+.superpowers/
+.playwright-mcp/
+crew/
+mayor/
+polecats/
+witness/
+settings/
+state.json
+report_to_human.md
+AGENTS.md
