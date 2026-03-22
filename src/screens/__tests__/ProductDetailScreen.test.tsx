@@ -615,7 +615,9 @@ describe('ProductDetailScreen', () => {
     });
 
     it('add-to-cart button renders fully on 320px wide screens', () => {
-      const spy = jest.spyOn(Dimensions, 'get').mockReturnValue({ width: 320, height: 568, scale: 2, fontScale: 1 });
+      const spy = jest
+        .spyOn(Dimensions, 'get')
+        .mockReturnValue({ width: 320, height: 568, scale: 2, fontScale: 1 });
       try {
         const { getByTestId } = renderDetail({ productId: 'asheville-full' });
         const btn = getByTestId('add-to-cart-button');

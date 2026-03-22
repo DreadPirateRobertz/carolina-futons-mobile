@@ -166,10 +166,7 @@ export function CompareScreen({
                 transition={200}
               />
             )}
-            <TouchableOpacity
-              onPress={() => onProductPress?.(product)}
-              accessibilityRole="button"
-            >
+            <TouchableOpacity onPress={() => onProductPress?.(product)} accessibilityRole="button">
               <Text style={[styles.productName, { color: colors.espresso }]} numberOfLines={2}>
                 {product.name}
               </Text>
