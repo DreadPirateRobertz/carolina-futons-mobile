@@ -134,11 +134,18 @@ npx eas build --profile preview --platform android
 ```
 Then update the table above with the new artifact URL from `expo.dev/accounts/carolinafutons/projects/carolina-futons/builds`.
 
-**Pending rebuild**: PR #153 (saved addresses) + PR #155 (Klarna BNPL) + PR #156 (loyalty tiers) are now merged. Next APK will contain:
-- Klarna BNPL checkout flow
-- Saved shipping addresses
-- Correct loyalty tier thresholds (Silver 500/Gold 1500)
-- CartItem imageUrl from Wix media (once cm-j6b lands)
+**Pending rebuild** (session 22, 2026-03-22 — wait for EAS quota reset 2026-04-01):
+Next APK will contain all of the above plus:
+- CollectionsScreen error state + skeleton loader (cm-thv)
+- RoomGalleryScreen expo-image + blurhash (cm-x6f)
+- StyleQuizScreen Wix product thumbnails (cm-49p)
+- OrderDetailScreen useRef guard + tracking URL null-check (cm-tsh)
+- Gamification: streak badges + PointsToast animation on OrderConfirmation (cm-ihz)
+- Loyalty tier badge in CheckoutScreen (cm-ds5)
+- SearchScreen 300ms debounce + CMS trending chips (cm-c00 + hq-jc723)
+- PDP freight delivery banner + liftgate badge (cm-z9n)
+- Shipping estimate on PDP (cm-9yn — in progress)
+- WWEX checkout shipping integration (cm-o4i — queued)
 
 **EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
@@ -236,21 +243,24 @@ All brand colors, typography, spacing come from tokens mirroring `sharedTokens.j
 
 When testing, verify each screen matches the Blue Ridge editorial feel:
 
-| Screen | Expected Treatment |
-|--------|--------------------|
-| Home | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider |
-| Shop | Dark editorial background, sand product cards, category pills |
-| Product Detail | Dark surfaces, editorial typography, warm shadows |
-| Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) |
-| Cart (items) | Dark editorial, product thumbnails, coral CTA |
-| Checkout | KeyboardAwareScrollView, saved address picker chips, address pre-fill |
-| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion) |
-| Onboarding | Brand story slides + style quiz (dark editorial treatment) |
-| Login/SignUp | Dark editorial with GlassCard form container, KeyboardAwareScrollView |
-| OrderDetail | Order tracking with status timeline |
-| Collections | Collection grid with deep link support |
-| NotificationPreferences | Per-category toggle switches |
-| ForceUpdateModal | Required/recommended variants with store link |
+| Screen | Expected Treatment | Last Updated |
+|--------|--------------------|-------------|
+| Home | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider | — |
+| Shop | Dark editorial background, sand product cards, category pills | — |
+| Search | Search input with 300ms debounce + CMS trending chips (Wix) + results grid | 2026-03-22 cm-c00 + hq-jc723 |
+| Product Detail | Dark surfaces, editorial typography, warm shadows. Freight delivery banner (🚛) when requiresFreight=true with optional liftgate badge | 2026-03-22 cm-z9n |
+| Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) | — |
+| Cart (items) | Dark editorial, product thumbnails, coral CTA | — |
+| Checkout | KeyboardAwareScrollView, saved address picker chips, address pre-fill. Loyalty tier banner near order summary when cart has items (hides on loading/error) | 2026-03-22 cm-ds5 |
+| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion) | — |
+| Onboarding | Brand story slides + style quiz (dark editorial treatment). Quiz result shows Wix-fetched product thumbnails (expo-image) | 2026-03-22 cm-49p |
+| Login/SignUp | Dark editorial with GlassCard form container, KeyboardAwareScrollView | — |
+| OrderDetail | Order tracking with status timeline. Tracking number shows as tappable link only when URL present; plain text otherwise. recordDelivery fires exactly once | 2026-03-22 cm-tsh |
+| Collections | Collection grid with error state card + retry button + skeleton loader during fetch | 2026-03-22 cm-thv |
+| RoomGallery | Room photos with expo-image memory-disk cache + blurhash blur-in placeholder | 2026-03-22 cm-x6f |
+| OrderConfirmation | "+N points earned" toast animation on purchase. Streak badge display. Tier progress bar | 2026-03-22 cm-ihz |
+| NotificationPreferences | Per-category toggle switches | — |
+| ForceUpdateModal | Required/recommended variants with store link | — |
 
 ### Sandbox Testing Protocol
 
