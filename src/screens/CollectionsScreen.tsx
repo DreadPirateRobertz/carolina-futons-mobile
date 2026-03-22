@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +20,7 @@ import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
+import { SkeletonCollectionCard } from '@/components/SkeletonCollectionCard';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
@@ -39,7 +40,7 @@ export function CollectionsScreen() {
   const { colors, spacing, typography } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { collections } = useCollections();
+  const { collections, isLoading, error, refresh } = useCollections();
   const { isPremium } = usePremium();
   const { itemCount } = useCart();
   const { open: openCart } = useMiniCartDrawer();
@@ -115,18 +116,56 @@ export function CollectionsScreen() {
     [colors, spacing, typography],
   );
 
-  return (
-    <View
-      style={[styles.container, { backgroundColor: colors.sandBase }]}
-      testID="collections-screen"
-    >
-      <Header
-        title="Curated Looks"
-        showBack
-        cartCount={itemCount}
-        onCartPress={openCart}
-        testID="collections-header"
-      />
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <View
+          testID="collections-skeleton"
+          style={{ paddingHorizontal: spacing.pagePadding, paddingTop: spacing.lg }}
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <SkeletonCollectionCard key={i} testID={`skeleton-collection-card-${i}`} />
+          ))}
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View testID="collections-error" style={styles.centerContent}>
+          <Text
+            testID="collections-error-message"
+            style={[typography.body, { color: colors.espressoLight, textAlign: 'center' }]}
+          >
+            Something went wrong loading collections.
+          </Text>
+          <TouchableOpacity
+            testID="collections-retry-btn"
+            onPress={refresh}
+            style={[styles.retryBtn, { backgroundColor: colors.espresso }]}
+          >
+            <Text style={[typography.body, { color: colors.white, fontWeight: '600' }]}>
+              Try Again
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (collections.length === 0) {
+      return (
+        <View testID="collections-empty" style={styles.centerContent}>
+          <Text
+            testID="collections-empty-message"
+            style={[typography.body, { color: colors.espressoLight, textAlign: 'center' }]}
+          >
+            No collections available right now.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
       <FlatList
         testID="collections-list"
         data={collections}
@@ -150,6 +189,22 @@ export function CollectionsScreen() {
         onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
         onScrollEndDrag={scrollPerf.onScrollEndDrag}
       />
+    );
+  };
+
+  return (
+    <View
+      style={[styles.container, { backgroundColor: colors.sandBase }]}
+      testID="collections-screen"
+    >
+      <Header
+        title="Curated Looks"
+        showBack
+        cartCount={itemCount}
+        onCartPress={openCart}
+        testID="collections-header"
+      />
+      {renderContent()}
     </View>
   );
 }
@@ -157,6 +212,19 @@ export function CollectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centerContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    gap: 16,
+  },
+  retryBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 8,
   },
   earlyAccessOverlay: {
     flexDirection: 'row',
