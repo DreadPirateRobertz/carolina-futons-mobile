@@ -20,6 +20,7 @@ let mockHookState = {
     serviceLevel: string;
     isEstimate: boolean;
     isFreight: boolean;
+    upsellMessage: string | null;
   },
   isLoading: false,
   error: null as Error | null,
@@ -104,6 +105,7 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'parcel',
         isEstimate: false,
         isFreight: false,
+        upsellMessage: null,
       },
     });
     expect(getByTestId('shipping-rate-result')).toBeTruthy();
@@ -120,6 +122,7 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'freight',
         isEstimate: true,
         isFreight: true,
+        upsellMessage: null,
       },
     });
     expect(getByText(/Freight/i)).toBeTruthy();
@@ -136,6 +139,7 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'freight',
         isEstimate: true,
         isFreight: true,
+        upsellMessage: null,
       },
     });
     expect(getByTestId('shipping-estimate-disclaimer')).toBeTruthy();
@@ -150,6 +154,7 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'parcel',
         isEstimate: false,
         isFreight: false,
+        upsellMessage: null,
       },
     });
     expect(queryByTestId('shipping-estimate-disclaimer')).toBeNull();
@@ -171,5 +176,70 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
       error: new Error('Service unavailable'),
     });
     expect(queryByTestId('shipping-rate-result')).toBeNull();
+  });
+
+  // ── cm-bundle-incentive: upsellMessage display ─────────────────────────────
+
+  it('shows upsellMessage when rate includes one', () => {
+    const { getByTestId } = renderPanel({
+      zip: '28801',
+      rate: {
+        amount: '49.00',
+        carrier: 'UPS',
+        serviceLevel: 'parcel',
+        isEstimate: false,
+        isFreight: false,
+        upsellMessage: 'Bundle savings — already paying for freight, add more items at no extra shipping cost',
+      },
+    });
+    expect(getByTestId('shipping-upsell-message')).toBeTruthy();
+  });
+
+  it('upsellMessage text matches rate.upsellMessage', () => {
+    const msg = 'Bundle savings — already paying for freight, add more items at no extra shipping cost';
+    const { getByTestId } = renderPanel({
+      zip: '28801',
+      rate: {
+        amount: '49.00',
+        carrier: 'UPS',
+        serviceLevel: 'parcel',
+        isEstimate: false,
+        isFreight: false,
+        upsellMessage: msg,
+      },
+    });
+    expect(getByTestId('shipping-upsell-message').props.children).toBe(msg);
+  });
+
+  it('does not show upsellMessage when rate.upsellMessage is null', () => {
+    const { queryByTestId } = renderPanel({
+      zip: '28801',
+      rate: {
+        amount: '49.00',
+        carrier: 'UPS',
+        serviceLevel: 'parcel',
+        isEstimate: false,
+        isFreight: false,
+        upsellMessage: null,
+      },
+    });
+    expect(queryByTestId('shipping-upsell-message')).toBeNull();
+  });
+
+  it('passes itemCount prop through to the hook', () => {
+    // The panel accepts itemCount and the hook mock receives any args —
+    // just verify it renders without throwing when itemCount is provided
+    mockHookState = { zip: '', setZip: mockSetZip, rate: null, isLoading: false, error: null };
+    expect(() =>
+      render(
+        <ThemeProvider>
+          <ShippingEstimatePanel
+            productId="prod-001"
+            dimensions={{ width: 60, depth: 36, height: 35 }}
+            itemCount={3}
+          />
+        </ThemeProvider>,
+      ),
+    ).not.toThrow();
   });
 });

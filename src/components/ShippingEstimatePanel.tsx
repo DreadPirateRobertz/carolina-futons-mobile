@@ -18,18 +18,22 @@ import {
 interface Props {
   productId: string;
   dimensions: ProductDimensions;
+  /** Cart item count forwarded to hook for bundle incentive upsell (cm-bundle-incentive) */
+  itemCount?: number;
   testID?: string;
 }
 
 export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
   productId,
   dimensions,
+  itemCount,
   testID = 'shipping-panel',
 }: Props) {
   const { colors, typography, borderRadius } = useTheme();
   const { zip, setZip, rate, isLoading, error } = useProductShippingEstimate({
     productId,
     dimensions,
+    itemCount,
   });
 
   const hasZip = zip.length > 0;
@@ -108,6 +112,16 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
           *Estimated rate — final shipping confirmed at checkout.
         </Text>
       )}
+
+      {/* Bundle incentive upsell — cm-bundle-incentive */}
+      {hasZip && !isLoading && !error && rate?.upsellMessage ? (
+        <Text
+          testID="shipping-upsell-message"
+          style={[styles.upsell, { color: colors.mountainBlue }]}
+        >
+          {rate.upsellMessage}
+        </Text>
+      ) : null}
     </View>
   );
 });
@@ -153,5 +167,10 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 13,
+  },
+  upsell: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
 });

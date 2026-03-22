@@ -230,4 +230,50 @@ describe('useProductShippingEstimate (cm-9yn)', () => {
     result.current.setZip('90210');
     await waitFor(() => expect(mockGetShippingEstimate).toHaveBeenCalledTimes(1));
   });
+
+  // ── cm-bundle-incentive: itemCount + upsellMessage ──────────────────────────
+
+  it('passes itemCount to API when provided', async () => {
+    mockGetShippingEstimate.mockResolvedValueOnce(PARCEL_RESPONSE);
+    const { result } = renderHook(() =>
+      useProductShippingEstimate({ productId: PRODUCT_ID, dimensions: DIMS, itemCount: 3 }),
+    );
+    result.current.setZip(ZIP);
+    await waitFor(() => expect(mockGetShippingEstimate).toHaveBeenCalledTimes(1));
+    expect(mockGetShippingEstimate).toHaveBeenCalledWith(
+      expect.objectContaining({ itemCount: 3 }),
+    );
+  });
+
+  it('does not pass itemCount when not provided', async () => {
+    mockGetShippingEstimate.mockResolvedValueOnce(PARCEL_RESPONSE);
+    const { result } = renderEstimate();
+    result.current.setZip(ZIP);
+    await waitFor(() => expect(mockGetShippingEstimate).toHaveBeenCalledTimes(1));
+    const callArg = mockGetShippingEstimate.mock.calls[0][0];
+    expect(callArg.itemCount).toBeUndefined();
+  });
+
+  it('maps upsellMessage from API response into rate', async () => {
+    mockGetShippingEstimate.mockResolvedValueOnce({
+      ...PARCEL_RESPONSE,
+      upsellMessage: 'Bundle savings — already paying for freight, add more at no extra cost',
+    });
+    const { result } = renderHook(() =>
+      useProductShippingEstimate({ productId: PRODUCT_ID, dimensions: DIMS, itemCount: 2 }),
+    );
+    result.current.setZip(ZIP);
+    await waitFor(() => expect(result.current.rate).not.toBeNull());
+    expect(result.current.rate?.upsellMessage).toBe(
+      'Bundle savings — already paying for freight, add more at no extra cost',
+    );
+  });
+
+  it('rate.upsellMessage is null when API returns no upsellMessage', async () => {
+    mockGetShippingEstimate.mockResolvedValueOnce(PARCEL_RESPONSE);
+    const { result } = renderEstimate();
+    result.current.setZip(ZIP);
+    await waitFor(() => expect(result.current.rate).not.toBeNull());
+    expect(result.current.rate?.upsellMessage).toBeNull();
+  });
 });
