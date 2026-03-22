@@ -7,9 +7,20 @@
  *
  * Hidden when the compare list is empty.
  * Uses existing CompareContext — no additional state management required.
+ *
+ * Each mini card supports left-swipe-to-remove gesture in addition to the
+ * explicit remove button.
  */
-import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  PanResponder,
+  Animated,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useCompareContext } from '@/contexts/CompareContext';
@@ -22,6 +33,9 @@ interface Props {
   testID?: string;
 }
 
+// ── Swipe threshold ────────────────────────────────────────────────────────────
+const SWIPE_THRESHOLD = -60;
+
 // ── Mini card ─────────────────────────────────────────────────────────────────
 
 function CompareMiniCard({
@@ -33,43 +47,82 @@ function CompareMiniCard({
 }) {
   const { colors, borderRadius, typography } = useTheme();
 
+  const translateX = useRef(new Animated.Value(0)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_evt, gestureState) =>
+        Math.abs(gestureState.dx) > 5 && Math.abs(gestureState.dy) < Math.abs(gestureState.dx),
+      onPanResponderMove: (_evt, gestureState) => {
+        if (gestureState.dx < 0) {
+          translateX.setValue(gestureState.dx);
+        }
+      },
+      onPanResponderRelease: (_evt, gestureState) => {
+        if (gestureState.dx <= SWIPE_THRESHOLD) {
+          Animated.timing(translateX, {
+            toValue: -200,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            onRemove(product.id);
+          });
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    }),
+  ).current;
+
   const handleRemove = useCallback(() => {
     onRemove(product.id);
   }, [product.id, onRemove]);
 
   return (
-    <View
-      style={[styles.miniCard, { backgroundColor: colors.white, borderRadius: borderRadius.card }]}
-      testID={`compare-tray-card-${product.id}`}
+    <Animated.View
+      style={[{ transform: [{ translateX }] }]}
+      {...panResponder.panHandlers}
+      testID={`compare-tray-swipeable-${product.id}`}
     >
-      <Image
-        source={{ uri: product.images[0]?.uri }}
-        style={styles.miniImage}
-        contentFit="cover"
-        testID={`compare-tray-image-${product.id}`}
-        accessibilityLabel={product.images[0]?.alt ?? product.name}
-        cachePolicy="memory-disk"
-      />
-      <Text
-        style={[styles.miniName, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
-        numberOfLines={2}
+      <View
+        style={[
+          styles.miniCard,
+          { backgroundColor: colors.white, borderRadius: borderRadius.card },
+        ]}
+        testID={`compare-tray-card-${product.id}`}
       >
-        {product.name}
-      </Text>
-      <Text style={[styles.miniPrice, { color: colors.espressoLight }]}>
-        {formatPrice(product.price)}
-      </Text>
-      <TouchableOpacity
-        style={[styles.removeBtn, { backgroundColor: colors.espressoLight + '22' }]}
-        onPress={handleRemove}
-        testID={`compare-tray-remove-${product.id}`}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${product.name} from compare`}
-        hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
-      >
-        <Text style={[styles.removeBtnText, { color: colors.espressoLight }]}>✕</Text>
-      </TouchableOpacity>
-    </View>
+        <Image
+          source={{ uri: product.images[0]?.uri }}
+          style={styles.miniImage}
+          contentFit="cover"
+          testID={`compare-tray-image-${product.id}`}
+          accessibilityLabel={product.images[0]?.alt ?? product.name}
+          cachePolicy="memory-disk"
+        />
+        <Text
+          style={[styles.miniName, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+          numberOfLines={2}
+        >
+          {product.name}
+        </Text>
+        <Text style={[styles.miniPrice, { color: colors.espressoLight }]}>
+          {formatPrice(product.price)}
+        </Text>
+        <TouchableOpacity
+          style={[styles.removeBtn, { backgroundColor: colors.espressoLight + '22' }]}
+          onPress={handleRemove}
+          testID={`compare-tray-remove-${product.id}`}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${product.name} from compare`}
+          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+        >
+          <Text style={[styles.removeBtnText, { color: colors.espressoLight }]}>✕</Text>
+        </TouchableOpacity>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -156,8 +209,8 @@ export function CompareTray({ onNavigateToCompare, testID = 'compare-tray' }: Pr
   );
 }
 
-const MINI_CARD_WIDTH = 100;
-const MINI_IMAGE_HEIGHT = 72;
+const MINI_CARD_WIDTH = 140;
+const MINI_IMAGE_HEIGHT = 140;
 
 const styles = StyleSheet.create({
   tray: {
@@ -228,7 +281,7 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
   cta: {
-    marginTop: 10,
+    marginTop: 16,
     paddingVertical: 12,
     alignItems: 'center',
   },
