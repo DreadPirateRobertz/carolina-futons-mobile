@@ -800,11 +800,19 @@ describe('ProductDetailScreen', () => {
     });
 
     it('shows empty state when product has no reviews', () => {
-      // pisgah-twin has no mock reviews
+      // cm-c01 seeded all futon models; spy on data layer to simulate zero-review state
+      const reviewsData = require('@/data/reviews');
+      jest.spyOn(reviewsData, 'getReviewsForProduct').mockReturnValue([]);
+      jest.spyOn(reviewsData, 'getReviewSummary').mockReturnValue({
+        totalReviews: 0,
+        averageRating: 0,
+        distribution: {},
+      });
       const { getByTestId, queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
       expect(getByTestId('reviews-empty-state')).toBeTruthy();
       expect(queryByTestId('review-sort-options')).toBeNull();
       expect(queryByTestId('view-all-reviews')).toBeNull();
+      jest.restoreAllMocks();
     });
 
     it('hides write review button when not authenticated', () => {
@@ -1390,6 +1398,7 @@ describe('ProductDetailScreen', () => {
       });
       const { queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
       expect(queryByTestId('price-inline-rating')).toBeNull();
+      jest.restoreAllMocks();
     });
 
     it('inline rating is within the price section', () => {
