@@ -89,7 +89,7 @@
     "@types/react-test-renderer": "^18.3.0",
     "detox": "^20.47.0",
     "eslint": "^8.57.0",
-    "eslint-config-expo": "^8.0.0",
+    "eslint-config-expo": "^55.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.0",
     "expo-auth-session": "~6.0.3",
