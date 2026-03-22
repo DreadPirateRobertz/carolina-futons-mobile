@@ -568,6 +568,19 @@ export class WixClient {
     return this.post('/_functions/klarna/confirm', request);
   }
 
+  // ── Shipping Intelligence (cm-6qt) ─────────────────────────
+
+  /**
+   * Fetch shipping options from the shippingIntelligence Wix backend function.
+   * Returns success/options shape from calculateBundleQuote.
+   */
+  async fetchShippingEstimate(
+    zip: string,
+    items: Array<{ productId: string; quantity: number }> = [],
+  ): Promise<{ success: boolean; options: Array<Record<string, unknown>>; error?: string }> {
+    return this.post('/_functions/shippingIntelligence/calculateBundleQuote', { zip, items });
+  }
+
   // ── Orders (eCommerce Orders API) ──────────────────────────
 
   async queryOrders(options: { limit?: number; offset?: number } = {}): Promise<{

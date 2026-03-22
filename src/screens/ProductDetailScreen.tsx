@@ -62,6 +62,8 @@ import { modelIdToProductId, productIdToModelId, productId as toProductId } from
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { BundleRow } from '@/components/BundleRow';
 import { useBundleDeals } from '@/hooks/useBundleDeals';
+import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
+import { useShippingEstimate } from '@/hooks/useShippingEstimate';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -181,6 +183,7 @@ export function ProductDetailScreen({
   const totalPrice = model.basePrice + selectedFabric.price;
 
   const { bundleProducts } = useBundleDeals(catalogProductId);
+  const shippingEstimate = useShippingEstimate(catalogProductId);
 
   const { addViewed } = useRecentlyViewed();
 
@@ -603,6 +606,14 @@ export function ProductDetailScreen({
             />
           )}
           <FinancingBadge price={totalPrice} variant="detail" />
+          <ShippingEstimateBadge
+            icon={shippingEstimate.icon}
+            label={shippingEstimate.label}
+            badge={shippingEstimate.badge}
+            badgeStyle={shippingEstimate.badgeStyle}
+            isLoading={shippingEstimate.isLoading}
+            testID="shipping-estimate-badge"
+          />
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
           <TouchableOpacity
             style={[
