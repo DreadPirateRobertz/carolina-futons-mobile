@@ -34,10 +34,10 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
           styles.compactBadge,
           { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.sm },
         ]}
-        testID={testID ?? 'financing-badge'}
+        testID={testID ?? 'financing-badge-compact'}
       >
         <Text style={styles.compactText}>
-          As low as {formatPrice(lowestTerm.monthlyPayment)}/mo
+          As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
         </Text>
       </View>
     );
@@ -46,10 +46,10 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
   return (
     <View
       style={[styles.detailContainer, { borderColor: colors.mountainBlue }]}
-      testID={testID ?? 'financing-badge'}
+      testID={testID ?? 'financing-badge-detail'}
     >
       <Text style={[styles.detailTitle, { color: colors.mountainBlue }]}>
-        As low as {formatPrice(lowestTerm.monthlyPayment)}/mo
+        As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
       </Text>
       <View style={styles.termsRow}>
         {terms.map((term) => (
@@ -74,13 +74,13 @@ const FINANCING_APR_DISPLAY = '9.99%';
 
 const styles = StyleSheet.create({
   compactBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     alignSelf: 'flex-start',
   },
   compactText: {
     color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.2,
   },

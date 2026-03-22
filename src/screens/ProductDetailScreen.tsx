@@ -570,7 +570,7 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
-          <FinancingBadge price={totalPrice} variant="detail" testID="financing-detail" />
+          <FinancingBadge price={totalPrice} variant="detail" />
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
           <TouchableOpacity
             style={[

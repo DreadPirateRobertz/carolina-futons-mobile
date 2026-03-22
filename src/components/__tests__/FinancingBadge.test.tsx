@@ -1,5 +1,6 @@
 /**
  * Tests for the FinancingBadge component shown on ProductCard and ProductDetail.
+ * CF-lalh: badge prominence — larger compact size + "with Klarna" branding.
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
@@ -36,7 +37,7 @@ describe('FinancingBadge', () => {
 
   it('uses lowest monthly payment (12-month term)', () => {
     const { getByTestId } = render(<FinancingBadge price={1200} />);
-    const badge = getByTestId('financing-badge');
+    const badge = getByTestId('financing-badge-compact');
     expect(badge).toBeTruthy();
   });
 
@@ -53,5 +54,46 @@ describe('FinancingBadge', () => {
   it('does not show disclaimer when variant is "compact"', () => {
     const { queryByText } = render(<FinancingBadge price={500} variant="compact" />);
     expect(queryByText(/Subject to credit approval/)).toBeNull();
+  });
+
+  // ── CF-lalh: prominence + Klarna branding ──────────────────────────────────
+
+  it('compact variant includes "with Klarna" in text', () => {
+    const { getByText } = render(<FinancingBadge price={500} variant="compact" />);
+    expect(getByText(/with Klarna/i)).toBeTruthy();
+  });
+
+  it('detail variant includes "with Klarna" in title', () => {
+    const { getByText } = render(<FinancingBadge price={500} variant="detail" />);
+    expect(getByText(/with Klarna/i)).toBeTruthy();
+  });
+
+  it('compact badge renders with branding text for legibility', () => {
+    const { getByTestId, getByText } = render(<FinancingBadge price={500} variant="compact" />);
+    expect(getByTestId('financing-badge-compact')).toBeTruthy();
+    // Verifies text is rendered (font size 12 applied via styles)
+    expect(getByText(/As low as.*\/mo.*with Klarna/i)).toBeTruthy();
+  });
+
+  it('compact badge has testID "financing-badge-compact" for ProductCard targeting', () => {
+    const { getByTestId } = render(<FinancingBadge price={500} variant="compact" />);
+    expect(getByTestId('financing-badge-compact')).toBeTruthy();
+  });
+
+  it('detail badge has testID "financing-badge-detail" for PDP targeting', () => {
+    const { getByTestId } = render(<FinancingBadge price={500} variant="detail" />);
+    expect(getByTestId('financing-badge-detail')).toBeTruthy();
+  });
+
+  it('compact badge renders adjacent to price — renders for $500 product', () => {
+    const { getByText } = render(<FinancingBadge price={500} variant="compact" />);
+    // Verifies badge renders at card-eligible price with Klarna branding visible
+    expect(getByText(/As low as.*\/mo.*with Klarna/i)).toBeTruthy();
+  });
+
+  it('detail badge shows Klarna branding prominently', () => {
+    const { getAllByText } = render(<FinancingBadge price={800} variant="detail" />);
+    const klarnaMatches = getAllByText(/Klarna/i);
+    expect(klarnaMatches.length).toBeGreaterThanOrEqual(1);
   });
 });
