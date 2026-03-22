@@ -96,4 +96,31 @@ describe('FinancingBadge', () => {
     const klarnaMatches = getAllByText(/Klarna/i);
     expect(klarnaMatches.length).toBeGreaterThanOrEqual(1);
   });
+
+  // ── Edge cases ─────────────────────────────────────────────────────────────
+
+  it('renders badge at exact threshold boundary ($300)', () => {
+    const { getByText } = render(<FinancingBadge price={300} />);
+    expect(getByText(/As low as/)).toBeTruthy();
+    expect(getByText(/with Klarna/i)).toBeTruthy();
+  });
+
+  it('accepts custom testID on detail variant', () => {
+    const { getByTestId } = render(
+      <FinancingBadge price={500} variant="detail" testID="my-detail-badge" />,
+    );
+    expect(getByTestId('my-detail-badge')).toBeTruthy();
+  });
+
+  it('detail variant renders all three term pills', () => {
+    const { getByText } = render(<FinancingBadge price={800} variant="detail" />);
+    expect(getByText(/3mo:/)).toBeTruthy();
+    expect(getByText(/6mo:/)).toBeTruthy();
+    expect(getByText(/12mo:/)).toBeTruthy();
+  });
+
+  it('detail variant disclaimer includes APR percentage', () => {
+    const { getByText } = render(<FinancingBadge price={500} variant="detail" />);
+    expect(getByText(/9\.99%/)).toBeTruthy();
+  });
 });
