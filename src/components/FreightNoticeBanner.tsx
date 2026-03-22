@@ -11,6 +11,7 @@
 
 import React, { memo } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
+import { useTheme } from '@/theme';
 
 interface Props {
   requiresFreight?: boolean | null;
@@ -23,23 +24,29 @@ export const FreightNoticeBanner = memo(function FreightNoticeBanner({
   requiresLiftgate,
   testID = 'freight-notice-banner',
 }: Props) {
+  const { colors } = useTheme();
+
   if (!requiresFreight) return null;
 
   return (
-    <View style={styles.container} testID={testID} accessibilityRole="text">
+    <View
+      style={[styles.container, { backgroundColor: colors.sandLight, borderLeftColor: colors.sunsetCoralDark }]}
+      testID={testID}
+      accessibilityRole="text"
+    >
       <View style={styles.row}>
         <Text style={styles.icon}>🚛</Text>
         <View style={styles.textBlock}>
-          <Text style={styles.title}>Freight Delivery</Text>
-          <Text style={styles.subtitle}>Carrier will call to schedule</Text>
+          <Text style={[styles.title, { color: colors.errorText }]}>Freight Delivery</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedBrown }]}>Carrier will call to schedule</Text>
         </View>
         {requiresLiftgate && (
           <View
-            style={styles.liftgateBadge}
+            style={[styles.liftgateBadge, { backgroundColor: colors.sunsetCoralDark }]}
             testID="liftgate-badge"
             accessibilityLabel="Liftgate required for delivery"
           >
-            <Text style={styles.liftgateText}>Liftgate Required</Text>
+            <Text style={[styles.liftgateText, { color: colors.offWhite }]}>Liftgate Required</Text>
           </View>
         )}
       </View>
@@ -49,9 +56,7 @@ export const FreightNoticeBanner = memo(function FreightNoticeBanner({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFF3E0',
     borderLeftWidth: 3,
-    borderLeftColor: '#E65100',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -71,21 +76,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#BF360C',
   },
   subtitle: {
     fontSize: 12,
-    color: '#6D4C41',
     marginTop: 1,
   },
   liftgateBadge: {
-    backgroundColor: '#E65100',
     borderRadius: 4,
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
   liftgateText: {
-    color: '#FFFFFF',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.2,
