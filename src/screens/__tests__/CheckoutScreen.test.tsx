@@ -926,4 +926,56 @@ describe('CheckoutScreen', () => {
       expect(utils.getByTestId(`checkout-item-${asheville.id}:${naturalLinen.id}`)).toBeTruthy();
     });
   });
+
+  // ── Delivery window estimator (cm-mk8) ───────────────────────────────────────
+
+  describe('delivery window estimator', () => {
+    it('shows delivery estimate after zip is entered', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-estimate')).toBeTruthy();
+    });
+
+    it('displays correct estimate text for local NC zip', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-estimate').props.children).toContain('2–3 business days');
+    });
+
+    it('displays correct estimate text for national zip', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '90210');
+      await act(async () => {});
+      expect(utils.getByTestId('delivery-estimate').props.children).toContain('5–7 business days');
+    });
+
+    it('does not show estimate when zip is empty', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-estimate')).toBeNull();
+    });
+
+    it('does not show estimate for invalid zip', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), 'ABCDE');
+      await act(async () => {});
+      expect(utils.queryByTestId('delivery-estimate')).toBeNull();
+    });
+
+    it('renders delivery estimate before the place-order button', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      // Both elements exist in the tree
+      expect(utils.getByTestId('delivery-estimate')).toBeTruthy();
+      expect(utils.getByTestId('place-order-button')).toBeTruthy();
+    });
+  });
 });

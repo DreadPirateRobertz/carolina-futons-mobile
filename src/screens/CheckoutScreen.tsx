@@ -48,6 +48,7 @@ import { useAffirmPrequalification } from '@/hooks/useAffirmPrequalification';
 import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
+import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
 
 const SHIPPING_THRESHOLD = 499;
 
@@ -1195,6 +1196,29 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </View>
         )}
 
+        {/* Delivery window estimate (cm-mk8) */}
+        {(() => {
+          const estimate = getDeliveryEstimate(shippingAddress.zip);
+          return estimate ? (
+            <View
+              style={[
+                styles.deliveryEstimateRow,
+                { marginHorizontal: spacing.lg, marginBottom: spacing.md },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.deliveryEstimateText,
+                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                ]}
+                testID="delivery-estimate"
+              >
+                {`Ships in ${estimate}`}
+              </Text>
+            </View>
+          ) : null;
+        })()}
+
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
           <TouchableOpacity
@@ -1612,6 +1636,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   // Place order
+  deliveryEstimateRow: {
+    paddingVertical: 8,
+  },
+  deliveryEstimateText: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
   placeOrderButton: {
     paddingVertical: 18,
     alignItems: 'center',
