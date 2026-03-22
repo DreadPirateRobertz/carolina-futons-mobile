@@ -30,21 +30,13 @@ jest.mock('expo-haptics', () => ({
 const futons = PRODUCTS.filter((p) => p.category === 'futons').slice(0, 3);
 const [productA, productB, productC] = futons;
 
-function renderBundleRow(
-  products: Product[],
-  onProductPress = jest.fn(),
-  testID = 'bundle-row',
-) {
+function renderBundleRow(products: Product[], onProductPress = jest.fn(), testID = 'bundle-row') {
   return {
     ...render(
       <ThemeProvider>
         <WishlistProvider>
           <CompareProvider>
-            <BundleRow
-              products={products}
-              onProductPress={onProductPress}
-              testID={testID}
-            />
+            <BundleRow products={products} onProductPress={onProductPress} testID={testID} />
           </CompareProvider>
         </WishlistProvider>
       </ThemeProvider>,
