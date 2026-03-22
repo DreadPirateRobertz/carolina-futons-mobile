@@ -11,11 +11,11 @@
  */
 import React, { useState, useCallback } from 'react';
 import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
-import { ProductCard } from '@/components/ProductCard';
-import { PRODUCTS } from '@/data/products';
+import { useProductBySlug } from '@/hooks/useProduct';
 import {
   useStyleQuiz,
   getRecommendation,
@@ -115,6 +115,57 @@ interface Props {
   /** Called with a product slug when a product card in the completion grid is tapped. */
   onProductPress?: (slug: string) => void;
   testID?: string;
+}
+
+// ── Quiz product card ─────────────────────────────────────────────────────────
+
+/**
+ * Single card in the quiz results grid. Fetches thumbnail + name from Wix
+ * Stores via useProductBySlug; falls back to slug text if unavailable. cm-49p
+ */
+function QuizProductCard({
+  slug,
+  onPress,
+}: {
+  slug: string;
+  onPress: () => void;
+}) {
+  const { colors, borderRadius, typography } = useTheme();
+  const { product } = useProductBySlug(slug);
+  const thumbnail = product?.images[0]?.uri ?? null;
+  const name = product?.name ?? null;
+
+  return (
+    <TouchableOpacity
+      testID={`quiz-product-${slug}`}
+      style={[
+        styles.productCard,
+        { borderRadius: borderRadius.card, backgroundColor: darkPalette.surface },
+      ]}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={name ? `View ${name}` : `View ${slug}`}
+    >
+      {thumbnail ? (
+        <Image
+          source={{ uri: thumbnail }}
+          style={styles.productThumbnail}
+          contentFit="cover"
+          testID={`quiz-product-img-${slug}`}
+          accessibilityLabel={product?.images[0]?.alt ?? name ?? slug}
+          cachePolicy="memory-disk"
+        />
+      ) : (
+        <View style={[styles.productThumbnailPlaceholder, { backgroundColor: colors.sandBase + '33' }]} />
+      )}
+      <Text
+        style={[styles.productSlug, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily }]}
+        numberOfLines={2}
+      >
+        {name ?? slug}
+      </Text>
+    </TouchableOpacity>
+  );
 }
 
 export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: Props) {
@@ -311,21 +362,15 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
           {`We\u2019ll highlight ${styleName.toLowerCase()} picks and features that fit your lifestyle.`}
         </Text>
 
-        {/* Curated product grid */}
+        {/* Curated product grid — thumbnails fetched from Wix Stores (cm-49p) */}
         <View style={styles.productGrid} testID="style-quiz-product-grid">
-          {recommendation.productSlugs.map((slug) => {
-            const product = PRODUCTS.find((p) => p.slug === slug);
-            if (!product) return null;
-            return (
-              <View key={slug} style={styles.productCardWrapper}>
-                <ProductCard
-                  product={product}
-                  testID={`quiz-product-${slug}`}
-                  onPress={() => onProductPress?.(slug)}
-                />
-              </View>
-            );
-          })}
+          {recommendation.productSlugs.map((slug) => (
+            <QuizProductCard
+              key={slug}
+              slug={slug}
+              onPress={() => onProductPress?.(slug)}
+            />
+          ))}
         </View>
       </View>
     );
@@ -524,8 +569,31 @@ const styles = StyleSheet.create({
     gap: 12,
     width: '100%',
   },
+  productCard: {
+    width: '100%',
+    overflow: 'hidden',
+  },
   productCardWrapper: {
     width: '46%',
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+  },
+  productThumbnail: {
+    width: '100%',
+    height: 100,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  productThumbnailPlaceholder: {
+    width: '100%',
+    height: 100,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  productSlug: {
+    fontSize: 13,
+    textAlign: 'center',
   },
   // Bottom action
   buttonContainer: {

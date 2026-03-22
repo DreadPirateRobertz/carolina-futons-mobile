@@ -83,6 +83,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
 }));
 
+const mockUseProductBySlug = jest.fn();
+jest.mock('@/hooks/useProduct', () => ({
+  useProductBySlug: (slug: string) => mockUseProductBySlug(slug),
+  useProduct: jest.fn(() => ({ product: null, isLoading: false, error: null, refresh: jest.fn() })),
+}));
+
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 /**
@@ -104,6 +110,8 @@ describe('StyleQuizScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: product not found — tests that need thumbnails override this
+    mockUseProductBySlug.mockReturnValue({ product: null, isLoading: false, error: null, refresh: jest.fn() });
   });
 
   // ── Rendering ───────────────────────────────────────────────────
@@ -402,5 +410,85 @@ describe('StyleQuizScreen', () => {
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} testID="custom-quiz" />,
     );
     expect(getByTestId('custom-quiz')).toBeTruthy();
+  });
+
+  // ── Product thumbnails (cm-49p) ─────────────────────────────────
+
+  it('shows product thumbnail when image data is available', () => {
+    mockUseProductBySlug.mockReturnValue({
+      product: {
+        id: 'prod-1',
+        slug: 'asheville-full',
+        name: 'The Asheville',
+        images: [{ uri: 'https://example.com/asheville.jpg', alt: 'The Asheville' }],
+        price: 378,
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    // At least one product card renders a thumbnail image
+    expect(getByTestId('quiz-product-img-asheville-full')).toBeTruthy();
+  });
+
+  it('shows product name when image data is available', () => {
+    mockUseProductBySlug.mockReturnValue({
+      product: {
+        id: 'prod-1',
+        slug: 'asheville-full',
+        name: 'The Asheville',
+        images: [{ uri: 'https://example.com/asheville.jpg', alt: 'The Asheville' }],
+        price: 378,
+      },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const { getByTestId, getAllByText } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    expect(getAllByText('The Asheville').length).toBeGreaterThan(0);
+  });
+
+  it('falls back to slug text when product is not found (graceful degradation)', () => {
+    mockUseProductBySlug.mockReturnValue({ product: null, isLoading: false, error: null, refresh: jest.fn() });
+    const { getByTestId, getAllByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    completeQuiz(getByTestId);
+    // Cards still render, no crash
+    const cards = getAllByTestId(/^quiz-product-/);
+    expect(cards.length).toBeGreaterThan(0);
+  });
+
+  it('does not crash when product has no images', () => {
+    mockUseProductBySlug.mockReturnValue({
+      product: { id: 'prod-1', slug: 'asheville-full', name: 'The Asheville', images: [], price: 378 },
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    expect(() => completeQuiz(getByTestId)).not.toThrow();
+  });
+
+  it('does not crash when useProductBySlug returns an error', () => {
+    mockUseProductBySlug.mockReturnValue({
+      product: null,
+      isLoading: false,
+      error: new Error('Wix unavailable'),
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = render(
+      <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+    );
+    expect(() => completeQuiz(getByTestId)).not.toThrow();
   });
 });
