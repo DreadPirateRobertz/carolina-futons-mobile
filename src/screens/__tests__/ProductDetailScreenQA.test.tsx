@@ -108,7 +108,7 @@ function renderScreen() {
       <WishlistProvider>
         <CompareProvider>
           <ProductDetailScreen
-            product={product}
+            slug={product.slug}
             onAddToCart={jest.fn()}
             onBack={jest.fn()}
           />

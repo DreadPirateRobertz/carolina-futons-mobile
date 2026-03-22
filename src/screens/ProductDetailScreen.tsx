@@ -446,7 +446,7 @@ export function ProductDetailScreen({
             Tag uses FutonModel.id (no 'prod-' prefix), matching the normalized
             tag in ProductCard so Reanimated can pair the transition elements. */}
         <Animated.View
-          sharedTransitionTag={sharedTransitionTag(`product-image-${model.id}`)}
+          sharedTransitionTag={sharedTransitionTag(`product-image-${localModel ? model.id : resolvedId}`)}
           testID={`product-image-gallery-${model.id}`}
           style={[styles.galleryContainer, galleryParallaxStyle]}
         >
