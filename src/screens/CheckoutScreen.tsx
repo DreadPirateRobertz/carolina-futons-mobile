@@ -854,8 +854,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                 const visibleOptions = wgOption
                   ? shippingOptions.filter((o) => !o.id.startsWith('white-glove-'))
                   : shippingOptions;
-                const localIsSelected =
-                  selectedDelivery?.startsWith('local-delivery-') ?? false;
+                const localIsSelected = selectedDelivery?.startsWith('local-delivery-') ?? false;
 
                 return visibleOptions.map((option) => {
                   const isSelected = selectedDelivery === option.id;
@@ -1010,10 +1009,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
                               {wgOption!.terrainSurcharge != null &&
                                 wgOption!.terrainSurcharge > 0 && (
                                   <Text
-                                    style={[
-                                      styles.deliveryUpsell,
-                                      { color: colors.espressoLight },
-                                    ]}
+                                    style={[styles.deliveryUpsell, { color: colors.espressoLight }]}
                                     testID="white-glove-upgrade-terrain"
                                   >
                                     +{formatPrice(wgOption!.terrainSurcharge * 100)} mountain
