@@ -290,6 +290,59 @@ describe('ProductCard', () => {
     });
   });
 
+  // =========================================================================
+  // Lifestyle photography placeholder (cm-1sp)
+  // =========================================================================
+  describe('lifestyle photo slot', () => {
+    const noLifestyleProduct: Product = { ...futon, lifestyleUri: undefined };
+    const lifestyleProduct: Product = {
+      ...futon,
+      lifestyleUri: 'https://example.com/lifestyle.jpg',
+    };
+
+    it('renders lifestyle photo slot with testID', () => {
+      const { getByTestId } = renderCard({ product: lifestyleProduct });
+      expect(getByTestId(`product-lifestyle-photo-${lifestyleProduct.id}`)).toBeTruthy();
+    });
+
+    it('renders lifestyle slot even when lifestyleUri is absent (shows placeholder)', () => {
+      const { getByTestId } = renderCard({ product: noLifestyleProduct });
+      expect(getByTestId(`product-lifestyle-photo-${noLifestyleProduct.id}`)).toBeTruthy();
+    });
+
+    it('lifestyle slot has accessibility label', () => {
+      const { getByTestId } = renderCard({ product: lifestyleProduct });
+      const slot = getByTestId(`product-lifestyle-photo-${lifestyleProduct.id}`);
+      expect(slot.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('uses product lifestyleUri as image source when provided', () => {
+      const { getByTestId, UNSAFE_getAllByType } = renderCard({ product: lifestyleProduct });
+      // Slot must render
+      expect(getByTestId(`product-lifestyle-photo-${lifestyleProduct.id}`)).toBeTruthy();
+      // At least one Image in the tree should have the lifestyleUri as its source
+      const { Image: ExpoImage } = require('expo-image');
+      const images = UNSAFE_getAllByType(ExpoImage);
+      const hasLifestyleSource = images.some(
+        (img: any) => img.props.source?.uri === lifestyleProduct.lifestyleUri,
+      );
+      expect(hasLifestyleSource).toBe(true);
+    });
+
+    it('tapping card with lifestyle photo still fires onPress', () => {
+      const onPress = jest.fn();
+      const { getByTestId } = renderCard({ product: lifestyleProduct, onPress });
+      fireEvent.press(getByTestId(`product-card-${lifestyleProduct.id}`));
+      expect(onPress).toHaveBeenCalledWith(lifestyleProduct);
+    });
+
+    it('lifestyle slot renders inside the image container', () => {
+      const { getByTestId } = renderCard({ product: lifestyleProduct });
+      expect(getByTestId(`product-image-container-${lifestyleProduct.id}`)).toBeTruthy();
+      expect(getByTestId(`product-lifestyle-photo-${lifestyleProduct.id}`)).toBeTruthy();
+    });
+  });
+
   describe('Long-press context menu', () => {
     function renderWithContextMenu(contextMenu: {
       onAddToCart?: jest.Mock;

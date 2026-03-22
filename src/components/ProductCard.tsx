@@ -31,6 +31,49 @@ import { InventoryBadge } from './InventoryBadge';
 import { useInventoryBadge } from '@/hooks/useInventoryBadge';
 import { ProductContextMenu } from './ProductContextMenu';
 
+// ── Lifestyle photo placeholder ────────────────────────────────────────────
+//
+// TODO(stilgar): Wire real lifestyle photo from Wix Media Manager once curated.
+// PLACEHOLDER: Using warm-beige solid color — replace with CF product lifestyle imagery.
+// SOURCE: Will come from manufacturer image banks + Wix Media uploads.
+//
+// The slot renders a small "room setting" thumbnail in the bottom-right corner
+// of the product image. When a product has a real lifestyleUri it is used;
+// otherwise the placeholder constant below is shown until content is curated.
+const LIFESTYLE_PLACEHOLDER_URI =
+  // TODO(stilgar): Wire real lifestyle photo from Wix Media Manager once curated.
+  // PLACEHOLDER: Using https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=120
+  //              (Unsplash free-tier, royalty-free futon room setting) — replace with
+  //              CF product lifestyle imagery once Wix Media Manager collection is populated.
+  // SOURCE: Will come from manufacturer image banks + Wix Media uploads.
+  'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=120&q=60';
+
+interface LifestylePhotoSlotProps {
+  lifestyleUri: string | undefined;
+  productId: string;
+}
+
+function LifestylePhotoSlot({ lifestyleUri, productId: pId }: LifestylePhotoSlotProps) {
+  const uri = lifestyleUri ?? LIFESTYLE_PLACEHOLDER_URI;
+  return (
+    <View
+      style={styles.lifestyleSlot}
+      testID={`product-lifestyle-photo-${pId}`}
+      accessibilityLabel="Lifestyle room setting photo"
+    >
+      <Image
+        source={{ uri }}
+        style={styles.lifestyleImage}
+        contentFit="cover"
+        // TODO(stilgar): Replace placeholder with real CF lifestyle imagery from Wix Media Manager.
+        // PLACEHOLDER: Using Unsplash royalty-free image — not for production use.
+        // SOURCE: Will come from manufacturer image banks + Wix Media uploads.
+        cachePolicy="memory-disk"
+      />
+    </View>
+  );
+}
+
 /** Optional context menu actions shown on long-press. */
 export interface ProductContextMenuActions {
   onAddToCart?: () => void;
@@ -137,6 +180,7 @@ export const ProductCard = memo(function ProductCard({
           {product.videoUri && (
             <ProductCardVideo videoUri={product.videoUri} testID={`product-video-${product.id}`} />
           )}
+          <LifestylePhotoSlot lifestyleUri={product.lifestyleUri} productId={product.id} />
           <WishlistButton
             product={product}
             size="sm"
@@ -329,6 +373,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.3,
+  },
+  lifestyleSlot: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.8)',
+    // TODO(stilgar): Remove placeholder styling once real lifestyle imagery is wired.
+  },
+  lifestyleImage: {
+    width: '100%',
+    height: '100%',
   },
   contextTrigger: {
     position: 'absolute',
