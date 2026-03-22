@@ -212,7 +212,7 @@ export function ProductDetailScreen({
     : null;
 
   // Gallery data: standard views + optional video slide at end
-  const galleryData: Array<(typeof GALLERY_VIEWS)[number] | 'Video'> = resolvedVideoUri
+  const galleryData: ((typeof GALLERY_VIEWS)[number] | 'Video')[] = resolvedVideoUri
     ? ([...GALLERY_VIEWS, 'Video'] as const)
     : [...GALLERY_VIEWS];
 

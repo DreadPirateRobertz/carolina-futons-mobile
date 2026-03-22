@@ -267,4 +267,73 @@ describe('CompareTray', () => {
       expect(getByTestId('my-tray')).toBeTruthy();
     });
   });
+
+  // ── Thumbnail size (cm-a9g) ─────────────────────────────────────────────────
+
+  describe('thumbnail size', () => {
+    it('mini card image renders at 140px height', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const img = getByTestId(`compare-tray-image-${PRODUCT_A.id}`);
+      expect(img.props.style).toEqual(expect.objectContaining({ height: 140 }));
+    });
+
+    it('mini card image renders at 140px height for all products', () => {
+      withCompare([PRODUCT_A, PRODUCT_B, PRODUCT_C]);
+      const { getByTestId } = renderTray();
+      [PRODUCT_A, PRODUCT_B, PRODUCT_C].forEach((p) => {
+        const img = getByTestId(`compare-tray-image-${p.id}`);
+        expect(img.props.style).toEqual(expect.objectContaining({ height: 140 }));
+      });
+    });
+  });
+
+  // ── Swipe-to-remove (cm-a9g) ───────────────────────────────────────────────
+
+  describe('swipe-to-remove', () => {
+    it('renders swipeable wrapper for each mini card', () => {
+      withCompare([PRODUCT_A, PRODUCT_B]);
+      const { getByTestId } = renderTray();
+      expect(getByTestId(`compare-tray-swipeable-${PRODUCT_A.id}`)).toBeTruthy();
+      expect(getByTestId(`compare-tray-swipeable-${PRODUCT_B.id}`)).toBeTruthy();
+    });
+
+    it('swipeable wrapper has panHandlers attached', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const wrapper = getByTestId(`compare-tray-swipeable-${PRODUCT_A.id}`);
+      // PanResponder attaches onStartShouldSetResponder and related handlers
+      expect(wrapper.props.onStartShouldSetResponder).toBeDefined();
+    });
+
+    it('remove button still calls removeFromCompare (both methods available)', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      fireEvent.press(getByTestId(`compare-tray-remove-${PRODUCT_A.id}`));
+      expect(mockRemoveFromCompare).toHaveBeenCalledWith(PRODUCT_A.id);
+    });
+
+    it('swipeable wrapper renders all three cards when list is full', () => {
+      withCompare([PRODUCT_A, PRODUCT_B, PRODUCT_C]);
+      const { getByTestId } = renderTray();
+      expect(getByTestId(`compare-tray-swipeable-${PRODUCT_A.id}`)).toBeTruthy();
+      expect(getByTestId(`compare-tray-swipeable-${PRODUCT_B.id}`)).toBeTruthy();
+      expect(getByTestId(`compare-tray-swipeable-${PRODUCT_C.id}`)).toBeTruthy();
+    });
+  });
+
+  // ── Action spacing (cm-a9g) ────────────────────────────────────────────────
+
+  describe('action spacing', () => {
+    it('CTA button has marginTop of at least 16px', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const cta = getByTestId('compare-tray-cta');
+      // The static style on the CTA sets marginTop: 16
+      const flatStyle = Array.isArray(cta.props.style)
+        ? Object.assign({}, ...cta.props.style.filter(Boolean))
+        : (cta.props.style ?? {});
+      expect(flatStyle.marginTop).toBeGreaterThanOrEqual(16);
+    });
+  });
 });
