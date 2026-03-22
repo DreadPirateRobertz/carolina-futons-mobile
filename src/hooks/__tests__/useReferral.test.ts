@@ -173,29 +173,91 @@ describe('unauthenticated user', () => {
   });
 });
 
-// ── Section 4: No code yet ────────────────────────────────────────────────────
+// ── Section 4: Auto-generate referral code when none exists (cm-1ny) ──────────
 
-describe('no referral code yet', () => {
+describe('auto-generates referral code when none exists', () => {
   beforeEach(() => {
     mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+    mockInsertDataItem.mockResolvedValue({ id: 'new-code-id' });
   });
 
-  it('returns null code', async () => {
+  it('calls insertDataItem for ReferralCodes when query returns empty', async () => {
+    renderHook(() => useReferral());
+    await waitFor(() => expect(mockInsertDataItem).toHaveBeenCalled());
+    expect(mockInsertDataItem).toHaveBeenCalledWith(
+      'ReferralCodes',
+      expect.objectContaining({ memberId: MEMBER_ID }),
+    );
+  });
+
+  it('inserts a code matching FUTON-XXXX format (4 uppercase alphanumeric)', async () => {
+    renderHook(() => useReferral());
+    await waitFor(() => expect(mockInsertDataItem).toHaveBeenCalled());
+    const payload = mockInsertDataItem.mock.calls[0][1];
+    expect(payload.code).toMatch(/^FUTON-[A-Z0-9]{4}$/);
+  });
+
+  it('inserts with creditsEarned: 0 and referralCount: 0', async () => {
+    renderHook(() => useReferral());
+    await waitFor(() => expect(mockInsertDataItem).toHaveBeenCalled());
+    const payload = mockInsertDataItem.mock.calls[0][1];
+    expect(payload.creditsEarned).toBe(0);
+    expect(payload.referralCount).toBe(0);
+  });
+
+  it('sets code to the generated value (not null)', async () => {
     const { result } = renderHook(() => useReferral());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.code).toBeNull();
+    expect(result.current.code).toMatch(/^FUTON-[A-Z0-9]{4}$/);
   });
 
-  it('sets error to no-code message', async () => {
+  it('sets no error after successful auto-generation', async () => {
     const { result } = renderHook(() => useReferral());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.error).toMatch(/not.*available|no.*code/i);
+    expect(result.current.error).toBeNull();
   });
 
-  it('returns 0 creditsEarned', async () => {
+  it('sets shareUrl using the generated code', async () => {
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.shareUrl).toMatch(
+      /^https:\/\/carolinafutons\.com\/referral\/FUTON-[A-Z0-9]{4}$/,
+    );
+  });
+
+  it('returns 0 creditsEarned for a freshly generated code', async () => {
     const { result } = renderHook(() => useReferral());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.creditsEarned).toBe(0);
+  });
+
+  it('sets error and keeps code null when insertDataItem fails', async () => {
+    mockInsertDataItem.mockRejectedValue(new Error('Insert failed'));
+    const { result } = renderHook(() => useReferral());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.code).toBeNull();
+    expect(result.current.error).toBeTruthy();
+  });
+
+  it('calls captureException when insertDataItem fails', async () => {
+    mockInsertDataItem.mockRejectedValue(new Error('Insert failed'));
+    renderHook(() => useReferral());
+    await waitFor(() => expect(mockCaptureException).toHaveBeenCalled());
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'error',
+      expect.objectContaining({ action: 'useReferral/generateReferralCode' }),
+    );
+  });
+
+  it('does not insert ReferralCode when member is unauthenticated', async () => {
+    mockUseAuth.mockReturnValue(makeAuth(null));
+    renderHook(() => useReferral());
+    await new Promise((r) => setTimeout(r, 50));
+    const referralCodeInserts = mockInsertDataItem.mock.calls.filter(
+      ([col]) => col === 'ReferralCodes',
+    );
+    expect(referralCodeInserts).toHaveLength(0);
   });
 });
 
@@ -459,11 +521,13 @@ describe('submitReferral', () => {
     ).rejects.toThrow();
   });
 
-  it('throws if referral code is not yet loaded', async () => {
+  it('throws if referral code failed to load or generate', async () => {
+    // query empty + insert fails → code stays null
     mockQueryData.mockImplementation((collection: string) => {
       if (collection === 'ReferralCodes') return Promise.resolve({ items: [], totalResults: 0 });
       return Promise.resolve({ items: [], totalResults: 0 });
     });
+    mockInsertDataItem.mockRejectedValue(new Error('Insert failed'));
     const { result } = renderHook(() => useReferral());
     await waitFor(() => expect(result.current.loading).toBe(false));
     await expect(

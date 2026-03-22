@@ -162,7 +162,30 @@ export function useReferral(): UseReferralResult {
       // Handle ReferralCodes result
       if (codesResult.status === 'fulfilled') {
         if (codesResult.value.items.length === 0) {
-          setError('Referral code not available yet');
+          // No code exists yet — auto-generate and persist one
+          const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+          const generatedCode = `FUTON-${suffix}`;
+          try {
+            await wixClient.insertDataItem('ReferralCodes', {
+              memberId,
+              code: generatedCode,
+              creditsEarned: 0,
+              referralCount: 0,
+            });
+            if (!cancelled) {
+              setCode(generatedCode);
+              setError(null);
+            }
+          } catch (e) {
+            if (!cancelled) {
+              const err = e instanceof Error ? e : new Error(String(e));
+              captureException(err, 'error', {
+                action: 'useReferral/generateReferralCode',
+                memberId: memberId ?? undefined,
+              });
+              setError('Could not create your referral code. Please try again later.');
+            }
+          }
         } else {
           const item = codesResult.value.items[0];
           setCode(item.code);
