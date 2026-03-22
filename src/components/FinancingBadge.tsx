@@ -37,14 +37,20 @@ export function FinancingBadge({ price, variant = 'compact', onPress, testID }: 
         style={[
           styles.compactBadge,
           {
-            backgroundColor: `${colors.mountainBlue}18`,
+            backgroundColor: `${colors.mountainBlue}22`,
             borderRadius: borderRadius.sm,
             borderColor: colors.mountainBlue,
           },
         ]}
       >
-        <Text style={[styles.compactText, { color: colors.mountainBlue }]}>
-          As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
+        <Text style={[styles.compactProvider, { color: colors.mountainBlue }]}>
+          Klarna · Affirm
+        </Text>
+        <Text style={[styles.compactAmount, { color: colors.mountainBlue }]}>
+          As low as {formatPrice(lowestTerm.monthlyPayment)}/mo
+        </Text>
+        <Text style={[styles.compactCta, { color: colors.mountainBlue }]}>
+          Tap to see options →
         </Text>
       </View>
     );
@@ -54,14 +60,21 @@ export function FinancingBadge({ price, variant = 'compact', onPress, testID }: 
           onPress={onPress}
           testID={badgeTestID}
           accessibilityRole="button"
-          accessibilityLabel="View financing options"
+          accessibilityLabel={`Financing available. As low as ${formatPrice(lowestTerm.monthlyPayment)} per month with Klarna or Affirm. Tap to see options.`}
           activeOpacity={0.7}
         >
           {inner}
         </TouchableOpacity>
       );
     }
-    return <View testID={badgeTestID}>{inner}</View>;
+    return (
+      <View
+        testID={badgeTestID}
+        accessibilityLabel={`Financing available. As low as ${formatPrice(lowestTerm.monthlyPayment)} per month with Klarna or Affirm.`}
+      >
+        {inner}
+      </View>
+    );
   }
 
   // detail variant
@@ -120,16 +133,30 @@ const FINANCING_APR_DISPLAY = '9.99%';
 const styles = StyleSheet.create({
   compactBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingVertical: 8,
     alignSelf: 'stretch',
-    borderWidth: 1,
-    marginTop: 2,
+    borderWidth: 1.5,
+    marginTop: 4,
+    gap: 2,
   },
-  compactText: {
-    fontSize: 13,
+  compactProvider: {
+    fontSize: 10,
     fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  compactAmount: {
+    fontSize: 14,
+    fontWeight: '800',
     letterSpacing: 0.1,
     textAlign: 'center',
+  },
+  compactCta: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+    opacity: 0.8,
   },
   detailContainer: {
     borderWidth: 1,

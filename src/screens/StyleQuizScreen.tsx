@@ -10,10 +10,12 @@
  * Error boundary provided by withScreenErrorBoundary in AppNavigator.
  */
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { ProductCard } from '@/components/ProductCard';
+import { PRODUCTS } from '@/data/products';
 import {
   useStyleQuiz,
   getRecommendation,
@@ -153,10 +155,14 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
   const handleSave = useCallback(async () => {
     try {
       await savePreferences();
+      onComplete();
     } catch {
-      // savePreferences handles its own errors; this guards unexpected throws
+      Alert.alert(
+        'Save Failed',
+        'We couldn\u2019t save your preferences. Please try again.',
+        [{ text: 'OK' }],
+      );
     }
-    onComplete();
   }, [savePreferences, onComplete]);
 
   // ── Progress ────────────────────────────────────────────────────
@@ -309,28 +315,19 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
 
         {/* Curated product grid */}
         <View style={styles.productGrid} testID="style-quiz-product-grid">
-          {recommendation.productSlugs.map((slug) => (
-            <TouchableOpacity
-              key={slug}
-              testID={`quiz-product-${slug}`}
-              style={[
-                styles.productCard,
-                { borderRadius: borderRadius.card, backgroundColor: darkPalette.surface },
-              ]}
-              onPress={() => onProductPress?.(slug)}
-              accessibilityRole="button"
-              accessibilityLabel={`View ${slug}`}
-            >
-              <Text
-                style={[
-                  styles.productSlug,
-                  { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily },
-                ]}
-              >
-                {slug}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {recommendation.productSlugs.map((slug) => {
+            const product = PRODUCTS.find((p) => p.slug === slug);
+            if (!product) return null;
+            return (
+              <View key={slug} style={styles.productCardWrapper}>
+                <ProductCard
+                  product={product}
+                  testID={`quiz-product-${slug}`}
+                  onPress={() => onProductPress?.(slug)}
+                />
+              </View>
+            );
+          })}
         </View>
       </View>
     );
@@ -529,15 +526,8 @@ const styles = StyleSheet.create({
     gap: 12,
     width: '100%',
   },
-  productCard: {
+  productCardWrapper: {
     width: '46%',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-  },
-  productSlug: {
-    fontSize: 13,
-    textAlign: 'center',
   },
   // Bottom action
   buttonContainer: {

@@ -7,7 +7,6 @@ function renderScreen(props: Partial<React.ComponentProps<typeof OrderSuccessScr
   return render(
     <ThemeProvider>
       <OrderSuccessScreen
-        orderId="ord_stripe_pi_123"
         orderNumber="CF-20260320-042"
         onContinueShopping={jest.fn()}
         onViewOrders={jest.fn()}
@@ -61,6 +60,19 @@ describe('OrderSuccessScreen', () => {
     });
   });
 
+  describe('accessibility and theme', () => {
+    it('checkmark has accessibilityLabel', () => {
+      const { getByLabelText } = renderScreen();
+      expect(getByLabelText('Order confirmed')).toBeTruthy();
+    });
+
+    it('checkmark has accessibilityRole of text', () => {
+      const { getByLabelText } = renderScreen();
+      const checkmark = getByLabelText('Order confirmed');
+      expect(checkmark.props.accessibilityRole).toBe('text');
+    });
+  });
+
   describe('edge cases', () => {
     it('renders without onViewOrders without crashing', () => {
       const { getByTestId } = renderScreen({ onViewOrders: undefined });
@@ -72,8 +84,8 @@ describe('OrderSuccessScreen', () => {
       expect(getByTestId('order-success-screen')).toBeTruthy();
     });
 
-    it('renders with minimal props (no orderId displayed to user)', () => {
-      const { getByTestId } = renderScreen({ orderId: '', orderNumber: 'CF-20260320-000' });
+    it('renders with minimal props', () => {
+      const { getByTestId } = renderScreen({ orderNumber: 'CF-20260320-000' });
       expect(getByTestId('order-success-screen')).toBeTruthy();
     });
   });

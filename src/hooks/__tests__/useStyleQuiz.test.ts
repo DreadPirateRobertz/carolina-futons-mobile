@@ -93,14 +93,16 @@ describe('useStyleQuiz', () => {
     );
   });
 
-  it('handles AsyncStorage write errors gracefully', async () => {
+  it('propagates AsyncStorage write errors to callers', async () => {
     mockSetItem.mockRejectedValue(new Error('Write error'));
     const { result } = renderHook(() => useStyleQuiz());
 
-    // Should not throw
-    await act(async () => {
-      await result.current.savePreferences();
-    });
+    // savePreferences propagates errors — callers (OnboardingScreen, StyleQuizScreen) handle them
+    await expect(
+      act(async () => {
+        await result.current.savePreferences();
+      }),
+    ).rejects.toThrow('Write error');
   });
 });
 

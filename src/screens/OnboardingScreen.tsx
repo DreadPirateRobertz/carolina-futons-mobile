@@ -10,7 +10,7 @@
  * Users can skip at any point; preferences are persisted on finish.
  */
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -118,8 +118,16 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   );
 
   const handleFinish = useCallback(async () => {
-    await savePreferences();
-    onComplete();
+    try {
+      await savePreferences();
+      onComplete();
+    } catch (err) {
+      Alert.alert(
+        'Save Failed',
+        'We couldn\u2019t save your preferences. Please try again.',
+        [{ text: 'OK' }],
+      );
+    }
   }, [savePreferences, onComplete]);
 
   // ── Progress Bar ────────────────────────────────────────────────
