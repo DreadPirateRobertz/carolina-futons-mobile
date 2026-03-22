@@ -45,6 +45,7 @@ import { useFutonModels } from '@/hooks/useFutonModels';
 import { useProduct, useProductBySlug } from '@/hooks/useProduct';
 import { ReviewCard } from '@/components/ReviewCard';
 import { ReviewSummary } from '@/components/ReviewSummary';
+import { StarRating } from '@/components/StarRating';
 import { ReviewForm } from '@/components/ReviewForm';
 import { useReviews } from '@/hooks/useReviews';
 import { useAuth } from '@/hooks/useAuth';
@@ -570,6 +571,15 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
+          {hasReviews && (
+            <StarRating
+              rating={reviewSummary.averageRating}
+              count={reviewSummary.totalReviews}
+              showValue
+              size="sm"
+              testID="price-inline-rating"
+            />
+          )}
           <FinancingBadge price={totalPrice} variant="detail" />
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
           <TouchableOpacity

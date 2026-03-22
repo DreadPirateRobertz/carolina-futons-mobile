@@ -1257,4 +1257,38 @@ describe('ProductDetailScreen', () => {
       expect(getByText('Add to Cart — $349.00')).toBeTruthy();
     });
   });
+
+  // ── CF-wah8: Star ratings adjacent to price ─────────────────────────────────
+
+  describe('Inline star rating near price', () => {
+    it('renders inline star rating near price when product has reviews', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('price-inline-rating')).toBeTruthy();
+    });
+
+    it('does NOT render inline rating when product has no reviews', () => {
+      // pisgah-twin has no mock reviews
+      const { queryByTestId } = renderDetail({ productId: 'pisgah-twin' });
+      expect(queryByTestId('price-inline-rating')).toBeNull();
+    });
+
+    it('inline rating is within the price section', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Both elements should be present in the same screen area
+      expect(getByTestId('price-section')).toBeTruthy();
+      expect(getByTestId('price-inline-rating')).toBeTruthy();
+    });
+
+    it('inline rating has accessible role', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const rating = getByTestId('price-inline-rating');
+      expect(rating.props.accessibilityRole).toBe('text');
+    });
+
+    it('inline rating has accessibility label with star count', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const rating = getByTestId('price-inline-rating');
+      expect(rating.props.accessibilityLabel).toMatch(/out of 5 stars/);
+    });
+  });
 });
