@@ -69,7 +69,7 @@ function renderTabs() {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0, itemCount: 2 });
+  mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
 });
 
 describe('TabNavigator — CartFAB integration', () => {
