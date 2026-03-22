@@ -582,6 +582,27 @@ export class WixClient {
   }
 
   /**
+   * Fetch a single-product shipping estimate from the getShippingEstimate
+   * Wix backend webmethod (cm-9yn). Returns parcel or freight rate for a
+   * specific product based on its dimensions.
+   */
+  async getShippingEstimate(params: {
+    zip: string;
+    productId: string;
+    dimensions: { width: number; depth: number; height: number };
+  }): Promise<{
+    success: boolean;
+    rate?: string;
+    carrier?: string;
+    serviceLevel?: string;
+    isEstimate?: boolean;
+    isFreight?: boolean;
+    error?: string;
+  }> {
+    return this.post('/_functions/getShippingEstimate', params);
+  }
+
+  /**
    * Call godfrey's getDeliveryEstimate webMethod (cm-uyd).
    * Returns a delivery window or fallback "2-5 business days" copy.
    */

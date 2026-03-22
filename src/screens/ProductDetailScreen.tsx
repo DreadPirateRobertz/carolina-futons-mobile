@@ -67,6 +67,7 @@ import { useBundleDeals } from '@/hooks/useBundleDeals';
 import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
 import { DeliveryEstimateWidget } from '@/components/DeliveryEstimateWidget';
 import { useShippingEstimate } from '@/hooks/useShippingEstimate';
+import { ShippingEstimatePanel } from '@/components/ShippingEstimatePanel';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -768,6 +769,13 @@ export function ProductDetailScreen({
             requiresFreight={catalogProduct?.requiresFreight}
             requiresLiftgate={catalogProduct?.requiresLiftgate}
             testID="freight-notice-banner"
+          />
+
+          {/* Shipping Estimate Panel — cm-9yn: zip-driven parcel/freight rate */}
+          <ShippingEstimatePanel
+            productId={catalogProductId ?? model.id}
+            dimensions={model.dimensions}
+            testID="shipping-estimate-panel"
           />
 
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
