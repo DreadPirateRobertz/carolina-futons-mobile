@@ -301,4 +301,42 @@ describe('CompareScreen', () => {
     expect(within(header).getByText(productA.name)).toBeTruthy();
     expect(within(header).getByText(productB.name)).toBeTruthy();
   });
+
+  it('sticky header zIndex is high enough to prevent iOS content overlap on scroll (>= 10)', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const header = getByTestId('sticky-product-header');
+    const style = header.props.style;
+    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style ?? {};
+    expect(flatStyle.zIndex).toBeGreaterThanOrEqual(10);
+  });
+
+  it('sticky header has iOS shadow properties for visual separation from scrolled content', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const header = getByTestId('sticky-product-header');
+    const style = header.props.style;
+    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style ?? {};
+    expect(flatStyle.shadowColor).toBeDefined();
+    expect(flatStyle.shadowOpacity).toBeGreaterThan(0);
+    expect(flatStyle.shadowRadius).toBeGreaterThan(0);
+  });
+
+  it('sticky header elevation is sufficient for Android layering (>= 4)', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const header = getByTestId('sticky-product-header');
+    const style = header.props.style;
+    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style ?? {};
+    expect(flatStyle.elevation).toBeGreaterThanOrEqual(4);
+  });
+
+  it('scroll view has bottom padding for safe area so last row is not obscured', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const scrollView = getByTestId('comparison-scroll-view');
+    const ccs = scrollView.props.contentContainerStyle;
+    const flatCcs = ccs
+      ? Array.isArray(ccs)
+        ? Object.assign({}, ...ccs)
+        : ccs
+      : {};
+    expect(flatCcs.paddingBottom).toBeGreaterThan(0);
+  });
 });

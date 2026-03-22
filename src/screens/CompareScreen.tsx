@@ -48,6 +48,7 @@ export function CompareScreen({
 }: Props) {
   const { colors, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
+  const scrollContentStyle = { paddingBottom: insets.bottom || 16 };
 
   // Cap products to max
   const products = rawProducts.slice(0, MAX_COMPARE_ITEMS);
@@ -191,6 +192,7 @@ export function CompareScreen({
       <ScrollView
         testID="comparison-scroll-view"
         style={styles.scrollView}
+        contentContainerStyle={scrollContentStyle}
         showsVerticalScrollIndicator={false}
       >
         {/* Comparison rows */}
@@ -279,8 +281,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderBottomWidth: 1,
-    zIndex: 1,
-    elevation: 2,
+    zIndex: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
   headerRow: {
     flexDirection: 'row',
