@@ -157,6 +157,30 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </Text>
       </View>
 
+      {/* Connection error banner — shows when Wix fetch fails but static content is visible.
+          Positioned here (below hero, above CTA cards) so it's visible without scrolling. cm-1b4 */}
+      {collectionsError ? (
+        <View
+          style={[styles.connectionErrorBanner, { backgroundColor: colors.espresso + 'E6' }]}
+          testID="home-connection-error"
+        >
+          <View
+            testID="home-connection-error-illustration"
+            style={styles.connectionErrorIllustration}
+          >
+            <MountainSkyline variant="sunset" height={40} testID="home-error-skyline" />
+          </View>
+          <Text
+            style={[
+              styles.connectionErrorText,
+              { color: colors.sandBase, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            Couldn't refresh content. Showing saved data.
+          </Text>
+        </View>
+      ) : null}
+
       {/* Promotional Banner Carousel */}
       <PromoBannerCarousel />
 
@@ -390,28 +414,6 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </Text>
       </View>
 
-      {/* Connection error banner — shows when Wix fetch fails but static content is visible */}
-      {collectionsError ? (
-        <View
-          style={[styles.connectionErrorBanner, { backgroundColor: colors.espresso + 'E6' }]}
-          testID="home-connection-error"
-        >
-          <View
-            testID="home-connection-error-illustration"
-            style={styles.connectionErrorIllustration}
-          >
-            <MountainSkyline variant="sunset" height={40} testID="home-error-skyline" />
-          </View>
-          <Text
-            style={[
-              styles.connectionErrorText,
-              { color: colors.sandBase, fontFamily: typography.bodyFamily },
-            ]}
-          >
-            Couldn't refresh content. Showing saved data.
-          </Text>
-        </View>
-      ) : null}
     </ScrollView>
   );
 }

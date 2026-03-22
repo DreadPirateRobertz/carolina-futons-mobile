@@ -239,5 +239,26 @@ describe('HomeScreen', () => {
       const { queryByTestId } = renderHomeScreen();
       expect(queryByTestId('home-connection-error')).toBeNull();
     });
+
+    // cm-1b4: error banner must appear before the "Since 1985" mountain skyline
+    // divider so users see it without scrolling.
+    it('error banner renders before the mountain skyline divider (above fold)', () => {
+      mockUseCollections.mockReturnValue({
+        collections: [],
+        featured: [],
+        isLoading: false,
+        isStale: true,
+        error: new Error('Network error'),
+        refresh: jest.fn(),
+      });
+      const { toJSON } = renderHomeScreen();
+      const json = JSON.stringify(toJSON());
+      const errorBannerPos = json.indexOf('"home-connection-error"');
+      const dividerPos = json.indexOf('"home-mountain-skyline"');
+      expect(errorBannerPos).toBeGreaterThan(-1);
+      expect(dividerPos).toBeGreaterThan(-1);
+      // Banner must appear before the "Since 1985" divider skyline
+      expect(errorBannerPos).toBeLessThan(dividerPos);
+    });
   });
 });
