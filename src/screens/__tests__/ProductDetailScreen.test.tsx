@@ -13,6 +13,10 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate, goBack: jest.fn() }),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
+}));
+
 const mockPremiumValue = {
   isPremium: false,
   isLoading: false,
@@ -1346,6 +1350,37 @@ describe('ProductDetailScreen', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const rating = getByTestId('price-inline-rating');
       expect(rating.props.accessibilityLabel).toMatch(/out of 5 stars/);
+    });
+  });
+
+  // ── cm-8tl: Add to Cart layout — bottom inset ────────────────────────────────
+
+  describe('Bottom inset / scroll layout (cm-8tl)', () => {
+    it('applies non-zero paddingBottom to scroll content to clear tab bar / safe area', () => {
+      const { getByTestId } = renderDetail();
+      const scrollView = getByTestId('scroll-view');
+      const contentContainerStyle = scrollView.props.contentContainerStyle;
+      // Flatten array style to resolve final paddingBottom value
+      const flat = Array.isArray(contentContainerStyle)
+        ? Object.assign({}, ...contentContainerStyle)
+        : contentContainerStyle;
+      // Must be non-zero — ensures safe area bottom inset (34pt on iPhone X) is applied
+      expect(flat.paddingBottom).toBeGreaterThan(0);
+    });
+
+    it('add-to-cart button is rendered and accessible', () => {
+      const { getByTestId } = renderDetail();
+      const btn = getByTestId('add-to-cart-button');
+      expect(btn).toBeTruthy();
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('quantity selector is rendered and accessible', () => {
+      const { getByTestId } = renderDetail();
+      expect(getByTestId('quantity-selector')).toBeTruthy();
+      expect(getByTestId('quantity-decrement')).toBeTruthy();
+      expect(getByTestId('quantity-increment')).toBeTruthy();
+      expect(getByTestId('quantity-value')).toBeTruthy();
     });
   });
 });
