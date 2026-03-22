@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +20,7 @@ import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
+import { SkeletonCollectionList } from '@/components/SkeletonCollectionCard';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
@@ -39,7 +40,7 @@ export function CollectionsScreen() {
   const { colors, spacing, typography } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { collections } = useCollections();
+  const { collections, isLoading, error, refresh } = useCollections();
   const { isPremium } = usePremium();
   const { itemCount } = useCart();
   const { open: openCart } = useMiniCartDrawer();
@@ -115,6 +116,78 @@ export function CollectionsScreen() {
     [colors, spacing, typography],
   );
 
+  if (isLoading) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
+        />
+        <SkeletonCollectionList count={3} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
+        />
+        <Text
+          style={[styles.errorText, { color: colors.espresso }]}
+          testID="collections-error"
+        >
+          Couldn't load collections. Check your connection.
+        </Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
+          onPress={refresh}
+          testID="collections-retry"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.retryButtonText, { color: colors.white }]}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (collections.length === 0) {
+    return (
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
+        />
+        <Text
+          style={[styles.emptyText, { color: colors.espressoLight }]}
+          testID="collections-empty"
+        >
+          No collections available yet. Check back soon!
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View
       style={[styles.container, { backgroundColor: colors.sandBase }]}
@@ -157,6 +230,30 @@ export function CollectionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginHorizontal: 32,
+    marginBottom: 20,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  emptyText: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginHorizontal: 32,
   },
   earlyAccessOverlay: {
     flexDirection: 'row',

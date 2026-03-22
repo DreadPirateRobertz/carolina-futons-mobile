@@ -3,6 +3,15 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { CollectionsScreen } from '../CollectionsScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { COLLECTIONS } from '@/data/collections';
+
+// Control useCollections state from tests
+const mockRefresh = jest.fn();
+const mockUseCollections = jest.fn();
+jest.mock('@/hooks/useCollections', () => ({
+  ...jest.requireActual('@/hooks/useCollections'),
+  useCollections: () => mockUseCollections(),
+}));
 
 const mockPremiumValue = {
   isPremium: false,
@@ -56,6 +65,16 @@ function renderCollectionsScreen() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockPremiumValue.isPremium = false;
+  // Default: loaded, no error, full static collections
+  mockUseCollections.mockReturnValue({
+    collections: COLLECTIONS,
+    featured: COLLECTIONS.filter((c) => c.featured),
+    isLoading: false,
+    isStale: false,
+    error: null,
+    refresh: mockRefresh,
+  });
 });
 
 describe('CollectionsScreen', () => {
@@ -78,14 +97,92 @@ describe('CollectionsScreen', () => {
     mockPremiumValue.isPremium = false;
     const { getByTestId } = renderCollectionsScreen();
     expect(getByTestId('early-access-lock-spring-2026-preview')).toBeTruthy();
-    mockPremiumValue.isPremium = false;
   });
 
   it('hides early access lock for premium users', () => {
     mockPremiumValue.isPremium = true;
     const { queryByTestId } = renderCollectionsScreen();
     expect(queryByTestId('early-access-lock-spring-2026-preview')).toBeNull();
-    mockPremiumValue.isPremium = false;
+  });
+});
+
+describe('CollectionsScreen — loading state', () => {
+  beforeEach(() => {
+    mockUseCollections.mockReturnValue({
+      collections: [],
+      featured: [],
+      isLoading: true,
+      isStale: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+  });
+
+  it('shows skeleton while loading', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('skeleton-collection-list')).toBeTruthy();
+  });
+
+  it('hides the collections list while loading', () => {
+    const { queryByTestId } = renderCollectionsScreen();
+    expect(queryByTestId('collections-list')).toBeNull();
+  });
+});
+
+describe('CollectionsScreen — error state', () => {
+  beforeEach(() => {
+    mockUseCollections.mockReturnValue({
+      collections: [],
+      featured: [],
+      isLoading: false,
+      isStale: false,
+      error: new Error('Network request failed'),
+      refresh: mockRefresh,
+    });
+  });
+
+  it('shows error message when fetch fails', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('collections-error')).toBeTruthy();
+  });
+
+  it('shows retry button on error', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('collections-retry')).toBeTruthy();
+  });
+
+  it('tapping retry calls refresh', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    fireEvent.press(getByTestId('collections-retry'));
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides collections list on error', () => {
+    const { queryByTestId } = renderCollectionsScreen();
+    expect(queryByTestId('collections-list')).toBeNull();
+  });
+});
+
+describe('CollectionsScreen — empty state', () => {
+  beforeEach(() => {
+    mockUseCollections.mockReturnValue({
+      collections: [],
+      featured: [],
+      isLoading: false,
+      isStale: false,
+      error: null,
+      refresh: mockRefresh,
+    });
+  });
+
+  it('shows empty state when no collections returned', () => {
+    const { getByTestId } = renderCollectionsScreen();
+    expect(getByTestId('collections-empty')).toBeTruthy();
+  });
+
+  it('hides collections list when empty', () => {
+    const { queryByTestId } = renderCollectionsScreen();
+    expect(queryByTestId('collections-list')).toBeNull();
   });
 });
 
