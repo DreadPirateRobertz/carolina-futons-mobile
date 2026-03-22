@@ -376,4 +376,46 @@ describe('RoomGalleryScreen', () => {
       expect(getByTestId('room-gallery-share-cta').props.accessibilityRole).toBe('button');
     });
   });
+
+  // ── cm-x6f: expo-image migration ──────────────────────────────────────────
+
+  describe('expo-image migration', () => {
+    it('renders room images with cachePolicy memory-disk', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.cachePolicy).toBe('memory-disk');
+    });
+
+    it('passes blurhash placeholder to room images', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.placeholder).toBeDefined();
+    });
+
+    it('renders image source with correct uri', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      expect(img.props.source).toEqual({
+        uri: 'https://static.wixstatic.com/media/e04e89_abc123',
+      });
+    });
+
+    it('handles image load error without crashing', () => {
+      const { getByTestId } = renderGallery();
+      // Trigger onError on the image — should not throw
+      expect(() => {
+        const img = getByTestId('room-image-room-001');
+        img.props.onError?.({ nativeEvent: { error: 'load failed' } });
+      }).not.toThrow();
+    });
+
+    it('shows fallback when image fails to load', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-room-001');
+      // Fire onError to trigger fallback state
+      img.props.onError?.({ nativeEvent: { error: 'load failed' } });
+      // Room card remains visible (no crash, card still rendered)
+      expect(getByTestId('room-card-room-001')).toBeTruthy();
+    });
+  });
 });

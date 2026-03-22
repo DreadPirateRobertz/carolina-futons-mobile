@@ -8,8 +8,9 @@
  * States handled: loading skeleton, empty gallery, API error with retry,
  * and the populated grid.
  */
-import React, { useCallback } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -25,6 +26,9 @@ interface Props {
 
 const NUM_COLUMNS = 2;
 
+/** Neutral warm fallback blurhash while room images are loading. */
+const DEFAULT_ROOM_BLURHASH = 'LKO2:N%2Tw=w]~RBVZRi};RPxuwH';
+
 function RoomCard({
   item,
   onProductPress,
@@ -33,6 +37,7 @@ function RoomCard({
   onProductPress?: (productId: string) => void;
 }) {
   const { colors, spacing, borderRadius, typography } = useTheme();
+  const [imageError, setImageError] = useState(false);
 
   const handlePress = useCallback(() => {
     if (item.productIds.length > 0) {
@@ -48,12 +53,22 @@ function RoomCard({
       accessibilityLabel={`${item.roomStyle} room, ${item.productIds.length} ${item.productIds.length === 1 ? 'product' : 'products'}`}
       accessibilityRole="button"
     >
-      <Image
-        source={{ uri: item.imageUrl }}
-        style={styles.image}
-        resizeMode="cover"
-        testID={`room-image-${item.roomId}`}
-      />
+      {imageError ? (
+        <View
+          style={[styles.image, styles.imageFallback, { backgroundColor: colors.sandDark }]}
+          testID={`room-image-fallback-${item.roomId}`}
+        />
+      ) : (
+        <Image
+          source={{ uri: item.imageUrl }}
+          style={styles.image}
+          contentFit="cover"
+          placeholder={DEFAULT_ROOM_BLURHASH}
+          cachePolicy="memory-disk"
+          onError={() => setImageError(true)}
+          testID={`room-image-${item.roomId}`}
+        />
+      )}
       <View
         style={[
           styles.overlay,
@@ -259,6 +274,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  imageFallback: {},
   overlay: {
     position: 'absolute',
     bottom: 0,
