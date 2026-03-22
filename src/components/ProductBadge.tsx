@@ -87,11 +87,7 @@ export function ProductBadge({ type, compact = false, testID = 'product-badge' }
       accessibilityLabel={config.accessibilityLabel}
     >
       <Text
-        style={[
-          styles.text,
-          compact && styles.compactText,
-          { color: config.textColor(colors) },
-        ]}
+        style={[styles.text, compact && styles.compactText, { color: config.textColor(colors) }]}
       >
         {config.label}
       </Text>

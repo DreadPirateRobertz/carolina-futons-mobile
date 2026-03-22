@@ -183,11 +183,7 @@ export const ProductCard = memo(function ProductCard({
             testID={`wishlist-btn-${product.id}`}
           />
           <View style={styles.badgeOverlay} pointerEvents="none">
-            <ProductBadge
-              type={normalizedBadge}
-              compact
-              testID={`product-badge-${product.id}`}
-            />
+            <ProductBadge type={normalizedBadge} compact testID={`product-badge-${product.id}`} />
           </View>
           {!product.inStock && (
             <View style={styles.outOfStockOverlay}>

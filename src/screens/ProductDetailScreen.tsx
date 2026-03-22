@@ -689,7 +689,7 @@ export function ProductDetailScreen({
             {model.name}
           </Text>
           <ProductBadge
-            type={normalizeBadgeType(model.badge)}
+            type={normalizeBadgeType(catalogProduct?.badge)}
             testID="product-detail-badge"
           />
           <Text
