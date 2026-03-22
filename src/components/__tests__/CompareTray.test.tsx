@@ -246,7 +246,9 @@ describe('CompareTray', () => {
     it('remove buttons have button role', () => {
       withCompare([PRODUCT_A]);
       const { getByTestId } = renderTray();
-      expect(getByTestId(`compare-tray-remove-${PRODUCT_A.id}`).props.accessibilityRole).toBe('button');
+      expect(getByTestId(`compare-tray-remove-${PRODUCT_A.id}`).props.accessibilityRole).toBe(
+        'button',
+      );
     });
   });
 

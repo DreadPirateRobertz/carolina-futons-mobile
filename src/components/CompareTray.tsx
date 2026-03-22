@@ -39,10 +39,7 @@ function CompareMiniCard({
 
   return (
     <View
-      style={[
-        styles.miniCard,
-        { backgroundColor: colors.white, borderRadius: borderRadius.card },
-      ]}
+      style={[styles.miniCard, { backgroundColor: colors.white, borderRadius: borderRadius.card }]}
       testID={`compare-tray-card-${product.id}`}
     >
       <Image
@@ -99,7 +96,12 @@ export function CompareTray({ onNavigateToCompare, testID = 'compare-tray' }: Pr
     >
       {/* Header row */}
       <View style={[styles.header, { paddingHorizontal: spacing.md }]}>
-        <Text style={[styles.headerTitle, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+        <Text
+          style={[
+            styles.headerTitle,
+            { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+          ]}
+        >
           Comparing {count}
         </Text>
         <TouchableOpacity
@@ -109,7 +111,12 @@ export function CompareTray({ onNavigateToCompare, testID = 'compare-tray' }: Pr
           accessibilityLabel="Clear compare list"
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.clearText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}>
+          <Text
+            style={[
+              styles.clearText,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
             Clear all
           </Text>
         </TouchableOpacity>
@@ -130,7 +137,11 @@ export function CompareTray({ onNavigateToCompare, testID = 'compare-tray' }: Pr
       <TouchableOpacity
         style={[
           styles.cta,
-          { backgroundColor: colors.mountainBlue, marginHorizontal: spacing.md, borderRadius: borderRadius.card },
+          {
+            backgroundColor: colors.mountainBlue,
+            marginHorizontal: spacing.md,
+            borderRadius: borderRadius.card,
+          },
         ]}
         onPress={onNavigateToCompare}
         testID="compare-tray-cta"
