@@ -15,6 +15,9 @@ import type { InventoryStatus } from '@/services/wix/wixClient';
 export type InventoryBadgeType = 'low_stock' | 'just_restocked' | 'none';
 
 const LOW_STOCK_MAX = 5;
+// TODO(stilgar): Wire real Wix inventory webhook for live updates.
+// Currently polls getInventoryStatus on mount/productId change.
+// Replace with a push-based subscription once Wix inventory webhooks are available.
 
 interface UseInventoryBadgeResult {
   badge: InventoryBadgeType;
