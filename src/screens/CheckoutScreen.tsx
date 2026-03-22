@@ -49,6 +49,8 @@ import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
+import { useLoyalty } from '@/hooks/useLoyalty';
+import { CheckoutLoyaltyBanner } from '@/components/CheckoutLoyaltyBanner';
 import {
   fetchShippingOptions,
   normalizeShippingOption,
@@ -235,6 +237,28 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   );
   const [affirmError, setAffirmError] = useState<string | null>(null);
   const klarnaCheckout = useKlarnaCheckout();
+
+  // cm-ds5: Loyalty tier badge near order summary
+  const {
+    tier: loyaltyTier,
+    points: loyaltyPoints,
+    loading: loyaltyLoading,
+    error: loyaltyError,
+  } = useLoyalty();
+  const TIER_THRESHOLDS: Record<string, number | null> = {
+    bronze: 500,
+    silver: 1500,
+    gold: null,
+  };
+  const NEXT_TIER_LABELS: Record<string, string | null> = {
+    bronze: 'Silver',
+    silver: 'Gold',
+    gold: null,
+  };
+  const loyaltyNextThreshold = TIER_THRESHOLDS[loyaltyTier] ?? null;
+  const loyaltyPointsToNext =
+    loyaltyNextThreshold !== null ? Math.max(0, loyaltyNextThreshold - loyaltyPoints) : 0;
+  const loyaltyNextTierLabel = NEXT_TIER_LABELS[loyaltyTier] ?? null;
 
   // Capture checkout-time values in refs so the success useEffect sees fresh
   // state even if the parent re-renders while the app is backgrounded between
@@ -1216,6 +1240,20 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               {formatPrice(totals.total)}
             </Text>
           </View>
+        </View>
+
+        {/* Loyalty tier badge — cm-ds5 */}
+        <View style={{ marginHorizontal: spacing.lg, marginTop: spacing.sm }}>
+          <CheckoutLoyaltyBanner
+            tier={loyaltyTier}
+            points={loyaltyPoints}
+            pointsToNext={loyaltyPointsToNext}
+            nextTierLabel={loyaltyNextTierLabel}
+            loading={loyaltyLoading}
+            error={loyaltyError}
+            hidden={items.length === 0}
+            testID="checkout-loyalty-banner"
+          />
         </View>
 
         {/* Apple Pay Quick Button */}
