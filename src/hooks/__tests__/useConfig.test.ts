@@ -6,9 +6,11 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useConfig } from '../useConfig';
 
 const mockQueryData = jest.fn();
+// Controllable — set to null in tests that need the !wixClient branch
+let mockWixClient: { queryData: jest.Mock } | null = { queryData: mockQueryData };
 
 jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => ({ queryData: mockQueryData }),
+  useOptionalWixClient: () => mockWixClient,
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -19,6 +21,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 describe('useConfig — trendingSearches', () => {
   beforeEach(() => {
     mockQueryData.mockReset();
+    mockWixClient = { queryData: mockQueryData };
+  });
+
+  afterEach(() => {
+    mockWixClient = { queryData: mockQueryData };
   });
 
   it('returns trending terms from CMS when available', async () => {
@@ -81,5 +88,14 @@ describe('useConfig — trendingSearches', () => {
     renderHook(() => useConfig());
     await act(async () => {});
     expect(mockQueryData).toHaveBeenCalledWith('TrendingSearches', expect.any(Object));
+  });
+
+  // cm-jest-coverage: hit !wixClient early-return branch (line 37)
+  it('returns empty array immediately when wixClient is null (no Wix session)', async () => {
+    mockWixClient = null;
+    const { result } = renderHook(() => useConfig());
+    await act(async () => {});
+    expect(result.current.trendingSearches).toEqual([]);
+    expect(mockQueryData).not.toHaveBeenCalled();
   });
 });
