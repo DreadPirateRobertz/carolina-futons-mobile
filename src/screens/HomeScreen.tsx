@@ -413,7 +413,6 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           Since 1985 · Hendersonville, NC
         </Text>
       </View>
-
     </ScrollView>
   );
 }
