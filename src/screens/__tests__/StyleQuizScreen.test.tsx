@@ -14,9 +14,42 @@ jest.mock('@/components/ProductCard', () => ({
 
 jest.mock('@/data/products', () => ({
   PRODUCTS: [
-    { id: 'prod-1', slug: 'asheville-full-futon', name: 'Asheville Full Futon', price: 799, images: [], inStock: true, rating: 4.5, reviewCount: 12, shortDescription: '', badge: null },
-    { id: 'prod-2', slug: 'blue-ridge-queen-futon', name: 'Blue Ridge Queen Futon', price: 999, images: [], inStock: true, rating: 4.7, reviewCount: 8, shortDescription: '', badge: null },
-    { id: 'prod-3', slug: 'biltmore-loveseat', name: 'Biltmore Loveseat', price: 649, images: [], inStock: true, rating: 4.3, reviewCount: 5, shortDescription: '', badge: null },
+    {
+      id: 'prod-1',
+      slug: 'asheville-full-futon',
+      name: 'Asheville Full Futon',
+      price: 799,
+      images: [],
+      inStock: true,
+      rating: 4.5,
+      reviewCount: 12,
+      shortDescription: '',
+      badge: null,
+    },
+    {
+      id: 'prod-2',
+      slug: 'blue-ridge-queen-futon',
+      name: 'Blue Ridge Queen Futon',
+      price: 999,
+      images: [],
+      inStock: true,
+      rating: 4.7,
+      reviewCount: 8,
+      shortDescription: '',
+      badge: null,
+    },
+    {
+      id: 'prod-3',
+      slug: 'biltmore-loveseat',
+      name: 'Biltmore Loveseat',
+      price: 649,
+      images: [],
+      inStock: true,
+      rating: 4.3,
+      reviewCount: 5,
+      shortDescription: '',
+      badge: null,
+    },
   ],
 }));
 
