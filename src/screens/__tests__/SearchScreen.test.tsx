@@ -350,4 +350,77 @@ describe('SearchScreen', () => {
       expect(getByTestId('sort-picker')).toBeTruthy();
     });
   });
+
+  // cm-c00: 300ms debounce on search input
+  describe('debounce on search input (cm-c00)', () => {
+    it('does not show results before debounce window elapses', async () => {
+      const { getByTestId, queryByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
+      fireEvent.changeText(getByTestId('search-input'), 'futon');
+      // Only 200ms elapsed — debounce has NOT fired yet
+      await act(async () => {
+        jest.advanceTimersByTime(200);
+      });
+
+      expect(queryByTestId('search-results-grid')).toBeNull();
+    });
+
+    it('shows results after debounce settles (300ms)', async () => {
+      const { getByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
+      fireEvent.changeText(getByTestId('search-input'), 'futon');
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+
+      expect(getByTestId('search-results-grid')).toBeTruthy();
+    });
+
+    it('resets debounce timer on rapid typing — no results until typing stops', async () => {
+      const { getByTestId, queryByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
+      // Rapid keystrokes — each resets the 300ms timer
+      fireEvent.changeText(getByTestId('search-input'), 'f');
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      fireEvent.changeText(getByTestId('search-input'), 'fu');
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      fireEvent.changeText(getByTestId('search-input'), 'fut');
+      // Total: 300ms elapsed but last keystroke was 100ms ago — timer reset
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
+      expect(queryByTestId('search-results-grid')).toBeNull();
+
+      // Let debounce settle
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(getByTestId('search-results-grid')).toBeTruthy();
+    });
+
+    it('input text reflects typing immediately (UI stays responsive)', async () => {
+      const { getByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+
+      fireEvent.changeText(getByTestId('search-input'), 'blue ridge');
+      // Input value is visible before debounce fires
+      expect(getByTestId('search-input').props.value).toBe('blue ridge');
+    });
+  });
 });
