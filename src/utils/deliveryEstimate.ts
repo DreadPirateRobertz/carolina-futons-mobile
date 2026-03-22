@@ -14,6 +14,41 @@
 const ZIP_RE = /^\d{5}(-\d{4})?$/;
 
 /**
+ * Delivery classification for a cart item — cm-afc.
+ *
+ * - no-zip   ZIP absent or invalid — no estimate available
+ * - freight  Item width ≥ 54" — requires LTL freight delivery
+ * - local    NC/SC ZIP prefix (270–299) — 2–3 business days
+ * - parcel   All other valid ZIPs — standard carrier estimate
+ */
+export type DeliveryMode = 'no-zip' | 'freight' | 'local' | 'parcel';
+
+/** Minimum item width (inches) that triggers freight classification. */
+const FREIGHT_WIDTH_THRESHOLD = 54;
+
+export interface ItemDimensions {
+  width: number;
+  depth: number;
+  height: number;
+}
+
+/**
+ * Classifies the delivery mode for a cart item given a ZIP and optional
+ * item dimensions. Freight takes priority over local/parcel.
+ */
+export function getDeliveryMode(zip: string, dimensions?: ItemDimensions): DeliveryMode {
+  const trimmed = zip.trim();
+  if (!ZIP_RE.test(trimmed)) return 'no-zip';
+
+  if (dimensions && dimensions.width >= FREIGHT_WIDTH_THRESHOLD) return 'freight';
+
+  const prefix = parseInt(trimmed.slice(0, 3), 10);
+  if (prefix >= 270 && prefix <= 299) return 'local';
+
+  return 'parcel';
+}
+
+/**
  * Returns a human-readable delivery estimate string for the given ZIP code,
  * or null if the ZIP is missing or invalid.
  */
