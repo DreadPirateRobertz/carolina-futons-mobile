@@ -16,8 +16,10 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
+const mockQueryData = jest.fn();
+
 jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => null,
+  useOptionalWixClient: () => ({ queryData: mockQueryData }),
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -35,6 +37,12 @@ jest.mock('@/services/analytics', () => ({
 }));
 
 jest.useFakeTimers();
+
+beforeEach(() => {
+  mockQueryData.mockReset();
+  // Default: CMS returns empty (no trending terms) so existing tests are unaffected
+  mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+});
 
 function renderSearchScreen() {
   return render(
@@ -220,7 +228,11 @@ describe('SearchScreen', () => {
       expect(getByTestId('search-initial-state')).toBeTruthy();
     });
 
-    it('shows trending searches section in initial state', async () => {
+    it('shows trending searches section in initial state when CMS has terms', async () => {
+      mockQueryData.mockResolvedValue({
+        items: [{ terms: ['futon mattress', 'queen size'] }],
+        totalResults: 1,
+      });
       const { getByText } = renderSearchScreen();
       await act(async () => {
         jest.advanceTimersByTime(700);
@@ -307,6 +319,10 @@ describe('SearchScreen', () => {
     });
 
     it('applies trending search from initial state', async () => {
+      mockQueryData.mockResolvedValue({
+        items: [{ terms: ['futon mattress'] }],
+        totalResults: 1,
+      });
       const { getByTestId, queryByTestId } = renderSearchScreen();
       await act(async () => {
         jest.advanceTimersByTime(700);
@@ -421,6 +437,57 @@ describe('SearchScreen', () => {
       fireEvent.changeText(getByTestId('search-input'), 'blue ridge');
       // Input value is visible before debounce fires
       expect(getByTestId('search-input').props.value).toBe('blue ridge');
+    });
+  });
+
+  // hq-jc723: Trending searches from Wix CMS
+  describe('trending searches from Wix CMS (hq-jc723)', () => {
+    it('renders CMS trending terms as chips', async () => {
+      mockQueryData.mockResolvedValue({
+        items: [{ terms: ['mountain living', 'sectional sofa', 'futon frame'] }],
+        totalResults: 1,
+      });
+      const { getByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      expect(getByTestId('initial-trending-0')).toBeTruthy();
+      expect(getByTestId('initial-trending-1')).toBeTruthy();
+      expect(getByTestId('initial-trending-2')).toBeTruthy();
+    });
+
+    it('hides the trending section entirely when CMS returns empty (not a crash)', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      const { queryByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      expect(queryByTestId('trending-section-header')).toBeNull();
+    });
+
+    it('hides the trending section when CMS fetch fails (graceful fallback)', async () => {
+      mockQueryData.mockRejectedValue(new Error('Wix unavailable'));
+      const { queryByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      expect(queryByTestId('trending-section-header')).toBeNull();
+    });
+
+    it('tapping a CMS trending chip triggers search', async () => {
+      mockQueryData.mockResolvedValue({
+        items: [{ terms: ['blue ridge futon'] }],
+        totalResults: 1,
+      });
+      const { getByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(100);
+      });
+      fireEvent.press(getByTestId('initial-trending-0'));
+      await act(async () => {
+        jest.advanceTimersByTime(500);
+      });
+      expect(getByTestId('search-results-grid')).toBeTruthy();
     });
   });
 });

@@ -28,12 +28,11 @@ import { SortPicker } from '@/components/SortPicker';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
+import { useConfig } from '@/hooks/useConfig';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
-
-const TRENDING_SEARCHES = ['futon mattress', 'queen size', 'wall bed', 'slipcover', 'memory foam'];
 
 const POPULAR_CATEGORIES: { id: ProductCategory; label: string }[] = [
   { id: 'futons', label: 'Futons' },
@@ -67,6 +66,7 @@ export function SearchScreen({ testID }: Props) {
     loadMore,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const { trendingSearches } = useConfig();
   const [hasSearched, setHasSearched] = useState(false);
   // cm-c00: local input text for responsive UI; debounced before hitting useProducts
   const [inputText, setInputText] = useState('');
@@ -239,16 +239,18 @@ export function SearchScreen({ testID }: Props) {
             </View>
           </View>
 
-          {/* Trending searches */}
+          {/* Trending searches — sourced from Wix CMS (hq-jc723); hidden when empty */}
+          {trendingSearches.length > 0 && (
           <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
             <Text
               style={[styles.sectionTitle, { color: colors.espressoLight }]}
               accessibilityRole="header"
+              testID="trending-section-header"
             >
               Trending Searches
             </Text>
             <View style={[styles.chipsContainer, { gap: spacing.sm }]}>
-              {TRENDING_SEARCHES.map((term, index) => (
+              {trendingSearches.map((term, index) => (
                 <AnimatedPressable
                   key={term}
                   style={[
@@ -269,6 +271,7 @@ export function SearchScreen({ testID }: Props) {
               ))}
             </View>
           </View>
+          )}
         </View>
       )}
 
