@@ -1582,4 +1582,44 @@ describe('ProductDetailScreen', () => {
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
     });
   });
+
+  describe('Wix network error state (cm-cii)', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('shows network error banner when Wix fetch fails', () => {
+      jest.spyOn(require('@/services/wix/config'), 'isWixConfigured').mockReturnValue(true);
+      jest.spyOn(require('@/hooks/useProduct'), 'useProductBySlug').mockReturnValue({
+        product: null,
+        isLoading: false,
+        error: new Error('Network request failed'),
+        refresh: jest.fn(),
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'wix-mesa-5000' });
+      expect(getByTestId('wix-network-error')).toBeTruthy();
+    });
+
+    it('shows retry button on Wix network error and calls refresh', () => {
+      const mockRefresh = jest.fn();
+      jest.spyOn(require('@/services/wix/config'), 'isWixConfigured').mockReturnValue(true);
+      jest.spyOn(require('@/hooks/useProduct'), 'useProductBySlug').mockReturnValue({
+        product: null,
+        isLoading: false,
+        error: new Error('Network request failed'),
+        refresh: mockRefresh,
+      });
+
+      const { getByTestId } = renderDetail({ productId: 'wix-mesa-5000' });
+      fireEvent.press(getByTestId('wix-network-error-retry'));
+      expect(mockRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not show network error when Wix product loads successfully', () => {
+      // Default: isWixConfigured returns false (no env vars in test), local models render fine
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(queryByTestId('wix-network-error')).toBeNull();
+    });
+  });
 });
