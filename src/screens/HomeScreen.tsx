@@ -77,10 +77,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     if (onOpenShop) return onOpenShop();
-    const parent = navigation.getParent?.();
-    if (parent) {
-      parent.navigate('Shop' as never);
-    }
+    navigation.navigate('Tabs', { screen: 'Shop' });
   }, [onOpenShop, navigation]);
 
   const handleCollectionPress = useCallback(

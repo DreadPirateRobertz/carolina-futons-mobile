@@ -158,6 +158,19 @@ describe('HomeScreen', () => {
     fireEvent.press(getByTestId('home-shop-button'));
   });
 
+  it('Shop button navigates to Tabs/Shop when no override provided (cm-7uu)', () => {
+    // Verify navigate is called — mocking useNavigation to capture the call
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+      navigate: mockNavigate,
+      getParent: () => null,
+    });
+    const { getByTestId } = renderHomeScreen();
+    fireEvent.press(getByTestId('home-shop-button'));
+    expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Shop' });
+    jest.restoreAllMocks();
+  });
+
   it('Shop button has correct accessibility', () => {
     const { getByTestId } = renderHomeScreen();
     const btn = getByTestId('home-shop-button');
