@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Pressable,
   TouchableOpacity,
   FlatList,
   Dimensions,
@@ -126,9 +127,12 @@ export function ProductDetailScreen({
 
   // When Wix is configured and no local model matches, fetch from Wix API
   const isWixProduct = !localModel && isWixConfigured();
-  const { product: wixProduct, isLoading: isWixLoading } = useProductBySlug(
-    isWixProduct ? resolvedId : '',
-  );
+  const {
+    product: wixProduct,
+    isLoading: isWixLoading,
+    error: wixError,
+    refresh: refreshWixProduct,
+  } = useProductBySlug(isWixProduct ? resolvedId : '');
 
   const catalogProductId = resolvedId ? `prod-${resolvedId}` : '';
   const { product: catalogProduct, isLoading: isProductLoading } = useProduct(catalogProductId);
@@ -497,7 +501,31 @@ export function ProductDetailScreen({
     if (wixProduct) {
       return <WixProductDetail product={wixProduct} onBack={onBack} testID={testID} />;
     }
-    // Wix fetch failed or product not found — fall through to local model
+    if (wixError) {
+      return (
+        <View
+          style={[styles.wixErrorContainer, { backgroundColor: colors.sandBase }]}
+          testID="wix-network-error"
+        >
+          <Text style={[styles.wixErrorTitle, { color: colors.espresso }]}>
+            Couldn't load product
+          </Text>
+          <Text style={[styles.wixErrorMessage, { color: colors.espressoLight }]}>
+            Check your connection and try again.
+          </Text>
+          <Pressable
+            style={[styles.wixErrorRetryButton, { backgroundColor: colors.sunsetCoral }]}
+            onPress={refreshWixProduct}
+            testID="wix-network-error-retry"
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading product"
+          >
+            <Text style={[styles.wixErrorRetryText, { color: colors.sandBase }]}>Try Again</Text>
+          </Pressable>
+        </View>
+      );
+    }
+    // Wix product not found — fall through to local model
   }
 
   if (isProductLoading) {
@@ -2131,6 +2159,32 @@ const styles = StyleSheet.create({
   qaSubmitBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  wixErrorContainer: {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    padding: 32,
+  },
+  wixErrorTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center' as const,
+  },
+  wixErrorMessage: {
+    fontSize: 15,
+    textAlign: 'center' as const,
+    marginBottom: 24,
+  },
+  wixErrorRetryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  wixErrorRetryText: {
+    fontSize: 16,
     fontWeight: '600',
   },
 });
