@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { AccessibilityInfo } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { PointsToast } from '../PointsToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -91,5 +92,12 @@ describe('PointsToast', () => {
   it('renders with large point value (10000)', () => {
     const { getByText } = renderToast({ points: 10000, visible: true });
     expect(getByText(/\+10000/)).toBeTruthy();
+  });
+
+  // cm-jest-coverage: reducedMotion === true branch (lines 46-47)
+  it('renders without crash when reduced motion is enabled', () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    expect(() => renderToast({ points: 100, visible: true })).not.toThrow();
+    jest.restoreAllMocks();
   });
 });

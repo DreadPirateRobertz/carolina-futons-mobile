@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+import { AccessibilityInfo } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { TierProgressBar } from '../TierProgressBar';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -115,5 +116,18 @@ describe('TierProgressBar', () => {
   it('renders at max tier (5000+)', () => {
     const { getByTestId } = renderBar(5000);
     expect(getByTestId('tier-progress-bar')).toBeTruthy();
+  });
+
+  // cm-jest-coverage: hit getCurrentTier fallback (line 37) with negative points
+  it('renders without crash when points is negative (getCurrentTier fallback)', () => {
+    const { getByTestId } = renderBar(-1);
+    expect(getByTestId('tier-progress-bar')).toBeTruthy();
+  });
+
+  // cm-jest-coverage: reducedMotion === true branch in animation effect (line 66)
+  it('renders without crash when reduced motion is enabled (zero-duration animation)', () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    expect(() => renderBar(200)).not.toThrow();
+    jest.restoreAllMocks();
   });
 });
