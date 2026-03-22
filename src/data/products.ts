@@ -33,6 +33,13 @@ export interface Product {
   inStock: boolean;
   stockCount?: number;
   videoUri?: string;
+  /**
+   * Lifestyle photography URI — a room-setting photo showing the product in context.
+   * TODO(stilgar): Wire real lifestyle photo from Wix Media Manager once curated.
+   * PLACEHOLDER: Using LIFESTYLE_PLACEHOLDER_URI constant — replace with CF product lifestyle imagery.
+   * SOURCE: Will come from manufacturer image banks + Wix Media uploads.
+   */
+  lifestyleUri?: string;
   fabricOptions: string[];
   dimensions: {
     width: number;
