@@ -17,7 +17,7 @@ interface Props {
 }
 
 export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
-  const { colors, spacing, borderRadius } = useTheme();
+  const { colors, borderRadius } = useTheme();
 
   if (!isFinancingEligible(price)) return null;
 
@@ -32,11 +32,15 @@ export function FinancingBadge({ price, variant = 'compact', testID }: Props) {
       <View
         style={[
           styles.compactBadge,
-          { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.sm },
+          {
+            backgroundColor: `${colors.mountainBlue}18`,
+            borderRadius: borderRadius.sm,
+            borderColor: colors.mountainBlue,
+          },
         ]}
         testID={testID ?? 'financing-badge-compact'}
       >
-        <Text style={styles.compactText}>
+        <Text style={[styles.compactText, { color: colors.mountainBlue }]}>
           As low as {formatPrice(lowestTerm.monthlyPayment)}/mo with Klarna
         </Text>
       </View>
@@ -74,15 +78,17 @@ const FINANCING_APR_DISPLAY = '9.99%';
 
 const styles = StyleSheet.create({
   compactBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    marginTop: 2,
   },
   compactText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.2,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.1,
+    textAlign: 'center',
   },
   detailContainer: {
     borderWidth: 1,

@@ -584,4 +584,32 @@ describe('ProductCard', () => {
       expect(badge.props.accessibilityLabel).toContain('2');
     });
   });
+
+  // ── CF-lalh: Klarna/Affirm badge prominence ─────────────────────────────────
+  describe('financing badge prominence (CF-lalh)', () => {
+    it('renders financing badge for eligible price (>$299)', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const { getByTestId } = renderCard({ product: eligibleProduct });
+      expect(getByTestId('financing-badge-compact')).toBeTruthy();
+    });
+
+    it('shows "with Klarna" in compact badge on card', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const { getByText } = renderCard({ product: eligibleProduct });
+      expect(getByText(/with Klarna/i)).toBeTruthy();
+    });
+
+    it('does not render financing badge for ineligible price (<=$299)', () => {
+      const ineligibleProduct = PRODUCTS.find((p) => p.price <= 299)!;
+      const { queryByTestId } = renderCard({ product: ineligibleProduct });
+      expect(queryByTestId('financing-badge-compact')).toBeNull();
+    });
+
+    it('financing badge shows "As low as" monthly amount', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const { getByText } = renderCard({ product: eligibleProduct });
+      expect(getByText(/As low as/i)).toBeTruthy();
+      expect(getByText(/\/mo/)).toBeTruthy();
+    });
+  });
 });
