@@ -15,12 +15,7 @@
 export const TIER_THRESHOLDS = [0, 500, 1500, 5000];
 
 /** Display names for each tier, in ascending order. */
-export const TIER_NAMES = [
-  'Trail Blazer',
-  'Mountain Guide',
-  'Summit Master',
-  'Blue Ridge Legend',
-];
+export const TIER_NAMES = ['Trail Blazer', 'Mountain Guide', 'Summit Master', 'Blue Ridge Legend'];
 
 /**
  * Derive the tier index (0–3) for a given points value.

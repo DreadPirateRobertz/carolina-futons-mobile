@@ -40,6 +40,7 @@ jest.mock('@/hooks/useCartAbandonmentReminder', () => ({
 
 // Mock analytics
 jest.mock('@/services/analytics', () => ({
+  trackEvent: jest.fn(),
   events: {
     beginCheckout: jest.fn(),
     purchase: jest.fn(),

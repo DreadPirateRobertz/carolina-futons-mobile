@@ -283,7 +283,7 @@ describe('CompareScreen', () => {
     const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
     const header = getByTestId('sticky-product-header');
     const style = header.props.style;
-    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style ?? {};
+    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : (style ?? {});
     expect(flatStyle.zIndex).toBeGreaterThan(0);
   });
 
@@ -293,9 +293,7 @@ describe('CompareScreen', () => {
   });
 
   it('sticky header shows product names fixed above comparison rows', () => {
-    const { getByTestId, getByText } = render(
-      <CompareScreen products={[productA, productB]} />,
-    );
+    const { getByTestId, getByText } = render(<CompareScreen products={[productA, productB]} />);
     const header = getByTestId('sticky-product-header');
     // Product names are inside the sticky header
     expect(within(header).getByText(productA.name)).toBeTruthy();
