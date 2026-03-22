@@ -55,11 +55,14 @@ export function useShippingEstimate(productId: string): ShippingEstimateResult {
       // Live API path
       if (wixClient) {
         try {
-          const result = await wixClient.fetchShippingEstimate(zip, [
-            { productId, quantity: 1 },
-          ]);
+          const result = await wixClient.fetchShippingEstimate(zip, [{ productId, quantity: 1 }]);
 
-          if (!cancelled && result.success && Array.isArray(result.options) && result.options.length > 0) {
+          if (
+            !cancelled &&
+            result.success &&
+            Array.isArray(result.options) &&
+            result.options.length > 0
+          ) {
             const first = result.options[0] as Record<string, unknown>;
             setIcon(typeof first.icon === 'string' ? first.icon : '🚚');
             setLabel(typeof first.deliveryTime === 'string' ? first.deliveryTime : null);
