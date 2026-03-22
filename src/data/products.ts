@@ -107,9 +107,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Bestselling full-size futon with innerspring mattress',
     images: [
       {
-        uri: 'https://placehold.co/800x600/D4C5A9/3A2518?text=Asheville',
-        alt: 'The Asheville Full Futon',
+        uri: 'https://static.wixstatic.com/media/cc389e_b524b0ad680c4c65b91c2339633c5208~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'The Asheville Full Futon in room lifestyle shot',
         blurhash: 'LKJRq_~q9F%M00WB-;ay4nofRjWB',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_1224985805ba4f988eae2d6d93c6270b~mv2.jpg/v1/fit/w_640,h_480,q_90/file.jpg',
+        alt: 'The Asheville Full Futon product shot',
       },
     ],
     badge: 'Bestseller',
@@ -136,9 +140,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Queen-size luxury futon with pocket coil mattress',
     images: [
       {
-        uri: 'https://placehold.co/800x600/5B8FA8/FFFFFF?text=Blue+Ridge',
-        alt: 'The Blue Ridge Queen Futon',
+        uri: 'https://static.wixstatic.com/media/cc389e_e399970838f741278d3ed89667f53bbc~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'The Blue Ridge Queen Futon in room lifestyle shot',
         blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_9fad425eab7b4ca388ed392523e2e8bf~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'The Blue Ridge Queen Futon product shot',
       },
     ],
     badge: 'Premium',
@@ -164,9 +172,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Compact twin futon for small spaces',
     images: [
       {
-        uri: 'https://placehold.co/800x600/4A7C59/FFFFFF?text=Pisgah',
-        alt: 'The Pisgah Twin Futon',
+        uri: 'https://static.wixstatic.com/media/cc389e_b77f29e803584b129bdbfa9d40cb49cc~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
+        alt: 'The Pisgah Twin Futon in room lifestyle shot',
         blurhash: 'LCEf;R~q4n%M-;WB9Fof00ay%MRj',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_8d58046b50394b18ab17888609e55a91~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
+        alt: 'The Pisgah Twin Futon product shot',
       },
     ],
     rating: 4.6,
@@ -191,9 +203,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Elegant loveseat futon with classic styling',
     images: [
       {
-        uri: 'https://placehold.co/800x600/C9A0A0/3A2518?text=Biltmore',
-        alt: 'The Biltmore Loveseat',
+        uri: 'https://static.wixstatic.com/media/cc389e_e891ed8b280d4d9f8c7562a5455744a6~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
+        alt: 'The Biltmore Loveseat in room lifestyle shot',
         blurhash: 'LMN],-xu9F~q_3WB%MRj4nofIUt7',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_020cf249fd9d444b899d981c74f1bbfd~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
+        alt: 'The Biltmore Loveseat product shot',
       },
     ],
     badge: 'Sale',
@@ -218,9 +234,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Queen vertical Murphy bed, solid oak',
     images: [
       {
-        uri: 'https://placehold.co/800x600/D4BC96/3A2518?text=Hendersonville',
-        alt: 'The Hendersonville Queen Murphy Cabinet Bed',
+        uri: 'https://static.wixstatic.com/media/cc389e_b4917a196a724e11bb77a4e059f30ebb~mv2.jpg/v1/fit/w_1999,h_1429,q_90/file.jpg',
+        alt: 'The Hendersonville Queen Murphy Cabinet Bed in room lifestyle shot',
         blurhash: 'LJIh5}~q9F%M00WB-;WB4nRjRjWB',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_4abd23adf72a4ba3a6ee5d1107e98174~mv2.jpg/v1/fit/w_1999,h_1429,q_90/file.jpg',
+        alt: 'The Hendersonville Queen Murphy Cabinet Bed product shot',
       },
     ],
     badge: 'Bestseller',
@@ -244,9 +264,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Full horizontal Murphy, solid maple',
     images: [
       {
-        uri: 'https://placehold.co/800x600/C9A0A0/3A2518?text=Appalachian',
-        alt: 'The Appalachian Full Horizontal Murphy Cabinet',
+        uri: 'https://static.wixstatic.com/media/cc389e_954d7e56d4d34e0b8e1f7d53dff2a346~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
+        alt: 'The Appalachian Full Horizontal Murphy Cabinet in room lifestyle shot',
         blurhash: 'LMN],-xu9F~q_3t7%MRj4nofIURj',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_f6b90a06940d41d5895782bf3025eac6~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
+        alt: 'The Appalachian Full Horizontal Murphy Cabinet product shot',
       },
     ],
     rating: 4.7,
@@ -269,9 +293,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Queen Murphy with bookcase side units',
     images: [
       {
-        uri: 'https://placehold.co/800x600/5B8FA8/FFFFFF?text=Smoky+Mountain',
-        alt: 'The Smoky Mountain Queen Bookcase Murphy',
+        uri: 'https://static.wixstatic.com/media/cc389e_261b5d74dd204869a2c8092b7280bc2e~mv2.png/v1/fit/w_2000,h_1333,q_90/file.png',
+        alt: 'The Smoky Mountain Queen Bookcase Murphy in room lifestyle shot',
         blurhash: 'LGF5]+Yk^6#M@-5c,1Ex@[or[Q6.',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_b1fad63605344fe69eca83037f832fae~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
+        alt: 'The Smoky Mountain Queen Bookcase Murphy product shot',
       },
     ],
     badge: 'Premium',
@@ -295,9 +323,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Twin cabinet bed, doubles as console',
     images: [
       {
-        uri: 'https://placehold.co/800x600/4A7C59/FFFFFF?text=Brevard',
-        alt: 'The Brevard Twin Cabinet Bed',
+        uri: 'https://static.wixstatic.com/media/cc389e_53db53baec144dd4b9ff70dccc60631d~mv2.jpg/v1/fit/w_1999,h_1428,q_90/file.jpg',
+        alt: 'The Brevard Twin Cabinet Bed in room lifestyle shot',
         blurhash: 'LCEf;R~q4n%M-;t79Fof00ay%MRj',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_ae3946ea9e884abfb61de5a74bacfad7~mv2.jpg/v1/fit/w_1999,h_1428,q_90/file.jpg',
+        alt: 'The Brevard Twin Cabinet Bed product shot',
       },
     ],
     rating: 4.6,
@@ -321,9 +353,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Queen Murphy with fold-down desk',
     images: [
       {
-        uri: 'https://placehold.co/800x600/E8845C/FFFFFF?text=Chimney+Rock',
-        alt: 'The Chimney Rock Queen Desk Murphy',
+        uri: 'https://static.wixstatic.com/media/cc389e_29faae8dd38c48979d7a6be0e450ae9f~mv2.png/v1/fit/w_2000,h_1428,q_90/file.png',
+        alt: 'The Chimney Rock Queen Desk Murphy in room lifestyle shot',
         blurhash: 'LHKB%|~q0KIU_3WB%MRj9Fof%MRj',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_5b1e78ca47dd4f6aa4ad162c09745d34~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
+        alt: 'The Chimney Rock Queen Desk Murphy product shot',
       },
     ],
     badge: 'Sale',
@@ -347,9 +383,13 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Full Murphy with integrated storage',
     images: [
       {
-        uri: 'https://placehold.co/800x600/6B7B8D/FFFFFF?text=Nantahala',
-        alt: 'The Nantahala Full Storage Murphy',
+        uri: 'https://static.wixstatic.com/media/cc389e_135592f0201940519bc411c9ad4265aa~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
+        alt: 'The Nantahala Full Storage Murphy in room lifestyle shot',
         blurhash: 'LDG+h2~q4n%M-;WB9FRj00of%Mt7',
+      },
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_fbd55db182574579a2582da2b4c3dca7~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
+        alt: 'The Nantahala Full Storage Murphy product shot',
       },
     ],
     rating: 4.7,
@@ -372,8 +412,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Durable cotton-poly cover, machine washable',
     images: [
       {
-        uri: 'https://placehold.co/800x600/E8D5B7/3A2518?text=Cover',
-        alt: 'Mountain Weave Futon Cover',
+        uri: 'https://static.wixstatic.com/media/cc389e_94729dcf772b426aadc8ffc703471d61~mv2.jpg/v1/fit/w_2000,h_1333,q_90/file.jpg',
+        alt: 'Mountain Weave Futon Cover in room lifestyle shot',
         blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdnj',
       },
     ],
@@ -398,8 +438,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Organic cotton cover in warm sunset tones',
     images: [
       {
-        uri: 'https://placehold.co/800x600/E8845C/FFFFFF?text=Sunset+Cover',
-        alt: 'Sunset Cotton Cover',
+        uri: 'https://static.wixstatic.com/media/cc389e_a7d627de8d47491c8aefc2ada7690293~mv2.jpg/v1/fit/w_2000,h_1428,q_90/file.jpg',
+        alt: 'Sunset Cotton Cover in room lifestyle shot',
         blurhash: 'LHKB%|~q0KIU_3of%MWB9Fay%MRj',
       },
     ],
@@ -424,8 +464,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: '8-inch innerspring with 312-coil support',
     images: [
       {
-        uri: 'https://placehold.co/800x600/F2E8D5/3A2518?text=Mattress',
-        alt: 'Premium Innerspring Mattress',
+        uri: 'https://static.wixstatic.com/media/cc389e_e24e1143660b4361af00a9825ba3c417~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'Premium Innerspring Mattress in room lifestyle shot',
         blurhash: 'LPO|x_~q9F%M00of-;WB4nayRjWB',
       },
     ],
@@ -449,8 +489,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Cooling gel memory foam, CertiPUR-US certified',
     images: [
       {
-        uri: 'https://placehold.co/800x600/A8CCD8/3A2518?text=Memory+Foam',
-        alt: 'Memory Foam Mattress',
+        uri: 'https://static.wixstatic.com/media/cc389e_bd4fe65dcec34605bf490f90dadbb3a2~mv2.jpg/v1/fit/w_1920,h_1080,q_90/file.jpg',
+        alt: 'Memory Foam Mattress in room lifestyle shot',
         blurhash: 'LKH_$O~q9F%M00WB-;of4nayRjt7',
       },
     ],
@@ -475,8 +515,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Solid hardwood with honey oak finish',
     images: [
       {
-        uri: 'https://placehold.co/800x600/D4BC96/3A2518?text=Frame',
-        alt: 'Solid Hardwood Frame',
+        uri: 'https://static.wixstatic.com/media/cc389e_f64bd95bfd3a486f9de4b7f0dca07d96~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'Solid Hardwood Frame in room lifestyle shot',
         blurhash: 'LJIh5}~q9F%M00WBD%WB4nRjRjWB',
       },
     ],
@@ -498,8 +538,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Set of 2 memory foam arm pillows',
     images: [
       {
-        uri: 'https://placehold.co/800x600/C9A0A0/FFFFFF?text=Pillows',
-        alt: 'Arm Pillow Set',
+        uri: 'https://static.wixstatic.com/media/cc389e_427363ff1bde4e4cab2ef97684a1e941~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'Futon Arm Pillow Set in room lifestyle shot',
         blurhash: 'LMN],-xu9F~q_3WBD%Rj4nofIUt7',
       },
     ],
@@ -522,8 +562,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Set of 4 adhesive grip strips',
     images: [
       {
-        uri: 'https://placehold.co/800x600/999999/FFFFFF?text=Grip+Strips',
-        alt: 'Non-Slip Grip Strips',
+        uri: 'https://static.wixstatic.com/media/cc389e_430d493e0a5d4483b8cc71702aa6aa9f~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'Non-Slip Grip Strips product shot',
         blurhash: 'L9ABV]~q00%M-;WB9Fof00of%MRj',
       },
     ],
@@ -546,8 +586,8 @@ export const PRODUCTS: Product[] = [
     shortDescription: 'Beeswax & lemon oil polish, made in NC',
     images: [
       {
-        uri: 'https://placehold.co/800x600/D4BC96/3A2518?text=Polish',
-        alt: 'Natural Wood Polish',
+        uri: 'https://static.wixstatic.com/media/cc389e_b88e2a0390cf4364b22b947840c566df~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        alt: 'Natural Wood Polish product shot',
         blurhash: 'LJIh5}~q9F%M00WB-;ay4nRjofWB',
       },
     ],

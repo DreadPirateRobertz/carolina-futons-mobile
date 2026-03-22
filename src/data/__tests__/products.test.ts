@@ -74,6 +74,32 @@ describe('Product catalog data integrity', () => {
     }
   });
 
+  it('all product images use Wix CDN URLs (no placeholder images)', () => {
+    for (const p of PRODUCTS) {
+      for (const img of p.images) {
+        expect(img.uri).toMatch(/^https:\/\/static\.wixstatic\.com\//);
+      }
+    }
+  });
+
+  it('futon and murphy-bed products have at least 2 images (lifestyle + product shot)', () => {
+    const heroCategories: Product['category'][] = ['futons', 'murphy-beds'];
+    const heroProducts = PRODUCTS.filter((p) => heroCategories.includes(p.category));
+    expect(heroProducts.length).toBeGreaterThan(0);
+    for (const p of heroProducts) {
+      expect(p.images.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('first image is lifestyle/room shot, second is product shot', () => {
+    const heroCategories: Product['category'][] = ['futons', 'murphy-beds'];
+    const heroProducts = PRODUCTS.filter((p) => heroCategories.includes(p.category));
+    for (const p of heroProducts) {
+      expect(p.images[0].alt).toMatch(/room|lifestyle|in room|living/i);
+      expect(p.images[1].alt).toBeTruthy();
+    }
+  });
+
   it('has products with badges', () => {
     const badgedProducts = PRODUCTS.filter((p) => p.badge);
     expect(badgedProducts.length).toBeGreaterThan(0);
