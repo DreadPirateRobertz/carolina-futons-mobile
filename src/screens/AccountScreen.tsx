@@ -40,6 +40,9 @@ import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { LoyaltyTierBadge } from '@/components/LoyaltyTierBadge';
+import { StreakBadge } from '@/components/StreakBadge';
+import { TierProgressBar } from '@/components/TierProgressBar';
+import { useStreak } from '@/hooks/useStreak';
 import { WixAuthService } from '@/services/wix/wixAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import * as gamification from '@/services/gamification';
@@ -100,6 +103,7 @@ export function AccountScreen({
 
   const referral = useReferral();
   const loyalty = useLoyalty();
+  const { streak, loading: streakLoading } = useStreak();
 
   const handleShareReferral = useCallback(async () => {
     if (!referral.shareUrl) return;
@@ -322,6 +326,10 @@ export function AccountScreen({
                 {isPremium && <PremiumBadge />}
               </View>
               <LoyaltyTierBadge points={loyalty.points} />
+              {!streakLoading && streak > 0 && (
+                <StreakBadge streak={streak} testID="account-streak-badge" />
+              )}
+              <TierProgressBar points={loyalty.points} testID="account-tier-progress" />
               <Text
                 style={[styles.userEmail, { color: darkPalette.textMuted }]}
                 testID="user-email"

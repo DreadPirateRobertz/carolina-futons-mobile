@@ -12,6 +12,8 @@
 
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
+import { StreakBadge } from '@/components/StreakBadge';
+import { useStreak } from '@/hooks/useStreak';
 import * as Haptics from 'expo-haptics';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -55,6 +57,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const { streak, loading: streakLoading } = useStreak();
   const { featured, isLoading: collectionsLoading, error: collectionsError } = useCollections();
   const { recentProducts } = useRecentlyViewed();
   const {
@@ -128,6 +131,10 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
             Handcrafted in NC
           </Text>
         </View>
+
+        {!streakLoading && streak > 0 && (
+          <StreakBadge streak={streak} testID="home-streak-badge" />
+        )}
 
         <Text
           style={[
