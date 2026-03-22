@@ -20,8 +20,7 @@ jest.mock('../ProductCardVideo', () => {
   const React = require('react');
   const { View } = require('react-native');
   return {
-    ProductCardVideo: ({ testID }: { testID?: string }) =>
-      React.createElement(View, { testID }),
+    ProductCardVideo: ({ testID }: { testID?: string }) => React.createElement(View, { testID }),
   };
 });
 
@@ -56,7 +55,12 @@ describe('ProductCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default: well-stocked, no live inventory badge
-    mockUseInventoryBadge.mockReturnValue({ badge: 'none', quantity: 0, isLoading: false, error: null });
+    mockUseInventoryBadge.mockReturnValue({
+      badge: 'none',
+      quantity: 0,
+      isLoading: false,
+      error: null,
+    });
   });
 
   describe('rendering', () => {
@@ -473,44 +477,79 @@ describe('ProductCard', () => {
   // =========================================================================
   describe('live inventory badge', () => {
     it('shows "Only X left" badge when hook returns low_stock', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'low_stock', quantity: 3, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'low_stock',
+        quantity: 3,
+        isLoading: false,
+        error: null,
+      });
       const { getByTestId, getByText } = renderCard();
       expect(getByTestId(`inventory-badge-${futon.id}`)).toBeTruthy();
       expect(getByText('Only 3 left')).toBeTruthy();
     });
 
     it('shows badge at threshold boundary (quantity=5)', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'low_stock', quantity: 5, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'low_stock',
+        quantity: 5,
+        isLoading: false,
+        error: null,
+      });
       const { getByText } = renderCard();
       expect(getByText('Only 5 left')).toBeTruthy();
     });
 
     it('shows badge at minimum (quantity=1)', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'low_stock', quantity: 1, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'low_stock',
+        quantity: 1,
+        isLoading: false,
+        error: null,
+      });
       const { getByText } = renderCard();
       expect(getByText('Only 1 left')).toBeTruthy();
     });
 
     it('hides badge when hook returns none (well-stocked, quantity > 5)', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'none', quantity: 50, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'none',
+        quantity: 50,
+        isLoading: false,
+        error: null,
+      });
       const { queryByTestId } = renderCard();
       expect(queryByTestId(`inventory-badge-${futon.id}`)).toBeNull();
     });
 
     it('hides badge when hook returns none (unknown quantity)', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'none', quantity: 0, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'none',
+        quantity: 0,
+        isLoading: false,
+        error: null,
+      });
       const { queryByTestId } = renderCard();
       expect(queryByTestId(`inventory-badge-${futon.id}`)).toBeNull();
     });
 
     it('hides badge when hook returns none (API error)', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'none', quantity: 0, isLoading: false, error: 'Network timeout' });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'none',
+        quantity: 0,
+        isLoading: false,
+        error: 'Network timeout',
+      });
       const { queryByTestId } = renderCard();
       expect(queryByTestId(`inventory-badge-${futon.id}`)).toBeNull();
     });
 
     it('hides badge while inventory is loading', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'none', quantity: 0, isLoading: true, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'none',
+        quantity: 0,
+        isLoading: true,
+        error: null,
+      });
       const { queryByTestId } = renderCard();
       expect(queryByTestId(`inventory-badge-${futon.id}`)).toBeNull();
     });
@@ -521,14 +560,24 @@ describe('ProductCard', () => {
     });
 
     it('shows just_restocked badge when hook returns just_restocked', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'just_restocked', quantity: 0, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'just_restocked',
+        quantity: 0,
+        isLoading: false,
+        error: null,
+      });
       const { getByTestId, getByText } = renderCard();
       expect(getByTestId(`inventory-badge-${futon.id}`)).toBeTruthy();
       expect(getByText('Just restocked')).toBeTruthy();
     });
 
     it('inventory badge has accessibility label when low_stock', () => {
-      mockUseInventoryBadge.mockReturnValue({ badge: 'low_stock', quantity: 2, isLoading: false, error: null });
+      mockUseInventoryBadge.mockReturnValue({
+        badge: 'low_stock',
+        quantity: 2,
+        isLoading: false,
+        error: null,
+      });
       const { getByTestId } = renderCard();
       const badge = getByTestId(`inventory-badge-${futon.id}`);
       expect(badge.props.accessibilityLabel).toBeTruthy();
