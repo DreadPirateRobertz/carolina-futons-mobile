@@ -248,4 +248,57 @@ describe('CompareScreen', () => {
     const { getByLabelText } = render(<CompareScreen products={[productA, productB]} />);
     expect(getByLabelText(/compare products/i)).toBeTruthy();
   });
+
+  // --- STICKY HEADER (cm-31m) ---
+
+  it('renders sticky product header with testID', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    expect(getByTestId('sticky-product-header')).toBeTruthy();
+  });
+
+  it('renders scrollable comparison rows with testID', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    expect(getByTestId('comparison-scroll-view')).toBeTruthy();
+  });
+
+  it('sticky header is not inside scroll view (not obscured by scroll)', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const header = getByTestId('sticky-product-header');
+    const scrollView = getByTestId('comparison-scroll-view');
+    // Header must not be a descendant of the scroll view
+    const scrollNode = scrollView;
+    let node = header.parent;
+    let isInsideScroll = false;
+    while (node) {
+      if (node === scrollNode) {
+        isInsideScroll = true;
+        break;
+      }
+      node = node.parent;
+    }
+    expect(isInsideScroll).toBe(false);
+  });
+
+  it('sticky header has elevation/zIndex for correct layering', () => {
+    const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
+    const header = getByTestId('sticky-product-header');
+    const style = header.props.style;
+    const flatStyle = Array.isArray(style) ? Object.assign({}, ...style) : style ?? {};
+    expect(flatStyle.zIndex).toBeGreaterThan(0);
+  });
+
+  it('sticky header is not shown in empty state', () => {
+    const { queryByTestId } = render(<CompareScreen products={[]} />);
+    expect(queryByTestId('sticky-product-header')).toBeNull();
+  });
+
+  it('sticky header shows product names fixed above comparison rows', () => {
+    const { getByTestId, getByText } = render(
+      <CompareScreen products={[productA, productB]} />,
+    );
+    const header = getByTestId('sticky-product-header');
+    // Product names are inside the sticky header
+    expect(within(header).getByText(productA.name)).toBeTruthy();
+    expect(within(header).getByText(productB.name)).toBeTruthy();
+  });
 });

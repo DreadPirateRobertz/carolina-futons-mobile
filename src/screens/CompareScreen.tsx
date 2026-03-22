@@ -46,7 +46,7 @@ export function CompareScreen({
   onBack,
   testID,
 }: Props) {
-  const { colors, spacing, borderRadius, typography } = useTheme();
+  const { colors, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
 
   // Cap products to max
@@ -144,44 +144,55 @@ export function CompareScreen({
       testID={testID}
     >
       <Header onBack={onBack} />
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Product headers */}
-        <View style={styles.headerRow}>
-          <View style={styles.labelCell} />
-          {products.map((product) => (
-            <View key={product.id} style={[styles.productCell, { borderColor: colors.sandDark }]}>
-              {product.images.length > 0 && (
-                <Image
-                  source={{ uri: product.images[0].uri }}
-                  style={[styles.productImage, { borderRadius: borderRadius.md }]}
-                  accessibilityLabel={product.images[0].alt}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                  transition={200}
-                />
-              )}
-              <TouchableOpacity
-                onPress={() => onProductPress?.(product)}
-                accessibilityRole="button"
-              >
-                <Text style={[styles.productName, { color: colors.espresso }]} numberOfLines={2}>
-                  {product.name}
-                </Text>
-              </TouchableOpacity>
-              {onRemove && (
-                <TouchableOpacity
-                  testID={`remove-product-${product.id}`}
-                  onPress={() => onRemove(product.id)}
-                  style={[styles.removeButton, { backgroundColor: colors.error + '15' }]}
-                  accessibilityLabel={`Remove ${product.name} from comparison`}
-                >
-                  <Text style={[styles.removeText, { color: colors.error }]}>✕</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
-        </View>
 
+      {/* Sticky product header — outside ScrollView so it never scrolls away */}
+      <View
+        testID="sticky-product-header"
+        style={[
+          styles.stickyHeader,
+          { backgroundColor: colors.sandBase, borderBottomColor: colors.sandDark },
+        ]}
+      >
+        <View style={styles.labelCell} />
+        {products.map((product) => (
+          <View key={product.id} style={[styles.productCell, { borderColor: colors.sandDark }]}>
+            {product.images.length > 0 && (
+              <Image
+                source={{ uri: product.images[0].uri }}
+                style={[styles.productImage, { borderRadius: borderRadius.md }]}
+                accessibilityLabel={product.images[0].alt}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={200}
+              />
+            )}
+            <TouchableOpacity
+              onPress={() => onProductPress?.(product)}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.productName, { color: colors.espresso }]} numberOfLines={2}>
+                {product.name}
+              </Text>
+            </TouchableOpacity>
+            {onRemove && (
+              <TouchableOpacity
+                testID={`remove-product-${product.id}`}
+                onPress={() => onRemove(product.id)}
+                style={[styles.removeButton, { backgroundColor: colors.error + '15' }]}
+                accessibilityLabel={`Remove ${product.name} from comparison`}
+              >
+                <Text style={[styles.removeText, { color: colors.error }]}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ))}
+      </View>
+
+      <ScrollView
+        testID="comparison-scroll-view"
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Comparison rows */}
         {rows.map((row, index) => (
           <View
@@ -210,7 +221,7 @@ export function CompareScreen({
 }
 
 function Header({ onBack }: { onBack?: () => void }) {
-  const { colors, spacing } = useTheme();
+  const { colors } = useTheme();
   return (
     <View style={[styles.header, { borderBottomColor: colors.sandDark }]}>
       {onBack && (
@@ -262,6 +273,14 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  stickyHeader: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    zIndex: 1,
+    elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
