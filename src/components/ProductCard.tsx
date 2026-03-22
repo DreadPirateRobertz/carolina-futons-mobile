@@ -28,7 +28,9 @@ import { FinancingBadge } from './FinancingBadge';
 import { ProductCardVideo } from './ProductCardVideo';
 import { CompareButton } from './CompareButton';
 import { InventoryBadge } from './InventoryBadge';
+import { ProductBadge } from './ProductBadge';
 import { useInventoryBadge } from '@/hooks/useInventoryBadge';
+import { normalizeBadgeType } from '@/data/productBadgeTypes';
 import { ProductContextMenu } from './ProductContextMenu';
 
 // ── Lifestyle photo placeholder ────────────────────────────────────────────
@@ -126,15 +128,7 @@ export const ProductCard = memo(function ProductCard({
     out_of_stock: { label: 'Out of Stock', color: '#C0392B' },
   };
   const stockBadge = stockBadgeConfig[stockStatus];
-
-  const badgeColor =
-    product.badge === 'Sale'
-      ? colors.sunsetCoral
-      : product.badge === 'New'
-        ? colors.mountainBlue
-        : product.badge === 'Bestseller'
-          ? colors.mountainBlue
-          : colors.espressoLight;
+  const normalizedBadge = normalizeBadgeType(product.badge);
 
   return (
     <>
@@ -188,11 +182,9 @@ export const ProductCard = memo(function ProductCard({
             overlay
             testID={`wishlist-btn-${product.id}`}
           />
-          {product.badge && (
-            <View style={[styles.badge, { backgroundColor: badgeColor }]}>
-              <Text style={styles.badgeText}>{product.badge}</Text>
-            </View>
-          )}
+          <View style={styles.badgeOverlay} pointerEvents="none">
+            <ProductBadge type={normalizedBadge} compact testID={`product-badge-${product.id}`} />
+          </View>
           {!product.inStock && (
             <View style={styles.outOfStockOverlay}>
               <Text style={styles.outOfStockText}>Out of Stock</Text>
@@ -298,19 +290,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  badge: {
+  badgeOverlay: {
     position: 'absolute',
     top: 8,
     left: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.3,
   },
   outOfStockOverlay: {
     ...StyleSheet.absoluteFillObject,

@@ -85,6 +85,7 @@ import { QuestionCard } from '@/components/QuestionCard';
 import { Video, ResizeMode } from 'expo-av';
 import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 import { useProductReviews } from '@/hooks/useProductReviews';
+import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -687,6 +688,10 @@ export function ProductDetailScreen({
           >
             {model.name}
           </Text>
+          <ProductBadge
+            type={normalizeBadgeType(catalogProduct?.badge)}
+            testID="product-detail-badge"
+          />
           <Text
             style={[
               styles.productTagline,
