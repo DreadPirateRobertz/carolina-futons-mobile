@@ -8,7 +8,7 @@
  *  - Returns { reviews, aggregate, isLoading, error }
  *  - aggregate: { averageRating, totalReviews }
  *  - isLoading=true during fetch, false when settled
- *  - Falls back to empty reviews when wixClient is null
+ *  - Falls back to MOCK_REVIEWS seed data when wixClient is null (cm-c01)
  *  - error set on API failure; captureException called
  *  - Re-fetches when productId changes
  *  - Handles empty collection (zero reviews)
@@ -31,8 +31,15 @@ jest.mock('@/services/crashReporting', () => ({
   captureException: jest.fn(),
 }));
 
+jest.mock('@/data/reviews', () => ({
+  getReviewsForProduct: jest.fn(),
+}));
+
 import { useOptionalWixClient } from '@/services/wix';
 import { captureException } from '@/services/crashReporting';
+import { getReviewsForProduct } from '@/data/reviews';
+
+const mockGetReviewsForProduct = getReviewsForProduct as jest.Mock;
 
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 const mockCaptureException = captureException as jest.Mock;
@@ -74,6 +81,7 @@ describe('useProductReviews', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseOptionalWixClient.mockReturnValue(mockWixClient);
+    mockGetReviewsForProduct.mockReturnValue([]);
   });
 
   // ── Initial state ──────────────────────────────────────────────────────────
@@ -312,15 +320,57 @@ describe('useProductReviews', () => {
 
   // ── Null wixClient ─────────────────────────────────────────────────────────
 
-  it('returns empty reviews without fetching when wixClient is null', async () => {
+  it('falls back to seed data (getReviewsForProduct) when wixClient is null', async () => {
     mockUseOptionalWixClient.mockReturnValue(null);
+    const seedReviews = [
+      makeItem({ id: 'rev-019', productId: 'pisgah-twin', rating: 5 }),
+      makeItem({ id: 'rev-021', productId: 'pisgah-twin', rating: 3 }),
+    ];
+    mockGetReviewsForProduct.mockReturnValue(seedReviews);
 
-    const { result } = renderHook(() => useProductReviews('prod-asheville'));
+    const { result } = renderHook(() => useProductReviews('pisgah-twin'));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.reviews).toEqual([]);
+    expect(mockGetReviewsForProduct).toHaveBeenCalledWith('pisgah-twin');
+    expect(result.current.reviews).toHaveLength(2);
+    expect(result.current.aggregate.totalReviews).toBe(2);
     expect(mockQueryData).not.toHaveBeenCalled();
     expect(result.current.error).toBeNull();
+  });
+
+  it('aggregate reflects seed data when wixClient is null', async () => {
+    mockUseOptionalWixClient.mockReturnValue(null);
+    mockGetReviewsForProduct.mockReturnValue([
+      makeItem({ id: 'r1', rating: 4 }),
+      makeItem({ id: 'r2', rating: 5 }),
+      makeItem({ id: 'r3', rating: 3 }),
+    ]);
+
+    const { result } = renderHook(() => useProductReviews('biltmore-loveseat'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.aggregate.averageRating).toBe(4.0);
+    expect(result.current.aggregate.totalReviews).toBe(3);
+  });
+
+  it('returns empty state (not error) when seed data is empty and wixClient is null', async () => {
+    mockUseOptionalWixClient.mockReturnValue(null);
+    mockGetReviewsForProduct.mockReturnValue([]);
+
+    const { result } = renderHook(() => useProductReviews('unknown-product'));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.reviews).toHaveLength(0);
+    expect(result.current.error).toBeNull();
+    expect(result.current.aggregate.totalReviews).toBe(0);
+  });
+
+  it('passes the productId to getReviewsForProduct when wixClient is null', async () => {
+    mockUseOptionalWixClient.mockReturnValue(null);
+    mockGetReviewsForProduct.mockReturnValue([]);
+
+    renderHook(() => useProductReviews('blue-ridge-queen'));
+    await waitFor(() => expect(mockGetReviewsForProduct).toHaveBeenCalledWith('blue-ridge-queen'));
   });
 
   // ── Re-fetch on productId change ───────────────────────────────────────────

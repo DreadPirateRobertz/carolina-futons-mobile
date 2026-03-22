@@ -2,8 +2,9 @@
  * @module useProductReviews
  *
  * Fetches product reviews from the Wix CMS CF-k8hw collection and returns
- * them with an aggregate star rating. Falls back to empty results when no
- * WixClient is available (unauthenticated / not configured).
+ * them with an aggregate star rating. Falls back to MOCK_REVIEWS seed data
+ * when no WixClient is available (dev / unauthenticated / not configured).
+ * Seed data covers all products — enables full UI rendering path in dev and tests.
  *
  * Returns:
  *  - reviews: Review[] — fetched items, most recent first (up to 100)
@@ -18,7 +19,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useOptionalWixClient } from '@/services/wix';
-import type { Review } from '@/data/reviews';
+import { type Review, getReviewsForProduct } from '@/data/reviews';
 import { captureException } from '@/services/crashReporting';
 
 /** CF-k8hw is the Wix CMS collection ID for product reviews. */
@@ -99,8 +100,11 @@ export function useProductReviews(productId: string): UseProductReviewsResult {
 
   useEffect(() => {
     if (!wixClient) {
-      setReviews([]);
-      setTotalReviews(0);
+      // No Wix client — fall back to local seed data so the full rendering
+      // path (reviews list, star rating, photos) works in dev and tests.
+      const seed = getReviewsForProduct(productId);
+      setReviews(seed);
+      setTotalReviews(seed.length);
       setIsLoading(false);
       setError(null);
       return;
