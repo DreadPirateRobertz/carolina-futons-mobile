@@ -9,7 +9,9 @@ jest.mock('@/services/wix/wixProvider', () => ({
 }));
 
 // Mock useAddressBook
-const mockUseAddressBook = jest.fn(() => ({ defaultAddress: null }));
+const mockUseAddressBook = jest.fn<{ defaultAddress: { zip: string } | null }, []>(() => ({
+  defaultAddress: null,
+}));
 jest.mock('@/hooks/useAddressBook', () => ({
   useAddressBook: () => mockUseAddressBook(),
 }));
