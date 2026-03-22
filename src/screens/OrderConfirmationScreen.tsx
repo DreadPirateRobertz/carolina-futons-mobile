@@ -6,8 +6,9 @@
  * estimated delivery window, and CTAs (Call To Action) to continue
  * shopping or view order history.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { PointsToast } from '@/components/PointsToast';
 import { useTheme } from '@/theme';
 import { formatPrice } from '@/utils';
 import { useRatingPrompt } from '@/hooks/useRatingPrompt';
@@ -17,6 +18,8 @@ interface Props {
   order: OrderConfirmation;
   onContinueShopping?: () => void;
   onViewOrders?: () => void;
+  /** Loyalty points earned for this order; shows animated toast when > 0. */
+  pointsEarned?: number;
   testID?: string;
 }
 
@@ -25,20 +28,37 @@ export function OrderConfirmationScreen({
   order,
   onContinueShopping,
   onViewOrders,
+  pointsEarned,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { recordPurchase } = useRatingPrompt();
+  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     recordPurchase();
   }, [recordPurchase]);
+
+  useEffect(() => {
+    if (pointsEarned && pointsEarned > 0) {
+      setToastVisible(true);
+      const timer = setTimeout(() => setToastVisible(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [pointsEarned]);
 
   return (
     <View
       style={[styles.root, { backgroundColor: colors.sandBase }]}
       testID={testID ?? 'order-confirmation-screen'}
     >
+      {pointsEarned != null && (
+        <PointsToast
+          points={pointsEarned}
+          visible={toastVisible}
+          testID="order-points-toast"
+        />
+      )}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
