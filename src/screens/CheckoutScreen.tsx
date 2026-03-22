@@ -298,6 +298,8 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
   const [shippingOptions, setShippingOptions] = useState<NormalizedShippingOption[]>([]);
   const [shippingOptionsLoading, setShippingOptionsLoading] = useState(false);
+  // White glove upgrade toggle — cm-cqz
+  const [whiteGloveUpgrade, setWhiteGloveUpgrade] = useState(false);
 
   // Fetch shipping options when ZIP changes (cm-z5f)
   useEffect(() => {
@@ -846,85 +848,182 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             {shippingOptionsLoading ? (
               <BrandedSpinner testID="delivery-options-loading" />
             ) : (
-              shippingOptions.map((option) => {
-                const isSelected = selectedDelivery === option.id;
-                const badgeColor = option.badgeStyle
-                  ? (BADGE_STYLE_COLORS[option.badgeStyle] ?? '#555')
-                  : null;
-                return (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={[
-                      styles.deliveryOption,
-                      option.highlight && styles.deliveryOptionHighlight,
-                      {
-                        borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
-                        borderRadius: borderRadius.card,
-                        backgroundColor: isSelected ? colors.sandLight : colors.sandBase,
-                      },
-                    ]}
-                    onPress={() => setSelectedDelivery(option.id)}
-                    testID={`delivery-option-${option.id}`}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: isSelected }}
-                    accessibilityLabel={`${option.label}, ${option.priceCents === 0 ? 'Free' : formatPrice(option.priceCents)}`}
-                  >
-                    {/* Selection indicator */}
-                    <View
+              (() => {
+                // cm-cqz: detect local+white-glove pair; white glove is an upgrade, not a peer
+                const wgOption = shippingOptions.find((o) => o.id.startsWith('white-glove-'));
+                const visibleOptions = wgOption
+                  ? shippingOptions.filter((o) => !o.id.startsWith('white-glove-'))
+                  : shippingOptions;
+                const localIsSelected = selectedDelivery?.startsWith('local-delivery-') ?? false;
+
+                return visibleOptions.map((option) => {
+                  const isSelected = selectedDelivery === option.id;
+                  const badgeColor = option.badgeStyle
+                    ? (BADGE_STYLE_COLORS[option.badgeStyle] ?? '#555')
+                    : null;
+                  const isLocalOption = option.id.startsWith('local-delivery-');
+                  const showWgUpgrade = isLocalOption && wgOption != null && isSelected;
+
+                  // Combined price when WG upgrade is active
+                  const combinedCents =
+                    showWgUpgrade && whiteGloveUpgrade
+                      ? option.priceCents + wgOption!.priceCents
+                      : null;
+
+                  return (
+                    <TouchableOpacity
+                      key={option.id}
                       style={[
-                        styles.deliveryRadio,
+                        styles.deliveryOption,
+                        option.highlight && styles.deliveryOptionHighlight,
                         {
                           borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
-                          backgroundColor: isSelected ? colors.mountainBlue : 'transparent',
+                          borderRadius: borderRadius.card,
+                          backgroundColor: isSelected ? colors.sandLight : colors.sandBase,
                         },
                       ]}
-                    />
-                    {/* Label + badge + upsell */}
-                    <View style={styles.deliveryInfo}>
-                      <View style={styles.deliveryLabelRow}>
+                      onPress={() => {
+                        setSelectedDelivery(option.id);
+                        setWhiteGloveUpgrade(false);
+                      }}
+                      testID={`delivery-option-${option.id}`}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: isSelected }}
+                      accessibilityLabel={`${option.label}, ${option.priceCents === 0 ? 'Free' : formatPrice(option.priceCents)}`}
+                    >
+                      {/* Selection indicator */}
+                      <View
+                        style={[
+                          styles.deliveryRadio,
+                          {
+                            borderColor: isSelected ? colors.mountainBlue : colors.sandDark,
+                            backgroundColor: isSelected ? colors.mountainBlue : 'transparent',
+                          },
+                        ]}
+                      />
+                      {/* Label + badge + upsell */}
+                      <View style={[styles.deliveryInfo, { flex: 1 }]}>
+                        <View style={styles.deliveryLabelRow}>
+                          <Text
+                            style={[styles.deliveryLabel, { color: colors.espresso }]}
+                            testID={`delivery-label-${option.id}`}
+                          >
+                            {option.icon} {option.label}
+                          </Text>
+                          {option.badge && badgeColor && (
+                            <View style={[styles.deliveryBadge, { backgroundColor: badgeColor }]}>
+                              <Text
+                                style={styles.deliveryBadgeText}
+                                testID={`delivery-badge-${option.id}`}
+                              >
+                                {option.badge}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
                         <Text
-                          style={[styles.deliveryLabel, { color: colors.espresso }]}
-                          testID={`delivery-label-${option.id}`}
+                          style={[styles.deliveryPrice, { color: colors.espressoLight }]}
+                          testID={`delivery-price-${option.id}`}
                         >
-                          {option.icon} {option.label}
+                          {combinedCents != null
+                            ? formatPrice(combinedCents)
+                            : option.priceCents === 0
+                              ? 'FREE'
+                              : formatPrice(option.priceCents)}
                         </Text>
-                        {option.badge && badgeColor && (
-                          <View style={[styles.deliveryBadge, { backgroundColor: badgeColor }]}>
-                            <Text
-                              style={styles.deliveryBadgeText}
-                              testID={`delivery-badge-${option.id}`}
-                            >
-                              {option.badge}
-                            </Text>
-                          </View>
+                        {option.upsellMessage && (
+                          <Text
+                            style={[styles.deliveryUpsell, { color: colors.mountainBlue }]}
+                            testID={`delivery-upsell-${option.id}`}
+                          >
+                            {option.upsellMessage}
+                          </Text>
+                        )}
+
+                        {/* White Glove upgrade section — cm-cqz */}
+                        {showWgUpgrade && (
+                          <TouchableOpacity
+                            style={styles.wgUpgradeRow}
+                            onPress={() => setWhiteGloveUpgrade((v) => !v)}
+                            testID="white-glove-upgrade-toggle"
+                            accessibilityRole="checkbox"
+                            accessibilityState={{ checked: whiteGloveUpgrade }}
+                            accessibilityLabel={`Add White Glove Setup, ${formatPrice(wgOption!.priceCents)}`}
+                          >
+                            <View
+                              style={[
+                                styles.wgCheckbox,
+                                {
+                                  borderColor: whiteGloveUpgrade
+                                    ? colors.mountainBlue
+                                    : colors.sandDark,
+                                  backgroundColor: whiteGloveUpgrade
+                                    ? colors.mountainBlue
+                                    : 'transparent',
+                                },
+                              ]}
+                            />
+                            <View style={{ flex: 1 }}>
+                              <View style={styles.deliveryLabelRow}>
+                                <Text
+                                  style={[styles.deliveryLabel, { color: colors.espresso }]}
+                                  testID="white-glove-upgrade-label"
+                                >
+                                  {wgOption!.icon} Add White Glove Setup
+                                </Text>
+                                {wgOption!.badge &&
+                                  wgOption!.badgeStyle &&
+                                  BADGE_STYLE_COLORS[wgOption!.badgeStyle] && (
+                                    <View
+                                      style={[
+                                        styles.deliveryBadge,
+                                        {
+                                          backgroundColor:
+                                            BADGE_STYLE_COLORS[wgOption!.badgeStyle] ?? '#555',
+                                        },
+                                      ]}
+                                    >
+                                      <Text
+                                        style={styles.deliveryBadgeText}
+                                        testID="white-glove-upgrade-badge"
+                                      >
+                                        {wgOption!.badge}
+                                      </Text>
+                                    </View>
+                                  )}
+                              </View>
+                              <Text
+                                style={[styles.deliveryPrice, { color: colors.espressoLight }]}
+                                testID="white-glove-upgrade-fee"
+                              >
+                                +{formatPrice(wgOption!.priceCents)}
+                              </Text>
+                              {whiteGloveUpgrade && (
+                                <Text
+                                  style={[styles.deliveryPrice, { color: colors.mountainBlue }]}
+                                  testID="white-glove-combined-price"
+                                >
+                                  {formatPrice(option.priceCents + wgOption!.priceCents)} total
+                                </Text>
+                              )}
+                              {wgOption!.terrainSurcharge != null &&
+                                wgOption!.terrainSurcharge > 0 && (
+                                  <Text
+                                    style={[styles.deliveryUpsell, { color: colors.espressoLight }]}
+                                    testID="white-glove-upgrade-terrain"
+                                  >
+                                    +{formatPrice(wgOption!.terrainSurcharge * 100)} mountain
+                                    surcharge
+                                  </Text>
+                                )}
+                            </View>
+                          </TouchableOpacity>
                         )}
                       </View>
-                      <Text
-                        style={[styles.deliveryPrice, { color: colors.espressoLight }]}
-                        testID={`delivery-price-${option.id}`}
-                      >
-                        {option.priceCents === 0 ? 'FREE' : formatPrice(option.priceCents)}
-                      </Text>
-                      {option.upsellMessage && (
-                        <Text
-                          style={[styles.deliveryUpsell, { color: colors.mountainBlue }]}
-                          testID={`delivery-upsell-${option.id}`}
-                        >
-                          {option.upsellMessage}
-                        </Text>
-                      )}
-                      {option.terrainSurcharge !== undefined && option.terrainSurcharge > 0 && (
-                        <Text
-                          style={[styles.deliveryUpsell, { color: colors.espressoLight }]}
-                          testID={`delivery-terrain-${option.id}`}
-                        >
-                          +{formatPrice(option.terrainSurcharge * 100)} mountain surcharge
-                        </Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                );
-              })
+                    </TouchableOpacity>
+                  );
+                });
+              })()
             )}
           </View>
         )}
@@ -1691,6 +1790,23 @@ const styles = StyleSheet.create({
   },
   deliveryOptionHighlight: {
     borderWidth: 2,
+  },
+  wgUpgradeRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E0D8CC',
+    gap: 10,
+  },
+  wgCheckbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 3,
+    borderWidth: 2,
+    flexShrink: 0,
+    marginTop: 2,
   },
   deliveryUpsell: {
     fontSize: 11,
