@@ -984,6 +984,22 @@ export class WixClient {
     });
   }
 
+  // ── Generic function caller (webMethods / /_functions/* ) ──────────────────
+
+  /**
+   * Call any Wix backend webMethod via /_functions/<module>/<method>.
+   *
+   * @param path   Full path including /_functions/ prefix
+   * @param method HTTP method (GET or POST)
+   * @param body   Request body for POST calls
+   */
+  async callFunction<T = unknown>(path: string, method: 'GET' | 'POST', body?: unknown): Promise<T> {
+    if (method === 'POST') {
+      return this.post<T>(path, body ?? {});
+    }
+    return this.get<T>(path);
+  }
+
   // ── HTTP helpers ───────────────────────────────────────────
 
   private headers(): Record<string, string> {
