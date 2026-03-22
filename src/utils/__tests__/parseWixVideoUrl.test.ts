@@ -61,9 +61,7 @@ describe('parseWixVideoUrl', () => {
 
     it('returns null for wix:image:// URI (wrong scheme)', () => {
       expect(
-        parseWixVideoUrl(
-          'wix:image://v1/e04e89_abc123/image.jpg#originWidth=800&originHeight=600',
-        ),
+        parseWixVideoUrl('wix:image://v1/e04e89_abc123/image.jpg#originWidth=800&originHeight=600'),
       ).toBeNull();
     });
 
@@ -75,8 +73,7 @@ describe('parseWixVideoUrl', () => {
 
 describe('parseWixVideoPosterUrl', () => {
   it('extracts posterUri and returns wixstatic CDN image URL', () => {
-    const uri =
-      'wix:video://v1/e04e89_abc123/vid.mp4#posterUri=e04e89_thumb123abc/thumbnail.jpg';
+    const uri = 'wix:video://v1/e04e89_abc123/vid.mp4#posterUri=e04e89_thumb123abc/thumbnail.jpg';
     expect(parseWixVideoPosterUrl(uri)).toBe(
       'https://static.wixstatic.com/media/e04e89_thumb123abc',
     );

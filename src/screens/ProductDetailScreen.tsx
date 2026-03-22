@@ -403,7 +403,10 @@ export function ProductDetailScreen({
       if (item === 'Video' && resolvedVideoUri) {
         return (
           <View
-            style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
+            style={[
+              styles.gallerySlide,
+              { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface },
+            ]}
             testID="gallery-slide-video"
             accessibilityLabel={`Product video for ${model.name}`}
             accessibilityRole="none"
@@ -442,7 +445,10 @@ export function ProductDetailScreen({
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={handleOpenFullscreen}
-          style={[styles.gallerySlide, { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface }]}
+          style={[
+            styles.gallerySlide,
+            { width: SCREEN_WIDTH, backgroundColor: darkPalette.surface },
+          ]}
           testID={`gallery-slide-${index}`}
           accessibilityLabel={`${item} of ${model.name}. Tap to view fullscreen`}
           accessibilityRole="imagebutton"
