@@ -56,6 +56,10 @@ export interface Product {
    * SOURCE: Will come from manufacturer image banks + professional shoot (Q2 2026).
    */
   lifestyleImageUri?: string;
+  /** When true, this product ships via LTL freight — carrier will call customer to schedule delivery. */
+  requiresFreight?: boolean;
+  /** When true, liftgate service is required at delivery (only relevant when requiresFreight is true). */
+  requiresLiftgate?: boolean;
 }
 
 export type ProductCategory =

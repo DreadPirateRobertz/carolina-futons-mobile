@@ -86,6 +86,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 import { useProductReviews } from '@/hooks/useProductReviews';
 import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
+import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -761,6 +762,12 @@ export function ProductDetailScreen({
           <DeliveryEstimateWidget
             productIds={catalogProductId ? [catalogProductId] : []}
             testID="delivery-estimate-widget"
+          />
+          {/* cm-z9n: WWEX freight notice — display-only, no booking logic */}
+          <FreightNoticeBanner
+            requiresFreight={catalogProduct?.requiresFreight}
+            requiresLiftgate={catalogProduct?.requiresLiftgate}
+            testID="freight-notice-banner"
           />
 
           {/* Try in AR — primary CTA near price, Wayfair/IKEA pattern for conversion */}
