@@ -41,6 +41,34 @@ jest.mock('expo-blur', () => {
 });
 
 // Build a mock BottomTabBarProps-like state
+function createMockPropsWithTint(activeTint: string, inactiveTint: string, activeIndex = 0) {
+  const routes = [
+    { key: 'Home-1', name: 'Home' },
+    { key: 'Shop-2', name: 'Shop' },
+    { key: 'Cart-3', name: 'Cart' },
+    { key: 'Account-4', name: 'Account' },
+  ];
+  const navigation = {
+    emit: jest.fn(() => ({ defaultPrevented: false })),
+    navigate: jest.fn(),
+  };
+  const descriptors: Record<string, any> = {};
+  routes.forEach((route) => {
+    descriptors[route.key] = {
+      options: {
+        tabBarLabel: route.name,
+        tabBarIcon: ({ focused, color }: any) => (
+          <Text testID={`icon-${route.name}`}>{route.name[0]}</Text>
+        ),
+        tabBarBadge: route.name === 'Cart' ? 2 : undefined,
+        tabBarActiveTintColor: activeTint,
+        tabBarInactiveTintColor: inactiveTint,
+      },
+    };
+  });
+  return { state: { index: activeIndex, routes }, descriptors, navigation } as any;
+}
+
 function createMockProps(activeIndex = 0) {
   const routes = [
     { key: 'Home-1', name: 'Home' },
@@ -122,6 +150,32 @@ describe('AnimatedTabBar', () => {
     const props = createMockProps(0);
     const { getByTestId } = render(<AnimatedTabBar {...props} />);
     expect(getByTestId('tab-bar-blur')).toBeTruthy();
+  });
+
+  describe('dynamic tint from options (cf-7l2)', () => {
+    it('uses tabBarActiveTintColor from options for the focused tab label', () => {
+      const { StyleSheet } = require('react-native');
+      const props = createMockPropsWithTint('#FF0000', '#0000FF', 0); // Home active
+      const { getByText } = render(<AnimatedTabBar {...props} />);
+      const flatStyle = StyleSheet.flatten(getByText('Home').props.style);
+      expect(flatStyle.color).toBe('#FF0000');
+    });
+
+    it('uses tabBarInactiveTintColor from options for unfocused tab labels', () => {
+      const { StyleSheet } = require('react-native');
+      const props = createMockPropsWithTint('#FF0000', '#0000FF', 0);
+      const { getByText } = render(<AnimatedTabBar {...props} />);
+      const flatStyle = StyleSheet.flatten(getByText('Shop').props.style);
+      expect(flatStyle.color).toBe('#0000FF');
+    });
+
+    it('falls back to ACTIVE_COLOR constant when options lack tint colors', () => {
+      const { StyleSheet } = require('react-native');
+      const props = createMockProps(0);
+      const { getByText } = render(<AnimatedTabBar {...props} />);
+      const flatStyle = StyleSheet.flatten(getByText('Home').props.style);
+      expect(flatStyle.color).toBe('#F5F0EB');
+    });
   });
 
   describe('Accessibility', () => {

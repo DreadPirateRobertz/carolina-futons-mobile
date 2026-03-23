@@ -13,16 +13,41 @@ import { TabNavigator } from '../TabNavigator';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+let mockCapturedScreenOptions: any = null;
+
 jest.mock('@react-navigation/bottom-tabs', () => {
-  const { View, Text, TouchableOpacity } = require('react-native');
+  const { View } = require('react-native');
   const createBottomTabNavigator = () => ({
-    Navigator: ({ children, screenOptions: _so, tabBar: _tb }: any) => (
-      <View testID="tab-navigator">{children}</View>
-    ),
-    Screen: ({ name, component: Comp }: any) => <View testID={`tab-screen-${name}`} />,
+    Navigator: ({ children, screenOptions, tabBar: _tb }: any) => {
+      mockCapturedScreenOptions = screenOptions;
+      return <View testID="tab-navigator">{children}</View>;
+    },
+    Screen: ({ name }: any) => <View testID={`tab-screen-${name}`} />,
   });
   return { createBottomTabNavigator };
 });
+
+jest.mock('@/hooks/useLivingSky', () => ({
+  useLivingSky: () => ({
+    navBg: '#0A0F1C',
+    navText: '#8BAFC8',
+    skyColors: ['#050810', '#080D1C', '#0D1628', '#141E30'] as [string, string, string, string],
+    glowColors: ['transparent', 'transparent'] as [string, string],
+    ridgeColors: { r1: '#0C1838', r2: '#162850', r3: '#283860', r4: '#3C4E6A', tree: '#080E1E' },
+    sunPos: { cx: 520, cy: 220, r: 14, opacity: 0 },
+    moonPos: { cx: 200, cy: 200, opacity: 1, phase: 0, shadowOffset: { dx: 0, dy: 0 } },
+    starOpacity: 0.9,
+    cloudOpacity: 0,
+    birdOpacity: 0,
+    fireflyOpacity: 0.55,
+    owlOpacity: 0.9,
+    rimOpacity: 0.12,
+    rimColor: '#4A6E8A',
+    season: 'winter' as const,
+    precipitationOpacity: 0.5,
+    precipitationType: 'snow' as const,
+  }),
+}));
 
 jest.mock('../AnimatedTabBar', () => ({ AnimatedTabBar: () => null }));
 jest.mock('../withScreenErrorBoundary', () => ({
@@ -68,6 +93,7 @@ function renderTabs() {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockCapturedScreenOptions = null;
   mockUseCart.mockReturnValue({ itemCount: 2, items: [], subtotal: 0 });
 });
 
@@ -83,5 +109,22 @@ describe('TabNavigator — structure', () => {
   it('does not render CartFAB — it lives in MiniCartDrawerHost (cm-377)', () => {
     const { queryByTestId } = renderTabs();
     expect(queryByTestId('cart-fab')).toBeNull();
+  });
+});
+
+describe('TabNavigator — living sky tint (cf-7l2)', () => {
+  it('sets tabBarActiveTintColor from skyState.navText', () => {
+    renderTabs();
+    expect(mockCapturedScreenOptions?.tabBarActiveTintColor).toBe('#8BAFC8');
+  });
+
+  it('sets tabBarInactiveTintColor from skyState.navText', () => {
+    renderTabs();
+    expect(mockCapturedScreenOptions?.tabBarInactiveTintColor).toBe('#8BAFC8');
+  });
+
+  it('sets tabBarStyle.backgroundColor from skyState.navBg', () => {
+    renderTabs();
+    expect(mockCapturedScreenOptions?.tabBarStyle?.backgroundColor).toBe('#0A0F1C');
   });
 });

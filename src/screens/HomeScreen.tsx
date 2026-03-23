@@ -10,7 +10,7 @@
  * users into the two main engagement paths.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useStreak } from '@/hooks/useStreak';
@@ -24,6 +24,7 @@ import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { LivingSkyBackground } from '@/components/LivingSkyBackground';
 import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline';
 import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
@@ -78,6 +79,14 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
 
+  // cf-7l2 — propagate sky nav colours to navigator options (e.g. for status bar theming)
+  useEffect(() => {
+    navigation.setOptions?.({
+      headerStyle: { backgroundColor: skyState.navBg },
+      headerTintColor: skyState.navText,
+    });
+  }, [skyState.navBg, skyState.navText, navigation]);
+
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -115,6 +124,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
 
   return (
     <View style={styles.root}>
+      {/* cf-7l2 — full-screen sky gradient, absolute behind all content */}
+      <LivingSkyBackground />
       <ScrollView
         style={[styles.container, { backgroundColor: colors.sandBase }]}
         contentContainerStyle={[
