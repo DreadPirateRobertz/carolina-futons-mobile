@@ -29,6 +29,8 @@ import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
+import { ChallengesRail } from '@/components/ChallengesRail';
+import { CHALLENGES } from '@/data/challenges';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -294,6 +296,9 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           </Text>
         </Pressable>
       </GlassCard>
+
+      {/* Gamification Challenges Rail */}
+      <ChallengesRail challenges={CHALLENGES} />
 
       {/* Collection Carousel */}
       {(collectionsLoading || featured.length > 0) && (
