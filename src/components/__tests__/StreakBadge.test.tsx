@@ -27,7 +27,7 @@ describe('StreakBadge', () => {
 
   it('shows the streak count', () => {
     const { getByText } = renderBadge(5);
-    expect(getByText(/5/)).toBeTruthy();
+    expect(getByText('5')).toBeTruthy();
   });
 
   it('shows "day streak" label for singular streak', () => {
@@ -70,5 +70,33 @@ describe('StreakBadge', () => {
   it('renders with large streak (365)', () => {
     const { getByText } = renderBadge(365);
     expect(getByText(/365/)).toBeTruthy();
+  });
+
+  // ── Streak Multiplier (cm-7i1y0) ───────────────────────────────
+
+  it('shows multiplier chip when streak >= 3 days', () => {
+    const { getByTestId } = renderBadge(3);
+    expect(getByTestId('streak-multiplier')).toBeTruthy();
+  });
+
+  it('shows "1.5×" multiplier for 3-day streak', () => {
+    const { getByText } = renderBadge(3);
+    expect(getByText(/1\.5×/)).toBeTruthy();
+  });
+
+  it('shows "2×" multiplier for 7-day streak', () => {
+    const { getByText } = renderBadge(7);
+    expect(getByText(/2×/)).toBeTruthy();
+  });
+
+  it('does NOT show multiplier chip when streak < 3 days', () => {
+    const { queryByTestId } = renderBadge(2);
+    expect(queryByTestId('streak-multiplier')).toBeNull();
+  });
+
+  it('includes multiplier in accessibility label when active', () => {
+    const { getByTestId } = renderBadge(7);
+    const badge = getByTestId('streak-badge');
+    expect(badge.props.accessibilityLabel).toMatch(/2×.*points/);
   });
 });
