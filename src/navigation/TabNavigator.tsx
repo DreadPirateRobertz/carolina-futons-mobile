@@ -48,6 +48,7 @@ function AccountScreenWithNav() {
       onStyleQuiz={() => nav.navigate('StyleQuiz')}
       onPrivacyPolicy={() => nav.navigate('PrivacyPolicy')}
       onLeaderboard={() => nav.navigate('Leaderboard')}
+      onChallenges={() => nav.navigate('Challenges')}
     />
   );
 }
