@@ -117,6 +117,29 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
           </View>
         )}
       </View>
+      <Text
+        style={[
+          styles.sectionTitle,
+          {
+            color: colors.espressoLight,
+            fontFamily: typography.bodyFamilyBold,
+            paddingHorizontal: spacing.lg,
+          },
+        ]}
+      >
+        Activity
+      </Text>
+      <View style={styles.emptyTx}>
+        <Text
+          style={[
+            styles.emptyText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+          testID="loyalty-no-transactions"
+        >
+          No transactions yet. Earn points by shopping!
+        </Text>
+      </View>
     </View>
   );
 }
@@ -131,6 +154,16 @@ const styles = StyleSheet.create({
   progressTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   progressFill: { height: 6, borderRadius: 3 },
   progressLabel: { fontSize: 12, marginTop: 6, textAlign: 'center' },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  emptyTx: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
+  emptyText: { fontSize: 15, textAlign: 'center' },
   errorText: { fontSize: 15, textAlign: 'center', marginHorizontal: 32, marginBottom: 20 },
   retryButton: { paddingVertical: 12, paddingHorizontal: 32, borderRadius: 8 },
   retryText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
