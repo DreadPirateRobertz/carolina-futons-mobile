@@ -11,13 +11,7 @@
  */
 
 import React from 'react';
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
 
@@ -55,23 +49,12 @@ function SectionHeader({ label, testID }: { label: string; testID: string }) {
 
 // ── Progress bar ──────────────────────────────────────────────────────────────
 
-function ProgressBar({
-  ratio,
-  color,
-  testID,
-}: {
-  ratio: number;
-  color: string;
-  testID: string;
-}) {
+function ProgressBar({ ratio, color, testID }: { ratio: number; color: string; testID: string }) {
   const { colors } = useTheme();
   return (
     <View style={[styles.trackOuter, { backgroundColor: colors.sandDark }]} testID={testID}>
       <View
-        style={[
-          styles.trackFill,
-          { width: `${Math.round(ratio * 100)}%`, backgroundColor: color },
-        ]}
+        style={[styles.trackFill, { width: `${Math.round(ratio * 100)}%`, backgroundColor: color }]}
       />
     </View>
   );
@@ -79,16 +62,20 @@ function ProgressBar({
 
 // ── Challenge row ─────────────────────────────────────────────────────────────
 
-function ChallengeRow({
-  challenge,
-  dim,
-}: {
-  challenge: CatalogChallenge;
-  dim?: boolean;
-}) {
+function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: boolean }) {
   const { colors, typography, spacing } = useTheme();
-  const { id, title, progress, goal, unit, pointReward, expiresAt, completed, isExpired, progressRatio } =
-    challenge;
+  const {
+    id,
+    title,
+    progress,
+    goal,
+    unit,
+    pointReward,
+    expiresAt,
+    completed,
+    isExpired,
+    progressRatio,
+  } = challenge;
 
   const textColor = dim ? colors.espressoLight : colors.espresso;
   const barColor = completed
@@ -101,7 +88,11 @@ function ChallengeRow({
     <View
       style={[
         styles.row,
-        { borderBottomColor: colors.sandDark, opacity: dim ? 0.5 : 1, paddingHorizontal: spacing.lg },
+        {
+          borderBottomColor: colors.sandDark,
+          opacity: dim ? 0.5 : 1,
+          paddingHorizontal: spacing.lg,
+        },
       ]}
       testID={`challenge-row-${id}`}
     >
@@ -115,7 +106,10 @@ function ChallengeRow({
         </Text>
         <Text
           testID={`challenge-reward-${id}`}
-          style={[styles.reward, { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold }]}
+          style={[
+            styles.reward,
+            { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold },
+          ]}
         >
           {`+${pointReward} pts`}
         </Text>
@@ -126,10 +120,13 @@ function ChallengeRow({
 
       {/* Progress label + expiry */}
       <View style={styles.rowBottom}>
-        <Text style={[styles.progressLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}>
-          {completed
-            ? `${goal}/${goal} ${unit}`
-            : `${progress}/${goal} ${unit}`}
+        <Text
+          style={[
+            styles.progressLabel,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
+        >
+          {completed ? `${goal}/${goal} ${unit}` : `${progress}/${goal} ${unit}`}
         </Text>
 
         {completed && (
@@ -151,7 +148,12 @@ function ChallengeRow({
         )}
 
         {!completed && !isExpired && (
-          <Text style={[styles.expiry, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}>
+          <Text
+            style={[
+              styles.expiry,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
             {expiryLabel(expiresAt)}
           </Text>
         )}
@@ -190,10 +192,7 @@ export function ChallengesScreen({ testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'challenges-screen'}
       >
-        <Text
-          style={[styles.errorText, { color: colors.espressoLight }]}
-          testID="challenges-error"
-        >
+        <Text style={[styles.errorText, { color: colors.espressoLight }]} testID="challenges-error">
           {error}
         </Text>
       </View>
@@ -206,10 +205,7 @@ export function ChallengesScreen({ testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'challenges-screen'}
       >
-        <Text
-          style={[styles.emptyText, { color: colors.espressoLight }]}
-          testID="challenges-empty"
-        >
+        <Text style={[styles.emptyText, { color: colors.espressoLight }]} testID="challenges-empty">
           No challenges available right now.{'\n'}Check back soon!
         </Text>
       </View>
