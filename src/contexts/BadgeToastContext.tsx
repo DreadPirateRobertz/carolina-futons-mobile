@@ -31,11 +31,7 @@ export function BadgeToastProvider({ children }: { children: React.ReactNode }) 
     <BadgeToastContext.Provider value={{ showBadgeToast }}>
       <View style={styles.container}>
         {children}
-        <BadgeToast
-          badgeName={badgeName ?? ''}
-          visible={visible}
-          testID="badge-toast"
-        />
+        <BadgeToast badgeName={badgeName ?? ''} visible={visible} testID="badge-toast" />
       </View>
     </BadgeToastContext.Provider>
   );
