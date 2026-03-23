@@ -19,6 +19,7 @@ import { OnboardingScreen } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
+import { BadgeToastProvider } from '@/contexts/BadgeToastContext';
 
 const OnboardingScreenWithBoundary = withScreenErrorBoundary(OnboardingScreen, 'Onboarding');
 
@@ -244,6 +245,7 @@ export function AppNavigator() {
   }
 
   return (
+    <BadgeToastProvider>
     <Suspense fallback={<LazyFallback />}>
       <Stack.Navigator
         screenOptions={{ headerShown: false }}
@@ -459,5 +461,6 @@ export function AppNavigator() {
         <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
       </Stack.Navigator>
     </Suspense>
+    </BadgeToastProvider>
   );
 }
