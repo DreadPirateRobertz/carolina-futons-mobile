@@ -6,9 +6,31 @@
  */
 
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { TierUpgradeToast } from '../TierUpgradeToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+
+const mockInsets = { bottom: 0, top: 0, left: 0, right: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
+
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: {
+      View,
+      createAnimatedComponent: (c: React.ComponentType) => c,
+    },
+    useSharedValue: (init: number) => ({ value: init }),
+    useAnimatedStyle: (fn: () => object) => fn(),
+    withTiming: (val: number) => val,
+    withSequence: (...vals: number[]) => vals[vals.length - 1],
+    withDelay: (_delay: number, val: number) => val,
+  };
+});
 
 function renderToast(props: React.ComponentProps<typeof TierUpgradeToast>) {
   return render(
@@ -48,5 +70,27 @@ describe('TierUpgradeToast', () => {
 
   it('renders without crashing when not visible', () => {
     expect(() => renderToast({ tier: 'bronze', visible: false })).not.toThrow();
+  });
+
+  // ── Safe area insets (hq-gbo6f) ───────────────────────────────────
+
+  afterEach(() => {
+    mockInsets.bottom = 0;
+  });
+
+  it('adds safe area inset to bottom position (non-zero inset)', () => {
+    mockInsets.bottom = 34;
+    const { getByTestId } = renderToast({ tier: 'silver', visible: true });
+    const toast = getByTestId('tier-upgrade-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    expect(flatStyle.bottom).toBe(134);
+  });
+
+  it('uses base bottom (100) when safe area inset is zero', () => {
+    mockInsets.bottom = 0;
+    const { getByTestId } = renderToast({ tier: 'gold', visible: true });
+    const toast = getByTestId('tier-upgrade-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    expect(flatStyle.bottom).toBe(100);
   });
 });

@@ -8,6 +8,14 @@ import { PRODUCTS } from '@/data/products';
 
 jest.useFakeTimers();
 
+afterEach(() => {
+  jest.clearAllTimers();
+});
+
+afterAll(() => {
+  jest.useRealTimers();
+});
+
 const futonProducts = PRODUCTS.filter((p) => p.category === 'futons');
 const coverProducts = PRODUCTS.filter((p) => p.category === 'covers');
 

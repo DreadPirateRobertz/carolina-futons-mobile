@@ -32,6 +32,10 @@ afterAll(() => {
 describe('useStreak', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Restore default implementations so a never-resolving mock from one test
+    // cannot bleed into the next (clearAllMocks resets calls but not impls).
+    mockGetItem.mockResolvedValue(null);
+    mockSetItem.mockResolvedValue(undefined);
   });
 
   it('returns streak of 1 on first ever visit', async () => {
