@@ -156,7 +156,9 @@ Next APK will contain all session-22 + session-23 work:
 - Recently Viewed rail on PDP — useRecentlyViewedSlugs hook (cm-pdp-recently-viewed) ✓ merged PR #233
 - Wishlist visual polish — item count, swipe actions, Add All to Cart (cm-l71) ✓ merged PR #239
 - A11y pass: shipping/share UI, ARIA labels, accessibilityHint, reduced-motion guards (cm-a11y-shipping) ✓ merged PR #234
-- Live points chip on PDP + CartPointsSummary earn estimate (cm-a02) — PR #238 in CI
+- Live points chip on PDP + CartPointsSummary earn estimate (cm-a02) ✓ merged PR #238
+- Loyalty screen reachable from AccountScreen (cm-1fh) ✓ merged PR #240
+- Search icon on HomeScreen navigates to SearchScreen (cm-we6) ✓ merged PR #241
 
 **EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
@@ -258,12 +260,12 @@ When testing, verify each screen matches the Blue Ridge editorial feel:
 |--------|--------------------|-------------|
 | Home | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider | — |
 | Shop | Dark editorial background, sand product cards, category pills | — |
-| Search | Search input with 300ms debounce + CMS trending chips (Wix) + results grid | 2026-03-22 cm-c00 + hq-jc723 |
+| Search | Search input with 300ms debounce + CMS trending chips (Wix) + results grid. Reachable via HomeScreen search icon (cm-we6) | 2026-03-22 cm-we6 |
 | Product Detail | Dark surfaces, editorial typography, warm shadows. Freight delivery banner (🚛) when requiresFreight=true with optional liftgate badge | 2026-03-22 cm-z9n |
 | Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) | — |
 | Cart (items) | Dark editorial, product thumbnails, coral CTA | — |
 | Checkout | KeyboardAwareScrollView, saved address picker chips, address pre-fill. Loyalty tier banner near order summary when cart has items (hides on loading/error) | 2026-03-22 cm-ds5 |
-| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion) | — |
+| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion). Loyalty section tappable → LoyaltyScreen (cm-1fh) | 2026-03-22 cm-1fh |
 | Onboarding | Brand story slides + style quiz (dark editorial treatment). Quiz result shows Wix-fetched product thumbnails (expo-image) | 2026-03-22 cm-49p |
 | Login/SignUp | Dark editorial with GlassCard form container, KeyboardAwareScrollView | — |
 | OrderDetail | Order tracking with status timeline. Tracking number shows as tappable link only when URL present; plain text otherwise. recordDelivery fires exactly once | 2026-03-22 cm-tsh |
@@ -347,4 +349,7 @@ npm test
 | Challenges rail | **Live** | ChallengeCard with progress + countdown, ChallengesRail horizontal scroll |
 | Live points chip | **Live** | PointsChip on PDP, CartPointsSummary earn estimate (Mountain Blue) |
 | A11y shipping/share | **Live** | ARIA labels, accessibilityHint, reduced-motion guards on all shipping + share UI |
-| Test suite | **5679 tests passing** | 32 skipped, all green (session 23) |
+| Loyalty nav (cm-1fh) | **Live** | LoyaltyScreen reachable from AccountScreen tap |
+| Search nav (cm-we6) | **Live** | HomeScreen search icon → SearchScreen |
+| CollectionCard null safety | **Live** | heroImage/mood/productIds null guards (cm-crd) |
+| Test suite | **5761+ tests passing** | All green (session 24) |

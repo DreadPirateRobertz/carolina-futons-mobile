@@ -1,6 +1,7 @@
 import React from 'react';
 import { Platform } from 'react-native';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CheckoutScreen } from '../CheckoutScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
@@ -1524,6 +1525,108 @@ describe('CheckoutScreen', () => {
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
       expect(utils.queryByTestId('shipping-options-error')).toBeNull();
+    });
+  });
+
+  describe('ZIP persistence (cm-k0396)', () => {
+    const SHIPPING_ZIP_KEY = 'shipping_zip';
+
+    beforeEach(() => {
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+      (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    it('pre-fills ZIP from AsyncStorage when no saved address exists', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === SHIPPING_ZIP_KEY ? Promise.resolve('90210') : Promise.resolve(null),
+      );
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      const zipField = utils.getByTestId('shipping-zip');
+      expect(zipField.props.value).toBe('90210');
+    });
+
+    it('does NOT override saved address ZIP with persisted ZIP', async () => {
+      // Mock address book with a saved address
+      const useAddressBookModule = require('@/hooks/useAddressBook');
+      const original = useAddressBookModule.useAddressBook;
+      useAddressBookModule.useAddressBook = () => ({
+        addresses: [
+          {
+            id: '1',
+            fullName: 'Jane Doe',
+            line1: '456 Oak Ave',
+            line2: '',
+            city: 'Denver',
+            state: 'CO',
+            zip: '80202',
+            isDefault: true,
+          },
+        ],
+        defaultAddress: {
+          id: '1',
+          fullName: 'Jane Doe',
+          line1: '456 Oak Ave',
+          line2: '',
+          city: 'Denver',
+          state: 'CO',
+          zip: '80202',
+          isDefault: true,
+        },
+        loading: false,
+        addAddress: jest.fn(),
+        updateAddress: jest.fn(),
+        deleteAddress: jest.fn(),
+        setDefault: jest.fn(),
+        saveFromCheckout: jest.fn(),
+      });
+
+      (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) =>
+        key === SHIPPING_ZIP_KEY ? Promise.resolve('90210') : Promise.resolve(null),
+      );
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      const zipField = utils.getByTestId('shipping-zip');
+      // Saved address ZIP (80202) takes precedence over persisted ZIP (90210)
+      expect(zipField.props.value).toBe('80202');
+
+      // Restore original mock
+      useAddressBookModule.useAddressBook = original;
+    });
+
+    it('persists ZIP to AsyncStorage when user types in checkout', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '10001');
+      await act(async () => {});
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(SHIPPING_ZIP_KEY, '10001');
+    });
+
+    it('handles AsyncStorage read failure gracefully — ZIP stays empty', async () => {
+      (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('storage error'));
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      const zipField = utils.getByTestId('shipping-zip');
+      expect(zipField.props.value).toBe('');
+    });
+
+    it('handles AsyncStorage write failure gracefully — no crash', async () => {
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValue(new Error('write error'));
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      // Should not throw
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+      await act(async () => {});
+      expect(utils.getByTestId('shipping-zip').props.value).toBe('28801');
+    });
+
+    it('does not persist empty or partial ZIP', async () => {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '123');
+      await act(async () => {});
+      // Only valid 5-digit ZIPs should be persisted
+      expect(AsyncStorage.setItem).not.toHaveBeenCalledWith(SHIPPING_ZIP_KEY, '123');
     });
   });
 });
