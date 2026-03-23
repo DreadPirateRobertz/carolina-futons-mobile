@@ -50,13 +50,7 @@ export const RecentlyViewedRail = memo(function RecentlyViewedRail({
 
   return (
     <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID={testID}>
-      <Text
-        style={[
-          styles.header,
-          { color: colors.espresso },
-        ]}
-        accessibilityRole="header"
-      >
+      <Text style={[styles.header, { color: colors.espresso }]} accessibilityRole="header">
         Recently Viewed
       </Text>
       <ScrollView
@@ -86,10 +80,7 @@ export const RecentlyViewedRail = memo(function RecentlyViewedRail({
               testID={`recently-viewed-img-${product.slug}`}
               accessibilityLabel={product.images[0]?.alt ?? product.name}
             />
-            <Text
-              style={[styles.name, { color: colors.espresso }]}
-              numberOfLines={2}
-            >
+            <Text style={[styles.name, { color: colors.espresso }]} numberOfLines={2}>
               {product.name}
             </Text>
           </TouchableOpacity>
