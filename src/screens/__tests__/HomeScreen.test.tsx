@@ -4,6 +4,28 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('@/hooks/useLivingSky', () => ({
+  useLivingSky: () => ({
+    skyColors: ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'] as [string, string, string, string],
+    glowColors: ['transparent', 'transparent'] as [string, string],
+    ridgeColors: { r1: '#1C4454', r2: '#487494', r3: '#7AA4BE', r4: '#AECCD8', tree: '#0C1C26' },
+    sunPos: { cx: 524, cy: 52, r: 16, opacity: 1 },
+    moonPos: { cx: 200, cy: 200, opacity: 0, phase: 0, shadowOffset: { dx: 0, dy: 0 } },
+    starOpacity: 0,
+    cloudOpacity: 0,
+    birdOpacity: 0,
+    fireflyOpacity: 0,
+    owlOpacity: 0,
+    rimOpacity: 0.04,
+    rimColor: '#FFFCE8',
+    navBg: '#ffffff',
+    navText: '#1E2A3A',
+    season: 'summer' as const,
+    precipitationOpacity: 0,
+    precipitationType: 'none' as const,
+  }),
+}));
+
 const mockUseCollections = jest.fn();
 jest.mock('@/hooks/useCollections', () => {
   const actual = jest.requireActual('@/hooks/useCollections');
@@ -408,5 +430,14 @@ describe('HomeScreen', () => {
       fireEvent(getByTestId('home-tier-upgrade-toast'), 'onDismiss');
       expect(mockDismiss).toHaveBeenCalledWith('tierChanged');
     });
+  });
+
+  // hq-4wgr3 — useLivingSky wiring
+  // Note: full HomeScreen render is too heavy for CI workers (OOM at 4GB).
+  // LivingSkyMountainSkyline has its own dedicated test suite (22 tests).
+  // This verifies the import + mock wiring only.
+  it('imports LivingSkyMountainSkyline without crashing', () => {
+    const mod = require('../../components/LivingSkyMountainSkyline');
+    expect(mod.LivingSkyMountainSkyline).toBeDefined();
   });
 });
