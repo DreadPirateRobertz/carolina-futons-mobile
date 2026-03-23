@@ -1,7 +1,10 @@
 /**
  * Tests for SentryCrashReportingProvider when @sentry/react-native IS available.
- * Uses jest.isolateModules in beforeAll so the provider's module-level try/catch
- * picks up the mock registered above.
+ *
+ * jest.mock with { virtual: true } intercepts the require('@sentry/react-native')
+ * call in the provider's module-level try/catch so that Sentry = mock object.
+ * No jest.resetModules() is needed — Jest gives each test file a fresh module
+ * registry, so the provider is always loaded fresh with the mock active.
  */
 export {};
 
@@ -25,6 +28,10 @@ const mockNavigationIntegration = { registerNavigationContainer: jest.fn() };
 const mockReactNavigationIntegration = jest.fn(() => mockNavigationIntegration);
 const mockMobileReplayIntegration = jest.fn(() => ({ name: 'MobileReplay' }));
 
+// The mock factory must be declared before any require() so the provider's
+// module-level try/catch picks up this mock when the module is first loaded.
+// jest.mock() calls are hoisted above imports/requires by Jest's transform,
+// so this registration is always in effect before require('../sentryCrashReporting').
 jest.mock('@sentry/react-native', () => ({
   init: mockInit,
   captureException: mockCaptureException,
@@ -37,25 +44,8 @@ jest.mock('@sentry/react-native', () => ({
   mobileReplayIntegration: mockMobileReplayIntegration,
 }));
 
-// Load a fresh instance of sentryCrashReporting in an isolated module scope so
-// its module-level try/catch picks up the virtual mock registered above.
-// jest.isolateModules is preferred over jest.resetModules here because it scopes
-// the registry reset to the callback only — the outer mock factory registry
-// (including the virtual mock) remains intact and is used for require() calls
-// inside the isolated scope.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let SentryCrashReportingProvider: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let wrapWithSentry: any;
-
-beforeAll(() => {
-  jest.isolateModules(() => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const m = require('../sentryCrashReporting');
-    SentryCrashReportingProvider = m.SentryCrashReportingProvider;
-    wrapWithSentry = m.wrapWithSentry;
-  });
-});
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { SentryCrashReportingProvider, wrapWithSentry } = require('../sentryCrashReporting');
 
 beforeEach(() => {
   jest.clearAllMocks();

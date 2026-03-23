@@ -2,9 +2,9 @@
 // This also prevents the real SDK from loading and registering async timers
 // (reactnavigation.ts setTimeout) that outlive the Jest environment and pollute
 // subsequent test files running in the same worker.
-import { SentryCrashReportingProvider } from '../sentryCrashReporting';
-
 jest.mock('@sentry/react-native', () => null);
+
+import { SentryCrashReportingProvider } from '../sentryCrashReporting';
 
 // With the null mock above, sentryCrashReporting.ts sets Sentry = null → no-op path
 describe('SentryCrashReportingProvider', () => {
