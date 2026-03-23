@@ -120,11 +120,13 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
 
       {/* Completion checkmark + reward earned label */}
       {isCompleted && (
-        <View
-          testID={`challenge-complete-check-${id}`}
-          style={styles.completionRow}
-        >
-          <View style={[styles.checkCircle, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill }]}>
+        <View testID={`challenge-complete-check-${id}`} style={styles.completionRow}>
+          <View
+            style={[
+              styles.checkCircle,
+              { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill },
+            ]}
+          >
             <Text style={styles.checkmark}>✓</Text>
           </View>
           <Text style={[styles.rewardEarned, { color: colors.sunsetCoral }]}>Reward earned!</Text>
@@ -134,7 +136,10 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
       {/* Countdown */}
       <Text
         testID={`challenge-countdown-${id}`}
-        style={[styles.countdown, { color: isCompleted ? colors.sunsetCoral : colors.mountainBlueLight }]}
+        style={[
+          styles.countdown,
+          { color: isCompleted ? colors.sunsetCoral : colors.mountainBlueLight },
+        ]}
       >
         {isCompleted ? 'Completed!' : countdown}
       </Text>
