@@ -51,12 +51,12 @@ interface AffirmPrequalResponse {
 interface AffirmCheckoutRequest {
   order_id: string;
   amount: number; // in cents
-  items: Array<{
+  items: {
     sku: string;
     display_name: string;
     quantity: number;
     unit_price: number; // in cents
-  }>;
+  }[];
 }
 
 interface AffirmCheckoutResponse {

@@ -284,14 +284,14 @@ export class WixAuthService {
    */
   async syncMemberAddresses(
     memberId: string,
-    addresses: Array<{
+    addresses: {
       fullName: string;
       line1: string;
       line2: string;
       city: string;
       state: string;
       zip: string;
-    }>,
+    }[],
   ): Promise<void> {
     const client = getWixSdkClient();
     const wixAddresses = addresses.map((a) => ({

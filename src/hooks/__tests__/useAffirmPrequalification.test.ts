@@ -25,6 +25,8 @@
 import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useAffirmPrequalification } from '../useAffirmPrequalification';
 
+import { useOptionalWixClient } from '@/services/wix';
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 jest.mock('@/services/wix', () => ({
@@ -38,8 +40,6 @@ jest.mock('@/services/affirmService', () => ({
   AFFIRM_MIN_AMOUNT: 50,
   AFFIRM_MAX_AMOUNT: 30000,
 }));
-
-import { useOptionalWixClient } from '@/services/wix';
 
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 

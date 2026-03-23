@@ -51,15 +51,15 @@ import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
 import { useLoyalty } from '@/hooks/useLoyalty';
-
-const SHIPPING_ZIP_KEY = 'shipping_zip';
-const ZIP_RE = /^\d{5}(-\d{4})?$/;
 import { CheckoutLoyaltyBanner } from '@/components/CheckoutLoyaltyBanner';
 import {
   fetchShippingOptions,
   normalizeShippingOption,
   type NormalizedShippingOption,
 } from '@/services/shippingIntelligenceService';
+
+const SHIPPING_ZIP_KEY = 'shipping_zip';
+const ZIP_RE = /^\d{5}(-\d{4})?$/;
 
 const SHIPPING_THRESHOLD = 499;
 
