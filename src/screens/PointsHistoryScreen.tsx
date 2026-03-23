@@ -70,17 +70,28 @@ export function PointsHistoryScreen({ testID }: Props) {
         </Text>
         <View style={styles.rowBody}>
           <Text
-            style={[styles.description, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.description,
+              { color: colors.espresso, fontFamily: typography.bodyFamily },
+            ]}
             numberOfLines={2}
           >
             {item.description}
           </Text>
-          <Text style={[styles.date, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}>
+          <Text
+            style={[
+              styles.date,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
             {relativeDate(item.earnedAt)}
           </Text>
         </View>
         <Text
-          style={[styles.points, { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold }]}
+          style={[
+            styles.points,
+            { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold },
+          ]}
           testID={`points-event-points-${item.id}`}
         >
           {`+${item.points} pts`}
@@ -98,7 +109,11 @@ export function PointsHistoryScreen({ testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'points-history-screen'}
       >
-        <ActivityIndicator size="large" color={colors.sunsetCoral} testID="points-history-loading" />
+        <ActivityIndicator
+          size="large"
+          color={colors.sunsetCoral}
+          testID="points-history-loading"
+        />
       </View>
     );
   }
@@ -110,7 +125,10 @@ export function PointsHistoryScreen({ testID }: Props) {
         testID={testID ?? 'points-history-screen'}
       >
         <Text
-          style={[styles.errorText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.errorText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
           testID="points-history-error"
         >
           {error}
@@ -135,7 +153,10 @@ export function PointsHistoryScreen({ testID }: Props) {
         testID={testID ?? 'points-history-screen'}
       >
         <Text
-          style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.emptyText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
           testID="points-history-empty"
         >
           No points activity yet.{'\n'}Start shopping to earn points!
@@ -152,7 +173,11 @@ export function PointsHistoryScreen({ testID }: Props) {
       <Text
         style={[
           styles.heading,
-          { color: colors.espresso, fontFamily: typography.bodyFamilyBold, paddingHorizontal: spacing.lg },
+          {
+            color: colors.espresso,
+            fontFamily: typography.bodyFamilyBold,
+            paddingHorizontal: spacing.lg,
+          },
         ]}
       >
         Points History

@@ -16,7 +16,13 @@ import { MOCK_POINTS_EVENTS } from '@/data/pointsHistory';
 
 export interface PointsEvent {
   id: string;
-  type: 'purchase' | 'review' | 'referral' | 'challenge_complete' | 'streak_milestone' | 'daily_quest';
+  type:
+    | 'purchase'
+    | 'review'
+    | 'referral'
+    | 'challenge_complete'
+    | 'streak_milestone'
+    | 'daily_quest';
   description: string;
   points: number;
   earnedAt: string;

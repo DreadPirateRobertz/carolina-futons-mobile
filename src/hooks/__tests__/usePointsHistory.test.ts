@@ -66,10 +66,7 @@ describe('usePointsHistory', () => {
     const { result } = renderHook(() => usePointsHistory());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(mockCallFunction).toHaveBeenCalledWith(
-      '/_functions/getMyActivity',
-      'GET',
-    );
+    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/getMyActivity', 'GET');
   });
 
   it('returns empty events when API returns empty array', async () => {
