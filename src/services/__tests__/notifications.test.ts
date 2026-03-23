@@ -163,6 +163,12 @@ describe('Notification service', () => {
       expect(DEFAULT_PREFERENCES.backInStock).toBe(true);
       expect(DEFAULT_PREFERENCES.cartReminders).toBe(false);
     });
+
+    it('includes gamification defaults', () => {
+      expect(DEFAULT_PREFERENCES.streakMilestone).toBe(true);
+      expect(DEFAULT_PREFERENCES.questComplete).toBe(true);
+      expect(DEFAULT_PREFERENCES.dailySpinReminder).toBe(false);
+    });
   });
 
   describe('ANDROID_CHANNEL_CONFIG', () => {
@@ -171,6 +177,9 @@ describe('Notification service', () => {
       'promotion',
       'back_in_stock',
       'cart_reminder',
+      'streak_milestone',
+      'quest_complete',
+      'daily_spin_reminder',
     ];
 
     it('has a channel config for every notification type', () => {
@@ -196,6 +205,12 @@ describe('Notification service', () => {
     it('cart_reminder has LOW importance', () => {
       expect(ANDROID_CHANNEL_CONFIG.cart_reminder.importance).toBe(2);
     });
+
+    it('gamification channels have DEFAULT or higher importance', () => {
+      expect(ANDROID_CHANNEL_CONFIG.streak_milestone.importance).toBeGreaterThanOrEqual(3);
+      expect(ANDROID_CHANNEL_CONFIG.quest_complete.importance).toBeGreaterThanOrEqual(3);
+      expect(ANDROID_CHANNEL_CONFIG.daily_spin_reminder.importance).toBeGreaterThanOrEqual(2);
+    });
   });
 
   describe('getChannelId', () => {
@@ -205,6 +220,12 @@ describe('Notification service', () => {
       expect(getChannelId('back_in_stock')).toBe('back-in-stock');
       expect(getChannelId('cart_reminder')).toBe('cart-reminders');
     });
+
+    it('returns channel IDs for gamification types', () => {
+      expect(getChannelId('streak_milestone')).toBeTruthy();
+      expect(getChannelId('quest_complete')).toBeTruthy();
+      expect(getChannelId('daily_spin_reminder')).toBeTruthy();
+    });
   });
 
   describe('NOTIFICATION_TYPE_CONFIG', () => {
@@ -213,6 +234,9 @@ describe('Notification service', () => {
       'promotion',
       'back_in_stock',
       'cart_reminder',
+      'streak_milestone',
+      'quest_complete',
+      'daily_spin_reminder',
     ];
 
     it('has config for all notification types', () => {
@@ -221,6 +245,74 @@ describe('Notification service', () => {
         expect(NOTIFICATION_TYPE_CONFIG[t].description).toBeTruthy();
         expect(NOTIFICATION_TYPE_CONFIG[t].prefKey).toBeTruthy();
       }
+    });
+
+    it('gamification types map to correct prefKeys', () => {
+      expect(NOTIFICATION_TYPE_CONFIG.streak_milestone.prefKey).toBe('streakMilestone');
+      expect(NOTIFICATION_TYPE_CONFIG.quest_complete.prefKey).toBe('questComplete');
+      expect(NOTIFICATION_TYPE_CONFIG.daily_spin_reminder.prefKey).toBe('dailySpinReminder');
+    });
+  });
+
+  describe('shouldShowNotification — gamification types', () => {
+    it('shows streak_milestone when enabled', () => {
+      expect(
+        shouldShowNotification('streak_milestone', {
+          ...DEFAULT_PREFERENCES,
+          streakMilestone: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('hides streak_milestone when disabled', () => {
+      expect(
+        shouldShowNotification('streak_milestone', {
+          ...DEFAULT_PREFERENCES,
+          streakMilestone: false,
+        }),
+      ).toBe(false);
+    });
+
+    it('shows quest_complete when enabled', () => {
+      expect(
+        shouldShowNotification('quest_complete', { ...DEFAULT_PREFERENCES, questComplete: true }),
+      ).toBe(true);
+    });
+
+    it('hides quest_complete when disabled', () => {
+      expect(
+        shouldShowNotification('quest_complete', { ...DEFAULT_PREFERENCES, questComplete: false }),
+      ).toBe(false);
+    });
+
+    it('hides daily_spin_reminder by default', () => {
+      expect(shouldShowNotification('daily_spin_reminder', DEFAULT_PREFERENCES)).toBe(false);
+    });
+
+    it('shows daily_spin_reminder when enabled', () => {
+      expect(
+        shouldShowNotification('daily_spin_reminder', {
+          ...DEFAULT_PREFERENCES,
+          dailySpinReminder: true,
+        }),
+      ).toBe(true);
+    });
+  });
+
+  describe('getDeepLinkForNotification — gamification types', () => {
+    it('streak_milestone routes to gamification screen', () => {
+      const link = getDeepLinkForNotification('streak_milestone');
+      expect(link).toMatch(/carolinafutons:\/\//);
+    });
+
+    it('quest_complete routes to challenges or gamification screen', () => {
+      const link = getDeepLinkForNotification('quest_complete');
+      expect(link).toMatch(/carolinafutons:\/\//);
+    });
+
+    it('daily_spin_reminder routes to daily spin screen', () => {
+      const link = getDeepLinkForNotification('daily_spin_reminder');
+      expect(link).toMatch(/carolinafutons:\/\//);
     });
   });
 });
