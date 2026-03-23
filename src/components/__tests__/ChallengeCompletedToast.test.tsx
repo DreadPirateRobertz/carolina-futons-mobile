@@ -6,10 +6,15 @@
  */
 
 import React from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { ChallengeCompletedToast } from '../ChallengeCompletedToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+
+const mockInsets = { bottom: 0, top: 0, left: 0, right: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
 
 // Mock reanimated — animation mechanics not under test
 jest.mock('react-native-reanimated', () => {
@@ -128,5 +133,24 @@ describe('ChallengeCompletedToast', () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     expect(() => renderToast(BASE)).not.toThrow();
     jest.restoreAllMocks();
+  });
+
+  // ── Safe area insets (hq-gbo6f) ───────────────────────────────────
+
+  it('adds safe area inset to bottom position (non-zero inset)', () => {
+    mockInsets.bottom = 34;
+    const { getByTestId } = renderToast(BASE);
+    const toast = getByTestId('challenge-completed-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    expect(flatStyle.bottom).toBe(134);
+    mockInsets.bottom = 0;
+  });
+
+  it('uses base bottom (100) when safe area inset is zero', () => {
+    mockInsets.bottom = 0;
+    const { getByTestId } = renderToast(BASE);
+    const toast = getByTestId('challenge-completed-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    expect(flatStyle.bottom).toBe(100);
   });
 });

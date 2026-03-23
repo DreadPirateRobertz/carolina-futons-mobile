@@ -13,6 +13,7 @@
 
 import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -41,6 +42,7 @@ const TIER_LABEL: Record<LoyaltyTier, string> = {
 
 export function TierUpgradeToast({ tier, visible, onDismiss, testID }: Props) {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -83,7 +85,7 @@ export function TierUpgradeToast({ tier, visible, onDismiss, testID }: Props) {
 
   return (
     <Animated.View
-      style={[styles.container, animatedStyle]}
+      style={[styles.container, { bottom: 100 + insets.bottom }, animatedStyle]}
       testID={testID ?? 'tier-upgrade-toast'}
       accessibilityLabel={`You've reached ${label} tier!`}
       accessibilityElementsHidden={!visible}

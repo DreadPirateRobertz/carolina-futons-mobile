@@ -13,6 +13,7 @@
 
 import { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -42,6 +43,7 @@ export function ChallengeCompletedToast({
   testID,
 }: Props) {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -82,7 +84,7 @@ export function ChallengeCompletedToast({
 
   return (
     <Animated.View
-      style={[styles.container, animatedStyle]}
+      style={[styles.container, { bottom: 100 + insets.bottom }, animatedStyle]}
       testID={testID ?? 'challenge-completed-toast'}
       accessibilityLabel={`${title}: +${rewardPoints} pts earned`}
       accessibilityElementsHidden={!visible}
