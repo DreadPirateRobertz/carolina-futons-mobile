@@ -1,8 +1,11 @@
 /**
  * LoyaltyScreen TDD tests — cm-elo
  *
- * 5 tests for LoyaltyScreen UI states.
+ * 4 tests for LoyaltyScreen UI states.
  * useLoyalty is mocked so screen tests control the data layer.
+ *
+ * Note: transaction history was removed in cm-a11y-shipping — the Wix
+ * webMethod only exposes points and tier, not transaction history.
  */
 
 import React from 'react';
@@ -20,8 +23,6 @@ jest.mock('@/hooks/useLoyalty', () => ({
 const DEFAULT_LOYALTY = {
   points: 750,
   tier: 'bronze' as const,
-  totalEarned: 750,
-  transactions: [],
   loading: false,
   error: null,
   refreshPoints: mockRefreshPoints,
@@ -66,10 +67,5 @@ describe('LoyaltyScreen', () => {
     mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'silver' });
     const { getByTestId } = renderScreen();
     expect(getByTestId('loyalty-tier-badge')).toBeTruthy();
-  });
-
-  it('shows empty transactions message when no transactions', () => {
-    const { getByTestId } = renderScreen();
-    expect(getByTestId('loyalty-no-transactions')).toBeTruthy();
   });
 });
