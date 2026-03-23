@@ -164,6 +164,11 @@ const LeaderboardScreen = lazy(() =>
     default: withScreenErrorBoundary(m.LeaderboardScreen, 'Leaderboard'),
   })),
 );
+const AvatarEquipScreen = lazy(() =>
+  import('@/screens/AvatarEquipScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.AvatarEquipScreen, 'AvatarEquip'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -210,6 +215,7 @@ export type RootStackParamList = {
   RoomGallery: undefined;
   Loyalty: undefined;
   Leaderboard: undefined;
+  AvatarEquip: undefined;
   ReferralLanding: { code: string };
 };
 
@@ -472,6 +478,11 @@ export function AppNavigator() {
           <Stack.Screen name="Leaderboard" options={fadeTransition}>
             {() => <LeaderboardScreen />}
           </Stack.Screen>
+          <Stack.Screen
+            name="AvatarEquip"
+            component={AvatarEquipScreen}
+            options={{ title: 'Customize Avatar', ...modalTransition }}
+          />
           <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
         </Stack.Navigator>
       </Suspense>
