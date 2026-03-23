@@ -60,4 +60,22 @@ describe('CollectionCard', () => {
       'Test Collection: A test subtitle',
     );
   });
+
+  it('renders placeholder emoji when heroImage is undefined', () => {
+    const collectionNoImage = { ...mockCollection, heroImage: undefined as unknown as EditorialCollection['heroImage'] };
+    const { getByText } = renderCard({ collection: collectionNoImage });
+    expect(getByText('🏡')).toBeTruthy();
+  });
+
+  it('renders without crashing when mood is undefined', () => {
+    const collectionNoMood = { ...mockCollection, mood: undefined as unknown as string[] };
+    const { getByText } = renderCard({ collection: collectionNoMood });
+    expect(getByText('Test Collection')).toBeTruthy();
+  });
+
+  it('renders 0 items when productIds is undefined', () => {
+    const collectionNoProducts = { ...mockCollection, productIds: undefined as unknown as string[] };
+    const { getByText } = renderCard({ collection: collectionNoProducts });
+    expect(getByText('0 items')).toBeTruthy();
+  });
 });

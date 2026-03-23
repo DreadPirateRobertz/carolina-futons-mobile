@@ -52,7 +52,7 @@ export const CollectionCard = memo(function CollectionCard({
       accessibilityLabel={`${collection.title}: ${collection.subtitle}`}
       accessibilityRole="button"
     >
-      {imageError ? (
+      {imageError || !collection.heroImage ? (
         <View style={[styles.image, styles.imagePlaceholder, { backgroundColor: colors.sandDark }]}>
           <Text style={styles.placeholderEmoji}>🏡</Text>
         </View>
@@ -71,7 +71,7 @@ export const CollectionCard = memo(function CollectionCard({
       )}
       <View style={[styles.overlay, { backgroundColor: colors.overlay, padding: spacing.md }]}>
         <View style={styles.moodRow}>
-          {collection.mood.slice(0, 3).map((tag) => (
+          {(collection.mood ?? []).slice(0, 3).map((tag) => (
             <View
               key={tag}
               style={[
@@ -118,7 +118,7 @@ export const CollectionCard = memo(function CollectionCard({
             },
           ]}
         >
-          {collection.productIds.length} items
+          {(collection.productIds ?? []).length} items
         </Text>
       </View>
     </TouchableOpacity>
