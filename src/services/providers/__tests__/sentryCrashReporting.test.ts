@@ -1,6 +1,12 @@
+// Mock @sentry/react-native as null to simulate the module being unavailable.
+// This also prevents the real SDK from loading and registering async timers
+// (reactnavigation.ts setTimeout) that outlive the Jest environment and pollute
+// subsequent test files running in the same worker.
+jest.mock('@sentry/react-native', () => null);
+
 import { SentryCrashReportingProvider } from '../sentryCrashReporting';
 
-// @sentry/react-native is not installed, so the provider should no-op gracefully
+// With the null mock above, sentryCrashReporting.ts sets Sentry = null → no-op path
 describe('SentryCrashReportingProvider', () => {
   const provider = new SentryCrashReportingProvider({
     dsn: 'https://fake@sentry.io/123',
