@@ -9,6 +9,24 @@ jest.mock('@/components/LivingSkyBackground', () => {
   return { LivingSkyBackground: () => <View testID="living-sky-background" /> };
 });
 
+jest.mock('react-native-reanimated', () => {
+  const { View } = require('react-native');
+  return {
+    __esModule: true,
+    default: {
+      View,
+      createAnimatedComponent: (c: React.ComponentType) => c,
+    },
+    useSharedValue: (init: number) => ({ value: init }),
+    useAnimatedStyle: (fn: () => object) => fn(),
+    withSpring: (val: number) => val,
+    withSequence: (...vals: number[]) => vals[vals.length - 1],
+    withTiming: (val: number) => val,
+    withDelay: (_delay: number, animation: unknown) => animation,
+    runOnJS: (fn: (...args: unknown[]) => void) => fn,
+  };
+});
+
 jest.mock('@/hooks/useLivingSky', () => ({
   useLivingSky: () => ({
     skyColors: ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'] as [string, string, string, string],
@@ -60,6 +78,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
 
+const mockUseDailyQuests = jest.fn();
+jest.mock('@/hooks/useDailyQuests', () => ({
+  useDailyQuests: () => mockUseDailyQuests(),
+}));
+
 function renderHomeScreen(
   props: {
     onOpenAR?: () => void;
@@ -79,6 +102,16 @@ function renderHomeScreen(
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: daily quests loaded
+    mockUseDailyQuests.mockReturnValue({
+      quests: [
+        { id: 'q-daily-purchase', title: 'Browse 3 products', action: 'purchase', pointReward: 25, completed: false },
+        { id: 'q-daily-review', title: 'Write a review', action: 'review', pointReward: 100, completed: false },
+        { id: 'q-daily-ar', title: 'Try AR on a product', action: 'ar', pointReward: 50, completed: false },
+      ],
+      loading: false,
+      refresh: jest.fn(),
+    });
     // Default: no active triggers
     mockUseTriggerMoments.mockReturnValue({
       triggers: { tierChanged: null, streakDanger: false },
@@ -434,6 +467,32 @@ describe('HomeScreen', () => {
       const { getByTestId } = renderHomeScreen();
       fireEvent(getByTestId('home-tier-upgrade-toast'), 'onDismiss');
       expect(mockDismiss).toHaveBeenCalledWith('tierChanged');
+    });
+  });
+
+  // cf-mz3 — DailyQuestsCard integration
+  describe('DailyQuestsCard integration', () => {
+    it('renders DailyQuestsCard on HomeScreen', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('daily-quests-card')).toBeTruthy();
+    });
+
+    it('shows quest loading skeleton when useDailyQuests is loading', () => {
+      mockUseDailyQuests.mockReturnValue({ quests: [], loading: true, refresh: jest.fn() });
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('daily-quests-loading')).toBeTruthy();
+    });
+
+    it('DailyQuestsCard appears after ChallengesRail in render tree', () => {
+      const { toJSON } = renderHomeScreen();
+      const json = JSON.stringify(toJSON());
+      const challengesPos = json.indexOf('"challenges-rail"');
+      const questsPos = json.indexOf('"daily-quests-card"');
+      expect(questsPos).toBeGreaterThan(-1);
+      // daily-quests-card renders after challenges-rail (or challenges-rail absent)
+      if (challengesPos !== -1) {
+        expect(questsPos).toBeGreaterThan(challengesPos);
+      }
     });
   });
 

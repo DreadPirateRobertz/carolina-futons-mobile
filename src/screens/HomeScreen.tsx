@@ -33,6 +33,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
+import { DailyQuestsCard } from '@/components/DailyQuestsCard';
 import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { StreakDangerBanner } from '@/components/StreakDangerBanner';
 import { ChallengeCompletedToast } from '@/components/ChallengeCompletedToast';
@@ -337,6 +338,11 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         {/* Gamification Challenges Rail */}
         <ChallengesRail challenges={challenges} />
 
+        {/* Daily Quests — cf-mz3 */}
+        <View style={[styles.dailyQuestsWrap, { marginHorizontal: spacing.lg }]}>
+          <DailyQuestsCard />
+        </View>
+
         {/* Collection Carousel */}
         {(collectionsLoading || featured.length > 0) && (
           <View style={styles.carouselSection}>
@@ -610,6 +616,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     marginTop: 8,
+  },
+  dailyQuestsWrap: {
+    width: '100%',
+    marginTop: 16,
   },
   streakBannerWrap: {
     width: '100%',
