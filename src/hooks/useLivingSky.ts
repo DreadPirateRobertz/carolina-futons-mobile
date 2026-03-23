@@ -610,8 +610,9 @@ function currentTotalMinutes(): number {
 /**
  * React hook that returns the living sky state for the current time.
  * Updates every 30 seconds. Pass `overrideMinutes` for static/testing use.
+ * `isLoading` is always false — state is computed synchronously on mount.
  */
-export function useLivingSky(overrideMinutes?: number): LivingSkyState {
+export function useLivingSky(overrideMinutes?: number): LivingSkyState & { isLoading: boolean } {
   const [state, setState] = useState<LivingSkyState>(() =>
     computeSkyState(overrideMinutes ?? currentTotalMinutes()),
   );
@@ -632,5 +633,5 @@ export function useLivingSky(overrideMinutes?: number): LivingSkyState {
     return () => clearInterval(id);
   }, [overrideMinutes]);
 
-  return state;
+  return { ...state, isLoading: false };
 }

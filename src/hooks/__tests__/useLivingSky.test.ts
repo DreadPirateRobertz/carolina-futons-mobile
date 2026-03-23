@@ -231,4 +231,17 @@ describe('useLivingSky', () => {
     expect(typeof result.current.rimColor).toBe('string');
     expect(result.current.rimColor.length).toBeGreaterThan(0);
   });
+
+  it('isLoading is false on first render (synchronous computation)', () => {
+    const { result } = renderHook(() => useLivingSky(720));
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('isLoading remains false after interval tick', () => {
+    const { result } = renderHook(() => useLivingSky());
+    act(() => {
+      jest.advanceTimersByTime(30000);
+    });
+    expect(result.current.isLoading).toBe(false);
+  });
 });
