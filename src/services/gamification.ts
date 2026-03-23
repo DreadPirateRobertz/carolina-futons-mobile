@@ -22,10 +22,7 @@ import { trackEvent } from '@/services/analytics';
 import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 
 /** Emit if under limit, otherwise drop silently. */
-function guardedEmit(
-  name: string,
-  properties: Record<string, string | number | boolean>,
-): void {
+function guardedEmit(name: string, properties: Record<string, string | number | boolean>): void {
   if (!gamificationRateLimiter.canEmit()) return;
   gamificationRateLimiter.recordEmission();
   trackEvent(name as Parameters<typeof trackEvent>[0], properties);
