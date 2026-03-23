@@ -134,18 +134,24 @@ npx eas build --profile preview --platform android
 ```
 Then update the table above with the new artifact URL from `expo.dev/accounts/carolinafutons/projects/carolina-futons/builds`.
 
-**Pending rebuild** (session 22, 2026-03-22 — wait for EAS quota reset 2026-04-01):
-Next APK will contain all of the above plus:
-- CollectionsScreen error state + skeleton loader (cm-thv)
-- RoomGalleryScreen expo-image + blurhash (cm-x6f)
-- StyleQuizScreen Wix product thumbnails (cm-49p)
-- OrderDetailScreen useRef guard + tracking URL null-check (cm-tsh)
-- Gamification: streak badges + PointsToast animation on OrderConfirmation (cm-ihz)
-- Loyalty tier badge in CheckoutScreen (cm-ds5)
-- SearchScreen 300ms debounce + CMS trending chips (cm-c00 + hq-jc723)
-- PDP freight delivery banner + liftgate badge (cm-z9n)
-- Shipping estimate on PDP (cm-9yn — in progress)
-- WWEX checkout shipping integration (cm-o4i — queued)
+**Pending rebuild** (session 23, 2026-03-22 — wait for EAS quota reset 2026-04-01):
+Next APK will contain all session-22 + session-23 work:
+- CollectionsScreen error state + skeleton loader (cm-thv) ✓ merged
+- RoomGalleryScreen expo-image + blurhash (cm-x6f) ✓ merged
+- StyleQuizScreen Wix product thumbnails (cm-49p) ✓ merged
+- OrderDetailScreen useRef guard + tracking URL null-check (cm-tsh) ✓ merged
+- Gamification: streak badges + PointsToast animation on OrderConfirmation (cm-ihz) ✓ merged
+- Loyalty tier badge in CheckoutScreen (cm-ds5) ✓ merged
+- SearchScreen 300ms debounce + CMS trending chips (cm-c00 + hq-jc723) ✓ merged
+- PDP freight delivery banner + liftgate badge (cm-z9n) ✓ merged
+- Shipping estimate on PDP (cm-9yn) ✓ merged PR #223
+- WWEX checkout shipping integration (cm-o4i) ✓ merged PR #226
+- Native social share sheet (cm-social-share) ✓ merged PR #227
+- Bundle shipping incentive upsellMessage (cm-bundle-incentive) ✓ merged PR #228
+- 100% branch coverage session-22 files (cm-jest-coverage) ✓ merged PR #229
+- Cart delivery date estimator (cm-afc) ✓ merged PR #232
+- CollectionCard null safety — heroImage/mood/productIds (cm-crd) — PR #235 open
+- Tab bar redesign — custom SVG icons + streak/tier badges (cm-f9b) — PR #236 open
 
 **EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
