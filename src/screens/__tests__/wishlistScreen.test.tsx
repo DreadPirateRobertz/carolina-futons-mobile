@@ -239,6 +239,23 @@ describe('WishlistScreen', () => {
       );
       shareSpy.mockRestore();
     });
+
+    it('share text includes product link URL for each item', async () => {
+      const shareSpy = jest
+        .spyOn(Share, 'share')
+        .mockResolvedValue({ action: 'sharedAction' } as any);
+      const { getByTestId } = renderScreen({
+        items: makeItems(product1),
+      });
+      fireEvent.press(getByTestId('wishlist-share'));
+      // product1 slug: 'asheville-full-futon'
+      expect(shareSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('carolinafutons.com/products/asheville-full-futon'),
+        }),
+      );
+      shareSpy.mockRestore();
+    });
   });
 
   describe('clear all', () => {
@@ -378,8 +395,8 @@ describe('WishlistScreen', () => {
   });
 
   describe('Add All to Cart', () => {
-    it('renders Add All to Cart button when items exist', () => {
-      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+    it('renders Add All to Cart button when 2+ items exist', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
       expect(getByTestId('wishlist-add-all')).toBeTruthy();
     });
 
@@ -388,8 +405,13 @@ describe('WishlistScreen', () => {
       expect(queryByTestId('wishlist-add-all')).toBeNull();
     });
 
+    it('does not render Add All to Cart when only 1 item', () => {
+      const { queryByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(queryByTestId('wishlist-add-all')).toBeNull();
+    });
+
     it('Add All to Cart button has accessible label', () => {
-      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
       expect(getByTestId('wishlist-add-all').props.accessibilityLabel).toBe(
         'Add all items to cart',
       );
@@ -403,7 +425,7 @@ describe('WishlistScreen', () => {
     });
 
     it('addItem called with FutonModel and default fabric for futon product', () => {
-      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
       fireEvent.press(getByTestId('wishlist-add-all'));
       expect(mockAddItem).toHaveBeenCalledWith(
         expect.objectContaining({ name: expect.stringContaining('Asheville') }),
@@ -414,8 +436,8 @@ describe('WishlistScreen', () => {
 
     it('Add All does not crash when no futon model found for product', () => {
       // Use a product whose ID doesn't match any FutonModel (e.g., a murphy bed)
-      const murphyProduct = PRODUCTS.find((p) => p.category === 'murphy-beds') ?? product1;
-      const { getByTestId } = renderScreen({ items: makeItems(murphyProduct) });
+      const murphyProduct = PRODUCTS.find((p) => p.category === 'murphy-beds') ?? product2;
+      const { getByTestId } = renderScreen({ items: makeItems(murphyProduct, product1) });
       expect(() => fireEvent.press(getByTestId('wishlist-add-all'))).not.toThrow();
     });
   });

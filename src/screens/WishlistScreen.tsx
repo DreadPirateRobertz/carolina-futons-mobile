@@ -173,7 +173,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
           style={[
             styles.swipeButton,
             styles.swipeMoveToCart,
-            { backgroundColor: colors.mountainBlue },
+            { backgroundColor: colors.sunsetCoral },
           ]}
           onPress={() => handleSwipeMoveToCart(product)}
           testID={`swipe-move-to-cart-${product.id}`}
@@ -328,22 +328,24 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
               >
                 <Text style={styles.actionButtonText}>Share</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleAddAllToCart}
-                style={[
-                  styles.actionButton,
-                  {
-                    backgroundColor: colors.success ?? '#27AE60',
-                    borderRadius: borderRadius.button,
-                  },
-                ]}
-                testID="wishlist-add-all"
-                accessibilityLabel="Add all items to cart"
-                accessibilityHint="Adds all wishlist items to your cart"
-                accessibilityRole="button"
-              >
-                <Text style={styles.actionButtonText}>Add All</Text>
-              </TouchableOpacity>
+              {count >= 2 && (
+                <TouchableOpacity
+                  onPress={handleAddAllToCart}
+                  style={[
+                    styles.actionButton,
+                    {
+                      backgroundColor: colors.success ?? '#27AE60',
+                      borderRadius: borderRadius.button,
+                    },
+                  ]}
+                  testID="wishlist-add-all"
+                  accessibilityLabel="Add all items to cart"
+                  accessibilityHint="Adds all wishlist items to your cart"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.actionButtonText}>Add All</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={handleClearAll}
                 style={[

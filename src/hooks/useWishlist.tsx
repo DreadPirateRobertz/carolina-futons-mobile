@@ -365,7 +365,10 @@ export function WishlistProvider({
   const getShareText = useCallback(() => {
     const products = getProducts();
     if (products.length === 0) return '';
-    const lines = products.map((p) => `- ${p.name} ($${p.price.toFixed(2)})`);
+    const lines = products.map(
+      (p) =>
+        `- ${p.name} ($${p.price.toFixed(2)})\n  carolinafutons.com/products/${p.slug}`,
+    );
     return `Check out my Carolina Futons wishlist!\n\n${lines.join('\n')}\n\nShop at carolinafutons.com`;
   }, [getProducts]);
 
