@@ -15,7 +15,6 @@ import {
   View,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   Switch,
   Alert,
   Platform,

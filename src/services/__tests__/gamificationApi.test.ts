@@ -11,7 +11,6 @@ import { sendGamificationEvent, replayGamificationQueue } from '../gamificationA
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Mock wix index ────────────────────────────────────────────────────────────
-const mockCallFunction = jest.fn();
 const mockGetWixClient = jest.fn();
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: jest.fn(),
