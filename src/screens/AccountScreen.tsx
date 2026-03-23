@@ -45,7 +45,7 @@ import { TierProgressBar } from '@/components/TierProgressBar';
 import { useStreak } from '@/hooks/useStreak';
 import { WixAuthService } from '@/services/wix/wixAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
-import * as gamification from '@/services/gamification';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -108,6 +108,7 @@ export function AccountScreen({
   } = useBiometricAuth();
 
   const referral = useReferral();
+  const gamificationEvents = useGamificationEvents();
   const loyalty = useLoyalty();
   const { streak, loading: streakLoading } = useStreak();
 
@@ -119,12 +120,12 @@ export function AccountScreen({
         url: referral.shareUrl,
       });
       if (referral.code) {
-        gamification.referralShared(referral.code);
+        gamificationEvents.referralShared(referral.code);
       }
     } catch (e) {
       console.warn('[AccountScreen] Share.share failed or cancelled:', e);
     }
-  }, [referral.shareUrl, referral.code]);
+  }, [referral.shareUrl, referral.code, gamificationEvents]);
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState('');

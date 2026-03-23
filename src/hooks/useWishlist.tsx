@@ -23,7 +23,7 @@ import React, {
   useState,
 } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
-import * as gamification from '@/services/gamification';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 import { useOptionalConnectivity } from './useConnectivity';
 import {
   enqueue,
@@ -155,6 +155,7 @@ export function WishlistProvider({
   const connectivity = useOptionalConnectivity();
   const isOnline = connectivity?.isOnline ?? true;
   const wixClient = useOptionalWixClient();
+  const gamificationEvents = useGamificationEvents();
   const wixClientRef = useRef(wixClient);
   wixClientRef.current = wixClient;
 
@@ -314,9 +315,9 @@ export function WishlistProvider({
       dispatch({ type: 'ADD', productId: product.id, price: product.price });
       syncAdd(product.id, product.price);
       // Phase 4 gamification event — cm-e2c3k
-      gamification.wishlistAdd(product.id);
+      gamificationEvents.wishlistAdd(product.id);
     },
-    [syncAdd],
+    [syncAdd, gamificationEvents],
   );
 
   const remove = useCallback(

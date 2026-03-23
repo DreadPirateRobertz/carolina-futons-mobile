@@ -125,6 +125,20 @@ jest.mock('@/hooks/useCart', () => ({
   CartProvider: ({ children }: any) => children,
 }));
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/useProductResources', () => ({
+  useProductResources: () => ({ resources: [], loading: false, error: null }),
+}));
+
 const mockAlert = jest.fn();
 Alert.alert = mockAlert;
 

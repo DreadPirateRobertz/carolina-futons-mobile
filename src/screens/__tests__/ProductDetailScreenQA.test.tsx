@@ -113,6 +113,20 @@ jest.mock('@/hooks/useProductQA', () => ({
   useProductQA: () => mockUseProductQA(),
 }));
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/useProductResources', () => ({
+  useProductResources: () => ({ resources: [], loading: false, error: null }),
+}));
+
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const product = PRODUCTS[0];

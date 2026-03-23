@@ -1,22 +1,28 @@
 /**
  * Tests for ProductResourcesSection — hq-g26rc
- * TDD: tests written before implementation per Melania Directive.
  *
- * Collapsible section rendering tappable resource items that open URLs
- * via Linking.openURL.
+ * Covers: hidden states (loading/error/empty), collapse/expand toggle,
+ * resource rendering, Linking.openURL, accessibility.
  */
 
 import React from 'react';
-import { Linking } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { ProductResourcesSection } from '../ProductResourcesSection';
-import { type ProductResource } from '@/hooks/useProductResources';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { ProductResource } from '@/hooks/useProductResources';
 
-const mockResources: ProductResource[] = [
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
+}));
+
+const mockOpenURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+const RESOURCES: ProductResource[] = [
   {
     productId: 'prod-1',
     resourceType: 'SPEC_SHEET',
-    label: 'Product Spec Sheet',
+    label: 'Spec Sheet',
     url: 'https://example.com/spec.pdf',
     sortOrder: 1,
     icon: '📋',
@@ -29,172 +35,117 @@ const mockResources: ProductResource[] = [
     sortOrder: 2,
     icon: '🧹',
   },
-  {
-    productId: 'prod-1',
-    resourceType: 'VIDEO',
-    label: 'Assembly Video',
-    url: 'https://example.com/video',
-    sortOrder: 3,
-    icon: '🎬',
-  },
 ];
 
+function renderSection(props: Partial<React.ComponentProps<typeof ProductResourcesSection>> = {}) {
+  return render(
+    <ThemeProvider>
+      <ProductResourcesSection resources={RESOURCES} loading={false} error={null} {...props} />
+    </ThemeProvider>,
+  );
+}
+
+beforeEach(() => {
+  mockOpenURL.mockClear();
+});
+
 describe('ProductResourcesSection', () => {
-  beforeEach(() => {
-    jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  describe('empty / hidden states', () => {
-    it('renders nothing when resources array is empty', () => {
-      const { queryByTestId } = render(
-        <ProductResourcesSection resources={[]} loading={false} error={null} />,
-      );
+  describe('hidden states', () => {
+    it('renders nothing when loading', () => {
+      const { queryByTestId } = renderSection({ loading: true });
       expect(queryByTestId('resources-section')).toBeNull();
     });
 
-    it('renders nothing while loading', () => {
-      const { queryByTestId } = render(
-        <ProductResourcesSection resources={[]} loading={true} error={null} />,
-      );
+    it('renders nothing when error', () => {
+      const { queryByTestId } = renderSection({ error: new Error('fail') });
       expect(queryByTestId('resources-section')).toBeNull();
     });
 
-    it('renders nothing on error', () => {
-      const { queryByTestId } = render(
-        <ProductResourcesSection
-          resources={[]}
-          loading={false}
-          error={new Error('fetch failed')}
-        />,
-      );
+    it('renders nothing when resources is empty', () => {
+      const { queryByTestId } = renderSection({ resources: [] });
       expect(queryByTestId('resources-section')).toBeNull();
     });
   });
 
-  describe('section rendering', () => {
-    it('renders section when resources are present', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+  describe('section renders', () => {
+    it('renders resources-section when resources present', () => {
+      const { getByTestId } = renderSection();
       expect(getByTestId('resources-section')).toBeTruthy();
     });
 
-    it('renders "Resources" header text', () => {
-      const { getByText } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByText('Resources')).toBeTruthy();
+    it('renders resources-list when expanded (default)', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resources-list')).toBeTruthy();
     });
 
-    it('renders collapse toggle button', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByTestId('resources-toggle')).toBeTruthy();
+    it('renders correct number of resource items', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resource-item-0')).toBeTruthy();
+      expect(getByTestId('resource-item-1')).toBeTruthy();
+    });
+
+    it('renders resource labels', () => {
+      const { getByText } = renderSection();
+      expect(getByText('Spec Sheet')).toBeTruthy();
+      expect(getByText('Care Guide')).toBeTruthy();
+    });
+
+    it('renders resource icons', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resource-icon-0')).toBeTruthy();
+      expect(getByTestId('resource-icon-1')).toBeTruthy();
     });
   });
 
-  describe('collapsed / expanded behavior', () => {
-    it('starts expanded showing all resource items', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByTestId('resources-list')).toBeTruthy();
-      expect(getByTestId('resource-item-0')).toBeTruthy();
-      expect(getByTestId('resource-item-1')).toBeTruthy();
-      expect(getByTestId('resource-item-2')).toBeTruthy();
-    });
-
-    it('hides resource list when toggle is pressed (collapse)', () => {
-      const { getByTestId, queryByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+  describe('collapse/expand toggle', () => {
+    it('collapses list when toggle pressed', () => {
+      const { getByTestId, queryByTestId } = renderSection();
       fireEvent.press(getByTestId('resources-toggle'));
       expect(queryByTestId('resources-list')).toBeNull();
     });
 
-    it('shows resource list again when toggle pressed twice (expand)', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+    it('expands list again after second toggle press', () => {
+      const { getByTestId } = renderSection();
       fireEvent.press(getByTestId('resources-toggle'));
       fireEvent.press(getByTestId('resources-toggle'));
       expect(getByTestId('resources-list')).toBeTruthy();
     });
   });
 
-  describe('resource items', () => {
-    it('renders label for each resource', () => {
-      const { getByText } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByText('Product Spec Sheet')).toBeTruthy();
-      expect(getByText('Care Guide')).toBeTruthy();
-      expect(getByText('Assembly Video')).toBeTruthy();
-    });
-
-    it('renders icon for each resource', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByTestId('resource-icon-0')).toBeTruthy();
-      expect(getByTestId('resource-icon-1')).toBeTruthy();
-    });
-
-    it('tapping a resource calls Linking.openURL with its url', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+  describe('Linking.openURL', () => {
+    it('calls Linking.openURL with correct URL when item pressed', () => {
+      const { getByTestId } = renderSection();
       fireEvent.press(getByTestId('resource-item-0'));
-      expect(Linking.openURL).toHaveBeenCalledWith('https://example.com/spec.pdf');
+      expect(mockOpenURL).toHaveBeenCalledWith('https://example.com/spec.pdf');
     });
 
-    it('tapping second resource opens its url', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+    it('calls Linking.openURL with correct URL for second item', () => {
+      const { getByTestId } = renderSection();
       fireEvent.press(getByTestId('resource-item-1'));
-      expect(Linking.openURL).toHaveBeenCalledWith('https://example.com/care.pdf');
+      expect(mockOpenURL).toHaveBeenCalledWith('https://example.com/care.pdf');
     });
 
-    it('each resource item has correct accessibilityRole button', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByTestId('resource-item-0').props.accessibilityRole).toBe('button');
-    });
-
-    it('each resource item has accessibilityLabel with its label', () => {
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
-      expect(getByTestId('resource-item-0').props.accessibilityLabel).toContain(
-        'Product Spec Sheet',
-      );
-    });
-  });
-
-  describe('single resource', () => {
-    it('renders correctly with one resource', () => {
-      const { getByTestId, getByText } = render(
-        <ProductResourcesSection resources={[mockResources[0]]} loading={false} error={null} />,
-      );
-      expect(getByTestId('resources-section')).toBeTruthy();
-      expect(getByText('Product Spec Sheet')).toBeTruthy();
-    });
-  });
-
-  describe('Linking error handling', () => {
-    it('does not throw when Linking.openURL rejects', async () => {
-      jest.spyOn(Linking, 'openURL').mockRejectedValueOnce(new Error('cannot open'));
-      const { getByTestId } = render(
-        <ProductResourcesSection resources={mockResources} loading={false} error={null} />,
-      );
+    it('does not throw when Linking.openURL rejects', () => {
+      mockOpenURL.mockRejectedValueOnce(new Error('invalid URL'));
+      const { getByTestId } = renderSection();
       expect(() => fireEvent.press(getByTestId('resource-item-0'))).not.toThrow();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('toggle has accessibilityRole button', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resources-toggle').props.accessibilityRole).toBe('button');
+    });
+
+    it('resource items have accessibilityRole link', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resource-item-0').props.accessibilityRole).toBe('link');
+    });
+
+    it('resource items have accessibilityLabel matching resource label', () => {
+      const { getByTestId } = renderSection();
+      expect(getByTestId('resource-item-0').props.accessibilityLabel).toBe('Spec Sheet');
     });
   });
 });

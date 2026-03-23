@@ -1,20 +1,16 @@
 /**
  * @module ProductResourcesSection
  *
- * Collapsible "Resources" section for ProductDetailScreen.
- * Renders tappable resource items (spec sheets, care guides, videos, etc.)
- * sourced from useProductResources. Opens URLs via Linking.openURL.
+ * Collapsible list of product resource items (spec sheets, care guides, videos,
+ * assembly guides). Renders nothing when loading, errored, or empty.
  *
- * Hidden when: loading, error, or empty resources array.
- * Starts expanded. Toggle collapses/expands the list.
- *
- * hq-g26rc / Phase 7 PDP
+ * hq-g26rc
  */
 
-import React, { useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, Linking, StyleSheet } from 'react-native';
-import { colors, spacing, typography, borderRadius } from '@/theme/tokens';
-import { type ProductResource } from '@/hooks/useProductResources';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { useTheme } from '@/theme';
+import type { ProductResource } from '@/hooks/useProductResources';
 
 interface Props {
   resources: ProductResource[];
@@ -23,51 +19,64 @@ interface Props {
 }
 
 export function ProductResourcesSection({ resources, loading, error }: Props) {
+  const { colors, spacing, typography } = useTheme();
   const [expanded, setExpanded] = useState(true);
-
-  const handleToggle = useCallback(() => setExpanded((v) => !v), []);
-
-  const handleOpen = useCallback((url: string) => {
-    Linking.openURL(url).catch(() => {
-      // URL open failure — platform may have no handler; fail silently
-    });
-  }, []);
 
   if (loading || error || resources.length === 0) return null;
 
+  const handleItemPress = (url: string) => {
+    Linking.openURL(url).catch(() => {
+      // Silent catch — URL open failure is non-fatal
+    });
+  };
+
   return (
-    <View testID="resources-section" style={styles.container}>
-      {/* Header row with toggle */}
+    <View testID="resources-section" style={[styles.section, { paddingHorizontal: spacing.lg }]}>
       <TouchableOpacity
         testID="resources-toggle"
+        onPress={() => setExpanded((prev) => !prev)}
         style={styles.header}
-        onPress={handleToggle}
         accessibilityRole="button"
         accessibilityLabel={expanded ? 'Collapse resources' : 'Expand resources'}
       >
-        <Text style={styles.title}>Resources</Text>
-        <Text style={styles.chevron}>{expanded ? '▲' : '▼'}</Text>
+        <Text
+          style={[styles.title, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+        >
+          Resources
+        </Text>
+        <Text style={[styles.chevron, { color: colors.espressoLight }]}>
+          {expanded ? '▲' : '▼'}
+        </Text>
       </TouchableOpacity>
 
-      {/* Resource list */}
       {expanded && (
-        <View testID="resources-list" style={styles.list}>
+        <View testID="resources-list">
           {resources.map((resource, index) => (
             <TouchableOpacity
-              key={`${resource.resourceType}-${resource.sortOrder}`}
+              key={`${resource.resourceType}-${index}`}
               testID={`resource-item-${index}`}
-              style={styles.item}
-              onPress={() => handleOpen(resource.url)}
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${resource.label}`}
+              onPress={() => handleItemPress(resource.url)}
+              style={[
+                styles.item,
+                { borderTopColor: colors.sandDark },
+                index === 0 && styles.itemFirst,
+              ]}
+              accessibilityRole="link"
+              accessibilityLabel={resource.label}
             >
               <Text testID={`resource-icon-${index}`} style={styles.icon}>
                 {resource.icon}
               </Text>
-              <Text style={styles.label} numberOfLines={1}>
+              <Text
+                style={[
+                  styles.label,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+                numberOfLines={1}
+              >
                 {resource.label}
               </Text>
-              <Text style={styles.arrow}>›</Text>
+              <Text style={[styles.arrow, { color: colors.espressoLight }]}>›</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -77,55 +86,41 @@ export function ProductResourcesSection({ resources, loading, error }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.sandLight,
-    overflow: 'hidden',
+  section: {
+    marginVertical: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 12,
   },
   title: {
-    fontFamily: typography.bodyFamilyBold,
-    fontSize: 15,
-    color: colors.espresso,
+    fontSize: 16,
+    fontWeight: '600',
   },
   chevron: {
-    fontSize: 11,
-    color: colors.espressoLight,
-  },
-  list: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.sandDark,
+    fontSize: 12,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.sandDark,
+    paddingVertical: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  itemFirst: {
+    borderTopWidth: 0,
   },
   icon: {
-    fontSize: 16,
-    marginRight: spacing.sm,
+    fontSize: 18,
+    marginRight: 10,
   },
   label: {
     flex: 1,
-    fontFamily: typography.bodyFamily,
     fontSize: 14,
-    color: colors.espresso,
   },
   arrow: {
     fontSize: 18,
-    color: colors.espressoLight,
-    marginLeft: spacing.xs,
+    marginLeft: 8,
   },
 });

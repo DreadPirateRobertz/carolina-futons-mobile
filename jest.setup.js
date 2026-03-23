@@ -168,3 +168,16 @@ try {
   // Module path does not exist in this RN version — safe to ignore
 }
 
+// Global mock for useGamificationEvents — prevents AuthProvider/WixClient dependency chain
+// from propagating into every test that uses CartProvider or WishlistProvider.
+// Tests that specifically verify gamification call-site behavior supply their own spies.
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
