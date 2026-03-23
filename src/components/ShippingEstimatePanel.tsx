@@ -66,6 +66,7 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
         value={zip}
         onChangeText={setZip}
         accessibilityLabel="ZIP code for shipping estimate"
+        accessibilityHint="Enter your 5-digit ZIP code to see shipping rates"
       />
 
       {/* No-zip prompt */}
@@ -82,19 +83,28 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
           size="small"
           color={colors.mountainBlue}
           style={styles.loader}
+          accessibilityLabel="Loading shipping rate"
         />
       )}
 
       {/* Error */}
       {hasZip && !isLoading && error && (
-        <Text testID="shipping-rate-error" style={[styles.errorText, { color: colors.error }]}>
+        <Text
+          testID="shipping-rate-error"
+          style={[styles.errorText, { color: colors.error }]}
+          accessibilityLiveRegion="polite"
+        >
           Unable to estimate shipping. Please verify your ZIP code.
         </Text>
       )}
 
       {/* Rate result */}
       {hasZip && !isLoading && !error && rate && (
-        <View testID="shipping-rate-result" style={styles.rateRow}>
+        <View
+          testID="shipping-rate-result"
+          style={styles.rateRow}
+          accessibilityLabel={`${rate.carrier} — $${rate.amount}${rate.isFreight ? ' Freight (LTL)' : ''}`}
+        >
           <Text
             style={[
               styles.rateText,

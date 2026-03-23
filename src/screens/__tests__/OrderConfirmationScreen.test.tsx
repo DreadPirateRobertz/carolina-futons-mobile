@@ -216,6 +216,12 @@ describe('OrderConfirmationScreen', () => {
       expect(btn.props.accessibilityLabel).toMatch(/share.*order/i);
     });
 
+    it('share order button has accessibilityHint (cm-a11y-shipping)', () => {
+      const { getByTestId } = renderConfirmation();
+      const btn = getByTestId('share-order-button');
+      expect(btn.props.accessibilityHint).toBeTruthy();
+    });
+
     it('calls Share.share with order number on press', async () => {
       const { getByTestId } = renderConfirmation();
       fireEvent.press(getByTestId('share-order-button'));

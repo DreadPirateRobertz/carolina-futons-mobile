@@ -205,6 +205,7 @@ export function OrderConfirmationScreen({
             testID="share-order-button"
             accessibilityLabel="Share your order"
             accessibilityRole="button"
+            accessibilityHint="Opens share sheet with your order details"
           >
             <Text style={[styles.secondaryButtonText, { color: colors.espressoLight }]}>
               Share Order ↗

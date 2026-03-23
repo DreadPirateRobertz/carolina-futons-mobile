@@ -250,6 +250,25 @@ describe('CompareTray', () => {
         'button',
       );
     });
+
+    it('remove button hitSlop meets 44pt minimum tap target on each side (cm-a11y-shipping)', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const btn = getByTestId(`compare-tray-remove-${PRODUCT_A.id}`);
+      const { top, bottom, left, right } = btn.props.hitSlop ?? {};
+      // Button is 20px; hitSlop must compensate to reach 44pt total (12 each side)
+      expect(top).toBeGreaterThanOrEqual(12);
+      expect(bottom).toBeGreaterThanOrEqual(12);
+      expect(left).toBeGreaterThanOrEqual(12);
+      expect(right).toBeGreaterThanOrEqual(12);
+    });
+
+    it('swipeable card has accessibilityHint describing swipe gesture (cm-a11y-shipping)', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const swipeable = getByTestId(`compare-tray-swipeable-${PRODUCT_A.id}`);
+      expect(swipeable.props.accessibilityHint).toBeTruthy();
+    });
   });
 
   // ── Custom testID ──────────────────────────────────────────────────────────
