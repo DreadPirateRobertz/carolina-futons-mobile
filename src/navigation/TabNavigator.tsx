@@ -82,18 +82,14 @@ export function TabNavigator() {
           name="Shop"
           component={ShopScreenWithBoundary}
           options={{
-            tabBarIcon: ({ focused, color }) => (
-              <ShopTabIcon focused={focused} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => <ShopTabIcon focused={focused} color={color} />,
           }}
         />
         <Tab.Screen
           name="Cart"
           component={CartScreenWithBoundary}
           options={{
-            tabBarIcon: ({ focused, color }) => (
-              <CartTabIcon focused={focused} color={color} />
-            ),
+            tabBarIcon: ({ focused, color }) => <CartTabIcon focused={focused} color={color} />,
             tabBarBadge: itemCount > 0 ? itemCount : undefined,
             tabBarBadgeStyle: { backgroundColor: colors.sunsetCoral },
           }}

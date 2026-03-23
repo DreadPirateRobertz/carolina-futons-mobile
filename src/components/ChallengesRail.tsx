@@ -40,9 +40,7 @@ export const ChallengesRail = memo(function ChallengesRail({
         keyExtractor={(item) => item.id}
         contentContainerStyle={[styles.listContent, { paddingHorizontal: spacing.lg }]}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        renderItem={({ item }) => (
-          <ChallengeCard challenge={item} onPress={onChallengePress} />
-        )}
+        renderItem={({ item }) => <ChallengeCard challenge={item} onPress={onChallengePress} />}
       />
     </View>
   );
