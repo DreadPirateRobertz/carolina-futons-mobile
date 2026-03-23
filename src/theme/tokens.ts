@@ -61,7 +61,9 @@ export const colors = {
   // --- Decorative gradients ---
   skyGradientTop: '#B8D4E3',
   skyGradientBottom: '#F0C87A',
-  /** Forest dark green for pine tree illustration fills — matches web mountain-skyline-figma.svg */
+  /** Primary canopy fill — matches web #4A7C59 (forest green) */
+  treeFill: '#4A7C59',
+  /** Dark linework/shadow/trunk outlines — matches web #2E4A38 */
   treeDark: '#2E4A38',
 
   // --- Neutrals ---
