@@ -84,7 +84,7 @@ export function ChallengeCompletedToast({
 
   return (
     <Animated.View
-      style={[styles.container, { bottom: 100 + insets.bottom }, animatedStyle]}
+      style={[styles.container, { bottom: 49 + insets.bottom + 8 }, animatedStyle]}
       testID={testID ?? 'challenge-completed-toast'}
       accessibilityLabel={`${title}: +${rewardPoints} pts earned`}
       accessibilityElementsHidden={!visible}

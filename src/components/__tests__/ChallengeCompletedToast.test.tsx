@@ -141,19 +141,21 @@ describe('ChallengeCompletedToast', () => {
     mockInsets.bottom = 0;
   });
 
-  it('adds safe area inset to bottom position (non-zero inset)', () => {
+  it('positions above tab bar + home indicator (inset=34)', () => {
     mockInsets.bottom = 34;
     const { getByTestId } = renderToast(BASE);
     const toast = getByTestId('challenge-completed-toast');
     const flatStyle = StyleSheet.flatten(toast.props.style);
-    expect(flatStyle.bottom).toBe(134);
+    // TAB_BAR_HEIGHT(49) + bottom(34) + padding(8) = 91
+    expect(flatStyle.bottom).toBe(91);
   });
 
-  it('uses base bottom (100) when safe area inset is zero', () => {
+  it('positions above tab bar on non-indicator devices (inset=0)', () => {
     mockInsets.bottom = 0;
     const { getByTestId } = renderToast(BASE);
     const toast = getByTestId('challenge-completed-toast');
     const flatStyle = StyleSheet.flatten(toast.props.style);
-    expect(flatStyle.bottom).toBe(100);
+    // TAB_BAR_HEIGHT(49) + bottom(0) + padding(8) = 57
+    expect(flatStyle.bottom).toBe(57);
   });
 });
