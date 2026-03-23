@@ -23,6 +23,7 @@ import React, {
   useState,
 } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
+import * as gamification from '@/services/gamification';
 import { useOptionalConnectivity } from './useConnectivity';
 import {
   enqueue,
@@ -312,6 +313,8 @@ export function WishlistProvider({
     (product: Product) => {
       dispatch({ type: 'ADD', productId: product.id, price: product.price });
       syncAdd(product.id, product.price);
+      // Phase 4 gamification event — cm-e2c3k
+      gamification.wishlistAdd(product.id);
     },
     [syncAdd],
   );
