@@ -21,6 +21,10 @@
 import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useProductReviews } from '../useProductReviews';
 
+import { useOptionalWixClient } from '@/services/wix';
+import { captureException } from '@/services/crashReporting';
+import { getReviewsForProduct } from '@/data/reviews';
+
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 jest.mock('@/services/wix', () => ({
@@ -34,10 +38,6 @@ jest.mock('@/services/crashReporting', () => ({
 jest.mock('@/data/reviews', () => ({
   getReviewsForProduct: jest.fn(),
 }));
-
-import { useOptionalWixClient } from '@/services/wix';
-import { captureException } from '@/services/crashReporting';
-import { getReviewsForProduct } from '@/data/reviews';
 
 const mockGetReviewsForProduct = getReviewsForProduct as jest.Mock;
 

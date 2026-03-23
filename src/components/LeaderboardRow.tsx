@@ -50,10 +50,7 @@ export function LeaderboardRow({
         },
       ]}
     >
-      <Text
-        testID="leaderboard-row-rank"
-        style={[styles.rank, { color: darkPalette.textMuted }]}
-      >
+      <Text testID="leaderboard-row-rank" style={[styles.rank, { color: darkPalette.textMuted }]}>
         {rank}
       </Text>
       <Text

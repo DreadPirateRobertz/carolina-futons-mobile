@@ -27,8 +27,7 @@ export interface LeaderboardScreenProps {
 
 export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
   const { colors, spacing, borderRadius } = useTheme();
-  const { entries, currentUserRank, period, loading, error, refresh, setPeriod } =
-    useLeaderboard();
+  const { entries, currentUserRank, period, loading, error, refresh, setPeriod } = useLeaderboard();
 
   const [refreshing, setRefreshing] = React.useState(false);
 

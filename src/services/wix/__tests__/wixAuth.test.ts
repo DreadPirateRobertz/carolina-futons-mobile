@@ -666,7 +666,7 @@ describe('WixAuthService', () => {
       await service.syncMemberAddresses('member-123', [ADDRESSES[1]]);
 
       const call = mockMembers.updateMember.mock.calls[0];
-      const addr = (call[1] as { contact?: { addresses?: Array<Record<string, unknown>> } }).contact
+      const addr = (call[1] as { contact?: { addresses?: Record<string, unknown>[] } }).contact
         ?.addresses?.[0];
       expect(addr?.addressLine2).toBeUndefined();
     });

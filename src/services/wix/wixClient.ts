@@ -546,7 +546,7 @@ export class WixClient {
   async initiateAffirmCheckout(request: {
     order_id: string;
     amount: number;
-    items: Array<{ sku: string; display_name: string; quantity: number; unit_price: number }>;
+    items: { sku: string; display_name: string; quantity: number; unit_price: number }[];
   }): Promise<{ checkout_url: string; checkout_token: string }> {
     return this.post('/ecom/v1/affirm/checkout', request);
   }
@@ -555,7 +555,7 @@ export class WixClient {
 
   async createKlarnaSession(request: {
     amountCents: number;
-    items: Array<{ id: string; quantity: number; price: number }>;
+    items: { id: string; quantity: number; price: number }[];
   }): Promise<{ redirectUrl: string; orderId: string }> {
     return this.post('/_functions/klarna/checkout', request);
   }
@@ -576,8 +576,8 @@ export class WixClient {
    */
   async fetchShippingEstimate(
     zip: string,
-    items: Array<{ productId: string; quantity: number }> = [],
-  ): Promise<{ success: boolean; options: Array<Record<string, unknown>>; error?: string }> {
+    items: { productId: string; quantity: number }[] = [],
+  ): Promise<{ success: boolean; options: Record<string, unknown>[]; error?: string }> {
     return this.post('/_functions/shippingIntelligence/calculateBundleQuote', { zip, items });
   }
 
@@ -991,17 +991,14 @@ export class WixClient {
    * Fetch the loyalty leaderboard from the Wix backend webMethod (cf-op6).
    * Returns ranked entries and the current user's rank if authenticated.
    */
-  async getLeaderboard(params: {
-    period: 'allTime' | 'weekly';
-    limit: number;
-  }): Promise<{
-    entries: Array<{
+  async getLeaderboard(params: { period: 'allTime' | 'weekly'; limit: number }): Promise<{
+    entries: {
       memberId: string;
       nickname: string;
       points: number;
       tier: string;
       rank: number;
-    }>;
+    }[];
     currentUserRank: number | null;
   }> {
     return this.post('/_functions/getLeaderboard', params);
