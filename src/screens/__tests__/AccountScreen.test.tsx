@@ -1242,4 +1242,21 @@ describe('AccountScreen', () => {
       await waitFor(() => expect(queryByTestId('account-streak-badge')).toBeNull());
     });
   });
+
+  // ── Challenges navigation (hq-elfso) ─────────────────────────────────────
+
+  describe('Challenges navigation', () => {
+    it('shows Challenges menu item when authenticated', async () => {
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(getByTestId('account-challenges')).toBeTruthy());
+    });
+
+    it('calls onChallenges when Challenges menu item is pressed', async () => {
+      const onChallenges = jest.fn();
+      const { getByTestId } = renderAccount({ onChallenges }, true);
+      await waitFor(() => expect(getByTestId('account-challenges')).toBeTruthy());
+      fireEvent.press(getByTestId('account-challenges'));
+      expect(onChallenges).toHaveBeenCalledTimes(1);
+    });
+  });
 });
