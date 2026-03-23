@@ -76,13 +76,20 @@ export function AvatarEquipScreen() {
   return (
     <View testID="avatar-equip-screen" style={styles.root}>
       {/* Preview */}
-      <View style={[styles.previewSection, { backgroundColor: colors.surfaceSecondary }]}>
+      <View style={[styles.previewSection, { backgroundColor: colors.sandLight }]}>
         {equipError && (
-          <Text testID="avatar-equip-equip-error" style={[styles.equipErrorText, { color: colors.error }]}>
+          <Text
+            testID="avatar-equip-equip-error"
+            style={[styles.equipErrorText, { color: colors.error }]}
+          >
             {equipError}
           </Text>
         )}
-        <AvatarDisplay size="lg" equippedAccessoryId={equippedAccessoryId} testID="avatar-equip-preview" />
+        <AvatarDisplay
+          size="lg"
+          equippedAccessoryId={equippedAccessoryId}
+          testID="avatar-equip-preview"
+        />
       </View>
 
       {/* Accessory grid */}
@@ -109,8 +116,8 @@ export function AvatarEquipScreen() {
                 styles.accessoryCard,
                 {
                   borderRadius: borderRadius.md,
-                  backgroundColor: colors.surface,
-                  borderColor: isEquipped ? colors.mountainBlue : colors.border,
+                  backgroundColor: colors.sandBase,
+                  borderColor: isEquipped ? colors.mountainBlue : colors.espressoLight,
                   borderWidth: isEquipped ? 2 : 1,
                   opacity: isUnlocked ? 1 : 0.45,
                   margin: spacing.xs / 2,
@@ -122,10 +129,7 @@ export function AvatarEquipScreen() {
               ) : (
                 <Text style={styles.accessoryEmoji}>{item.emoji}</Text>
               )}
-              <Text
-                style={[styles.accessoryName, { color: colors.text }]}
-                numberOfLines={1}
-              >
+              <Text style={[styles.accessoryName, { color: colors.espresso }]} numberOfLines={1}>
                 {item.name}
               </Text>
 
@@ -140,7 +144,7 @@ export function AvatarEquipScreen() {
               {item.pointsCost > 0 && (
                 <Text
                   testID={`accessory-cost-${item.id}`}
-                  style={[styles.costLabel, { color: colors.textSecondary }]}
+                  style={[styles.costLabel, { color: colors.mutedBrown }]}
                 >
                   {item.pointsCost} pts
                 </Text>
