@@ -16,6 +16,7 @@ jest.mock('@/hooks/useCollections', () => {
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({
     queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
+    callFunction: jest.fn().mockResolvedValue({ challenges: [] }),
   }),
 }));
 
