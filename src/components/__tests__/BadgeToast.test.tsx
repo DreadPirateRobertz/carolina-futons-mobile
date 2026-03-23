@@ -88,4 +88,30 @@ describe('BadgeToast', () => {
       expect(getByText(/Summit Seeker/i)).toBeTruthy();
     });
   });
+
+  describe('badgeKey SVG icon (hq-zarsg)', () => {
+    it('shows SVG icon when badgeKey is provided', () => {
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <BadgeToast badgeName="Week Wanderer" visible={true} badgeKey="week_wanderer" />
+        </ThemeProvider>,
+      );
+      expect(getByTestId('badge-toast-icon')).toBeTruthy();
+    });
+
+    it('does not show SVG icon when badgeKey is omitted', () => {
+      const { queryByTestId } = renderToast({ badgeName: 'Explorer Badge', visible: true });
+      expect(queryByTestId('badge-toast-icon')).toBeNull();
+    });
+
+    it('renders with streak_chip key without crashing', () => {
+      expect(() =>
+        render(
+          <ThemeProvider>
+            <BadgeToast badgeName="Streak" visible={true} badgeKey="streak_chip" />
+          </ThemeProvider>,
+        ),
+      ).not.toThrow();
+    });
+  });
 });

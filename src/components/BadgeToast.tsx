@@ -18,16 +18,19 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { BadgeSvgIcon } from './BadgeSvgIcon';
 
 interface Props {
   /** Badge name to display (e.g. "Explorer Badge"). */
   badgeName: string;
   /** Whether the toast is currently visible / should animate in. */
   visible: boolean;
+  /** Optional badge key — shows the animal SVG icon in the toast when provided. */
+  badgeKey?: string;
   testID?: string;
 }
 
-export function BadgeToast({ badgeName, visible, testID }: Props) {
+export function BadgeToast({ badgeName, visible, badgeKey, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 
   const opacity = useSharedValue(0);
@@ -77,6 +80,7 @@ export function BadgeToast({ badgeName, visible, testID }: Props) {
           { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.pill },
         ]}
       >
+        {badgeKey ? <BadgeSvgIcon badgeKey={badgeKey} size={32} testID="badge-toast-icon" /> : null}
         <Text style={styles.label}>Badge Unlocked</Text>
         <Text style={styles.name}>{badgeName}</Text>
       </View>

@@ -40,9 +40,9 @@ describe('StreakBadge', () => {
     expect(getByText(/day streak/i)).toBeTruthy();
   });
 
-  it('shows fire emoji', () => {
-    const { getByText } = renderBadge(3);
-    expect(getByText(/🔥/)).toBeTruthy();
+  it('shows streak hawk icon (Sharp-shinned Hawk SVG replaces fire emoji)', () => {
+    const { getByTestId } = renderBadge(3);
+    expect(getByTestId('badge-svg-streak_chip')).toBeTruthy();
   });
 
   // ── Accessibility ─────────────────────────────────────────────────
