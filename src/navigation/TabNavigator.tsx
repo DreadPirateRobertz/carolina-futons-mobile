@@ -20,6 +20,7 @@ import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
 import { CompareFAB } from '@/components/CompareFAB';
 import { AnimatedTabBar } from './AnimatedTabBar';
+import { useLivingSky } from '@/hooks/useLivingSky';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import { HomeTabIcon, ShopTabIcon, CartTabIcon, AccountTabIcon } from './TabIcons';
 import type { RootStackParamList } from './AppNavigator';
@@ -59,11 +60,12 @@ export function TabNavigator() {
   const { itemCount } = useCart();
   const { streak } = useStreak();
   const { tier } = useLoyalty();
+  const { navBg, navText } = useLivingSky();
 
   return (
     <View style={tabStyles.container}>
       <Tab.Navigator
-        tabBar={(props) => <AnimatedTabBar {...props} />}
+        tabBar={(props) => <AnimatedTabBar {...props} navBg={navBg} navText={navText} />}
         screenOptions={{
           headerShown: false,
           tabBarActiveTintColor: colors.sunsetCoral,

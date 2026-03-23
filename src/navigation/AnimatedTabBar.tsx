@@ -24,11 +24,13 @@ function TabButton({
   descriptor,
   isFocused,
   navigation,
+  activeColor,
 }: {
   route: { key: string; name: string };
   descriptor: any;
   isFocused: boolean;
   navigation: any;
+  activeColor?: string;
 }) {
   const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
@@ -66,7 +68,7 @@ function TabButton({
   const { options } = descriptor;
   const label = options.tabBarLabel ?? route.name;
   const badge = options.tabBarBadge;
-  const color = isFocused ? ACTIVE_COLOR : INACTIVE_COLOR;
+  const color = isFocused ? (activeColor ?? ACTIVE_COLOR) : INACTIVE_COLOR;
 
   return (
     <Pressable
@@ -95,7 +97,13 @@ function TabButton({
 }
 
 /** Custom tab bar rendered by the BottomTabNavigator; safe-area aware. */
-export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export function AnimatedTabBar({
+  state,
+  descriptors,
+  navigation,
+  navBg,
+  navText,
+}: BottomTabBarProps & { navBg?: string; navText?: string }) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -103,7 +111,11 @@ export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarP
       testID="tab-bar-blur"
       intensity={40}
       tint="dark"
-      style={[styles.blurContainer, { paddingBottom: insets.bottom || 8 }]}
+      style={[
+        styles.blurContainer,
+        { paddingBottom: insets.bottom || 8 },
+        navBg != null ? { backgroundColor: navBg } : null,
+      ]}
     >
       <View testID="animated-tab-bar" style={styles.container}>
         {state.routes.map((route, index) => (
@@ -113,6 +125,7 @@ export function AnimatedTabBar({ state, descriptors, navigation }: BottomTabBarP
             descriptor={descriptors[route.key]}
             isFocused={state.index === index}
             navigation={navigation}
+            activeColor={navText}
           />
         ))}
       </View>

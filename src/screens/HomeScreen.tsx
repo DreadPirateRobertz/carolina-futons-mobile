@@ -25,6 +25,7 @@ import { CollectionCard } from '@/components/CollectionCard';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline';
+import { LivingSkyBackground } from '@/components/LivingSkyBackground';
 import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
@@ -115,6 +116,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
 
   return (
     <View style={styles.root}>
+      <LivingSkyBackground />
       <ScrollView
         style={[styles.container, { backgroundColor: colors.sandBase }]}
         contentContainerStyle={[

@@ -440,4 +440,10 @@ describe('HomeScreen', () => {
     const mod = require('../../components/LivingSkyMountainSkyline');
     expect(mod.LivingSkyMountainSkyline).toBeDefined();
   });
+
+  // cf-7l2 — LivingSkyBackground wired into HomeScreen
+  it('renders LivingSkyBackground', () => {
+    const { getByTestId } = renderHomeScreen();
+    expect(getByTestId('living-sky-background')).toBeTruthy();
+  });
 });
