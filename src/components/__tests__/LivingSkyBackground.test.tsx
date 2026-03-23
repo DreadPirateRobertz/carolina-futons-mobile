@@ -16,14 +16,11 @@ import { render } from '@testing-library/react-native';
 import { LivingSkyBackground } from '../LivingSkyBackground';
 import type { LivingSkyState } from '@/types/livingSky';
 
+import { useLivingSky } from '@/hooks/useLivingSky';
+
 // ── Mock useLivingSky ────────────────────────────────────────────────────────
 
-const mockSkyColors: LivingSkyState['skyColors'] = [
-  '#2858A0',
-  '#4878A8',
-  '#88B0C4',
-  '#A4C8DC',
-];
+const mockSkyColors: LivingSkyState['skyColors'] = ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'];
 
 const mockState: LivingSkyState = {
   skyColors: mockSkyColors,
@@ -48,8 +45,6 @@ const mockState: LivingSkyState = {
 jest.mock('@/hooks/useLivingSky', () => ({
   useLivingSky: jest.fn(() => mockState),
 }));
-
-import { useLivingSky } from '@/hooks/useLivingSky';
 const mockUseLivingSky = useLivingSky as jest.Mock;
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -97,7 +92,7 @@ describe('LivingSkyBackground', () => {
     const bg = getByTestId('living-sky-background');
     const flatStyle = Array.isArray(bg.props.style)
       ? Object.assign({}, ...bg.props.style)
-      : bg.props.style ?? {};
+      : (bg.props.style ?? {});
     expect(flatStyle.position).toBe('absolute');
     expect(flatStyle.zIndex).toBeLessThan(0);
   });
