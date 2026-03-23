@@ -11,6 +11,8 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { ChallengesScreen } from '../ChallengesScreen';
 import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCatalog';
 
+import { useChallengeCatalog } from '@/hooks/useChallengeCatalog';
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const FUTURE = '2027-01-01T00:00:00Z';
@@ -52,8 +54,6 @@ jest.mock('@/hooks/useChallengeCatalog', () => ({
     refresh: mockRefresh,
   })),
 }));
-
-import { useChallengeCatalog } from '@/hooks/useChallengeCatalog';
 const mockHook = useChallengeCatalog as jest.Mock;
 
 function renderScreen() {

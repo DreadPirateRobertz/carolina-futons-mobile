@@ -47,9 +47,30 @@ const MOCK_QUESTS_JSON = JSON.stringify({
 const API_QUESTS_TODAY = {
   date: TODAY,
   quests: [
-    { id: 'api-q1', title: 'Place an order today', action: 'purchase', pointReward: 50, completed: false, completedAt: null },
-    { id: 'api-q2', title: 'Write a product review', action: 'review', pointReward: 30, completed: true, completedAt: '2026-03-23T09:00:00Z' },
-    { id: 'api-q3', title: 'Refer a friend', action: 'referral', pointReward: 75, completed: false, completedAt: null },
+    {
+      id: 'api-q1',
+      title: 'Place an order today',
+      action: 'purchase',
+      pointReward: 50,
+      completed: false,
+      completedAt: null,
+    },
+    {
+      id: 'api-q2',
+      title: 'Write a product review',
+      action: 'review',
+      pointReward: 30,
+      completed: true,
+      completedAt: '2026-03-23T09:00:00Z',
+    },
+    {
+      id: 'api-q3',
+      title: 'Refer a friend',
+      action: 'referral',
+      pointReward: 75,
+      completed: false,
+      completedAt: null,
+    },
   ],
 };
 
@@ -84,7 +105,7 @@ describe('useDailyQuests', () => {
     expect(result.current.quests).toHaveLength(3);
   });
 
-  it('persists quests to AsyncStorage with today\'s date on first load', async () => {
+  it("persists quests to AsyncStorage with today's date on first load", async () => {
     mockGetItem.mockResolvedValue(null);
     renderHook(() => useDailyQuests());
     await act(async () => {});
@@ -129,7 +150,7 @@ describe('useDailyQuests', () => {
     expect(result.current.quests.every((q) => !q.completed)).toBe(true);
   });
 
-  it('persists refreshed quests with today\'s date after midnight refresh', async () => {
+  it("persists refreshed quests with today's date after midnight refresh", async () => {
     const staleData = JSON.stringify({ date: YESTERDAY, quests: [] });
     mockGetItem.mockResolvedValue(staleData);
     renderHook(() => useDailyQuests());
@@ -218,7 +239,7 @@ describe('useDailyQuests', () => {
     expect(result.current.quests[1].completed).toBe(true);
   });
 
-  it('persists API response to AsyncStorage with today\'s date', async () => {
+  it("persists API response to AsyncStorage with today's date", async () => {
     mockGetItem.mockResolvedValue(null);
     mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
     mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);

@@ -105,9 +105,27 @@ describe('HomeScreen', () => {
     // Default: daily quests loaded
     mockUseDailyQuests.mockReturnValue({
       quests: [
-        { id: 'q-daily-purchase', title: 'Browse 3 products', action: 'purchase', pointReward: 25, completed: false },
-        { id: 'q-daily-review', title: 'Write a review', action: 'review', pointReward: 100, completed: false },
-        { id: 'q-daily-ar', title: 'Try AR on a product', action: 'ar', pointReward: 50, completed: false },
+        {
+          id: 'q-daily-purchase',
+          title: 'Browse 3 products',
+          action: 'purchase',
+          pointReward: 25,
+          completed: false,
+        },
+        {
+          id: 'q-daily-review',
+          title: 'Write a review',
+          action: 'review',
+          pointReward: 100,
+          completed: false,
+        },
+        {
+          id: 'q-daily-ar',
+          title: 'Try AR on a product',
+          action: 'ar',
+          pointReward: 50,
+          completed: false,
+        },
       ],
       loading: false,
       refresh: jest.fn(),
