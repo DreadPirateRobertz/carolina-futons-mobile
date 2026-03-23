@@ -159,6 +159,11 @@ const LoyaltyScreen = lazy(() =>
     default: withScreenErrorBoundary(m.LoyaltyScreen, 'Loyalty'),
   })),
 );
+const LeaderboardScreen = lazy(() =>
+  import('@/screens/LeaderboardScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LeaderboardScreen, 'Leaderboard'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -204,6 +209,7 @@ export type RootStackParamList = {
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
   Loyalty: undefined;
+  Leaderboard: undefined;
   ReferralLanding: { code: string };
 };
 
@@ -462,6 +468,9 @@ export function AppNavigator() {
           </Stack.Screen>
           <Stack.Screen name="Loyalty" options={modalTransition}>
             {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
+          </Stack.Screen>
+          <Stack.Screen name="Leaderboard" options={fadeTransition}>
+            {() => <LeaderboardScreen />}
           </Stack.Screen>
           <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
         </Stack.Navigator>

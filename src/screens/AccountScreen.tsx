@@ -61,6 +61,8 @@ interface Props {
   onPrivacyPolicy?: () => void;
   /** Callback to navigate to the loyalty rewards screen. */
   onLoyalty?: () => void;
+  /** Callback to navigate to the loyalty leaderboard screen. */
+  onLeaderboard?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -79,6 +81,7 @@ export function AccountScreen({
   onStyleQuiz,
   onPrivacyPolicy,
   onLoyalty,
+  onLeaderboard,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
@@ -507,6 +510,14 @@ export function AccountScreen({
             borderRadius={borderRadius}
             shadows={shadows}
             testID="account-order-history"
+          />
+          <MenuItem
+            label="Leaderboard"
+            onPress={onLeaderboard}
+            colors={colors}
+            borderRadius={borderRadius}
+            shadows={shadows}
+            testID="account-leaderboard"
           />
           <MenuItem
             label={`Saved Addresses${addressBook.addresses.length > 0 ? ` (${addressBook.addresses.length})` : ''}`}

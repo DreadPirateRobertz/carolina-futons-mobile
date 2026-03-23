@@ -987,6 +987,26 @@ export class WixClient {
     }
   }
 
+  /**
+   * Fetch the loyalty leaderboard from the Wix backend webMethod (cf-op6).
+   * Returns ranked entries and the current user's rank if authenticated.
+   */
+  async getLeaderboard(params: {
+    period: 'allTime' | 'weekly';
+    limit: number;
+  }): Promise<{
+    entries: Array<{
+      memberId: string;
+      nickname: string;
+      points: number;
+      tier: string;
+      rank: number;
+    }>;
+    currentUserRank: number | null;
+  }> {
+    return this.post('/_functions/getLeaderboard', params);
+  }
+
   // ── Wix Data Mutations ──────────────────────────────────────
 
   async insertDataItem(
