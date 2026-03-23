@@ -29,6 +29,7 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { BNPLModal } from '@/components/BNPLModal';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
+import { CartItemDeliveryEstimate } from '@/components/CartItemDeliveryEstimate';
 import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
@@ -572,6 +573,7 @@ function CartItemRow({
               {item.fabric.name}
               {item.fabric.price > 0 && ` (+${formatPrice(item.fabric.price)})`}
             </Text>
+            <CartItemDeliveryEstimate item={item} testID={`cart-item-delivery-${item.id}`} />
           </View>
           <TouchableOpacity
             onPress={onRemove}
