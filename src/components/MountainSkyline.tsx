@@ -171,7 +171,7 @@ export function MountainSkyline({
               <Path
                 key={`canopy-${i}-${j}`}
                 d={canopy.path}
-                fill={colors.treeDark}
+                fill={colors.treeFill}
                 opacity={canopy.opacity}
               />
             ))}
