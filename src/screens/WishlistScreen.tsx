@@ -18,7 +18,7 @@ import {
   Platform,
   Share,
 } from 'react-native';
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
@@ -198,7 +198,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
 
   const renderItem = useCallback(
     ({ item }: { item: WishlistProduct }) => (
-      <Swipeable
+      <ReanimatedSwipeable
         renderRightActions={renderSwipeActions(item)}
         overshootRight={false}
         testID={`wishlist-swipeable-${item.id}`}
@@ -219,7 +219,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
             </View>
           )}
         </View>
-      </Swipeable>
+      </ReanimatedSwipeable>
     ),
     [onProductPress, handleLongPress, colors, renderSwipeActions],
   );
