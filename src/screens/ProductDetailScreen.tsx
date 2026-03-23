@@ -88,6 +88,8 @@ import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 import { useProductReviews } from '@/hooks/useProductReviews';
 import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
 import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
+import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
+import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -228,6 +230,7 @@ export function ProductDetailScreen({
   const shippingEstimate = useShippingEstimate(catalogProductId);
 
   const { addViewed } = useRecentlyViewed();
+  const { slugs: recentSlugs, addSlug } = useRecentlyViewedSlugs();
 
   // Track product view on mount
   useEffect(() => {
@@ -235,7 +238,9 @@ export function ProductDetailScreen({
     const productId = catalogProduct?.id ?? toProductId(`prod-${model.id}`);
     addViewed(productId);
     trackView(productId);
-  }, [model.id, catalogProduct?.id, addViewed, trackView]);
+    const slug = catalogProduct?.slug ?? String(model.id);
+    addSlug(slug);
+  }, [model.id, catalogProduct?.id, catalogProduct?.slug, addViewed, trackView, addSlug]);
 
   // --- Parallax scroll tracking ---
   const scrollY = useSharedValue(0);
@@ -1415,6 +1420,13 @@ export function ProductDetailScreen({
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* Recently Viewed rail */}
+        <RecentlyViewedRail
+          slugs={recentSlugs}
+          currentSlug={catalogProduct?.slug ?? String(model.id)}
+          onProductPress={(slug) => navigation.push('ProductDetail', { slug })}
+        />
 
         {/* Bottom spacer */}
         <View style={{ height: spacing.xxl }} />
