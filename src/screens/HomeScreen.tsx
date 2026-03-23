@@ -34,9 +34,8 @@ import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { StreakDangerBanner } from '@/components/StreakDangerBanner';
-import { ChallengeCompletedToast } from '@/components/ChallengeCompletedToast';
 import { TierUpgradeToast } from '@/components/TierUpgradeToast';
-import { useTriggerMoments } from '@/hooks/useTriggerMoments';
+import { useTriggerMomentsContext } from '@/contexts/TriggerMomentsContext';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -75,7 +74,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     quizTaken,
   } = useQuizRecommendations();
   const { challenges } = useActiveChallenges();
-  const { triggers, dismiss } = useTriggerMoments();
+  const { triggers, dismiss } = useTriggerMomentsContext();
   const skyState = useLivingSky();
 
   const handleOpenAR = useCallback(() => {
@@ -451,16 +450,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </View>
       </ScrollView>
 
-      {/* Gamification toasts — cfutons_mobile-0lt */}
-      {triggers.challengeCompleted && (
-        <ChallengeCompletedToast
-          title={triggers.challengeCompleted.title}
-          rewardPoints={triggers.challengeCompleted.rewardPoints}
-          visible={true}
-          testID="home-challenge-toast"
-          onDismiss={() => dismiss('challengeCompleted')}
-        />
-      )}
+      {/* ChallengeCompletedToast is rendered globally by TriggerMomentsContext — hq-qrjk2 */}
       {triggers.tierChanged && (
         <TierUpgradeToast
           tier={triggers.tierChanged}

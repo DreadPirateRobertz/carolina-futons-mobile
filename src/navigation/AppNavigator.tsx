@@ -20,6 +20,7 @@ import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { BadgeToastProvider } from '@/contexts/BadgeToastContext';
+import { TriggerMomentsProvider } from '@/contexts/TriggerMomentsContext';
 
 const OnboardingScreenWithBoundary = withScreenErrorBoundary(OnboardingScreen, 'Onboarding');
 
@@ -246,226 +247,235 @@ export function AppNavigator() {
 
   return (
     <BadgeToastProvider>
-      <Suspense fallback={<LazyFallback />}>
-        <Stack.Navigator
-          screenOptions={{ headerShown: false }}
-          initialRouteName={hasSeenOnboarding ? 'Tabs' : 'Onboarding'}
-        >
-          <Stack.Screen name="Onboarding">
-            {({ navigation: nav }) => (
-              <OnboardingScreenWithBoundary
-                onComplete={() => {
-                  handleOnboardingComplete();
-                  nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="Tabs" component={TabNavigator} />
-          <Stack.Screen
-            name="AR"
-            component={ARScreen}
-            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
-          />
-          <Stack.Screen
-            name="ProductDetail"
-            component={ProductDetailScreen}
-            options={fadeTransition}
-          />
-          <Stack.Screen name="Category" component={CategoryScreen} options={fadeTransition} />
-          <Stack.Screen name="Checkout">
-            {({ navigation: nav }) => (
-              <CheckoutScreen
-                onOrderComplete={(order) => {
-                  nav.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [
-                        { name: 'Tabs' },
-                        { name: 'PaymentConfirmation', params: { order } },
-                      ],
-                    }),
-                  );
-                }}
-                onBack={() => nav.goBack()}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="PaymentConfirmation">
-            {({ route, navigation: nav }) => {
-              // Guard against malformed deep-links or push notification payloads
-              // that arrive without the required params — crash-safe fallback.
-              if (!route.params?.order) {
-                nav.goBack();
-                return null;
-              }
-              const { order } = route.params as { order: OrderConfirmation };
-              return (
-                <Suspense fallback={<LazyFallback />}>
-                  <PaymentConfirmationScreen
-                    order={order}
-                    onSuccess={() =>
-                      nav.replace('OrderSuccess', {
-                        orderId: order.orderId,
-                        orderNumber: order.orderNumber,
-                      })
-                    }
-                    onRetry={() => nav.goBack()}
-                  />
-                </Suspense>
-              );
-            }}
-          </Stack.Screen>
-          <Stack.Screen name="OrderSuccess">
-            {({ route, navigation: nav }) => {
-              // Guard against malformed deep-links or push notification payloads.
-              if (!route.params?.orderNumber) {
-                nav.goBack();
-                return null;
-              }
-              const { orderNumber } = route.params as {
-                orderNumber: string;
-              };
-              return (
-                <Suspense fallback={<LazyFallback />}>
-                  <OrderSuccessScreen
-                    orderNumber={orderNumber}
-                    onContinueShopping={() =>
-                      nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }))
-                    }
-                    onViewOrders={() =>
-                      nav.dispatch(
-                        CommonActions.reset({
-                          index: 1,
-                          routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
-                        }),
-                      )
-                    }
-                  />
-                </Suspense>
-              );
-            }}
-          </Stack.Screen>
-          <Stack.Screen name="OrderConfirmation">
-            {({ route, navigation: nav }) => (
-              <OrderConfirmationScreen
-                order={(route.params as { order: OrderConfirmation }).order}
-                onContinueShopping={() => {
-                  nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
-                }}
-                onViewOrders={() => {
-                  nav.dispatch(
-                    CommonActions.reset({
-                      index: 1,
-                      routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
-                    }),
-                  );
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="OrderHistory">
-            {({ navigation: nav }) => (
-              <OrderHistoryScreen
-                onSelectOrder={(orderId) => nav.navigate('OrderDetail', { orderId })}
-                onStartShopping={() => {
-                  nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="OrderDetail">
-            {({ route, navigation: nav }) => (
-              <OrderDetailScreen
-                orderId={(route.params as { orderId: string }).orderId}
-                onBack={() => nav.goBack()}
-                onReorderSuccess={() => {
-                  nav.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [{ name: 'Tabs', state: { index: 2 } } as any],
-                    }),
-                  );
-                }}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="Login" component={LoginScreen} options={modalTransition} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} options={modalTransition} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} />
-          <Stack.Screen name="Wishlist" component={WishlistScreen} />
-          <Stack.Screen name="StoreLocator" component={StoreLocatorScreen} />
-          <Stack.Screen name="StoreDetail" component={StoreDetailScreen} />
-          <Stack.Screen
-            name="ARWeb"
-            component={ARWebScreen}
-            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
-          />
-          <Stack.Screen name="Collections" component={CollectionsScreen} options={fadeTransition} />
-          <Stack.Screen
-            name="CollectionDetail"
-            component={CollectionDetailScreen}
-            options={fadeTransition}
-          />
-          <Stack.Screen name="Premium">
-            {({ navigation: nav }) => <PremiumScreen onBack={() => nav.goBack()} />}
-          </Stack.Screen>
-          <Stack.Screen name="StyleQuiz">
-            {({ navigation: nav }) => (
-              <StyleQuizScreen
-                onComplete={() => nav.goBack()}
-                onBack={() => nav.goBack()}
-                onProductPress={(slug) =>
-                  nav.navigate('ProductDetail', { productId: slug, source: 'quiz' })
-                }
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />
-          <Stack.Screen name="Compare" options={fadeTransition}>
-            {({ navigation: nav, route }) => {
-              const { PRODUCTS } = require('@/data/products');
-              const products = (route.params?.productSlugs ?? [])
-                .map((slug: string) => PRODUCTS.find((p: { slug: string }) => p.slug === slug))
-                .filter(Boolean);
-              return (
-                <CompareScreen
-                  products={products}
-                  onRemove={(id: string) => {
-                    const remaining = products.filter((p: { id: string }) => p.id !== id);
-                    if (remaining.length === 0) {
-                      nav.goBack();
-                    } else {
-                      nav.setParams({
-                        productSlugs: remaining.map((p: { slug: string }) => p.slug),
-                      });
-                    }
+      <TriggerMomentsProvider>
+        <Suspense fallback={<LazyFallback />}>
+          <Stack.Navigator
+            screenOptions={{ headerShown: false }}
+            initialRouteName={hasSeenOnboarding ? 'Tabs' : 'Onboarding'}
+          >
+            <Stack.Screen name="Onboarding">
+              {({ navigation: nav }) => (
+                <OnboardingScreenWithBoundary
+                  onComplete={() => {
+                    handleOnboardingComplete();
+                    nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
                   }}
-                  onProductPress={(p: { slug: string }) =>
-                    nav.navigate('ProductDetail', { slug: p.slug })
-                  }
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Tabs" component={TabNavigator} />
+            <Stack.Screen
+              name="AR"
+              component={ARScreen}
+              options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+            />
+            <Stack.Screen
+              name="ProductDetail"
+              component={ProductDetailScreen}
+              options={fadeTransition}
+            />
+            <Stack.Screen name="Category" component={CategoryScreen} options={fadeTransition} />
+            <Stack.Screen name="Checkout">
+              {({ navigation: nav }) => (
+                <CheckoutScreen
+                  onOrderComplete={(order) => {
+                    nav.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [
+                          { name: 'Tabs' },
+                          { name: 'PaymentConfirmation', params: { order } },
+                        ],
+                      }),
+                    );
+                  }}
                   onBack={() => nav.goBack()}
                 />
-              );
-            }}
-          </Stack.Screen>
-          <Stack.Screen name="PrivacyPolicy">
-            {({ navigation: nav }) => <PrivacyPolicyScreen onBack={() => nav.goBack()} />}
-          </Stack.Screen>
-          <Stack.Screen name="RoomGallery" options={fadeTransition}>
-            {({ navigation: nav }) => (
-              <RoomGalleryScreen
-                onProductPress={(productId) => nav.navigate('ProductDetail', { slug: productId })}
-              />
-            )}
-          </Stack.Screen>
-          <Stack.Screen name="Loyalty" options={modalTransition}>
-            {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
-          </Stack.Screen>
-          <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
-        </Stack.Navigator>
-      </Suspense>
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="PaymentConfirmation">
+              {({ route, navigation: nav }) => {
+                // Guard against malformed deep-links or push notification payloads
+                // that arrive without the required params — crash-safe fallback.
+                if (!route.params?.order) {
+                  nav.goBack();
+                  return null;
+                }
+                const { order } = route.params as { order: OrderConfirmation };
+                return (
+                  <Suspense fallback={<LazyFallback />}>
+                    <PaymentConfirmationScreen
+                      order={order}
+                      onSuccess={() =>
+                        nav.replace('OrderSuccess', {
+                          orderId: order.orderId,
+                          orderNumber: order.orderNumber,
+                        })
+                      }
+                      onRetry={() => nav.goBack()}
+                    />
+                  </Suspense>
+                );
+              }}
+            </Stack.Screen>
+            <Stack.Screen name="OrderSuccess">
+              {({ route, navigation: nav }) => {
+                // Guard against malformed deep-links or push notification payloads.
+                if (!route.params?.orderNumber) {
+                  nav.goBack();
+                  return null;
+                }
+                const { orderNumber } = route.params as {
+                  orderNumber: string;
+                };
+                return (
+                  <Suspense fallback={<LazyFallback />}>
+                    <OrderSuccessScreen
+                      orderNumber={orderNumber}
+                      onContinueShopping={() =>
+                        nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }))
+                      }
+                      onViewOrders={() =>
+                        nav.dispatch(
+                          CommonActions.reset({
+                            index: 1,
+                            routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
+                          }),
+                        )
+                      }
+                    />
+                  </Suspense>
+                );
+              }}
+            </Stack.Screen>
+            <Stack.Screen name="OrderConfirmation">
+              {({ route, navigation: nav }) => (
+                <OrderConfirmationScreen
+                  order={(route.params as { order: OrderConfirmation }).order}
+                  onContinueShopping={() => {
+                    nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
+                  }}
+                  onViewOrders={() => {
+                    nav.dispatch(
+                      CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'Tabs' }, { name: 'OrderHistory' }],
+                      }),
+                    );
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="OrderHistory">
+              {({ navigation: nav }) => (
+                <OrderHistoryScreen
+                  onSelectOrder={(orderId) => nav.navigate('OrderDetail', { orderId })}
+                  onStartShopping={() => {
+                    nav.dispatch(CommonActions.reset({ index: 0, routes: [{ name: 'Tabs' }] }));
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="OrderDetail">
+              {({ route, navigation: nav }) => (
+                <OrderDetailScreen
+                  orderId={(route.params as { orderId: string }).orderId}
+                  onBack={() => nav.goBack()}
+                  onReorderSuccess={() => {
+                    nav.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'Tabs', state: { index: 2 } } as any],
+                      }),
+                    );
+                  }}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Login" component={LoginScreen} options={modalTransition} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} options={modalTransition} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+            />
+            <Stack.Screen name="Wishlist" component={WishlistScreen} />
+            <Stack.Screen name="StoreLocator" component={StoreLocatorScreen} />
+            <Stack.Screen name="StoreDetail" component={StoreDetailScreen} />
+            <Stack.Screen
+              name="ARWeb"
+              component={ARWebScreen}
+              options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+            />
+            <Stack.Screen
+              name="Collections"
+              component={CollectionsScreen}
+              options={fadeTransition}
+            />
+            <Stack.Screen
+              name="CollectionDetail"
+              component={CollectionDetailScreen}
+              options={fadeTransition}
+            />
+            <Stack.Screen name="Premium">
+              {({ navigation: nav }) => <PremiumScreen onBack={() => nav.goBack()} />}
+            </Stack.Screen>
+            <Stack.Screen name="StyleQuiz">
+              {({ navigation: nav }) => (
+                <StyleQuizScreen
+                  onComplete={() => nav.goBack()}
+                  onBack={() => nav.goBack()}
+                  onProductPress={(slug) =>
+                    nav.navigate('ProductDetail', { productId: slug, source: 'quiz' })
+                  }
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Search" component={SearchScreen} options={fadeTransition} />
+            <Stack.Screen name="Compare" options={fadeTransition}>
+              {({ navigation: nav, route }) => {
+                const { PRODUCTS } = require('@/data/products');
+                const products = (route.params?.productSlugs ?? [])
+                  .map((slug: string) => PRODUCTS.find((p: { slug: string }) => p.slug === slug))
+                  .filter(Boolean);
+                return (
+                  <CompareScreen
+                    products={products}
+                    onRemove={(id: string) => {
+                      const remaining = products.filter((p: { id: string }) => p.id !== id);
+                      if (remaining.length === 0) {
+                        nav.goBack();
+                      } else {
+                        nav.setParams({
+                          productSlugs: remaining.map((p: { slug: string }) => p.slug),
+                        });
+                      }
+                    }}
+                    onProductPress={(p: { slug: string }) =>
+                      nav.navigate('ProductDetail', { slug: p.slug })
+                    }
+                    onBack={() => nav.goBack()}
+                  />
+                );
+              }}
+            </Stack.Screen>
+            <Stack.Screen name="PrivacyPolicy">
+              {({ navigation: nav }) => <PrivacyPolicyScreen onBack={() => nav.goBack()} />}
+            </Stack.Screen>
+            <Stack.Screen name="RoomGallery" options={fadeTransition}>
+              {({ navigation: nav }) => (
+                <RoomGalleryScreen
+                  onProductPress={(productId) => nav.navigate('ProductDetail', { slug: productId })}
+                />
+              )}
+            </Stack.Screen>
+            <Stack.Screen name="Loyalty" options={modalTransition}>
+              {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
+            </Stack.Screen>
+            <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
+          </Stack.Navigator>
+        </Suspense>
+      </TriggerMomentsProvider>
     </BadgeToastProvider>
   );
 }

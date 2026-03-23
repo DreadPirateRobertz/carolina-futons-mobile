@@ -45,9 +45,9 @@ jest.mock('@/hooks/useActiveChallenges', () => ({
   useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: jest.fn() }),
 }));
 
-const mockUseTriggerMoments = jest.fn();
-jest.mock('@/hooks/useTriggerMoments', () => ({
-  useTriggerMoments: () => mockUseTriggerMoments(),
+const mockUseTriggerMomentsContext = jest.fn();
+jest.mock('@/contexts/TriggerMomentsContext', () => ({
+  useTriggerMomentsContext: () => mockUseTriggerMomentsContext(),
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -75,9 +75,10 @@ describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default: no active triggers
-    mockUseTriggerMoments.mockReturnValue({
-      triggers: { tierChanged: null, streakDanger: false },
+    mockUseTriggerMomentsContext.mockReturnValue({
+      triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
       dismiss: jest.fn(),
+      reportChallengesCompleted: jest.fn(),
     });
     // Default: collections load with realistic featured data matching static COLLECTIONS
     mockUseCollections.mockReturnValue({
@@ -264,18 +265,20 @@ describe('HomeScreen', () => {
   // Streak danger banner (cm-a7bqj)
   describe('StreakDangerBanner integration', () => {
     it('does not show streak danger banner when streakDanger is false', () => {
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: { tierChanged: null, streakDanger: false },
+      mockUseTriggerMomentsContext.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
         dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
       });
       const { queryByTestId } = renderHomeScreen();
       expect(queryByTestId('streak-danger-banner')).toBeNull();
     });
 
     it('shows streak danger banner when streakDanger is true', () => {
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: { tierChanged: null, streakDanger: true },
+      mockUseTriggerMomentsContext.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: true, challengeCompleted: null },
         dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
       });
       const { getByTestId } = renderHomeScreen();
       expect(getByTestId('streak-danger-banner')).toBeTruthy();
@@ -283,9 +286,10 @@ describe('HomeScreen', () => {
 
     it('pressing dismiss calls dismiss("streakDanger")', () => {
       const mockDismiss = jest.fn();
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: { tierChanged: null, streakDanger: true },
+      mockUseTriggerMomentsContext.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: true, challengeCompleted: null },
         dismiss: mockDismiss,
+        reportChallengesCompleted: jest.fn(),
       });
       const { getByTestId } = renderHomeScreen();
       fireEvent.press(getByTestId('streak-danger-dismiss'));
@@ -355,52 +359,12 @@ describe('HomeScreen', () => {
     });
   });
 
-  // cfutons_mobile-0lt — gamification trigger toasts
-  describe('ChallengeCompletedToast integration', () => {
-    it('does not show challenge toast when challengeCompleted is null', () => {
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
-        dismiss: jest.fn(),
-        reportChallengesCompleted: jest.fn(),
-      });
-      const { queryByTestId } = renderHomeScreen();
-      expect(queryByTestId('home-challenge-toast')).toBeNull();
-    });
-
-    it('shows challenge toast when challengeCompleted is set', () => {
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: {
-          tierChanged: null,
-          streakDanger: false,
-          challengeCompleted: { challengeId: 'c1', title: 'Spring Refresh', rewardPoints: 200 },
-        },
-        dismiss: jest.fn(),
-        reportChallengesCompleted: jest.fn(),
-      });
-      const { getByTestId } = renderHomeScreen();
-      expect(getByTestId('home-challenge-toast')).toBeTruthy();
-    });
-
-    it('dismisses challenge toast on animation end by calling dismiss("challengeCompleted")', () => {
-      const mockDismiss = jest.fn();
-      mockUseTriggerMoments.mockReturnValue({
-        triggers: {
-          tierChanged: null,
-          streakDanger: false,
-          challengeCompleted: { challengeId: 'c1', title: 'Spring Refresh', rewardPoints: 200 },
-        },
-        dismiss: mockDismiss,
-        reportChallengesCompleted: jest.fn(),
-      });
-      const { getByTestId } = renderHomeScreen();
-      fireEvent(getByTestId('home-challenge-toast'), 'onDismiss');
-      expect(mockDismiss).toHaveBeenCalledWith('challengeCompleted');
-    });
-  });
+  // cfutons_mobile-0lt — ChallengeCompletedToast is rendered globally by TriggerMomentsContext
+  // (hq-qrjk2). Tests for its visibility live in TriggerMomentsContext.test.tsx.
 
   describe('TierUpgradeToast integration', () => {
     it('does not show tier upgrade toast when tierChanged is null', () => {
-      mockUseTriggerMoments.mockReturnValue({
+      mockUseTriggerMomentsContext.mockReturnValue({
         triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
         dismiss: jest.fn(),
         reportChallengesCompleted: jest.fn(),
@@ -410,7 +374,7 @@ describe('HomeScreen', () => {
     });
 
     it('shows tier upgrade toast when tierChanged is set', () => {
-      mockUseTriggerMoments.mockReturnValue({
+      mockUseTriggerMomentsContext.mockReturnValue({
         triggers: { tierChanged: 'silver', streakDanger: false, challengeCompleted: null },
         dismiss: jest.fn(),
         reportChallengesCompleted: jest.fn(),
@@ -421,7 +385,7 @@ describe('HomeScreen', () => {
 
     it('dismisses tier toast on animation end by calling dismiss("tierChanged")', () => {
       const mockDismiss = jest.fn();
-      mockUseTriggerMoments.mockReturnValue({
+      mockUseTriggerMomentsContext.mockReturnValue({
         triggers: { tierChanged: 'gold', streakDanger: false, challengeCompleted: null },
         dismiss: mockDismiss,
         reportChallengesCompleted: jest.fn(),
