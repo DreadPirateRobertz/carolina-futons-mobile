@@ -221,6 +221,39 @@ describe('DailyQuestsCard', () => {
     expect(mockNavigate).toHaveBeenCalledWith('AR');
   });
 
+  it('tapping referral quest navigates to Loyalty screen', () => {
+    mockUseDailyQuests.mockReturnValue({
+      quests: [{ id: 'q-referral', title: 'Refer a friend', action: 'referral', pointReward: 75, completed: false }],
+      loading: false,
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = renderCard();
+    fireEvent.press(getByTestId('daily-quest-row-q-referral'));
+    expect(mockNavigate).toHaveBeenCalledWith('Loyalty');
+  });
+
+  it('tapping browse quest navigates to Tabs/Shop', () => {
+    mockUseDailyQuests.mockReturnValue({
+      quests: [{ id: 'q-browse', title: 'View 5 products', action: 'browse', pointReward: 15, completed: false }],
+      loading: false,
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = renderCard();
+    fireEvent.press(getByTestId('daily-quest-row-q-browse'));
+    expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Shop' });
+  });
+
+  it('tapping wishlist_share quest navigates to Wishlist', () => {
+    mockUseDailyQuests.mockReturnValue({
+      quests: [{ id: 'q-ws', title: 'Share your wishlist', action: 'wishlist_share', pointReward: 20, completed: false }],
+      loading: false,
+      refresh: jest.fn(),
+    });
+    const { getByTestId } = renderCard();
+    fireEvent.press(getByTestId('daily-quest-row-q-ws'));
+    expect(mockNavigate).toHaveBeenCalledWith('Wishlist');
+  });
+
   it('onNavigate prop overrides default navigation for incomplete row', () => {
     const onNavigate = jest.fn();
     const { getByTestId } = renderCard({ onNavigate });

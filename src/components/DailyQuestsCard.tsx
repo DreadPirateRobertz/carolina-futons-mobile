@@ -38,6 +38,7 @@ function navigateForAction(
 ): void {
   switch (action) {
     case 'purchase':
+    case 'browse':
       navigate('Tabs', { screen: 'Shop' });
       break;
     case 'review':
@@ -47,7 +48,11 @@ function navigateForAction(
       navigate('AR');
       break;
     case 'wishlist':
+    case 'wishlist_share':
       navigate('Wishlist');
+      break;
+    case 'referral':
+      navigate('Loyalty');
       break;
   }
 }

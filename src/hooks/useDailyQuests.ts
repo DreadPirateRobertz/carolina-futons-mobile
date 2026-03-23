@@ -1,19 +1,21 @@
 /**
  * @module useDailyQuests
  *
- * Loads today's daily quests, caches them in AsyncStorage keyed by date,
- * and resets automatically when the date changes (midnight rollover).
+ * Loads today's daily quests from the getMyDailyQuests webMethod (cf-6tv),
+ * caches them in AsyncStorage keyed by date, and resets automatically when
+ * the date changes (midnight rollover).
  *
- * Data source: mock until cf-6tv (getMyDailyQuests webMethod) ships.
- * When cf-6tv lands, replace MOCK_QUESTS with a WixClient.callFunction call.
+ * When Wix client is unavailable (unauthenticated / offline), falls back to
+ * static mock quests. Calling refresh() bypasses the cache and re-fetches.
  *
  * cf-mz3
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useOptionalWixClient } from '@/services/wix';
 
-export type QuestAction = 'purchase' | 'review' | 'ar' | 'wishlist';
+export type QuestAction = 'purchase' | 'review' | 'ar' | 'wishlist' | 'referral' | 'browse' | 'wishlist_share';
 
 export interface DailyQuest {
   id: string;
@@ -28,6 +30,20 @@ interface StoredQuests {
   quests: DailyQuest[];
 }
 
+interface ApiQuest {
+  id: string;
+  title: string;
+  action: string;
+  pointReward: number;
+  completed: boolean;
+  completedAt: string | null;
+}
+
+interface ApiResponse {
+  quests: ApiQuest[];
+  date: string;
+}
+
 export interface UseDailyQuestsResult {
   quests: DailyQuest[];
   loading: boolean;
@@ -36,7 +52,7 @@ export interface UseDailyQuestsResult {
 
 const STORAGE_KEY = 'daily-quests';
 
-// Mock quests — replaced by cf-6tv webMethod when available
+// Fallback quests — used when unauthenticated or API unavailable
 const MOCK_QUESTS: DailyQuest[] = [
   {
     id: 'q-daily-purchase',
@@ -65,38 +81,72 @@ function todayDateString(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function mapApiQuest(api: ApiQuest): DailyQuest {
+  return {
+    id: api.id,
+    title: api.title,
+    action: api.action as QuestAction,
+    pointReward: api.pointReward,
+    completed: api.completed,
+  };
+}
+
 export function useDailyQuests(): UseDailyQuestsResult {
+  const wixClient = useOptionalWixClient();
   const [quests, setQuests] = useState<DailyQuest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const today = todayDateString();
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const stored: StoredQuests = JSON.parse(raw);
-        if (stored.date === today) {
-          setQuests(stored.quests);
-          setLoading(false);
-          return;
+  const load = useCallback(
+    async (bustCache = false) => {
+      setLoading(true);
+      try {
+        const today = todayDateString();
+
+        // Check cache unless explicitly busting
+        if (!bustCache) {
+          const raw = await AsyncStorage.getItem(STORAGE_KEY).catch(() => null);
+          if (raw) {
+            const stored: StoredQuests = JSON.parse(raw);
+            if (stored.date === today) {
+              setQuests(stored.quests);
+              return;
+            }
+          }
         }
+
+        // Cache miss, stale, or bust — fetch from API or use mock
+        let freshQuests: DailyQuest[];
+        if (wixClient) {
+          const res = await wixClient.callFunction<ApiResponse>(
+            '/_functions/getMyDailyQuests',
+            'POST',
+            {},
+          );
+          freshQuests = Array.isArray(res?.quests) ? res.quests.map(mapApiQuest) : MOCK_QUESTS;
+        } else {
+          freshQuests = MOCK_QUESTS;
+        }
+
+        const fresh: StoredQuests = { date: today, quests: freshQuests };
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)).catch(() => {});
+        setQuests(freshQuests);
+      } catch {
+        // Any error — fall back to in-memory mock data
+        setQuests(MOCK_QUESTS);
+      } finally {
+        setLoading(false);
       }
-      // Stale or missing — load fresh mock data and persist
-      const fresh: StoredQuests = { date: today, quests: MOCK_QUESTS };
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-      setQuests(MOCK_QUESTS);
-    } catch {
-      // Storage error — fall back to in-memory mock data
-      setQuests(MOCK_QUESTS);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [wixClient],
+  );
 
   useEffect(() => {
     load();
   }, [load]);
 
-  return { quests, loading, refresh: load };
+  const refresh = useCallback(() => {
+    load(true);
+  }, [load]);
+
+  return { quests, loading, refresh };
 }

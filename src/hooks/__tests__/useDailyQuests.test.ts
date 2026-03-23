@@ -3,6 +3,7 @@
  *
  * TDD spec for the hook that loads daily quests, stores them with the
  * current date, and triggers a refresh when the date changes (midnight reset).
+ * Includes API integration via getMyDailyQuests webMethod (cf-6tv).
  */
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +15,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn().mockResolvedValue(undefined),
   removeItem: jest.fn().mockResolvedValue(undefined),
+}));
+
+const mockCallFunction = jest.fn();
+const mockUseOptionalWixClient = jest.fn();
+jest.mock('@/services/wix', () => ({
+  useOptionalWixClient: () => mockUseOptionalWixClient(),
 }));
 
 const mockGetItem = AsyncStorage.getItem as jest.Mock;
@@ -35,11 +42,25 @@ const MOCK_QUESTS_JSON = JSON.stringify({
 
 // ── Tests ─────────────────────────────────────────────────────────────────
 
+// ── API response fixture ───────────────────────────────────────────────────
+
+const API_QUESTS_TODAY = {
+  date: TODAY,
+  quests: [
+    { id: 'api-q1', title: 'Place an order today', action: 'purchase', pointReward: 50, completed: false, completedAt: null },
+    { id: 'api-q2', title: 'Write a product review', action: 'review', pointReward: 30, completed: true, completedAt: '2026-03-23T09:00:00Z' },
+    { id: 'api-q3', title: 'Refer a friend', action: 'referral', pointReward: 75, completed: false, completedAt: null },
+  ],
+};
+
 describe('useDailyQuests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default date: today
     jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(`${TODAY}T10:00:00.000Z`);
+    // Default: no Wix client (unauthenticated / offline)
+    mockUseOptionalWixClient.mockReturnValue(null);
+    mockCallFunction.mockReset();
   });
 
   afterEach(() => {
@@ -172,5 +193,97 @@ describe('useDailyQuests', () => {
     await act(async () => {});
     expect(result.current.loading).toBe(false);
     expect(result.current.quests).toHaveLength(3);
+  });
+
+  // ── API integration (cf-6tv) ─────────────────────────────────────────────
+
+  it('calls getMyDailyQuests API when Wix client is available and no cache', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/getMyDailyQuests', 'POST', {});
+    expect(result.current.quests).toHaveLength(3);
+    expect(result.current.quests[0].id).toBe('api-q1');
+  });
+
+  it('maps API completed flag correctly', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(result.current.quests[0].completed).toBe(false);
+    expect(result.current.quests[1].completed).toBe(true);
+  });
+
+  it('persists API response to AsyncStorage with today\'s date', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(mockSetItem).toHaveBeenCalledWith(
+      'daily-quests',
+      expect.stringContaining(`"date":"${TODAY}"`),
+    );
+  });
+
+  it('uses cached data (same day) even when Wix client is available', async () => {
+    mockGetItem.mockResolvedValue(MOCK_QUESTS_JSON);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    // Cache hit — API should not be called
+    expect(mockCallFunction).not.toHaveBeenCalled();
+    expect(result.current.quests[0].id).toBe('q1');
+  });
+
+  it('falls back to mock quests when API call fails', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockRejectedValue(new Error('API unavailable'));
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(result.current.loading).toBe(false);
+    expect(result.current.quests).toHaveLength(3);
+  });
+
+  it('uses mock quests when Wix client is unavailable (no auth)', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue(null);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(mockCallFunction).not.toHaveBeenCalled();
+    expect(result.current.quests).toHaveLength(3);
+  });
+
+  it('refresh() bypasses cache and re-fetches from API', async () => {
+    // First load uses cache
+    mockGetItem.mockResolvedValue(MOCK_QUESTS_JSON);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(mockCallFunction).not.toHaveBeenCalled();
+
+    // Refresh should bypass cache and call API
+    await act(async () => {
+      result.current.refresh();
+    });
+    expect(mockCallFunction).toHaveBeenCalledTimes(1);
+    expect(result.current.quests[0].id).toBe('api-q1');
+  });
+
+  it('API quest with action "referral" is preserved in mapped quest', async () => {
+    mockGetItem.mockResolvedValue(null);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    const referralQuest = result.current.quests.find((q) => q.action === 'referral');
+    expect(referralQuest).toBeDefined();
+    expect(referralQuest?.id).toBe('api-q3');
   });
 });
