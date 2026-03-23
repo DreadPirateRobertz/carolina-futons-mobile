@@ -111,7 +111,12 @@ describe('StyleQuizScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Default: product not found — tests that need thumbnails override this
-    mockUseProductBySlug.mockReturnValue({ product: null, isLoading: false, error: null, refresh: jest.fn() });
+    mockUseProductBySlug.mockReturnValue({
+      product: null,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
   });
 
   // ── Rendering ───────────────────────────────────────────────────
@@ -456,7 +461,12 @@ describe('StyleQuizScreen', () => {
   });
 
   it('falls back to slug text when product is not found (graceful degradation)', () => {
-    mockUseProductBySlug.mockReturnValue({ product: null, isLoading: false, error: null, refresh: jest.fn() });
+    mockUseProductBySlug.mockReturnValue({
+      product: null,
+      isLoading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
     const { getByTestId, getAllByTestId } = render(
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
@@ -468,7 +478,13 @@ describe('StyleQuizScreen', () => {
 
   it('does not crash when product has no images', () => {
     mockUseProductBySlug.mockReturnValue({
-      product: { id: 'prod-1', slug: 'asheville-full', name: 'The Asheville', images: [], price: 378 },
+      product: {
+        id: 'prod-1',
+        slug: 'asheville-full',
+        name: 'The Asheville',
+        images: [],
+        price: 378,
+      },
       isLoading: false,
       error: null,
       refresh: jest.fn(),

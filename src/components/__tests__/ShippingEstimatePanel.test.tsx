@@ -33,7 +33,14 @@ jest.mock('@/hooks/useProductShippingEstimate', () => ({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function renderPanel(overrides?: Partial<typeof mockHookState>) {
-  mockHookState = { zip: '', setZip: mockSetZip, rate: null, isLoading: false, error: null, ...overrides };
+  mockHookState = {
+    zip: '',
+    setZip: mockSetZip,
+    rate: null,
+    isLoading: false,
+    error: null,
+    ...overrides,
+  };
   return render(
     <ThemeProvider>
       <ShippingEstimatePanel
@@ -189,14 +196,16 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'parcel',
         isEstimate: false,
         isFreight: false,
-        upsellMessage: 'Bundle savings — already paying for freight, add more items at no extra shipping cost',
+        upsellMessage:
+          'Bundle savings — already paying for freight, add more items at no extra shipping cost',
       },
     });
     expect(getByTestId('shipping-upsell-message')).toBeTruthy();
   });
 
   it('upsellMessage text matches rate.upsellMessage', () => {
-    const msg = 'Bundle savings — already paying for freight, add more items at no extra shipping cost';
+    const msg =
+      'Bundle savings — already paying for freight, add more items at no extra shipping cost';
     const { getByTestId } = renderPanel({
       zip: '28801',
       rate: {

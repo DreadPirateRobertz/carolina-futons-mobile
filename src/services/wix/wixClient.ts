@@ -970,7 +970,11 @@ export class WixClient {
       }>;
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new WixApiError(`Request timeout after ${this.timeoutMs}ms`, undefined, '/_functions/getLoyaltyAccount');
+        throw new WixApiError(
+          `Request timeout after ${this.timeoutMs}ms`,
+          undefined,
+          '/_functions/getLoyaltyAccount',
+        );
       }
       if (err instanceof WixApiError) throw err;
       throw new WixApiError(

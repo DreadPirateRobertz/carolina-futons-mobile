@@ -54,10 +54,7 @@ export function PointsToast({ points, visible, testID }: Props) {
       );
       translateY.value = withSequence(
         withTiming(-40, { duration: 300 }),
-        withDelay(
-          1200,
-          withTiming(-80, { duration: 400 }),
-        ),
+        withDelay(1200, withTiming(-80, { duration: 400 })),
       );
     });
   }, [visible, opacity, translateY]);

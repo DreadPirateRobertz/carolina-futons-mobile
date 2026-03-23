@@ -139,7 +139,11 @@ describe('useProductShippingEstimate (cm-9yn)', () => {
 
   it('sets isLoading=true while API is in flight then false on resolve', async () => {
     let resolve!: (v: unknown) => void;
-    mockGetShippingEstimate.mockReturnValueOnce(new Promise((r) => { resolve = r; }));
+    mockGetShippingEstimate.mockReturnValueOnce(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
 
     const { result } = renderEstimate();
     result.current.setZip(ZIP);
@@ -176,7 +180,11 @@ describe('useProductShippingEstimate (cm-9yn)', () => {
   it('ignores stale response when productId changes before resolution', async () => {
     let resolveStale!: (v: unknown) => void;
     mockGetShippingEstimate
-      .mockReturnValueOnce(new Promise((r) => { resolveStale = r; }))
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveStale = r;
+        }),
+      )
       .mockResolvedValueOnce({ ...PARCEL_RESPONSE, rate: '55.00', carrier: 'FedEx' });
 
     const { result, rerender } = renderHook(
@@ -240,9 +248,7 @@ describe('useProductShippingEstimate (cm-9yn)', () => {
     );
     result.current.setZip(ZIP);
     await waitFor(() => expect(mockGetShippingEstimate).toHaveBeenCalledTimes(1));
-    expect(mockGetShippingEstimate).toHaveBeenCalledWith(
-      expect.objectContaining({ itemCount: 3 }),
-    );
+    expect(mockGetShippingEstimate).toHaveBeenCalledWith(expect.objectContaining({ itemCount: 3 }));
   });
 
   it('does not pass itemCount when not provided', async () => {

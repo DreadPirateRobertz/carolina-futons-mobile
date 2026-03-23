@@ -56,7 +56,13 @@ beforeEach(() => {
 describe('useLoyalty hook', () => {
   it('returns 0 points and bronze tier for a new member with no account', async () => {
     mockGetLoyaltyAccount.mockResolvedValue(
-      makeApiResponse({ points: 0, tier: 'Bronze', nextTier: 'Silver', pointsToNext: 500, progress: 0 }),
+      makeApiResponse({
+        points: 0,
+        tier: 'Bronze',
+        nextTier: 'Silver',
+        pointsToNext: 500,
+        progress: 0,
+      }),
     );
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -69,7 +75,13 @@ describe('useLoyalty hook', () => {
 
   it('returns correct points, tier, and nextTier for an existing member', async () => {
     mockGetLoyaltyAccount.mockResolvedValue(
-      makeApiResponse({ points: 1500, tier: 'Gold', nextTier: null, pointsToNext: 0, progress: 100 }),
+      makeApiResponse({
+        points: 1500,
+        tier: 'Gold',
+        nextTier: null,
+        pointsToNext: 0,
+        progress: 100,
+      }),
     );
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -122,7 +134,10 @@ describe('useLoyalty hook', () => {
   });
 
   it('returns Bronze defaults when getTokens() returns no access token (unauthenticated)', async () => {
-    mockGetTokens.mockReturnValue({ accessToken: null, refreshToken: { value: 'r', role: 'visitor' } });
+    mockGetTokens.mockReturnValue({
+      accessToken: null,
+      refreshToken: { value: 'r', role: 'visitor' },
+    });
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(0);

@@ -97,8 +97,9 @@ describe('FreightNoticeBanner', () => {
       // The truck emoji Text should carry accessibilityElementsHidden so VoiceOver skips it
       const banner = getByTestId('freight-notice-banner');
       // Find the emoji node among children — it should be hidden
-      const allChildren = banner.findAll((node: { props: { accessibilityElementsHidden?: boolean; children?: unknown } }) =>
-        node.props.accessibilityElementsHidden === true,
+      const allChildren = banner.findAll(
+        (node: { props: { accessibilityElementsHidden?: boolean; children?: unknown } }) =>
+          node.props.accessibilityElementsHidden === true,
       );
       expect(allChildren.length).toBeGreaterThan(0);
     });
@@ -117,9 +118,7 @@ describe('FreightNoticeBanner', () => {
     });
 
     it('renders without crash when both are true simultaneously', () => {
-      expect(() =>
-        renderBanner({ requiresFreight: true, requiresLiftgate: true }),
-      ).not.toThrow();
+      expect(() => renderBanner({ requiresFreight: true, requiresLiftgate: true })).not.toThrow();
     });
   });
 });
