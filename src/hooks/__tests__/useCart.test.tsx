@@ -13,6 +13,7 @@ import { ConnectivityProvider } from '../useConnectivity';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { _resetForTesting } from '@/services/offlineQueue';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
+import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 
 let mockUser: { id: string; email: string; displayName: string; provider: string } | null = null;
 
@@ -1270,6 +1271,7 @@ describe('AsyncStorage error resilience', () => {
 describe('gamification events on addItem', () => {
   beforeEach(() => {
     clearEventBuffer();
+    gamificationRateLimiter.reset();
   });
 
   it('fires gamification_add_to_cart when a product is added', () => {
