@@ -92,6 +92,8 @@ import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
 import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 import { PointsChip } from '@/components/PointsChip';
+import { useProductResources } from '@/hooks/useProductResources';
+import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -233,6 +235,11 @@ export function ProductDetailScreen({
 
   const { addViewed } = useRecentlyViewed();
   const { slugs: recentSlugs, addSlug } = useRecentlyViewedSlugs();
+  const {
+    resources,
+    loading: resourcesLoading,
+    error: resourcesError,
+  } = useProductResources(catalogProductId ?? model.id);
 
   // Track product view on mount
   useEffect(() => {
@@ -815,6 +822,13 @@ export function ProductDetailScreen({
             {isPremium && <PremiumBadge size="sm" testID="ar-premium-badge" />}
           </TouchableOpacity>
         </View>
+
+        {/* Resources — spec sheets, care guides, videos, assembly guides */}
+        <ProductResourcesSection
+          resources={resources}
+          loading={resourcesLoading}
+          error={resourcesError}
+        />
 
         {/* Fabric Selector */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
