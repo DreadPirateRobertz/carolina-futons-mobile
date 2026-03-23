@@ -140,11 +140,7 @@ const ConfettiPiece = memo(function ConfettiPiece({ particle, run }: ConfettiPie
   }, [run]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const style = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: x.value },
-      { translateY: y.value },
-      { rotate: `${rotate.value}deg` },
-    ],
+    transform: [{ translateX: x.value }, { translateY: y.value }, { rotate: `${rotate.value}deg` }],
     opacity: opacity.value,
     width: particle.size,
     height: particle.size,
@@ -201,20 +197,18 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
   const tierEmoji = TIER_EMOJI[newTier];
 
   return (
-    <Modal
-      visible
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={onDismiss}
-    >
+    <Modal visible transparent animationType="fade" statusBarTranslucent onRequestClose={onDismiss}>
       <View
         testID="tier-celebration-modal"
         style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.85)' }]}
         accessibilityViewIsModal
       >
         {/* Confetti layer */}
-        <View testID="tier-celebration-confetti" style={StyleSheet.absoluteFillObject} pointerEvents="none">
+        <View
+          testID="tier-celebration-confetti"
+          style={StyleSheet.absoluteFillObject}
+          pointerEvents="none"
+        >
           {particles.map((p, i) => (
             <ConfettiPiece key={i} particle={p} run />
           ))}
@@ -226,7 +220,7 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
             styles.card,
             {
               backgroundColor: colors.espresso,
-              borderRadius: borderRadius.modal ?? 24,
+              borderRadius: borderRadius.xl,
               padding: spacing.xl,
             },
           ]}

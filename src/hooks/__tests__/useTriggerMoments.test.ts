@@ -114,9 +114,7 @@ describe('useTriggerMoments', () => {
         result.current.dismiss('tierChanged');
       });
       // setItem should be called with the new tier
-      await waitFor(() =>
-        expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'silver'),
-      );
+      await waitFor(() => expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'silver'));
     });
 
     it('dismissing a null trigger is a no-op', async () => {
