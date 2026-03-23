@@ -12,6 +12,37 @@ import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // Minimal mocks — only what HomeScreen transitively requires
+jest.mock('@/hooks/useActiveChallenges', () => ({
+  useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: jest.fn() }),
+}));
+jest.mock('@/hooks/useLivingSky', () => ({
+  useLivingSky: () => ({
+    skyColors: ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'],
+    glowColors: ['transparent', 'transparent'],
+    ridgeColors: { r1: '#1C4454', r2: '#487494', r3: '#7AA4BE', r4: '#AECCD8', tree: '#0C1C26' },
+    sunPos: { cx: 524, cy: 52, r: 16, opacity: 1 },
+    moonPos: { cx: 200, cy: 200, opacity: 0, phase: 0, shadowOffset: { dx: 0, dy: 0 } },
+    starOpacity: 0,
+    cloudOpacity: 0,
+    birdOpacity: 0,
+    fireflyOpacity: 0,
+    owlOpacity: 0,
+    rimOpacity: 0,
+    rimColor: '#FFFCE8',
+    navBg: '#fff',
+    navText: '#1E2A3A',
+    season: 'summer',
+    precipitationOpacity: 0,
+    precipitationType: 'none',
+  }),
+}));
+jest.mock('@/hooks/useTriggerMoments', () => ({
+  useTriggerMoments: () => ({
+    triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
+    dismiss: jest.fn(),
+    reportChallengesCompleted: jest.fn(),
+  }),
+}));
 jest.mock('expo-image', () => ({ Image: 'Image' }));
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
