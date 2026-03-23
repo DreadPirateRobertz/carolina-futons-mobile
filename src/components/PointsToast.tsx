@@ -11,6 +11,7 @@
 
 import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -28,8 +29,12 @@ interface Props {
   testID?: string;
 }
 
+const TAB_BAR_HEIGHT = 49;
+const TOAST_BOTTOM_PADDING = 8;
+
 export function PointsToast({ points, visible, testID }: Props) {
   const { colors, borderRadius } = useTheme();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -66,7 +71,11 @@ export function PointsToast({ points, visible, testID }: Props) {
 
   return (
     <Animated.View
-      style={[styles.container, animatedStyle]}
+      style={[
+        styles.container,
+        { bottom: TAB_BAR_HEIGHT + bottomInset + TOAST_BOTTOM_PADDING },
+        animatedStyle,
+      ]}
       testID={testID ?? 'points-toast'}
       accessibilityLabel={`${points} points earned`}
       accessibilityElementsHidden={!visible}
@@ -90,7 +99,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 100,
     zIndex: 999,
     pointerEvents: 'none',
   },

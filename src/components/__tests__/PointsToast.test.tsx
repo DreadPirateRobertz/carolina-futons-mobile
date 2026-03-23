@@ -5,10 +5,15 @@
  */
 
 import React from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { PointsToast } from '../PointsToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+
+const mockInsets = { bottom: 0, top: 0, left: 0, right: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
 
 // Mock reanimated — animation mechanics not under test
 jest.mock('react-native-reanimated', () => {
@@ -99,5 +104,29 @@ describe('PointsToast', () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     expect(() => renderToast({ points: 100, visible: true })).not.toThrow();
     jest.restoreAllMocks();
+  });
+
+  // ── Safe area bottom positioning (gh-254) ─────────────────────────
+
+  afterEach(() => {
+    mockInsets.bottom = 0;
+  });
+
+  it('positions above tab bar + home indicator (inset=34)', () => {
+    mockInsets.bottom = 34;
+    const { getByTestId } = renderToast({ points: 100, visible: true });
+    const toast = getByTestId('points-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    // TAB_BAR_HEIGHT(49) + bottom(34) + padding(8) = 91
+    expect(flatStyle.bottom).toBe(91);
+  });
+
+  it('positions above tab bar on non-indicator devices (inset=0)', () => {
+    mockInsets.bottom = 0;
+    const { getByTestId } = renderToast({ points: 100, visible: true });
+    const toast = getByTestId('points-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    // TAB_BAR_HEIGHT(49) + bottom(0) + padding(8) = 57
+    expect(flatStyle.bottom).toBe(57);
   });
 });

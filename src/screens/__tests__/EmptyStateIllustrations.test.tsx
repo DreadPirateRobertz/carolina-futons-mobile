@@ -14,6 +14,7 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { WishlistProvider } from '@/hooks/useWishlist';
 
 jest.useFakeTimers();
+afterAll(() => jest.useRealTimers());
 
 // Skip: illustration components not yet built (sprint bead cm-0qn)
 describe.skip('Empty state illustrations', () => {

@@ -6,6 +6,7 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useBadgeToast } from '../useBadgeToast';
 
 jest.useFakeTimers();
+afterAll(() => jest.useRealTimers());
 
 describe('useBadgeToast', () => {
   describe('initial state', () => {
