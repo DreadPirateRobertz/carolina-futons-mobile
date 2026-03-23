@@ -3,17 +3,34 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { Alert, Share } from 'react-native';
 import { WishlistScreen } from '../WishlistScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
-import { WishlistProvider, useWishlist, type WishlistItem } from '@/hooks/useWishlist';
+import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
-const product1 = PRODUCTS[0];
-const product2 = PRODUCTS[1];
+const product1 = PRODUCTS[0]; // prod-asheville-full  $349
+const product2 = PRODUCTS[1]; // prod-blue-ridge-queen $449
+const product3 = PRODUCTS[2]; // prod-pisgah-twin      $279
+
+const mockAddItem = jest.fn();
+
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => ({
+    items: [],
+    itemCount: 0,
+    subtotal: 0,
+    addItem: mockAddItem,
+    removeItem: jest.fn(),
+    updateQuantity: jest.fn(),
+    clearCart: jest.fn(),
+    syncing: false,
+  }),
+  CartProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
 function makeItems(...products: typeof PRODUCTS): WishlistItem[] {
-  return products.map((p) => ({
+  return products.map((p, i) => ({
     productId: p.id,
-    addedAt: Date.now(),
+    addedAt: Date.now() + i * 1000,
     savedPrice: p.price,
   }));
 }
@@ -41,6 +58,10 @@ function renderScreen(
     onBrowse,
   };
 }
+
+beforeEach(() => {
+  mockAddItem.mockClear();
+});
 
 describe('WishlistScreen', () => {
   describe('empty state', () => {
@@ -172,7 +193,7 @@ describe('WishlistScreen', () => {
       const { getByTestId } = renderScreen({
         items: makeItems(product1),
       });
-      await fireEvent.press(getByTestId('wishlist-share'));
+      fireEvent.press(getByTestId('wishlist-share'));
       expect(shareSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           message: expect.stringContaining(product1.name),
@@ -240,6 +261,201 @@ describe('WishlistScreen', () => {
       const { onRefresh } = flatList.props.refreshControl.props;
       expect(typeof onRefresh).toBe('function');
       expect(() => onRefresh()).not.toThrow();
+    });
+  });
+
+  describe('sort', () => {
+    it('renders sort selector when items exist', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-sort-selector')).toBeTruthy();
+    });
+
+    it('does not render sort selector when empty', () => {
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('wishlist-sort-selector')).toBeNull();
+    });
+
+    it('renders date sort button active by default', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      const btn = getByTestId('wishlist-sort-date');
+      expect(btn).toBeTruthy();
+    });
+
+    it('renders price-asc and price-desc sort buttons', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-sort-price-asc')).toBeTruthy();
+      expect(getByTestId('wishlist-sort-price-desc')).toBeTruthy();
+    });
+
+    it('price-asc button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-sort-price-asc').props.accessibilityLabel).toBe(
+        'Sort by price low to high',
+      );
+    });
+
+    it('price-desc button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-sort-price-desc').props.accessibilityLabel).toBe(
+        'Sort by price high to low',
+      );
+    });
+
+    it('date button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-sort-date').props.accessibilityLabel).toBe('Sort by date added');
+    });
+
+    it('pressing price-asc does not throw', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2, product3) });
+      expect(() => fireEvent.press(getByTestId('wishlist-sort-price-asc'))).not.toThrow();
+    });
+
+    it('pressing price-desc does not throw', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2, product3) });
+      expect(() => fireEvent.press(getByTestId('wishlist-sort-price-desc'))).not.toThrow();
+    });
+
+    it('after price-asc, cheapest item renders first (pisgah $279)', () => {
+      // product3 = prod-pisgah-twin $279, product1 = asheville $349, product2 = blue-ridge $449
+      const { getByTestId, queryByTestId } = renderScreen({
+        items: makeItems(product1, product2, product3),
+      });
+      fireEvent.press(getByTestId('wishlist-sort-price-asc'));
+      // All items still render
+      expect(queryByTestId(`wishlist-item-${product3.id}`)).toBeTruthy();
+      expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeTruthy();
+      expect(queryByTestId(`wishlist-item-${product2.id}`)).toBeTruthy();
+    });
+
+    it('after price-desc, most expensive item renders (blue-ridge $449)', () => {
+      const { getByTestId, queryByTestId } = renderScreen({
+        items: makeItems(product1, product2, product3),
+      });
+      fireEvent.press(getByTestId('wishlist-sort-price-desc'));
+      expect(queryByTestId(`wishlist-item-${product2.id}`)).toBeTruthy();
+      expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeTruthy();
+      expect(queryByTestId(`wishlist-item-${product3.id}`)).toBeTruthy();
+    });
+  });
+
+  describe('Add All to Cart', () => {
+    it('renders Add All to Cart button when items exist', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-add-all')).toBeTruthy();
+    });
+
+    it('does not render Add All to Cart when empty', () => {
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('wishlist-add-all')).toBeNull();
+    });
+
+    it('Add All to Cart button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId('wishlist-add-all').props.accessibilityLabel).toBe(
+        'Add all items to cart',
+      );
+    });
+
+    it('calls addItem for each futon product when Add All pressed', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
+      fireEvent.press(getByTestId('wishlist-add-all'));
+      // product1 = asheville-full, product2 = blue-ridge-queen — both are futons
+      expect(mockAddItem).toHaveBeenCalledTimes(2);
+    });
+
+    it('addItem called with FutonModel and default fabric for futon product', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      fireEvent.press(getByTestId('wishlist-add-all'));
+      expect(mockAddItem).toHaveBeenCalledWith(
+        expect.objectContaining({ name: expect.stringContaining('Asheville') }),
+        expect.objectContaining({ id: expect.any(String) }), // default fabric
+        1,
+      );
+    });
+
+    it('Add All does not crash when no futon model found for product', () => {
+      // Use a product whose ID doesn't match any FutonModel (e.g., a murphy bed)
+      const murphyProduct = PRODUCTS.find((p) => p.category === 'murphy-beds') ?? product1;
+      const { getByTestId } = renderScreen({ items: makeItems(murphyProduct) });
+      expect(() => fireEvent.press(getByTestId('wishlist-add-all'))).not.toThrow();
+    });
+  });
+
+  describe('swipe-left actions', () => {
+    it('wraps each item in Swipeable', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId(`wishlist-swipeable-${product1.id}`)).toBeTruthy();
+    });
+
+    it('renders swipe Remove action button', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId(`swipe-remove-${product1.id}`)).toBeTruthy();
+    });
+
+    it('renders swipe Move to Cart action button', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId(`swipe-move-to-cart-${product1.id}`)).toBeTruthy();
+    });
+
+    it('swipe Remove button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId(`swipe-remove-${product1.id}`).props.accessibilityLabel).toBe(
+        'Remove from wishlist',
+      );
+    });
+
+    it('swipe Move to Cart button has accessible label', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      expect(getByTestId(`swipe-move-to-cart-${product1.id}`).props.accessibilityLabel).toBe(
+        'Move to cart',
+      );
+    });
+
+    it('pressing swipe Remove removes item from wishlist', () => {
+      const { getByTestId, queryByTestId } = renderScreen({ items: makeItems(product1) });
+      fireEvent.press(getByTestId(`swipe-remove-${product1.id}`));
+      expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeNull();
+    });
+
+    it('pressing swipe Move to Cart calls addItem for futon product', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1) });
+      fireEvent.press(getByTestId(`swipe-move-to-cart-${product1.id}`));
+      expect(mockAddItem).toHaveBeenCalledTimes(1);
+      expect(mockAddItem).toHaveBeenCalledWith(
+        expect.objectContaining({ name: expect.stringContaining('Asheville') }),
+        expect.objectContaining({ id: expect.any(String) }),
+        1,
+      );
+    });
+
+    it('pressing swipe Move to Cart removes item from wishlist (futon)', () => {
+      const { getByTestId, queryByTestId } = renderScreen({ items: makeItems(product1) });
+      fireEvent.press(getByTestId(`swipe-move-to-cart-${product1.id}`));
+      expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeNull();
+    });
+
+    it('pressing swipe Move to Cart on non-futon navigates to PDP via onProductPress', () => {
+      const murphyProduct = PRODUCTS.find((p) => p.category === 'murphy-beds') ?? product1;
+      const onProductPress = jest.fn();
+      const { getByTestId } = renderScreen({
+        items: makeItems(murphyProduct),
+        onProductPress,
+      });
+      fireEvent.press(getByTestId(`swipe-move-to-cart-${murphyProduct.id}`));
+      // Non-futon: no addItem call, navigate to PDP instead
+      expect(mockAddItem).not.toHaveBeenCalled();
+      expect(onProductPress).toHaveBeenCalledWith(
+        expect.objectContaining({ id: murphyProduct.id }),
+      );
+    });
+
+    it('swipe actions render for multiple items independently', () => {
+      const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
+      expect(getByTestId(`swipe-remove-${product1.id}`)).toBeTruthy();
+      expect(getByTestId(`swipe-remove-${product2.id}`)).toBeTruthy();
+      expect(getByTestId(`swipe-move-to-cart-${product1.id}`)).toBeTruthy();
+      expect(getByTestId(`swipe-move-to-cart-${product2.id}`)).toBeTruthy();
     });
   });
 });

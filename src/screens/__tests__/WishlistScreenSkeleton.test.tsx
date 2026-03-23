@@ -13,6 +13,20 @@ import { CompareProvider } from '@/contexts/CompareContext';
 
 jest.mock('@/components/ProductCard', () => ({ ProductCard: () => null }));
 
+jest.mock('@/hooks/useCart', () => ({
+  useCart: () => ({
+    items: [],
+    itemCount: 0,
+    subtotal: 0,
+    addItem: jest.fn(),
+    removeItem: jest.fn(),
+    updateQuantity: jest.fn(),
+    clearCart: jest.fn(),
+    syncing: false,
+  }),
+  CartProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 function renderScreen(isLoading: boolean) {
   return render(
     <ThemeProvider>
