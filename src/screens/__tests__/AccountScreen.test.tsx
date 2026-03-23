@@ -131,6 +131,11 @@ jest.mock('@/hooks/useLoyalty', () => ({
   }),
 }));
 
+const mockUseStreak = jest.fn();
+jest.mock('@/hooks/useStreak', () => ({
+  useStreak: () => mockUseStreak(),
+}));
+
 jest.mock('@/hooks/useReferral', () => ({
   useReferral: () => ({
     code: null,
@@ -205,6 +210,7 @@ describe('AccountScreen', () => {
     };
     mockBiometricAuth.isEnabled = false;
     mockBiometricAuth.loading = false;
+    mockUseStreak.mockReturnValue({ streak: 0, loading: false });
   });
 
   describe('Guest state', () => {
@@ -1204,6 +1210,36 @@ describe('AccountScreen', () => {
       await waitFor(() => expect(getByTestId('address-form')).toBeTruthy());
       fireEvent.press(getByTestId('address-cancel-button'));
       await waitFor(() => expect(queryByTestId('address-form')).toBeNull());
+    });
+  });
+
+  // ── Streak multiplier in header (hq-paclo) ────────────────────────
+  describe('Streak multiplier display (hq-paclo)', () => {
+    it('shows streak badge with 1× multiplier when streak is 0', async () => {
+      mockUseStreak.mockReturnValue({ streak: 0, loading: false });
+      const { getByTestId } = renderAccount({}, true);
+      await waitFor(() => {
+        expect(getByTestId('account-streak-badge')).toBeTruthy();
+        expect(getByTestId('streak-multiplier')).toBeTruthy();
+      });
+    });
+
+    it('shows 1.5× multiplier chip when streak is 3 days', async () => {
+      mockUseStreak.mockReturnValue({ streak: 3, loading: false });
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => expect(getByText('1.5×')).toBeTruthy());
+    });
+
+    it('shows 2× multiplier chip when streak is 7 days', async () => {
+      mockUseStreak.mockReturnValue({ streak: 7, loading: false });
+      const { getByText } = renderAccount({}, true);
+      await waitFor(() => expect(getByText('2×')).toBeTruthy());
+    });
+
+    it('hides streak badge while streak is loading', async () => {
+      mockUseStreak.mockReturnValue({ streak: 0, loading: true });
+      const { queryByTestId } = renderAccount({}, true);
+      await waitFor(() => expect(queryByTestId('account-streak-badge')).toBeNull());
     });
   });
 });
