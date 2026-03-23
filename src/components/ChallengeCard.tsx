@@ -4,12 +4,19 @@
  * Gamification challenge card showing title, reward, progress bar, and countdown.
  * Used in the ChallengesRail on HomeScreen.
  */
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import type { Challenge } from '@/data/challenges';
 
 const CARD_WIDTH = 160;
+const PROGRESS_DURATION_MS = 600;
 
 interface Props {
   challenge: Challenge;
@@ -32,6 +39,20 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
   const countdown = useMemo(() => formatCountdown(expiresAt, Date.now()), [expiresAt]);
 
   const clampedProgress = Math.min(1, Math.max(0, progress));
+  const isCompleted = clampedProgress >= 1;
+
+  const animatedProgress = useSharedValue(clampedProgress);
+
+  useEffect(() => {
+    animatedProgress.value = withTiming(clampedProgress, {
+      duration: PROGRESS_DURATION_MS,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [clampedProgress]);
+
+  const fillStyle = useAnimatedStyle(() => ({
+    width: `${animatedProgress.value * 100}%`,
+  }));
 
   return (
     <TouchableOpacity
@@ -84,24 +105,43 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max: 100, now: Math.round(clampedProgress * 100) }}
       >
-        <View
+        <Animated.View
+          testID={`challenge-progress-fill-${id}`}
           style={[
             styles.progressFill,
+            fillStyle,
             {
-              width: `${clampedProgress * 100}%`,
-              backgroundColor: colors.mountainBlue,
+              backgroundColor: isCompleted ? colors.sunsetCoral : colors.mountainBlue,
               borderRadius: borderRadius.pill,
             },
           ]}
         />
       </View>
 
+      {/* Completion checkmark + reward earned label */}
+      {isCompleted && (
+        <View testID={`challenge-complete-check-${id}`} style={styles.completionRow}>
+          <View
+            style={[
+              styles.checkCircle,
+              { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill },
+            ]}
+          >
+            <Text style={styles.checkmark}>✓</Text>
+          </View>
+          <Text style={[styles.rewardEarned, { color: colors.sunsetCoral }]}>Reward earned!</Text>
+        </View>
+      )}
+
       {/* Countdown */}
       <Text
         testID={`challenge-countdown-${id}`}
-        style={[styles.countdown, { color: colors.mountainBlueLight }]}
+        style={[
+          styles.countdown,
+          { color: isCompleted ? colors.sunsetCoral : colors.mountainBlueLight },
+        ]}
       >
-        {countdown}
+        {isCompleted ? 'Completed!' : countdown}
       </Text>
     </TouchableOpacity>
   );
@@ -148,6 +188,28 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
+  },
+  completionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 4,
+  },
+  checkCircle: {
+    width: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmark: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fff',
+    lineHeight: 11,
+  },
+  rewardEarned: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   countdown: {
     fontSize: 11,
