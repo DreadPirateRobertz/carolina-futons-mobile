@@ -1,10 +1,11 @@
 /**
- * Tests for useTriggerMoments — Phase 5
- * Verifies tier-change detection, AsyncStorage persistence, and dismiss.
+ * Tests for useTriggerMoments — Phase 5 + Phase 4 (hq-myhj5)
+ * Verifies tier-change detection, AsyncStorage persistence, dismiss,
+ * and challenge-completion toast queue.
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTriggerMoments } from '../useTriggerMoments';
+import { useTriggerMoments, type ChallengeCompletedItem } from '../useTriggerMoments';
 
 // Mock useLoyalty so we can control the returned tier
 const mockUseLoyalty = jest.fn();
@@ -218,6 +219,132 @@ describe('useTriggerMoments', () => {
         result.current.dismiss('streakDanger');
       });
       expect(result.current.triggers.streakDanger).toBe(false);
+    });
+  });
+
+  describe('challengeCompleted queue', () => {
+    const challenge1: ChallengeCompletedItem = {
+      challengeId: 'spring-refresh',
+      title: 'Spring Refresh',
+      rewardPoints: 500,
+    };
+    const challenge2: ChallengeCompletedItem = {
+      challengeId: 'flash-weekend',
+      title: 'Flash Weekend',
+      rewardPoints: 250,
+    };
+
+    it('returns null challengeCompleted in initial state', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(getItem).toHaveBeenCalled());
+      expect(result.current.triggers.challengeCompleted).toBeNull();
+    });
+
+    it('surfaces first challenge after reportChallengesCompleted([item])', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1]);
+      });
+
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
+    });
+
+    it('surfaces first challenge when multiple are reported', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1, challenge2]);
+      });
+
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
+    });
+
+    it('dismiss("challengeCompleted") advances to the next queued challenge', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1, challenge2]);
+      });
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
+
+      act(() => {
+        result.current.dismiss('challengeCompleted');
+      });
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge2);
+    });
+
+    it('dismiss("challengeCompleted") returns null when last item is dismissed', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1]);
+      });
+
+      act(() => {
+        result.current.dismiss('challengeCompleted');
+      });
+      expect(result.current.triggers.challengeCompleted).toBeNull();
+    });
+
+    it('dismiss("challengeCompleted") with empty queue is a no-op', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.dismiss('challengeCompleted');
+      });
+      expect(result.current.triggers.challengeCompleted).toBeNull();
+    });
+
+    it('reportChallengesCompleted([]) is a no-op', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([]);
+      });
+      expect(result.current.triggers.challengeCompleted).toBeNull();
+    });
+
+    it('successive reportChallengesCompleted calls append to the queue', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1]);
+      });
+      act(() => {
+        result.current.reportChallengesCompleted([challenge2]);
+      });
+
+      // First challenge is still showing
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
+
+      act(() => {
+        result.current.dismiss('challengeCompleted');
+      });
+      // Second challenge is now showing
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge2);
+    });
+
+    it('does not affect tierChanged when challenges are queued', async () => {
+      getItem.mockResolvedValue('bronze');
+      mockUseLoyalty.mockReturnValue(loyaltyOf('silver'));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
+
+      act(() => {
+        result.current.reportChallengesCompleted([challenge1]);
+      });
+
+      expect(result.current.triggers.tierChanged).toBe('silver');
+      expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
     });
   });
 
