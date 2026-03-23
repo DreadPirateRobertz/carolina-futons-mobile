@@ -43,6 +43,7 @@ import { ARControls } from '@/components/ARControls';
 import { ARProductPicker } from '@/components/ARProductPicker';
 import { PlaneIndicator } from '@/components/PlaneIndicator';
 import { events } from '@/services/analytics';
+import { arUsed } from '@/services/gamification';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
@@ -190,6 +191,14 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   }, [lightingWarning, lightingWarningDismissed, lightingCondition]);
 
   const isInWishlist = currentProduct ? wishlist.isInWishlist(currentProduct.id) : false;
+
+  // Fire gamification event once when the AR viewer is first opened with a product.
+  const arEventFired = useRef(false);
+  useEffect(() => {
+    if (!cameraPermission.granted || !currentProduct?.id || arEventFired.current) return;
+    arUsed(currentProduct.id);
+    arEventFired.current = true;
+  }, [cameraPermission.granted, currentProduct?.id]);
 
   const handleSelectModel = useCallback(
     (model: FutonModel) => {

@@ -35,6 +35,7 @@ import {
 } from '@/services/offlineQueue';
 import type { ReplayResult } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
+import { wishlistAdd } from '@/services/gamification';
 
 /**
  * A single wishlist entry, storing the product ID, timestamp, and
@@ -310,10 +311,13 @@ export function WishlistProvider({
 
   const add = useCallback(
     (product: Product) => {
+      if (!isInWishlist(product.id)) {
+        wishlistAdd(product.id);
+      }
       dispatch({ type: 'ADD', productId: product.id, price: product.price });
       syncAdd(product.id, product.price);
     },
-    [syncAdd],
+    [isInWishlist, syncAdd],
   );
 
   const remove = useCallback(
