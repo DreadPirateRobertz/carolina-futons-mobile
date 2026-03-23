@@ -15,7 +15,14 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
 
-export type QuestAction = 'purchase' | 'review' | 'ar' | 'wishlist' | 'referral' | 'browse' | 'wishlist_share';
+export type QuestAction =
+  | 'purchase'
+  | 'review'
+  | 'ar'
+  | 'wishlist'
+  | 'referral'
+  | 'browse'
+  | 'wishlist_share';
 
 export interface DailyQuest {
   id: string;
