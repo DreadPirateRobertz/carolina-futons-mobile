@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { StatusBar } from 'react-native';
 import { OrderConfirmationScreen } from '../OrderConfirmationScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { OrderConfirmation } from '@/services/payment';
@@ -74,6 +75,12 @@ describe('OrderConfirmationScreen', () => {
     it('displays "Order Confirmed!" heading', () => {
       const { getByText } = renderConfirmation();
       expect(getByText('Order Confirmed!')).toBeTruthy();
+    });
+
+    it('renders StatusBar with dark-content barStyle (hq-w7m3n)', () => {
+      const { UNSAFE_getByType } = renderConfirmation();
+      const statusBar = UNSAFE_getByType(StatusBar);
+      expect(statusBar.props.barStyle).toBe('dark-content');
     });
   });
 
