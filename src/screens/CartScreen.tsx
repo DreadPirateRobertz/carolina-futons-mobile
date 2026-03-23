@@ -12,7 +12,6 @@
 
 import React, { useCallback, useRef, useState } from 'react';
 import {
-  Animated as RNAnimated,
   StyleSheet,
   Text,
   TextInput,
@@ -21,9 +20,18 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  interpolate,
+  Extrapolation,
+  type SharedValue,
+} from 'react-native-reanimated';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
@@ -449,26 +457,19 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
 }
 
 /**
- * Renders the red "Delete" action behind a swipeable cart item.
+ * Animated "Delete" action revealed behind a swipeable cart item.
  */
-function renderDeleteAction(
-  _progress: RNAnimated.AnimatedInterpolation<number>,
-  dragX: RNAnimated.AnimatedInterpolation<number>,
-  borderRadius: number,
-) {
-  const opacity = dragX.interpolate({
-    inputRange: [-80, -40, 0],
-    outputRange: [1, 0.6, 0],
-    extrapolate: 'clamp',
-  });
-
+function DeleteAction({ drag, borderRadius }: { drag: SharedValue<number>; borderRadius: number }) {
+  const opacityStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(drag.value, [-80, -40, 0], [1, 0.6, 0], Extrapolation.CLAMP),
+  }));
   return (
-    <RNAnimated.View
-      style={[styles.deleteAction, { borderRadius, opacity }]}
+    <Animated.View
+      style={[styles.deleteAction, { borderRadius }, opacityStyle]}
       testID="swipe-delete-action"
     >
       <Text style={styles.deleteActionText}>Delete</Text>
-    </RNAnimated.View>
+    </Animated.View>
   );
 }
 
@@ -497,7 +498,7 @@ function CartItemRow({
   shadows: any;
 }) {
   const lineTotal = item.unitPrice * item.quantity;
-  const swipeableRef = useRef<Swipeable>(null);
+  const swipeableRef = useRef<SwipeableMethods>(null);
   const reduceMotion = useReducedMotion();
 
   const handleSwipeOpen = useCallback(() => {
@@ -534,9 +535,9 @@ function CartItemRow({
   }, [onIncrement, incrementScale, reduceMotion]);
 
   return (
-    <Swipeable
+    <ReanimatedSwipeable
       ref={swipeableRef}
-      renderRightActions={(progress, dragX) => renderDeleteAction(progress, dragX, br.card)}
+      renderRightActions={(_progress, drag) => <DeleteAction drag={drag} borderRadius={br.card} />}
       onSwipeableOpen={handleSwipeOpen}
       rightThreshold={80}
       overshootRight={false}
@@ -647,7 +648,7 @@ function CartItemRow({
           </Text>
         </View>
       </View>
-    </Swipeable>
+    </ReanimatedSwipeable>
   );
 }
 

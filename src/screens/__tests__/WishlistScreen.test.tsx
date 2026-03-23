@@ -7,6 +7,35 @@ import { WishlistProvider, type WishlistItem } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
+// Mock ReanimatedSwipeable — wraps each wishlist item; expose renderRightActions
+// so swipe action buttons are visible in tests.
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockSwipeable = React.forwardRef(
+    ({ children, testID, renderRightActions }: any, _ref: any) => (
+      <View testID={testID}>
+        {renderRightActions
+          ? renderRightActions({ value: 1 }, { value: -100 }, { close: jest.fn() })
+          : null}
+        {children}
+      </View>
+    ),
+  );
+  return { __esModule: true, default: MockSwipeable };
+});
+
+// Mock ProductCard to avoid expo-av transitive dependency chain.
+// WishlistScreen only uses the testID, onPress, and onLongPress props.
+jest.mock('@/components/ProductCard', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    ProductCard: ({ testID, onPress, onLongPress }: any) =>
+      React.createElement(View, { testID, onPress, onLongPress }),
+  };
+});
+
 const product1 = PRODUCTS[0]; // prod-asheville-full  $349
 const product2 = PRODUCTS[1]; // prod-blue-ridge-queen $449
 const product3 = PRODUCTS[2]; // prod-pisgah-twin      $279

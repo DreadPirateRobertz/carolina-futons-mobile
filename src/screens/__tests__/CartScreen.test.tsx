@@ -6,6 +6,24 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+// Mock ReanimatedSwipeable: render testID wrapper exposing onSwipeableOpen for fireEvent,
+// and invoke renderRightActions so action buttons are visible in tests.
+jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const MockSwipeable = React.forwardRef(
+    ({ children, onSwipeableOpen, testID, renderRightActions }: any, _ref: any) => (
+      <View testID={testID} onSwipeableOpen={() => onSwipeableOpen?.('right', { close: jest.fn() })}>
+        {renderRightActions
+          ? renderRightActions({ value: 1 }, { value: -100 }, { close: jest.fn() })
+          : null}
+        {children}
+      </View>
+    ),
+  );
+  return { __esModule: true, default: MockSwipeable };
+});
+
 jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ isAuthenticated: true }),
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
