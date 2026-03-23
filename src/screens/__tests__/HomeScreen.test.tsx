@@ -4,6 +4,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+jest.mock('@/components/LivingSkyBackground', () => {
+  const { View } = require('react-native');
+  return { LivingSkyBackground: () => <View testID="living-sky-background" /> };
+});
+
 jest.mock('@/hooks/useLivingSky', () => ({
   useLivingSky: () => ({
     skyColors: ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'] as [string, string, string, string],
@@ -439,5 +444,29 @@ describe('HomeScreen', () => {
   it('imports LivingSkyMountainSkyline without crashing', () => {
     const mod = require('../../components/LivingSkyMountainSkyline');
     expect(mod.LivingSkyMountainSkyline).toBeDefined();
+  });
+
+  // cf-7l2 — LivingSkyBackground integration
+  describe('LivingSkyBackground integration (cf-7l2)', () => {
+    it('renders LivingSkyBackground behind screen content', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('living-sky-background')).toBeTruthy();
+    });
+
+    it('calls navigation.setOptions with navBg and navText from sky state', () => {
+      const mockSetOptions = jest.fn();
+      jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+        navigate: jest.fn(),
+        setOptions: mockSetOptions,
+      });
+      renderHomeScreen();
+      expect(mockSetOptions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headerStyle: expect.objectContaining({ backgroundColor: '#ffffff' }),
+          headerTintColor: '#1E2A3A',
+        }),
+      );
+      jest.restoreAllMocks();
+    });
   });
 });

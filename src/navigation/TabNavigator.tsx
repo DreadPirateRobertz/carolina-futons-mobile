@@ -14,6 +14,7 @@ import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
 import { useStreak } from '@/hooks/useStreak';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import { useLivingSky } from '@/hooks/useLivingSky';
 import { HomeScreen } from '@/screens/HomeScreen';
 import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
@@ -59,6 +60,7 @@ export function TabNavigator() {
   const { itemCount } = useCart();
   const { streak } = useStreak();
   const { tier } = useLoyalty();
+  const skyState = useLivingSky();
 
   return (
     <View style={tabStyles.container}>
@@ -66,8 +68,9 @@ export function TabNavigator() {
         tabBar={(props) => <AnimatedTabBar {...props} />}
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: colors.sunsetCoral,
-          tabBarInactiveTintColor: colors.espressoLight,
+          tabBarActiveTintColor: skyState.navText,
+          tabBarInactiveTintColor: skyState.navText,
+          tabBarStyle: { backgroundColor: skyState.navBg },
         }}
       >
         <Tab.Screen

@@ -66,7 +66,9 @@ function TabButton({
   const { options } = descriptor;
   const label = options.tabBarLabel ?? route.name;
   const badge = options.tabBarBadge;
-  const color = isFocused ? ACTIVE_COLOR : INACTIVE_COLOR;
+  const color = isFocused
+    ? ((options.tabBarActiveTintColor as string) ?? ACTIVE_COLOR)
+    : ((options.tabBarInactiveTintColor as string) ?? INACTIVE_COLOR);
 
   return (
     <Pressable
