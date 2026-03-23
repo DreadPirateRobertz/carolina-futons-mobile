@@ -1,8 +1,9 @@
 /**
- * PointsChip TDD tests — cfutons_mobile-a02
+ * PointsChip TDD tests — cfutons_mobile-a02, hq-xfib1
  *
  * Tests written BEFORE implementation per CLAUDE.md mandate.
  * Component shows 'Earn X pts' pill below price on PDP.
+ * Phase 6: bonus points day indicator when bonusPointsDayActive=true.
  */
 
 import React from 'react';
@@ -59,5 +60,50 @@ describe('PointsChip', () => {
       testID: 'custom-chip',
     });
     expect(getByTestId('custom-chip')).toBeTruthy();
+  });
+
+  describe('bonus points day indicator', () => {
+    it('shows no bonus badge by default', () => {
+      const { queryByTestId } = renderChip({ price: 500, isAuthenticated: true });
+      expect(queryByTestId('points-chip-bonus')).toBeNull();
+    });
+
+    it('shows bonus badge when bonusPointsDayActive=true', () => {
+      const { getByTestId } = renderChip({
+        price: 500,
+        isAuthenticated: true,
+        bonusPointsDayActive: true,
+      });
+      expect(getByTestId('points-chip-bonus')).toBeTruthy();
+    });
+
+    it('bonus badge is hidden when bonusPointsDayActive=false', () => {
+      const { queryByTestId } = renderChip({
+        price: 500,
+        isAuthenticated: true,
+        bonusPointsDayActive: false,
+      });
+      expect(queryByTestId('points-chip-bonus')).toBeNull();
+    });
+
+    it('includes 2x in the bonus badge label', () => {
+      const { getByTestId } = renderChip({
+        price: 500,
+        isAuthenticated: true,
+        bonusPointsDayActive: true,
+      });
+      expect(getByTestId('points-chip-bonus').props.children).toContain('2×');
+    });
+
+    it('updates accessibilityLabel to include bonus when active', () => {
+      const { getByTestId } = renderChip({
+        price: 500,
+        isAuthenticated: true,
+        bonusPointsDayActive: true,
+      });
+      expect(getByTestId('points-chip').props.accessibilityLabel).toBe(
+        'Earn 30 loyalty points — bonus points day, 2× multiplier active',
+      );
+    });
   });
 });
