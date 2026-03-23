@@ -150,8 +150,13 @@ Next APK will contain all session-22 + session-23 work:
 - Bundle shipping incentive upsellMessage (cm-bundle-incentive) ✓ merged PR #228
 - 100% branch coverage session-22 files (cm-jest-coverage) ✓ merged PR #229
 - Cart delivery date estimator (cm-afc) ✓ merged PR #232
-- CollectionCard null safety — heroImage/mood/productIds (cm-crd) — PR #235 open
-- Tab bar redesign — custom SVG icons + streak/tier badges (cm-f9b) — PR #236 open
+- CollectionCard null safety — heroImage/mood/productIds (cm-crd) ✓ merged PR #235
+- Tab bar redesign — custom SVG icons + streak/tier badges (cm-f9b) ✓ merged PR #236
+- Challenges rail component + ChallengeCard (cfutons_mobile-jyw) ✓ merged PR #237
+- Recently Viewed rail on PDP — useRecentlyViewedSlugs hook (cm-pdp-recently-viewed) ✓ merged PR #233
+- Wishlist visual polish — item count, swipe actions, Add All to Cart (cm-l71) ✓ merged PR #239
+- A11y pass: shipping/share UI, ARIA labels, accessibilityHint, reduced-motion guards (cm-a11y-shipping) ✓ merged PR #234
+- Live points chip on PDP + CartPointsSummary earn estimate (cm-a02) — PR #238 in CI
 
 **EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
@@ -336,4 +341,10 @@ npm test
 | Force update check | **Live** | Semver comparison, AppState foreground re-check |
 | Account deletion (GDPR/CCPA) | **Live** | Wix member deletion + local data wipe |
 | Data export (GDPR/CCPA) | **Live** | JSON export via share sheet (native) / Share API (web) |
-| Test suite | **5329 tests passing** | 60 skipped, all green (session 23, cm-f9b branch) |
+| Custom SVG tab icons | **Live** | Mountain/house, tag, bag, profile — streak 🔥 + tier ★ gamification badges |
+| Recently Viewed rail | **Live** | AsyncStorage FIFO queue, max 10, shown on PDP |
+| Wishlist polish | **Live** | Item count header, swipe Remove/Move to Cart, Add All to Cart |
+| Challenges rail | **Live** | ChallengeCard with progress + countdown, ChallengesRail horizontal scroll |
+| Live points chip | **Live** | PointsChip on PDP, CartPointsSummary earn estimate (Mountain Blue) |
+| A11y shipping/share | **Live** | ARIA labels, accessibilityHint, reduced-motion guards on all shipping + share UI |
+| Test suite | **5679 tests passing** | 32 skipped, all green (session 23) |
