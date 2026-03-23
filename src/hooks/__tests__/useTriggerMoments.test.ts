@@ -12,6 +12,16 @@ jest.mock('@/hooks/useLoyalty', () => ({
   useLoyalty: () => mockUseLoyalty(),
 }));
 
+// Mock useStreak so we can control the returned streak
+const mockUseStreak = jest.fn();
+jest.mock('@/hooks/useStreak', () => ({
+  useStreak: () => mockUseStreak(),
+}));
+
+function streakOf(streak: number, loading = false) {
+  return { streak, loading };
+}
+
 function loyaltyOf(tier: string, loading = false) {
   return {
     tier,
@@ -32,6 +42,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   getItem.mockResolvedValue(null);
   setItem.mockResolvedValue(undefined);
+  // Default: streak=1 (below danger threshold), not loading
+  mockUseStreak.mockReturnValue(streakOf(1));
 });
 
 describe('useTriggerMoments', () => {
@@ -127,6 +139,85 @@ describe('useTriggerMoments', () => {
         result.current.dismiss('tierChanged');
       });
       expect(result.current.triggers.tierChanged).toBeNull();
+    });
+  });
+
+  describe('streakDanger', () => {
+    it('returns false while streak is loading', () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(5, true)); // loading=true
+      const { result } = renderHook(() => useTriggerMoments());
+      expect(result.current.triggers.streakDanger).toBe(false);
+    });
+
+    it('returns false when streak is 1 (below threshold)', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(1));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(getItem).toHaveBeenCalled());
+      expect(result.current.triggers.streakDanger).toBe(false);
+    });
+
+    it('returns false when streak is 0', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(0));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(getItem).toHaveBeenCalled());
+      expect(result.current.triggers.streakDanger).toBe(false);
+    });
+
+    it('returns true when streak is 2', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(2));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
+    });
+
+    it('returns true when streak is 10', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(10));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
+    });
+
+    it('dismiss("streakDanger") sets streakDanger to false', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(5));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
+
+      act(() => {
+        result.current.dismiss('streakDanger');
+      });
+      expect(result.current.triggers.streakDanger).toBe(false);
+    });
+
+    it('dismiss("streakDanger") does NOT write to AsyncStorage', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(5));
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
+
+      act(() => {
+        result.current.dismiss('streakDanger');
+      });
+      // setItem is only ever called for tier persistence, not streakDanger
+      expect(setItem).not.toHaveBeenCalledWith(
+        expect.stringContaining('streak_danger'),
+        expect.anything(),
+      );
+    });
+
+    it('dismissing when streakDanger is already false is a no-op', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+      mockUseStreak.mockReturnValue(streakOf(1)); // below threshold
+      const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(getItem).toHaveBeenCalled());
+
+      act(() => {
+        result.current.dismiss('streakDanger');
+      });
+      expect(result.current.triggers.streakDanger).toBe(false);
     });
   });
 

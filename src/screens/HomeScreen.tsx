@@ -31,6 +31,8 @@ import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { useActiveChallenges } from '@/hooks/useActiveChallenges';
+import { StreakDangerBanner } from '@/components/StreakDangerBanner';
+import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -69,6 +71,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     quizTaken,
   } = useQuizRecommendations();
   const { challenges } = useActiveChallenges();
+  const { triggers, dismiss } = useTriggerMoments();
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -171,6 +174,16 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
             Handcrafted comfort from the Blue Ridge Mountains
           </Text>
         </View>
+
+        {/* Streak danger banner — cm-a7bqj */}
+        {triggers.streakDanger && (
+          <View style={[styles.streakBannerWrap, { marginHorizontal: spacing.lg }]}>
+            <StreakDangerBanner
+              visible={triggers.streakDanger}
+              onDismiss={() => dismiss('streakDanger')}
+            />
+          </View>
+        )}
 
         {/* Connection error banner — shows when Wix fetch fails but static content is visible.
           Positioned here (below hero, above CTA cards) so it's visible without scrolling. cm-1b4 */}
@@ -562,6 +575,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     marginTop: 8,
+  },
+  streakBannerWrap: {
+    width: '100%',
+    marginTop: 8,
+    marginBottom: 8,
   },
   searchBtn: {
     position: 'absolute',

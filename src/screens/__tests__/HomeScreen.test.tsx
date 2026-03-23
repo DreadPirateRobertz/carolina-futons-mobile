@@ -23,6 +23,11 @@ jest.mock('@/hooks/useActiveChallenges', () => ({
   useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: jest.fn() }),
 }));
 
+const mockUseTriggerMoments = jest.fn();
+jest.mock('@/hooks/useTriggerMoments', () => ({
+  useTriggerMoments: () => mockUseTriggerMoments(),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),
@@ -47,6 +52,11 @@ function renderHomeScreen(
 describe('HomeScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: no active triggers
+    mockUseTriggerMoments.mockReturnValue({
+      triggers: { tierChanged: null, streakDanger: false },
+      dismiss: jest.fn(),
+    });
     // Default: collections load with realistic featured data matching static COLLECTIONS
     mockUseCollections.mockReturnValue({
       collections: [
@@ -227,6 +237,38 @@ describe('HomeScreen', () => {
     expect(onCollectionPress).toHaveBeenCalledWith(
       expect.objectContaining({ slug: 'mountain-lodge-living' }),
     );
+  });
+
+  // Streak danger banner (cm-a7bqj)
+  describe('StreakDangerBanner integration', () => {
+    it('does not show streak danger banner when streakDanger is false', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: false },
+        dismiss: jest.fn(),
+      });
+      const { queryByTestId } = renderHomeScreen();
+      expect(queryByTestId('streak-danger-banner')).toBeNull();
+    });
+
+    it('shows streak danger banner when streakDanger is true', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: true },
+        dismiss: jest.fn(),
+      });
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('streak-danger-banner')).toBeTruthy();
+    });
+
+    it('pressing dismiss calls dismiss("streakDanger")', () => {
+      const mockDismiss = jest.fn();
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: true },
+        dismiss: mockDismiss,
+      });
+      const { getByTestId } = renderHomeScreen();
+      fireEvent.press(getByTestId('streak-danger-dismiss'));
+      expect(mockDismiss).toHaveBeenCalledWith('streakDanger');
+    });
   });
 
   describe('Error state (cm-s1y — branded illustration)', () => {
