@@ -28,28 +28,31 @@ export function AvatarEquipScreen() {
   const { equippedAccessoryId, unlockedAccessoryIds, loading, error, refreshAvatarState } =
     useAvatarState();
   const [equipping, setEquipping] = useState<string | null>(null);
+  const [equipError, setEquipError] = useState<string | null>(null);
 
   const handleEquip = useCallback(
     async (accessory: Accessory) => {
-      const isUnlocked = unlockedAccessoryIds.includes(accessory.id);
-      if (!isUnlocked) return;
+      if (!unlockedAccessoryIds.includes(accessory.id)) return;
 
+      setEquipError(null);
       setEquipping(accessory.id);
       try {
         const client = getWixClientSingleton();
-        if (client) {
-          await client.callFunction('/_functions/equipAccessory', 'POST', {
-            accessoryId: accessory.id,
-          });
+        if (!client) {
+          setEquipError('Avatar service unavailable');
+          return;
         }
+        // Tapping the currently-equipped accessory unequips it (pass null)
+        const nextId = accessory.id === equippedAccessoryId ? null : accessory.id;
+        await client.callFunction('/_functions/equipAccessory', 'POST', { accessoryId: nextId });
         await refreshAvatarState();
-      } catch {
-        // equip failed silently — avatar state unchanged
+      } catch (err) {
+        setEquipError(err instanceof Error ? err.message : 'Failed to equip accessory');
       } finally {
         setEquipping(null);
       }
     },
-    [unlockedAccessoryIds, refreshAvatarState],
+    [unlockedAccessoryIds, equippedAccessoryId, refreshAvatarState],
   );
 
   if (loading) {
@@ -74,6 +77,11 @@ export function AvatarEquipScreen() {
     <View testID="avatar-equip-screen" style={styles.root}>
       {/* Preview */}
       <View style={[styles.previewSection, { backgroundColor: colors.surfaceSecondary }]}>
+        {equipError && (
+          <Text testID="avatar-equip-equip-error" style={[styles.equipErrorText, { color: colors.error }]}>
+            {equipError}
+          </Text>
+        )}
         <AvatarDisplay size="lg" equippedAccessoryId={equippedAccessoryId} testID="avatar-equip-preview" />
       </View>
 
@@ -94,6 +102,7 @@ export function AvatarEquipScreen() {
               testID={`accessory-item-${item.id}`}
               accessibilityLabel={`${item.name}${isUnlocked ? '' : ', locked'}${isEquipped ? ', equipped' : ''}`}
               accessibilityState={{ disabled: !isUnlocked }}
+              disabled={!isUnlocked}
               onPress={() => handleEquip(item)}
               activeOpacity={isUnlocked ? 0.7 : 1}
               style={[
@@ -204,5 +213,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     paddingHorizontal: 24,
+  },
+  equipErrorText: {
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 16,
   },
 });

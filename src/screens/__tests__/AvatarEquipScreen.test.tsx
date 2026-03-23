@@ -31,10 +31,9 @@ jest.mock('@/hooks/useAvatarState', () => ({
 }));
 
 const mockEquipAccessory = jest.fn();
+const mockGetWixClient = jest.fn();
 jest.mock('@/services/wix/wixClientSingleton', () => ({
-  getWixClientSingleton: () => ({
-    callFunction: mockEquipAccessory,
-  }),
+  getWixClientSingleton: () => mockGetWixClient(),
 }));
 
 function renderScreen() {
@@ -58,6 +57,7 @@ describe('AvatarEquipScreen', () => {
       refreshAvatarState: jest.fn(),
     });
     mockEquipAccessory.mockResolvedValue({});
+    mockGetWixClient.mockReturnValue({ callFunction: mockEquipAccessory });
   });
 
   // ── Rendering ──────────────────────────────────────────────────────
@@ -179,5 +179,67 @@ describe('AvatarEquipScreen', () => {
     });
     const { getByTestId } = renderScreen();
     expect(getByTestId('avatar-equip-error')).toBeTruthy();
+  });
+
+  // ── Disabled state on locked accessories (via accessibilityState) ────
+
+  it('locked accessory is not interactive (accessibilityState.disabled)', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('accessory-item-hat-cowboy').props.accessibilityState?.disabled).toBe(true);
+  });
+
+  it('unlocked accessory is interactive (accessibilityState not disabled)', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('accessory-item-hat-crown').props.accessibilityState?.disabled).toBe(false);
+  });
+
+  // ── Equip error (CLAUDE.md: no empty catch blocks) ─────────────────
+
+  it('shows equip error banner when wix client throws', async () => {
+    mockEquipAccessory.mockRejectedValue(new Error('Wix timeout'));
+    const { getByTestId, findByTestId } = renderScreen();
+    fireEvent.press(getByTestId('accessory-item-hat-crown'));
+    const errorEl = await findByTestId('avatar-equip-equip-error');
+    expect(errorEl).toBeTruthy();
+  });
+
+  it('shows error banner when wix client is unavailable', async () => {
+    mockGetWixClient.mockReturnValueOnce(null);
+    const { getByTestId, findByTestId } = renderScreen();
+    fireEvent.press(getByTestId('accessory-item-hat-crown'));
+    const errorEl = await findByTestId('avatar-equip-equip-error');
+    expect(errorEl).toBeTruthy();
+  });
+
+  // ── Unequip path ───────────────────────────────────────────────────
+
+  it('tapping currently-equipped accessory calls equip with null (unequip)', () => {
+    mockUseAvatarState.mockReturnValue({
+      equippedAccessoryId: 'hat-crown',
+      unlockedAccessoryIds: ['hat-crown', 'badge-star', 'bg-mountain'],
+      loading: false,
+      error: null,
+      refreshAvatarState: jest.fn().mockResolvedValue(undefined),
+    });
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('accessory-item-hat-crown'));
+    expect(mockEquipAccessory).toHaveBeenCalledWith(
+      expect.stringContaining('equip'),
+      expect.any(String),
+      expect.objectContaining({ accessoryId: null }),
+    );
+  });
+
+  // ── Edge case: empty unlocked list ─────────────────────────────────
+
+  it('renders grid without crashing when unlockedAccessoryIds is empty', () => {
+    mockUseAvatarState.mockReturnValue({
+      equippedAccessoryId: null,
+      unlockedAccessoryIds: [],
+      loading: false,
+      error: null,
+      refreshAvatarState: jest.fn(),
+    });
+    expect(() => renderScreen()).not.toThrow();
   });
 });
