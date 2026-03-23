@@ -91,6 +91,7 @@ import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
 import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 import { PointsChip } from '@/components/PointsChip';
+import { ResourcesSection } from '@/components/ResourcesSection';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -880,6 +881,12 @@ export function ProductDetailScreen({
           products={bundleProducts}
           onProductPress={handleBundleProductPress}
           testID="bundle-row"
+        />
+
+        {/* Resources — spec sheets, care guide, policy links, video (cm-cgo) */}
+        <ResourcesSection
+          resources={model.resources}
+          testID="pdp-resources-section"
         />
 
         {/* Dimensions */}

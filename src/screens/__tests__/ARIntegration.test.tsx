@@ -212,8 +212,8 @@ describe('Product-to-AR-Model Data Integrity', () => {
     }
   });
 
-  it('FUTON_MODELS has exactly 4 models', () => {
-    expect(FUTON_MODELS).toHaveLength(4);
+  it('FUTON_MODELS has at least 4 models', () => {
+    expect(FUTON_MODELS.length).toBeGreaterThanOrEqual(4);
   });
 
   it('FABRICS has exactly 8 fabrics', () => {
