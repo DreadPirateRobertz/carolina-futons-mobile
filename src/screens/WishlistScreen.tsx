@@ -1,12 +1,13 @@
 /**
  * @module WishlistScreen
  *
- * Saved-for-later product grid with share and bulk-clear actions.
- * Highlights price drops since the item was wishlisted so users can
- * spot deals. Long-press triggers a removal confirmation dialog.
- * Share exports a plain-text list via the native share sheet.
+ * Saved-for-later product grid with share, sort, bulk-add-to-cart, and swipe
+ * actions (Remove / Move to Cart). Highlights price drops since the item was
+ * wishlisted so users can spot deals. Long-press triggers a removal
+ * confirmation dialog. Share exports a plain-text list via the native share
+ * sheet.
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -17,11 +18,13 @@ import {
   Platform,
   Share,
 } from 'react-native';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCart } from '@/hooks/useCart';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
@@ -30,9 +33,12 @@ import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { WishlistIllustration } from '@/components/illustrations/WishlistIllustration';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
+import { useFutonModels } from '@/hooks/useFutonModels';
 
 /** Estimated height (px) of a single product-grid row (two-column layout). */
 const ESTIMATED_PRODUCT_ROW_HEIGHT = 262;
+
+type SortOption = 'date' | 'price-asc' | 'price-desc';
 
 interface Props {
   onProductPress?: (product: Product) => void;
@@ -40,15 +46,20 @@ interface Props {
   testID?: string;
 }
 
-/** Wishlist grid with price-drop badges, share, and bulk-clear actions. */
+type WishlistProduct = Product & { savedPrice: number; priceDrop: number };
+
+/** Wishlist grid with price-drop badges, sort, swipe actions, and bulk-add-to-cart. */
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
   const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useWishlist();
+  const { addItem } = useCart();
+  const { getModelForProduct } = useFutonModels();
 
   const scrollPerf = useScrollPerformance('WishlistScreen');
 
   const [refreshing, setRefreshing] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('date');
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -105,32 +116,108 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     ]);
   }, [clear]);
 
-  const renderItem = useCallback(
-    ({ item }: { item: Product & { savedPrice: number; priceDrop: number } }) => (
-      <View style={styles.cardWrapper}>
-        <ProductCard
-          product={item}
-          onPress={onProductPress}
-          onLongPress={() => handleLongPress(item)}
-          testID={`wishlist-item-${item.id}`}
-        />
-        {item.priceDrop > 0 && (
-          <View
-            style={[styles.priceDropBadge, { backgroundColor: colors.success }]}
-            accessibilityLabel={`Price dropped ${formatPrice(item.priceDrop)}`}
-          >
-            <Text style={styles.priceDropText}>{formatPrice(item.priceDrop)} off!</Text>
-          </View>
-        )}
-      </View>
-    ),
-    [onProductPress, handleLongPress, colors],
+  const handleAddAllToCart = useCallback(() => {
+    const products = getProducts();
+    for (const product of products) {
+      const model = getModelForProduct(product.id);
+      if (model) {
+        addItem(model, model.fabrics[0], 1);
+        remove(product.id);
+      }
+      // Non-futon products are skipped — no direct cart add without fabric selection
+    }
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [getProducts, addItem, remove]);
+
+  const handleSwipeRemove = useCallback(
+    (productId: string) => {
+      handleRemove(productId);
+    },
+    [handleRemove],
   );
 
-  const keyExtractor = useCallback(
-    (item: Product & { savedPrice: number; priceDrop: number }) => item.id,
-    [],
+  const handleSwipeMoveToCart = useCallback(
+    (product: WishlistProduct) => {
+      const model = getModelForProduct(product.id);
+      if (model) {
+        addItem(model, model.fabrics[0], 1);
+        remove(product.id);
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } else {
+        // Non-futon: navigate to PDP for fabric/variant selection
+        onProductPress?.(product);
+      }
+    },
+    [addItem, remove, onProductPress],
   );
+
+  const sortedProducts = useMemo(() => {
+    const products = getProducts();
+    if (sortBy === 'price-asc') return [...products].sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-desc') return [...products].sort((a, b) => b.price - a.price);
+    return products; // 'date': insertion order from the reducer
+  }, [getProducts, sortBy]);
+
+  const renderSwipeActions = useCallback(
+    (product: WishlistProduct) => () =>
+      (
+        <View style={styles.swipeActions}>
+          <TouchableOpacity
+            style={[styles.swipeButton, styles.swipeMoveToCart, { backgroundColor: colors.mountainBlue }]}
+            onPress={() => handleSwipeMoveToCart(product)}
+            testID={`swipe-move-to-cart-${product.id}`}
+            accessibilityLabel="Move to cart"
+            accessibilityRole="button"
+          >
+            <Text style={styles.swipeButtonText}>Cart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.swipeButton, styles.swipeRemove, { backgroundColor: colors.error ?? '#C0392B' }]}
+            onPress={() => handleSwipeRemove(product.id)}
+            testID={`swipe-remove-${product.id}`}
+            accessibilityLabel="Remove from wishlist"
+            accessibilityRole="button"
+          >
+            <Text style={styles.swipeButtonText}>Remove</Text>
+          </TouchableOpacity>
+        </View>
+      ),
+    [handleSwipeMoveToCart, handleSwipeRemove, colors],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: WishlistProduct }) => (
+      <Swipeable
+        renderRightActions={renderSwipeActions(item)}
+        overshootRight={false}
+        testID={`wishlist-swipeable-${item.id}`}
+      >
+        <View style={styles.cardWrapper}>
+          <ProductCard
+            product={item}
+            onPress={onProductPress}
+            onLongPress={() => handleLongPress(item)}
+            testID={`wishlist-item-${item.id}`}
+          />
+          {item.priceDrop > 0 && (
+            <View
+              style={[styles.priceDropBadge, { backgroundColor: colors.success }]}
+              accessibilityLabel={`Price dropped ${formatPrice(item.priceDrop)}`}
+            >
+              <Text style={styles.priceDropText}>{formatPrice(item.priceDrop)} off!</Text>
+            </View>
+          )}
+        </View>
+      </Swipeable>
+    ),
+    [onProductPress, handleLongPress, colors, renderSwipeActions],
+  );
+
+  const keyExtractor = useCallback((item: WishlistProduct) => item.id, []);
 
   const getItemLayout = useCallback(
     (_data: unknown, index: number) => ({
@@ -139,6 +226,71 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
       index,
     }),
     [],
+  );
+
+  const renderSortSelector = useCallback(
+    () => (
+      <View style={styles.sortRow} testID="wishlist-sort-selector">
+        <TouchableOpacity
+          onPress={() => setSortBy('date')}
+          style={[
+            styles.sortButton,
+            sortBy === 'date' && { backgroundColor: colors.mountainBlue },
+          ]}
+          testID="wishlist-sort-date"
+          accessibilityLabel="Sort by date added"
+          accessibilityRole="button"
+        >
+          <Text
+            style={[
+              styles.sortButtonText,
+              { color: sortBy === 'date' ? '#FFFFFF' : colors.espressoLight },
+            ]}
+          >
+            Date
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSortBy('price-asc')}
+          style={[
+            styles.sortButton,
+            sortBy === 'price-asc' && { backgroundColor: colors.mountainBlue },
+          ]}
+          testID="wishlist-sort-price-asc"
+          accessibilityLabel="Sort by price low to high"
+          accessibilityRole="button"
+        >
+          <Text
+            style={[
+              styles.sortButtonText,
+              { color: sortBy === 'price-asc' ? '#FFFFFF' : colors.espressoLight },
+            ]}
+          >
+            Price ↑
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSortBy('price-desc')}
+          style={[
+            styles.sortButton,
+            sortBy === 'price-desc' && { backgroundColor: colors.mountainBlue },
+          ]}
+          testID="wishlist-sort-price-desc"
+          accessibilityLabel="Sort by price high to low"
+          accessibilityRole="button"
+        >
+          <Text
+            style={[
+              styles.sortButtonText,
+              { color: sortBy === 'price-desc' ? '#FFFFFF' : colors.espressoLight },
+            ]}
+          >
+            Price ↓
+          </Text>
+        </TouchableOpacity>
+      </View>
+    ),
+    [sortBy, colors],
   );
 
   const renderHeader = useCallback(
@@ -153,41 +305,57 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
           </Text>
         </View>
         {count > 0 && (
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              onPress={handleShare}
-              style={[
-                styles.actionButton,
-                { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button },
-              ]}
-              testID="wishlist-share"
-              accessibilityLabel="Share wishlist"
-              accessibilityHint="Opens the share sheet with your wishlist items"
-              accessibilityRole="button"
-            >
-              <Text style={styles.actionButtonText}>Share</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleClearAll}
-              style={[
-                styles.actionButton,
-                styles.clearButton,
-                { borderRadius: borderRadius.button, borderColor: colors.espressoLight },
-              ]}
-              testID="wishlist-clear"
-              accessibilityLabel="Clear all items from wishlist"
-              accessibilityHint="Removes all products from your wishlist"
-              accessibilityRole="button"
-            >
-              <Text style={[styles.clearButtonText, { color: colors.espressoLight }]}>
-                Clear All
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <>
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                onPress={handleShare}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.button },
+                ]}
+                testID="wishlist-share"
+                accessibilityLabel="Share wishlist"
+                accessibilityHint="Opens the share sheet with your wishlist items"
+                accessibilityRole="button"
+              >
+                <Text style={styles.actionButtonText}>Share</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleAddAllToCart}
+                style={[
+                  styles.actionButton,
+                  { backgroundColor: colors.success ?? '#27AE60', borderRadius: borderRadius.button },
+                ]}
+                testID="wishlist-add-all"
+                accessibilityLabel="Add all items to cart"
+                accessibilityHint="Adds all wishlist items to your cart"
+                accessibilityRole="button"
+              >
+                <Text style={styles.actionButtonText}>Add All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleClearAll}
+                style={[
+                  styles.actionButton,
+                  styles.clearButton,
+                  { borderRadius: borderRadius.button, borderColor: colors.espressoLight },
+                ]}
+                testID="wishlist-clear"
+                accessibilityLabel="Clear all items from wishlist"
+                accessibilityHint="Removes all products from your wishlist"
+                accessibilityRole="button"
+              >
+                <Text style={[styles.clearButtonText, { color: colors.espressoLight }]}>
+                  Clear All
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {renderSortSelector()}
+          </>
         )}
       </View>
     ),
-    [count, colors, spacing, borderRadius, handleShare, handleClearAll],
+    [count, colors, spacing, borderRadius, handleShare, handleAddAllToCart, handleClearAll, renderSortSelector],
   );
 
   const renderEmpty = useCallback(
@@ -207,19 +375,17 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
     return <SkeletonProductGrid count={4} testID="skeleton-wishlist-grid" />;
   }
 
-  const products = getProducts();
-
   return (
     <View
       style={[styles.container, { backgroundColor: colors.sandBase, paddingTop: insets.top }]}
       testID={testID ?? 'wishlist-screen'}
     >
       <FlatList
-        data={products}
+        data={sortedProducts}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         numColumns={2}
-        columnWrapperStyle={products.length > 0 ? styles.row : undefined}
+        columnWrapperStyle={sortedProducts.length > 0 ? styles.row : undefined}
         getItemLayout={getItemLayout}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
@@ -286,6 +452,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  sortRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  sortButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  sortButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
   listContent: {
     flexGrow: 1,
   },
@@ -307,6 +490,22 @@ const styles = StyleSheet.create({
   priceDropText: {
     color: '#FFFFFF',
     fontSize: 11,
+    fontWeight: '700',
+  },
+  swipeActions: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  swipeButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 72,
+  },
+  swipeMoveToCart: {},
+  swipeRemove: {},
+  swipeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '700',
   },
 });

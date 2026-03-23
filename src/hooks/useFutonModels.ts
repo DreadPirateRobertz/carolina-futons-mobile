@@ -8,6 +8,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { FUTON_MODELS, FABRICS, type FutonModel, type Fabric } from '@/data/futons';
 import { PRODUCTS, type Product } from '@/data/products';
+import { productIdToModelId, type ProductId } from '@/data/productId';
 
 // Re-export types for screens — avoids direct src/data imports
 export type { FutonModel, Fabric };
@@ -20,6 +21,8 @@ interface UseFutonModelsReturn {
   getModel: (modelId: string) => FutonModel | undefined;
   getModelById: (modelId: string) => FutonModel | undefined;
   getFabric: (fabricId: string) => Fabric | undefined;
+  /** Looks up the FutonModel matching a product by its ID convention (prod-X → model X). */
+  getModelForProduct: (productId: ProductId) => FutonModel | undefined;
   refresh: () => void;
 }
 
@@ -41,6 +44,10 @@ export function useFutonModels(): UseFutonModelsReturn {
     return FABRICS.find((f) => f.id === fabricId);
   }, []);
 
+  const getModelForProduct = useCallback((productId: ProductId): FutonModel | undefined => {
+    return FUTON_MODELS.find((m) => m.id === productIdToModelId(productId));
+  }, []);
+
   const refresh = useCallback(() => {
     // No-op for static fallback. Will trigger API refetch when integrated.
   }, []);
@@ -53,6 +60,7 @@ export function useFutonModels(): UseFutonModelsReturn {
     getModel,
     getModelById: getModel,
     getFabric,
+    getModelForProduct,
     refresh,
   };
 }
