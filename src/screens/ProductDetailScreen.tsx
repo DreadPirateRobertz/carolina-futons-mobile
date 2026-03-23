@@ -55,6 +55,7 @@ import { useCart } from '@/hooks/useCart';
 import { EmptyState } from '@/components/EmptyState';
 import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
+import { arUsed } from '@/services/gamification';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
@@ -389,6 +390,7 @@ export function ProductDetailScreen({
     }
     onOpenAR?.(model.id);
     events.openAR(model.id);
+    arUsed(catalogProduct?.id ?? model.id); // Phase 4 gamification — cm-e2c3k
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
