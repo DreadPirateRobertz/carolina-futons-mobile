@@ -16,8 +16,11 @@ jest.mock('@/hooks/useCollections', () => {
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({
     queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
-    callFunction: jest.fn().mockResolvedValue({ challenges: [] }),
   }),
+}));
+
+jest.mock('@/hooks/useActiveChallenges', () => ({
+  useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: jest.fn() }),
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
