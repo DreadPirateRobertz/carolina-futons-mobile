@@ -1,17 +1,17 @@
 /**
- * @module ChallengeCompletedToast
+ * @module TierUpgradeToast
  *
- * Animated challenge completion toast — shows "{title}: +N pts earned"
- * when a gamification challenge is completed. Flies up and fades out,
- * consistent with the PointsToast animation pattern.
+ * Animated "You've reached {tier} tier!" toast shown when a loyalty tier upgrade
+ * fires via useTriggerMoments. Flies up and fades out, consistent with the
+ * PointsToast / ChallengeCompletedToast animation pattern.
  *
  * Respects prefers-reduced-motion: when reduce motion is enabled the
- * animation is skipped entirely.
+ * animation is skipped.
  *
- * hq-myhj5 / Phase 4
+ * cfutons_mobile-0lt / Phase 5
  */
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -21,26 +21,25 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import type { LoyaltyTier } from '@/hooks/useLoyalty';
 
 interface Props {
-  /** Challenge title, e.g. "Spring Refresh" */
-  title: string;
-  /** Points awarded for completing this challenge */
-  rewardPoints: number;
+  /** The new tier the user has reached. */
+  tier: LoyaltyTier;
   /** Whether the toast is currently visible / should animate in. */
   visible: boolean;
-  /** Called after the exit animation completes so the caller can advance the challenge queue. */
+  /** Called after the exit animation completes so the caller can dismiss the trigger. */
   onDismiss?: () => void;
   testID?: string;
 }
 
-export function ChallengeCompletedToast({
-  title,
-  rewardPoints,
-  visible,
-  onDismiss,
-  testID,
-}: Props) {
+const TIER_LABEL: Record<LoyaltyTier, string> = {
+  bronze: 'bronze',
+  silver: 'silver',
+  gold: 'gold',
+};
+
+export function TierUpgradeToast({ tier, visible, onDismiss, testID }: Props) {
   const { colors, borderRadius } = useTheme();
 
   const opacity = useSharedValue(0);
@@ -62,15 +61,15 @@ export function ChallengeCompletedToast({
       translateY.value = 0;
       opacity.value = withSequence(
         withTiming(1, { duration: 300 }),
-        withDelay(1200, withTiming(0, { duration: 400 })),
+        withDelay(1400, withTiming(0, { duration: 400 })),
       );
       translateY.value = withSequence(
         withTiming(-40, { duration: 300 }),
-        withDelay(1200, withTiming(-80, { duration: 400 })),
+        withDelay(1400, withTiming(-80, { duration: 400 })),
       );
-      // Dismiss after animation completes (300 fly-up + 1200 hold + 400 fade = 1900ms)
+      // Dismiss after animation completes (300 fly-up + 1400 hold + 400 fade = 2100ms)
       if (onDismiss) {
-        setTimeout(onDismiss, 1900);
+        setTimeout(onDismiss, 2100);
       }
     });
   }, [visible, opacity, translateY, onDismiss]);
@@ -80,24 +79,26 @@ export function ChallengeCompletedToast({
     transform: [{ translateY: translateY.value }],
   }));
 
+  const label = TIER_LABEL[tier];
+
   return (
     <Animated.View
       style={[styles.container, animatedStyle]}
-      testID={testID ?? 'challenge-completed-toast'}
-      accessibilityLabel={`${title}: +${rewardPoints} pts earned`}
+      testID={testID ?? 'tier-upgrade-toast'}
+      accessibilityLabel={`You've reached ${label} tier!`}
       accessibilityElementsHidden={!visible}
       pointerEvents="none"
     >
       <View
         style={[
           styles.pill,
-          { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.pill },
+          { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.pill },
         ]}
       >
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
+        <Text style={styles.heading}>Tier Upgrade!</Text>
+        <Text style={styles.label} testID={(testID ?? 'tier-upgrade-toast') + '-label'}>
+          {`You've reached ${label} tier`}
         </Text>
-        <Text style={styles.points}>+{rewardPoints} pts earned</Text>
       </View>
     </Animated.View>
   );
@@ -115,17 +116,19 @@ const styles = StyleSheet.create({
   },
   pill: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     maxWidth: 280,
   },
-  title: {
+  heading: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
-  points: {
+  label: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
