@@ -123,13 +123,7 @@ interface Props {
  * Single card in the quiz results grid. Fetches thumbnail + name from Wix
  * Stores via useProductBySlug; falls back to slug text if unavailable. cm-49p
  */
-function QuizProductCard({
-  slug,
-  onPress,
-}: {
-  slug: string;
-  onPress: () => void;
-}) {
+function QuizProductCard({ slug, onPress }: { slug: string; onPress: () => void }) {
   const { colors, borderRadius, typography } = useTheme();
   const { product } = useProductBySlug(slug);
   const thumbnail = product?.images[0]?.uri ?? null;
@@ -156,10 +150,15 @@ function QuizProductCard({
           cachePolicy="memory-disk"
         />
       ) : (
-        <View style={[styles.productThumbnailPlaceholder, { backgroundColor: colors.sandBase + '33' }]} />
+        <View
+          style={[styles.productThumbnailPlaceholder, { backgroundColor: colors.sandBase + '33' }]}
+        />
       )}
       <Text
-        style={[styles.productSlug, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily }]}
+        style={[
+          styles.productSlug,
+          { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily },
+        ]}
         numberOfLines={2}
       >
         {name ?? slug}
@@ -365,11 +364,7 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
         {/* Curated product grid — thumbnails fetched from Wix Stores (cm-49p) */}
         <View style={styles.productGrid} testID="style-quiz-product-grid">
           {recommendation.productSlugs.map((slug) => (
-            <QuizProductCard
-              key={slug}
-              slug={slug}
-              onPress={() => onProductPress?.(slug)}
-            />
+            <QuizProductCard key={slug} slug={slug} onPress={() => onProductPress?.(slug)} />
           ))}
         </View>
       </View>

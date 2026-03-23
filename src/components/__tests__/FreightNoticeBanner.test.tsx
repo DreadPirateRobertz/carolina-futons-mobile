@@ -91,9 +91,7 @@ describe('FreightNoticeBanner', () => {
     });
 
     it('renders without crash when both are true simultaneously', () => {
-      expect(() =>
-        renderBanner({ requiresFreight: true, requiresLiftgate: true }),
-      ).not.toThrow();
+      expect(() => renderBanner({ requiresFreight: true, requiresLiftgate: true })).not.toThrow();
     });
   });
 });

@@ -30,7 +30,10 @@ export const FreightNoticeBanner = memo(function FreightNoticeBanner({
 
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.sandLight, borderLeftColor: colors.sunsetCoralDark }]}
+      style={[
+        styles.container,
+        { backgroundColor: colors.sandLight, borderLeftColor: colors.sunsetCoralDark },
+      ]}
       testID={testID}
       accessibilityRole="text"
     >
@@ -38,7 +41,9 @@ export const FreightNoticeBanner = memo(function FreightNoticeBanner({
         <Text style={styles.icon}>🚛</Text>
         <View style={styles.textBlock}>
           <Text style={[styles.title, { color: colors.errorText }]}>Freight Delivery</Text>
-          <Text style={[styles.subtitle, { color: colors.mutedBrown }]}>Carrier will call to schedule</Text>
+          <Text style={[styles.subtitle, { color: colors.mutedBrown }]}>
+            Carrier will call to schedule
+          </Text>
         </View>
         {requiresLiftgate && (
           <View

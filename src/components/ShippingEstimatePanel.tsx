@@ -41,7 +41,9 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
   return (
     <View testID={testID} style={styles.container}>
       {/* Section label */}
-      <Text style={[styles.label, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+      <Text
+        style={[styles.label, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+      >
         Shipping Estimate
       </Text>
 
@@ -93,11 +95,17 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
       {/* Rate result */}
       {hasZip && !isLoading && !error && rate && (
         <View testID="shipping-rate-result" style={styles.rateRow}>
-          <Text style={[styles.rateText, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+          <Text
+            style={[
+              styles.rateText,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
             ${rate.amount}
           </Text>
           <Text style={[styles.carrierText, { color: colors.espresso }]}>
-            {' · '}{rate.carrier}
+            {' · '}
+            {rate.carrier}
             {rate.isFreight ? ' · Freight (LTL)' : ''}
           </Text>
         </View>

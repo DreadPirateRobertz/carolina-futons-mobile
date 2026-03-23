@@ -66,11 +66,7 @@ export function OrderConfirmationScreen({
       testID={testID ?? 'order-confirmation-screen'}
     >
       {pointsEarned != null && (
-        <PointsToast
-          points={pointsEarned}
-          visible={toastVisible}
-          testID="order-points-toast"
-        />
+        <PointsToast points={pointsEarned} visible={toastVisible} testID="order-points-toast" />
       )}
       <ScrollView
         style={styles.scrollView}
