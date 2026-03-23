@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Carolina Futons — Screen Reference (Session 23)</title>
+<title>Carolina Futons — Screen Reference (Session 24)</title>
 <style>
 * { box-sizing:border-box;margin:0;padding:0 }
 body { background:#111;color:#e8d5b7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:20px;line-height:1.5 }
@@ -26,23 +26,53 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 </head>
 <body>
 <h1>Carolina Futons — Screen Reference</h1>
-<p class="meta">Platform: Android (Pixel_7_API_34 emulator) · Session 23, 2026-03-22 · Debug build via Metro · Generated ~9:35 MDT</p>
+<p class="meta">Platform: iOS (iPhone 16e simulator) · Session 24, 2026-03-23 · 32 PRs merged (#242-#297) · Generated ~6:30 MDT</p>
 
 <div class="section">
-<div class="section-title">🐛 Bug Status — Session 23</div>
+<div class="section-title">🐛 Bug Status — Session 24</div>
 <table>
 <tr><th>Priority</th><th>Bug</th><th>Status</th><th>Notes</th></tr>
 <tr>
   <td class="p1">P1</td>
   <td>CollectionCard crash — heroImage/mood/productIds undefined from Wix</td>
-  <td class="status-fixed">✅ MERGED PR #235</td>
-  <td>3 null guards added. 10 tests green. CI pending.</td>
+  <td class="status-fixed">✅ FIXED PR #235</td>
+  <td>3 null guards. Confirmed in bishop QA pass 3.</td>
 </tr>
 <tr>
-  <td class="p1">P1</td>
-  <td>$0.00 prices / 'Call for Price' on all products</td>
+  <td class="p2">P2</td>
+  <td>Unreachable screens: Search, Loyalty, Compare</td>
+  <td class="status-fixed">✅ FIXED PRs #240, #241</td>
+  <td>Search nav wired to HomeScreen icon. Loyalty tappable from AccountScreen. Compare via CompareFAB.</td>
+</tr>
+<tr>
+  <td class="p2">P2</td>
+  <td>OrderConfirmation status bar bright blue</td>
+  <td class="status-fixed">✅ FIXED PR #274</td>
+  <td>StatusBar barStyle now dark espresso. Confirmed by hicks.</td>
+</tr>
+<tr>
+  <td class="p2">P2</td>
+  <td>Deprecated Swipeable in CartScreen + WishlistScreen</td>
+  <td class="status-fixed">✅ FIXED PR #266</td>
+  <td>Replaced with ReanimatedSwipeable.</td>
+</tr>
+<tr>
+  <td class="p2">P2</td>
+  <td>AsyncStorage mock isolation (#252/#253/#259)</td>
+  <td class="status-fixed">✅ FIXED PR #286</td>
+  <td>Root cause: { virtual: true } + missing timer cleanup.</td>
+</tr>
+<tr>
+  <td class="p2">P2</td>
+  <td>Tree fill color — #2E4A38 vs #4A7C59 alignment</td>
+  <td class="status-open">🔶 OPEN hq-00y93</td>
+  <td>Melania gave conflicting answers. Clarification pending.</td>
+</tr>
+<tr>
+  <td class="p3">P3</td>
+  <td>$0.00 prices in offline/simulator category screen</td>
   <td class="status-infra">INFRA — emulator only</td>
-  <td>Wix REST API unreachable from Android emulator guest network. Works on real device.</td>
+  <td>Wix API unreachable offline. Cart shows correct prices.</td>
 </tr>
 <tr>
   <td class="p1">P1</td>
@@ -90,36 +120,60 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 </div>
 
 <div class="section">
-<div class="section-title">✅ Session 23 Deliverables</div>
+<div class="section-title">✅ Session 24 Deliverables — 32 PRs Merged</div>
 <table>
-<tr><th>PR</th><th>Feature</th><th>Status</th><th>Tests</th></tr>
-<tr><td>#235</td><td>CollectionCard null safety (Wix undefined fields)</td><td class="status-fixed">✅ MERGED</td><td>10 tests</td></tr>
-<tr><td>#236</td><td>Tab bar redesign — SVG icons + streak/tier badges</td><td class="status-fixed">✅ MERGED</td><td>11 new TabIcons tests</td></tr>
-<tr><td>#237</td><td>Home screen challenges rail (ripley) — Spring Refresh, Flash Weekend, Streak Saver</td><td class="status-fixed">✅ MERGED</td><td>5761 total green</td></tr>
-<tr><td>#233</td><td>Recently Viewed rail on PDP — useRecentlyViewedSlugs hook</td><td class="status-fixed">✅ MERGED</td><td>20 tests</td></tr>
-<tr><td>#234</td><td>A11y pass: shipping/share UI — ARIA labels, accessibilityHint, reduced-motion guards</td><td class="status-fixed">✅ MERGED</td><td>all green</td></tr>
-<tr><td>#238</td><td>Live points chip on PDP + CartPointsSummary earn estimate</td><td class="status-fixed">✅ MERGED</td><td>13 tests</td></tr>
-<tr><td>#239</td><td>Wishlist polish — item count header, swipe Remove/Move to Cart, Add All to Cart</td><td class="status-fixed">✅ MERGED</td><td>all green</td></tr>
+<tr><th>PR</th><th>Feature</th><th>Category</th></tr>
+<tr><td>#242</td><td>ZIP persistence across PDP + Checkout</td><td>Shipping</td></tr>
+<tr><td>#243</td><td>Streak multiplier display (1x/1.5x/2x tiers)</td><td>Phase 2</td></tr>
+<tr><td>#244</td><td>useActiveChallenges hook — Wix API integration</td><td>Phase 4</td></tr>
+<tr><td>#245</td><td>Wire challenges to HomeScreen + gamification_ar_used/wishlist_add events</td><td>Phase 4</td></tr>
+<tr><td>#246</td><td>Wire gamification events to AR viewer + wishlist call sites</td><td>Phase 4</td></tr>
+<tr><td>#247</td><td>TierCelebrationModal — confetti + badge reveal (ripley)</td><td>Phase 5</td></tr>
+<tr><td>#248</td><td>useAvatarState hook + bonus points day indicator (burke)</td><td>Phase 6</td></tr>
+<tr><td>#249</td><td>BadgeToast + useBadgeToast context (hicks)</td><td>Phase 5</td></tr>
+<tr><td>#250</td><td>StreakDangerBanner on HomeScreen (ripley)</td><td>Phase 5</td></tr>
+<tr><td>#251</td><td>ChallengeCompletedToast + queue system (nux)</td><td>Phase 4</td></tr>
+<tr><td>#258</td><td>ChallengeCard progress animation + completion state (bishop)</td><td>Phase 4</td></tr>
+<tr><td>#265</td><td>useProductResources hook — PDP resources from Wix CMS</td><td>Content</td></tr>
+<tr><td>#266</td><td>Fix deprecated Swipeable → ReanimatedSwipeable (bishop)</td><td>Bug fix</td></tr>
+<tr><td>#267</td><td>Fix test act() warnings + mock isolation (ripley)</td><td>Bug fix</td></tr>
+<tr><td>#269</td><td>Tree fill color fix #5C4033 → #2E4A38 (nux)</td><td>Illustration</td></tr>
+<tr><td>#270</td><td>LivingSkyMountainSkyline renderer — 4 ridges + celestials (ripley)</td><td>Phase 7</td></tr>
+<tr><td>#271</td><td>App icon SVG master with mountain silhouette (burke)</td><td>Illustration</td></tr>
+<tr><td>#272</td><td>ProductResourcesSection on PDP — collapsible list (ripley)</td><td>Content</td></tr>
+<tr><td>#274</td><td>OrderConfirmation status bar fix (burke)</td><td>Bug fix</td></tr>
+<tr><td>#276</td><td>Wire trigger moment toasts at HomeScreen root (burke)</td><td>Phase 5</td></tr>
+<tr><td>#277</td><td>Client-side gamification rate limiter (burke)</td><td>Phase 4</td></tr>
+<tr><td>#280</td><td>useLivingSky hook + HomeScreen hero wiring (hicks)</td><td>Phase 7</td></tr>
+<tr><td>#281</td><td>Golden hour splash screen (hicks)</td><td>Phase 7</td></tr>
+<tr><td>#282</td><td>useActiveChallenges → GET endpoint (burke)</td><td>Phase 4</td></tr>
+<tr><td>#284</td><td>WildlifeLayer — birds/fireflies/owls (bishop)</td><td>Phase 7</td></tr>
+<tr><td>#285</td><td>Toast safe area inset fix (hicks)</td><td>Bug fix</td></tr>
+<tr><td>#286</td><td>AsyncStorage mock isolation fix (bishop)</td><td>Bug fix</td></tr>
+<tr><td>#288</td><td>LivingSkyBackground 4-stop gradient (burke)</td><td>Phase 7</td></tr>
+<tr><td>#289</td><td>AvatarDisplay + AvatarEquipScreen (hicks)</td><td>Phase 6</td></tr>
+<tr><td>#295</td><td>useLivingSky isLoading field (bishop)</td><td>Phase 7</td></tr>
+<tr><td>#296</td><td>NotificationsScreen gamification feed (bishop)</td><td>Phase 5</td></tr>
+<tr><td>#297</td><td>ChallengesScreen — 4 groups + progress bars (burke)</td><td>Phase 4</td></tr>
 </table>
-<p style="font-size:11px;color:#666;margin-top:8px">✅ GitHub auth restored. All 7 PRs merged: #233-#239 + #234 + #238. 5679 tests passing.</p>
+<p style="font-size:11px;color:#666;margin-top:8px">32 PRs merged. 6000+ tests passing. Cross-rig alignment with melania (cfutons web) on all phases.</p>
 </div>
 
 <div class="section">
-<div class="section-title">🔧 In Progress (crew dispatched)</div>
+<div class="section-title">🔧 Open PRs (pending merge)</div>
 <table>
-<tr><th>Bead</th><th>Worker</th><th>Feature</th></tr>
-
-
-<tr><td>cfutons_mobile-cgo</td><td>—</td><td>PDP content (PDFs, care guide, video, policy links) — awaiting melania on content URLs</td></tr>
-<tr><td>cm-we6</td><td>ripley</td><td>SearchScreen nav fix — wire search icon to navigate('Search')</td></tr>
-<tr><td>cm-1fh</td><td>hicks</td><td>LoyaltyScreen nav fix — add entry point in AccountScreen</td></tr>
+<tr><th>PR</th><th>Feature</th><th>Status</th></tr>
+<tr><td>#293</td><td>PointsHistoryScreen (burke)</td><td class="status-pr">lint rebase needed</td></tr>
+<tr><td>#294</td><td>AchievementBadgesScreen (bishop)</td><td class="status-pr">lint rebase needed</td></tr>
+<tr><td>#298</td><td>GameProfileCard widget (bishop)</td><td class="status-pr">lint rebase needed</td></tr>
+<tr><td>#278</td><td>Gamification events → Wix API (ripley)</td><td class="status-pr">P1 in progress</td></tr>
 </table>
 </div>
 
 <div class="section">
-<div class="section-title">📱 Screen Captures — Android Emulator (Pixel 7, API 34)</div>
+<div class="section-title">📱 Screen Captures — iOS Simulator (iPhone 16e)</div>
 <div style="background:#1c1410;border:1px solid #3a2518;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#9b8a7a">
-  <strong style="color:#e8845c">Note:</strong> These screenshots are from the emulator running <strong>main branch</strong> debug build via Metro.
+  <strong style="color:#e8845c">Note:</strong> Screenshots from iOS Simulator running main branch after 32 PRs merged. Session 24, 2026-03-23.
   PRs #235 (CollectionCard fix), #236 (tab bar SVG icons), #237 (challenges rail) are pending merge — not yet visible.
   Wix API is unreachable from emulator guest network: prices show $0, collections fail.
   All these features work correctly on a real device with network access.
