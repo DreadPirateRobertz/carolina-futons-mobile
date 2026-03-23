@@ -340,8 +340,8 @@ export function AccountScreen({
                 activeOpacity={0.7}
               >
                 <LoyaltyTierBadge points={loyalty.points} />
-                {!streakLoading && streak > 0 && (
-                  <StreakBadge streak={streak} testID="account-streak-badge" />
+                {!streakLoading && (
+                  <StreakBadge streak={streak} testID="account-streak-badge" showBaseMultiplier />
                 )}
                 <TierProgressBar points={loyalty.points} testID="account-tier-progress" />
               </TouchableOpacity>

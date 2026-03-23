@@ -9,10 +9,10 @@ import { render } from '@testing-library/react-native';
 import { StreakBadge } from '../StreakBadge';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-function renderBadge(streak: number, testID?: string) {
+function renderBadge(streak: number, testID?: string, showBaseMultiplier?: boolean) {
   return render(
     <ThemeProvider>
-      <StreakBadge streak={streak} testID={testID} />
+      <StreakBadge streak={streak} testID={testID} showBaseMultiplier={showBaseMultiplier} />
     </ThemeProvider>,
   );
 }
@@ -98,5 +98,28 @@ describe('StreakBadge', () => {
     const { getByTestId } = renderBadge(7);
     const badge = getByTestId('streak-badge');
     expect(badge.props.accessibilityLabel).toMatch(/2×.*points/);
+  });
+
+  // ── showBaseMultiplier prop (hq-paclo) ────────────────────────────
+
+  it('shows "1×" chip when showBaseMultiplier=true and streak < 3', () => {
+    const { getByTestId } = renderBadge(2, undefined, true);
+    expect(getByTestId('streak-multiplier')).toBeTruthy();
+  });
+
+  it('shows "1×" text when showBaseMultiplier=true and streak = 0', () => {
+    const { getByText } = renderBadge(0, undefined, true);
+    expect(getByText('1×')).toBeTruthy();
+  });
+
+  it('still hides multiplier chip for base streak without showBaseMultiplier', () => {
+    const { queryByTestId } = renderBadge(2);
+    expect(queryByTestId('streak-multiplier')).toBeNull();
+  });
+
+  it('includes 1× in accessibility label when showBaseMultiplier=true', () => {
+    const { getByTestId } = renderBadge(1, undefined, true);
+    const badge = getByTestId('streak-badge');
+    expect(badge.props.accessibilityLabel).toMatch(/1×.*points/);
   });
 });

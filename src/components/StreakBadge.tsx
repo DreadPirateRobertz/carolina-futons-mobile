@@ -15,12 +15,14 @@ interface Props {
   /** Number of consecutive days in the current streak. */
   streak: number;
   testID?: string;
+  /** Force-show the 1× multiplier chip even when streak is below the threshold. */
+  showBaseMultiplier?: boolean;
 }
 
-export function StreakBadge({ streak, testID }: Props) {
+export function StreakBadge({ streak, testID, showBaseMultiplier }: Props) {
   const { colors, borderRadius } = useTheme();
   const multiplier = getStreakMultiplier(streak);
-  const showMultiplier = multiplier > 1;
+  const showMultiplier = multiplier > 1 || showBaseMultiplier === true;
 
   return (
     <View
