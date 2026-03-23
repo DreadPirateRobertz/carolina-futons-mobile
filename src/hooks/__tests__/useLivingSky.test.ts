@@ -244,4 +244,37 @@ describe('useLivingSky', () => {
     });
     expect(result.current.isLoading).toBe(false);
   });
+
+  // ── refresh() — hq-nyr2p ─────────────────────────────────────────────────
+
+  it('exposes a refresh function', () => {
+    const { result } = renderHook(() => useLivingSky(720));
+    expect(typeof result.current.refresh).toBe('function');
+  });
+
+  it('refresh() re-computes sky state with current time (switches from override to live)', () => {
+    // Start at midnight
+    jest.spyOn(Date.prototype, 'getHours').mockReturnValue(0);
+    jest.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0);
+    const { result } = renderHook(() => useLivingSky());
+    const midnightBg = result.current.skyColors[0];
+
+    // Change mock time to noon
+    jest.spyOn(Date.prototype, 'getHours').mockReturnValue(12);
+    jest.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0);
+
+    act(() => {
+      result.current.refresh();
+    });
+
+    expect(result.current.skyColors[0]).not.toBe(midnightBg);
+    jest.restoreAllMocks();
+  });
+
+  it('calling refresh() does not throw', () => {
+    const { result } = renderHook(() => useLivingSky(720));
+    expect(() => {
+      act(() => { result.current.refresh(); });
+    }).not.toThrow();
+  });
 });
