@@ -18,6 +18,12 @@ jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => mockWixClient,
 }));
 
+// Mock auth — provides memberId for the GET query param
+const MEMBER_ID = 'member-abc123';
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: MEMBER_ID }, isAuthenticated: true }),
+}));
+
 const MOCK_API_RESPONSE = {
   challenges: [
     {
@@ -148,10 +154,13 @@ describe('useActiveChallenges', () => {
     expect(result.current.challenges).toEqual([]);
   });
 
-  it('calls API with correct path and method', async () => {
+  it('calls GET /_functions/activeChallenges with memberId query param', async () => {
     const { result } = renderHook(() => useActiveChallenges());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/getActiveChallenges', 'POST', {});
+    expect(mockCallFunction).toHaveBeenCalledWith(
+      `/_functions/activeChallenges?memberId=${MEMBER_ID}`,
+      'GET',
+    );
   });
 });
