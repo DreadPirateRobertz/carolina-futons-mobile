@@ -35,7 +35,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <tr>
   <td class="p1">P1</td>
   <td>CollectionCard crash — heroImage/mood/productIds undefined from Wix</td>
-  <td class="status-pr">PR #235 OPEN</td>
+  <td class="status-fixed">✅ MERGED PR #235</td>
   <td>3 null guards added. 10 tests green. CI pending.</td>
 </tr>
 <tr>
@@ -59,7 +59,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <tr>
   <td class="p2">P2</td>
   <td>Tab bar — emoji icons, no gamification badges</td>
-  <td class="status-pr">PR #236 OPEN</td>
+  <td class="status-fixed">✅ MERGED PR #236</td>
   <td>Replaced with SVG mountain icons. Streak 🔥 on Home, tier ★ on Account. 11 tests.</td>
 </tr>
 <tr>
@@ -72,7 +72,19 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
   <td class="p3">P3</td>
   <td>HomeScreen 'Browse Products' navigation crash</td>
   <td class="status-fixed">ALREADY FIXED</td>
-  <td>Fixed before session 23. navigate('Tabs', {screen:'Shop'}) in main.</td>
+  <td>Fixed before session 23.</td>
+</tr>
+<tr>
+  <td class="p1">P1</td>
+  <td>SearchScreen unreachable — no navigate('Search') call in any UI component</td>
+  <td class="status-open">🔧 IN PROGRESS — cm-we6 (ripley)</td>
+  <td>Bishop QA confirmed. ShopScreen SearchBar is inline, SearchScreen is separate + unlinked. Fix: wire search icon.</td>
+</tr>
+<tr>
+  <td class="p1">P1</td>
+  <td>LoyaltyScreen unreachable — no navigate('Loyalty') call anywhere in UI</td>
+  <td class="status-open">🔧 IN PROGRESS — cm-1fh (hicks)</td>
+  <td>Bishop QA confirmed. Registered in AppNavigator but no AccountScreen entry point. Fix: add tappable tier row.</td>
 </tr>
 </table>
 </div>
@@ -81,21 +93,26 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <div class="section-title">✅ Session 23 Deliverables</div>
 <table>
 <tr><th>PR</th><th>Feature</th><th>Status</th><th>Tests</th></tr>
-<tr><td>#235</td><td>CollectionCard null safety (Wix undefined fields)</td><td class="status-pr">CI pending merge</td><td>10 tests</td></tr>
-<tr><td>#236</td><td>Tab bar redesign — SVG icons + streak/tier badges</td><td class="status-pr">CI pending merge</td><td>11 new TabIcons tests</td></tr>
-<tr><td>#237</td><td>Home screen challenges rail (ripley) — Spring Refresh, Flash Weekend, Streak Saver</td><td class="status-pr">CI pending merge</td><td>5761 total green</td></tr>
+<tr><td>#235</td><td>CollectionCard null safety (Wix undefined fields)</td><td class="status-fixed">✅ MERGED</td><td>10 tests</td></tr>
+<tr><td>#236</td><td>Tab bar redesign — SVG icons + streak/tier badges</td><td class="status-fixed">✅ MERGED</td><td>11 new TabIcons tests</td></tr>
+<tr><td>#237</td><td>Home screen challenges rail (ripley) — Spring Refresh, Flash Weekend, Streak Saver</td><td class="status-fixed">✅ MERGED</td><td>5761 total green</td></tr>
+<tr><td>#233</td><td>Recently Viewed rail on PDP — useRecentlyViewedSlugs hook</td><td class="status-fixed">✅ MERGED</td><td>20 tests</td></tr>
+<tr><td>#234</td><td>A11y pass: shipping/share UI — ARIA labels, accessibilityHint, reduced-motion guards</td><td class="status-fixed">✅ MERGED</td><td>all green</td></tr>
+<tr><td>#238</td><td>Live points chip on PDP + CartPointsSummary earn estimate</td><td class="status-fixed">✅ MERGED</td><td>13 tests</td></tr>
+<tr><td>#239</td><td>Wishlist polish — item count header, swipe Remove/Move to Cart, Add All to Cart</td><td class="status-fixed">✅ MERGED</td><td>all green</td></tr>
 </table>
-<p style="font-size:11px;color:#666;margin-top:8px">⚠️ GitHub token expired — run <code>gh auth login -h github.com</code> to merge PRs.</p>
+<p style="font-size:11px;color:#666;margin-top:8px">✅ GitHub auth restored. All 7 PRs merged: #233-#239 + #234 + #238. 5679 tests passing.</p>
 </div>
 
 <div class="section">
 <div class="section-title">🔧 In Progress (crew dispatched)</div>
 <table>
 <tr><th>Bead</th><th>Worker</th><th>Feature</th></tr>
-<tr><td>cfutons_mobile-a02</td><td>burke</td><td>Live points chip on PDP + cart</td></tr>
-<tr><td>cfutons_mobile-l71</td><td>hicks</td><td>Wishlist visual polish (swipe actions, share, sort)</td></tr>
+
+
 <tr><td>cfutons_mobile-cgo</td><td>—</td><td>PDP content (PDFs, care guide, video, policy links) — awaiting melania on content URLs</td></tr>
-<tr><td>cm-pdp-recently-viewed</td><td>ripley</td><td>Recently Viewed rail on PDP (branch exists, PR pending)</td></tr>
+<tr><td>cm-we6</td><td>ripley</td><td>SearchScreen nav fix — wire search icon to navigate('Search')</td></tr>
+<tr><td>cm-1fh</td><td>hicks</td><td>LoyaltyScreen nav fix — add entry point in AccountScreen</td></tr>
 </table>
 </div>
 
