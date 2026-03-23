@@ -28,6 +28,9 @@ describe('useNotificationStorage', () => {
       promotions: true,
       backInStock: false,
       cartReminders: true,
+      streakMilestone: true,
+      questComplete: true,
+      dailySpinReminder: false,
     };
     mockGetItem.mockResolvedValue(JSON.stringify(saved));
 
@@ -46,6 +49,9 @@ describe('useNotificationStorage', () => {
       promotions: false,
       backInStock: true,
       cartReminders: true,
+      streakMilestone: true,
+      questComplete: true,
+      dailySpinReminder: false,
     };
     await act(async () => {
       await result.current.savePreferences(newPrefs);
@@ -67,6 +73,9 @@ describe('useNotificationStorage', () => {
         promotions: true,
         backInStock: true,
         cartReminders: true,
+        streakMilestone: true,
+        questComplete: true,
+        dailySpinReminder: false,
       });
     });
 
