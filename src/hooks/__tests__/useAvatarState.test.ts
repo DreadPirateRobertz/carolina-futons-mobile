@@ -16,7 +16,7 @@ import { useAvatarState } from '../useAvatarState';
 // Mocks
 // ---------------------------------------------------------------------------
 
-const mockGetAvatarState = jest.fn();
+const mockCallFunction = jest.fn();
 const mockGetWixClientSingleton = jest.fn();
 
 jest.mock('@/services/wix/wixClientSingleton', () => ({
@@ -43,8 +43,8 @@ function makeApiResponse(overrides = {}) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockGetTokens.mockReturnValue({ accessToken: { value: MEMBER_TOKEN, expiresAt: 9999999999 } });
-  mockGetWixClientSingleton.mockReturnValue({ getAvatarState: mockGetAvatarState });
-  mockGetAvatarState.mockResolvedValue(makeApiResponse());
+  mockGetWixClientSingleton.mockReturnValue({ callFunction: mockCallFunction });
+  mockCallFunction.mockResolvedValue(makeApiResponse());
 });
 
 // ---------------------------------------------------------------------------
@@ -63,7 +63,7 @@ describe('useAvatarState hook', () => {
   });
 
   it('returns bonusPointsDayActive: true when API signals bonus day', async () => {
-    mockGetAvatarState.mockResolvedValue(makeApiResponse({ bonusPointsDayActive: true }));
+    mockCallFunction.mockResolvedValue(makeApiResponse({ bonusPointsDayActive: true }));
     const { result } = renderHook(() => useAvatarState());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.bonusPointsDayActive).toBe(true);
@@ -78,7 +78,7 @@ describe('useAvatarState hook', () => {
     expect(result.current.lottieAnimationId).toBeNull();
     expect(result.current.bonusPointsDayActive).toBe(false);
     expect(result.current.error).toBeNull();
-    expect(mockGetAvatarState).not.toHaveBeenCalled();
+    expect(mockCallFunction).not.toHaveBeenCalled();
   });
 
   it('returns guest defaults when SDK throws (token not initialized)', async () => {
@@ -89,7 +89,7 @@ describe('useAvatarState hook', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.bonusPointsDayActive).toBe(false);
     expect(result.current.error).toBeNull();
-    expect(mockGetAvatarState).not.toHaveBeenCalled();
+    expect(mockCallFunction).not.toHaveBeenCalled();
   });
 
   it('sets error when Wix client unavailable', async () => {
@@ -100,7 +100,7 @@ describe('useAvatarState hook', () => {
   });
 
   it('sets error on API failure', async () => {
-    mockGetAvatarState.mockRejectedValue(new Error('network timeout'));
+    mockCallFunction.mockRejectedValue(new Error('network timeout'));
     const { result } = renderHook(() => useAvatarState());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBe('network timeout');
@@ -108,7 +108,7 @@ describe('useAvatarState hook', () => {
   });
 
   it('handles missing/null fields gracefully (partial API response)', async () => {
-    mockGetAvatarState.mockResolvedValue({
+    mockCallFunction.mockResolvedValue({
       bonusPointsDayActive: true,
       // equippedAccessoryId, unlockedAccessoryIds, lottieAnimationId intentionally missing
     });
@@ -121,8 +121,18 @@ describe('useAvatarState hook', () => {
     expect(result.current.error).toBeNull();
   });
 
+  it('calls callFunction with correct path, method, and memberId', async () => {
+    const { result } = renderHook(() => useAvatarState());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(mockCallFunction).toHaveBeenCalledWith(
+      '/_functions/getAvatarState',
+      'POST',
+      { memberId: MEMBER_TOKEN },
+    );
+  });
+
   it('starts in loading state', () => {
-    mockGetAvatarState.mockReturnValue(new Promise(() => {})); // never resolves
+    mockCallFunction.mockReturnValue(new Promise(() => {})); // never resolves
     const { result } = renderHook(() => useAvatarState());
     expect(result.current.loading).toBe(true);
   });
@@ -130,9 +140,9 @@ describe('useAvatarState hook', () => {
   it('refreshAvatarState re-fetches from API', async () => {
     const { result } = renderHook(() => useAvatarState());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockGetAvatarState).toHaveBeenCalledTimes(1);
+    expect(mockCallFunction).toHaveBeenCalledTimes(1);
 
     await result.current.refreshAvatarState();
-    expect(mockGetAvatarState).toHaveBeenCalledTimes(2);
+    expect(mockCallFunction).toHaveBeenCalledTimes(2);
   });
 });

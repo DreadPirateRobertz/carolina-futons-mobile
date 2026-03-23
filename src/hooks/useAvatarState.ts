@@ -67,7 +67,12 @@ export function useAvatarState(): UseAvatarStateResult {
         return;
       }
 
-      const data = await wixClient.getAvatarState(memberToken);
+      const data = await wixClient.callFunction<{
+        equippedAccessoryId?: string | null;
+        unlockedAccessoryIds?: string[];
+        lottieAnimationId?: string | null;
+        bonusPointsDayActive?: boolean;
+      }>('/_functions/getAvatarState', 'POST', { memberId: memberToken });
       setEquippedAccessoryId(data.equippedAccessoryId ?? null);
       setUnlockedAccessoryIds(data.unlockedAccessoryIds ?? []);
       setLottieAnimationId(data.lottieAnimationId ?? null);
