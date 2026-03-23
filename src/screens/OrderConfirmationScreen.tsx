@@ -7,7 +7,15 @@
  * shopping or view order history.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Share, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  Share,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import { PointsToast } from '@/components/PointsToast';
 import { useTheme } from '@/theme';
 import { formatPrice } from '@/utils';
@@ -65,6 +73,7 @@ export function OrderConfirmationScreen({
       style={[styles.root, { backgroundColor: colors.sandBase }]}
       testID={testID ?? 'order-confirmation-screen'}
     >
+      <StatusBar barStyle="dark-content" />
       {pointsEarned != null && (
         <PointsToast points={pointsEarned} visible={toastVisible} testID="order-points-toast" />
       )}
