@@ -152,10 +152,6 @@ describe('useActiveChallenges', () => {
     const { result } = renderHook(() => useActiveChallenges());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(mockCallFunction).toHaveBeenCalledWith(
-      '/_functions/getActiveChallenges',
-      'POST',
-      {},
-    );
+    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/getActiveChallenges', 'POST', {});
   });
 });

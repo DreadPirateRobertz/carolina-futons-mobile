@@ -47,8 +47,7 @@ export interface UseActiveChallengesResult {
 }
 
 function mapApiChallenge(api: ApiChallenge): Challenge {
-  const rawProgress =
-    api.targetCount > 0 ? api.progress.progressValue / api.targetCount : 0;
+  const rawProgress = api.targetCount > 0 ? api.progress.progressValue / api.targetCount : 0;
 
   return {
     id: api.challengeId,
