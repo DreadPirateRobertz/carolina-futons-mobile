@@ -32,6 +32,8 @@ import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { StreakDangerBanner } from '@/components/StreakDangerBanner';
+import { ChallengeCompletedToast } from '@/components/ChallengeCompletedToast';
+import { TierUpgradeToast } from '@/components/TierUpgradeToast';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
@@ -445,6 +447,25 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Gamification toasts — cfutons_mobile-0lt */}
+      {triggers.challengeCompleted && (
+        <ChallengeCompletedToast
+          title={triggers.challengeCompleted.title}
+          rewardPoints={triggers.challengeCompleted.rewardPoints}
+          visible={true}
+          testID="home-challenge-toast"
+          onDismiss={() => dismiss('challengeCompleted')}
+        />
+      )}
+      {triggers.tierChanged && (
+        <TierUpgradeToast
+          tier={triggers.tierChanged}
+          visible={true}
+          testID="home-tier-upgrade-toast"
+          onDismiss={() => dismiss('tierChanged')}
+        />
+      )}
 
       {/* Search icon — absolute top-right, overlays hero */}
       <Pressable

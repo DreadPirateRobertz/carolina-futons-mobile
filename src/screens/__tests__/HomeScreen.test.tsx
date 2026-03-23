@@ -332,4 +332,81 @@ describe('HomeScreen', () => {
       expect(errorBannerPos).toBeLessThan(dividerPos);
     });
   });
+
+  // cfutons_mobile-0lt — gamification trigger toasts
+  describe('ChallengeCompletedToast integration', () => {
+    it('does not show challenge toast when challengeCompleted is null', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
+        dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { queryByTestId } = renderHomeScreen();
+      expect(queryByTestId('home-challenge-toast')).toBeNull();
+    });
+
+    it('shows challenge toast when challengeCompleted is set', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: {
+          tierChanged: null,
+          streakDanger: false,
+          challengeCompleted: { challengeId: 'c1', title: 'Spring Refresh', rewardPoints: 200 },
+        },
+        dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('home-challenge-toast')).toBeTruthy();
+    });
+
+    it('dismisses challenge toast on animation end by calling dismiss("challengeCompleted")', () => {
+      const mockDismiss = jest.fn();
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: {
+          tierChanged: null,
+          streakDanger: false,
+          challengeCompleted: { challengeId: 'c1', title: 'Spring Refresh', rewardPoints: 200 },
+        },
+        dismiss: mockDismiss,
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { getByTestId } = renderHomeScreen();
+      fireEvent(getByTestId('home-challenge-toast'), 'onDismiss');
+      expect(mockDismiss).toHaveBeenCalledWith('challengeCompleted');
+    });
+  });
+
+  describe('TierUpgradeToast integration', () => {
+    it('does not show tier upgrade toast when tierChanged is null', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: null, streakDanger: false, challengeCompleted: null },
+        dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { queryByTestId } = renderHomeScreen();
+      expect(queryByTestId('home-tier-upgrade-toast')).toBeNull();
+    });
+
+    it('shows tier upgrade toast when tierChanged is set', () => {
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: 'silver', streakDanger: false, challengeCompleted: null },
+        dismiss: jest.fn(),
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('home-tier-upgrade-toast')).toBeTruthy();
+    });
+
+    it('dismisses tier toast on animation end by calling dismiss("tierChanged")', () => {
+      const mockDismiss = jest.fn();
+      mockUseTriggerMoments.mockReturnValue({
+        triggers: { tierChanged: 'gold', streakDanger: false, challengeCompleted: null },
+        dismiss: mockDismiss,
+        reportChallengesCompleted: jest.fn(),
+      });
+      const { getByTestId } = renderHomeScreen();
+      fireEvent(getByTestId('home-tier-upgrade-toast'), 'onDismiss');
+      expect(mockDismiss).toHaveBeenCalledWith('tierChanged');
+    });
+  });
 });
