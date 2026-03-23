@@ -57,7 +57,7 @@ export interface ReplayResult {
 }
 
 type WixClientLike = {
-  callFunction: <T>(path: string, method: string, body: unknown) => Promise<T>;
+  callFunction: <T>(path: string, method: 'GET' | 'POST', body?: unknown) => Promise<T>;
 };
 
 function generateEventId(): string {
