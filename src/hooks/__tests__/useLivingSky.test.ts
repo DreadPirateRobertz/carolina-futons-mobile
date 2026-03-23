@@ -224,4 +224,11 @@ describe('useLivingSky', () => {
     expect(setIntervalSpy).not.toHaveBeenCalled();
     setIntervalSpy.mockRestore();
   });
+
+  it('rimColor is a string (interpolated, not snapped)', () => {
+    // Between keyframes (e.g. h=11, between h=10 rimCol=#FFFAE0 and h=12 rimCol=#FFFCE8)
+    const { result } = renderHook(() => useLivingSky(660)); // 11h = 660 min
+    expect(typeof result.current.rimColor).toBe('string');
+    expect(result.current.rimColor.length).toBeGreaterThan(0);
+  });
 });

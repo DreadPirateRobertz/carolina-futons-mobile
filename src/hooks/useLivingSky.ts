@@ -263,7 +263,7 @@ export function computeSkyState(totalMinutes: number, date?: Date): LivingSkySta
   const fireflyOpacity = lerp(sa.fireflyOp, sb.fireflyOp, st);
   const owlOpacity = lerp(sa.owlOp, sb.owlOp, st);
   const rimOpacity = lerp(sa.rimOp, sb.rimOp, st);
-  const rimColor = sa.rimCol;
+  const rimColor = lerpColor(sa.rimCol, sb.rimCol ?? sa.rimCol, st);
 
   // Nav theming
   const navBg = lerpColor(sa.navBg, sb.navBg ?? sa.navBg, st);
@@ -324,7 +324,14 @@ export function useLivingSky(overrideMinutes?: number): LivingSkyState {
     // Static mode — no interval, no updates
     if (overrideMinutes !== undefined) return;
 
-    const tick = () => setState(computeSkyState(currentTotalMinutes()));
+    const tick = () => {
+      try {
+        setState(computeSkyState(currentTotalMinutes()));
+      } catch {
+        // computeSkyState is pure and should never throw; guard against
+        // unexpected runtime errors so the interval does not silently die.
+      }
+    };
     const id = setInterval(tick, 30000);
     return () => clearInterval(id);
   }, [overrideMinutes]);
