@@ -436,8 +436,8 @@ describe('StyleQuizScreen', () => {
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
     completeQuiz(getByTestId);
-    // At least one product card renders a thumbnail image
-    expect(getByTestId('quiz-product-img-asheville-full')).toBeTruthy();
+    // completeQuiz selects modern+full → Coastal Minimalist recommendation → slug 'asheville-full-futon'
+    expect(getByTestId('quiz-product-img-asheville-full-futon')).toBeTruthy();
   });
 
   it('shows product name when image data is available', () => {
