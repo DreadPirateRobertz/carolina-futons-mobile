@@ -15,6 +15,16 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import type { Product } from '@/data/products';
 import type { ProductId } from '@/data/productId';
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: jest.fn(), goBack: jest.fn() }),
 }));

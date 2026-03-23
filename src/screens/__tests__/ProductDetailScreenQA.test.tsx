@@ -5,7 +5,7 @@
  * submit form (validation, success, error).
  */
 import React from 'react';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -111,6 +111,20 @@ const mockClearSubmitStatus = jest.fn();
 const mockUseProductQA = jest.fn();
 jest.mock('@/hooks/useProductQA', () => ({
   useProductQA: () => mockUseProductQA(),
+}));
+
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/useProductResources', () => ({
+  useProductResources: () => ({ resources: [], loading: false, error: null }),
 }));
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────

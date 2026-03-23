@@ -17,7 +17,7 @@ import {
 } from '@/data/reviews';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { events } from '@/services/analytics';
-import * as gamification from '@/services/gamification';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest';
 
@@ -58,6 +58,7 @@ export function useReviews(productId: string): UseReviewsReturn {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const wixClient = useOptionalWixClient();
+  const gamificationEvents = useGamificationEvents();
   const localReviewsRef = useRef(localReviews);
   localReviewsRef.current = localReviews;
 
@@ -132,7 +133,7 @@ export function useReviews(productId: string): UseReviewsReturn {
           setShowForm(false);
           setSubmitSuccess(true);
           events.submitReview(productId, data.rating);
-          gamification.submitReview(productId, data.rating, data.photos.length > 0);
+          gamificationEvents.submitReview(productId, data.rating, data.photos.length > 0);
           return true;
         } catch {
           // Roll back optimistic review
@@ -149,7 +150,7 @@ export function useReviews(productId: string): UseReviewsReturn {
           setShowForm(false);
           setSubmitSuccess(true);
           events.submitReview(productId, data.rating);
-          gamification.submitReview(productId, data.rating, data.photos.length > 0);
+          gamificationEvents.submitReview(productId, data.rating, data.photos.length > 0);
           return true;
         } catch {
           setLocalReviews((prev) => prev.filter((r) => r.id !== optimisticId));
@@ -160,7 +161,7 @@ export function useReviews(productId: string): UseReviewsReturn {
         }
       }
     },
-    [productId, wixClient],
+    [productId, wixClient, gamificationEvents],
   );
 
   const markHelpful = useCallback(

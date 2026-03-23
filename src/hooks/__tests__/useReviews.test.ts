@@ -2,6 +2,18 @@ import { renderHook, act } from '@testing-library/react-native';
 import { useReviews } from '../useReviews';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
+// ── useGamificationEvents mock ─────────────────────────────────
+const mockSubmitReview = jest.fn().mockResolvedValue({ success: true });
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: mockSubmitReview,
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 // ── Wix client mock ────────────────────────────────────────────
 const mockCreateReview = jest.fn();
 const mockQueryReviews = jest.fn();
@@ -181,9 +193,7 @@ describe('useReviews', () => {
         await promise;
       });
 
-      const ev = getEventBuffer().find((e) => e.name === 'gamification_submit_review');
-      expect(ev).toBeDefined();
-      expect(ev?.properties?.has_photo).toBe(false);
+      expect(mockSubmitReview).toHaveBeenCalledWith(productId, 4, false);
     });
 
     it('fires gamification_submit_review with has_photo=true when photos present', async () => {
@@ -200,9 +210,7 @@ describe('useReviews', () => {
         await promise;
       });
 
-      const ev = getEventBuffer().find((e) => e.name === 'gamification_submit_review');
-      expect(ev).toBeDefined();
-      expect(ev?.properties?.has_photo).toBe(true);
+      expect(mockSubmitReview).toHaveBeenCalledWith(productId, 5, true);
     });
 
     it('hides form after successful submission', async () => {

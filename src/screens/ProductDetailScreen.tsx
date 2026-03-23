@@ -55,7 +55,7 @@ import { useCart } from '@/hooks/useCart';
 import { EmptyState } from '@/components/EmptyState';
 import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustration';
 import { events } from '@/services/analytics';
-import { arUsed } from '@/services/gamification';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
@@ -235,6 +235,7 @@ export function ProductDetailScreen({
 
   const { addViewed } = useRecentlyViewed();
   const { slugs: recentSlugs, addSlug } = useRecentlyViewedSlugs();
+  const gamificationEvents = useGamificationEvents();
   const {
     resources,
     loading: resourcesLoading,
@@ -397,7 +398,7 @@ export function ProductDetailScreen({
     }
     onOpenAR?.(model.id);
     events.openAR(model.id);
-    arUsed(catalogProduct?.id ?? model.id); // Phase 4 gamification — cm-e2c3k
+    gamificationEvents.arUsed(catalogProduct?.id ?? model.id); // Phase 4 gamification — cm-e2c3k
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
@@ -408,7 +409,15 @@ export function ProductDetailScreen({
         });
       },
     });
-  }, [model.id, model.name, catalogProduct?.id, onOpenAR, navigation, isPremium]);
+  }, [
+    model.id,
+    model.name,
+    catalogProduct?.id,
+    onOpenAR,
+    navigation,
+    isPremium,
+    gamificationEvents,
+  ]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);

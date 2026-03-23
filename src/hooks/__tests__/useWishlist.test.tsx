@@ -4,6 +4,16 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { WishlistProvider, useWishlist } from '../useWishlist';
 import { PRODUCTS } from '@/data/products';
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 const product1 = PRODUCTS[0];
 const product2 = PRODUCTS[1];
 const product3 = PRODUCTS[2];

@@ -6,6 +6,16 @@ import { ConnectivityProvider, useConnectivity } from '../useConnectivity';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { getQueue, _resetForTesting } from '@/services/offlineQueue';
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 const asheville = FUTON_MODELS[0];
 const naturalLinen = FABRICS[0];
 

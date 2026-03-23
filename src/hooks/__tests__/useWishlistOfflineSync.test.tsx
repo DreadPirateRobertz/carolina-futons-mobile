@@ -7,6 +7,16 @@ import { useConnectivity } from '../useConnectivity';
 import { _resetForTesting, getQueue, getQueueLength } from '@/services/offlineQueue';
 import { PRODUCTS } from '@/data/products';
 
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 const product1 = PRODUCTS[0];
 const product2 = PRODUCTS[1];
 
