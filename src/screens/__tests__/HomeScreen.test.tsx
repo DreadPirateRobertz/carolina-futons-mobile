@@ -13,6 +13,11 @@ jest.mock('@/hooks/useCollections', () => {
   };
 });
 
+const mockUseActiveChallenges = jest.fn();
+jest.mock('@/hooks/useActiveChallenges', () => ({
+  useActiveChallenges: () => mockUseActiveChallenges(),
+}));
+
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => ({
     queryData: jest.fn().mockResolvedValue({ items: [], totalResults: 0 }),
@@ -41,8 +46,51 @@ function renderHomeScreen(
 }
 
 describe('HomeScreen', () => {
+  const NOW = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+
+  const MOCK_CHALLENGES = [
+    {
+      id: 'spring-refresh',
+      title: 'Spring Refresh',
+      description: 'Browse 5 new arrivals.',
+      reward: '500 pts',
+      progress: 0.4,
+      expiresAt: NOW + 7 * DAY,
+      isActive: false,
+      type: 'points',
+    },
+    {
+      id: 'flash-weekend',
+      title: 'Flash Weekend',
+      description: 'Purchase this weekend.',
+      reward: '2× pts',
+      progress: 0,
+      expiresAt: NOW + 2 * DAY,
+      isActive: true,
+      type: 'multiplier',
+    },
+    {
+      id: 'streak-saver',
+      title: 'Streak Saver',
+      description: 'Open 3 days in a row.',
+      reward: '100 pts',
+      progress: 0.67,
+      expiresAt: NOW + 1 * DAY,
+      isActive: false,
+      type: 'streak',
+    },
+  ];
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: active challenges loaded
+    mockUseActiveChallenges.mockReturnValue({
+      challenges: MOCK_CHALLENGES,
+      loading: false,
+      error: null,
+      refresh: jest.fn(),
+    });
     // Default: collections load with realistic featured data matching static COLLECTIONS
     mockUseCollections.mockReturnValue({
       collections: [
@@ -284,6 +332,59 @@ describe('HomeScreen', () => {
       expect(dividerPos).toBeGreaterThan(-1);
       // Banner must appear before the "Since 1985" divider skyline
       expect(errorBannerPos).toBeLessThan(dividerPos);
+    });
+  });
+
+  describe('Challenges rail (cm-jyw)', () => {
+    it('renders challenges rail when challenges array is non-empty', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('challenges-rail')).toBeTruthy();
+    });
+
+    it('hides challenges rail when challenges array is empty', () => {
+      mockUseActiveChallenges.mockReturnValue({
+        challenges: [],
+        loading: false,
+        error: null,
+        refresh: jest.fn(),
+      });
+      const { queryByTestId } = renderHomeScreen();
+      expect(queryByTestId('challenges-rail')).toBeNull();
+    });
+
+    it('renders challenge cards for each challenge', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('challenge-card-spring-refresh')).toBeTruthy();
+      expect(getByTestId('challenge-card-flash-weekend')).toBeTruthy();
+      expect(getByTestId('challenge-card-streak-saver')).toBeTruthy();
+    });
+
+    it('Flash Weekend card renders ACTIVE badge', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('challenge-active-badge-flash-weekend')).toBeTruthy();
+    });
+
+    it('renders challenges rail below hero and above collection carousel', () => {
+      const { toJSON } = renderHomeScreen();
+      const json = JSON.stringify(toJSON());
+      const railPos = json.indexOf('"challenges-rail"');
+      const carouselPos = json.indexOf('"collection-carousel"');
+      expect(railPos).toBeGreaterThan(-1);
+      expect(carouselPos).toBeGreaterThan(-1);
+      expect(railPos).toBeLessThan(carouselPos);
+    });
+
+    it('tapping a challenge card opens the detail sheet', () => {
+      const { getByTestId } = renderHomeScreen();
+      fireEvent.press(getByTestId('challenge-card-spring-refresh'));
+      expect(getByTestId('challenge-detail-sheet')).toBeTruthy();
+    });
+
+    it('closing the detail sheet hides it', () => {
+      const { getByTestId, queryByTestId } = renderHomeScreen();
+      fireEvent.press(getByTestId('challenge-card-spring-refresh'));
+      fireEvent.press(getByTestId('challenge-detail-close'));
+      expect(queryByTestId('challenge-detail-sheet')).toBeNull();
     });
   });
 });

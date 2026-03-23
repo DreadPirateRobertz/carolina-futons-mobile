@@ -10,8 +10,16 @@
  * users into the two main engagement paths.
  */
 
-import React, { useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Dimensions,
+  Pressable,
+  Platform,
+} from 'react-native';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useStreak } from '@/hooks/useStreak';
 import * as Haptics from 'expo-haptics';
@@ -30,7 +38,8 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
-import { CHALLENGES } from '@/data/challenges';
+import { ChallengeDetailSheet } from '@/components/ChallengeDetailSheet';
+import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -68,6 +77,18 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     isLoading: quizLoading,
     quizTaken,
   } = useQuizRecommendations();
+
+  const { challenges } = useActiveChallenges();
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId) ?? null;
+
+  const handleChallengePress = useCallback((id: string) => {
+    setSelectedChallengeId(id);
+  }, []);
+
+  const handleChallengeDetailClose = useCallback(() => {
+    setSelectedChallengeId(null);
+  }, []);
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -305,7 +326,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </GlassCard>
 
         {/* Gamification Challenges Rail */}
-        <ChallengesRail challenges={CHALLENGES} />
+        <ChallengesRail challenges={challenges} onChallengePress={handleChallengePress} />
 
         {/* Collection Carousel */}
         {(collectionsLoading || featured.length > 0) && (
@@ -443,6 +464,13 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       >
         <Text style={styles.searchIcon}>🔍</Text>
       </Pressable>
+
+      {/* Challenge detail sheet */}
+      <ChallengeDetailSheet
+        visible={selectedChallengeId !== null}
+        challenge={selectedChallenge}
+        onClose={handleChallengeDetailClose}
+      />
     </View>
   );
 }

@@ -33,6 +33,8 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
 
   const clampedProgress = Math.min(1, Math.max(0, progress));
 
+  const isMultiplier = challenge.type === 'multiplier';
+
   return (
     <TouchableOpacity
       testID={`challenge-card-${id}`}
@@ -42,6 +44,8 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
           backgroundColor: colors.espresso,
           borderRadius: borderRadius.card,
           padding: spacing.md,
+          borderWidth: isMultiplier ? 1.5 : 0,
+          borderColor: isMultiplier ? colors.sunsetCoral : undefined,
         },
       ]}
       onPress={() => onPress?.(id)}
