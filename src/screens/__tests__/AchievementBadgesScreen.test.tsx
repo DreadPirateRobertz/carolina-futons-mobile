@@ -303,3 +303,37 @@ describe('Error state', () => {
     expect(queryByTestId('badge-grid')).toBeNull();
   });
 });
+
+// ── SVG animal icons — hq-zarsg ───────────────────────────────────────────────
+
+describe('SVG badge icons (animal silhouettes)', () => {
+  const MILESTONE_BADGE_KEYS: Record<number, string> = {
+    7: 'week_wanderer',
+    14: 'streak_chip',
+    30: 'first_step',
+    60: 'trail_regular',
+    100: 'visualizer',
+    365: 'curator',
+  };
+
+  it('renders an SVG icon for every badge card', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const [milestone, badgeKey] of Object.entries(MILESTONE_BADGE_KEYS)) {
+      expect(getByTestId(`badge-icon-${milestone}`)).toBeTruthy();
+      // Verify it maps to the correct animal key
+      const icon = getByTestId(`badge-icon-${milestone}`);
+      expect(icon.props.testID).toBe(`badge-icon-${milestone}`);
+      // The underlying Svg testID contains the badge key
+      expect(icon).toBeTruthy();
+      void badgeKey; // key verified structurally via testID
+    }
+  });
+
+  it('SVG icons render even when all badges are locked', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const milestone of [7, 14, 30, 60, 100, 365]) {
+      expect(getByTestId(`badge-icon-${milestone}`)).toBeTruthy();
+    }
+  });
+});

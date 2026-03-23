@@ -10,6 +10,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { getStreakMultiplier } from '@/utils/streakMultiplier';
+import { BadgeSvgIcon } from './BadgeSvgIcon';
 
 interface Props {
   /** Number of consecutive days in the current streak. */
@@ -38,7 +39,7 @@ export function StreakBadge({ streak, testID, showBaseMultiplier }: Props) {
       accessibilityLabel={`${streak} day streak${showMultiplier ? `, ${multiplier}× points` : ''}`}
       accessibilityRole="text"
     >
-      <Text style={styles.fire}>🔥</Text>
+      <BadgeSvgIcon badgeKey="streak_chip" size={20} />
       <Text style={[styles.count, { color: colors.sunsetCoral }]}>{streak}</Text>
       <Text style={[styles.label, { color: colors.sunsetCoral }]}>day streak</Text>
       {showMultiplier && (
@@ -69,9 +70,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderWidth: 1,
     gap: 4,
-  },
-  fire: {
-    fontSize: 14,
   },
   count: {
     fontSize: 14,

@@ -24,26 +24,30 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { useAchievements } from '@/hooks/useAchievements';
 import type { Achievement } from '@/hooks/useAchievements';
+import { BadgeSvgIcon } from '@/components/BadgeSvgIcon';
 
 // ── Badge catalog ─────────────────────────────────────────────────────────────
 
 interface BadgeDef {
   milestone: number;
   label: string;
-  emoji: string;
+  badgeKey: string;
   description: string;
 }
 
+// Animal mapping (hq-zarsg): each milestone gets a Blue Ridge animal silhouette.
+// 7d → Red-Tailed Hawk · 14d → Sharp-shinned Hawk · 30d → Eastern Bluebird
+// 60d → Black Bear · 100d → Great Horned Owl · 365d → Luna Moth
 const BADGE_CATALOG: BadgeDef[] = [
-  { milestone: 7, label: 'Week Warrior', emoji: '🏅', description: 'Reach a 7-day streak' },
-  { milestone: 14, label: 'Fortnight Fighter', emoji: '🥇', description: 'Reach a 14-day streak' },
-  { milestone: 30, label: 'Monthly Master', emoji: '🌟', description: 'Reach a 30-day streak' },
-  { milestone: 60, label: 'Two Month Titan', emoji: '💫', description: 'Reach a 60-day streak' },
-  { milestone: 100, label: 'Century Club', emoji: '🏆', description: 'Reach a 100-day streak' },
+  { milestone: 7, label: 'Week Warrior', badgeKey: 'week_wanderer', description: 'Reach a 7-day streak' },
+  { milestone: 14, label: 'Fortnight Fighter', badgeKey: 'streak_chip', description: 'Reach a 14-day streak' },
+  { milestone: 30, label: 'Monthly Master', badgeKey: 'first_step', description: 'Reach a 30-day streak' },
+  { milestone: 60, label: 'Two Month Titan', badgeKey: 'trail_regular', description: 'Reach a 60-day streak' },
+  { milestone: 100, label: 'Century Club', badgeKey: 'visualizer', description: 'Reach a 100-day streak' },
   {
     milestone: 365,
     label: 'Year-Round Legend',
-    emoji: '👑',
+    badgeKey: 'curator',
     description: 'Reach a 365-day streak',
   },
 ];
@@ -110,7 +114,11 @@ export function AchievementBadgesScreen() {
           ]}
           activeOpacity={0.7}
         >
-          <Text style={styles.badgeEmoji}>{item.emoji}</Text>
+          <BadgeSvgIcon
+            badgeKey={item.badgeKey}
+            size={ITEM_WIDTH * 0.5}
+            testID={`badge-icon-${item.milestone}`}
+          />
           <Text
             style={[
               styles.badgeLabel,
@@ -205,7 +213,7 @@ export function AchievementBadgesScreen() {
                 },
               ]}
             >
-              <Text style={styles.sheetEmoji}>{selected.def.emoji}</Text>
+              <BadgeSvgIcon badgeKey={selected.def.badgeKey} size={64} testID="badge-sheet-icon" />
               <Text
                 testID="badge-sheet-title"
                 style={[styles.sheetTitle, { color: darkPalette.textPrimary }]}
@@ -281,10 +289,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
   },
-  badgeEmoji: {
-    fontSize: 32,
-    marginBottom: 4,
-  },
   badgeLabel: {
     fontSize: 11,
     fontWeight: '600',
@@ -305,10 +309,6 @@ const styles = StyleSheet.create({
   sheet: {
     alignItems: 'center',
     paddingBottom: 32,
-  },
-  sheetEmoji: {
-    fontSize: 56,
-    marginBottom: 8,
   },
   sheetTitle: {
     fontSize: 22,
