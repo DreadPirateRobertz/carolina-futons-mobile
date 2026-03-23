@@ -41,7 +41,9 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
   return (
     <View testID={testID} style={styles.container}>
       {/* Section label */}
-      <Text style={[styles.label, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+      <Text
+        style={[styles.label, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+      >
         Shipping Estimate
       </Text>
 
@@ -64,6 +66,7 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
         value={zip}
         onChangeText={setZip}
         accessibilityLabel="ZIP code for shipping estimate"
+        accessibilityHint="Enter your 5-digit ZIP code to see shipping rates"
       />
 
       {/* No-zip prompt */}
@@ -80,24 +83,39 @@ export const ShippingEstimatePanel = memo(function ShippingEstimatePanel({
           size="small"
           color={colors.mountainBlue}
           style={styles.loader}
+          accessibilityLabel="Loading shipping rate"
         />
       )}
 
       {/* Error */}
       {hasZip && !isLoading && error && (
-        <Text testID="shipping-rate-error" style={[styles.errorText, { color: colors.error }]}>
+        <Text
+          testID="shipping-rate-error"
+          style={[styles.errorText, { color: colors.error }]}
+          accessibilityLiveRegion="polite"
+        >
           Unable to estimate shipping. Please verify your ZIP code.
         </Text>
       )}
 
       {/* Rate result */}
       {hasZip && !isLoading && !error && rate && (
-        <View testID="shipping-rate-result" style={styles.rateRow}>
-          <Text style={[styles.rateText, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+        <View
+          testID="shipping-rate-result"
+          style={styles.rateRow}
+          accessibilityLabel={`${rate.carrier} — $${rate.amount}${rate.isFreight ? ' Freight (LTL)' : ''}`}
+        >
+          <Text
+            style={[
+              styles.rateText,
+              { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
             ${rate.amount}
           </Text>
           <Text style={[styles.carrierText, { color: colors.espresso }]}>
-            {' · '}{rate.carrier}
+            {' · '}
+            {rate.carrier}
             {rate.isFreight ? ' · Freight (LTL)' : ''}
           </Text>
         </View>

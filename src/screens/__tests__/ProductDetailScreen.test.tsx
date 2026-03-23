@@ -372,6 +372,12 @@ describe('ProductDetailScreen', () => {
       expect(shareBtn.props.accessibilityLabel).toContain('Share');
     });
 
+    it('share button has accessibilityHint describing the action (cm-a11y-shipping)', () => {
+      const { getByTestId } = renderDetail();
+      const shareBtn = getByTestId('detail-share-button');
+      expect(shareBtn.props.accessibilityHint).toBeTruthy();
+    });
+
     it('calls Share.share with product slug in deep link on press', async () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('detail-share-button'));

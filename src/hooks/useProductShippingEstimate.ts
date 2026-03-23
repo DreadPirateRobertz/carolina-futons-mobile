@@ -131,7 +131,16 @@ export function useProductShippingEstimate({
     promise
       .then((res: unknown) => {
         if (cancelled || fetchIdRef.current !== fetchId) return;
-        const r = res as { success: boolean; rate?: string; carrier?: string; serviceLevel?: string; isEstimate?: boolean; isFreight?: boolean; upsellMessage?: string | null; error?: string };
+        const r = res as {
+          success: boolean;
+          rate?: string;
+          carrier?: string;
+          serviceLevel?: string;
+          isEstimate?: boolean;
+          isFreight?: boolean;
+          upsellMessage?: string | null;
+          error?: string;
+        };
         if (!r.success) {
           setError(new Error(r.error ?? 'Shipping estimate unavailable'));
           setRate(null);
@@ -158,9 +167,9 @@ export function useProductShippingEstimate({
     return () => {
       cancelled = true;
     };
-  // wixClient intentionally omitted — accessed via wixClientRef to avoid
-  // new object identity on every render causing infinite effect re-runs
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // wixClient intentionally omitted — accessed via wixClientRef to avoid
+    // new object identity on every render causing infinite effect re-runs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zip, productId, dimW, dimD, dimH, itemCount]);
 
   return { zip, setZip, rate, isLoading, error };

@@ -132,9 +132,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           </Text>
         </View>
 
-        {!streakLoading && streak > 0 && (
-          <StreakBadge streak={streak} testID="home-streak-badge" />
-        )}
+        {!streakLoading && streak > 0 && <StreakBadge streak={streak} testID="home-streak-badge" />}
 
         <Text
           style={[

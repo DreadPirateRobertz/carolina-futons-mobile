@@ -33,7 +33,14 @@ jest.mock('@/hooks/useProductShippingEstimate', () => ({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function renderPanel(overrides?: Partial<typeof mockHookState>) {
-  mockHookState = { zip: '', setZip: mockSetZip, rate: null, isLoading: false, error: null, ...overrides };
+  mockHookState = {
+    zip: '',
+    setZip: mockSetZip,
+    rate: null,
+    isLoading: false,
+    error: null,
+    ...overrides,
+  };
   return render(
     <ThemeProvider>
       <ShippingEstimatePanel
@@ -189,14 +196,16 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
         serviceLevel: 'parcel',
         isEstimate: false,
         isFreight: false,
-        upsellMessage: 'Bundle savings — already paying for freight, add more items at no extra shipping cost',
+        upsellMessage:
+          'Bundle savings — already paying for freight, add more items at no extra shipping cost',
       },
     });
     expect(getByTestId('shipping-upsell-message')).toBeTruthy();
   });
 
   it('upsellMessage text matches rate.upsellMessage', () => {
-    const msg = 'Bundle savings — already paying for freight, add more items at no extra shipping cost';
+    const msg =
+      'Bundle savings — already paying for freight, add more items at no extra shipping cost';
     const { getByTestId } = renderPanel({
       zip: '28801',
       rate: {
@@ -224,6 +233,51 @@ describe('ShippingEstimatePanel (cm-9yn)', () => {
       },
     });
     expect(queryByTestId('shipping-upsell-message')).toBeNull();
+  });
+
+  // ── Accessibility (cm-a11y-shipping) ───────────────────────────────────────
+
+  describe('accessibility', () => {
+    it('zip input has descriptive accessibilityLabel', () => {
+      const { getByTestId } = renderPanel();
+      const input = getByTestId('shipping-zip-input');
+      expect(input.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('zip input has accessibilityHint describing its purpose', () => {
+      const { getByTestId } = renderPanel();
+      const input = getByTestId('shipping-zip-input');
+      expect(input.props.accessibilityHint).toBeTruthy();
+    });
+
+    it('loading spinner has accessibilityLabel for screen readers', () => {
+      const { getByTestId } = renderPanel({ zip: '28801', isLoading: true });
+      const spinner = getByTestId('shipping-rate-loading');
+      expect(spinner.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('error text has accessibilityLiveRegion polite so screen readers announce it', () => {
+      const { getByTestId } = renderPanel({ zip: '99999', error: new Error('fail') });
+      const err = getByTestId('shipping-rate-error');
+      expect(err.props.accessibilityLiveRegion).toBe('polite');
+    });
+
+    it('rate result has accessibilityLabel summarising carrier and amount', () => {
+      const { getByTestId } = renderPanel({
+        zip: '28801',
+        rate: {
+          amount: '49.00',
+          carrier: 'UPS',
+          serviceLevel: 'parcel',
+          isEstimate: false,
+          isFreight: false,
+          upsellMessage: null,
+        },
+      });
+      const result = getByTestId('shipping-rate-result');
+      expect(result.props.accessibilityLabel).toMatch(/UPS/i);
+      expect(result.props.accessibilityLabel).toMatch(/49/);
+    });
   });
 
   it('passes itemCount prop through to the hook', () => {

@@ -66,11 +66,7 @@ export function OrderConfirmationScreen({
       testID={testID ?? 'order-confirmation-screen'}
     >
       {pointsEarned != null && (
-        <PointsToast
-          points={pointsEarned}
-          visible={toastVisible}
-          testID="order-points-toast"
-        />
+        <PointsToast points={pointsEarned} visible={toastVisible} testID="order-points-toast" />
       )}
       <ScrollView
         style={styles.scrollView}
@@ -209,6 +205,7 @@ export function OrderConfirmationScreen({
             testID="share-order-button"
             accessibilityLabel="Share your order"
             accessibilityRole="button"
+            accessibilityHint="Opens share sheet with your order details"
           >
             <Text style={[styles.secondaryButtonText, { color: colors.espressoLight }]}>
               Share Order ↗

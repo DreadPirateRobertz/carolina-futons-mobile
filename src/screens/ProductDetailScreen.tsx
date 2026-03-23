@@ -567,6 +567,7 @@ export function ProductDetailScreen({
           testID="detail-share-button"
           accessibilityLabel={`Share ${model.name}`}
           accessibilityRole="button"
+          accessibilityHint="Opens share sheet"
         >
           <Text style={[styles.shareButtonText, { color: colors.espresso }]}>{'↗'}</Text>
         </TouchableOpacity>

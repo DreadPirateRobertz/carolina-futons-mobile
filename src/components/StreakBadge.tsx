@@ -23,7 +23,11 @@ export function StreakBadge({ streak, testID }: Props) {
     <View
       style={[
         styles.badge,
-        { backgroundColor: colors.sunsetCoralLight + '33', borderColor: colors.sunsetCoral, borderRadius: borderRadius.pill },
+        {
+          backgroundColor: colors.sunsetCoralLight + '33',
+          borderColor: colors.sunsetCoral,
+          borderRadius: borderRadius.pill,
+        },
       ]}
       testID={testID ?? 'streak-badge'}
       accessibilityLabel={`${streak} day streak`}

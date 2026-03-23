@@ -1424,9 +1424,9 @@ describe('CheckoutScreen', () => {
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
       expect(utils.getByTestId('delivery-time-WWEX_LTL_STANDARD')).toBeTruthy();
-      expect(
-        utils.getByTestId('delivery-time-WWEX_LTL_STANDARD').props.children,
-      ).toContain('7–10 business days');
+      expect(utils.getByTestId('delivery-time-WWEX_LTL_STANDARD').props.children).toContain(
+        '7–10 business days',
+      );
     });
 
     it('shows freight scheduling notice for isLTL option', async () => {
