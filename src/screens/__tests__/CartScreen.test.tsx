@@ -6,6 +6,12 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ isAuthenticated: true }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  AuthContext: { _currentValue: null },
+}));
+
 const mockApplyCoupon = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => ({

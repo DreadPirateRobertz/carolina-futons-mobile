@@ -34,8 +34,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { usePromoCode } from '@/hooks/usePromoCode';
+import { useAuth } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
+import { CartPointsSummary } from '@/components/CartPointsSummary';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -64,6 +66,7 @@ interface Props {
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
   const [promoInput, setPromoInput] = useState('');
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
@@ -360,6 +363,8 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
               {formatPrice(tax)}
             </Text>
           </View>
+
+          <CartPointsSummary subtotal={subtotal} isAuthenticated={isAuthenticated} />
 
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
 
