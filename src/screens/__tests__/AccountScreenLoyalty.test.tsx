@@ -7,7 +7,7 @@
  * - Badge hidden / loading state when loyalty data unavailable
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { AccountScreen } from '../AccountScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
@@ -104,10 +104,10 @@ const loyaltyBase = {
   refreshPoints: jest.fn(),
 };
 
-function renderAccountScreen() {
+function renderAccountScreen(props: { onLoyalty?: jest.Mock } = {}) {
   return render(
     <ThemeProvider>
-      <AccountScreen />
+      <AccountScreen onLoyalty={props.onLoyalty} />
     </ThemeProvider>,
   );
 }
@@ -180,6 +180,66 @@ describe('points balance display', () => {
     const { getByTestId } = renderAccountScreen();
     const pointsEl = getByTestId('loyalty-points-balance');
     expect(pointsEl.props.children).toContain('0');
+  });
+});
+
+// ── Loyalty navigation row ────────────────────────────────────────────────────
+
+describe('loyalty navigation row', () => {
+  it('renders a tappable loyalty row when authenticated', () => {
+    const { getByTestId } = renderAccountScreen();
+    expect(getByTestId('account-loyalty-row')).toBeTruthy();
+  });
+
+  it('loyalty row has accessible label', () => {
+    const { getByTestId } = renderAccountScreen();
+    expect(getByTestId('account-loyalty-row').props.accessibilityLabel).toBe(
+      'View loyalty rewards',
+    );
+  });
+
+  it('loyalty row has button role', () => {
+    const { getByTestId } = renderAccountScreen();
+    expect(getByTestId('account-loyalty-row').props.accessibilityRole).toBe('button');
+  });
+
+  it('pressing loyalty row calls onLoyalty', () => {
+    const onLoyalty = jest.fn();
+    const { getByTestId } = renderAccountScreen({ onLoyalty });
+    fireEvent.press(getByTestId('account-loyalty-row'));
+    expect(onLoyalty).toHaveBeenCalledTimes(1);
+  });
+
+  it('pressing loyalty row does not crash when onLoyalty is undefined', () => {
+    const { getByTestId } = renderAccountScreen();
+    expect(() => fireEvent.press(getByTestId('account-loyalty-row'))).not.toThrow();
+  });
+
+  it('loyalty row contains tier badge', () => {
+    const { getByTestId } = renderAccountScreen();
+    expect(getByTestId('account-loyalty-row')).toBeTruthy();
+    expect(getByTestId('loyalty-tier-badge')).toBeTruthy();
+  });
+
+  it('loyalty row shows points balance', () => {
+    mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 850, tier: 'silver' });
+    const { getByTestId } = renderAccountScreen();
+    const pointsEl = getByTestId('loyalty-points-balance');
+    expect(pointsEl.props.children).toContain('850');
+  });
+
+  it('loyalty row not rendered when unauthenticated', () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      isAuthenticated: false,
+      loading: false,
+      error: null,
+      signOut: jest.fn(),
+      updateProfile: jest.fn(),
+      clearError: jest.fn(),
+    });
+    const { queryByTestId } = renderAccountScreen();
+    expect(queryByTestId('account-loyalty-row')).toBeNull();
   });
 });
 

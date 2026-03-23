@@ -59,6 +59,8 @@ interface Props {
   onStyleQuiz?: () => void;
   /** Callback to navigate to the privacy policy screen. */
   onPrivacyPolicy?: () => void;
+  /** Callback to navigate to the loyalty rewards screen. */
+  onLoyalty?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -76,6 +78,7 @@ export function AccountScreen({
   onPremium,
   onStyleQuiz,
   onPrivacyPolicy,
+  onLoyalty,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
@@ -325,11 +328,20 @@ export function AccountScreen({
                 </Text>
                 {isPremium && <PremiumBadge />}
               </View>
-              <LoyaltyTierBadge points={loyalty.points} />
-              {!streakLoading && streak > 0 && (
-                <StreakBadge streak={streak} testID="account-streak-badge" />
-              )}
-              <TierProgressBar points={loyalty.points} testID="account-tier-progress" />
+              <TouchableOpacity
+                onPress={onLoyalty}
+                testID="account-loyalty-row"
+                accessibilityLabel="View loyalty rewards"
+                accessibilityHint="Opens your loyalty points and tier details"
+                accessibilityRole="button"
+                activeOpacity={0.7}
+              >
+                <LoyaltyTierBadge points={loyalty.points} />
+                {!streakLoading && streak > 0 && (
+                  <StreakBadge streak={streak} testID="account-streak-badge" />
+                )}
+                <TierProgressBar points={loyalty.points} testID="account-tier-progress" />
+              </TouchableOpacity>
               <Text
                 style={[styles.userEmail, { color: darkPalette.textMuted }]}
                 testID="user-email"
