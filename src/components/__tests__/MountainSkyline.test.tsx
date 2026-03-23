@@ -48,6 +48,19 @@ describe('MountainSkyline', () => {
     expect(colors.espresso).toBe('#3A2518');
   });
 
+  it('treeDark token is forest dark green #2E4A38', () => {
+    expect(colors.treeDark).toBe('#2E4A38');
+  });
+
+  it('tree fill uses forest dark green (#2E4A38)', () => {
+    const { toJSON } = render(<MountainSkyline testID="skyline-tree-color" showDetails />, {
+      wrapper,
+    });
+    const json = JSON.stringify(toJSON());
+    // Trees (trunk Rect + canopy Path) should render with forest dark green
+    expect(json).toContain('"fill":"#2E4A38"');
+  });
+
   it('renders 7 mountain layers', () => {
     const { toJSON } = render(<MountainSkyline testID="skyline-layers" />, { wrapper });
     const json = JSON.stringify(toJSON());

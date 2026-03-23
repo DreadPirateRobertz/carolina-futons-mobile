@@ -164,14 +164,14 @@ export function MountainSkyline({
               y={tree.trunk.y}
               width={tree.trunk.width}
               height={tree.trunk.height}
-              fill={colors.espresso}
+              fill={colors.treeDark}
               opacity={0.4}
             />
             {tree.canopyLayers.map((canopy, j) => (
               <Path
                 key={`canopy-${i}-${j}`}
                 d={canopy.path}
-                fill={colors.espresso}
+                fill={colors.treeDark}
                 opacity={canopy.opacity}
               />
             ))}
