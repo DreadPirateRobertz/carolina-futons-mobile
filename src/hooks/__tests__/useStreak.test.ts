@@ -106,11 +106,16 @@ describe('useStreak', () => {
   it('does not update state when unmounted before getItem resolves (line 45)', async () => {
     let resolveGetItem!: (val: string | null) => void;
     mockGetItem.mockImplementation(
-      () => new Promise<string | null>((resolve) => { resolveGetItem = resolve; }),
+      () =>
+        new Promise<string | null>((resolve) => {
+          resolveGetItem = resolve;
+        }),
     );
     const { unmount } = renderHook(() => useStreak());
     unmount(); // sets cancelled = true
-    await act(async () => { resolveGetItem(null); }); // resolves after cancel
+    await act(async () => {
+      resolveGetItem(null);
+    }); // resolves after cancel
     // cancelled guard fires at line 45 — setItem should NOT be called
     expect(mockSetItem).not.toHaveBeenCalled();
   });
@@ -118,11 +123,16 @@ describe('useStreak', () => {
   it('does not update state when unmounted before getItem rejects (lines 71, 73)', async () => {
     let rejectGetItem!: (err: Error) => void;
     mockGetItem.mockImplementation(
-      () => new Promise<string | null>((_, reject) => { rejectGetItem = reject; }),
+      () =>
+        new Promise<string | null>((_, reject) => {
+          rejectGetItem = reject;
+        }),
     );
     const { result, unmount } = renderHook(() => useStreak());
     unmount(); // sets cancelled = true
-    await act(async () => { rejectGetItem(new Error('Storage error')); });
+    await act(async () => {
+      rejectGetItem(new Error('Storage error'));
+    });
     // catch fires with cancelled=true — streak stays at initial 1, loading stays true
     expect(result.current.streak).toBe(1);
   });
