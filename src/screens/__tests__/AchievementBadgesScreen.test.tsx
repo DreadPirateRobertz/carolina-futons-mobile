@@ -1,0 +1,305 @@
+/**
+ * Tests for AchievementBadgesScreen — cf-ljq
+ * TDD: written before implementation.
+ *
+ * Covers: all 6 badges render, earned vs locked states, bottom sheet on tap
+ * (earned: name + how earned + date; locked: milestone description + CTA),
+ * loading/error states, dismiss sheet.
+ */
+
+import React from 'react';
+import { render, fireEvent } from '@testing-library/react-native';
+import { AchievementBadgesScreen } from '../AchievementBadgesScreen';
+import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { Achievement } from '@/hooks/useAchievements';
+
+// ── Mock ──────────────────────────────────────────────────────────────────────
+
+const mockUseAchievements = jest.fn();
+jest.mock('@/hooks/useAchievements', () => ({
+  useAchievements: () => mockUseAchievements(),
+}));
+
+// ── Fixtures ──────────────────────────────────────────────────────────────────
+
+const EARNED_7: Achievement = {
+  milestone: 7,
+  streakDays: 7,
+  earnedAt: '2026-03-01T10:00:00Z',
+  badgeLabel: 'Week Warrior',
+};
+
+const EARNED_30: Achievement = {
+  milestone: 30,
+  streakDays: 30,
+  earnedAt: '2026-03-10T12:00:00Z',
+  badgeLabel: 'Monthly Master',
+};
+
+const LOADED_SOME_EARNED = {
+  achievements: [EARNED_7, EARNED_30],
+  loading: false,
+  error: null,
+};
+
+const LOADED_ALL_EARNED = {
+  achievements: [
+    EARNED_7,
+    {
+      milestone: 14,
+      streakDays: 14,
+      earnedAt: '2026-03-05T00:00:00Z',
+      badgeLabel: 'Fortnight Fighter',
+    },
+    EARNED_30,
+    {
+      milestone: 60,
+      streakDays: 60,
+      earnedAt: '2026-03-15T00:00:00Z',
+      badgeLabel: 'Two Month Titan',
+    },
+    {
+      milestone: 100,
+      streakDays: 100,
+      earnedAt: '2026-03-20T00:00:00Z',
+      badgeLabel: 'Century Club',
+    },
+    {
+      milestone: 365,
+      streakDays: 365,
+      earnedAt: '2026-03-22T00:00:00Z',
+      badgeLabel: 'Year-Round Legend',
+    },
+  ],
+  loading: false,
+  error: null,
+};
+
+const LOADED_NONE_EARNED = {
+  achievements: [],
+  loading: false,
+  error: null,
+};
+
+const LOADING_STATE = { achievements: [], loading: true, error: null };
+const ERROR_STATE = { achievements: [], loading: false, error: 'Failed to load' };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function wrap(ui: React.ReactElement) {
+  return render(<ThemeProvider>{ui}</ThemeProvider>);
+}
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockUseAchievements.mockReturnValue(LOADED_SOME_EARNED);
+});
+
+// ── Root container ────────────────────────────────────────────────────────────
+
+describe('AchievementBadgesScreen — root', () => {
+  it('renders screen testID', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('achievements-screen')).toBeTruthy();
+  });
+
+  it('renders badge grid container', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('badge-grid')).toBeTruthy();
+  });
+});
+
+// ── Badge catalog — all 6 always render ──────────────────────────────────────
+
+describe('Badge catalog — all 6 milestones render', () => {
+  it('renders all 6 badge cards', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const milestone of [7, 14, 30, 60, 100, 365]) {
+      expect(getByTestId(`badge-card-${milestone}`)).toBeTruthy();
+    }
+  });
+
+  it('renders badge cards even when all locked (no achievements)', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const milestone of [7, 14, 30, 60, 100, 365]) {
+      expect(getByTestId(`badge-card-${milestone}`)).toBeTruthy();
+    }
+  });
+});
+
+// ── Earned badge state ────────────────────────────────────────────────────────
+
+describe('Earned badge state', () => {
+  it('shows earnedAt date for an earned badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    // milestone 7 is earned → date label visible
+    expect(getByTestId('badge-date-7')).toBeTruthy();
+  });
+
+  it('shows earnedAt date for a second earned badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('badge-date-30')).toBeTruthy();
+  });
+
+  it('does not show date for a locked badge', () => {
+    const { queryByTestId } = wrap(<AchievementBadgesScreen />);
+    // milestone 14 is not in LOADED_SOME_EARNED → locked
+    expect(queryByTestId('badge-date-14')).toBeNull();
+  });
+
+  it('all badges show dates when all earned', () => {
+    mockUseAchievements.mockReturnValue(LOADED_ALL_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const milestone of [7, 14, 30, 60, 100, 365]) {
+      expect(getByTestId(`badge-date-${milestone}`)).toBeTruthy();
+    }
+  });
+
+  it('no dates shown when none earned', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { queryByTestId } = wrap(<AchievementBadgesScreen />);
+    for (const milestone of [7, 14, 30, 60, 100, 365]) {
+      expect(queryByTestId(`badge-date-${milestone}`)).toBeNull();
+    }
+  });
+});
+
+// ── Bottom sheet — earned badge ───────────────────────────────────────────────
+
+describe('Bottom sheet — earned badge tap', () => {
+  it('opens bottom sheet when earned badge is tapped', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet')).toBeTruthy();
+  });
+
+  it('sheet shows badge label as title', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Week Warrior');
+  });
+
+  it('sheet shows earned description', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-description')).toBeTruthy();
+  });
+
+  it('sheet shows earnedAt date for earned badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-date')).toBeTruthy();
+  });
+
+  it('sheet does not show locked CTA for earned badge', () => {
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(queryByTestId('badge-sheet-cta')).toBeNull();
+  });
+
+  it('sheet shows correct title for a different earned badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-30'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Monthly Master');
+  });
+});
+
+// ── Bottom sheet — locked badge ───────────────────────────────────────────────
+
+describe('Bottom sheet — locked badge tap', () => {
+  it('opens bottom sheet when locked badge is tapped', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-14'));
+    expect(getByTestId('badge-sheet')).toBeTruthy();
+  });
+
+  it('sheet shows badge label as title for locked badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-14'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Fortnight Fighter');
+  });
+
+  it('sheet shows locked CTA text for locked badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-14'));
+    expect(getByTestId('badge-sheet-cta')).toBeTruthy();
+    expect(getByTestId('badge-sheet-cta').props.children).toBe('Keep your streak going!');
+  });
+
+  it('sheet does not show earnedAt date for locked badge', () => {
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-14'));
+    expect(queryByTestId('badge-sheet-date')).toBeNull();
+  });
+
+  it('sheet shows description for locked badge', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-60'));
+    expect(getByTestId('badge-sheet-description')).toBeTruthy();
+  });
+});
+
+// ── Bottom sheet — dismiss ────────────────────────────────────────────────────
+
+describe('Bottom sheet — dismiss', () => {
+  it('sheet has a close button', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-close')).toBeTruthy();
+  });
+
+  it('pressing close hides the sheet', () => {
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet')).toBeTruthy();
+    fireEvent.press(getByTestId('badge-sheet-close'));
+    expect(queryByTestId('badge-sheet')).toBeNull();
+  });
+
+  it('sheet is closed initially', () => {
+    const { queryByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(queryByTestId('badge-sheet')).toBeNull();
+  });
+
+  it('tapping another badge after dismiss opens sheet again', () => {
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    fireEvent.press(getByTestId('badge-sheet-close'));
+    expect(queryByTestId('badge-sheet')).toBeNull();
+    fireEvent.press(getByTestId('badge-card-30'));
+    expect(getByTestId('badge-sheet')).toBeTruthy();
+  });
+});
+
+// ── Loading state ─────────────────────────────────────────────────────────────
+
+describe('Loading state', () => {
+  it('shows loading indicator while loading', () => {
+    mockUseAchievements.mockReturnValue(LOADING_STATE);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('achievements-loading')).toBeTruthy();
+  });
+
+  it('hides badge grid while loading', () => {
+    mockUseAchievements.mockReturnValue(LOADING_STATE);
+    const { queryByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(queryByTestId('badge-grid')).toBeNull();
+  });
+});
+
+// ── Error state ───────────────────────────────────────────────────────────────
+
+describe('Error state', () => {
+  it('shows error message on failure', () => {
+    mockUseAchievements.mockReturnValue(ERROR_STATE);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('achievements-error')).toBeTruthy();
+  });
+
+  it('hides badge grid on error', () => {
+    mockUseAchievements.mockReturnValue(ERROR_STATE);
+    const { queryByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(queryByTestId('badge-grid')).toBeNull();
+  });
+});
