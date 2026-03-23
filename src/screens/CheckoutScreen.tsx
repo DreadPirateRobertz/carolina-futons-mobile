@@ -48,8 +48,12 @@ import { useAffirmPrequalification } from '@/hooks/useAffirmPrequalification';
 import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
 import { useLoyalty } from '@/hooks/useLoyalty';
+
+const SHIPPING_ZIP_KEY = 'shipping_zip';
+const ZIP_RE = /^\d{5}(-\d{4})?$/;
 import { CheckoutLoyaltyBanner } from '@/components/CheckoutLoyaltyBanner';
 import {
   fetchShippingOptions,
@@ -289,7 +293,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   // Address state — pre-fill from default saved address
   const [shippingAddress, setShippingAddress] = useState<Address>(EMPTY_ADDRESS);
 
-  // Pre-fill with default address on load
+  // Pre-fill with default address on load; fall back to persisted ZIP (cm-k0396)
   useEffect(() => {
     if (!addressBook.loading && addressBook.defaultAddress && !usingSavedAddress) {
       const da = addressBook.defaultAddress;
@@ -302,6 +306,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         zip: da.zip,
       });
       setUsingSavedAddress(true);
+    } else if (!addressBook.loading && !addressBook.defaultAddress) {
+      // No saved address — pre-fill ZIP from shared shipping_zip key
+      AsyncStorage.getItem(SHIPPING_ZIP_KEY)
+        .then((stored) => {
+          if (stored) {
+            setShippingAddress((prev) => ({ ...prev, zip: stored }));
+          }
+        })
+        .catch(() => {
+          // Ignore storage errors — ZIP stays empty
+        });
     }
   }, [addressBook.loading, addressBook.defaultAddress]); // eslint-disable-line react-hooks/exhaustive-deps
   const [billingAddress, setBillingAddress] = useState<Address>(EMPTY_ADDRESS);
@@ -396,6 +411,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       setShippingAddress((prev) => ({ ...prev, [field]: value }));
       if (shippingErrors[field as keyof AddressErrors]) {
         setShippingErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+      // Persist valid ZIP to shared storage for PDP/cart (cm-k0396)
+      if (field === 'zip' && ZIP_RE.test(value)) {
+        AsyncStorage.setItem(SHIPPING_ZIP_KEY, value).catch(() => {});
       }
     },
     [shippingErrors],
