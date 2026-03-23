@@ -3,7 +3,7 @@
  *
  * Covers all 3 event paths + hasPhoto variants.
  */
-import { addToCart, submitReview, referralShared } from '../gamification';
+import { addToCart, submitReview, referralShared, arUsed, wishlistAdd } from '../gamification';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 beforeEach(() => {
@@ -65,5 +65,34 @@ describe('referralShared', () => {
     referralShared('CAMP-A1B2');
     const ev = getEventBuffer().find((e) => e.name === 'gamification_referral_shared');
     expect(ev?.properties?.referral_code).toBe('CAMP-A1B2');
+  });
+});
+
+// Phase 4 events — cm-b7zsx
+describe('arUsed', () => {
+  it('fires gamification_ar_used event', () => {
+    arUsed('prod-asheville');
+    const events = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
+    expect(events).toHaveLength(1);
+  });
+
+  it('includes product_id', () => {
+    arUsed('futon-queen');
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_ar_used');
+    expect(ev?.properties?.product_id).toBe('futon-queen');
+  });
+});
+
+describe('wishlistAdd', () => {
+  it('fires gamification_wishlist_add event', () => {
+    wishlistAdd('prod-123');
+    const events = getEventBuffer().filter((e) => e.name === 'gamification_wishlist_add');
+    expect(events).toHaveLength(1);
+  });
+
+  it('includes product_id', () => {
+    wishlistAdd('blue-ridge');
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_wishlist_add');
+    expect(ev?.properties?.product_id).toBe('blue-ridge');
   });
 });

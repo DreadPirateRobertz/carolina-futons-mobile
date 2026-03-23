@@ -48,3 +48,23 @@ export function submitReview(productId: string, rating: number, hasPhoto: boolea
 export function referralShared(code: string): void {
   trackEvent('gamification_referral_shared', { referral_code: code });
 }
+
+/**
+ * Fire a gamification event when the user opens the AR viewer for a product.
+ * Awards 10 pts per use. Phase 4 event — cm-b7zsx.
+ *
+ * @param productId - Catalog product ID viewed in AR.
+ */
+export function arUsed(productId: string): void {
+  trackEvent('gamification_ar_used', { product_id: productId });
+}
+
+/**
+ * Fire a gamification event when a product is added to the wishlist.
+ * Awards 2 pts, capped at 5 per day (enforced server-side). Phase 4 — cm-b7zsx.
+ *
+ * @param productId - Catalog product ID added to wishlist.
+ */
+export function wishlistAdd(productId: string): void {
+  trackEvent('gamification_wishlist_add', { product_id: productId });
+}

@@ -30,7 +30,7 @@ import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
-import { CHALLENGES } from '@/data/challenges';
+import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { ProductCard } from '@/components/ProductCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
@@ -68,6 +68,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     isLoading: quizLoading,
     quizTaken,
   } = useQuizRecommendations();
+  const { challenges } = useActiveChallenges();
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -305,7 +306,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </GlassCard>
 
         {/* Gamification Challenges Rail */}
-        <ChallengesRail challenges={CHALLENGES} />
+        <ChallengesRail challenges={challenges} />
 
         {/* Collection Carousel */}
         {(collectionsLoading || featured.length > 0) && (

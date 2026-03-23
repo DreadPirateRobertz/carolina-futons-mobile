@@ -76,7 +76,9 @@ export type AnalyticsEventName =
   | 'gamification_add_to_cart'
   | 'gamification_submit_review'
   | 'gamification_referral_shared'
-  | 'gamification_track_view';
+  | 'gamification_track_view'
+  | 'gamification_ar_used'
+  | 'gamification_wishlist_add';
 
 /** A single buffered analytics event with its metadata. */
 export interface AnalyticsEvent {
