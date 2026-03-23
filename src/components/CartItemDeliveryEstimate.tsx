@@ -43,7 +43,9 @@ export const CartItemDeliveryEstimate = memo(function CartItemDeliveryEstimate({
         style={[
           styles.label,
           {
-            color: isFreight ? colors.sunsetCoralDark ?? colors.sunsetCoral : colors.espressoLight,
+            color: isFreight
+              ? (colors.sunsetCoralDark ?? colors.sunsetCoral)
+              : colors.espressoLight,
             fontFamily: typography.bodyFamily,
           },
         ]}
@@ -52,7 +54,8 @@ export const CartItemDeliveryEstimate = memo(function CartItemDeliveryEstimate({
         {displayText}
       </Text>
       {isLocal ? (
-        <View style={[styles.badge, { backgroundColor: colors.success ?? '#2E7D32' }]}
+        <View
+          style={[styles.badge, { backgroundColor: colors.success ?? '#2E7D32' }]}
           testID="delivery-local-badge"
         >
           <Text style={styles.badgeText}>Local</Text>

@@ -573,10 +573,7 @@ function CartItemRow({
               {item.fabric.name}
               {item.fabric.price > 0 && ` (+${formatPrice(item.fabric.price)})`}
             </Text>
-            <CartItemDeliveryEstimate
-              item={item}
-              testID={`cart-item-delivery-${item.id}`}
-            />
+            <CartItemDeliveryEstimate item={item} testID={`cart-item-delivery-${item.id}`} />
           </View>
           <TouchableOpacity
             onPress={onRemove}

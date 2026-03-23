@@ -14,11 +14,7 @@
 
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  getDeliveryEstimate,
-  getDeliveryMode,
-  type DeliveryMode,
-} from '@/utils/deliveryEstimate';
+import { getDeliveryEstimate, getDeliveryMode, type DeliveryMode } from '@/utils/deliveryEstimate';
 import type { CartItem } from '@/hooks/useCart';
 
 const STORAGE_KEY = 'shipping_zip';
