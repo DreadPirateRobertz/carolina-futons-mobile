@@ -35,6 +35,8 @@ import { prefetchCriticalData } from '@/services/prefetch';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
 import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
+import { useTriggerMoments } from '@/hooks/useTriggerMoments';
+import { TierCelebrationModal } from '@/components/TierCelebrationModal';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 const wixConfig = getWixConfig();
@@ -78,6 +80,7 @@ function App() {
     setCurrentRoute(navigationRef.getCurrentRoute()?.name);
   }, [trackState, navigationRef]);
   const forceUpdate = useForceUpdate();
+  const { triggers, dismiss } = useTriggerMoments();
 
   // Defer non-critical service init to after first render for faster cold start
   useEffect(() => {
@@ -160,6 +163,10 @@ function App() {
                                         visible={forceUpdate.visible}
                                         required={forceUpdate.required}
                                         onDismiss={forceUpdate.dismiss}
+                                      />
+                                      <TierCelebrationModal
+                                        newTier={triggers.tierChanged}
+                                        onDismiss={() => dismiss('tierChanged')}
                                       />
                                     </DeepLinkProvider>
                                   </NavigationContainer>
