@@ -39,11 +39,36 @@ interface BadgeDef {
 // 7d → Red-Tailed Hawk · 14d → Sharp-shinned Hawk · 30d → Eastern Bluebird
 // 60d → Black Bear · 100d → Great Horned Owl · 365d → Luna Moth
 const BADGE_CATALOG: BadgeDef[] = [
-  { milestone: 7, label: 'Week Warrior', badgeKey: 'week_wanderer', description: 'Reach a 7-day streak' },
-  { milestone: 14, label: 'Fortnight Fighter', badgeKey: 'streak_chip', description: 'Reach a 14-day streak' },
-  { milestone: 30, label: 'Monthly Master', badgeKey: 'first_step', description: 'Reach a 30-day streak' },
-  { milestone: 60, label: 'Two Month Titan', badgeKey: 'trail_regular', description: 'Reach a 60-day streak' },
-  { milestone: 100, label: 'Century Club', badgeKey: 'visualizer', description: 'Reach a 100-day streak' },
+  {
+    milestone: 7,
+    label: 'Week Warrior',
+    badgeKey: 'week_wanderer',
+    description: 'Reach a 7-day streak',
+  },
+  {
+    milestone: 14,
+    label: 'Fortnight Fighter',
+    badgeKey: 'streak_chip',
+    description: 'Reach a 14-day streak',
+  },
+  {
+    milestone: 30,
+    label: 'Monthly Master',
+    badgeKey: 'first_step',
+    description: 'Reach a 30-day streak',
+  },
+  {
+    milestone: 60,
+    label: 'Two Month Titan',
+    badgeKey: 'trail_regular',
+    description: 'Reach a 60-day streak',
+  },
+  {
+    milestone: 100,
+    label: 'Century Club',
+    badgeKey: 'visualizer',
+    description: 'Reach a 100-day streak',
+  },
   {
     milestone: 365,
     label: 'Year-Round Legend',

@@ -10,7 +10,8 @@
  */
 import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
-import Animated, {  useSharedValue,
+import Animated, {
+  useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSequence,
@@ -79,9 +80,7 @@ export function BadgeToast({ badgeName, visible, badgeKey, testID }: Props) {
           { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.pill },
         ]}
       >
-        {badgeKey ? (
-          <BadgeSvgIcon badgeKey={badgeKey} size={32} testID="badge-toast-icon" />
-        ) : null}
+        {badgeKey ? <BadgeSvgIcon badgeKey={badgeKey} size={32} testID="badge-toast-icon" /> : null}
         <Text style={styles.label}>Badge Unlocked</Text>
         <Text style={styles.name}>{badgeName}</Text>
       </View>

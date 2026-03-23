@@ -91,7 +91,7 @@ const BADGE_SVG_DATA: Record<string, BadgeSvgData> = {
 };
 
 /** All valid badge keys — useful for iteration and validation. */
-export const BADGE_SVG_KEYS = Object.keys(BADGE_SVG_DATA) as Array<keyof typeof BADGE_SVG_DATA>;
+export const BADGE_SVG_KEYS = Object.keys(BADGE_SVG_DATA) as (keyof typeof BADGE_SVG_DATA)[];
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
