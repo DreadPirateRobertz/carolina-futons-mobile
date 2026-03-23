@@ -1,8 +1,7 @@
-export {};
 /**
  * Tests for SentryCrashReportingProvider when @sentry/react-native IS available.
- * Uses jest.mock with virtual:true since the package isn't installed,
- * then re-requires the provider so its try/catch picks up the mock.
+ * Uses jest.isolateModules in beforeAll so the provider's module-level try/catch
+ * picks up the mock registered above.
  */
 export {};
 
@@ -26,29 +25,37 @@ const mockNavigationIntegration = { registerNavigationContainer: jest.fn() };
 const mockReactNavigationIntegration = jest.fn(() => mockNavigationIntegration);
 const mockMobileReplayIntegration = jest.fn(() => ({ name: 'MobileReplay' }));
 
-jest.mock(
-  '@sentry/react-native',
-  () => ({
-    init: mockInit,
-    captureException: mockCaptureException,
-    captureMessage: mockCaptureMessage,
-    setUser: mockSetUser,
-    addBreadcrumb: mockAddBreadcrumb,
-    withScope: mockWithScope,
-    wrap: mockWrap,
-    reactNavigationIntegration: mockReactNavigationIntegration,
-    mobileReplayIntegration: mockMobileReplayIntegration,
-  }),
-  { virtual: true },
-);
+jest.mock('@sentry/react-native', () => ({
+  init: mockInit,
+  captureException: mockCaptureException,
+  captureMessage: mockCaptureMessage,
+  setUser: mockSetUser,
+  addBreadcrumb: mockAddBreadcrumb,
+  withScope: mockWithScope,
+  wrap: mockWrap,
+  reactNavigationIntegration: mockReactNavigationIntegration,
+  mobileReplayIntegration: mockMobileReplayIntegration,
+}));
 
-// Reset module registry so any previously-cached @sentry/react-native (from other
-// test suites sharing this worker) is replaced by our virtual mock above.
-jest.resetModules();
+// Load a fresh instance of sentryCrashReporting in an isolated module scope so
+// its module-level try/catch picks up the virtual mock registered above.
+// jest.isolateModules is preferred over jest.resetModules here because it scopes
+// the registry reset to the callback only — the outer mock factory registry
+// (including the virtual mock) remains intact and is used for require() calls
+// inside the isolated scope.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let SentryCrashReportingProvider: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let wrapWithSentry: any;
 
-// Re-require the provider so the module-level try/catch picks up our mock
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { SentryCrashReportingProvider, wrapWithSentry } = require('../sentryCrashReporting');
+beforeAll(() => {
+  jest.isolateModules(() => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const m = require('../sentryCrashReporting');
+    SentryCrashReportingProvider = m.SentryCrashReportingProvider;
+    wrapWithSentry = m.wrapWithSentry;
+  });
+});
 
 beforeEach(() => {
   jest.clearAllMocks();
