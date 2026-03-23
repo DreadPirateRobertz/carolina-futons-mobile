@@ -31,7 +31,11 @@ jest.mock('expo-notifications', () => ({
 }));
 
 let mockIsDevice = true;
-jest.mock('expo-device', () => ({ get isDevice() { return mockIsDevice; } }));
+jest.mock('expo-device', () => ({
+  get isDevice() {
+    return mockIsDevice;
+  },
+}));
 
 const mockFetch = jest.fn().mockResolvedValue({ ok: true });
 global.fetch = mockFetch;
