@@ -11,12 +11,20 @@ module.exports = {
   // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
   maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
-  setupFilesAfterEnv: ["./jest.setup.after.js"],
+  setupFilesAfterEnv: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)',
+    // Transform all the React Native / Expo packages, plus until-async (ESM-only dep
+    // pulled in by msw/lib/core/utils/handleRequest.js for integration tests).
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|until-async)',
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Route MSW imports to compiled CJS bundles — MSW v2 uses package exports
+    // that resolve to ESM in jest-expo's react-native environment, breaking
+    // Node-based integration tests. Pinning to the lib/ CJS build avoids
+    // the ESM-only transitive dependency (until-async, rettime) transform issue.
+    '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
+    '^msw$': '<rootDir>/node_modules/msw/lib/core/index.js',
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
