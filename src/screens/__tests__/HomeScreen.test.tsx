@@ -178,6 +178,31 @@ describe('HomeScreen', () => {
     expect(btn.props.accessibilityRole).toBe('button');
   });
 
+  // Search icon (cm-we6)
+  it('renders search icon button', () => {
+    const { getByTestId } = renderHomeScreen();
+    expect(getByTestId('home-search-button')).toBeTruthy();
+  });
+
+  it('search icon has correct accessibility', () => {
+    const { getByTestId } = renderHomeScreen();
+    const btn = getByTestId('home-search-button');
+    expect(btn.props.accessibilityRole).toBe('button');
+    expect(btn.props.accessibilityLabel).toBe('Search products');
+  });
+
+  it('pressing search icon navigates to Search screen (cm-we6)', () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('@react-navigation/native'), 'useNavigation').mockReturnValue({
+      navigate: mockNavigate,
+      getParent: () => null,
+    });
+    const { getByTestId } = renderHomeScreen();
+    fireEvent.press(getByTestId('home-search-button'));
+    expect(mockNavigate).toHaveBeenCalledWith('Search');
+    jest.restoreAllMocks();
+  });
+
   it('renders collection carousel section with header', () => {
     const { getByText, getByTestId } = renderHomeScreen();
     expect(getByText('Shop the Look')).toBeTruthy();
