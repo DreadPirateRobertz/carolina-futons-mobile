@@ -74,13 +74,16 @@ describe('TierUpgradeToast', () => {
 
   // ── Safe area insets (hq-gbo6f) ───────────────────────────────────
 
+  afterEach(() => {
+    mockInsets.bottom = 0;
+  });
+
   it('adds safe area inset to bottom position (non-zero inset)', () => {
     mockInsets.bottom = 34;
     const { getByTestId } = renderToast({ tier: 'silver', visible: true });
     const toast = getByTestId('tier-upgrade-toast');
     const flatStyle = StyleSheet.flatten(toast.props.style);
     expect(flatStyle.bottom).toBe(134);
-    mockInsets.bottom = 0;
   });
 
   it('uses base bottom (100) when safe area inset is zero', () => {
