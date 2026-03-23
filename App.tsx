@@ -1,13 +1,12 @@
 import 'react-native-url-polyfill/auto';
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { BrandedSpinner } from '@/components/BrandedSpinner';
+import { LivingSkyLoadingView } from '@/components/LivingSkyLoadingView';
 import { ThemeProvider } from '@/theme';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CartProvider } from '@/hooks/useCart';
@@ -113,11 +112,7 @@ function App() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return (
-      <View style={styles.loading}>
-        <BrandedSpinner size="large" color="#E8845C" />
-      </View>
-    );
+    return <LivingSkyLoadingView />;
   }
 
   return (
@@ -190,11 +185,3 @@ function App() {
 
 export default wrapWithSentry(App);
 
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#E8D5B7',
-  },
-});
