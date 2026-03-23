@@ -39,6 +39,7 @@ jest.mock('@/hooks/useProducts', () => ({
 }));
 
 jest.useFakeTimers();
+afterAll(() => jest.useRealTimers());
 
 function renderSearchScreen() {
   return render(

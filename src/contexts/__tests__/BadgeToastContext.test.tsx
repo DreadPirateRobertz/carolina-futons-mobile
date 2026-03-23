@@ -9,6 +9,7 @@ import { BadgeToastProvider, useBadgeToastContext } from '../BadgeToastContext';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 jest.useFakeTimers();
+afterAll(() => jest.useRealTimers());
 
 /** Helper: a button that fires showBadgeToast on press. */
 function TriggerButton({ name }: { name: string }) {

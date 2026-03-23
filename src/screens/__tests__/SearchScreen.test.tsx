@@ -37,6 +37,7 @@ jest.mock('@/services/analytics', () => ({
 }));
 
 jest.useFakeTimers();
+afterAll(() => jest.useRealTimers());
 
 beforeEach(() => {
   mockQueryData.mockReset();
