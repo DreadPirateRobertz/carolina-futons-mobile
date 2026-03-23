@@ -26,6 +26,7 @@ code { background:rgba(0,0,0,.08); padding:2px 5px; border-radius:3px; font-size
   <p>Generated 2026-03-22 · Debug APK (189MB) · Android emulator cfutons_test (Pixel 7, API 34, 1080×2400)</p>
 </header>
 <nav>
+  <a href="#fixes">✅ Session 22 Fixes</a>
   <a href="#build">🔨 Build</a>
   <a href="#nav">🗺 Navigation</a>
   <a href="#tabs">Main Tabs</a>
@@ -37,6 +38,72 @@ code { background:rgba(0,0,0,.08); padding:2px 5px; border-radius:3px; font-size
 </nav>
 
 <div class="container">
+
+<div id="fixes" style="margin-bottom:32px;">
+<div style="margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #ddd;">
+  <h2 style="font-size:18px;font-weight:700;color:#3A2518;">✅ Session 22 Fixes Applied (2026-03-22)</h2>
+  <p style="font-size:12px;color:#666;margin-top:3px;">Last updated 4:13 PM MDT · CI green on all merged PRs</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;">
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">MERGED PR #209</span>
+      <strong style="font-size:12px;color:#15803d;">SearchScreen — 300ms debounce (cm-c00)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">Input debounce: typing resets timer, explicit submit/chip tap bypasses. Hides trending when empty. No ghost UI.</p>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">MERGED PR #208</span>
+      <strong style="font-size:12px;color:#15803d;">OrderDetailScreen — delivery useRef guard (cm-tsh)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">recordDelivery() no longer fires on every re-render. tracking.url null-check prevents crash.</p>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">MERGED PR #213</span>
+      <strong style="font-size:12px;color:#15803d;">Silent failures + OrderSuccess + BNPL (cm-ll3/cm-6rf/cm-kag)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">Onboarding/StyleQuiz: try/catch on savePreferences, Alert on error. OrderSuccess: theme success color, accessible checkmark. BNPL badge: full-width prominent treatment on ProductCard.</p>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">MERGED PR #215</span>
+      <strong style="font-size:12px;color:#15803d;">White-glove delivery upgrade in checkout (cm-cqz)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">White-glove shown as add-on to local delivery — not a standalone rate. Correct pricing presentation.</p>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#16a34a;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">MERGED PR #214</span>
+      <strong style="font-size:12px;color:#15803d;">TrendingSearches from Wix CMS (hq-jc723)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">useConfig() hook pulls live trending terms from CMS. Falls back to empty (no crash, section hidden).</p>
+  </div>
+
+  <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#ca8a04;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">CI PENDING — PR #210</span>
+      <strong style="font-size:12px;color:#92400e;">Loyalty tier badge in CheckoutScreen (cm-ds5)</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">LoyaltyTierBadge rendered in checkout. Fixes to UseLoyaltyResult interface (transactions, totalEarned). CI running.</p>
+  </div>
+
+  <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="background:#ca8a04;color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">QUEUED — cm-675 / CF-nnul</span>
+      <strong style="font-size:12px;color:#92400e;">WWEX LTL + getShippingEstimate in checkout</strong>
+    </div>
+    <p style="font-size:11px;color:#555;">Unblocked 4:11 PM MDT — cfutons PR #623 + getShippingEstimate webmethod live. LTL for &gt;150 lbs / &gt;108". Assigning to crew now.</p>
+  </div>
+
+</div>
+</div>
 
 <!-- BUILD SECTION -->
 <div id="build" style="background:#3A2518;color:#E8D5B7;border-radius:12px;padding:24px;margin-bottom:28px;">
@@ -360,7 +427,7 @@ Overlays (rendered inside TabNavigator):
 </div>
 
 <!-- BUGS SECTION -->
-<div id="bugs" style="margin:32px 0 16px;padding-bottom:10px;border-bottom:2px solid #ddd;"><h2 style="font-size:18px;font-weight:700;color:#3A2518;">🐛 Bugs &amp; Issues Found During Testing</h2><p style="font-size:12px;color:#666;margin-top:3px;">All discovered during emulator walkthrough — beads to be filed</p></div>
+<div id="bugs" style="margin:32px 0 16px;padding-bottom:10px;border-bottom:2px solid #ddd;"><h2 style="font-size:18px;font-weight:700;color:#3A2518;">🐛 Bugs &amp; Issues Found During Testing</h2><p style="font-size:12px;color:#666;margin-top:3px;">Discovered during emulator walkthrough · Updated 4:13 PM MDT 2026-03-22</p></div>
 <div style="background:#fff5f5;border:1px solid #ffc0c0;border-radius:12px;padding:24px;margin-bottom:28px;">
 
 <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #ffe0e0;">
