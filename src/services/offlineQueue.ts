@@ -10,7 +10,7 @@ import { captureException } from './crashReporting';
 export interface QueuedAction {
   id: string;
   timestamp: number;
-  domain: 'cart' | 'wishlist';
+  domain: 'cart' | 'wishlist' | 'gamification';
   action: string; // action type string (e.g. 'ADD_ITEM', 'REMOVE')
   payload: Record<string, unknown>;
 }
