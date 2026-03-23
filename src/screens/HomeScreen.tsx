@@ -24,6 +24,8 @@ import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { MountainSkyline } from '@/components/MountainSkyline';
+import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline';
+import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
@@ -74,6 +76,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   } = useQuizRecommendations();
   const { challenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
+  const skyState = useLivingSky();
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -126,7 +129,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           accessible={false}
           importantForAccessibility="no-hide-descendants"
         >
-          <MountainSkyline variant="sunrise" height={140} showGlow testID="home-hero-skyline" />
+          <LivingSkyMountainSkyline state={skyState} height={140} testID="home-hero-skyline" />
         </View>
 
         {/* Hero Section */}

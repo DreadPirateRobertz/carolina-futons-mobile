@@ -409,4 +409,12 @@ describe('HomeScreen', () => {
       expect(mockDismiss).toHaveBeenCalledWith('tierChanged');
     });
   });
+
+  // hq-4wgr3 — useLivingSky wiring
+  describe('LivingSkyMountainSkyline wiring', () => {
+    it('renders the hero skyline with testID home-hero-skyline', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('home-hero-skyline')).toBeTruthy();
+    });
+  });
 });
