@@ -7,8 +7,9 @@
  * Falls back to static mock challenges when the Wix client is unavailable
  * (offline mode) or the API call fails.
  *
- * API contract (from melania, hq-wisp-rxmt):
- *   getActiveChallenges(memberId) → { challenges: ApiChallenge[] }
+ * API contract (confirmed by melania, hq-7pcom):
+ *   GET /_functions/activeChallenges?memberId=X → { challenges: ApiChallenge[] }
+ *   Auth: Wix member session, IDOR guard (403).
  *   Max 5 challenges, sorted expiresAt ASC, no expired.
  *
  * cm-f3872 / Phase 4
@@ -16,6 +17,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useOptionalWixClient } from '@/services/wix';
+import { useAuth } from '@/hooks/useAuth';
 import { CHALLENGES, type Challenge } from '@/data/challenges';
 
 interface ApiChallengeProgress {
@@ -63,6 +65,7 @@ function mapApiChallenge(api: ApiChallenge): Challenge {
 
 export function useActiveChallenges(): UseActiveChallengesResult {
   const wixClient = useOptionalWixClient();
+  const { user } = useAuth();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -90,7 +93,7 @@ export function useActiveChallenges(): UseActiveChallengesResult {
     setError(null);
 
     wixClient
-      .callFunction<ApiResponse>('/_functions/getActiveChallenges', 'POST', {})
+      .callFunction<ApiResponse>(`/_functions/activeChallenges?memberId=${user?.id ?? ''}`, 'GET')
       .then((res: unknown) => {
         if (cancelled) return;
         const data = res as ApiResponse;
@@ -110,7 +113,7 @@ export function useActiveChallenges(): UseActiveChallengesResult {
     return () => {
       cancelled = true;
     };
-  }, [wixClient, refreshToken]);
+  }, [wixClient, user?.id, refreshToken]);
 
   const refresh = () => setRefreshToken((t) => t + 1);
 
