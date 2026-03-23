@@ -53,7 +53,11 @@ describe('PointsChip', () => {
   });
 
   it('accepts optional testID override', () => {
-    const { getByTestId } = renderChip({ price: 100, isAuthenticated: true, testID: 'custom-chip' });
+    const { getByTestId } = renderChip({
+      price: 100,
+      isAuthenticated: true,
+      testID: 'custom-chip',
+    });
     expect(getByTestId('custom-chip')).toBeTruthy();
   });
 });

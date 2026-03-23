@@ -734,7 +734,11 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
-          <PointsChip price={totalPrice} isAuthenticated={isAuthenticated} testID="pdp-points-chip" />
+          <PointsChip
+            price={totalPrice}
+            isAuthenticated={isAuthenticated}
+            testID="pdp-points-chip"
+          />
           <FinancingBadge
             price={totalPrice}
             variant="detail"

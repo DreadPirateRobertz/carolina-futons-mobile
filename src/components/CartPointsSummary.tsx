@@ -21,7 +21,11 @@ interface Props {
   testID?: string;
 }
 
-export function CartPointsSummary({ subtotal, isAuthenticated, testID = 'cart-points-summary' }: Props) {
+export function CartPointsSummary({
+  subtotal,
+  isAuthenticated,
+  testID = 'cart-points-summary',
+}: Props) {
   if (!isAuthenticated || subtotal <= 0) return null;
 
   const pts = calcPoints(subtotal);

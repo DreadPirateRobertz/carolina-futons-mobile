@@ -22,7 +22,9 @@ describe('CartPointsSummary', () => {
   it('renders correct total points for a cart subtotal', () => {
     const { getByTestId } = renderSummary({ subtotal: 799, isAuthenticated: true });
     // floor(799 * 0.06) = 47
-    expect(getByTestId('cart-points-label').props.children).toBe("You'll earn 47 pts on this order");
+    expect(getByTestId('cart-points-label').props.children).toBe(
+      "You'll earn 47 pts on this order",
+    );
   });
 
   it('is hidden when user is not authenticated', () => {
@@ -51,6 +53,8 @@ describe('CartPointsSummary', () => {
   it('floors fractional points correctly', () => {
     const { getByTestId } = renderSummary({ subtotal: 1001, isAuthenticated: true });
     // floor(1001 * 0.06) = floor(60.06) = 60
-    expect(getByTestId('cart-points-label').props.children).toBe("You'll earn 60 pts on this order");
+    expect(getByTestId('cart-points-label').props.children).toBe(
+      "You'll earn 60 pts on this order",
+    );
   });
 });

@@ -39,7 +39,10 @@ export function PointsChip({ price, isAuthenticated, testID = 'points-chip' }: P
       accessibilityLabel={`Earn ${pts} loyalty points`}
     >
       <Text
-        style={[styles.label, { color: '#FFFFFF', fontFamily: typography.bodyFamilyBold, marginLeft: spacing.xs }]}
+        style={[
+          styles.label,
+          { color: '#FFFFFF', fontFamily: typography.bodyFamilyBold, marginLeft: spacing.xs },
+        ]}
         testID="points-chip-label"
       >
         {label}
