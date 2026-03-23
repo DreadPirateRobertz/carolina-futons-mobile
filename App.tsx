@@ -37,6 +37,9 @@ import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { TierCelebrationModal } from '@/components/TierCelebrationModal';
+import { useChatbot } from '@/hooks/useChatbot';
+import { ChatbotModal } from '@/components/ChatbotModal';
+import { FloatingChatbotButton } from '@/components/FloatingChatbotButton';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 const wixConfig = getWixConfig();
@@ -81,6 +84,8 @@ function App() {
   }, [trackState, navigationRef]);
   const forceUpdate = useForceUpdate();
   const { triggers, dismiss } = useTriggerMoments();
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const chatbot = useChatbot();
 
   // Defer non-critical service init to after first render for faster cold start
   useEffect(() => {
@@ -167,6 +172,17 @@ function App() {
                                       <TierCelebrationModal
                                         newTier={triggers.tierChanged}
                                         onDismiss={() => dismiss('tierChanged')}
+                                      />
+                                      <FloatingChatbotButton
+                                        onPress={() => setChatbotOpen(true)}
+                                      />
+                                      <ChatbotModal
+                                        visible={chatbotOpen}
+                                        onClose={() => setChatbotOpen(false)}
+                                        messages={chatbot.messages}
+                                        sending={chatbot.sending}
+                                        error={chatbot.error}
+                                        onSend={chatbot.sendMessage}
                                       />
                                     </DeepLinkProvider>
                                   </NavigationContainer>
