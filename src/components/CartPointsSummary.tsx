@@ -26,12 +26,12 @@ export function CartPointsSummary({
   isAuthenticated,
   testID = 'cart-points-summary',
 }: Props) {
+  const { colors, typography } = useTheme();
+
   if (!isAuthenticated || subtotal <= 0) return null;
 
   const pts = calcPoints(subtotal);
   const label = `You'll earn ${pts} pts on this order`;
-
-  const { colors, typography } = useTheme();
 
   return (
     <View

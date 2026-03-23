@@ -25,12 +25,12 @@ export function calcPoints(price: number): number {
 }
 
 export function PointsChip({ price, isAuthenticated, testID = 'points-chip' }: Props) {
+  const { colors, typography, borderRadius, spacing } = useTheme();
+
   if (!isAuthenticated) return null;
 
   const pts = calcPoints(price);
   const label = `Earn ${pts} pts`;
-
-  const { colors, typography, borderRadius, spacing } = useTheme();
 
   return (
     <View
