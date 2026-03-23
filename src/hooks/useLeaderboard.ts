@@ -38,28 +38,25 @@ export function useLeaderboard(): UseLeaderboardResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetch = useCallback(
-    async (p: LeaderboardPeriod) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const client = getWixClientSingleton();
-        if (!client) {
-          setError('Leaderboard service unavailable');
-          return;
-        }
-        const data = await client.getLeaderboard({ period: p, limit: LIMIT });
-        setEntries((data.entries ?? []) as LeaderboardEntry[]);
-        setCurrentUserRank(data.currentUserRank ?? null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
-        setEntries([]);
-      } finally {
-        setLoading(false);
+  const fetch = useCallback(async (p: LeaderboardPeriod) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const client = getWixClientSingleton();
+      if (!client) {
+        setError('Leaderboard service unavailable');
+        return;
       }
-    },
-    [],
-  );
+      const data = await client.getLeaderboard({ period: p, limit: LIMIT });
+      setEntries((data.entries ?? []) as LeaderboardEntry[]);
+      setCurrentUserRank(data.currentUserRank ?? null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setEntries([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetch(period);
