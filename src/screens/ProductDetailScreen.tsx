@@ -90,6 +90,7 @@ import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
 import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
 import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
+import { PointsChip } from '@/components/PointsChip';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -733,6 +734,11 @@ export function ProductDetailScreen({
               </Text>
             )}
           </View>
+          <PointsChip
+            price={totalPrice}
+            isAuthenticated={isAuthenticated}
+            testID="pdp-points-chip"
+          />
           <FinancingBadge
             price={totalPrice}
             variant="detail"
