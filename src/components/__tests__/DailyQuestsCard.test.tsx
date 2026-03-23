@@ -9,6 +9,10 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { DailyQuestsCard } from '../DailyQuestsCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+// ── Fixtures ──────────────────────────────────────────────────────────────
+
+import type { DailyQuest } from '@/hooks/useDailyQuests';
+
 // ── Mocks ─────────────────────────────────────────────────────────────────
 
 jest.mock('react-native-reanimated', () => {
@@ -38,10 +42,6 @@ const mockUseDailyQuests = jest.fn();
 jest.mock('@/hooks/useDailyQuests', () => ({
   useDailyQuests: () => mockUseDailyQuests(),
 }));
-
-// ── Fixtures ──────────────────────────────────────────────────────────────
-
-import type { DailyQuest } from '@/hooks/useDailyQuests';
 
 const QUEST_PURCHASE: DailyQuest = {
   id: 'q-purchase',
@@ -115,11 +115,7 @@ describe('DailyQuestsCard', () => {
 
   it('shows "1 of 3 complete" when one quest is done', () => {
     mockUseDailyQuests.mockReturnValue({
-      quests: [
-        { ...QUEST_PURCHASE, completed: true },
-        QUEST_REVIEW,
-        QUEST_AR,
-      ],
+      quests: [{ ...QUEST_PURCHASE, completed: true }, QUEST_REVIEW, QUEST_AR],
       loading: false,
       refresh: jest.fn(),
     });
@@ -223,7 +219,15 @@ describe('DailyQuestsCard', () => {
 
   it('tapping referral quest navigates to Loyalty screen', () => {
     mockUseDailyQuests.mockReturnValue({
-      quests: [{ id: 'q-referral', title: 'Refer a friend', action: 'referral', pointReward: 75, completed: false }],
+      quests: [
+        {
+          id: 'q-referral',
+          title: 'Refer a friend',
+          action: 'referral',
+          pointReward: 75,
+          completed: false,
+        },
+      ],
       loading: false,
       refresh: jest.fn(),
     });
@@ -234,7 +238,15 @@ describe('DailyQuestsCard', () => {
 
   it('tapping browse quest navigates to Tabs/Shop', () => {
     mockUseDailyQuests.mockReturnValue({
-      quests: [{ id: 'q-browse', title: 'View 5 products', action: 'browse', pointReward: 15, completed: false }],
+      quests: [
+        {
+          id: 'q-browse',
+          title: 'View 5 products',
+          action: 'browse',
+          pointReward: 15,
+          completed: false,
+        },
+      ],
       loading: false,
       refresh: jest.fn(),
     });
@@ -245,7 +257,15 @@ describe('DailyQuestsCard', () => {
 
   it('tapping wishlist_share quest navigates to Wishlist', () => {
     mockUseDailyQuests.mockReturnValue({
-      quests: [{ id: 'q-ws', title: 'Share your wishlist', action: 'wishlist_share', pointReward: 20, completed: false }],
+      quests: [
+        {
+          id: 'q-ws',
+          title: 'Share your wishlist',
+          action: 'wishlist_share',
+          pointReward: 20,
+          completed: false,
+        },
+      ],
       loading: false,
       refresh: jest.fn(),
     });

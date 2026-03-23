@@ -200,11 +200,7 @@ function QuestRow({ quest, onPress, colors, spacing, borderRadius }: QuestRowPro
         onPress={handlePress}
         accessibilityRole="button"
         accessibilityLabel={a11yLabel}
-        style={[
-          styles.row,
-          { paddingVertical: spacing.sm },
-          completed && styles.rowCompleted,
-        ]}
+        style={[styles.row, { paddingVertical: spacing.sm }, completed && styles.rowCompleted]}
       >
         {/* Checkbox */}
         <View
@@ -219,9 +215,7 @@ function QuestRow({ quest, onPress, colors, spacing, borderRadius }: QuestRowPro
             },
           ]}
         >
-          {completed && (
-            <Text style={styles.checkmark}>✓</Text>
-          )}
+          {completed && <Text style={styles.checkmark}>✓</Text>}
         </View>
 
         {/* Title */}
@@ -250,7 +244,12 @@ function QuestRow({ quest, onPress, colors, spacing, borderRadius }: QuestRowPro
             },
           ]}
         >
-          <Text style={[styles.rewardText, { color: completed ? colors.mountainBlueLight : colors.sandBase }]}>
+          <Text
+            style={[
+              styles.rewardText,
+              { color: completed ? colors.mountainBlueLight : colors.sandBase },
+            ]}
+          >
             {`+${pointReward} pts`}
           </Text>
         </View>
