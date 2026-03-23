@@ -100,7 +100,12 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     [navigation],
   );
 
+  const handleOpenSearch = useCallback(() => {
+    navigation.navigate('Search');
+  }, [navigation]);
+
   return (
+    <View style={styles.root}>
     <ScrollView
       style={[styles.container, { backgroundColor: colors.sandBase }]}
       contentContainerStyle={[
@@ -424,10 +429,29 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </Text>
       </View>
     </ScrollView>
+
+      {/* Search icon — absolute top-right, overlays hero */}
+      <Pressable
+        testID="home-search-button"
+        style={[
+          styles.searchBtn,
+          { top: insets.top + spacing.sm, right: spacing.lg },
+        ]}
+        onPress={handleOpenSearch}
+        accessibilityRole="button"
+        accessibilityLabel="Search products"
+        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      >
+        <Text style={styles.searchIcon}>🔍</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },
@@ -538,5 +562,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 16,
     marginTop: 8,
+  },
+  searchBtn: {
+    position: 'absolute',
+    zIndex: 10,
+    padding: 4,
+  },
+  searchIcon: {
+    fontSize: 22,
   },
 });
