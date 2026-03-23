@@ -9,6 +9,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
+import { getStreakMultiplier } from '@/utils/streakMultiplier';
 
 interface Props {
   /** Number of consecutive days in the current streak. */
@@ -18,6 +19,8 @@ interface Props {
 
 export function StreakBadge({ streak, testID }: Props) {
   const { colors, borderRadius } = useTheme();
+  const multiplier = getStreakMultiplier(streak);
+  const showMultiplier = multiplier > 1;
 
   return (
     <View
@@ -30,12 +33,27 @@ export function StreakBadge({ streak, testID }: Props) {
         },
       ]}
       testID={testID ?? 'streak-badge'}
-      accessibilityLabel={`${streak} day streak`}
+      accessibilityLabel={`${streak} day streak${showMultiplier ? `, ${multiplier}× points` : ''}`}
       accessibilityRole="text"
     >
       <Text style={styles.fire}>🔥</Text>
       <Text style={[styles.count, { color: colors.sunsetCoral }]}>{streak}</Text>
       <Text style={[styles.label, { color: colors.sunsetCoral }]}>day streak</Text>
+      {showMultiplier && (
+        <Text
+          testID="streak-multiplier"
+          style={[
+            styles.multiplier,
+            {
+              color: colors.mountainBlue,
+              backgroundColor: colors.mountainBlue + '22',
+              borderRadius: borderRadius.sm,
+            },
+          ]}
+        >
+          {multiplier}×
+        </Text>
+      )}
     </View>
   );
 }
@@ -60,5 +78,12 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
+  },
+  multiplier: {
+    fontSize: 11,
+    fontWeight: '700',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    overflow: 'hidden',
   },
 });
