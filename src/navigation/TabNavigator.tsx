@@ -6,12 +6,14 @@
  * AnimatedTabBar for spring-press feedback.
  */
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
+import { useStreak } from '@/hooks/useStreak';
+import { useLoyalty } from '@/hooks/useLoyalty';
 import { HomeScreen } from '@/screens/HomeScreen';
 import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
@@ -19,6 +21,7 @@ import { AccountScreen } from '@/screens/AccountScreen';
 import { CompareFAB } from '@/components/CompareFAB';
 import { AnimatedTabBar } from './AnimatedTabBar';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
+import { HomeTabIcon, ShopTabIcon, CartTabIcon, AccountTabIcon } from './TabIcons';
 import type { RootStackParamList } from './AppNavigator';
 
 const HomeScreenWithBoundary = withScreenErrorBoundary(HomeScreen, 'Home');
@@ -33,16 +36,6 @@ export type TabParamList = {
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
-
-function TabIcon({ label, focused, color }: { label: string; focused: boolean; color: string }) {
-  const icons: Record<string, string> = {
-    Home: '🏠',
-    Shop: '🛋️',
-    Cart: '🛒',
-    Account: '👤',
-  };
-  return <Text style={{ fontSize: focused ? 22 : 20 }}>{icons[label] ?? '•'}</Text>;
-}
 
 function AccountScreenWithNav() {
   const nav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -59,10 +52,12 @@ function AccountScreenWithNav() {
 
 const AccountScreenWithBoundary = withScreenErrorBoundary(AccountScreenWithNav, 'Account');
 
-/** Bottom tab shell with cart badge count and the custom AnimatedTabBar. */
+/** Bottom tab shell with cart badge count, streak badge, tier badge, and the custom AnimatedTabBar. */
 export function TabNavigator() {
   const { colors } = useTheme();
   const { itemCount } = useCart();
+  const { streak } = useStreak();
+  const { tier } = useLoyalty();
 
   return (
     <View style={tabStyles.container}>
@@ -79,7 +74,7 @@ export function TabNavigator() {
           component={HomeScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
-              <TabIcon label="Home" focused={focused} color={color} />
+              <HomeTabIcon focused={focused} color={color} streak={streak} />
             ),
           }}
         />
@@ -88,7 +83,7 @@ export function TabNavigator() {
           component={ShopScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
-              <TabIcon label="Shop" focused={focused} color={color} />
+              <ShopTabIcon focused={focused} color={color} />
             ),
           }}
         />
@@ -97,7 +92,7 @@ export function TabNavigator() {
           component={CartScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
-              <TabIcon label="Cart" focused={focused} color={color} />
+              <CartTabIcon focused={focused} color={color} />
             ),
             tabBarBadge: itemCount > 0 ? itemCount : undefined,
             tabBarBadgeStyle: { backgroundColor: colors.sunsetCoral },
@@ -108,7 +103,7 @@ export function TabNavigator() {
           component={AccountScreenWithBoundary}
           options={{
             tabBarIcon: ({ focused, color }) => (
-              <TabIcon label="Account" focused={focused} color={color} />
+              <AccountTabIcon focused={focused} color={color} tier={tier} />
             ),
           }}
         />
