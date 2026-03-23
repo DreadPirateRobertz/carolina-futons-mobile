@@ -124,11 +124,9 @@ describe('useAvatarState hook', () => {
   it('calls callFunction with correct path, method, and memberId', async () => {
     const { result } = renderHook(() => useAvatarState());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockCallFunction).toHaveBeenCalledWith(
-      '/_functions/getAvatarState',
-      'POST',
-      { memberId: MEMBER_TOKEN },
-    );
+    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/getAvatarState', 'POST', {
+      memberId: MEMBER_TOKEN,
+    });
   });
 
   it('starts in loading state', () => {
