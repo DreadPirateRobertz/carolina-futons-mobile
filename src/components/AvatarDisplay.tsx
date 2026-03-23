@@ -9,7 +9,12 @@
 
 import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withSequence, withSpring } from 'react-native-reanimated';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withSpring,
+} from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import type { LoyaltyTier } from '@/hooks/useLoyalty';
 import { getAccessoryById } from '@/data/accessories';
@@ -65,10 +70,7 @@ export function AvatarDisplay({ size = 'md', equippedAccessoryId, tier, testID }
     >
       <Text style={[styles.bear, { fontSize: bearFontSize }]}>🐻</Text>
       {accessory && (
-        <Text
-          testID="avatar-accessory"
-          style={[styles.accessory, { fontSize: accessoryFontSize }]}
-        >
+        <Text testID="avatar-accessory" style={[styles.accessory, { fontSize: accessoryFontSize }]}>
           {accessory.emoji}
         </Text>
       )}
