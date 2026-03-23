@@ -218,7 +218,7 @@ export type RootStackParamList = {
   Compare: { productSlugs: string[] };
   PrivacyPolicy: undefined;
   RoomGallery: undefined;
-  Loyalty: undefined;
+  Loyalty: { initialTab?: import('../screens/LoyaltyScreen').LoyaltyInitialTab } | undefined;
   Leaderboard: undefined;
   AvatarEquip: undefined;
   Challenges: undefined;
@@ -479,7 +479,12 @@ export function AppNavigator() {
             )}
           </Stack.Screen>
           <Stack.Screen name="Loyalty" options={modalTransition}>
-            {({ navigation: nav }) => <LoyaltyScreen onClose={() => nav.goBack()} />}
+            {({ route, navigation: nav }) => (
+              <LoyaltyScreen
+                onClose={() => nav.goBack()}
+                initialTab={route.params?.initialTab}
+              />
+            )}
           </Stack.Screen>
           <Stack.Screen name="Leaderboard" options={fadeTransition}>
             {() => <LeaderboardScreen />}

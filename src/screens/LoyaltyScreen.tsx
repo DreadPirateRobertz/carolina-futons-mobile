@@ -14,9 +14,12 @@ import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
 
+export type LoyaltyInitialTab = 'streak' | 'quests' | 'spin';
+
 interface Props {
   testID?: string;
   onClose?: () => void;
+  initialTab?: LoyaltyInitialTab;
 }
 
 const TIER_NEXT: Record<string, { label: string; threshold: number } | null> = {

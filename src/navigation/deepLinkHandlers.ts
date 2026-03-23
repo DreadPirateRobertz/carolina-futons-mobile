@@ -20,11 +20,12 @@ export type GamificationNotificationType =
   | 'quest_complete'
   | 'spin_reminder';
 
-export type GamificationInitialTab = 'streak' | 'quests' | 'spin';
+export type { LoyaltyInitialTab as GamificationInitialTab } from '@/screens/LoyaltyScreen';
+import type { LoyaltyInitialTab } from '@/screens/LoyaltyScreen';
 
 export type GamificationRoute = {
   screen: 'Loyalty';
-  params: { initialTab: GamificationInitialTab };
+  params: { initialTab: LoyaltyInitialTab };
 };
 
 /** Type guard — true only for the three gamification notification types. */
