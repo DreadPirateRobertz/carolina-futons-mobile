@@ -163,29 +163,36 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   }, [getProducts, sortBy]);
 
   const renderSwipeActions = useCallback(
-    (product: WishlistProduct) => () =>
-      (
-        <View style={styles.swipeActions}>
-          <TouchableOpacity
-            style={[styles.swipeButton, styles.swipeMoveToCart, { backgroundColor: colors.mountainBlue }]}
-            onPress={() => handleSwipeMoveToCart(product)}
-            testID={`swipe-move-to-cart-${product.id}`}
-            accessibilityLabel="Move to cart"
-            accessibilityRole="button"
-          >
-            <Text style={styles.swipeButtonText}>Cart</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.swipeButton, styles.swipeRemove, { backgroundColor: colors.error ?? '#C0392B' }]}
-            onPress={() => handleSwipeRemove(product.id)}
-            testID={`swipe-remove-${product.id}`}
-            accessibilityLabel="Remove from wishlist"
-            accessibilityRole="button"
-          >
-            <Text style={styles.swipeButtonText}>Remove</Text>
-          </TouchableOpacity>
-        </View>
-      ),
+    (product: WishlistProduct) => () => (
+      <View style={styles.swipeActions}>
+        <TouchableOpacity
+          style={[
+            styles.swipeButton,
+            styles.swipeMoveToCart,
+            { backgroundColor: colors.mountainBlue },
+          ]}
+          onPress={() => handleSwipeMoveToCart(product)}
+          testID={`swipe-move-to-cart-${product.id}`}
+          accessibilityLabel="Move to cart"
+          accessibilityRole="button"
+        >
+          <Text style={styles.swipeButtonText}>Cart</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.swipeButton,
+            styles.swipeRemove,
+            { backgroundColor: colors.error ?? '#C0392B' },
+          ]}
+          onPress={() => handleSwipeRemove(product.id)}
+          testID={`swipe-remove-${product.id}`}
+          accessibilityLabel="Remove from wishlist"
+          accessibilityRole="button"
+        >
+          <Text style={styles.swipeButtonText}>Remove</Text>
+        </TouchableOpacity>
+      </View>
+    ),
     [handleSwipeMoveToCart, handleSwipeRemove, colors],
   );
 
@@ -233,10 +240,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
       <View style={styles.sortRow} testID="wishlist-sort-selector">
         <TouchableOpacity
           onPress={() => setSortBy('date')}
-          style={[
-            styles.sortButton,
-            sortBy === 'date' && { backgroundColor: colors.mountainBlue },
-          ]}
+          style={[styles.sortButton, sortBy === 'date' && { backgroundColor: colors.mountainBlue }]}
           testID="wishlist-sort-date"
           accessibilityLabel="Sort by date added"
           accessibilityRole="button"
@@ -324,7 +328,10 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
                 onPress={handleAddAllToCart}
                 style={[
                   styles.actionButton,
-                  { backgroundColor: colors.success ?? '#27AE60', borderRadius: borderRadius.button },
+                  {
+                    backgroundColor: colors.success ?? '#27AE60',
+                    borderRadius: borderRadius.button,
+                  },
                 ]}
                 testID="wishlist-add-all"
                 accessibilityLabel="Add all items to cart"
@@ -355,7 +362,16 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
         )}
       </View>
     ),
-    [count, colors, spacing, borderRadius, handleShare, handleAddAllToCart, handleClearAll, renderSortSelector],
+    [
+      count,
+      colors,
+      spacing,
+      borderRadius,
+      handleShare,
+      handleAddAllToCart,
+      handleClearAll,
+      renderSortSelector,
+    ],
   );
 
   const renderEmpty = useCallback(

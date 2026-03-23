@@ -352,7 +352,9 @@ describe('WishlistScreen', () => {
 
     it('Add All to Cart button has accessible label', () => {
       const { getByTestId } = renderScreen({ items: makeItems(product1) });
-      expect(getByTestId('wishlist-add-all').props.accessibilityLabel).toBe('Add all items to cart');
+      expect(getByTestId('wishlist-add-all').props.accessibilityLabel).toBe(
+        'Add all items to cart',
+      );
     });
 
     it('calls addItem for each futon product when Add All pressed', () => {
