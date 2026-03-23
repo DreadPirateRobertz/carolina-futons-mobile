@@ -127,7 +127,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       {/* cf-7l2 — full-screen sky gradient, absolute behind all content */}
       <LivingSkyBackground />
       <ScrollView
-        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        style={styles.container}
         contentContainerStyle={[
           styles.content,
           { paddingTop: insets.top + spacing.xxl, paddingBottom: insets.bottom },
