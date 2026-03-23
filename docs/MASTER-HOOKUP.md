@@ -336,4 +336,4 @@ npm test
 | Force update check | **Live** | Semver comparison, AppState foreground re-check |
 | Account deletion (GDPR/CCPA) | **Live** | Wix member deletion + local data wipe |
 | Data export (GDPR/CCPA) | **Live** | JSON export via share sheet (native) / Share API (web) |
-| Test suite | **2931 tests passing** | 189 suites |
+| Test suite | **5329 tests passing** | 60 skipped, all green (session 23, cm-f9b branch) |
