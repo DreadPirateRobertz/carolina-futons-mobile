@@ -2,8 +2,7 @@
  * @module useTriggerMoments
  *
  * Phase 5 — Detects gamification trigger moments and surfaces them for
- * celebration UX. Currently tracks tier upgrades; designed to accommodate
- * additional triggers (streaks, milestone purchases, etc.) in future phases.
+ * celebration UX. Tracks tier upgrades, streak danger, and challenge completions.
  *
  * Tier changes are detected by comparing the current `tier` from `useLoyalty`
  * against the last-known tier stored in AsyncStorage. A trigger fires only
@@ -11,7 +10,11 @@
  * are never celebrated. First-ever sessions (no stored tier) are silent to
  * avoid spurious celebrations.
  *
- * cm-r02ce / Phase 5
+ * Challenge completions are fed in via `reportChallengesCompleted()` (called
+ * by screens that process gamification event responses). Items are queued and
+ * surfaced one at a time; `dismiss('challengeCompleted')` advances the queue.
+ *
+ * cm-r02ce / Phase 5 | cm-a7bqj / Phase 5 | hq-myhj5 / Phase 4
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -27,15 +30,24 @@ const TIER_RANK: Record<LoyaltyTier, number> = {
   gold: 2,
 };
 
+export interface ChallengeCompletedItem {
+  challengeId: string;
+  title: string;
+  rewardPoints: number;
+}
+
 export interface TriggerMoments {
   tierChanged: LoyaltyTier | null;
   /** True when the user has a multi-day streak (≥2) worth protecting. Session-only dismiss. */
   streakDanger: boolean;
+  challengeCompleted: ChallengeCompletedItem | null;
 }
 
 export interface UseTriggerMomentsResult {
   triggers: TriggerMoments;
   dismiss: (trigger: keyof TriggerMoments) => void;
+  /** Enqueue completed challenges from a gamification event response. */
+  reportChallengesCompleted: (items: ChallengeCompletedItem[]) => void;
 }
 
 export function useTriggerMoments(): UseTriggerMomentsResult {
@@ -43,6 +55,7 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
   const { streak, loading: streakLoading } = useStreak();
   const [tierChanged, setTierChanged] = useState<LoyaltyTier | null>(null);
   const [streakDangerDismissed, setStreakDangerDismissed] = useState(false);
+  const [challengeQueue, setChallengeQueue] = useState<ChallengeCompletedItem[]>([]);
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -88,10 +101,25 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
         }
       } else if (trigger === 'streakDanger') {
         setStreakDangerDismissed(true);
+      } else if (trigger === 'challengeCompleted') {
+        setChallengeQueue((prev) => prev.slice(1));
       }
     },
     [tierChanged],
   );
 
-  return { triggers: { tierChanged, streakDanger }, dismiss };
+  const reportChallengesCompleted = useCallback((items: ChallengeCompletedItem[]) => {
+    if (!items || items.length === 0) return;
+    setChallengeQueue((prev) => [...prev, ...items]);
+  }, []);
+
+  return {
+    triggers: {
+      tierChanged,
+      streakDanger,
+      challengeCompleted: challengeQueue[0] ?? null,
+    },
+    dismiss,
+    reportChallengesCompleted,
+  };
 }
