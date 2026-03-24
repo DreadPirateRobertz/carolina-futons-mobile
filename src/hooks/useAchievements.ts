@@ -2,10 +2,15 @@
  * @module useAchievements
  *
  * Returns streak achievement data for the current member.
- * Uses mock data while cf-7sb (backend) is in-flight.
+ * Fetches from /_functions/getAchievements webMethod.
+ * Results sorted by earnedAt descending (most recent first),
+ * with unearned (null earnedAt) entries trailing.
  *
- * cf-ljq
+ * cf-ljq / cf-7sb
  */
+
+import { useState, useEffect } from 'react';
+import { useOptionalWixClient } from '@/services/wix';
 
 export interface Achievement {
   /** Streak milestone in days (7, 14, 30, 60, 100, 365) */
@@ -16,6 +21,8 @@ export interface Achievement {
   earnedAt: string | null;
   /** Display label for the badge */
   badgeLabel: string;
+  /** Remote icon URL, null if not set */
+  iconUrl: string | null;
 }
 
 export interface UseAchievementsResult {
@@ -24,25 +31,75 @@ export interface UseAchievementsResult {
   error: string | null;
 }
 
-// Mock data — replaced when cf-7sb ships
-const MOCK_ACHIEVEMENTS: Achievement[] = [
-  { milestone: 7, streakDays: 7, earnedAt: '2026-02-14T09:00:00Z', badgeLabel: 'Week Warrior' },
-  {
-    milestone: 14,
-    streakDays: 14,
-    earnedAt: '2026-02-21T09:00:00Z',
-    badgeLabel: 'Fortnight Fighter',
-  },
-  { milestone: 30, streakDays: 30, earnedAt: null, badgeLabel: 'Monthly Master' },
-  { milestone: 60, streakDays: 0, earnedAt: null, badgeLabel: 'Two Month Titan' },
-  { milestone: 100, streakDays: 0, earnedAt: null, badgeLabel: 'Century Club' },
-  { milestone: 365, streakDays: 0, earnedAt: null, badgeLabel: 'Year-Round Legend' },
-];
+interface ApiAchievement {
+  milestone: number;
+  streakDays: number;
+  earnedAt: string | null;
+  badgeLabel: string;
+  iconUrl?: string | null;
+}
+
+interface ApiResponse {
+  achievements: ApiAchievement[] | null;
+}
+
+function mapAchievement(api: ApiAchievement): Achievement {
+  return {
+    milestone: api.milestone,
+    streakDays: api.streakDays,
+    earnedAt: api.earnedAt ?? null,
+    badgeLabel: api.badgeLabel,
+    iconUrl: api.iconUrl ?? null,
+  };
+}
+
+function sortByEarnedAtDesc(achievements: Achievement[]): Achievement[] {
+  return [...achievements].sort((a, b) => {
+    if (a.earnedAt === null && b.earnedAt === null) return 0;
+    if (a.earnedAt === null) return 1;
+    if (b.earnedAt === null) return -1;
+    return new Date(b.earnedAt).getTime() - new Date(a.earnedAt).getTime();
+  });
+}
 
 export function useAchievements(): UseAchievementsResult {
-  return {
-    achievements: MOCK_ACHIEVEMENTS,
-    loading: false,
-    error: null,
-  };
+  const wixClient = useOptionalWixClient();
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!wixClient) {
+      setAchievements([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    wixClient
+      .callFunction<ApiResponse>('/_functions/getAchievements', 'GET')
+      .then((res: unknown) => {
+        if (cancelled) return;
+        const data = res as ApiResponse;
+        const raw = Array.isArray(data?.achievements) ? data.achievements : [];
+        setAchievements(sortByEarnedAtDesc(raw.map(mapAchievement)));
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError('Unable to load achievements. Please try again.');
+        setAchievements([]);
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [wixClient]);
+
+  return { achievements, loading, error };
 }
