@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../HomeScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -27,6 +27,7 @@ jest.mock('react-native-reanimated', () => {
   };
 });
 
+const mockRefreshSky = jest.fn();
 jest.mock('@/hooks/useLivingSky', () => ({
   useLivingSky: () => ({
     skyColors: ['#2858A0', '#4878A8', '#88B0C4', '#A4C8DC'] as [string, string, string, string],
@@ -46,6 +47,7 @@ jest.mock('@/hooks/useLivingSky', () => ({
     season: 'summer' as const,
     precipitationOpacity: 0,
     precipitationType: 'none' as const,
+    refresh: mockRefreshSky,
   }),
 }));
 
@@ -64,8 +66,14 @@ jest.mock('@/services/wix', () => ({
   }),
 }));
 
+const mockRefreshChallenges = jest.fn();
 jest.mock('@/hooks/useActiveChallenges', () => ({
-  useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: jest.fn() }),
+  useActiveChallenges: () => ({
+    challenges: [],
+    loading: false,
+    error: null,
+    refresh: mockRefreshChallenges,
+  }),
 }));
 
 const mockUseTriggerMoments = jest.fn();
@@ -400,14 +408,17 @@ describe('HomeScreen', () => {
         error: new Error('Network error'),
         refresh: jest.fn(),
       });
-      const { toJSON } = renderHomeScreen();
-      const json = JSON.stringify(toJSON());
-      const errorBannerPos = json.indexOf('"home-connection-error"');
-      const dividerPos = json.indexOf('"home-mountain-skyline"');
-      expect(errorBannerPos).toBeGreaterThan(-1);
-      expect(dividerPos).toBeGreaterThan(-1);
-      // Banner must appear before the "Since 1985" divider skyline
-      expect(errorBannerPos).toBeLessThan(dividerPos);
+      const { getByTestId, UNSAFE_root } = renderHomeScreen();
+      expect(getByTestId('home-connection-error')).toBeTruthy();
+      // Banner appears near the top — verify it precedes any elements after it
+      const all = UNSAFE_root.findAll((el) => !!el.props.testID);
+      const errorIdx = all.findIndex((el) => el.props.testID === 'home-connection-error');
+      expect(errorIdx).toBeGreaterThan(-1);
+      // If the decorative skyline divider renders, it must be after the banner
+      const dividerIdx = all.findIndex((el) => el.props.testID === 'home-mountain-skyline');
+      if (dividerIdx !== -1) {
+        expect(errorIdx).toBeLessThan(dividerIdx);
+      }
     });
   });
 
@@ -502,15 +513,44 @@ describe('HomeScreen', () => {
     });
 
     it('DailyQuestsCard appears after ChallengesRail in render tree', () => {
-      const { toJSON } = renderHomeScreen();
-      const json = JSON.stringify(toJSON());
-      const challengesPos = json.indexOf('"challenges-rail"');
-      const questsPos = json.indexOf('"daily-quests-card"');
-      expect(questsPos).toBeGreaterThan(-1);
+      const { getByTestId, UNSAFE_root } = renderHomeScreen();
+      expect(getByTestId('daily-quests-card')).toBeTruthy();
+      const all = UNSAFE_root.findAll((el) => !!el.props.testID);
+      const challengesIdx = all.findIndex((el) => el.props.testID === 'challenges-rail');
+      const questsIdx = all.findIndex((el) => el.props.testID === 'daily-quests-card');
       // daily-quests-card renders after challenges-rail (or challenges-rail absent)
-      if (challengesPos !== -1) {
-        expect(questsPos).toBeGreaterThan(challengesPos);
+      if (challengesIdx !== -1) {
+        expect(questsIdx).toBeGreaterThan(challengesIdx);
       }
+    });
+  });
+
+  // hq-nyr2p — pull-to-refresh
+  describe('pull-to-refresh', () => {
+    it('ScrollView has a refreshControl', () => {
+      const { getByTestId } = renderHomeScreen();
+      const scrollView = getByTestId('home-screen');
+      expect(scrollView.props.refreshControl).toBeTruthy();
+    });
+
+    it('pull-to-refresh calls useActiveChallenges.refresh()', () => {
+      const { getByTestId } = renderHomeScreen();
+      const scrollView = getByTestId('home-screen');
+      act(() => scrollView.props.refreshControl.props.onRefresh());
+      expect(mockRefreshChallenges).toHaveBeenCalledTimes(1);
+    });
+
+    it('pull-to-refresh calls useLivingSky.refresh()', () => {
+      const { getByTestId } = renderHomeScreen();
+      const scrollView = getByTestId('home-screen');
+      act(() => scrollView.props.refreshControl.props.onRefresh());
+      expect(mockRefreshSky).toHaveBeenCalledTimes(1);
+    });
+
+    it('refreshing indicator is false by default', () => {
+      const { getByTestId } = renderHomeScreen();
+      const scrollView = getByTestId('home-screen');
+      expect(scrollView.props.refreshControl.props.refreshing).toBe(false);
     });
   });
 

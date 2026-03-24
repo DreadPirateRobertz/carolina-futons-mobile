@@ -11,7 +11,7 @@
  * hq-u0aqm / hq-4wgr3
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { LivingSkyState } from '@/types/livingSky';
 
 // ─── Color utilities ──────────────────────────────────────────────────────────
@@ -612,7 +612,9 @@ function currentTotalMinutes(): number {
  * Updates every 30 seconds. Pass `overrideMinutes` for static/testing use.
  * `isLoading` is always false — state is computed synchronously on mount.
  */
-export function useLivingSky(overrideMinutes?: number): LivingSkyState & { isLoading: boolean } {
+export function useLivingSky(
+  overrideMinutes?: number,
+): LivingSkyState & { isLoading: boolean; refresh: () => void } {
   const [state, setState] = useState<LivingSkyState>(() =>
     computeSkyState(overrideMinutes ?? currentTotalMinutes()),
   );
@@ -633,5 +635,10 @@ export function useLivingSky(overrideMinutes?: number): LivingSkyState & { isLoa
     return () => clearInterval(id);
   }, [overrideMinutes]);
 
-  return { ...state, isLoading: false };
+  // hq-nyr2p — manual refresh for pull-to-refresh
+  const refresh = useCallback(() => {
+    setState(computeSkyState(currentTotalMinutes()));
+  }, []);
+
+  return { ...state, isLoading: false, refresh };
 }

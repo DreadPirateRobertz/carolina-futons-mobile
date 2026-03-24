@@ -49,10 +49,7 @@ function classifyError(err: unknown): Exclude<ChatErrorType, null> {
   if (err instanceof TypeError && err.message.includes('Network request failed')) {
     return 'network';
   }
-  if (
-    err instanceof Error &&
-    ((err as { status?: number }).status ?? 0) >= 500
-  ) {
+  if (err instanceof Error && ((err as { status?: number }).status ?? 0) >= 500) {
     return 'server';
   }
   // Any other thrown error (e.g. auth, unexpected shape) treated as server error

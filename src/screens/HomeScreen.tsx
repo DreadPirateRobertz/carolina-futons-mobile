@@ -11,7 +11,16 @@
  */
 
 import React, { useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Dimensions,
+  Pressable,
+  Platform,
+  RefreshControl,
+} from 'react-native';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useStreak } from '@/hooks/useStreak';
 import * as Haptics from 'expo-haptics';
@@ -76,9 +85,14 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     isLoading: quizLoading,
     quizTaken,
   } = useQuizRecommendations();
-  const { challenges } = useActiveChallenges();
+  const { challenges, refresh: refreshChallenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
+
+  const handleRefresh = useCallback(() => {
+    refreshChallenges();
+    skyState.refresh();
+  }, [refreshChallenges, skyState]);
 
   // cf-7l2 — propagate sky nav colours to navigator options (e.g. for status bar theming)
   useEffect(() => {
@@ -134,6 +148,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           { paddingTop: insets.top + spacing.xxl, paddingBottom: insets.bottom },
         ]}
         testID="home-screen"
+        refreshControl={<RefreshControl refreshing={false} onRefresh={handleRefresh} />}
       >
         {/* Hero — Mountain skyline backdrop (decorative) */}
         <View
