@@ -53,7 +53,7 @@ function mockClient(
 describe('event schema', () => {
   it('includes eventId as UUID v4 format', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.eventId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
@@ -62,14 +62,14 @@ describe('event schema', () => {
 
   it('includes schemaVersion 1.0', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.schemaVersion).toBe('1.0');
   });
 
   it('includes traceId with trace_ prefix', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(typeof body.traceId).toBe('string');
     expect((body.traceId as string).startsWith('trace_')).toBe(true);
@@ -77,21 +77,21 @@ describe('event schema', () => {
 
   it('includes source: mobile', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.source).toBe('mobile');
   });
 
   it('includes platform as ios or android', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(['ios', 'android']).toContain(body.platform);
   });
 
   it('includes appVersion as a string', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(typeof body.appVersion).toBe('string');
     expect((body.appVersion as string).length).toBeGreaterThan(0);
@@ -100,7 +100,7 @@ describe('event schema', () => {
   it('includes ts as epoch-ms integer', async () => {
     const before = Date.now();
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 50, newTotal: 350 });
+    await emitStreakExtended(client, { streak: 3, delta: 50, newTotal: 350 });
     const after = Date.now();
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(typeof body.ts).toBe('number');
@@ -110,8 +110,8 @@ describe('event schema', () => {
 
   it('each emission generates a unique eventId', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
-    await emitStreakExtended(client, { userId: USER, streak: 2, delta: 20, newTotal: 220 });
+    await emitStreakExtended(client, { streak: 1, delta: 10, newTotal: 110 });
+    await emitStreakExtended(client, { streak: 2, delta: 20, newTotal: 220 });
     const id1 = (client.callFunction.mock.calls[0][2] as Record<string, unknown>).eventId;
     const id2 = (client.callFunction.mock.calls[1][2] as Record<string, unknown>).eventId;
     expect(id1).not.toBe(id2);
@@ -119,8 +119,8 @@ describe('event schema', () => {
 
   it('each emission generates a unique traceId', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1', currentPoints: 100 });
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-2', currentPoints: 200 });
+    await emitChallengeStarted(client, { challengeId: 'ch-1', currentPoints: 100 });
+    await emitChallengeStarted(client, { challengeId: 'ch-2', currentPoints: 200 });
     const t1 = (client.callFunction.mock.calls[0][2] as Record<string, unknown>).traceId;
     const t2 = (client.callFunction.mock.calls[1][2] as Record<string, unknown>).traceId;
     expect(t1).not.toBe(t2);
@@ -132,21 +132,20 @@ describe('event schema', () => {
 describe('emitStreakExtended', () => {
   it('sends event: streak_extended', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 7, delta: 70, newTotal: 770 });
+    await emitStreakExtended(client, { streak: 7, delta: 70, newTotal: 770 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.event).toBe('streak_extended');
   });
 
   it('includes streak count in payload', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 12, delta: 120, newTotal: 1200 });
+    await emitStreakExtended(client, { streak: 12, delta: 120, newTotal: 1200 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.streak).toBe(12);
   });
 
   it('returns success:true on 200 response', async () => {
     const result = await emitStreakExtended(mockClient(), {
-      userId: USER,
       streak: 5,
       delta: 50,
       newTotal: 550,
@@ -156,7 +155,6 @@ describe('emitStreakExtended', () => {
 
   it('queues and returns queued:true when client is null', async () => {
     const result = await emitStreakExtended(null, {
-      userId: USER,
       streak: 3,
       delta: 30,
       newTotal: 330,
@@ -168,7 +166,6 @@ describe('emitStreakExtended', () => {
   it('queues and returns queued:true on network error', async () => {
     const client = mockClient({}, new Error('Network timeout'));
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 3,
       delta: 30,
       newTotal: 330,
@@ -184,7 +181,6 @@ describe('emitChallengeStarted', () => {
   it('sends event: challenge_started', async () => {
     const client = mockClient();
     await emitChallengeStarted(client, {
-      userId: USER,
       challengeId: 'ch-sunrise-hike',
       currentPoints: 400,
     });
@@ -195,7 +191,6 @@ describe('emitChallengeStarted', () => {
   it('includes challengeId in payload', async () => {
     const client = mockClient();
     await emitChallengeStarted(client, {
-      userId: USER,
       challengeId: 'ch-sunrise-hike',
       currentPoints: 400,
     });
@@ -205,7 +200,7 @@ describe('emitChallengeStarted', () => {
 
   it('sends delta:0 and newTotal:currentPoints (consistent envelope shape)', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1', currentPoints: 750 });
+    await emitChallengeStarted(client, { challengeId: 'ch-1', currentPoints: 750 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.delta).toBe(0);
     expect(body.newTotal).toBe(750);
@@ -213,7 +208,6 @@ describe('emitChallengeStarted', () => {
 
   it('returns success:true on 200', async () => {
     const result = await emitChallengeStarted(mockClient(), {
-      userId: USER,
       challengeId: 'ch-1',
       currentPoints: 400,
     });
@@ -222,7 +216,6 @@ describe('emitChallengeStarted', () => {
 
   it('queues when client null', async () => {
     const result = await emitChallengeStarted(null, {
-      userId: USER,
       challengeId: 'ch-1',
       currentPoints: 400,
     });
@@ -235,14 +228,14 @@ describe('emitChallengeStarted', () => {
 describe('emitRedemptionInitiated', () => {
   it('sends event: redemption_initiated', async () => {
     const client = mockClient();
-    await emitRedemptionInitiated(client, { userId: USER, pointsRedeemed: 200, newTotal: 800 });
+    await emitRedemptionInitiated(client, { pointsRedeemed: 200, newTotal: 800 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.event).toBe('redemption_initiated');
   });
 
   it('sends delta as negative pointsRedeemed and includes newTotal', async () => {
     const client = mockClient();
-    await emitRedemptionInitiated(client, { userId: USER, pointsRedeemed: 500, newTotal: 1500 });
+    await emitRedemptionInitiated(client, { pointsRedeemed: 500, newTotal: 1500 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.delta).toBe(-500);
     expect(body.newTotal).toBe(1500);
@@ -250,7 +243,6 @@ describe('emitRedemptionInitiated', () => {
 
   it('returns success:true on 200', async () => {
     const result = await emitRedemptionInitiated(mockClient(), {
-      userId: USER,
       pointsRedeemed: 100,
       newTotal: 900,
     });
@@ -259,7 +251,6 @@ describe('emitRedemptionInitiated', () => {
 
   it('queues when client null', async () => {
     const result = await emitRedemptionInitiated(null, {
-      userId: USER,
       pointsRedeemed: 100,
       newTotal: 900,
     });
@@ -274,7 +265,6 @@ describe('400 rejection handling', () => {
     const client = mockClient({ success: false, status: 400, error: 'missing eventId' });
     // A 400-like response: success:false, not a thrown error
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 1,
       delta: 10,
       newTotal: 110,
@@ -288,7 +278,6 @@ describe('400 rejection handling', () => {
     err.status = 400;
     const client = mockClient({}, err);
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 1,
       delta: 10,
       newTotal: 110,
@@ -313,8 +302,8 @@ describe('replayCrossRigQueue', () => {
 
   it('replays queued events on reconnect', async () => {
     // Queue 2 events while offline
-    await emitStreakExtended(null, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
-    await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1', currentPoints: 400 });
+    await emitStreakExtended(null, { streak: 3, delta: 30, newTotal: 330 });
+    await emitChallengeStarted(null, { challengeId: 'ch-1', currentPoints: 400 });
 
     const client = mockClient();
     const result = await replayCrossRigQueue(client);
@@ -324,7 +313,7 @@ describe('replayCrossRigQueue', () => {
   });
 
   it('clears queue after successful replay', async () => {
-    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    await emitStreakExtended(null, { streak: 1, delta: 10, newTotal: 110 });
     await replayCrossRigQueue(mockClient());
 
     // Re-replay should find nothing
@@ -333,7 +322,7 @@ describe('replayCrossRigQueue', () => {
   });
 
   it('keeps failed events in queue for next retry', async () => {
-    await emitRedemptionInitiated(null, { userId: USER, pointsRedeemed: 100, newTotal: 900 });
+    await emitRedemptionInitiated(null, { pointsRedeemed: 100, newTotal: 900 });
 
     const failingClient = mockClient({}, new Error('Server error'));
     const result = await replayCrossRigQueue(failingClient);
@@ -346,7 +335,7 @@ describe('replayCrossRigQueue', () => {
   });
 
   it('preserves eventId across queue → replay (idempotency)', async () => {
-    await emitStreakExtended(null, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    await emitStreakExtended(null, { streak: 5, delta: 50, newTotal: 550 });
     const client = mockClient();
     await replayCrossRigQueue(client);
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
@@ -357,7 +346,7 @@ describe('replayCrossRigQueue', () => {
   });
 
   it('queued body does not contain a session token field', async () => {
-    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    await emitStreakExtended(null, { streak: 1, delta: 10, newTotal: 110 });
     const client = mockClient();
     await replayCrossRigQueue(client);
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
@@ -403,7 +392,6 @@ describe('401 auth hardening', () => {
   it('calls refreshTokens() and retries once on 401', async () => {
     const client = mockClientWithRefresh({ failFirstWith: make401Error() });
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 5,
       delta: 50,
       newTotal: 550,
@@ -421,7 +409,6 @@ describe('401 auth hardening', () => {
       refreshTokens: jest.fn().mockResolvedValue(undefined),
     };
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 5,
       delta: 50,
       newTotal: 550,
@@ -437,7 +424,6 @@ describe('401 auth hardening', () => {
       callFunction: jest.fn().mockRejectedValue(make401Error()),
     };
     const result = await emitStreakExtended(clientNoRefresh, {
-      userId: USER,
       streak: 3,
       delta: 30,
       newTotal: 330,
@@ -450,7 +436,6 @@ describe('401 auth hardening', () => {
   it('queues event when refreshTokens() throws', async () => {
     const client = mockClientWithRefresh({ failFirstWith: make401Error(), refreshThrows: true });
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 3,
       delta: 30,
       newTotal: 330,
@@ -463,13 +448,13 @@ describe('401 auth hardening', () => {
 
   it('does not call refreshTokens on non-401 network errors', async () => {
     const client = mockClientWithRefresh({ failFirstWith: new Error('Network timeout') });
-    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(client, { streak: 3, delta: 30, newTotal: 330 });
 
     expect(client.refreshTokens).not.toHaveBeenCalled();
   });
 
   it('replayCrossRigQueue calls refreshTokens and retries on 401', async () => {
-    await emitStreakExtended(null, { userId: USER, streak: 2, delta: 20, newTotal: 220 });
+    await emitStreakExtended(null, { streak: 2, delta: 20, newTotal: 220 });
 
     const client = mockClientWithRefresh({ failFirstWith: make401Error() });
     const result = await replayCrossRigQueue(client);
@@ -488,27 +473,27 @@ describe('401 auth hardening', () => {
 describe('security — userId not in payload', () => {
   it('emitStreakExtended does not include userId in body', async () => {
     const client = mockClient();
-    await emitStreakExtended(client, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body).not.toHaveProperty('userId');
   });
 
   it('emitChallengeStarted does not include userId in body', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1', currentPoints: 400 });
+    await emitChallengeStarted(client, { challengeId: 'ch-1', currentPoints: 400 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body).not.toHaveProperty('userId');
   });
 
   it('emitRedemptionInitiated does not include userId in body', async () => {
     const client = mockClient();
-    await emitRedemptionInitiated(client, { userId: USER, pointsRedeemed: 200, newTotal: 800 });
+    await emitRedemptionInitiated(client, { pointsRedeemed: 200, newTotal: 800 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body).not.toHaveProperty('userId');
   });
 
   it('queued events do not include userId', async () => {
-    await emitStreakExtended(null, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    await emitStreakExtended(null, { streak: 3, delta: 30, newTotal: 330 });
     const raw = await AsyncStorage.getItem('@cf_cross_rig_queue');
     const queue = JSON.parse(raw!);
     expect(queue[0].body).not.toHaveProperty('userId');
@@ -535,7 +520,6 @@ describe('401 auth error handling', () => {
     const client = { callFunction, refreshTokens };
 
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 5,
       delta: 50,
       newTotal: 550,
@@ -551,7 +535,6 @@ describe('401 auth error handling', () => {
     const client = mockClient({}, authErr);
 
     const result = await emitStreakExtended(client, {
-      userId: USER,
       streak: 5,
       delta: 50,
       newTotal: 550,
@@ -568,7 +551,6 @@ describe('401 auth error handling', () => {
     const client = { callFunction, refreshTokens };
 
     const result = await emitChallengeStarted(client, {
-      userId: USER,
       challengeId: 'ch-1',
       currentPoints: 400,
     });
@@ -586,7 +568,7 @@ describe('401 auth error handling', () => {
       .mockResolvedValueOnce({ success: true });
     const client = { callFunction, refreshTokens: jest.fn(async () => {}) };
 
-    await emitRedemptionInitiated(client, { userId: USER, pointsRedeemed: 100, newTotal: 900 });
+    await emitRedemptionInitiated(client, { pointsRedeemed: 100, newTotal: 900 });
 
     const body1 = callFunction.mock.calls[0][2] as Record<string, unknown>;
     const body2 = callFunction.mock.calls[1][2] as Record<string, unknown>;
