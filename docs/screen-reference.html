@@ -26,7 +26,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 </head>
 <body>
 <h1>Carolina Futons — Screen Reference</h1>
-<p class="meta">Platform: iOS (iPhone 16e simulator) · Session 25, 2026-03-23 · 43 PRs merged (#242-#308, with gaps) · Updated ~17:45 MDT</p>
+<p class="meta">Platform: iOS (iPhone 16e simulator) · Session 25, 2026-03-23 · 46 PRs merged (#242-#310, with gaps) · Updated ~18:30 MDT</p>
 
 <div class="section">
 <div class="section-title">🐛 Bug Status — Session 25</div>
@@ -166,30 +166,29 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <tr><td>#309</td><td>Animal badge SVGs ported from web — react-native-svg</td><td>Illustration</td></tr>
 <tr><td>#307</td><td>ChallengesScreen wired into navigation from AccountScreen (burke)</td><td>Phase 4</td></tr>
 <tr><td>#308</td><td>Gamification onboarding tour — 4-slide overlay (ripley)</td><td>Phase 4</td></tr>
+<tr><td>#303</td><td>LeaderboardScreen — live backend, isCurrentUser highlight (hicks)</td><td>Phase 5</td></tr>
+<tr><td>#304</td><td>Push notification opt-in UI for gamification (burke)</td><td>Phase 5</td></tr>
+<tr><td>#310</td><td>AccountGamificationHeader — consolidated tier/streak/progress widget (dallas)</td><td>Phase 2/5</td></tr>
 </table>
-<p style="font-size:11px;color:#666;margin-top:8px">43 PRs merged. 5761+ tests passing. Session 25 adds: AccountGamificationHeader widget (hq-u6i9c), ChallengesScreen nav (#307), gamification onboarding tour (#308). PRs #303–#305 in CI (LeaderboardScreen, push opt-in, deep links). Cross-rig alignment with melania on all phases.</p>
+<p style="font-size:11px;color:#666;margin-top:8px">46 PRs merged. 5800+ tests passing. Session 25 adds: AccountGamificationHeader widget (#310 hq-u6i9c), ChallengesScreen nav (#307), gamification onboarding tour (#308), LeaderboardScreen (#303), push opt-in UI (#304), gamification deep links (#305). Phase 8 cross-rig event bus (cm-p8-bus #311 in CI). Cross-rig alignment with melania on all phases.</p>
 </div>
 
 <div class="section">
-<div class="section-title">🔧 Open PRs — Session 25 (CI Running)</div>
+<div class="section-title">🔧 Open PRs — Session 25</div>
 <table>
 <tr><th>PR</th><th>Feature</th><th>Status</th></tr>
-
-
-
-<tr><td>#303</td><td>LeaderboardScreen — live backend wired, isCurrentUser highlight</td><td class="status-pr">CI running (lint fixed)</td></tr>
-<tr><td>#304</td><td>Push notification opt-in UI for gamification triggers</td><td class="status-pr">CI running (lint fixed)</td></tr>
-<tr><td>#305</td><td>Gamification push deep links — streak/quests/spin routing</td><td class="status-pr">CI running (lint fixed)</td></tr>
+<tr><td>#310</td><td>AccountGamificationHeader — consolidated tier/streak/progress widget in AccountScreen</td><td class="status-fixed">✅ MERGED</td></tr>
+<tr><td>#303</td><td>LeaderboardScreen — live backend wired, isCurrentUser highlight</td><td class="status-fixed">✅ MERGED</td></tr>
+<tr><td>#304</td><td>Push notification opt-in UI for gamification triggers</td><td class="status-fixed">✅ MERGED</td></tr>
+<tr><td>#305</td><td>Gamification push deep links — streak/quests/spin routing (TS fix + prettier)</td><td class="status-pr">CI running</td></tr>
+<tr><td>#311</td><td>Phase 8 cross-rig event bus — streak_extended/challenge_started/redemption_initiated (27 tests)</td><td class="status-pr">CI running</td></tr>
 </table>
 </div>
 
 <div class="section">
 <div class="section-title">📱 Screen Captures — iOS Simulator (iPhone 16e)</div>
 <div style="background:#1c1410;border:1px solid #3a2518;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#9b8a7a">
-  <strong style="color:#e8845c">Note:</strong> Screenshots from iOS Simulator running main branch. Session 25, 2026-03-23. 43 PRs merged. PRs #303–#305 in CI, not yet visible. Wix API unreachable from emulator guest network.
-  PRs #235 (CollectionCard fix), #236 (tab bar SVG icons), #237 (challenges rail) are pending merge — not yet visible.
-  Wix API is unreachable from emulator guest network: prices show $0, collections fail.
-  All these features work correctly on a real device with network access.
+  <strong style="color:#e8845c">Note:</strong> Screenshots from iOS Simulator running main branch. Session 25, 2026-03-23. 46 PRs merged (#242-#310). PRs #305 + #311 in CI, not yet visible. Wix API unreachable from emulator guest network — prices show $0, collections fail on sim. All features work correctly on real device with network access.
 </div>
 <div class="grid">
 
