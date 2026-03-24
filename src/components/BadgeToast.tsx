@@ -10,6 +10,7 @@
  */
 import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -29,6 +30,7 @@ interface Props {
 
 export function BadgeToast({ badgeName, visible, testID }: Props) {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -65,7 +67,7 @@ export function BadgeToast({ badgeName, visible, testID }: Props) {
 
   return (
     <Animated.View
-      style={[styles.container, animatedStyle]}
+      style={[styles.container, { bottom: 120 + insets.bottom }, animatedStyle]}
       testID={testID ?? 'badge-toast'}
       accessibilityLabel={`Badge Unlocked: ${badgeName}`}
       accessibilityElementsHidden={!visible}

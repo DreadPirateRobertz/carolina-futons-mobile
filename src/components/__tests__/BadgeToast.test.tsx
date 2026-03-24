@@ -3,9 +3,15 @@
  * TDD tests for the BadgeToast component — hq-v0a2z.
  */
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { BadgeToast } from '../BadgeToast';
+
+const mockInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
 
 function renderToast(props: { badgeName: string; visible: boolean; testID?: string }) {
   return render(
@@ -73,6 +79,26 @@ describe('BadgeToast', () => {
         getByTestId('badge-toast', { includeHiddenElements: true }).props
           .accessibilityElementsHidden,
       ).toBe(true);
+    });
+  });
+
+  describe('safe area insets (hq-gbo6f)', () => {
+    beforeEach(() => {
+      mockInsets.bottom = 0;
+    });
+
+    it('adds safe area inset to bottom position (non-zero inset)', () => {
+      mockInsets.bottom = 34;
+      const { getByTestId } = renderToast({ badgeName: 'Explorer Badge', visible: true });
+      const flatStyle = StyleSheet.flatten(getByTestId('badge-toast').props.style);
+      expect(flatStyle.bottom).toBe(154);
+    });
+
+    it('uses base bottom (120) when safe area inset is zero', () => {
+      mockInsets.bottom = 0;
+      const { getByTestId } = renderToast({ badgeName: 'Explorer Badge', visible: true });
+      const flatStyle = StyleSheet.flatten(getByTestId('badge-toast').props.style);
+      expect(flatStyle.bottom).toBe(120);
     });
   });
 

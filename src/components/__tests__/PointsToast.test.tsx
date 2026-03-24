@@ -5,10 +5,15 @@
  */
 
 import React from 'react';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { PointsToast } from '../PointsToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+
+const mockInsets = { top: 0, right: 0, bottom: 0, left: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
 
 // Mock reanimated — animation mechanics not under test
 jest.mock('react-native-reanimated', () => {
@@ -92,6 +97,26 @@ describe('PointsToast', () => {
   it('renders with large point value (10000)', () => {
     const { getByText } = renderToast({ points: 10000, visible: true });
     expect(getByText(/\+10000/)).toBeTruthy();
+  });
+
+  // ── Safe area insets (hq-gbo6f) ───────────────────────────────────
+
+  beforeEach(() => {
+    mockInsets.bottom = 0;
+  });
+
+  it('adds safe area inset to bottom position (non-zero inset)', () => {
+    mockInsets.bottom = 34;
+    const { getByTestId } = renderToast({ points: 100, visible: true });
+    const flatStyle = StyleSheet.flatten(getByTestId('points-toast').props.style);
+    expect(flatStyle.bottom).toBe(134);
+  });
+
+  it('uses base bottom (100) when safe area inset is zero', () => {
+    mockInsets.bottom = 0;
+    const { getByTestId } = renderToast({ points: 100, visible: true });
+    const flatStyle = StyleSheet.flatten(getByTestId('points-toast').props.style);
+    expect(flatStyle.bottom).toBe(100);
   });
 
   // cm-jest-coverage: reducedMotion === true branch (lines 46-47)
