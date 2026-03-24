@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OnboardingScreen } from '../OnboardingScreen';
+import { useGamificationReveal } from '@/hooks/useGamificationReveal';
 
 // Mock useTheme
 jest.mock('@/theme', () => ({
@@ -20,7 +21,7 @@ jest.mock('@/theme', () => ({
       muted: '#999999',
     },
     spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 },
-    borderRadius: { button: 8, pill: 9999, card: 12 },
+    borderRadius: { button: 8, pill: 9999, card: 12, sm: 4, md: 8 },
     typography: {
       headingFamily: 'PlayfairDisplay_700Bold',
       bodyFamily: 'SourceSans3_400Regular',
@@ -38,6 +39,28 @@ jest.mock('@/theme', () => ({
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
+}));
+
+// Mock useGamificationReveal — first-time user by default
+const mockMarkRevealShown = jest.fn(() => Promise.resolve());
+jest.mock('@/hooks/useGamificationReveal', () => ({
+  useGamificationReveal: jest.fn(() => ({
+    hasSeenReveal: false,
+    isLoading: false,
+    tierData: {
+      tierName: 'Trail Blazer',
+      points: 150,
+      nextTierName: 'Mountain Guide',
+      pointsToNextTier: 350,
+      progressFraction: 0.3,
+    },
+    challengeTeasers: [
+      { title: 'Make your first purchase', pointsLabel: '+200 pts' },
+      { title: 'Complete your style profile', pointsLabel: '+50 pts' },
+    ],
+    markRevealShown: mockMarkRevealShown,
+  })),
+  WELCOME_POINTS: 150,
 }));
 
 describe('OnboardingScreen', () => {
@@ -104,8 +127,8 @@ describe('OnboardingScreen', () => {
     expect(getByTestId('onboarding-quiz-step-1')).toBeTruthy();
   });
 
-  it('progresses through all quiz steps', () => {
-    const { getByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
+  it('progresses through all quiz steps to the completion phase', () => {
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={mockOnComplete} />);
     // Navigate to quiz
     fireEvent.press(getByTestId('onboarding-next-button'));
     fireEvent.press(getByTestId('onboarding-next-button'));
@@ -114,8 +137,11 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByTestId('quiz-option-bedroom'));
     fireEvent.press(getByTestId('quiz-option-rustic'));
     fireEvent.press(getByTestId('quiz-option-both'));
-    // Should reach completion
-    expect(getByTestId('onboarding-completion')).toBeTruthy();
+    // Should reach completion phase — either gamification reveal (first-time) or standard
+    const completion =
+      queryByTestId('onboarding-gamification-reveal') ?? queryByTestId('onboarding-completion');
+    expect(completion).toBeTruthy();
+    expect(getByTestId('onboarding-get-started-button')).toBeTruthy();
   });
 
   // ── Completion Phase ──────────────────────────────────────────
@@ -215,5 +241,110 @@ describe('OnboardingScreen', () => {
     // Skip from quiz
     fireEvent.press(getByTestId('onboarding-skip-button'));
     expect(mockOnComplete).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Gamification Reveal ──────────────────────────────────────────────────────
+
+/** Helper: navigate through all brand slides + quiz to reach the completion step. */
+function navigateToCompletion(getByTestId: ReturnType<typeof render>['getByTestId']) {
+  fireEvent.press(getByTestId('onboarding-next-button')); // slide 1 → 2
+  fireEvent.press(getByTestId('onboarding-next-button')); // slide 2 → 3
+  fireEvent.press(getByTestId('onboarding-next-button')); // slide 3 → quiz Q1
+  fireEvent.press(getByTestId('quiz-option-living-room')); // Q1 → Q2
+  fireEvent.press(getByTestId('quiz-option-modern'));       // Q2 → Q3
+  fireEvent.press(getByTestId('quiz-option-sitting'));      // Q3 → completion
+}
+
+describe('Gamification Reveal — first-time user', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Default mock: first-time user (hasSeenReveal: false)
+    (useGamificationReveal as jest.Mock).mockReturnValue({
+      hasSeenReveal: false,
+      isLoading: false,
+      tierData: {
+        tierName: 'Trail Blazer',
+        points: 150,
+        nextTierName: 'Mountain Guide',
+        pointsToNextTier: 350,
+        progressFraction: 0.3,
+      },
+      challengeTeasers: [
+        { title: 'Make your first purchase', pointsLabel: '+200 pts' },
+        { title: 'Complete your style profile', pointsLabel: '+50 pts' },
+      ],
+      markRevealShown: mockMarkRevealShown,
+    });
+  });
+
+  it('shows gamification reveal slide instead of standard completion', () => {
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    expect(getByTestId('onboarding-gamification-reveal')).toBeTruthy();
+    expect(queryByTestId('onboarding-completion')).toBeNull();
+  });
+
+  it('shows WELCOME_POINTS in the headline', () => {
+    const { getByTestId, getByText } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    expect(getByText(/150 welcome points/i)).toBeTruthy();
+  });
+
+  it('renders 2 challenge teasers', () => {
+    const { getByTestId, getAllByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    expect(getAllByTestId('gamification-reveal-challenge-teaser')).toHaveLength(2);
+  });
+
+  it('renders tier badge with welcome points', () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    expect(getByTestId('gamification-reveal-tier-badge')).toBeTruthy();
+  });
+
+  it('calls markRevealShown when completion step mounts', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    await waitFor(() => {
+      expect(mockMarkRevealShown).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('still calls onComplete when Start Shopping is pressed', async () => {
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    navigateToCompletion(getByTestId);
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+  });
+});
+
+describe('Gamification Reveal — returning user (hasSeenReveal: true)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useGamificationReveal as jest.Mock).mockReturnValue({
+      hasSeenReveal: true,
+      isLoading: false,
+      tierData: { tierName: 'Trail Blazer', points: 150, nextTierName: 'Mountain Guide', pointsToNextTier: 350, progressFraction: 0.3 },
+      challengeTeasers: [],
+      markRevealShown: mockMarkRevealShown,
+    });
+  });
+
+  it('shows standard completion instead of reveal when hasSeenReveal is true', () => {
+    const { getByTestId, queryByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    expect(getByTestId('onboarding-completion')).toBeTruthy();
+    expect(queryByTestId('onboarding-gamification-reveal')).toBeNull();
+  });
+
+  it('does not call markRevealShown when reveal already seen', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    navigateToCompletion(getByTestId);
+    await waitFor(() => {}, { timeout: 200 });
+    expect(mockMarkRevealShown).not.toHaveBeenCalled();
   });
 });

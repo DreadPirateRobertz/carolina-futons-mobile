@@ -9,18 +9,20 @@
  * Progression: 3 brand slides -> 3 quiz steps -> completion summary.
  * Users can skip at any point; preferences are persisted on finish.
  */
-import React, { useState, useCallback } from 'react';
-import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { Alert, Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
+import { LoyaltyTierBadge } from '@/components/LoyaltyTierBadge';
 import {
   useStyleQuiz,
   type RoomType,
   type StylePreference,
   type PrimaryUse,
 } from '@/hooks/useStyleQuiz';
+import { useGamificationReveal, WELCOME_POINTS } from '@/hooks/useGamificationReveal';
 
 // ── Brand Story Slides ──────────────────────────────────────────────
 
@@ -92,11 +94,34 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   const [step, setStep] = useState(0);
   const { preferences, setRoomType, setStylePreference, setPrimaryUse, savePreferences } =
     useStyleQuiz();
+  const { hasSeenReveal, isLoading: revealLoading, tierData, challengeTeasers, markRevealShown } =
+    useGamificationReveal();
 
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
   const isCompletionStep = step === TOTAL_STEPS - 1;
   const _isLastBrandSlide = step === BRAND_SLIDES.length - 1;
+  const showReveal = isCompletionStep && !hasSeenReveal && !revealLoading;
+
+  // Mark reveal shown on first mount of completion step
+  useEffect(() => {
+    if (showReveal) {
+      markRevealShown();
+    }
+  }, [showReveal, markRevealShown]);
+
+  // Animate progress bar for the gamification reveal tier bar
+  const tierBarAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (showReveal) {
+      Animated.timing(tierBarAnim, {
+        toValue: tierData.progressFraction,
+        duration: 800,
+        delay: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [showReveal, tierBarAnim, tierData.progressFraction]);
 
   const handleNext = useCallback(() => {
     setStep((s) => s + 1);
@@ -303,6 +328,94 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   // ── Completion ──────────────────────────────────────────────────
 
   const renderCompletion = () => {
+    if (showReveal) {
+      return (
+        <ScrollView
+          style={styles.slideContainer}
+          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          testID="onboarding-gamification-reveal"
+        >
+          <Text
+            style={[
+              styles.accentLabel,
+              { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+            ]}
+          >
+            Welcome bonus
+          </Text>
+          <Text
+            style={[
+              styles.heroHeadline,
+              { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+            ]}
+            testID="gamification-reveal-headline"
+          >
+            You earned{'\n'}{WELCOME_POINTS} welcome points!
+          </Text>
+
+          {/* Tier badge */}
+          <View style={{ marginTop: spacing.lg }}>
+            <LoyaltyTierBadge points={WELCOME_POINTS} testID="gamification-reveal-tier-badge" />
+          </View>
+
+          {/* Tier progress bar toward next tier */}
+          {tierData.nextTierName != null && (
+            <View style={{ marginTop: spacing.md }}>
+              <Text
+                style={[styles.bodyText, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily, marginBottom: spacing.xs }]}
+                testID="gamification-reveal-tier-progress-label"
+              >
+                {tierData.pointsToNextTier} pts to {tierData.nextTierName}
+              </Text>
+              <View style={[styles.tierBarTrack, { borderRadius: borderRadius.sm, backgroundColor: darkPalette.surfaceAlt }]}>
+                <Animated.View
+                  style={[
+                    styles.tierBarFill,
+                    {
+                      borderRadius: borderRadius.sm,
+                      backgroundColor: colors.sunsetCoral,
+                      width: tierBarAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0%', '100%'],
+                      }),
+                    },
+                  ]}
+                  testID="gamification-reveal-tier-bar"
+                />
+              </View>
+            </View>
+          )}
+
+          {/* Challenge teasers */}
+          <Text
+            style={[
+              styles.accentLabel,
+              { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold, marginTop: spacing.xl },
+            ]}
+          >
+            Earn more points
+          </Text>
+          {challengeTeasers.map((c) => (
+            <View
+              key={c.title}
+              style={[
+                styles.challengeRow,
+                { borderRadius: borderRadius.md, backgroundColor: darkPalette.surfaceAlt, marginTop: spacing.sm },
+              ]}
+              testID="gamification-reveal-challenge-teaser"
+            >
+              <Text style={[styles.bodyText, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily, flex: 1 }]}>
+                {c.title}
+              </Text>
+              <Text style={[styles.bodyText, { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold }]}>
+                {c.pointsLabel}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      );
+    }
+
     const styleName =
       STYLE_OPTIONS.find((o) => o.value === preferences.stylePreference)?.label ?? 'your';
     return (
@@ -573,5 +686,20 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 17,
     fontWeight: '700',
+  },
+  // ── Gamification reveal ──
+  tierBarTrack: {
+    height: 8,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  tierBarFill: {
+    height: '100%',
+  },
+  challengeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });
