@@ -51,7 +51,7 @@ function buildBody(event: string, payload: Record<string, unknown>): Record<stri
     traceId: `trace_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     event,
     source: 'mobile',
-    ts: Math.floor(Date.now() / 1000),
+    ts: Date.now(), // epoch-ms per shared envelope schema
     ...payload,
   };
 }
@@ -106,9 +106,14 @@ async function emit(
 
 export async function emitStreakExtended(
   client: WixClientLike | null,
-  input: { userId: string; streak: number },
+  input: { userId: string; streak: number; delta: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
-  return emit(client, 'streak_extended', { userId: input.userId, streak: input.streak });
+  return emit(client, 'streak_extended', {
+    userId: input.userId,
+    streak: input.streak,
+    delta: input.delta,
+    newTotal: input.newTotal,
+  });
 }
 
 export async function emitChallengeStarted(
@@ -123,11 +128,12 @@ export async function emitChallengeStarted(
 
 export async function emitRedemptionInitiated(
   client: WixClientLike | null,
-  input: { userId: string; pointsRedeemed: number },
+  input: { userId: string; pointsRedeemed: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'redemption_initiated', {
     userId: input.userId,
-    pointsRedeemed: input.pointsRedeemed,
+    delta: -input.pointsRedeemed, // negative: points leaving the account
+    newTotal: input.newTotal,
   });
 }
 
