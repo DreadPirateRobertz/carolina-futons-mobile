@@ -94,6 +94,8 @@ import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 import { PointsChip } from '@/components/PointsChip';
 import { useProductResources } from '@/hooks/useProductResources';
 import { ProductResourcesSection } from '@/components/ProductResourcesSection';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PointsToast } from '@/components/PointsToast';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -158,6 +160,7 @@ export function ProductDetailScreen({
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
+  const [arToastVisible, setArToastVisible] = useState(false);
   const wixClient = useOptionalWixClient();
   const sizeGuideHeight = useSharedValue(0);
 
@@ -398,7 +401,17 @@ export function ProductDetailScreen({
     }
     onOpenAR?.(model.id);
     events.openAR(model.id);
-    gamificationEvents.arUsed(catalogProduct?.id ?? model.id); // Phase 4 gamification — cm-e2c3k
+    gamificationEvents
+      .arUsed(catalogProduct?.id ?? model.id) // Phase 4 gamification — cm-e2c3k
+      ?.then(async (result) => {
+        if (!result?.success) return;
+        const seen = await AsyncStorage.getItem('@cf_ar_points_toast_shown');
+        if (seen) return;
+        await AsyncStorage.setItem('@cf_ar_points_toast_shown', '1');
+        setArToastVisible(true);
+        setTimeout(() => setArToastVisible(false), 2200);
+      })
+      ?.catch(() => {}); // non-critical — toast failure must not block AR
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
@@ -1496,6 +1509,18 @@ export function ProductDetailScreen({
         price={totalPrice}
         testID="bnpl-modal"
       />
+      <PointsToast points={25} visible={arToastVisible} testID="ar-points-toast" />
+      {arToastVisible && (
+        <TouchableOpacity
+          style={[styles.arAccountLink, { bottom: 49 + insets.bottom + 60 }]}
+          onPress={() => navigation.navigate('Tabs', { screen: 'Account' })}
+          testID="ar-account-link"
+          accessibilityLabel="View your points in Account"
+          accessibilityRole="button"
+        >
+          <Text style={styles.arAccountLinkText}>View your points →</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -2260,6 +2285,19 @@ const styles = StyleSheet.create({
   },
   wixErrorRetryText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  arAccountLink: {
+    position: 'absolute',
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.72)',
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+  },
+  arAccountLinkText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
   },
 });
