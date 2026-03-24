@@ -50,13 +50,21 @@ export function useLeaderboard(): UseLeaderboardResult {
       }
       const data = await client.getLeaderboard({ period: p, limit: LIMIT });
       setEntries(
-        (data.entries ?? []).map((e: { memberId: string; nickname?: string | null; points: number; tier: string; rank: number }) => ({
-          memberId: e.memberId,
-          displayName: e.nickname ?? null,
-          points: e.points,
-          tier: e.tier as LoyaltyTier,
-          rank: e.rank,
-        })),
+        (data.entries ?? []).map(
+          (e: {
+            memberId: string;
+            nickname?: string | null;
+            points: number;
+            tier: string;
+            rank: number;
+          }) => ({
+            memberId: e.memberId,
+            displayName: e.nickname ?? null,
+            points: e.points,
+            tier: e.tier as LoyaltyTier,
+            rank: e.rank,
+          }),
+        ),
       );
       setCurrentUserRank(data.currentUserRank ?? null);
     } catch (err) {
