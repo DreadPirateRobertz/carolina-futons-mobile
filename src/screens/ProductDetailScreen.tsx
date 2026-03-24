@@ -400,14 +400,18 @@ export function ProductDetailScreen({
     }
     onOpenAR?.(model.id);
     events.openAR(model.id);
-    gamificationEvents.arUsed(catalogProduct?.id ?? model.id)?.then((result) => { // Phase 4 gamification — cm-e2c3k
-      if (result.success) {
-        setArPointsVisible(true);
-        setTimeout(() => setArPointsVisible(false), 2200);
-      }
-    }).catch((err) => {
-      if (__DEV__) console.warn('[AR] arUsed failed:', err);
-    });
+    gamificationEvents
+      .arUsed(catalogProduct?.id ?? model.id)
+      ?.then((result) => {
+        // Phase 4 gamification — cm-e2c3k
+        if (result.success) {
+          setArPointsVisible(true);
+          setTimeout(() => setArPointsVisible(false), 2200);
+        }
+      })
+      .catch((err) => {
+        if (__DEV__) console.warn('[AR] arUsed failed:', err);
+      });
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
