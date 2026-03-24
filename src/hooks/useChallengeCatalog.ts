@@ -41,7 +41,7 @@ interface ApiChallenge {
   description: string;
   goal: number;
   unit: string;
-  pointReward: number;
+  pointReward: number | null | undefined;
   expiresAt: string;
   progress: number;
   completed: boolean;
@@ -60,7 +60,7 @@ function mapChallenge(api: ApiChallenge): CatalogChallenge {
     description: api.description,
     goal: api.goal,
     unit: api.unit,
-    pointReward: api.pointReward,
+    pointReward: api.pointReward ?? 0,
     expiresAt: api.expiresAt,
     progress: api.progress,
     progressRatio: Math.min(1, Math.max(0, rawRatio)),
@@ -123,7 +123,13 @@ export function useChallengeCatalog(): UseChallengeCatalogResult {
         if (cancelled) return;
         const data = res as ApiResponse;
         const raw = Array.isArray(data?.challenges) ? data.challenges : [];
-        setChallenges(raw.map(mapChallenge));
+        const seen = new Set<string>();
+        const deduped = raw.filter((c) => {
+          if (seen.has(c.id)) return false;
+          seen.add(c.id);
+          return true;
+        });
+        setChallenges(deduped.map(mapChallenge));
         setLoading(false);
       })
       .catch(() => {
