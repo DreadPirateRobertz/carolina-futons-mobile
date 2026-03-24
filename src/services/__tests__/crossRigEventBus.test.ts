@@ -76,6 +76,21 @@ describe('event schema', () => {
     expect(body.source).toBe('mobile');
   });
 
+  it('includes platform as ios or android', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(['ios', 'android']).toContain(body.platform);
+  });
+
+  it('includes appVersion as a string', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(typeof body.appVersion).toBe('string');
+    expect((body.appVersion as string).length).toBeGreaterThan(0);
+  });
+
   it('includes ts as epoch-ms integer', async () => {
     const before = Date.now();
     const client = mockClient();
@@ -98,8 +113,8 @@ describe('event schema', () => {
 
   it('each emission generates a unique traceId', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1' });
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-2' });
+    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1', currentPoints: 100 });
+    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-2', currentPoints: 200 });
     const t1 = (client.callFunction.mock.calls[0][2] as Record<string, unknown>).traceId;
     const t2 = (client.callFunction.mock.calls[1][2] as Record<string, unknown>).traceId;
     expect(t1).not.toBe(t2);
@@ -147,28 +162,37 @@ describe('emitStreakExtended', () => {
 describe('emitChallengeStarted', () => {
   it('sends event: challenge_started', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike' });
+    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike', currentPoints: 400 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.event).toBe('challenge_started');
   });
 
   it('includes challengeId in payload', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike' });
+    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike', currentPoints: 400 });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.challengeId).toBe('ch-sunrise-hike');
+  });
+
+  it('sends delta:0 and newTotal:currentPoints (consistent envelope shape)', async () => {
+    const client = mockClient();
+    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-1', currentPoints: 750 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.delta).toBe(0);
+    expect(body.newTotal).toBe(750);
   });
 
   it('returns success:true on 200', async () => {
     const result = await emitChallengeStarted(mockClient(), {
       userId: USER,
       challengeId: 'ch-1',
+      currentPoints: 400,
     });
     expect(result.success).toBe(true);
   });
 
   it('queues when client null', async () => {
-    const result = await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1' });
+    const result = await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1', currentPoints: 400 });
     expect(result.queued).toBe(true);
   });
 });
@@ -243,7 +267,7 @@ describe('replayCrossRigQueue', () => {
   it('replays queued events on reconnect', async () => {
     // Queue 2 events while offline
     await emitStreakExtended(null, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
-    await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1' });
+    await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1', currentPoints: 400 });
 
     const client = mockClient();
     const result = await replayCrossRigQueue(client);

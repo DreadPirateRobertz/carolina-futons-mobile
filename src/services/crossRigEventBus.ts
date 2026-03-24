@@ -4,8 +4,8 @@
  * Phase 8 mobile → web event emitter (cm-p8-bus).
  *
  * Sends streak_extended, challenge_started, redemption_initiated to the Wix
- * crossRigEvent webMethod using the v2 schema:
- *   { eventId (UUID v4), schemaVersion '1.0', traceId, event, userId, source, ts, ...payload }
+ * crossRigEvent webMethod using the cf-44r finalized envelope schema:
+ *   { eventId, schemaVersion, traceId, event, userId, source, platform, appVersion, ts, delta, newTotal, ...payload }
  *
  * Retry policy:
  *   - Network failures / null client → queued in AsyncStorage for replay
@@ -13,7 +13,9 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import { captureException } from '@/services/crashReporting';
+import { version as appVersion } from '../../package.json';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -51,7 +53,9 @@ function buildBody(event: string, payload: Record<string, unknown>): Record<stri
     traceId: `trace_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     event,
     source: 'mobile',
-    ts: Date.now(), // epoch-ms per shared envelope schema
+    platform: Platform.OS as 'ios' | 'android',
+    appVersion,
+    ts: Date.now(), // epoch-ms per cf-44r shared envelope schema
     ...payload,
   };
 }
@@ -118,11 +122,13 @@ export async function emitStreakExtended(
 
 export async function emitChallengeStarted(
   client: WixClientLike | null,
-  input: { userId: string; challengeId: string },
+  input: { userId: string; challengeId: string; currentPoints: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'challenge_started', {
     userId: input.userId,
     challengeId: input.challengeId,
+    delta: 0, // no points change on challenge start — consistent envelope shape per cf-44r
+    newTotal: input.currentPoints,
   });
 }
 
