@@ -6,11 +6,12 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
 
 const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();
 
-const ENTRIES = [
+const ENTRIES: LeaderboardEntry[] = [
   { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
   { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
   { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
