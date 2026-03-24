@@ -32,6 +32,8 @@ interface ReplayResult {
 
 interface WixClientLike {
   callFunction: (name: string, method: string, body: Record<string, unknown>) => Promise<unknown>;
+  /** Refreshes the Wix session token. Called once on 401 before retry. */
+  refreshTokens?: () => Promise<void>;
 }
 
 interface QueuedEvent {
@@ -62,6 +64,11 @@ function buildBody(event: string, payload: Record<string, unknown>): Record<stri
 
 function is400(err: unknown): boolean {
   if (err instanceof Error && (err as Error & { status?: number }).status === 400) return true;
+  return false;
+}
+
+function is401(err: unknown): boolean {
+  if (err instanceof Error && (err as Error & { status?: number }).status === 401) return true;
   return false;
 }
 
@@ -100,6 +107,19 @@ async function emit(
       captureException(err instanceof Error ? err : new Error(String(err)));
       return { success: false, error: (err as Error).message };
     }
+    if (is401(err)) {
+      // Refresh session token and retry once — 401 is not a queueable transient error
+      try {
+        await client.refreshTokens?.();
+        await client.callFunction(WIX_FN, 'POST', body);
+        return { success: true };
+      } catch (retryErr) {
+        return {
+          success: false,
+          error: retryErr instanceof Error ? retryErr.message : 'auth_error',
+        };
+      }
+    }
     // Network / transient error → queue
     await enqueue(body);
     return { success: false, queued: true };
@@ -108,12 +128,15 @@ async function emit(
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
+// NOTE: userId is intentionally absent from all payloads — the server resolves
+// memberId from the Wix session token via getMemberIdentity(). Sending userId
+// in the body is an IDOR forgery vector. hq-u35ub.
+
 export async function emitStreakExtended(
   client: WixClientLike | null,
-  input: { userId: string; streak: number; delta: number; newTotal: number },
+  input: { streak: number; delta: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'streak_extended', {
-    userId: input.userId,
     streak: input.streak,
     delta: input.delta,
     newTotal: input.newTotal,
@@ -122,10 +145,9 @@ export async function emitStreakExtended(
 
 export async function emitChallengeStarted(
   client: WixClientLike | null,
-  input: { userId: string; challengeId: string; currentPoints: number },
+  input: { challengeId: string; currentPoints: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'challenge_started', {
-    userId: input.userId,
     challengeId: input.challengeId,
     delta: 0, // no points change on challenge start — consistent envelope shape per cf-44r
     newTotal: input.currentPoints,
@@ -134,10 +156,9 @@ export async function emitChallengeStarted(
 
 export async function emitRedemptionInitiated(
   client: WixClientLike | null,
-  input: { userId: string; pointsRedeemed: number; newTotal: number },
+  input: { pointsRedeemed: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'redemption_initiated', {
-    userId: input.userId,
     delta: -input.pointsRedeemed, // negative: points leaving the account
     newTotal: input.newTotal,
   });
