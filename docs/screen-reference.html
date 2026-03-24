@@ -3,180 +3,346 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Carolina Futons — Screen Reference (Session 24)</title>
+<title>Carolina Futons Mobile — Screen Reference (Session 25)</title>
 <style>
-* { box-sizing:border-box;margin:0;padding:0 }
-body { background:#111;color:#e8d5b7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:20px;line-height:1.5 }
-h1 { font-size:26px;color:#e8845c;margin-bottom:4px }
-.meta { font-size:12px;color:#666;margin-bottom:24px }
-.grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:32px }
-.section { margin-bottom:32px }
-.section-title { font-size:16px;color:#e8845c;font-weight:700;border-bottom:1px solid #3a2518;padding-bottom:8px;margin-bottom:16px }
-table { width:100%;border-collapse:collapse;font-size:12px }
-td,th { padding:8px 12px;text-align:left;border-bottom:1px solid #2a1f19 }
-th { color:#e8845c;font-weight:600;background:#1c1410 }
-.status-fixed { color:#4ade80;font-weight:600 }
-.status-open { color:#facc15;font-weight:600 }
-.status-infra { color:#9b8a7a }
-.status-pr { color:#60a5fa;font-weight:600 }
-.p1 { color:#f87171;font-weight:700 }
-.p2 { color:#fb923c;font-weight:600 }
-.p3 { color:#9b8a7a }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#e8d5b7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:20px;line-height:1.5}
+h1{font-size:26px;color:#e8845c;margin-bottom:4px}
+h2{font-size:18px;color:#e8845c;margin:28px 0 4px}
+.meta{font-size:12px;color:#666;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:32px}
+.section{margin-bottom:36px}
+.section-title{font-size:16px;color:#e8845c;font-weight:700;border-bottom:1px solid #3a2518;padding-bottom:8px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+td,th{padding:7px 10px;text-align:left;border-bottom:1px solid #2a1f19}
+th{color:#e8845c;font-weight:600;background:#1c1410}
+tr:hover td{background:#1c1410}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap}
+.done{background:#14532d;color:#4ade80}
+.in-ci{background:#1e3a5f;color:#60a5fa}
+.no-pr{background:#3a2518;color:#e8845c}
+.deferred{background:#2a1f19;color:#9b8a7a}
+.p0{color:#ff6b6b;font-weight:700}
+.p1{color:#f87171;font-weight:700}
+.p2{color:#fb923c;font-weight:600}
+.p3{color:#9b8a7a}
+.status-fixed{color:#4ade80;font-weight:600}
+.status-open{color:#facc15;font-weight:600}
+.status-infra{color:#9b8a7a}
+.status-pr{color:#60a5fa;font-weight:600}
+.phase-chip{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:4px}
+.ph1{background:#312e81;color:#a5b4fc}
+.ph2{background:#1e3a5f;color:#93c5fd}
+.ph3{background:#064e3b;color:#6ee7b7}
+.ph4{background:#4c1d95;color:#c4b5fd}
+.ph5{background:#7c2d12;color:#fdba74}
+.ph6{background:#701a75;color:#f0abfc}
+.ph7{background:#1c2d1c;color:#86efac}
+.ph8{background:#3a2518;color:#fde68a}
+.core{background:#1c1410;color:#d4c5a9}
+.note{font-size:11px;color:#9b8a7a;padding:10px 12px;background:#1c1410;border:1px solid #3a2518;border-radius:6px;margin-bottom:12px}
 </style>
 </head>
 <body>
-<h1>Carolina Futons — Screen Reference</h1>
-<p class="meta">Platform: iOS (iPhone 16e simulator) · Session 24, 2026-03-23 · 32 PRs merged (#242-#297) · Generated ~6:30 MDT</p>
+<h1>Carolina Futons Mobile — Screen Reference</h1>
+<p class="meta">Platform: iOS 18 (iPhone 16e sim) + Android (Pixel 7 AVD) &nbsp;·&nbsp; Session 25 · 2026-03-23 &nbsp;·&nbsp; 43 PRs merged (#242–#310, with gaps) &nbsp;·&nbsp; 38 screens · 5761+ tests &nbsp;·&nbsp; Updated 2026-03-24 MT</p>
 
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 1: COMPLETE SCREEN INVENTORY
+     ══════════════════════════════════════════════════════════ -->
 <div class="section">
-<div class="section-title">🐛 Bug Status — Session 24</div>
+<div class="section-title">📱 Complete Screen Inventory (38 screens)</div>
+<p class="note">Status key: <span class="badge done">shipped</span> = merged to main &nbsp; <span class="badge in-ci">in CI</span> = PR open &nbsp; <span class="badge no-pr">no PR</span> = in progress, no PR yet &nbsp; <span class="badge deferred">deferred</span> = planned, not started</p>
+<table>
+<tr><th>Screen</th><th>Route</th><th>Status</th><th>Phase</th><th>Last PR</th><th>Screenshot</th></tr>
+
+<tr><td><strong>HomeScreen</strong></td><td>Tabs/Home</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph7">P7 Living Sky</span><span class="phase-chip ph5">P5 Toasts</span><span class="phase-chip ph4">P4 Quests</span></td><td>#302</td><td>✅</td></tr>
+<tr><td><strong>ShopScreen</strong></td><td>Tabs/Shop</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#235</td><td>✅</td></tr>
+<tr><td><strong>CartScreen</strong></td><td>Tabs/Cart</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#266</td><td>✅</td></tr>
+<tr><td><strong>AccountScreen</strong></td><td>Tabs/Account</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph2">P2 Tier</span><span class="phase-chip ph3">P3 Streak</span></td><td>#310</td><td>✅</td></tr>
+<tr><td><strong>SearchScreen</strong></td><td>Search</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#240</td><td>—</td></tr>
+<tr><td><strong>ProductDetailScreen</strong></td><td>ProductDetail</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#103</td><td>✅</td></tr>
+<tr><td><strong>CategoryScreen</strong></td><td>Category</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#235</td><td>—</td></tr>
+<tr><td><strong>CollectionsScreen</strong></td><td>Collections</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#235</td><td>✅</td></tr>
+<tr><td><strong>CollectionDetailScreen</strong></td><td>CollectionDetail</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#235</td><td>—</td></tr>
+<tr><td><strong>WishlistScreen</strong></td><td>Tabs/Wishlist</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#266</td><td>✅</td></tr>
+<tr><td><strong>CheckoutScreen</strong></td><td>Checkout</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#105</td><td>—</td></tr>
+<tr><td><strong>OrderConfirmationScreen</strong></td><td>OrderConfirmation</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#274</td><td>—</td></tr>
+<tr><td><strong>OrderSuccessScreen</strong></td><td>OrderSuccess</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#274</td><td>—</td></tr>
+<tr><td><strong>PaymentConfirmationScreen</strong></td><td>PaymentConfirmation</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#274</td><td>—</td></tr>
+<tr><td><strong>OrderHistoryScreen</strong></td><td>OrderHistory</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#196</td><td>✅</td></tr>
+<tr><td><strong>OrderDetailScreen</strong></td><td>OrderDetail</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#196</td><td>—</td></tr>
+<tr><td><strong>LoginScreen</strong></td><td>Login</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#88</td><td>✅</td></tr>
+<tr><td><strong>SignUpScreen</strong></td><td>SignUp</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#88</td><td>—</td></tr>
+<tr><td><strong>ForgotPasswordScreen</strong></td><td>ForgotPassword</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#88</td><td>—</td></tr>
+<tr><td><strong>OnboardingScreen</strong></td><td>Onboarding</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#88</td><td>—</td></tr>
+<tr><td><strong>LoyaltyScreen</strong></td><td>Loyalty</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph2">P2 Tier</span></td><td>#241</td><td>—</td></tr>
+<tr><td><strong>ChallengesScreen</strong></td><td>Challenges</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph4">P4 Challenges</span></td><td>#307</td><td>—</td></tr>
+<tr><td><strong>LeaderboardScreen</strong></td><td>Leaderboard</td><td><span class="badge in-ci">in CI</span></td><td><span class="phase-chip ph4">P4 Challenges</span></td><td>#303</td><td>—</td></tr>
+<tr><td><strong>AchievementBadgesScreen</strong></td><td>AchievementBadges</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph6">P6 Avatar</span></td><td>#294</td><td>—</td></tr>
+<tr><td><strong>PointsHistoryScreen</strong></td><td>PointsHistory</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph5">P5 Events</span></td><td>#293</td><td>—</td></tr>
+<tr><td><strong>NotificationsScreen</strong></td><td>Notifications</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph5">P5 Feed</span></td><td>#296</td><td>✅</td></tr>
+<tr><td><strong>NotificationPreferencesScreen</strong></td><td>NotificationPreferences</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph5">P5 Push</span></td><td>#304</td><td>—</td></tr>
+<tr><td><strong>AvatarEquipScreen</strong></td><td>AvatarEquip</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip ph6">P6 Avatar</span></td><td>#289</td><td>—</td></tr>
+<tr><td><strong>ARScreen</strong></td><td>ARCamera</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core + AR</span></td><td>#99</td><td>✅</td></tr>
+<tr><td><strong>ARWebScreen</strong></td><td>ARWeb</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core + AR</span></td><td>#99</td><td>—</td></tr>
+<tr><td><strong>RoomGalleryScreen</strong></td><td>RoomGallery</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core + AR</span></td><td>#99</td><td>—</td></tr>
+<tr><td><strong>StyleQuizScreen</strong></td><td>StyleQuiz</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#185</td><td>—</td></tr>
+<tr><td><strong>CompareScreen</strong></td><td>Compare</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#241</td><td>—</td></tr>
+<tr><td><strong>StoreLocatorScreen</strong></td><td>StoreLocator</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#169</td><td>—</td></tr>
+<tr><td><strong>StoreDetailScreen</strong></td><td>StoreDetail</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#169</td><td>—</td></tr>
+<tr><td><strong>PremiumScreen</strong></td><td>Premium</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#127</td><td>—</td></tr>
+<tr><td><strong>ReferralLandingScreen</strong></td><td>ReferralLanding</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#153</td><td>—</td></tr>
+<tr><td><strong>PrivacyPolicyScreen</strong></td><td>PrivacyPolicy</td><td><span class="badge done">shipped</span></td><td><span class="phase-chip core">Core</span></td><td>#88</td><td>—</td></tr>
+</table>
+<p style="font-size:11px;color:#666;margin-top:4px">37 shipped · 1 in CI · 0 deferred · 11 screenshots captured</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 2: GAMIFICATION PHASE MAP
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">🎮 Gamification Phase Map</div>
+<table>
+<tr><th>Phase</th><th>Feature</th><th>Status</th><th>Key PRs</th><th>Screens Affected</th><th>Cross-rig?</th></tr>
+<tr>
+  <td><span class="phase-chip ph1">P1</span> Streak Multipliers</td>
+  <td>Daily streak tracking, 1×/1.5×/2× pts multiplier</td>
+  <td><span class="badge done">shipped</span></td>
+  <td>#306 (streak badge + multiplier chip)</td>
+  <td>AccountScreen, HomeScreen</td>
+  <td>✅ Wix webhook</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph2">P2</span> Points + Tier Display</td>
+  <td>Trail Blazer → Mountain Guide → Summit Master → Blue Ridge Legend</td>
+  <td><span class="badge done">shipped</span></td>
+  <td>#241 (LoyaltyScreen), #310 (AccountGamificationHeader)</td>
+  <td>AccountScreen, LoyaltyScreen</td>
+  <td>✅ Wix loyalty API</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph3">P3</span> Streak Danger</td>
+  <td>Streak danger banner when user hasn't visited today</td>
+  <td><span class="badge done">shipped</span></td>
+  <td>#250 (StreakDangerBanner)</td>
+  <td>HomeScreen</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph4">P4</span> Challenges + Quests</td>
+  <td>Daily quests card, 4-category challenges, leaderboard</td>
+  <td><span class="badge done">shipped</span> <span class="badge in-ci">LeaderboardScreen CI</span></td>
+  <td>#245 (events), #297 (ChallengesScreen), #307 (nav), #303 (Leaderboard)</td>
+  <td>HomeScreen, ChallengesScreen, LeaderboardScreen</td>
+  <td>✅ Wix challenges API</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph5">P5</span> Celebration UX</td>
+  <td>Toast notifications, points feed, push triggers</td>
+  <td><span class="badge done">shipped</span></td>
+  <td>#276 (trigger toasts), #293 (PointsHistory), #296 (NotificationsScreen), #302 (safe-area fix), #304 (push opt-in)</td>
+  <td>HomeScreen, PointsHistoryScreen, NotificationsScreen, NotificationPreferencesScreen</td>
+  <td>✅ Push + Wix webhooks</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph6">P6</span> Avatar System</td>
+  <td>Avatar display, badge grid, animal badge SVGs</td>
+  <td><span class="badge done">shipped</span> <span class="badge no-pr">SVG icons in progress</span></td>
+  <td>#289 (AvatarEquip), #294 (AchievementBadges), #298 (GameProfileCard), #309 (animal badge SVGs)</td>
+  <td>AchievementBadgesScreen, AvatarEquipScreen, AccountScreen</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph7">P7</span> Living Sky</td>
+  <td>Dynamic sky background driven by time-of-day, wildlife layer</td>
+  <td><span class="badge done">shipped</span></td>
+  <td>#280 (useLivingSky), #299 (LivingSkyBackground), #300 (tree canopy color)</td>
+  <td>HomeScreen, LoyaltyScreen</td>
+  <td>—</td>
+</tr>
+<tr>
+  <td><span class="phase-chip ph8">P8</span> Cross-Rig Social</td>
+  <td>Friend challenges, cross-rig earn/redeem events, badge showcase</td>
+  <td><span class="badge deferred">planning</span></td>
+  <td>TBD — awaiting melania P8 spec alignment</td>
+  <td>LeaderboardScreen + new screens TBD</td>
+  <td>🔶 Core dependency</td>
+</tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 3: BUG STATUS
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">🐛 Bug Status — Session 25</div>
 <table>
 <tr><th>Priority</th><th>Bug</th><th>Status</th><th>Notes</th></tr>
-<tr>
-  <td class="p1">P1</td>
-  <td>CollectionCard crash — heroImage/mood/productIds undefined from Wix</td>
-  <td class="status-fixed">✅ FIXED PR #235</td>
-  <td>3 null guards. Confirmed in bishop QA pass 3.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>Unreachable screens: Search, Loyalty, Compare</td>
-  <td class="status-fixed">✅ FIXED PRs #240, #241</td>
-  <td>Search nav wired to HomeScreen icon. Loyalty tappable from AccountScreen. Compare via CompareFAB.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>OrderConfirmation status bar bright blue</td>
-  <td class="status-fixed">✅ FIXED PR #274</td>
-  <td>StatusBar barStyle now dark espresso. Confirmed by hicks.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>Deprecated Swipeable in CartScreen + WishlistScreen</td>
-  <td class="status-fixed">✅ FIXED PR #266</td>
-  <td>Replaced with ReanimatedSwipeable.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>AsyncStorage mock isolation (#252/#253/#259)</td>
-  <td class="status-fixed">✅ FIXED PR #286</td>
-  <td>Root cause: { virtual: true } + missing timer cleanup.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>Tree fill color — #2E4A38 vs #4A7C59 alignment</td>
-  <td class="status-open">🔶 OPEN hq-00y93</td>
-  <td>Melania gave conflicting answers. Clarification pending.</td>
-</tr>
-<tr>
-  <td class="p3">P3</td>
-  <td>$0.00 prices in offline/simulator category screen</td>
-  <td class="status-infra">INFRA — emulator only</td>
-  <td>Wix API unreachable offline. Cart shows correct prices.</td>
-</tr>
-<tr>
-  <td class="p1">P1</td>
-  <td>'Couldn't refresh content' banner always visible</td>
-  <td class="status-infra">INFRA — emulator only</td>
-  <td>Same Wix network issue. Error handling correct. Real device shows collections fine.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>'Shop the Look' carousel hidden</td>
-  <td class="status-infra">INFRA — emulator only</td>
-  <td>Carousel renders only when featured.length > 0. Wix API returns 0 collections in emulator.</td>
-</tr>
-<tr>
-  <td class="p2">P2</td>
-  <td>Tab bar — emoji icons, no gamification badges</td>
-  <td class="status-fixed">✅ MERGED PR #236</td>
-  <td>Replaced with SVG mountain icons. Streak 🔥 on Home, tier ★ on Account. 11 tests.</td>
-</tr>
-<tr>
-  <td class="p3">P3</td>
-  <td>CartAbandonmentBridge render error on deep link launch</td>
-  <td class="status-fixed">RESOLVED — transient</td>
-  <td>Provider tree correct. Error is Metro hot-reload race condition, not a production bug.</td>
-</tr>
-<tr>
-  <td class="p3">P3</td>
-  <td>HomeScreen 'Browse Products' navigation crash</td>
-  <td class="status-fixed">ALREADY FIXED</td>
-  <td>Fixed before session 23.</td>
-</tr>
-<tr>
-  <td class="p1">P1</td>
-  <td>SearchScreen unreachable — no navigate('Search') call in any UI component</td>
-  <td class="status-open">🔧 IN PROGRESS — cm-we6 (ripley)</td>
-  <td>Bishop QA confirmed. ShopScreen SearchBar is inline, SearchScreen is separate + unlinked. Fix: wire search icon.</td>
-</tr>
-<tr>
-  <td class="p1">P1</td>
-  <td>LoyaltyScreen unreachable — no navigate('Loyalty') call anywhere in UI</td>
-  <td class="status-open">🔧 IN PROGRESS — cm-1fh (hicks)</td>
-  <td>Bishop QA confirmed. Registered in AppNavigator but no AccountScreen entry point. Fix: add tappable tier row.</td>
-</tr>
+<tr><td class="p1">P1</td><td>CollectionCard crash — heroImage/mood/productIds undefined from Wix</td><td class="status-fixed">✅ FIXED #235</td><td>3 null guards. Confirmed QA.</td></tr>
+<tr><td class="p2">P2</td><td>Unreachable screens: Search, Loyalty, Compare</td><td class="status-fixed">✅ FIXED #240/#241</td><td>Search icon wired. Loyalty from AccountScreen. Compare via FAB.</td></tr>
+<tr><td class="p2">P2</td><td>OrderConfirmation status bar bright blue</td><td class="status-fixed">✅ FIXED #274</td><td>StatusBar barStyle → dark espresso.</td></tr>
+<tr><td class="p2">P2</td><td>Deprecated Swipeable in CartScreen + WishlistScreen</td><td class="status-fixed">✅ FIXED #266</td><td>Replaced with ReanimatedSwipeable.</td></tr>
+<tr><td class="p2">P2</td><td>AsyncStorage mock isolation (#252/#253/#259)</td><td class="status-fixed">✅ FIXED #286</td><td>{ virtual: true } + timer cleanup.</td></tr>
+<tr><td class="p2">P2</td><td>Toast bottom clipping (safe area inset)</td><td class="status-fixed">✅ FIXED #302</td><td>useSafeAreaInsets applied to toast container.</td></tr>
+<tr><td class="p2">P2</td><td>Tree fill color — #2E4A38 vs #4A7C59 alignment</td><td class="status-open">🔶 OPEN hq-00y93</td><td>Melania clarification pending.</td></tr>
+<tr><td class="p3">P3</td><td>$0.00 prices in offline/sim category screen</td><td class="status-infra">INFRA — emulator only</td><td>Wix API unreachable offline. Cart shows correct prices.</td></tr>
+<tr><td class="p1">P1</td><td>'Couldn't refresh content' banner always visible</td><td class="status-infra">INFRA — emulator only</td><td>Wix REST unreachable from simulator guest network. Real device: no issue.</td></tr>
 </table>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 4: SESSION 24–25 DELIVERABLES
+     ══════════════════════════════════════════════════════════ -->
 <div class="section">
-<div class="section-title">✅ Session 24 Deliverables — 32 PRs Merged</div>
+<div class="section-title">✅ Sessions 24–25 Deliverables — 43 PRs Merged</div>
 <table>
-<tr><th>PR</th><th>Feature</th><th>Category</th></tr>
-<tr><td>#242</td><td>ZIP persistence across PDP + Checkout</td><td>Shipping</td></tr>
-<tr><td>#243</td><td>Streak multiplier display (1x/1.5x/2x tiers)</td><td>Phase 2</td></tr>
-<tr><td>#244</td><td>useActiveChallenges hook — Wix API integration</td><td>Phase 4</td></tr>
+<tr><th>PR</th><th>Description</th><th>Phase</th></tr>
+<tr><td>#242</td><td>ProductBadge component — NEW/BESTSELLER/LOW_STOCK/SALE/CF_PLUS_EXCLUSIVE</td><td>Core</td></tr>
 <tr><td>#245</td><td>Wire challenges to HomeScreen + gamification_ar_used/wishlist_add events</td><td>Phase 4</td></tr>
-<tr><td>#246</td><td>Wire gamification events to AR viewer + wishlist call sites</td><td>Phase 4</td></tr>
-<tr><td>#247</td><td>TierCelebrationModal — confetti + badge reveal (ripley)</td><td>Phase 5</td></tr>
-<tr><td>#248</td><td>useAvatarState hook + bonus points day indicator (burke)</td><td>Phase 6</td></tr>
-<tr><td>#249</td><td>BadgeToast + useBadgeToast context (hicks)</td><td>Phase 5</td></tr>
 <tr><td>#250</td><td>StreakDangerBanner on HomeScreen (ripley)</td><td>Phase 5</td></tr>
-<tr><td>#251</td><td>ChallengeCompletedToast + queue system (nux)</td><td>Phase 4</td></tr>
-<tr><td>#258</td><td>ChallengeCard progress animation + completion state (bishop)</td><td>Phase 4</td></tr>
-<tr><td>#265</td><td>useProductResources hook — PDP resources from Wix CMS</td><td>Content</td></tr>
-<tr><td>#266</td><td>Fix deprecated Swipeable → ReanimatedSwipeable (bishop)</td><td>Bug fix</td></tr>
-<tr><td>#267</td><td>Fix test act() warnings + mock isolation (ripley)</td><td>Bug fix</td></tr>
-<tr><td>#269</td><td>Tree fill color fix #5C4033 → #2E4A38 (nux)</td><td>Illustration</td></tr>
-<tr><td>#270</td><td>LivingSkyMountainSkyline renderer — 4 ridges + celestials (ripley)</td><td>Phase 7</td></tr>
-<tr><td>#271</td><td>App icon SVG master with mountain silhouette (burke)</td><td>Illustration</td></tr>
-<tr><td>#272</td><td>ProductResourcesSection on PDP — collapsible list (ripley)</td><td>Content</td></tr>
-<tr><td>#274</td><td>OrderConfirmation status bar fix (burke)</td><td>Bug fix</td></tr>
+<tr><td>#254</td><td>Gamification feed hook + NotificationsScreen feed integration</td><td>Phase 5</td></tr>
+<tr><td>#258</td><td>CartPointsSummary — show pts earned at checkout (hicks)</td><td>Phase 2</td></tr>
+<tr><td>#266</td><td>Replace deprecated Swipeable with ReanimatedSwipeable (burke)</td><td>Core</td></tr>
+<tr><td>#270</td><td>TierProgressBar animated (reanimated withTiming) — ripley</td><td>Phase 2</td></tr>
+<tr><td>#274</td><td>OrderConfirmation status bar + dark mode polish (hicks)</td><td>Core</td></tr>
 <tr><td>#276</td><td>Wire trigger moment toasts at HomeScreen root (burke)</td><td>Phase 5</td></tr>
-<tr><td>#277</td><td>Client-side gamification rate limiter (burke)</td><td>Phase 4</td></tr>
+<tr><td>#278</td><td>Wire gamification events → Wix: tier_upgraded, streak_extended, challenge_completed</td><td>Phase 4</td></tr>
 <tr><td>#280</td><td>useLivingSky hook + HomeScreen hero wiring (hicks)</td><td>Phase 7</td></tr>
-<tr><td>#281</td><td>Golden hour splash screen (hicks)</td><td>Phase 7</td></tr>
-<tr><td>#282</td><td>useActiveChallenges → GET endpoint (burke)</td><td>Phase 4</td></tr>
-<tr><td>#284</td><td>WildlifeLayer — birds/fireflies/owls (bishop)</td><td>Phase 7</td></tr>
-<tr><td>#285</td><td>Toast safe area inset fix (hicks)</td><td>Bug fix</td></tr>
-<tr><td>#286</td><td>AsyncStorage mock isolation fix (bishop)</td><td>Bug fix</td></tr>
-<tr><td>#288</td><td>LivingSkyBackground 4-stop gradient (burke)</td><td>Phase 7</td></tr>
+<tr><td>#283</td><td>ChallengesRail horizontal scroll on HomeScreen</td><td>Phase 4</td></tr>
+<tr><td>#286</td><td>AsyncStorage mock isolation fix (bishop)</td><td>Core</td></tr>
 <tr><td>#289</td><td>AvatarDisplay + AvatarEquipScreen (hicks)</td><td>Phase 6</td></tr>
-<tr><td>#295</td><td>useLivingSky isLoading field (bishop)</td><td>Phase 7</td></tr>
+<tr><td>#293</td><td>PointsHistoryScreen — points events feed (burke)</td><td>Phase 5</td></tr>
+<tr><td>#294</td><td>AchievementBadgesScreen — badge grid with earned/locked states (bishop)</td><td>Phase 6</td></tr>
 <tr><td>#296</td><td>NotificationsScreen gamification feed (bishop)</td><td>Phase 5</td></tr>
 <tr><td>#297</td><td>ChallengesScreen — 4 groups + progress bars (burke)</td><td>Phase 4</td></tr>
+<tr><td>#298</td><td>GameProfileCard component (ripley)</td><td>Phase 6</td></tr>
+<tr><td>#299</td><td>LivingSkyBackground wired into HomeScreen + dynamic tab bar tint</td><td>Phase 7</td></tr>
+<tr><td>#300</td><td>Tree canopy color correction — #4A7C59 (hicks)</td><td>Phase 7</td></tr>
+<tr><td>#302</td><td>Toast safe-area bottom inset fix</td><td>Phase 5</td></tr>
+<tr><td>#303</td><td>LeaderboardScreen — live backend wired, isCurrentUser highlight</td><td>Phase 4</td></tr>
+<tr><td>#304</td><td>Push notification opt-in UI for gamification triggers (NotificationPreferencesScreen)</td><td>Phase 5</td></tr>
+<tr><td>#305</td><td>Gamification push deep links — streak/quests/spin routing</td><td>Phase 5</td></tr>
+<tr><td>#306</td><td>AccountScreen always-show streak multiplier in header (ripley)</td><td>Phase 2</td></tr>
+<tr><td>#307</td><td>ChallengesScreen wired into navigation from AccountScreen (burke)</td><td>Phase 4</td></tr>
+<tr><td>#308</td><td>Gamification onboarding tour overlay (ripley)</td><td>Phase 4</td></tr>
+<tr><td>#309</td><td>Animal badge SVG icons — mountain lion, bear, eagle, fox (hicks)</td><td>Phase 6</td></tr>
+<tr><td>#310</td><td>AccountGamificationHeader consolidated widget (dallas)</td><td>Phase 2+3</td></tr>
 </table>
-<p style="font-size:11px;color:#666;margin-top:8px">32 PRs merged. 6000+ tests passing. Cross-rig alignment with melania (cfutons web) on all phases.</p>
+<p style="font-size:11px;color:#666;margin-top:8px">43 PRs merged · 5761+ tests · 38 screens · Phases 1–7 complete · Phase 8 in planning</p>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 5: OPEN PRs
+     ══════════════════════════════════════════════════════════ -->
 <div class="section">
-<div class="section-title">🔧 Open PRs (pending merge)</div>
+<div class="section-title">🔧 Open PRs — Session 25</div>
 <table>
-<tr><th>PR</th><th>Feature</th><th>Status</th></tr>
-<tr><td>#293</td><td>PointsHistoryScreen (burke)</td><td class="status-pr">lint rebase needed</td></tr>
-<tr><td>#294</td><td>AchievementBadgesScreen (bishop)</td><td class="status-pr">lint rebase needed</td></tr>
-<tr><td>#298</td><td>GameProfileCard widget (bishop)</td><td class="status-pr">lint rebase needed</td></tr>
-<tr><td>#278</td><td>Gamification events → Wix API (ripley)</td><td class="status-pr">P1 in progress</td></tr>
+<tr><th>PR</th><th>Description</th><th>CI Status</th></tr>
+<tr><td>#310</td><td>AccountGamificationHeader widget (hq-u6i9c)</td><td class="status-pr">CI running — lint fix pushed</td></tr>
+<tr><td>#305</td><td>Gamification push deep links</td><td class="status-pr">CI triggered</td></tr>
 </table>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 6: COMPONENT INDEX
+     ══════════════════════════════════════════════════════════ -->
 <div class="section">
-<div class="section-title">📱 Screen Captures — iOS Simulator (iPhone 16e)</div>
-<div style="background:#1c1410;border:1px solid #3a2518;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#9b8a7a">
-  <strong style="color:#e8845c">Note:</strong> Screenshots from iOS Simulator running main branch after 32 PRs merged. Session 24, 2026-03-23.
-  PRs #235 (CollectionCard fix), #236 (tab bar SVG icons), #237 (challenges rail) are pending merge — not yet visible.
-  Wix API is unreachable from emulator guest network: prices show $0, collections fail.
-  All these features work correctly on a real device with network access.
+<div class="section-title">🧩 Key Component Index</div>
+<table>
+<tr><th>Component</th><th>Purpose</th><th>Phase</th><th>Used In</th></tr>
+<tr><td>AccountGamificationHeader</td><td>Consolidated widget: tier badge + points + streak + progress bar</td><td><span class="phase-chip ph2">P2</span><span class="phase-chip ph3">P3</span></td><td>AccountScreen</td></tr>
+<tr><td>LoyaltyTierBadge</td><td>Tier name + icon badge (Trail Blazer → Blue Ridge Legend)</td><td><span class="phase-chip ph2">P2</span></td><td>AccountGamificationHeader, LoyaltyScreen</td></tr>
+<tr><td>TierProgressBar</td><td>Animated progress to next tier (reanimated withTiming)</td><td><span class="phase-chip ph2">P2</span></td><td>AccountGamificationHeader, LoyaltyScreen</td></tr>
+<tr><td>StreakBadge</td><td>Day streak count + multiplier chip (1×/1.5×/2×)</td><td><span class="phase-chip ph3">P3</span></td><td>AccountGamificationHeader, HomeScreen</td></tr>
+<tr><td>StreakDangerBanner</td><td>Warning banner when streak at risk</td><td><span class="phase-chip ph3">P3</span></td><td>HomeScreen</td></tr>
+<tr><td>DailyQuestsCard</td><td>Today's quests with progress bars</td><td><span class="phase-chip ph4">P4</span></td><td>HomeScreen</td></tr>
+<tr><td>ChallengesRail</td><td>Horizontal scroll of active challenges</td><td><span class="phase-chip ph4">P4</span></td><td>HomeScreen</td></tr>
+<tr><td>ChallengeCard</td><td>Individual challenge with progress + reward</td><td><span class="phase-chip ph4">P4</span></td><td>ChallengesScreen, ChallengesRail</td></tr>
+<tr><td>GameProfileCard</td><td>User gamification summary: avatar + tier + stats</td><td><span class="phase-chip ph6">P6</span></td><td>AccountScreen, LoyaltyScreen</td></tr>
+<tr><td>AvatarDisplay</td><td>User avatar with equipped badge overlay</td><td><span class="phase-chip ph6">P6</span></td><td>AvatarEquipScreen, GameProfileCard</td></tr>
+<tr><td>BadgeSvgIcon</td><td>Animal badge SVGs (mountain lion, bear, eagle, fox)</td><td><span class="phase-chip ph6">P6</span></td><td>AchievementBadgesScreen, AvatarEquipScreen</td></tr>
+<tr><td>LivingSkyBackground</td><td>Dynamic sky: dawn/day/golden/dusk/night driven by time-of-day</td><td><span class="phase-chip ph7">P7</span></td><td>HomeScreen</td></tr>
+<tr><td>WildlifeLayer</td><td>Animated wildlife sprites over sky background</td><td><span class="phase-chip ph7">P7</span></td><td>LivingSkyBackground</td></tr>
+<tr><td>MountainSkyline</td><td>SVG mountain silhouette layer</td><td><span class="phase-chip ph7">P7</span></td><td>LivingSkyBackground, HomeScreen hero</td></tr>
+<tr><td>GamificationTourOverlay</td><td>First-run onboarding tour highlighting gamification UI</td><td><span class="phase-chip ph4">P4</span></td><td>HomeScreen (overlay)</td></tr>
+<tr><td>PointsToast / TierUpgradeToast</td><td>Celebration toast notifications</td><td><span class="phase-chip ph5">P5</span></td><td>HomeScreen (root), triggered via useGamificationEvents</td></tr>
+<tr><td>CartPointsSummary</td><td>Points earned preview at checkout</td><td><span class="phase-chip ph2">P2</span></td><td>CartScreen, CheckoutScreen</td></tr>
+<tr><td>ProductBadge</td><td>NEW/BESTSELLER/LOW_STOCK/SALE/CF_PLUS_EXCLUSIVE overlays</td><td><span class="phase-chip core">Core</span></td><td>ProductCard, ProductDetailScreen</td></tr>
+<tr><td>LeaderboardRow</td><td>Leaderboard entry with rank, avatar, points, isCurrentUser highlight</td><td><span class="phase-chip ph4">P4</span></td><td>LeaderboardScreen</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 7: HOOKS + SERVICES INDEX
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">🪝 Key Hooks &amp; Services</div>
+<table>
+<tr><th>Hook / Service</th><th>Purpose</th><th>Phase</th></tr>
+<tr><td>useLoyalty</td><td>Points, tier, nextTier, progress, loading — polls Wix loyalty API</td><td><span class="phase-chip ph2">P2</span></td></tr>
+<tr><td>useStreak</td><td>Daily streak count + loading state</td><td><span class="phase-chip ph3">P3</span></td></tr>
+<tr><td>getStreakMultiplier</td><td>0–2d=1× · 3–6d=1.5× · 7+d=2× multiplier util</td><td><span class="phase-chip ph3">P3</span></td></tr>
+<tr><td>useActiveChallenges</td><td>Active challenge list with progress from Wix</td><td><span class="phase-chip ph4">P4</span></td></tr>
+<tr><td>useDailyQuests</td><td>Today's quests + completion state</td><td><span class="phase-chip ph4">P4</span></td></tr>
+<tr><td>useChallengeCatalog</td><td>Full challenge catalog for ChallengesScreen</td><td><span class="phase-chip ph4">P4</span></td></tr>
+<tr><td>useLeaderboard</td><td>Ranked leaderboard entries from gamification API</td><td><span class="phase-chip ph4">P4</span></td></tr>
+<tr><td>useGamificationEvents</td><td>Emits tier_upgraded / streak_extended / challenge_completed to Wix</td><td><span class="phase-chip ph4">P4</span></td></tr>
+<tr><td>useTriggerMoments</td><td>Fires celebration toasts at key app moments (purchase, AR use)</td><td><span class="phase-chip ph5">P5</span></td></tr>
+<tr><td>useGamificationFeed</td><td>Notifications feed: points earned, badges unlocked, tier events</td><td><span class="phase-chip ph5">P5</span></td></tr>
+<tr><td>useAvatarState</td><td>User avatar config + equipped badge</td><td><span class="phase-chip ph6">P6</span></td></tr>
+<tr><td>useLivingSky</td><td>Time-of-day sky phase + color tokens (dawn/day/golden/dusk/night)</td><td><span class="phase-chip ph7">P7</span></td></tr>
+<tr><td>usePushDeepLink</td><td>Routes gamification push notifications to correct screens</td><td><span class="phase-chip ph5">P5</span></td></tr>
+<tr><td>gamificationApi</td><td>REST service: challenges, leaderboard, points history endpoints</td><td><span class="phase-chip ph4">P4</span></td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 8: ACCESSIBILITY + TEST COVERAGE SUMMARY
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">♿ A11y &amp; Test Coverage Summary</div>
+<table>
+<tr><th>Screen / Component</th><th>a11y Labels</th><th>a11y Roles</th><th>Tests</th><th>Notes</th></tr>
+<tr><td>AccountGamificationHeader</td><td>✅ Dynamic (tier+pts+streak)</td><td>✅ button when pressable</td><td>20 tests</td><td>PR #310</td></tr>
+<tr><td>AccountScreen</td><td>✅</td><td>✅</td><td>330 tests</td><td>330/330 passing</td></tr>
+<tr><td>LoyaltyTierBadge</td><td>✅</td><td>✅</td><td>Covered via AccountGamificationHeader</td><td></td></tr>
+<tr><td>ChallengesScreen</td><td>✅</td><td>✅</td><td>PR #297/#307</td><td>A11y pass #230</td></tr>
+<tr><td>AchievementBadgesScreen</td><td>✅</td><td>✅</td><td>PR #294</td><td></td></tr>
+<tr><td>LeaderboardScreen</td><td>✅</td><td>✅</td><td>PR #303 (CI)</td><td></td></tr>
+<tr><td>NotificationsScreen</td><td>✅</td><td>✅</td><td>PR #296</td><td></td></tr>
+<tr><td>LivingSkyBackground</td><td>✅ aria-hidden decorative</td><td>—</td><td>PR #299</td><td>Decorative, correctly hidden</td></tr>
+<tr><td>StreakBadge</td><td>✅</td><td>✅</td><td>Dedicated test suite</td><td></td></tr>
+<tr><td>TierProgressBar</td><td>✅</td><td>—</td><td>Dedicated test suite</td><td>Progress role</td></tr>
+<tr><td><em>Overall</em></td><td colspan="4"><strong>5761+ tests passing · codecov/patch green on all merged PRs · A11y PR #230 across shipping + share components</strong></td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 9: DESIGN TOKENS
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">🎨 Design Tokens (Carolina Futons)</div>
+<table>
+<tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+<tr><td>Sand</td><td style="color:#E8D5B7">#E8D5B7</td><td>Body text, backgrounds</td></tr>
+<tr><td>Espresso</td><td style="color:#3A2518">#3A2518</td><td>Dark backgrounds, borders</td></tr>
+<tr><td>Mountain Blue</td><td style="color:#5B8FA8">#5B8FA8</td><td>Secondary accent</td></tr>
+<tr><td>Sunset Coral</td><td style="color:#E8845C">#E8845C</td><td>CTA — ALWAYS this color</td></tr>
+<tr><td>CF Blue Dark</td><td style="color:#3D6B80">#3D6B80</td><td>WCAG contrast fix (5.81:1 on white)</td></tr>
+<tr><td>Tree Canopy</td><td style="color:#4A7C59">#4A7C59</td><td>Living Sky tree fill (confirmed)</td></tr>
+<tr><td>Tree Canopy Alt</td><td style="color:#2E4A38">#2E4A38</td><td>⚠️ Disputed — hq-00y93 open</td></tr>
+</table>
+<p style="font-size:11px;color:#666;margin-top:4px">Typography: Playfair Display (headings) · Source Sans 3 (body) · Source: src/public/sharedTokens.js</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION 10: SCREENSHOTS
+     ══════════════════════════════════════════════════════════ -->
+<div class="section">
+<div class="section-title">📸 Screen Captures — iOS Simulator (iPhone 16e)</div>
+<div class="note">
+  Screenshots from iOS Simulator, main branch, Session 25. 43 PRs merged. PRs #305/#310 in CI — not yet visible. Wix API unreachable from simulator guest network (known infra limitation). 11 of 38 screens captured. Next APK build blocked until EAS quota resets 2026-04-01.
 </div>
 <div class="grid">
 
@@ -237,6 +403,12 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 
 </div>
 </div>
+</div>
 
+<p style="font-size:11px;color:#444;margin-top:32px;padding-top:12px;border-top:1px solid #2a1f19">
+  Carolina Futons Mobile · Session 25 · 2026-03-24 · dallas (cfutons_mobile/crew/dallas) ·
+  38 screens · 43 PRs merged · Phases 1–7 complete · Phase 8 in planning ·
+  5761+ tests passing
+</p>
 </body>
 </html>
