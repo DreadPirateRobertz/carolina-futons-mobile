@@ -38,12 +38,8 @@ import { useReferral } from '@/hooks/useReferral';
 import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
-import { LoyaltyTierBadge } from '@/components/LoyaltyTierBadge';
-import { StreakBadge } from '@/components/StreakBadge';
-import { TierProgressBar } from '@/components/TierProgressBar';
-import { useStreak } from '@/hooks/useStreak';
+import { AccountGamificationHeader } from '@/components/AccountGamificationHeader';
 import { WixAuthService } from '@/services/wix/wixAuth';
-import { useLoyalty } from '@/hooks/useLoyalty';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 /** Props for the AccountScreen component. */
@@ -111,8 +107,6 @@ export function AccountScreen({
 
   const referral = useReferral();
   const gamificationEvents = useGamificationEvents();
-  const loyalty = useLoyalty();
-  const { streak, loading: streakLoading } = useStreak();
 
   const handleShareReferral = useCallback(async () => {
     if (!referral.shareUrl) return;
@@ -334,20 +328,7 @@ export function AccountScreen({
                 </Text>
                 {isPremium && <PremiumBadge />}
               </View>
-              <TouchableOpacity
-                onPress={onLoyalty}
-                testID="account-loyalty-row"
-                accessibilityLabel="View loyalty rewards"
-                accessibilityHint="Opens your loyalty points and tier details"
-                accessibilityRole="button"
-                activeOpacity={0.7}
-              >
-                <LoyaltyTierBadge points={loyalty.points} />
-                {!streakLoading && (
-                  <StreakBadge streak={streak} testID="account-streak-badge" showBaseMultiplier />
-                )}
-                <TierProgressBar points={loyalty.points} testID="account-tier-progress" />
-              </TouchableOpacity>
+              <AccountGamificationHeader onPress={onLoyalty} testID="account-loyalty-row" />
               <Text
                 style={[styles.userEmail, { color: darkPalette.textMuted }]}
                 testID="user-email"
