@@ -13,7 +13,8 @@ export type LeaderboardPeriod = 'allTime' | 'weekly';
 
 export interface LeaderboardEntry {
   memberId: string;
-  nickname: string;
+  /** Populated from MemberPoints writer — null until first write. Falls back to 'CF Member' in UI. */
+  displayName: string | null;
   points: number;
   tier: LoyaltyTier;
   rank: number;

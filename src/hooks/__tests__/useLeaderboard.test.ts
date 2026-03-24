@@ -17,14 +17,14 @@ jest.mock('@/services/wix/wixClientSingleton', () => ({
 }));
 
 const SAMPLE_ENTRIES = [
-  { memberId: 'm1', nickname: 'Alice', points: 2500, tier: 'gold', rank: 1 },
-  { memberId: 'm2', nickname: 'Bob', points: 800, tier: 'silver', rank: 2 },
-  { memberId: 'm3', nickname: 'Carol', points: 200, tier: 'bronze', rank: 3 },
+  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
+  { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
+  { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
 
 const SAMPLE_WEEKLY = [
-  { memberId: 'm2', nickname: 'Bob', points: 150, tier: 'silver', rank: 1 },
-  { memberId: 'm1', nickname: 'Alice', points: 100, tier: 'gold', rank: 2 },
+  { memberId: 'm2', displayName: 'Bob', points: 150, tier: 'silver', rank: 1 },
+  { memberId: 'm1', displayName: 'Alice', points: 100, tier: 'gold', rank: 2 },
 ];
 
 beforeEach(() => {

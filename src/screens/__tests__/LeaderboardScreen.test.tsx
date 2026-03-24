@@ -11,9 +11,9 @@ const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();
 
 const ENTRIES = [
-  { memberId: 'm1', nickname: 'Alice', points: 2500, tier: 'gold', rank: 1 },
-  { memberId: 'm2', nickname: 'Bob', points: 800, tier: 'silver', rank: 2 },
-  { memberId: 'm3', nickname: 'Carol', points: 200, tier: 'bronze', rank: 3 },
+  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
+  { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
+  { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
 
 let mockHookState = {
@@ -157,6 +157,18 @@ describe('LeaderboardScreen', () => {
       const { getByTestId } = wrap(<LeaderboardScreen />);
       const list = getByTestId('leaderboard-list');
       expect(list.props.refreshControl).toBeTruthy();
+    });
+  });
+
+  describe('null displayName fallback', () => {
+    it('renders CF Member for null displayName', () => {
+      mockHookState = {
+        ...mockHookState,
+        entries: [{ memberId: 'm1', displayName: null, points: 500, tier: 'bronze', rank: 1 }],
+      };
+      const { getAllByTestId } = wrap(<LeaderboardScreen />);
+      const nicknames = getAllByTestId('leaderboard-row-nickname');
+      expect(nicknames[0].props.children).toBe('CF Member');
     });
   });
 
