@@ -52,7 +52,10 @@ describe('StreakMilestoneBridge', () => {
     useNotifications.mockReturnValueOnce &&
       jest
         .spyOn(require('@/hooks/useNotifications'), 'useNotifications')
-        .mockReturnValueOnce({ preferences: { streakMilestone: true }, permissionStatus: 'denied' });
+        .mockReturnValueOnce({
+          preferences: { streakMilestone: true },
+          permissionStatus: 'denied',
+        });
 
     render(<StreakMilestoneBridge />);
     // The first call uses the default mock (granted), subsequent overrides work via spy
