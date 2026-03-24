@@ -26,10 +26,7 @@ export interface AccountGamificationHeaderProps {
   testID?: string;
 }
 
-export function AccountGamificationHeader({
-  onPress,
-  testID,
-}: AccountGamificationHeaderProps) {
+export function AccountGamificationHeader({ onPress, testID }: AccountGamificationHeaderProps) {
   const { points, tier, loading } = useLoyalty();
   const { streak, loading: streakLoading } = useStreak();
 

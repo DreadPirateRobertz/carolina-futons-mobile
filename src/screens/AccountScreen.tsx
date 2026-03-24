@@ -328,10 +328,7 @@ export function AccountScreen({
                 </Text>
                 {isPremium && <PremiumBadge />}
               </View>
-              <AccountGamificationHeader
-                onPress={onLoyalty}
-                testID="account-loyalty-row"
-              />
+              <AccountGamificationHeader onPress={onLoyalty} testID="account-loyalty-row" />
               <Text
                 style={[styles.userEmail, { color: darkPalette.textMuted }]}
                 testID="user-email"
