@@ -92,6 +92,7 @@ import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
 import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 import { PointsChip } from '@/components/PointsChip';
+import { PointsToast } from '@/components/PointsToast';
 import { useProductResources } from '@/hooks/useProductResources';
 import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 
@@ -158,6 +159,7 @@ export function ProductDetailScreen({
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
+  const [arPointsVisible, setArPointsVisible] = useState(false);
   const wixClient = useOptionalWixClient();
   const sizeGuideHeight = useSharedValue(0);
 
@@ -398,7 +400,12 @@ export function ProductDetailScreen({
     }
     onOpenAR?.(model.id);
     events.openAR(model.id);
-    gamificationEvents.arUsed(catalogProduct?.id ?? model.id); // Phase 4 gamification — cm-e2c3k
+    gamificationEvents.arUsed(catalogProduct?.id ?? model.id)?.then((result) => { // Phase 4 gamification — cm-e2c3k
+      if (result.success) {
+        setArPointsVisible(true);
+        setTimeout(() => setArPointsVisible(false), 2200);
+      }
+    });
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
@@ -417,6 +424,7 @@ export function ProductDetailScreen({
     navigation,
     isPremium,
     gamificationEvents,
+    setArPointsVisible,
   ]);
 
   const onGalleryScroll = useCallback((e: { nativeEvent: { contentOffset: { x: number } } }) => {
@@ -1496,6 +1504,20 @@ export function ProductDetailScreen({
         price={totalPrice}
         testID="bnpl-modal"
       />
+
+      {/* AR points toast — hq-27qq8 */}
+      <PointsToast points={10} visible={arPointsVisible} testID="ar-points-toast" />
+      {arPointsVisible && (
+        <TouchableOpacity
+          style={styles.arAccountLink}
+          onPress={() => navigation.navigate('Account')}
+          testID="ar-account-link"
+          accessibilityLabel="View your points in Account"
+          accessibilityRole="button"
+        >
+          <Text style={styles.arAccountLinkText}>View your points →</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -2260,6 +2282,19 @@ const styles = StyleSheet.create({
   },
   wixErrorRetryText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  arAccountLink: {
+    position: 'absolute',
+    bottom: 120,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    zIndex: 1001,
+  },
+  arAccountLinkText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '600',
   },
 });
