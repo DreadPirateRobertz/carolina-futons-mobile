@@ -65,7 +65,7 @@ export function useGamificationReveal(): GamificationRevealState {
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
-      .then(v => setHasSeenReveal(v === 'true'))
+      .then((v) => setHasSeenReveal(v === 'true'))
       .catch(() => setHasSeenReveal(false))
       .finally(() => setIsLoading(false));
   }, []);

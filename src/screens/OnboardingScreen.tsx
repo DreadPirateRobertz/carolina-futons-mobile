@@ -10,7 +10,15 @@
  * Users can skip at any point; preferences are persisted on finish.
  */
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Alert, Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  Alert,
+  Animated,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { MountainSkyline } from '@/components/MountainSkyline';
@@ -94,8 +102,13 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   const [step, setStep] = useState(0);
   const { preferences, setRoomType, setStylePreference, setPrimaryUse, savePreferences } =
     useStyleQuiz();
-  const { hasSeenReveal, isLoading: revealLoading, tierData, challengeTeasers, markRevealShown } =
-    useGamificationReveal();
+  const {
+    hasSeenReveal,
+    isLoading: revealLoading,
+    tierData,
+    challengeTeasers,
+    markRevealShown,
+  } = useGamificationReveal();
 
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
@@ -350,7 +363,8 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
             ]}
             testID="gamification-reveal-headline"
           >
-            You earned{'\n'}{WELCOME_POINTS} welcome points!
+            You earned{'\n'}
+            {WELCOME_POINTS} welcome points!
           </Text>
 
           {/* Tier badge */}
@@ -362,12 +376,24 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           {tierData.nextTierName != null && (
             <View style={{ marginTop: spacing.md }}>
               <Text
-                style={[styles.bodyText, { color: darkPalette.textMuted, fontFamily: typography.bodyFamily, marginBottom: spacing.xs }]}
+                style={[
+                  styles.bodyText,
+                  {
+                    color: darkPalette.textMuted,
+                    fontFamily: typography.bodyFamily,
+                    marginBottom: spacing.xs,
+                  },
+                ]}
                 testID="gamification-reveal-tier-progress-label"
               >
                 {tierData.pointsToNextTier} pts to {tierData.nextTierName}
               </Text>
-              <View style={[styles.tierBarTrack, { borderRadius: borderRadius.sm, backgroundColor: darkPalette.surfaceAlt }]}>
+              <View
+                style={[
+                  styles.tierBarTrack,
+                  { borderRadius: borderRadius.sm, backgroundColor: darkPalette.surfaceAlt },
+                ]}
+              >
                 <Animated.View
                   style={[
                     styles.tierBarFill,
@@ -390,7 +416,11 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
           <Text
             style={[
               styles.accentLabel,
-              { color: darkPalette.textMuted, fontFamily: typography.bodyFamilySemiBold, marginTop: spacing.xl },
+              {
+                color: darkPalette.textMuted,
+                fontFamily: typography.bodyFamilySemiBold,
+                marginTop: spacing.xl,
+              },
             ]}
           >
             Earn more points
@@ -400,14 +430,28 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
               key={c.title}
               style={[
                 styles.challengeRow,
-                { borderRadius: borderRadius.md, backgroundColor: darkPalette.surfaceAlt, marginTop: spacing.sm },
+                {
+                  borderRadius: borderRadius.md,
+                  backgroundColor: darkPalette.surfaceAlt,
+                  marginTop: spacing.sm,
+                },
               ]}
               testID="gamification-reveal-challenge-teaser"
             >
-              <Text style={[styles.bodyText, { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily, flex: 1 }]}>
+              <Text
+                style={[
+                  styles.bodyText,
+                  { color: darkPalette.textPrimary, fontFamily: typography.bodyFamily, flex: 1 },
+                ]}
+              >
                 {c.title}
               </Text>
-              <Text style={[styles.bodyText, { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold }]}>
+              <Text
+                style={[
+                  styles.bodyText,
+                  { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+                ]}
+              >
                 {c.pointsLabel}
               </Text>
             </View>

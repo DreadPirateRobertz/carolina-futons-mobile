@@ -252,8 +252,8 @@ function navigateToCompletion(getByTestId: ReturnType<typeof render>['getByTestI
   fireEvent.press(getByTestId('onboarding-next-button')); // slide 2 → 3
   fireEvent.press(getByTestId('onboarding-next-button')); // slide 3 → quiz Q1
   fireEvent.press(getByTestId('quiz-option-living-room')); // Q1 → Q2
-  fireEvent.press(getByTestId('quiz-option-modern'));       // Q2 → Q3
-  fireEvent.press(getByTestId('quiz-option-sitting'));      // Q3 → completion
+  fireEvent.press(getByTestId('quiz-option-modern')); // Q2 → Q3
+  fireEvent.press(getByTestId('quiz-option-sitting')); // Q3 → completion
 }
 
 describe('Gamification Reveal — first-time user', () => {
@@ -328,7 +328,13 @@ describe('Gamification Reveal — returning user (hasSeenReveal: true)', () => {
     (useGamificationReveal as jest.Mock).mockReturnValue({
       hasSeenReveal: true,
       isLoading: false,
-      tierData: { tierName: 'Trail Blazer', points: 150, nextTierName: 'Mountain Guide', pointsToNextTier: 350, progressFraction: 0.3 },
+      tierData: {
+        tierName: 'Trail Blazer',
+        points: 150,
+        nextTierName: 'Mountain Guide',
+        pointsToNextTier: 350,
+        progressFraction: 0.3,
+      },
       challengeTeasers: [],
       markRevealShown: mockMarkRevealShown,
     });
