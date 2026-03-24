@@ -246,7 +246,7 @@ describe('ProductDetailScreen — AR points toast (hq-27qq8)', () => {
     });
 
     fireEvent.press(getByTestId('ar-account-link'));
-    expect(mockNavigate).toHaveBeenCalledWith('Account');
+    expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Account' });
   });
 
   it('calls arUsed with the product id', async () => {
