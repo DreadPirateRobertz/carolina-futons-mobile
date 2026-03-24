@@ -11,6 +11,13 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {
+  emitStreakExtended,
+  emitChallengeStarted,
+  emitRedemptionInitiated,
+  replayCrossRigQueue,
+} from '../crossRigEventBus';
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
@@ -18,14 +25,6 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/services/crashReporting', () => ({
   captureException: jest.fn(),
 }));
-
-import {
-  emitStreakExtended,
-  emitChallengeStarted,
-  emitRedemptionInitiated,
-  replayCrossRigQueue,
-  type CrossRigEventResult,
-} from '../crossRigEventBus';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -340,6 +339,128 @@ describe('replayCrossRigQueue', () => {
     expect(body.eventId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
+  });
+
+  it('queued body does not contain a session token field', async () => {
+    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const client = mockClient();
+    await replayCrossRigQueue(client);
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body).not.toHaveProperty('sessionToken');
+    expect(body).not.toHaveProperty('authorization');
+    expect(body).not.toHaveProperty('token');
+  });
+});
+
+// ── 401 auth hardening — hq-ud4bq ─────────────────────────────────────────
+
+function make401Error(): Error & { status?: number } {
+  const err = new Error('Unauthorized') as Error & { status?: number };
+  err.status = 401;
+  return err;
+}
+
+function mockClientWithRefresh(
+  opts: {
+    failFirstWith?: Error;
+    refreshThrows?: boolean;
+  } = {},
+) {
+  let callCount = 0;
+  const refreshTokens = opts.refreshThrows
+    ? jest.fn().mockRejectedValue(new Error('refresh failed'))
+    : jest.fn().mockResolvedValue(undefined);
+
+  const callFunction = jest.fn(async () => {
+    callCount++;
+    if (callCount === 1 && opts.failFirstWith) throw opts.failFirstWith;
+    return { success: true };
+  });
+
+  return { callFunction, refreshTokens };
+}
+
+describe('401 auth hardening', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('calls refreshTokens() and retries once on 401', async () => {
+    const client = mockClientWithRefresh({ failFirstWith: make401Error() });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 5,
+      delta: 50,
+      newTotal: 550,
+    });
+
+    expect(client.refreshTokens).toHaveBeenCalledTimes(1);
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+    expect(result.success).toBe(true);
+  });
+
+  it('does not retry more than once on consecutive 401s', async () => {
+    const err401 = make401Error();
+    const client = {
+      callFunction: jest.fn().mockRejectedValue(err401),
+      refreshTokens: jest.fn().mockResolvedValue(undefined),
+    };
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 5,
+      delta: 50,
+      newTotal: 550,
+    });
+
+    expect(client.callFunction).toHaveBeenCalledTimes(2); // initial + one retry
+    expect(result.queued).toBe(true); // queued after retry also fails
+  });
+
+  it('queues event when no refreshTokens method on client', async () => {
+    const clientNoRefresh = {
+      callFunction: jest.fn().mockRejectedValue(make401Error()),
+    };
+    const result = await emitStreakExtended(clientNoRefresh, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
+
+    expect(result.queued).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it('queues event when refreshTokens() throws', async () => {
+    const client = mockClientWithRefresh({ failFirstWith: make401Error(), refreshThrows: true });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
+
+    expect(client.refreshTokens).toHaveBeenCalledTimes(1);
+    expect(result.queued).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it('does not call refreshTokens on non-401 network errors', async () => {
+    const client = mockClientWithRefresh({ failFirstWith: new Error('Network timeout') });
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+
+    expect(client.refreshTokens).not.toHaveBeenCalled();
+  });
+
+  it('replayCrossRigQueue calls refreshTokens and retries on 401', async () => {
+    await emitStreakExtended(null, { userId: USER, streak: 2, delta: 20, newTotal: 220 });
+
+    const client = mockClientWithRefresh({ failFirstWith: make401Error() });
+    const result = await replayCrossRigQueue(client);
+
+    expect(client.refreshTokens).toHaveBeenCalledTimes(1);
+    expect(result.replayed).toBe(1);
+    expect(result.failed).toBe(0);
   });
 });
 
