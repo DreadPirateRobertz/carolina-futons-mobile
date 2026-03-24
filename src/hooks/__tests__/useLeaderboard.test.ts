@@ -16,13 +16,26 @@ jest.mock('@/services/wix/wixClientSingleton', () => ({
     mockClientOverride === undefined ? { getLeaderboard: mockGetLeaderboard } : mockClientOverride,
 }));
 
+// Server response shape (nickname field)
 const SAMPLE_ENTRIES = [
+  { memberId: 'm1', nickname: 'Alice', points: 2500, tier: 'gold', rank: 1 },
+  { memberId: 'm2', nickname: 'Bob', points: 800, tier: 'silver', rank: 2 },
+  { memberId: 'm3', nickname: 'Carol', points: 200, tier: 'bronze', rank: 3 },
+];
+
+const SAMPLE_WEEKLY = [
+  { memberId: 'm2', nickname: 'Bob', points: 150, tier: 'silver', rank: 1 },
+  { memberId: 'm1', nickname: 'Alice', points: 100, tier: 'gold', rank: 2 },
+];
+
+// Mapped hook output shape (displayName field)
+const MAPPED_ENTRIES = [
   { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
   { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
   { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
 
-const SAMPLE_WEEKLY = [
+const MAPPED_WEEKLY = [
   { memberId: 'm2', displayName: 'Bob', points: 150, tier: 'silver', rank: 1 },
   { memberId: 'm1', displayName: 'Alice', points: 100, tier: 'gold', rank: 2 },
 ];
@@ -45,7 +58,7 @@ describe('useLeaderboard', () => {
     const { result } = renderHook(() => useLeaderboard());
     await act(async () => {});
     expect(mockGetLeaderboard).toHaveBeenCalledWith({ period: 'allTime', limit: 20 });
-    expect(result.current.entries).toEqual(SAMPLE_ENTRIES);
+    expect(result.current.entries).toEqual(MAPPED_ENTRIES);
     expect(result.current.loading).toBe(false);
   });
 
@@ -74,7 +87,7 @@ describe('useLeaderboard', () => {
     });
 
     expect(mockGetLeaderboard).toHaveBeenCalledWith({ period: 'weekly', limit: 20 });
-    expect(result.current.entries).toEqual(SAMPLE_WEEKLY);
+    expect(result.current.entries).toEqual(MAPPED_WEEKLY);
     expect(result.current.period).toBe('weekly');
   });
 
@@ -113,7 +126,7 @@ describe('useLeaderboard', () => {
       await result.current.refresh();
     });
     expect(result.current.error).toBeNull();
-    expect(result.current.entries).toEqual(SAMPLE_ENTRIES);
+    expect(result.current.entries).toEqual(MAPPED_ENTRIES);
   });
 
   it('handles wix client unavailable (null) gracefully', async () => {
