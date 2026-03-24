@@ -3,9 +3,15 @@
  * TDD tests for the BadgeToast component — hq-v0a2z.
  */
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { BadgeToast } from '../BadgeToast';
+
+const mockInsets = { bottom: 0, top: 0, left: 0, right: 0 };
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => mockInsets,
+}));
 
 function renderToast(props: { badgeName: string; visible: boolean; testID?: string }) {
   return render(
@@ -87,6 +93,30 @@ describe('BadgeToast', () => {
       const { getByText } = renderToast({ badgeName: '🏔️ Summit Seeker', visible: true });
       expect(getByText(/Summit Seeker/i)).toBeTruthy();
     });
+  });
+
+  // ── Safe area bottom positioning (hq-gbo6f) ───────────────────────
+
+  afterEach(() => {
+    mockInsets.bottom = 0;
+  });
+
+  it('positions above tab bar + home indicator (inset=34)', () => {
+    mockInsets.bottom = 34;
+    const { getByTestId } = renderToast({ badgeName: 'Explorer Badge', visible: true });
+    const toast = getByTestId('badge-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    // TAB_BAR_HEIGHT(49) + bottom(34) + padding(8) = 91
+    expect(flatStyle.bottom).toBe(91);
+  });
+
+  it('positions above tab bar on non-indicator devices (inset=0)', () => {
+    mockInsets.bottom = 0;
+    const { getByTestId } = renderToast({ badgeName: 'Explorer Badge', visible: true });
+    const toast = getByTestId('badge-toast');
+    const flatStyle = StyleSheet.flatten(toast.props.style);
+    // TAB_BAR_HEIGHT(49) + bottom(0) + padding(8) = 57
+    expect(flatStyle.bottom).toBe(57);
   });
 
   describe('badgeKey SVG icon (hq-zarsg)', () => {
