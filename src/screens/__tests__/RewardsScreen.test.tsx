@@ -14,7 +14,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 
 const mockEmitRedemptionInitiated = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitRedemptionInitiated: (...args: unknown[]) => mockEmitRedemptionInitiated(...args),
+  emitRedemptionInitiated: (...args: any[]) => mockEmitRedemptionInitiated(...args),
 }));
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
