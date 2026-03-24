@@ -176,4 +176,170 @@ describe('useChallengeCatalog', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockCallFunction).toHaveBeenCalledTimes(2);
   });
+
+  // ── Edge cases — hq-1216p ──────────────────────────────────────────────────
+
+  it('expired challenge with progress > 0 goes to expired (not inProgress)', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-exp-prog',
+          title: 'Expired In Progress',
+          description: 'Was in progress but expired',
+          goal: 5,
+          unit: 'actions',
+          pointReward: 200,
+          expiresAt: PAST,
+          progress: 3,
+          completed: false,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.grouped.expired).toHaveLength(1);
+    expect(result.current.grouped.inProgress).toHaveLength(0);
+    expect(result.current.grouped.expired[0].id).toBe('ch-exp-prog');
+  });
+
+  it('completed challenge that is also expired goes to completed (completed wins)', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-done-exp',
+          title: 'Done and Expired',
+          description: 'Completed before it expired',
+          goal: 1,
+          unit: 'purchase',
+          pointReward: 300,
+          expiresAt: PAST,
+          progress: 1,
+          completed: true,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.grouped.completed).toHaveLength(1);
+    expect(result.current.grouped.expired).toHaveLength(0);
+    expect(result.current.grouped.completed[0].id).toBe('ch-done-exp');
+  });
+
+  it('challenge with pointReward: 0 maps correctly and groups as available', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-zero-pts',
+          title: 'Zero Point Challenge',
+          description: 'No reward',
+          goal: 1,
+          unit: 'action',
+          pointReward: 0,
+          expiresAt: FUTURE,
+          progress: 0,
+          completed: false,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.challenges[0].pointReward).toBe(0);
+    expect(result.current.grouped.available).toHaveLength(1);
+    expect(result.current.grouped.available[0].id).toBe('ch-zero-pts');
+  });
+
+  it('challenge with null pointReward from API is forwarded as-is', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-null-reward',
+          title: 'Null Reward',
+          description: 'Missing reward field',
+          goal: 2,
+          unit: 'actions',
+          pointReward: null,
+          expiresAt: FUTURE,
+          progress: 0,
+          completed: false,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    // Hook forwards API value — null is not transformed
+    expect(result.current.challenges[0].pointReward).toBeNull();
+    // Still groups correctly as available
+    expect(result.current.grouped.available).toHaveLength(1);
+  });
+
+  it('goal: 0 produces progressRatio of 0 (no division by zero)', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-zero-goal',
+          title: 'Zero Goal',
+          description: 'Malformed goal',
+          goal: 0,
+          unit: 'actions',
+          pointReward: 100,
+          expiresAt: FUTURE,
+          progress: 5,
+          completed: false,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.challenges[0].progressRatio).toBe(0);
+  });
+
+  it('empty challenges array from API returns empty groups', async () => {
+    mockCallFunction.mockResolvedValue({ challenges: [] });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.challenges).toHaveLength(0);
+    expect(result.current.grouped.inProgress).toHaveLength(0);
+    expect(result.current.grouped.available).toHaveLength(0);
+    expect(result.current.grouped.completed).toHaveLength(0);
+    expect(result.current.grouped.expired).toHaveLength(0);
+  });
+
+  it('missing challenges field in response (undefined) treated as empty', async () => {
+    mockCallFunction.mockResolvedValue({});
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.challenges).toHaveLength(0);
+    expect(result.current.error).toBeNull();
+  });
+
+  it('already-joined challenge (progress > 0, not complete, not expired) lands in inProgress', async () => {
+    mockCallFunction.mockResolvedValue({
+      challenges: [
+        {
+          id: 'ch-joined',
+          title: 'Joined Challenge',
+          description: 'User already started this',
+          goal: 10,
+          unit: 'actions',
+          pointReward: 400,
+          expiresAt: FUTURE,
+          progress: 1,
+          completed: false,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useChallengeCatalog());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    expect(result.current.grouped.inProgress).toHaveLength(1);
+    expect(result.current.grouped.available).toHaveLength(0);
+    expect(result.current.grouped.inProgress[0].id).toBe('ch-joined');
+  });
 });
