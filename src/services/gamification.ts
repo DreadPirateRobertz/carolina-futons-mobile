@@ -85,3 +85,12 @@ export function wishlistAdd(productId: string): void {
     300,
   );
 }
+
+/**
+ * Fire a gamification event on the user's first app session.
+ * Awards a one-time first-session bonus (enforced client-side via AsyncStorage).
+ * Bead: cfutons_mobile-b0z
+ */
+export function firstSessionBonus(): void {
+  guardedEmit('gamification_first_session_bonus', {});
+}
