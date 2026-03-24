@@ -14,13 +14,20 @@
  * by screens that process gamification event responses). Items are queued and
  * surfaced one at a time; `dismiss('challengeCompleted')` advances the queue.
  *
- * cm-r02ce / Phase 5 | cm-a7bqj / Phase 5 | hq-myhj5 / Phase 4
+ * Phase 5 server triggers (hq-rowwt): `reportTriggers()` accepts the
+ * `triggers` object from a `receiveGamificationEvent` response and fires
+ * `badgeUnlocked`, `milestoneUnlocked`, and additional challenges into state.
+ *
+ * cm-r02ce / Phase 5 | cm-a7bqj / Phase 5 | hq-myhj5 / Phase 4 | hq-rowwt / Phase 5
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLoyalty, type LoyaltyTier } from '@/hooks/useLoyalty';
 import { useStreak } from '@/hooks/useStreak';
+import type { ServerTriggers } from '@/services/gamificationApi';
+
+export type { ServerTriggers };
 
 const STORAGE_KEY = '@cf_last_known_tier';
 
@@ -41,6 +48,10 @@ export interface TriggerMoments {
   /** True when the user has a multi-day streak (≥2) worth protecting. Session-only dismiss. */
   streakDanger: boolean;
   challengeCompleted: ChallengeCompletedItem | null;
+  /** Badge key unlocked by a server gamification event. Session-only dismiss. */
+  badgeUnlocked: string | null;
+  /** True when a streak milestone was unlocked by a server gamification event. Session-only dismiss. */
+  milestoneUnlocked: boolean;
 }
 
 export interface UseTriggerMomentsResult {
@@ -48,6 +59,8 @@ export interface UseTriggerMomentsResult {
   dismiss: (trigger: keyof TriggerMoments) => void;
   /** Enqueue completed challenges from a gamification event response. */
   reportChallengesCompleted: (items: ChallengeCompletedItem[]) => void;
+  /** Apply server-side triggers from a receiveGamificationEvent response. */
+  reportTriggers: (serverTriggers: ServerTriggers) => void;
 }
 
 export function useTriggerMoments(): UseTriggerMomentsResult {
@@ -56,6 +69,8 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
   const [tierChanged, setTierChanged] = useState<LoyaltyTier | null>(null);
   const [streakDangerDismissed, setStreakDangerDismissed] = useState(false);
   const [challengeQueue, setChallengeQueue] = useState<ChallengeCompletedItem[]>([]);
+  const [badgeUnlocked, setBadgeUnlocked] = useState<string | null>(null);
+  const [milestoneUnlocked, setMilestoneUnlocked] = useState(false);
   const initializedRef = useRef(false);
 
   useEffect(() => {
@@ -103,6 +118,10 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
         setStreakDangerDismissed(true);
       } else if (trigger === 'challengeCompleted') {
         setChallengeQueue((prev) => prev.slice(1));
+      } else if (trigger === 'badgeUnlocked') {
+        setBadgeUnlocked(null);
+      } else if (trigger === 'milestoneUnlocked') {
+        setMilestoneUnlocked(false);
       }
     },
     [tierChanged],
@@ -113,13 +132,28 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
     setChallengeQueue((prev) => [...prev, ...items]);
   }, []);
 
+  const reportTriggers = useCallback((serverTriggers: ServerTriggers) => {
+    if (serverTriggers.badgeUnlocked) {
+      setBadgeUnlocked(serverTriggers.badgeUnlocked);
+    }
+    if (serverTriggers.milestoneUnlocked) {
+      setMilestoneUnlocked(true);
+    }
+    if (serverTriggers.challengeCompleted && serverTriggers.challengeCompleted.length > 0) {
+      setChallengeQueue((prev) => [...prev, ...serverTriggers.challengeCompleted]);
+    }
+  }, []);
+
   return {
     triggers: {
       tierChanged,
       streakDanger,
       challengeCompleted: challengeQueue[0] ?? null,
+      badgeUnlocked,
+      milestoneUnlocked,
     },
     dismiss,
     reportChallengesCompleted,
+    reportTriggers,
   };
 }

@@ -41,7 +41,7 @@ export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
     ({ item }: { item: LeaderboardEntry }) => (
       <LeaderboardRow
         rank={item.rank}
-        nickname={item.nickname}
+        nickname={item.displayName ?? 'CF Member'}
         points={item.points}
         tier={item.tier}
         isCurrentUser={item.rank === currentUserRank}

@@ -5,7 +5,11 @@
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTriggerMoments, type ChallengeCompletedItem } from '../useTriggerMoments';
+import {
+  useTriggerMoments,
+  type ChallengeCompletedItem,
+  type ServerTriggers,
+} from '../useTriggerMoments';
 
 // Mock useLoyalty so we can control the returned tier
 const mockUseLoyalty = jest.fn();
@@ -370,6 +374,206 @@ describe('useTriggerMoments', () => {
         result.current.dismiss('tierChanged');
       });
       expect(result.current.triggers.tierChanged).toBeNull();
+    });
+  });
+
+  describe('Phase 5 server triggers — reportTriggers (hq-rowwt)', () => {
+    const badgeTrigger: ServerTriggers = {
+      tierChanged: false,
+      newTier: null,
+      milestoneUnlocked: false,
+      badgeUnlocked: 'streak_chip',
+      challengeCompleted: [],
+      streakDanger: false,
+    };
+
+    const milestoneTrigger: ServerTriggers = {
+      tierChanged: false,
+      newTier: null,
+      milestoneUnlocked: true,
+      badgeUnlocked: null,
+      challengeCompleted: [],
+      streakDanger: false,
+    };
+
+    const emptyTrigger: ServerTriggers = {
+      tierChanged: false,
+      newTier: null,
+      milestoneUnlocked: false,
+      badgeUnlocked: null,
+      challengeCompleted: [],
+      streakDanger: false,
+    };
+
+    describe('badgeUnlocked', () => {
+      it('returns null badgeUnlocked in initial state', async () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+        await waitFor(() => expect(getItem).toHaveBeenCalled());
+        expect(result.current.triggers.badgeUnlocked).toBeNull();
+      });
+
+      it('sets badgeUnlocked after reportTriggers with a badge key', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(badgeTrigger);
+        });
+
+        expect(result.current.triggers.badgeUnlocked).toBe('streak_chip');
+      });
+
+      it('dismiss("badgeUnlocked") resets badgeUnlocked to null', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(badgeTrigger);
+        });
+        expect(result.current.triggers.badgeUnlocked).toBe('streak_chip');
+
+        act(() => {
+          result.current.dismiss('badgeUnlocked');
+        });
+        expect(result.current.triggers.badgeUnlocked).toBeNull();
+      });
+
+      it('does not set badgeUnlocked when badgeUnlocked is null in server triggers', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(emptyTrigger);
+        });
+
+        expect(result.current.triggers.badgeUnlocked).toBeNull();
+      });
+
+      it('overwrites previous badgeUnlocked when a new badge is reported', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers({ ...badgeTrigger, badgeUnlocked: 'week_wanderer' });
+        });
+        act(() => {
+          result.current.reportTriggers({ ...badgeTrigger, badgeUnlocked: 'trail_regular' });
+        });
+
+        expect(result.current.triggers.badgeUnlocked).toBe('trail_regular');
+      });
+    });
+
+    describe('milestoneUnlocked', () => {
+      it('returns false milestoneUnlocked in initial state', async () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+        await waitFor(() => expect(getItem).toHaveBeenCalled());
+        expect(result.current.triggers.milestoneUnlocked).toBe(false);
+      });
+
+      it('sets milestoneUnlocked to true after reportTriggers', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(milestoneTrigger);
+        });
+
+        expect(result.current.triggers.milestoneUnlocked).toBe(true);
+      });
+
+      it('dismiss("milestoneUnlocked") resets milestoneUnlocked to false', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(milestoneTrigger);
+        });
+        expect(result.current.triggers.milestoneUnlocked).toBe(true);
+
+        act(() => {
+          result.current.dismiss('milestoneUnlocked');
+        });
+        expect(result.current.triggers.milestoneUnlocked).toBe(false);
+      });
+
+      it('does not set milestoneUnlocked when false in server triggers', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(emptyTrigger);
+        });
+
+        expect(result.current.triggers.milestoneUnlocked).toBe(false);
+      });
+    });
+
+    describe('challengeCompleted via reportTriggers', () => {
+      it('enqueues challenges from server triggers', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers({
+            ...emptyTrigger,
+            challengeCompleted: [
+              { challengeId: 'c1', title: 'Challenge One', rewardPoints: 100 },
+            ],
+          });
+        });
+
+        expect(result.current.triggers.challengeCompleted).toEqual({
+          challengeId: 'c1',
+          title: 'Challenge One',
+          rewardPoints: 100,
+        });
+      });
+
+      it('does not enqueue when challengeCompleted is empty in server triggers', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers(emptyTrigger);
+        });
+
+        expect(result.current.triggers.challengeCompleted).toBeNull();
+      });
+    });
+
+    describe('compound server triggers', () => {
+      it('fires badge and milestone simultaneously', () => {
+        mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
+        const { result } = renderHook(() => useTriggerMoments());
+
+        act(() => {
+          result.current.reportTriggers({
+            ...emptyTrigger,
+            badgeUnlocked: 'curator',
+            milestoneUnlocked: true,
+          });
+        });
+
+        expect(result.current.triggers.badgeUnlocked).toBe('curator');
+        expect(result.current.triggers.milestoneUnlocked).toBe(true);
+      });
+
+      it('reportTriggers does not stomp existing tierChanged state', async () => {
+        getItem.mockResolvedValue('bronze');
+        mockUseLoyalty.mockReturnValue(loyaltyOf('silver'));
+        const { result } = renderHook(() => useTriggerMoments());
+        await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
+
+        act(() => {
+          result.current.reportTriggers(badgeTrigger);
+        });
+
+        expect(result.current.triggers.tierChanged).toBe('silver');
+        expect(result.current.triggers.badgeUnlocked).toBe('streak_chip');
+      });
     });
   });
 });
