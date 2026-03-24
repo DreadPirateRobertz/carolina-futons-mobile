@@ -6,6 +6,22 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+const mockUseLoyalty = jest.fn();
+jest.mock('@/hooks/useLoyalty', () => ({
+  useLoyalty: () => mockUseLoyalty(),
+}));
+
+const loyaltyBase = {
+  points: 250,
+  tier: 'bronze' as const,
+  nextTier: 'silver' as const,
+  pointsToNext: 250,
+  progress: 0.5,
+  loading: false,
+  error: null,
+  refreshPoints: jest.fn(),
+};
+
 // Mock ReanimatedSwipeable: render testID wrapper exposing onSwipeableOpen for fireEvent,
 // and invoke renderRightActions so action buttons are visible in tests.
 jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
@@ -24,11 +40,13 @@ jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
       </View>
     ),
   );
+  MockSwipeable.displayName = 'MockSwipeable';
   return { __esModule: true, default: MockSwipeable };
 });
 
+const mockUseAuth = jest.fn(() => ({ isAuthenticated: true }));
 jest.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ isAuthenticated: true }),
+  useAuth: () => mockUseAuth(),
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
   AuthContext: { _currentValue: null },
 }));
@@ -83,6 +101,11 @@ function CartSeeder({
 }
 
 describe('CartScreen', () => {
+  beforeEach(() => {
+    mockUseLoyalty.mockReturnValue(loyaltyBase);
+    mockUseAuth.mockReturnValue({ isAuthenticated: true });
+  });
+
   describe('Empty cart', () => {
     it('renders empty state when cart is empty', () => {
       const { getByTestId } = renderCartScreen();
@@ -479,6 +502,63 @@ describe('CartScreen', () => {
       fireEvent.press(getByTestId('bnpl-teaser'));
       fireEvent.press(getByTestId('bnpl-modal-overlay'));
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
+    });
+  });
+
+  // ── LoyaltyProgressBar in CartScreen — hq-99ofd ───────────────────────────
+
+  describe('LoyaltyProgressBar — hq-99ofd', () => {
+    const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
+
+    it('renders tier-progress-bar when authenticated with items in cart', () => {
+      const { getByTestId } = renderCartScreen({}, seed);
+      expect(getByTestId('cart-loyalty-progress')).toBeTruthy();
+    });
+
+    it('does not render tier-progress-bar in empty cart', () => {
+      const { queryByTestId } = renderCartScreen();
+      expect(queryByTestId('cart-loyalty-progress')).toBeNull();
+    });
+
+    it('does not render tier-progress-bar when unauthenticated', () => {
+      mockUseAuth.mockReturnValue({ isAuthenticated: false });
+      const { queryByTestId } = renderCartScreen({}, seed);
+      expect(queryByTestId('cart-loyalty-progress')).toBeNull();
+    });
+
+    it('passes points from useLoyalty to TierProgressBar (bronze tier a11y)', () => {
+      mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 250, tier: 'bronze' });
+      const { getByTestId } = renderCartScreen({}, seed);
+      const bar = getByTestId('cart-loyalty-progress');
+      expect(bar.props.accessibilityLabel).toMatch(/bronze/i);
+    });
+
+    it('shows silver tier a11y label when points >= 500', () => {
+      mockUseLoyalty.mockReturnValue({
+        ...loyaltyBase,
+        points: 750,
+        tier: 'silver',
+        nextTier: 'gold',
+        pointsToNext: 750,
+        progress: 0.25,
+      });
+      const { getByTestId } = renderCartScreen({}, seed);
+      const bar = getByTestId('cart-loyalty-progress');
+      expect(bar.props.accessibilityLabel).toMatch(/silver/i);
+    });
+
+    it('shows max-tier label when gold (points >= 1500)', () => {
+      mockUseLoyalty.mockReturnValue({
+        ...loyaltyBase,
+        points: 2000,
+        tier: 'gold',
+        nextTier: null,
+        pointsToNext: 0,
+        progress: 1,
+      });
+      const { getByTestId } = renderCartScreen({}, seed);
+      const bar = getByTestId('cart-loyalty-progress');
+      expect(bar.props.accessibilityLabel).toMatch(/maximum tier reached/i);
     });
   });
 });
