@@ -274,7 +274,9 @@ describe('useLivingSky', () => {
   it('calling refresh() does not throw', () => {
     const { result } = renderHook(() => useLivingSky(720));
     expect(() => {
-      act(() => { result.current.refresh(); });
+      act(() => {
+        result.current.refresh();
+      });
     }).not.toThrow();
   });
 });

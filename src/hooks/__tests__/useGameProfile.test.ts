@@ -160,14 +160,27 @@ describe('useGameProfile', () => {
   });
 
   it('error uses pointsError when both have errors', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: false, error: 'points failed' });
-    mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: false, error: 'rank failed' });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: 'bronze',
+      loading: false,
+      error: 'points failed',
+    });
+    mockUseLeaderboard.mockReturnValue({
+      currentUserRank: null,
+      loading: false,
+      error: 'rank failed',
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.error).toBe('points failed');
   });
 
   it('error uses rankError when pointsError is null', () => {
-    mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: false, error: 'rank failed' });
+    mockUseLeaderboard.mockReturnValue({
+      currentUserRank: null,
+      loading: false,
+      error: 'rank failed',
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.error).toBe('rank failed');
   });

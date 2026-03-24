@@ -68,7 +68,12 @@ jest.mock('@/services/wix', () => ({
 
 const mockRefreshChallenges = jest.fn();
 jest.mock('@/hooks/useActiveChallenges', () => ({
-  useActiveChallenges: () => ({ challenges: [], loading: false, error: null, refresh: mockRefreshChallenges }),
+  useActiveChallenges: () => ({
+    challenges: [],
+    loading: false,
+    error: null,
+    refresh: mockRefreshChallenges,
+  }),
 }));
 
 const mockUseTriggerMoments = jest.fn();

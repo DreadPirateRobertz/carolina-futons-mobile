@@ -519,9 +519,7 @@ describe('useTriggerMoments', () => {
         act(() => {
           result.current.reportTriggers({
             ...emptyTrigger,
-            challengeCompleted: [
-              { challengeId: 'c1', title: 'Challenge One', rewardPoints: 100 },
-            ],
+            challengeCompleted: [{ challengeId: 'c1', title: 'Challenge One', rewardPoints: 100 }],
           });
         });
 

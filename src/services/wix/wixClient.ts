@@ -1010,10 +1010,7 @@ export class WixClient {
    * @param message - The user's message text.
    * @param memberToken - Optional Wix session access token for authenticated context.
    */
-  async chatbotMessage(
-    message: string,
-    memberToken?: string,
-  ): Promise<{ response: string }> {
+  async chatbotMessage(message: string, memberToken?: string): Promise<{ response: string }> {
     const url = `${this.baseUrl}/_functions/chatbotMessage`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

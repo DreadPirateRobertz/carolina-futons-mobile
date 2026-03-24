@@ -11,7 +11,16 @@
  */
 
 import React, { useCallback, useEffect } from 'react';
-import { StyleSheet, Text, View, ScrollView, Dimensions, Pressable, Platform, RefreshControl } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Dimensions,
+  Pressable,
+  Platform,
+  RefreshControl,
+} from 'react-native';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useStreak } from '@/hooks/useStreak';
 import * as Haptics from 'expo-haptics';
@@ -139,9 +148,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           { paddingTop: insets.top + spacing.xxl, paddingBottom: insets.bottom },
         ]}
         testID="home-screen"
-        refreshControl={
-          <RefreshControl refreshing={false} onRefresh={handleRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={false} onRefresh={handleRefresh} />}
       >
         {/* Hero — Mountain skyline backdrop (decorative) */}
         <View
