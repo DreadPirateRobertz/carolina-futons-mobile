@@ -11,7 +11,7 @@ module.exports = {
   // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
   maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
-  setupFilesAfterEnv: ["./jest.setup.after.js"],
+  setupFilesAfterEnv: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)',
   ],
@@ -23,6 +23,7 @@ module.exports = {
   // TDD tests for unimplemented features — skip until modules exist
   testPathIgnorePatterns: [
     '/node_modules/',
+    '/crew/',
     'stores\\.test\\.ts',
     'StoreCard\\.test\\.tsx',
     'StoreLocatorScreen\\.test\\.tsx',

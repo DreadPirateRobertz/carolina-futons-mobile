@@ -12,6 +12,7 @@ import { AppState, Platform } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { events } from '@/services/analytics';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 const STORAGE_KEY = '@cfutons/rating_prompt';
 const PURCHASE_THRESHOLD = 3;
@@ -63,6 +64,7 @@ export function useRatingPrompt() {
   const [loaded, setLoaded] = useState(false);
   const stateRef = useRef(state);
   stateRef.current = state;
+  const { submitReview } = useGamificationEvents();
 
   // Load persisted state on mount
   useEffect(() => {
@@ -97,20 +99,25 @@ export function useRatingPrompt() {
     return () => subscription.remove();
   }, [loaded]);
 
-  const requestPrompt = useCallback(async (currentState: RatingState, trigger: string) => {
-    try {
-      const available = await StoreReview.isAvailableAsync();
-      if (!available) return;
+  const requestPrompt = useCallback(
+    async (currentState: RatingState, trigger: string) => {
+      try {
+        const available = await StoreReview.isAvailableAsync();
+        if (!available) return;
 
-      await StoreReview.requestReview();
-      const updated = { ...currentState, lastPromptedAt: Date.now() };
-      setState(updated);
-      await persistState(updated);
-      events.rateApp(trigger);
-    } catch {
-      // Review dialog failed — non-critical
-    }
-  }, []);
+        await StoreReview.requestReview();
+        const updated = { ...currentState, lastPromptedAt: Date.now() };
+        setState(updated);
+        await persistState(updated);
+        events.rateApp(trigger);
+        // Award points for review submission — native dialog shown is our proxy
+        submitReview('', 5, false).catch(() => {});
+      } catch {
+        // Review dialog failed — non-critical
+      }
+    },
+    [submitReview],
+  );
 
   /** Call after a successful purchase. Triggers review prompt at the 3rd purchase. */
   const recordPurchase = useCallback(async () => {
