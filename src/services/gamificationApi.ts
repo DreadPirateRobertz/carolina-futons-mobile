@@ -24,7 +24,8 @@ export type GamificationEventName =
   | 'gamification_referral_shared'
   | 'gamification_ar_used'
   | 'gamification_wishlist_add'
-  | 'gamification_order_placed';
+  | 'gamification_order_placed'
+  | 'gamification_style_quiz_complete';
 
 export interface GamificationEventInput {
   eventName: GamificationEventName;

@@ -25,6 +25,7 @@ import {
   type SizeNeeds,
   type BudgetRange,
 } from '@/hooks/useStyleQuiz';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 // ── Quiz Questions ────────────────────────────────────────────────
 
@@ -179,6 +180,7 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
     setBudgetRange,
     savePreferences,
   } = useStyleQuiz();
+  const { styleQuizComplete } = useGamificationEvents();
 
   const isCompletion = step === QUESTIONS.length;
 
@@ -205,13 +207,14 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
   const handleSave = useCallback(async () => {
     try {
       await savePreferences();
+      styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '').catch(() => {});
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete]);
+  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference, preferences.sizeNeeds]);
 
   // ── Progress ────────────────────────────────────────────────────
 
