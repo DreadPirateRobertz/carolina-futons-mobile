@@ -139,19 +139,34 @@ describe('emitStreakExtended', () => {
   });
 
   it('returns success:true on 200 response', async () => {
-    const result = await emitStreakExtended(mockClient(), { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    const result = await emitStreakExtended(mockClient(), {
+      userId: USER,
+      streak: 5,
+      delta: 50,
+      newTotal: 550,
+    });
     expect(result.success).toBe(true);
   });
 
   it('queues and returns queued:true when client is null', async () => {
-    const result = await emitStreakExtended(null, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const result = await emitStreakExtended(null, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
     expect(result.success).toBe(false);
     expect(result.queued).toBe(true);
   });
 
   it('queues and returns queued:true on network error', async () => {
     const client = mockClient({}, new Error('Network timeout'));
-    const result = await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
     expect(result.success).toBe(false);
     expect(result.queued).toBe(true);
   });
@@ -162,14 +177,22 @@ describe('emitStreakExtended', () => {
 describe('emitChallengeStarted', () => {
   it('sends event: challenge_started', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike', currentPoints: 400 });
+    await emitChallengeStarted(client, {
+      userId: USER,
+      challengeId: 'ch-sunrise-hike',
+      currentPoints: 400,
+    });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.event).toBe('challenge_started');
   });
 
   it('includes challengeId in payload', async () => {
     const client = mockClient();
-    await emitChallengeStarted(client, { userId: USER, challengeId: 'ch-sunrise-hike', currentPoints: 400 });
+    await emitChallengeStarted(client, {
+      userId: USER,
+      challengeId: 'ch-sunrise-hike',
+      currentPoints: 400,
+    });
     const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body.challengeId).toBe('ch-sunrise-hike');
   });
@@ -192,7 +215,11 @@ describe('emitChallengeStarted', () => {
   });
 
   it('queues when client null', async () => {
-    const result = await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1', currentPoints: 400 });
+    const result = await emitChallengeStarted(null, {
+      userId: USER,
+      challengeId: 'ch-1',
+      currentPoints: 400,
+    });
     expect(result.queued).toBe(true);
   });
 });
@@ -225,7 +252,11 @@ describe('emitRedemptionInitiated', () => {
   });
 
   it('queues when client null', async () => {
-    const result = await emitRedemptionInitiated(null, { userId: USER, pointsRedeemed: 100, newTotal: 900 });
+    const result = await emitRedemptionInitiated(null, {
+      userId: USER,
+      pointsRedeemed: 100,
+      newTotal: 900,
+    });
     expect(result.queued).toBe(true);
   });
 });
@@ -236,7 +267,12 @@ describe('400 rejection handling', () => {
   it('returns error and does NOT queue on 400 (schema validation failure)', async () => {
     const client = mockClient({ success: false, status: 400, error: 'missing eventId' });
     // A 400-like response: success:false, not a thrown error
-    const result = await emitStreakExtended(client, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
     // Should not queue — schema errors are not retriable
     expect(result.queued).toBeUndefined();
   });
@@ -245,7 +281,12 @@ describe('400 rejection handling', () => {
     const err = new Error('Bad Request') as Error & { status?: number };
     err.status = 400;
     const client = mockClient({}, err);
-    const result = await emitStreakExtended(client, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
     expect(result.queued).toBeUndefined();
     expect(result.success).toBe(false);
   });
