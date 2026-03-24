@@ -13,6 +13,33 @@ import { Platform } from 'react-native';
 
 export type NotificationType = 'order_update' | 'promotion' | 'back_in_stock' | 'cart_reminder';
 
+export type GamificationNotificationType =
+  | 'streak_milestone'
+  | 'points_milestone'
+  | 'tier_upgrade'
+  | 'challenge_complete'
+  | 'badge_earned'
+  | 'new_mover_welcome';
+
+/** Map gamification notification type to deep link URL */
+export function getDeepLinkForGamificationNotification(
+  type: GamificationNotificationType,
+): string {
+  switch (type) {
+    case 'streak_milestone':
+    case 'points_milestone':
+    case 'tier_upgrade':
+    case 'challenge_complete':
+    case 'badge_earned':
+      return 'carolinafutons://loyalty';
+    case 'new_mover_welcome':
+      // Routes to loyalty until LeaderboardScreen is built (cm-p8 wave capstone)
+      return 'carolinafutons://loyalty';
+    default:
+      return 'carolinafutons://home';
+  }
+}
+
 export interface NotificationPreferences {
   orderUpdates: boolean;
   promotions: boolean;

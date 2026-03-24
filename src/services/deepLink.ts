@@ -44,6 +44,12 @@ export type DeepLinkRoute =
   | { screen: 'ForgotPassword' }
   | { screen: 'Collections' }
   | { screen: 'CollectionDetail'; params: { slug: string } }
+  | { screen: 'Loyalty' }
+  | { screen: 'ReferralLanding'; params: { code: string } }
+  | { screen: 'StyleQuiz' }
+  | { screen: 'Premium' }
+  | { screen: 'Search' }
+  | { screen: 'RoomGallery' }
   | { screen: 'NotFound'; params: { path: string } };
 
 /** Parse a deep link URL into components */
@@ -152,6 +158,25 @@ export function resolveRoute(parsed: ParsedDeepLink): DeepLinkRoute {
     case 'collections':
       if (second) return { screen: 'CollectionDetail', params: { slug: second } };
       return { screen: 'Collections' };
+
+    case 'loyalty':
+      return { screen: 'Loyalty' };
+
+    case 'referral':
+      if (second) return { screen: 'ReferralLanding', params: { code: second } };
+      return { screen: 'Account' };
+
+    case 'style-quiz':
+      return { screen: 'StyleQuiz' };
+
+    case 'premium':
+      return { screen: 'Premium' };
+
+    case 'search':
+      return { screen: 'Search' };
+
+    case 'room-gallery':
+      return { screen: 'RoomGallery' };
 
     default:
       return { screen: 'NotFound', params: { path: parsed.path } };
