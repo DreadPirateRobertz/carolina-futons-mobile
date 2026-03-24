@@ -1219,7 +1219,7 @@ describe('AccountScreen', () => {
       mockUseStreak.mockReturnValue({ streak: 0, loading: false });
       const { getByTestId } = renderAccount({}, true);
       await waitFor(() => {
-        expect(getByTestId('account-streak-badge')).toBeTruthy();
+        expect(getByTestId('streak-badge')).toBeTruthy();
         expect(getByTestId('streak-multiplier')).toBeTruthy();
       });
     });
@@ -1239,7 +1239,7 @@ describe('AccountScreen', () => {
     it('hides streak badge while streak is loading', async () => {
       mockUseStreak.mockReturnValue({ streak: 0, loading: true });
       const { queryByTestId } = renderAccount({}, true);
-      await waitFor(() => expect(queryByTestId('account-streak-badge')).toBeNull());
+      await waitFor(() => expect(queryByTestId('streak-badge')).toBeNull());
     });
   });
 
