@@ -29,4 +29,6 @@ module.exports = {
     'StoreLocatorScreen\\.test\\.tsx',
     'useStoreLocator\\.test\\.tsx',
   ],
+  // Prevent zombie worker processes from accumulating memory after test runs.
+  forceExit: true,
 };
