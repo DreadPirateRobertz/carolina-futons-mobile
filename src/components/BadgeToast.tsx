@@ -73,7 +73,11 @@ export function BadgeToast({ badgeName, visible, badgeKey, testID }: Props) {
 
   return (
     <Animated.View
-      style={[styles.container, { bottom: TAB_BAR_HEIGHT + bottomInset + TOAST_BOTTOM_PADDING }, animatedStyle]}
+      style={[
+        styles.container,
+        { bottom: TAB_BAR_HEIGHT + bottomInset + TOAST_BOTTOM_PADDING },
+        animatedStyle,
+      ]}
       testID={testID ?? 'badge-toast'}
       accessibilityLabel={`Badge Unlocked: ${badgeName}`}
       accessibilityElementsHidden={!visible}
