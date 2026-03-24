@@ -282,7 +282,6 @@ describe('foreground / background tap', () => {
   it('wraps non-Error thrown in listener catch before captureException', async () => {
     render(<HookHarness navRef={makeNavRef()} />);
     const cb = mockAddListener.mock.calls[0][0];
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     mockNavigate.mockImplementationOnce(() => {
       throw 'string error';
     });
