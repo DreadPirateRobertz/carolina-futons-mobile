@@ -391,7 +391,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
               <View
                 style={[
                   styles.tierBarTrack,
-                  { borderRadius: borderRadius.sm, backgroundColor: darkPalette.surfaceAlt },
+                  { borderRadius: borderRadius.sm, backgroundColor: darkPalette.surface },
                 ]}
               >
                 <Animated.View
@@ -432,7 +432,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
                 styles.challengeRow,
                 {
                   borderRadius: borderRadius.md,
-                  backgroundColor: darkPalette.surfaceAlt,
+                  backgroundColor: darkPalette.surface,
                   marginTop: spacing.sm,
                 },
               ]}
