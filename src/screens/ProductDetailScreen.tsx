@@ -403,7 +403,7 @@ export function ProductDetailScreen({
     events.openAR(model.id);
     gamificationEvents
       .arUsed(catalogProduct?.id ?? model.id) // Phase 4 gamification — cm-e2c3k
-      .then(async (result) => {
+      ?.then(async (result) => {
         if (!result?.success) return;
         const seen = await AsyncStorage.getItem('@cf_ar_points_toast_shown');
         if (seen) return;
@@ -411,7 +411,7 @@ export function ProductDetailScreen({
         setArToastVisible(true);
         setTimeout(() => setArToastVisible(false), 2200);
       })
-      .catch(() => {}); // non-critical — toast failure must not block AR
+      ?.catch(() => {}); // non-critical — toast failure must not block AR
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
         navigation.navigate('ARWeb', {
