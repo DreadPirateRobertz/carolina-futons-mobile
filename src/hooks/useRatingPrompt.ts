@@ -99,22 +99,25 @@ export function useRatingPrompt() {
     return () => subscription.remove();
   }, [loaded]);
 
-  const requestPrompt = useCallback(async (currentState: RatingState, trigger: string) => {
-    try {
-      const available = await StoreReview.isAvailableAsync();
-      if (!available) return;
+  const requestPrompt = useCallback(
+    async (currentState: RatingState, trigger: string) => {
+      try {
+        const available = await StoreReview.isAvailableAsync();
+        if (!available) return;
 
-      await StoreReview.requestReview();
-      const updated = { ...currentState, lastPromptedAt: Date.now() };
-      setState(updated);
-      await persistState(updated);
-      events.rateApp(trigger);
-      // Award points for review submission — native dialog shown is our proxy
-      submitReview('', 5, false).catch(() => {});
-    } catch {
-      // Review dialog failed — non-critical
-    }
-  }, [submitReview]);
+        await StoreReview.requestReview();
+        const updated = { ...currentState, lastPromptedAt: Date.now() };
+        setState(updated);
+        await persistState(updated);
+        events.rateApp(trigger);
+        // Award points for review submission — native dialog shown is our proxy
+        submitReview('', 5, false).catch(() => {});
+      } catch {
+        // Review dialog failed — non-critical
+      }
+    },
+    [submitReview],
+  );
 
   /** Call after a successful purchase. Triggers review prompt at the 3rd purchase. */
   const recordPurchase = useCallback(async () => {

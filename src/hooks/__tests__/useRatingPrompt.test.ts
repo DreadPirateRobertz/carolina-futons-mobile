@@ -382,54 +382,96 @@ describe('useRatingPrompt', () => {
   describe('gamification_submit_review event', () => {
     it('fires submitReview when purchase milestone prompt succeeds', async () => {
       const { result } = await renderLoaded();
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
       expect(mockSubmitReview).toHaveBeenCalledTimes(1);
     });
 
     it('fires submitReview when delivery milestone prompt succeeds', async () => {
       mockGetItem.mockResolvedValue(
-        JSON.stringify({ purchaseCount: 0, deliveryCount: 2, appOpenCount: 0, lastPromptedAt: null, disabled: false }),
+        JSON.stringify({
+          purchaseCount: 0,
+          deliveryCount: 2,
+          appOpenCount: 0,
+          lastPromptedAt: null,
+          disabled: false,
+        }),
       );
       const { result } = await renderLoaded();
-      await act(async () => { await result.current.recordDelivery(); });
+      await act(async () => {
+        await result.current.recordDelivery();
+      });
       expect(mockSubmitReview).toHaveBeenCalledTimes(1);
     });
 
     it('fires submitReview when app-open milestone prompt succeeds', async () => {
       mockGetItem.mockResolvedValue(
-        JSON.stringify({ purchaseCount: 0, deliveryCount: 0, appOpenCount: 6, lastPromptedAt: null, disabled: false }),
+        JSON.stringify({
+          purchaseCount: 0,
+          deliveryCount: 0,
+          appOpenCount: 6,
+          lastPromptedAt: null,
+          disabled: false,
+        }),
       );
       await renderLoaded();
-      await act(async () => { appStateCallback?.('active'); });
+      await act(async () => {
+        appStateCallback?.('active');
+      });
       expect(mockSubmitReview).toHaveBeenCalledTimes(1);
     });
 
     it('does not fire submitReview when StoreReview is unavailable', async () => {
       mockIsAvailable.mockResolvedValue(false);
       const { result } = await renderLoaded();
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
       expect(mockSubmitReview).not.toHaveBeenCalled();
     });
 
     it('does not fire submitReview within cooldown (prompt suppressed)', async () => {
       mockGetItem.mockResolvedValue(
-        JSON.stringify({ purchaseCount: 2, deliveryCount: 0, appOpenCount: 0, lastPromptedAt: Date.now() - 1000, disabled: false }),
+        JSON.stringify({
+          purchaseCount: 2,
+          deliveryCount: 0,
+          appOpenCount: 0,
+          lastPromptedAt: Date.now() - 1000,
+          disabled: false,
+        }),
       );
       const { result } = await renderLoaded();
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
       expect(mockSubmitReview).not.toHaveBeenCalled();
     });
 
     it('gamification failure does not break the review prompt flow', async () => {
       mockSubmitReview.mockRejectedValue(new Error('network error'));
       const { result } = await renderLoaded();
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
-      await act(async () => { await result.current.recordPurchase(); });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
+      await act(async () => {
+        await result.current.recordPurchase();
+      });
       // requestReview still called despite gamification failure
       expect(mockRequestReview).toHaveBeenCalledTimes(1);
     });
