@@ -43,7 +43,11 @@ import { useLoyaltyCard } from '../useLoyaltyCard';
 
 function makeLoyaltyResponse(tier: 'Bronze' | 'Silver' | 'Gold', points: number) {
   const thresholds = { Bronze: 500, Silver: 1500, Gold: 1500 };
-  const progresses = { Bronze: (points / 500) * 100, Silver: ((points - 500) / 1000) * 100, Gold: 100 };
+  const progresses = {
+    Bronze: (points / 500) * 100,
+    Silver: ((points - 500) / 1000) * 100,
+    Gold: 100,
+  };
   return {
     points,
     tier,

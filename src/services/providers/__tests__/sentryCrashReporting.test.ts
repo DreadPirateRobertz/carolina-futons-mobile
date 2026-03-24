@@ -6,7 +6,6 @@ jest.mock('@sentry/react-native', () => null);
 
 import { SentryCrashReportingProvider } from '../sentryCrashReporting';
 
-
 // With the null mock above, sentryCrashReporting.ts sets Sentry = null → no-op path
 describe('SentryCrashReportingProvider', () => {
   const provider = new SentryCrashReportingProvider({

@@ -104,11 +104,10 @@ export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardR
         hasActivity,
       });
     } catch (err) {
-      captureException(
-        err instanceof Error ? err : new Error(String(err)),
-        'error',
-        { action: 'useLoyaltyCard-fetch', memberId },
-      );
+      captureException(err instanceof Error ? err : new Error(String(err)), 'error', {
+        action: 'useLoyaltyCard-fetch',
+        memberId,
+      });
       setError(err instanceof Error ? err.message : String(err));
       setData(SAFE_DEFAULTS);
     } finally {
