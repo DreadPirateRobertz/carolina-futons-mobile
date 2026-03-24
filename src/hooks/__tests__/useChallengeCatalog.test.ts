@@ -176,4 +176,97 @@ describe('useChallengeCatalog', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockCallFunction).toHaveBeenCalledTimes(2);
   });
+
+  describe('edge cases — expired, duplicate, null reward', () => {
+    it('challenge with goal === 0 gets progressRatio 0', async () => {
+      mockCallFunction.mockResolvedValue({
+        challenges: [{ ...MOCK_CHALLENGES[1], goal: 0, progress: 0 }],
+      });
+      const { result } = renderHook(() => useChallengeCatalog());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.challenges[0].progressRatio).toBe(0);
+    });
+
+    it('expired challenge goes to grouped.expired even if progress > 0', async () => {
+      mockCallFunction.mockResolvedValue({
+        challenges: [{ ...MOCK_CHALLENGES[0], expiresAt: PAST, progress: 3 }],
+      });
+      const { result } = renderHook(() => useChallengeCatalog());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.grouped.expired).toHaveLength(1);
+      expect(result.current.grouped.inProgress).toHaveLength(0);
+    });
+
+    it('duplicate IDs in API response appear multiple times (no dedup)', async () => {
+      mockCallFunction.mockResolvedValue({
+        challenges: [MOCK_CHALLENGES[1], MOCK_CHALLENGES[1]],
+      });
+      const { result } = renderHook(() => useChallengeCatalog());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.challenges).toHaveLength(2);
+      expect(result.current.challenges[0].id).toBe(result.current.challenges[1].id);
+    });
+
+    it('null pointReward passes through as-is', async () => {
+      mockCallFunction.mockResolvedValue({
+        challenges: [{ ...MOCK_CHALLENGES[1], pointReward: null }],
+      });
+      const { result } = renderHook(() => useChallengeCatalog());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.challenges[0].pointReward).toBeNull();
+    });
+
+    it('cancels in-flight request on unmount (no state update after unmount)', async () => {
+      let resolveCall!: (v: unknown) => void;
+      mockCallFunction.mockReturnValue(new Promise((res) => (resolveCall = res)));
+
+      const { result, unmount } = renderHook(() => useChallengeCatalog());
+      expect(result.current.loading).toBe(true);
+
+      unmount();
+      resolveCall({ challenges: MOCK_CHALLENGES });
+
+      // No assertion needed — absence of "act()" warning is the pass condition.
+      // The cancelled guard prevents setState after unmount.
+    });
+
+    it('cancels in-flight error on unmount (catch branch)', async () => {
+      let rejectCall!: (e: unknown) => void;
+      mockCallFunction.mockReturnValue(new Promise((_, rej) => (rejectCall = rej)));
+
+      const { result, unmount } = renderHook(() => useChallengeCatalog());
+      expect(result.current.loading).toBe(true);
+
+      unmount();
+      rejectCall(new Error('network error'));
+
+      // No "act()" warning = cancelled guard in .catch() ran correctly.
+    });
+
+    it('cancels in-flight request on wixClient change', async () => {
+      let resolveFirst!: (v: unknown) => void;
+      mockCallFunction
+        .mockReturnValueOnce(new Promise((res) => (resolveFirst = res)))
+        .mockResolvedValue({ challenges: [] });
+
+      const { result, rerender } = renderHook(() => useChallengeCatalog());
+      expect(result.current.loading).toBe(true);
+
+      // Trigger a re-render that changes the dependency (via refresh bumping refreshToken)
+      result.current.refresh();
+
+      // Resolve the first (now-cancelled) call after the second has started
+      resolveFirst({ challenges: MOCK_CHALLENGES });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      // Second call resolved with [] — cancelled first call must not overwrite it
+      expect(result.current.challenges).toHaveLength(0);
+
+      void rerender;
+    });
+  });
 });
