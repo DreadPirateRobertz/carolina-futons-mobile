@@ -7,7 +7,6 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
 import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
-import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
 
 const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();

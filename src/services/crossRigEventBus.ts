@@ -129,7 +129,11 @@ async function emit(
       captureException(err instanceof Error ? err : new Error(String(err)));
       return { success: false, error: (err as Error).message };
     }
-    // Network / transient / 401 post-retry failure → queue
+    if (is401(err)) {
+      // 401 after refresh+retry = stale auth, not transient — do NOT queue
+      return { success: false, error: (err as Error).message };
+    }
+    // Network / transient failures → queue for replay
     await enqueue(body);
     return { success: false, queued: true };
   }
@@ -142,7 +146,7 @@ export async function emitStreakExtended(
   input: { userId: string; streak: number; delta: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'streak_extended', {
-    userId: input.userId,
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     streak: input.streak,
     delta: input.delta,
     newTotal: input.newTotal,
@@ -154,7 +158,7 @@ export async function emitChallengeStarted(
   input: { userId: string; challengeId: string; currentPoints: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'challenge_started', {
-    userId: input.userId,
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     challengeId: input.challengeId,
     delta: 0, // no points change on challenge start — consistent envelope shape per cf-44r
     newTotal: input.currentPoints,
@@ -166,7 +170,7 @@ export async function emitRedemptionInitiated(
   input: { userId: string; pointsRedeemed: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'redemption_initiated', {
-    userId: input.userId,
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     delta: -input.pointsRedeemed, // negative: points leaving the account
     newTotal: input.newTotal,
   });
