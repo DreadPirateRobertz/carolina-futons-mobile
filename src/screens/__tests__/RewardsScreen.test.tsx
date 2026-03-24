@@ -12,9 +12,13 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockEmitRedemptionInitiated = jest.fn(() => Promise.resolve({ success: true }));
+const mockEmitRedemptionInitiated = jest.fn(
+  (_client: unknown, _input: { pointsRedeemed: number; newTotal: number }) =>
+    Promise.resolve({ success: true }),
+);
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitRedemptionInitiated: (...args: any[]) => mockEmitRedemptionInitiated(...args),
+  emitRedemptionInitiated: (client: unknown, input: { pointsRedeemed: number; newTotal: number }) =>
+    mockEmitRedemptionInitiated(client, input),
 }));
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
