@@ -34,6 +34,10 @@ export interface GamificationEvents {
   referralShared: (code: string) => Promise<GamificationEventResult>;
   arUsed: (productId: string) => Promise<GamificationEventResult>;
   wishlistAdd: (productId: string) => Promise<GamificationEventResult>;
+  styleQuizComplete: (
+    stylePreference: string,
+    sizeNeeds: string,
+  ) => Promise<GamificationEventResult>;
 }
 
 const FALLBACK: GamificationEventResult = { success: false };
@@ -122,5 +126,20 @@ export function useGamificationEvents(): GamificationEvents {
     [wixClient, memberId],
   );
 
-  return { addToCart, submitReview, referralShared, arUsed, wishlistAdd };
+  const styleQuizComplete = useCallback(
+    async (stylePreference: string, sizeNeeds: string): Promise<GamificationEventResult> => {
+      try {
+        return await sendGamificationEvent(wixClient ?? null, {
+          eventName: 'gamification_style_quiz_complete',
+          memberId,
+          payload: { style_preference: stylePreference, size_needs: sizeNeeds },
+        });
+      } catch {
+        return FALLBACK;
+      }
+    },
+    [wixClient, memberId],
+  );
+
+  return { addToCart, submitReview, referralShared, arUsed, wishlistAdd, styleQuizComplete };
 }

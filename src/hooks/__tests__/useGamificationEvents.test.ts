@@ -173,4 +173,89 @@ describe('useGamificationEvents', () => {
       await expect(result.current.addToCart('prod-8', 100)).resolves.not.toThrow();
     });
   });
+
+  // ── styleQuizComplete — cfutons_mobile-0l2 ───────────────────────────────
+
+  describe('styleQuizComplete', () => {
+    it('exposes styleQuizComplete function', () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      expect(typeof result.current.styleQuizComplete).toBe('function');
+    });
+
+    it('fires gamification_style_quiz_complete event with style and size payload', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.styleQuizComplete('modern', 'full');
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        mockWixClient,
+        expect.objectContaining({
+          eventName: 'gamification_style_quiz_complete',
+          memberId: 'member-abc',
+          payload: expect.objectContaining({
+            style_preference: 'modern',
+            size_needs: 'full',
+          }),
+        }),
+      );
+    });
+
+    it('fires with rustic style preference', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.styleQuizComplete('rustic', 'queen');
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        mockWixClient,
+        expect.objectContaining({
+          payload: expect.objectContaining({ style_preference: 'rustic', size_needs: 'queen' }),
+        }),
+      );
+    });
+
+    it('fires with classic style preference', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.styleQuizComplete('classic', 'twin');
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        mockWixClient,
+        expect.objectContaining({
+          payload: expect.objectContaining({ style_preference: 'classic', size_needs: 'twin' }),
+        }),
+      );
+    });
+
+    it('returns sendGamificationEvent result', async () => {
+      mockSendGamificationEvent.mockResolvedValue({ success: true, newTotal: 100 });
+      const { result } = renderHook(() => useGamificationEvents());
+      const response = await result.current.styleQuizComplete('modern', 'full');
+
+      expect(response.success).toBe(true);
+    });
+
+    it('does not throw when unauthenticated (empty memberId)', async () => {
+      mockUseAuth.mockReturnValue({ user: null });
+      const { result } = renderHook(() => useGamificationEvents());
+      await expect(
+        result.current.styleQuizComplete('modern', 'full'),
+      ).resolves.not.toThrow();
+    });
+
+    it('does not throw when sendGamificationEvent rejects', async () => {
+      mockSendGamificationEvent.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGamificationEvents());
+      await expect(
+        result.current.styleQuizComplete('modern', 'full'),
+      ).resolves.not.toThrow();
+    });
+
+    it('passes null wixClient when unavailable', async () => {
+      mockUseOptionalWixClient.mockReturnValue(null);
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.styleQuizComplete('rustic', 'full');
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        null,
+        expect.objectContaining({ eventName: 'gamification_style_quiz_complete' }),
+      );
+    });
+  });
 });

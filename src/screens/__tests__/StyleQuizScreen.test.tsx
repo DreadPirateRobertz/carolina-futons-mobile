@@ -89,6 +89,18 @@ jest.mock('@/hooks/useProduct', () => ({
   useProduct: jest.fn(() => ({ product: null, isLoading: false, error: null, refresh: jest.fn() })),
 }));
 
+const mockStyleQuizComplete = jest.fn();
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    styleQuizComplete: (...args: unknown[]) => mockStyleQuizComplete(...args),
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+  }),
+}));
+
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 /**
@@ -110,6 +122,7 @@ describe('StyleQuizScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStyleQuizComplete.mockResolvedValue({ success: true, newTotal: 100 });
     // Default: product not found — tests that need thumbnails override this
     mockUseProductBySlug.mockReturnValue({
       product: null,
@@ -506,5 +519,33 @@ describe('StyleQuizScreen', () => {
       <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
     );
     expect(() => completeQuiz(getByTestId)).not.toThrow();
+  });
+
+  // ── styleQuizComplete gamification wiring — cfutons_mobile-0l2 ──
+
+  describe('styleQuizComplete gamification', () => {
+    it('calls styleQuizComplete with style and size from quiz answers', async () => {
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      // completeQuiz selects: modern (style) + full (size)
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', 'full');
+      });
+    });
+
+    it('onComplete fires even when styleQuizComplete rejects', async () => {
+      mockStyleQuizComplete.mockRejectedValue(new Error('network'));
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 });
