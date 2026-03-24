@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
@@ -114,6 +114,20 @@ describe('LeaderboardScreen', () => {
       mockHookState = { ...mockHookState, currentUserRank: null as any };
       const { queryByTestId } = wrap(<LeaderboardScreen />);
       expect(queryByTestId('leaderboard-your-rank')).toBeNull();
+    });
+
+    it('passes isCurrentUser=true only to the row matching currentUserRank', () => {
+      // currentUserRank = 2 (Bob) in default fixture
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      // Row 2 should have highlighted border style
+      const row2 = getByTestId('leaderboard-row-2');
+      const row1 = getByTestId('leaderboard-row-1');
+      const styles2 = row2.props.style.flat ? row2.props.style.flat() : row2.props.style;
+      const styles1 = row1.props.style.flat ? row1.props.style.flat() : row1.props.style;
+      const hasBorder = (s: unknown[]) =>
+        s.some((x) => x && typeof x === 'object' && 'borderWidth' in (x as object));
+      expect(hasBorder(styles2)).toBe(true);
+      expect(hasBorder(styles1)).toBe(false);
     });
   });
 

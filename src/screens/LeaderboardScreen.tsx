@@ -44,10 +44,11 @@ export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
         nickname={item.nickname}
         points={item.points}
         tier={item.tier}
+        isCurrentUser={item.rank === currentUserRank}
         testID={`leaderboard-row-${item.rank}`}
       />
     ),
-    [],
+    [currentUserRank],
   );
 
   return (
