@@ -5,10 +5,11 @@
  */
 
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { act, render, fireEvent } from '@testing-library/react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { AvatarEquipScreen } from '../AvatarEquipScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { ConnectivityProvider, useConnectivity } from '@/hooks/useConnectivity';
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
@@ -43,6 +44,29 @@ function renderScreen() {
         <AvatarEquipScreen />
       </ThemeProvider>
     </NavigationContainer>,
+  );
+}
+
+// ── Connectivity helpers ────────────────────────────────────────────────────
+
+let testSetOnline: ((online: boolean) => void) | null = null;
+
+function ConnectivityBridge() {
+  const { setOnline } = useConnectivity();
+  testSetOnline = setOnline;
+  return null;
+}
+
+function renderScreenWithConnectivity(initialOnline: boolean) {
+  return render(
+    <ConnectivityProvider initialOnline={initialOnline} skipNetInfo={true}>
+      <ConnectivityBridge />
+      <NavigationContainer>
+        <ThemeProvider>
+          <AvatarEquipScreen />
+        </ThemeProvider>
+      </NavigationContainer>
+    </ConnectivityProvider>,
   );
 }
 
@@ -241,5 +265,102 @@ describe('AvatarEquipScreen', () => {
       refreshAvatarState: jest.fn(),
     });
     expect(() => renderScreen()).not.toThrow();
+  });
+
+  // ── Offline optimistic equip ────────────────────────────────────────────
+
+  describe('offline optimistic equip', () => {
+    beforeEach(() => {
+      testSetOnline = null;
+    });
+
+    it('immediately shows equipped indicator when offline (optimistic)', async () => {
+      const { getByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      expect(getByTestId('accessory-equipped-hat-crown')).toBeTruthy();
+    });
+
+    it('does not call API when equipping offline', async () => {
+      renderScreenWithConnectivity(false);
+      await act(async () => {
+        // no-op — screen renders offline
+      });
+      const { getByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      expect(mockEquipAccessory).not.toHaveBeenCalled();
+    });
+
+    it('calls API when connectivity is restored after offline equip', async () => {
+      mockEquipAccessory.mockResolvedValue({});
+      const { getByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      await act(async () => {
+        testSetOnline?.(true);
+      });
+      expect(mockEquipAccessory).toHaveBeenCalledWith(
+        expect.stringContaining('equip'),
+        expect.any(String),
+        expect.objectContaining({ accessoryId: 'hat-crown' }),
+      );
+    });
+
+    it('retains optimistic equipped state while syncing on reconnect', async () => {
+      let resolveEquip!: () => void;
+      mockEquipAccessory.mockReturnValue(
+        new Promise<void>((res) => {
+          resolveEquip = res;
+        }),
+      );
+      const { getByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      await act(async () => {
+        testSetOnline?.(true);
+      });
+      // Still shows equipped optimistically while request is in-flight
+      expect(getByTestId('accessory-equipped-hat-crown')).toBeTruthy();
+      await act(async () => {
+        resolveEquip();
+      });
+    });
+  });
+
+  // ── 403 rollback ────────────────────────────────────────────────────────
+
+  describe('403 rollback', () => {
+    it('rolls back optimistic equip on 403 response', async () => {
+      const err = new Error('403 Forbidden');
+      mockEquipAccessory.mockRejectedValue(err);
+      const { getByTestId, queryByTestId } = renderScreen();
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      expect(queryByTestId('accessory-equipped-hat-crown')).toBeNull();
+    });
+
+    it('shows error toast on 403 response', async () => {
+      const err = new Error('403 Forbidden');
+      mockEquipAccessory.mockRejectedValue(err);
+      const { getByTestId, findByTestId } = renderScreen();
+      fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      const errorEl = await findByTestId('avatar-equip-equip-error');
+      expect(errorEl).toBeTruthy();
+    });
+
+    it('shows 403-specific message in toast', async () => {
+      const err = new Error('403 Forbidden');
+      mockEquipAccessory.mockRejectedValue(err);
+      const { getByTestId, findByTestId } = renderScreen();
+      fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      const errorEl = await findByTestId('avatar-equip-equip-error');
+      expect(errorEl.props.children).toMatch(/not authorized|403/i);
+    });
   });
 });

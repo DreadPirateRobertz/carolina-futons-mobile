@@ -5,10 +5,14 @@
  * Locked accessories are dimmed and non-interactive.
  * Tap an unlocked accessory to equip/unequip via Wix webMethod.
  *
- * cf-ymo / Phase 6
+ * Supports optimistic updates while offline — queues the equip and
+ * flushes it when connectivity is restored. 403 responses roll back
+ * the optimistic state and surface an error toast.
+ *
+ * cf-ymo / Phase 6 / cm-xch
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -19,9 +23,21 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { useAvatarState } from '@/hooks/useAvatarState';
+import { useOptionalConnectivity } from '@/hooks/useConnectivity';
 import { AvatarDisplay } from '@/components/AvatarDisplay';
 import { ACCESSORIES, type Accessory } from '@/data/accessories';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
+
+function is403Error(err: unknown): boolean {
+  if (err instanceof Error) {
+    return err.message.includes('403') || err.message.toLowerCase().includes('forbidden');
+  }
+  if (typeof err === 'object' && err !== null) {
+    const e = err as { status?: number; statusCode?: number };
+    return e.status === 403 || e.statusCode === 403;
+  }
+  return false;
+}
 
 export function AvatarEquipScreen() {
   const { colors, borderRadius, spacing } = useTheme();
@@ -30,29 +46,86 @@ export function AvatarEquipScreen() {
   const [equipping, setEquipping] = useState<string | null>(null);
   const [equipError, setEquipError] = useState<string | null>(null);
 
+  // Optimistic state: undefined = use server value, string/null = local override
+  const [optimisticEquipped, setOptimisticEquipped] = useState<string | null | undefined>(
+    undefined,
+  );
+  const pendingEquipRef = useRef<{ accessoryId: string | null; prevId: string | null } | null>(
+    null,
+  );
+
+  const connectivity = useOptionalConnectivity();
+  const isOnline = connectivity?.isOnline ?? true;
+
+  const effectiveEquipped =
+    optimisticEquipped !== undefined ? optimisticEquipped : equippedAccessoryId;
+
+  // Flush pending equip when connectivity is restored
+  useEffect(() => {
+    if (!isOnline || pendingEquipRef.current === null) return;
+    const pending = pendingEquipRef.current;
+    pendingEquipRef.current = null;
+
+    const client = getWixClientSingleton();
+    if (!client) {
+      setOptimisticEquipped(pending.prevId);
+      setEquipError('Avatar service unavailable');
+      return;
+    }
+
+    client
+      .callFunction('/_functions/equipAccessory', 'POST', { accessoryId: pending.accessoryId })
+      .then(() => {
+        setOptimisticEquipped(undefined);
+        refreshAvatarState();
+      })
+      .catch((err: unknown) => {
+        setOptimisticEquipped(pending.prevId);
+        setEquipError(
+          is403Error(err) ? 'Not authorized to equip this accessory' : 'Failed to sync accessory',
+        );
+      });
+  }, [isOnline, refreshAvatarState]);
+
   const handleEquip = useCallback(
     async (accessory: Accessory) => {
       if (!unlockedAccessoryIds.includes(accessory.id)) return;
 
       setEquipError(null);
+      const prevId = effectiveEquipped;
+      const nextId = accessory.id === effectiveEquipped ? null : accessory.id;
+      setOptimisticEquipped(nextId);
+
+      if (!isOnline) {
+        pendingEquipRef.current = { accessoryId: nextId, prevId };
+        return;
+      }
+
       setEquipping(accessory.id);
       try {
         const client = getWixClientSingleton();
         if (!client) {
+          setOptimisticEquipped(prevId);
           setEquipError('Avatar service unavailable');
           return;
         }
-        // Tapping the currently-equipped accessory unequips it (pass null)
-        const nextId = accessory.id === equippedAccessoryId ? null : accessory.id;
         await client.callFunction('/_functions/equipAccessory', 'POST', { accessoryId: nextId });
+        setOptimisticEquipped(undefined);
         await refreshAvatarState();
       } catch (err) {
-        setEquipError(err instanceof Error ? err.message : 'Failed to equip accessory');
+        setOptimisticEquipped(prevId);
+        setEquipError(
+          is403Error(err)
+            ? 'Not authorized to equip this accessory'
+            : err instanceof Error
+              ? err.message
+              : 'Failed to equip accessory',
+        );
       } finally {
         setEquipping(null);
       }
     },
-    [unlockedAccessoryIds, equippedAccessoryId, refreshAvatarState],
+    [unlockedAccessoryIds, effectiveEquipped, isOnline, refreshAvatarState],
   );
 
   if (loading) {
@@ -87,7 +160,7 @@ export function AvatarEquipScreen() {
         )}
         <AvatarDisplay
           size="lg"
-          equippedAccessoryId={equippedAccessoryId}
+          equippedAccessoryId={effectiveEquipped}
           testID="avatar-equip-preview"
         />
       </View>
@@ -101,7 +174,7 @@ export function AvatarEquipScreen() {
         contentContainerStyle={styles.gridContent}
         renderItem={({ item }) => {
           const isUnlocked = unlockedAccessoryIds.includes(item.id);
-          const isEquipped = item.id === equippedAccessoryId;
+          const isEquipped = item.id === effectiveEquipped;
           const isEquipping = equipping === item.id;
 
           return (
