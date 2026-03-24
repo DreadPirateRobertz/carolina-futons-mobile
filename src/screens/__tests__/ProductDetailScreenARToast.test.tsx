@@ -141,7 +141,7 @@ function renderScreen() {
     <ThemeProvider>
       <WishlistProvider>
         <CompareProvider>
-          <ProductDetailScreen model={model} />
+          <ProductDetailScreen productId={model.id} />
         </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
