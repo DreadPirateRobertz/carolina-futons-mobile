@@ -405,6 +405,8 @@ export function ProductDetailScreen({
         setArPointsVisible(true);
         setTimeout(() => setArPointsVisible(false), 2200);
       }
+    }).catch((err) => {
+      if (__DEV__) console.warn('[AR] arUsed failed:', err);
     });
     openARViewer(model.id, model.name, {
       onWebModelView: (params) => {
@@ -1509,7 +1511,7 @@ export function ProductDetailScreen({
       <PointsToast points={10} visible={arPointsVisible} testID="ar-points-toast" />
       {arPointsVisible && (
         <TouchableOpacity
-          style={styles.arAccountLink}
+          style={[styles.arAccountLink, { bottom: 49 + insets.bottom + 8 + 44 }]}
           onPress={() => navigation.navigate('Account')}
           testID="ar-account-link"
           accessibilityLabel="View your points in Account"
@@ -2286,7 +2288,6 @@ const styles = StyleSheet.create({
   },
   arAccountLink: {
     position: 'absolute',
-    bottom: 120,
     alignSelf: 'center',
     paddingHorizontal: 16,
     paddingVertical: 6,

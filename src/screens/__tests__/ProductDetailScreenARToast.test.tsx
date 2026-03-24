@@ -254,4 +254,18 @@ describe('ProductDetailScreen — AR points toast (hq-27qq8)', () => {
 
     expect(mockArUsed).toHaveBeenCalledWith(expect.any(String));
   });
+
+  it('does not show toast when arUsed rejects (network/API error)', async () => {
+    mockArUsed.mockRejectedValue(new Error('network error'));
+    const { queryByTestId, getByTestId } = renderDetail({ productId: asheville.id });
+
+    await act(async () => {
+      fireEvent.press(getByTestId('detail-ar-button'));
+    });
+
+    const toast = queryByTestId('ar-points-toast');
+    if (toast) {
+      expect(toast.props.accessibilityElementsHidden).toBe(true);
+    }
+  });
 });
