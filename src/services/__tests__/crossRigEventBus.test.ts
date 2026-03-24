@@ -31,10 +31,12 @@ import {
 
 function mockClient(response: object = { success: true }, shouldThrow?: Error) {
   return {
-    callFunction: jest.fn(async () => {
-      if (shouldThrow) throw shouldThrow;
-      return response;
-    }),
+    callFunction: jest.fn(
+      async (_name: string, _method: string, _body: Record<string, unknown>) => {
+        if (shouldThrow) throw shouldThrow;
+        return response;
+      },
+    ),
   };
 }
 

@@ -68,7 +68,7 @@ async function enqueue(body: Record<string, unknown>): Promise<void> {
     queue.push({ fnName: WIX_FN, body });
     await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch (err) {
-    captureException(err);
+    captureException(err instanceof Error ? err : new Error(String(err)));
   }
 }
 
@@ -93,7 +93,7 @@ async function emit(
     return { success: true };
   } catch (err) {
     if (is400(err)) {
-      captureException(err);
+      captureException(err instanceof Error ? err : new Error(String(err)));
       return { success: false, error: (err as Error).message };
     }
     // Network / transient error → queue
