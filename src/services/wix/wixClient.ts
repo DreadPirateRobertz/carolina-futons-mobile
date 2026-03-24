@@ -1004,6 +1004,51 @@ export class WixClient {
     return this.post('/_functions/getLeaderboard', params);
   }
 
+  /**
+   * Send a message to the Carolina Futons AI chatbot and return the response.
+   *
+   * @param message - The user's message text.
+   * @param memberToken - Optional Wix session access token for authenticated context.
+   */
+  async chatbotMessage(
+    message: string,
+    memberToken?: string,
+  ): Promise<{ response: string }> {
+    const url = `${this.baseUrl}/_functions/chatbotMessage`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Authorization: this.apiKey,
+      'wix-site-id': this.siteId,
+    };
+    if (memberToken) {
+      headers['x-member-token'] = memberToken;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ message }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const err = new Error(`chatbotMessage failed: ${response.status}`) as Error & {
+          status: number;
+        };
+        err.status = response.status;
+        throw err;
+      }
+
+      return response.json() as Promise<{ response: string }>;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   // ── Wix Data Mutations ──────────────────────────────────────
 
   async insertDataItem(
