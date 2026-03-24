@@ -34,6 +34,8 @@ export interface GamificationEvents {
   referralShared: (code: string) => Promise<GamificationEventResult>;
   arUsed: (productId: string) => Promise<GamificationEventResult>;
   wishlistAdd: (productId: string) => Promise<GamificationEventResult>;
+  /** cfutons_mobile-r2o: orderId doubles as idempotency key to prevent double-counting. */
+  orderPlaced: (orderId: string, orderTotal: number) => Promise<GamificationEventResult>;
 }
 
 const FALLBACK: GamificationEventResult = { success: false };
@@ -122,5 +124,21 @@ export function useGamificationEvents(): GamificationEvents {
     [wixClient, memberId],
   );
 
-  return { addToCart, submitReview, referralShared, arUsed, wishlistAdd };
+  const orderPlaced = useCallback(
+    async (orderId: string, orderTotal: number): Promise<GamificationEventResult> => {
+      try {
+        return await sendGamificationEvent(wixClient ?? null, {
+          eventName: 'gamification_order_placed',
+          memberId,
+          payload: { order_id: orderId, order_total: orderTotal },
+          eventId: orderId,
+        });
+      } catch {
+        return FALLBACK;
+      }
+    },
+    [wixClient, memberId],
+  );
+
+  return { addToCart, submitReview, referralShared, arUsed, wishlistAdd, orderPlaced };
 }

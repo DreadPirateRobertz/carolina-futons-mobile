@@ -173,11 +173,12 @@ try {
 // Tests that specifically verify gamification call-site behavior supply their own spies.
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
-    addToCart: jest.fn(),
-    submitReview: jest.fn(),
-    referralShared: jest.fn(),
-    arUsed: jest.fn(),
-    wishlistAdd: jest.fn(),
+    addToCart: jest.fn().mockResolvedValue({ success: true }),
+    submitReview: jest.fn().mockResolvedValue({ success: true }),
+    referralShared: jest.fn().mockResolvedValue({ success: true }),
+    arUsed: jest.fn().mockResolvedValue({ success: true }),
+    wishlistAdd: jest.fn().mockResolvedValue({ success: true }),
+    orderPlaced: jest.fn().mockResolvedValue({ success: true }),
   }),
 }));
 

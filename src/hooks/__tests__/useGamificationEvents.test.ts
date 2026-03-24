@@ -173,4 +173,51 @@ describe('useGamificationEvents', () => {
       await expect(result.current.addToCart('prod-8', 100)).resolves.not.toThrow();
     });
   });
+
+  // ── cfutons_mobile-r2o ───────────────────────────────────────────────────
+  describe('orderPlaced', () => {
+    it('calls sendGamificationEvent with correct event name and payload', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.orderPlaced('ord-abc', 422.43);
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        mockWixClient,
+        expect.objectContaining({
+          eventName: 'gamification_order_placed',
+          memberId: 'member-abc',
+          payload: expect.objectContaining({ order_id: 'ord-abc', order_total: 422.43 }),
+        }),
+      );
+    });
+
+    it('uses orderId as eventId for server-side idempotency', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.orderPlaced('ord-idem-123', 299.99);
+
+      expect(mockSendGamificationEvent).toHaveBeenCalledWith(
+        mockWixClient,
+        expect.objectContaining({ eventId: 'ord-idem-123' }),
+      );
+    });
+
+    it('returns FALLBACK on network error', async () => {
+      mockSendGamificationEvent.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGamificationEvents());
+      const response = await result.current.orderPlaced('ord-err', 100);
+      expect(response).toEqual({ success: false });
+    });
+
+    it('returns tierChanged and newTier for badge evaluation', async () => {
+      mockSendGamificationEvent.mockResolvedValue({
+        success: true,
+        newTotal: 1500,
+        tierChanged: true,
+        newTier: 'gold',
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      const response = await result.current.orderPlaced('ord-tier', 1200);
+      expect(response.tierChanged).toBe(true);
+      expect(response.newTier).toBe('gold');
+    });
+  });
 });

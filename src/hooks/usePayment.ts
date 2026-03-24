@@ -15,6 +15,7 @@ import { captureException } from '@/services/crashReporting';
 import { scrubPiiFromError } from '@/services/checkoutSecurity';
 import { useCart } from './useCart';
 import { usePremium } from './usePremium';
+import { useGamificationEvents } from './useGamificationEvents';
 import {
   createPaymentIntent,
   confirmOrder,
@@ -105,6 +106,7 @@ export function usePayment() {
   const wixClient = useOptionalWixClient();
   const { items, subtotal, clearCart } = useCart();
   const { isPremium } = usePremium();
+  const gamificationEvents = useGamificationEvents();
   const [state, setState] = useState<PaymentState>({
     status: 'idle',
     error: null,
@@ -240,7 +242,12 @@ export function usePayment() {
         // 3. Confirm order via Wix eCommerce API
         const confirmation = await confirmOrder(wixClient, paymentIntentId, items, totals, method);
 
-        // 4. Clear cart and set success state
+        // 4. Fire gamification event (fire-and-forget; never blocks checkout success)
+        gamificationEvents
+          .orderPlaced(confirmation.orderId, confirmation.totals?.total ?? totals.total)
+          .catch(() => {});
+
+        // 5. Clear cart and set success state
         clearCart();
         processingRef.current = false;
         setState({ status: 'success', error: null, order: confirmation });
@@ -270,6 +277,7 @@ export function usePayment() {
       presentPaymentSheet,
       confirmPlatformPayPayment,
       clearCart,
+      gamificationEvents,
     ],
   );
 

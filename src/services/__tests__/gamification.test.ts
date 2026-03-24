@@ -3,7 +3,7 @@
  *
  * Covers all event paths, hasPhoto variants, and rate limit guard (hq-74nry).
  */
-import { addToCart, submitReview, referralShared, arUsed, wishlistAdd } from '../gamification';
+import { addToCart, submitReview, referralShared, arUsed, wishlistAdd, orderPlaced } from '../gamification';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 
@@ -112,6 +112,37 @@ describe('wishlistAdd', () => {
     jest.advanceTimersByTime(300);
     const ev = getEventBuffer().find((e) => e.name === 'gamification_wishlist_add');
     expect(ev?.properties?.product_id).toBe('blue-ridge');
+  });
+});
+
+// ── cfutons_mobile-r2o ─────────────────────────────────────────────────
+describe('orderPlaced', () => {
+  it('fires gamification_order_placed event', () => {
+    orderPlaced('ord-abc', 422.43);
+    const events = getEventBuffer().filter((e) => e.name === 'gamification_order_placed');
+    expect(events).toHaveLength(1);
+  });
+
+  it('includes order_id and order_total', () => {
+    orderPlaced('ord-xyz', 599.0);
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_order_placed');
+    expect(ev?.properties?.order_id).toBe('ord-xyz');
+    expect(ev?.properties?.order_total).toBe(599.0);
+  });
+
+  it('handles zero order total', () => {
+    orderPlaced('ord-free', 0);
+    const ev = getEventBuffer().find((e) => e.name === 'gamification_order_placed');
+    expect(ev?.properties?.order_total).toBe(0);
+  });
+
+  it('drops event when rate limit exceeded', () => {
+    for (let i = 0; i < 20; i++) {
+      gamificationRateLimiter.recordEmission();
+    }
+    orderPlaced('ord-rl', 100);
+    const events = getEventBuffer().filter((e) => e.name === 'gamification_order_placed');
+    expect(events).toHaveLength(0);
   });
 });
 
