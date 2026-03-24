@@ -1512,7 +1512,7 @@ export function ProductDetailScreen({
       {arPointsVisible && (
         <TouchableOpacity
           style={[styles.arAccountLink, { bottom: 49 + insets.bottom + 8 + 44 }]}
-          onPress={() => navigation.navigate('Account')}
+          onPress={() => navigation.navigate('Tabs', { screen: 'Account' })}
           testID="ar-account-link"
           accessibilityLabel="View your points in Account"
           accessibilityRole="button"

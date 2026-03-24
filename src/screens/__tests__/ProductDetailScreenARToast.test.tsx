@@ -16,7 +16,6 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { FUTON_MODELS } from '@/data/futons';
 
-
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
 }));
@@ -132,7 +131,12 @@ jest.mock('@/utils', () => ({
 }));
 
 jest.mock('@/hooks/useRecentlyViewed', () => ({
-  useRecentlyViewed: () => ({ recentProducts: [], addViewed: jest.fn(), clearAll: jest.fn(), count: 0 }),
+  useRecentlyViewed: () => ({
+    recentProducts: [],
+    addViewed: jest.fn(),
+    clearAll: jest.fn(),
+    count: 0,
+  }),
 }));
 
 jest.mock('@/hooks/useRecentlyViewedSlugs', () => ({
