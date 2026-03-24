@@ -32,6 +32,7 @@ interface MilestonePushState {
 
 export interface UseStreakMilestonePushOptions {
   streak: number;
+  streakLoading?: boolean;
   streakMilestoneEnabled: boolean;
   permissionGranted: boolean;
 }
@@ -77,10 +78,14 @@ async function cancelExisting(state: MilestonePushState | null): Promise<void> {
  */
 export function useStreakMilestonePush({
   streak,
+  streakLoading = false,
   streakMilestoneEnabled,
   permissionGranted,
 }: UseStreakMilestonePushOptions): void {
   useEffect(() => {
+    // Wait for streak to be loaded from storage before acting
+    if (streakLoading) return;
+
     let cancelled = false;
 
     async function run() {
@@ -108,7 +113,7 @@ export function useStreakMilestonePush({
         const notifId = await Notifications.scheduleNotificationAsync({
           content: {
             title: "You're on a 7-day streak! 🔥",
-            body: "Keep it going! Open the app today to hit Day 7 and earn bonus points.",
+            body: 'Keep it going! Open the app today to hit Day 7 and earn bonus points.',
             data: {
               type: 'streak_milestone',
               deepLink: 'carolinafutons://challenges',
@@ -123,8 +128,8 @@ export function useStreakMilestonePush({
 
         if (cancelled) return;
         await saveState({ scheduledNotificationId: notifId, scheduledForStreak: TRIGGER_STREAK });
-      } catch {
-        // Scheduling failed — non-critical, don't crash
+      } catch (err) {
+        if (__DEV__) console.warn('[StreakMilestonePush] Failed to schedule notification:', err);
       }
     }
 
@@ -132,5 +137,5 @@ export function useStreakMilestonePush({
     return () => {
       cancelled = true;
     };
-  }, [streak, streakMilestoneEnabled, permissionGranted]);
+  }, [streak, streakLoading, streakMilestoneEnabled, permissionGranted]);
 }

@@ -12,11 +12,12 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { useStreakMilestonePush } from '@/hooks/useStreakMilestonePush';
 
 export function StreakMilestoneBridge() {
-  const { streak } = useStreak();
+  const { streak, loading: streakLoading } = useStreak();
   const { preferences, permissionStatus } = useNotifications();
 
   useStreakMilestonePush({
     streak,
+    streakLoading,
     streakMilestoneEnabled: preferences.streakMilestone,
     permissionGranted: permissionStatus === 'granted',
   });

@@ -236,4 +236,36 @@ describe('useStreakMilestonePush', () => {
 
     await act(async () => {});
   });
+
+  it('does NOT schedule when streakLoading is true (cold-start guard)', async () => {
+    renderHook(() =>
+      useStreakMilestonePush({
+        streak: 6,
+        streakLoading: true,
+        streakMilestoneEnabled: true,
+        permissionGranted: true,
+      }),
+    );
+
+    await act(async () => {});
+    expect(mockScheduleNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('does NOT cancel on streak===1 while loading (prevents false reset)', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ scheduledNotificationId: 'notif', scheduledForStreak: 6 }),
+    );
+
+    renderHook(() =>
+      useStreakMilestonePush({
+        streak: 1,
+        streakLoading: true,
+        streakMilestoneEnabled: true,
+        permissionGranted: true,
+      }),
+    );
+
+    await act(async () => {});
+    expect(mockCancelScheduledNotificationAsync).not.toHaveBeenCalled();
+  });
 });
