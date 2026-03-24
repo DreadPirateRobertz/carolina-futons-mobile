@@ -16,13 +16,12 @@ import {
 // ── isGamificationType ────────────────────────────────────────────────────────
 
 describe('isGamificationType', () => {
-  it.each<GamificationNotificationType>([
-    'streak_milestone',
-    'quest_complete',
-    'spin_reminder',
-  ])('returns true for "%s"', (type) => {
-    expect(isGamificationType(type)).toBe(true);
-  });
+  it.each<GamificationNotificationType>(['streak_milestone', 'quest_complete', 'spin_reminder'])(
+    'returns true for "%s"',
+    (type) => {
+      expect(isGamificationType(type)).toBe(true);
+    },
+  );
 
   it.each([
     'order_update',

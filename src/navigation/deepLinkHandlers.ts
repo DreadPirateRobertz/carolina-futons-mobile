@@ -32,7 +32,7 @@ export function isGamificationType(type: string): type is GamificationNotificati
 
 /** Map a gamification notification type to its Loyalty screen tab. */
 export function resolveGamificationRoute(type: GamificationNotificationType): GamificationRoute {
-  const tabMap: Record<GamificationNotificationType, GamificationInitialTab> = {
+  const tabMap: Record<GamificationNotificationType, LoyaltyInitialTab> = {
     streak_milestone: 'streak',
     quest_complete: 'quests',
     spin_reminder: 'spin',

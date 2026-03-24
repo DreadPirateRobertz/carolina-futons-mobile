@@ -480,10 +480,7 @@ export function AppNavigator() {
           </Stack.Screen>
           <Stack.Screen name="Loyalty" options={modalTransition}>
             {({ route, navigation: nav }) => (
-              <LoyaltyScreen
-                onClose={() => nav.goBack()}
-                initialTab={route.params?.initialTab}
-              />
+              <LoyaltyScreen onClose={() => nav.goBack()} initialTab={route.params?.initialTab} />
             )}
           </Stack.Screen>
           <Stack.Screen name="Leaderboard" options={fadeTransition}>
