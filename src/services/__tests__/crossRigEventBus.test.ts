@@ -29,8 +29,11 @@ import {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function mockClient(response: object = { success: true }, shouldThrow?: Error) {
-  return {
+function mockClient(response: object = { success: true }, shouldThrow?: Error, token?: string | null) {
+  const client: {
+    callFunction: jest.Mock;
+    getSessionToken?: jest.Mock;
+  } = {
     callFunction: jest.fn(
       async (_name: string, _method: string, _body: Record<string, unknown>) => {
         if (shouldThrow) throw shouldThrow;
@@ -38,6 +41,10 @@ function mockClient(response: object = { success: true }, shouldThrow?: Error) {
       },
     ),
   };
+  if (token !== undefined) {
+    client.getSessionToken = jest.fn(async () => token);
+  }
+  return client;
 }
 
 const USER = 'member-abc123';
@@ -348,5 +355,58 @@ describe('replayCrossRigQueue', () => {
     expect(body.eventId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
+  });
+});
+
+// ── Bearer token attachment ────────────────────────────────────────────────
+
+describe('Bearer token attachment', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('includes sessionToken in emitted body when getSessionToken returns a value', async () => {
+    const client = mockClient({ success: true }, undefined, 'tok_abc123');
+    await emitStreakExtended(client, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.sessionToken).toBe('tok_abc123');
+  });
+
+  it('omits sessionToken when getSessionToken returns null', async () => {
+    const client = mockClient({ success: true }, undefined, null);
+    await emitStreakExtended(client, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.sessionToken).toBeUndefined();
+  });
+
+  it('omits sessionToken when client has no getSessionToken method', async () => {
+    const client = mockClient(); // no token arg → no getSessionToken
+    await emitStreakExtended(client, { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.sessionToken).toBeUndefined();
+  });
+
+  it('does NOT store sessionToken in queue (tokens expire before replay)', async () => {
+    const client = mockClient({ success: true }, new Error('Network timeout'), 'tok_xyz');
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const raw = await AsyncStorage.getItem('@cf_cross_rig_queue');
+    const queue = JSON.parse(raw!) as Array<{ body: Record<string, unknown> }>;
+    expect(queue[0].body.sessionToken).toBeUndefined();
+  });
+
+  it('attaches fresh sessionToken to replayed events', async () => {
+    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const client = mockClient({ success: true }, undefined, 'fresh_tok');
+    await replayCrossRigQueue(client);
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.sessionToken).toBe('fresh_tok');
+  });
+
+  it('replays without sessionToken when getSessionToken returns null (logged-out replay)', async () => {
+    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const client = mockClient({ success: true }, undefined, null);
+    await replayCrossRigQueue(client);
+    const body = client.callFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body.sessionToken).toBeUndefined();
   });
 });

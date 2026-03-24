@@ -20,6 +20,7 @@ import type {
 } from '@/data/products';
 import { productId } from '@/data/productId';
 import { withRetry } from './retry';
+import { getWixSdkClient } from './wixSdkClient';
 
 // ── Config ─────────────────────────────────────────────────────
 
@@ -1165,6 +1166,16 @@ export class WixClient {
       return this.post<T>(path, body ?? {});
     }
     return this.get<T>(path);
+  }
+
+  /**
+   * Returns the current Wix session Bearer token for authenticated requests.
+   * Used by crossRigEventBus to attach caller identity for server-side validation.
+   * Returns null if no session is active.
+   */
+  async getSessionToken(): Promise<string | null> {
+    const tokens = getWixSdkClient().auth.getTokens();
+    return tokens.accessToken?.value ?? null;
   }
 
   // ── HTTP helpers ───────────────────────────────────────────

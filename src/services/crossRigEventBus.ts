@@ -32,6 +32,7 @@ interface ReplayResult {
 
 interface WixClientLike {
   callFunction: (name: string, method: string, body: Record<string, unknown>) => Promise<unknown>;
+  getSessionToken?: () => Promise<string | null>;
 }
 
 interface QueuedEvent {
@@ -88,8 +89,11 @@ async function emit(
     return { success: false, queued: true };
   }
 
+  const sessionToken = client.getSessionToken ? await client.getSessionToken() : null;
+  const sendBody = sessionToken ? { ...body, sessionToken } : body;
+
   try {
-    const response = await client.callFunction(WIX_FN, 'POST', body);
+    const response = await client.callFunction(WIX_FN, 'POST', sendBody);
     const res = response as Record<string, unknown>;
     if (res.success === false && res.status === 400) {
       return { success: false, error: (res.error as string) ?? 'schema_error' };
@@ -150,12 +154,15 @@ export async function replayCrossRigQueue(client: WixClientLike): Promise<Replay
   const queue: QueuedEvent[] = JSON.parse(raw);
   if (queue.length === 0) return { replayed: 0, failed: 0 };
 
+  const sessionToken = client.getSessionToken ? await client.getSessionToken() : null;
+
   let replayed = 0;
   const failed: QueuedEvent[] = [];
 
   for (const item of queue) {
+    const sendBody = sessionToken ? { ...item.body, sessionToken } : item.body;
     try {
-      await client.callFunction(item.fnName, 'POST', item.body);
+      await client.callFunction(item.fnName, 'POST', sendBody);
       replayed++;
     } catch (err) {
       failed.push(item);
