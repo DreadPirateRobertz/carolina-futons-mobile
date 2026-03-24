@@ -31,7 +31,13 @@ interface ReplayResult {
 }
 
 interface WixClientLike {
-  callFunction: (name: string, method: string, body: Record<string, unknown>) => Promise<unknown>;
+  callFunction: (
+    name: string,
+    method: 'GET' | 'POST',
+    body: Record<string, unknown>,
+  ) => Promise<unknown>;
+  /** Optional — called on 401 to refresh the session before a single retry. */
+  refreshTokens?: () => Promise<void>;
 }
 
 interface QueuedEvent {
@@ -65,6 +71,29 @@ function is400(err: unknown): boolean {
   return false;
 }
 
+function is401(err: unknown): boolean {
+  return err instanceof Error && (err as Error & { status?: number }).status === 401;
+}
+
+/**
+ * Calls callFunction once. On 401, refreshes the session token and retries exactly once.
+ * If refresh fails or the retry also throws, the error is re-thrown for the caller to handle.
+ */
+async function callWithRetry(
+  client: WixClientLike,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  try {
+    return await client.callFunction(WIX_FN, 'POST', body);
+  } catch (err) {
+    if (is401(err) && client.refreshTokens) {
+      await client.refreshTokens();
+      return await client.callFunction(WIX_FN, 'POST', body);
+    }
+    throw err;
+  }
+}
+
 async function enqueue(body: Record<string, unknown>): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
@@ -89,7 +118,7 @@ async function emit(
   }
 
   try {
-    const response = await client.callFunction(WIX_FN, 'POST', body);
+    const response = await callWithRetry(client, body);
     const res = response as Record<string, unknown>;
     if (res.success === false && res.status === 400) {
       return { success: false, error: (res.error as string) ?? 'schema_error' };
@@ -100,7 +129,7 @@ async function emit(
       captureException(err instanceof Error ? err : new Error(String(err)));
       return { success: false, error: (err as Error).message };
     }
-    // Network / transient error → queue
+    // Network / transient / 401 post-retry failure → queue
     await enqueue(body);
     return { success: false, queued: true };
   }
@@ -155,9 +184,9 @@ export async function replayCrossRigQueue(client: WixClientLike): Promise<Replay
 
   for (const item of queue) {
     try {
-      await client.callFunction(item.fnName, 'POST', item.body);
+      await callWithRetry(client, item.body);
       replayed++;
-    } catch (err) {
+    } catch {
       failed.push(item);
     }
   }
