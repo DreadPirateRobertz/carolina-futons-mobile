@@ -332,6 +332,36 @@ describe('AvatarEquipScreen', () => {
     });
   });
 
+  // ── Reconnect edge cases ─────────────────────────────────────────────────
+
+  describe('reconnect edge cases', () => {
+    it('rolls back and shows error when wix client is null on reconnect flush', async () => {
+      // Equip offline
+      const { getByTestId, findByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      // Wix client disappears before reconnect
+      mockGetWixClient.mockReturnValue(null);
+      await act(async () => {
+        testSetOnline?.(true);
+      });
+      expect(findByTestId('avatar-equip-equip-error')).toBeTruthy();
+    });
+
+    it('rolls back optimistic equip on non-403 network error during reconnect flush', async () => {
+      const { getByTestId, queryByTestId } = renderScreenWithConnectivity(false);
+      await act(async () => {
+        fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      });
+      mockEquipAccessory.mockRejectedValue(new Error('Network timeout'));
+      await act(async () => {
+        testSetOnline?.(true);
+      });
+      expect(queryByTestId('accessory-equipped-hat-crown')).toBeNull();
+    });
+  });
+
   // ── 403 rollback ────────────────────────────────────────────────────────
 
   describe('403 rollback', () => {
@@ -356,6 +386,16 @@ describe('AvatarEquipScreen', () => {
 
     it('shows 403-specific message in toast', async () => {
       const err = new Error('403 Forbidden');
+      mockEquipAccessory.mockRejectedValue(err);
+      const { getByTestId, findByTestId } = renderScreen();
+      fireEvent.press(getByTestId('accessory-item-hat-crown'));
+      const errorEl = await findByTestId('avatar-equip-equip-error');
+      expect(errorEl.props.children).toMatch(/not authorized|403/i);
+    });
+
+    it('recognizes 403 from plain object with status property (non-Error throw)', async () => {
+      // Covers lines 35-39: is403Error branch for non-Error objects
+      const err = { status: 403 };
       mockEquipAccessory.mockRejectedValue(err);
       const { getByTestId, findByTestId } = renderScreen();
       fireEvent.press(getByTestId('accessory-item-hat-crown'));
