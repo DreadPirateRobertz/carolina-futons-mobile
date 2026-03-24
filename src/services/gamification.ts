@@ -85,3 +85,15 @@ export function wishlistAdd(productId: string): void {
     300,
   );
 }
+
+/**
+ * Fire a gamification event when an order is placed at checkout.
+ * Awards points per the "Purchase" earning rule (10 pts / $1 spent).
+ * cfutons_mobile-r2o
+ *
+ * @param orderId - Wix eCommerce order ID (used as idempotency key server-side).
+ * @param orderTotal - Grand total in USD including tax and shipping.
+ */
+export function orderPlaced(orderId: string, orderTotal: number): void {
+  guardedEmit('gamification_order_placed', { order_id: orderId, order_total: orderTotal });
+}
