@@ -89,7 +89,14 @@ function wrapper({ children }: { children: React.ReactNode }) {
   });
 }
 
-async function addCartItem(result: ReturnType<typeof renderHook<{ cart: ReturnType<typeof useCart>; payment: ReturnType<typeof usePayment> }, typeof wrapper>>['result']) {
+async function addCartItem(
+  result: ReturnType<
+    typeof renderHook<
+      { cart: ReturnType<typeof useCart>; payment: ReturnType<typeof usePayment> },
+      typeof wrapper
+    >
+  >['result'],
+) {
   return act(async () => {
     result.current.cart.addItem(
       { id: 'test-model', name: 'Test Futon', basePrice: 349 } as any,
@@ -108,10 +115,7 @@ describe('usePayment — gamification_order_placed wiring (cfutons_mobile-r2o)',
   });
 
   it('fires orderPlaced after successful card payment', async () => {
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
     await addCartItem(result);
     await act(async () => {
       await result.current.payment.processPayment('card');
@@ -129,10 +133,7 @@ describe('usePayment — gamification_order_placed wiring (cfutons_mobile-r2o)',
     };
     mockedConfirmOrder.mockResolvedValue(custom);
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
     await addCartItem(result);
     await act(async () => {
       await result.current.payment.processPayment('card');
@@ -152,10 +153,7 @@ describe('usePayment — gamification_order_placed wiring (cfutons_mobile-r2o)',
   it('does NOT fire orderPlaced when confirmOrder throws', async () => {
     mockedConfirmOrder.mockRejectedValue(new Error('Order creation failed'));
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
     await addCartItem(result);
     await act(async () => {
       await result.current.payment.processPayment('card');
@@ -168,10 +166,7 @@ describe('usePayment — gamification_order_placed wiring (cfutons_mobile-r2o)',
   it('does NOT block payment success if orderPlaced rejects', async () => {
     mockOrderPlaced.mockRejectedValue(new Error('gamification service down'));
 
-    const { result } = renderHook(
-      () => ({ cart: useCart(), payment: usePayment() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), { wrapper });
     await addCartItem(result);
     let order: unknown;
     await act(async () => {

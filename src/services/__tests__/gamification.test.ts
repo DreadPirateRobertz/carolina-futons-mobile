@@ -3,7 +3,14 @@
  *
  * Covers all event paths, hasPhoto variants, and rate limit guard (hq-74nry).
  */
-import { addToCart, submitReview, referralShared, arUsed, wishlistAdd, orderPlaced } from '../gamification';
+import {
+  addToCart,
+  submitReview,
+  referralShared,
+  arUsed,
+  wishlistAdd,
+  orderPlaced,
+} from '../gamification';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 

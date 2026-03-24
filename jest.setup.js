@@ -181,4 +181,3 @@ jest.mock('@/hooks/useGamificationEvents', () => ({
     orderPlaced: jest.fn().mockResolvedValue({ success: true }),
   }),
 }));
-
