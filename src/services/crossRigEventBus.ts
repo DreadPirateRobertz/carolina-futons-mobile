@@ -115,7 +115,10 @@ export async function emitChallengeStarted(
   client: WixClientLike | null,
   input: { userId: string; challengeId: string },
 ): Promise<CrossRigEventResult> {
-  return emit(client, 'challenge_started', { userId: input.userId, challengeId: input.challengeId });
+  return emit(client, 'challenge_started', {
+    userId: input.userId,
+    challengeId: input.challengeId,
+  });
 }
 
 export async function emitRedemptionInitiated(
