@@ -31,8 +31,12 @@ interface ReplayResult {
 }
 
 interface WixClientLike {
-  callFunction: (name: string, method: string, body: Record<string, unknown>) => Promise<unknown>;
-  /** Refreshes the Wix session token. Called once on 401 before retry. */
+  callFunction: (
+    name: string,
+    method: 'GET' | 'POST',
+    body: Record<string, unknown>,
+  ) => Promise<unknown>;
+  /** Optional — called on 401 to refresh the session before a single retry. */
   refreshTokens?: () => Promise<void>;
 }
 
@@ -68,8 +72,26 @@ function is400(err: unknown): boolean {
 }
 
 function is401(err: unknown): boolean {
-  if (err instanceof Error && (err as Error & { status?: number }).status === 401) return true;
-  return false;
+  return err instanceof Error && (err as Error & { status?: number }).status === 401;
+}
+
+/**
+ * Calls callFunction once. On 401, refreshes the session token and retries exactly once.
+ * If refresh fails or the retry also throws, the error is re-thrown for the caller to handle.
+ */
+async function callWithRetry(
+  client: WixClientLike,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  try {
+    return await client.callFunction(WIX_FN, 'POST', body);
+  } catch (err) {
+    if (is401(err) && client.refreshTokens) {
+      await client.refreshTokens();
+      return await client.callFunction(WIX_FN, 'POST', body);
+    }
+    throw err;
+  }
 }
 
 async function enqueue(body: Record<string, unknown>): Promise<void> {
@@ -96,7 +118,7 @@ async function emit(
   }
 
   try {
-    const response = await client.callFunction(WIX_FN, 'POST', body);
+    const response = await callWithRetry(client, body);
     const res = response as Record<string, unknown>;
     if (res.success === false && res.status === 400) {
       return { success: false, error: (res.error as string) ?? 'schema_error' };
@@ -108,19 +130,10 @@ async function emit(
       return { success: false, error: (err as Error).message };
     }
     if (is401(err)) {
-      // Refresh session token and retry once — 401 is not a queueable transient error
-      try {
-        await client.refreshTokens?.();
-        await client.callFunction(WIX_FN, 'POST', body);
-        return { success: true };
-      } catch (retryErr) {
-        return {
-          success: false,
-          error: retryErr instanceof Error ? retryErr.message : 'auth_error',
-        };
-      }
+      // 401 after refresh+retry = stale auth, not transient — do NOT queue
+      return { success: false, error: (err as Error).message };
     }
-    // Network / transient error → queue
+    // Network / transient failures → queue for replay
     await enqueue(body);
     return { success: false, queued: true };
   }
@@ -128,15 +141,12 @@ async function emit(
 
 // ── Public API ────────────────────────────────────────────────────────────────
 
-// NOTE: userId is intentionally absent from all payloads — the server resolves
-// memberId from the Wix session token via getMemberIdentity(). Sending userId
-// in the body is an IDOR forgery vector. hq-u35ub.
-
 export async function emitStreakExtended(
   client: WixClientLike | null,
-  input: { streak: number; delta: number; newTotal: number },
+  input: { userId: string; streak: number; delta: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'streak_extended', {
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     streak: input.streak,
     delta: input.delta,
     newTotal: input.newTotal,
@@ -145,9 +155,10 @@ export async function emitStreakExtended(
 
 export async function emitChallengeStarted(
   client: WixClientLike | null,
-  input: { challengeId: string; currentPoints: number },
+  input: { userId: string; challengeId: string; currentPoints: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'challenge_started', {
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     challengeId: input.challengeId,
     delta: 0, // no points change on challenge start — consistent envelope shape per cf-44r
     newTotal: input.currentPoints,
@@ -156,9 +167,10 @@ export async function emitChallengeStarted(
 
 export async function emitRedemptionInitiated(
   client: WixClientLike | null,
-  input: { pointsRedeemed: number; newTotal: number },
+  input: { userId: string; pointsRedeemed: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'redemption_initiated', {
+    // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
     delta: -input.pointsRedeemed, // negative: points leaving the account
     newTotal: input.newTotal,
   });
@@ -176,9 +188,9 @@ export async function replayCrossRigQueue(client: WixClientLike): Promise<Replay
 
   for (const item of queue) {
     try {
-      await client.callFunction(item.fnName, 'POST', item.body);
+      await callWithRetry(client, item.body);
       replayed++;
-    } catch (err) {
+    } catch {
       failed.push(item);
     }
   }

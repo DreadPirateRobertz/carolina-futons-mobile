@@ -5,8 +5,8 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
-import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 
 const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();

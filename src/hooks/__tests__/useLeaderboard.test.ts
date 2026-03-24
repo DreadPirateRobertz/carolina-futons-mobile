@@ -16,26 +16,24 @@ jest.mock('@/services/wix/wixClientSingleton', () => ({
     mockClientOverride === undefined ? { getLeaderboard: mockGetLeaderboard } : mockClientOverride,
 }));
 
-// Server response shape (nickname field)
-const SAMPLE_ENTRIES = [
+// API response uses nickname (server field name)
+const SAMPLE_API_ENTRIES = [
   { memberId: 'm1', nickname: 'Alice', points: 2500, tier: 'gold', rank: 1 },
   { memberId: 'm2', nickname: 'Bob', points: 800, tier: 'silver', rank: 2 },
   { memberId: 'm3', nickname: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
-
-const SAMPLE_WEEKLY = [
-  { memberId: 'm2', nickname: 'Bob', points: 150, tier: 'silver', rank: 1 },
-  { memberId: 'm1', nickname: 'Alice', points: 100, tier: 'gold', rank: 2 },
-];
-
-// Mapped hook output shape (displayName field)
-const MAPPED_ENTRIES = [
+// Hook maps nickname → displayName
+const SAMPLE_ENTRIES = [
   { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
   { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
   { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
 
-const MAPPED_WEEKLY = [
+const SAMPLE_WEEKLY_API = [
+  { memberId: 'm2', nickname: 'Bob', points: 150, tier: 'silver', rank: 1 },
+  { memberId: 'm1', nickname: 'Alice', points: 100, tier: 'gold', rank: 2 },
+];
+const SAMPLE_WEEKLY = [
   { memberId: 'm2', displayName: 'Bob', points: 150, tier: 'silver', rank: 1 },
   { memberId: 'm1', displayName: 'Alice', points: 100, tier: 'gold', rank: 2 },
 ];
@@ -43,7 +41,7 @@ const MAPPED_WEEKLY = [
 beforeEach(() => {
   jest.clearAllMocks();
   mockClientOverride = undefined;
-  mockGetLeaderboard.mockResolvedValue({ entries: SAMPLE_ENTRIES, currentUserRank: 2 });
+  mockGetLeaderboard.mockResolvedValue({ entries: SAMPLE_API_ENTRIES, currentUserRank: 2 });
 });
 
 describe('useLeaderboard', () => {
@@ -58,7 +56,7 @@ describe('useLeaderboard', () => {
     const { result } = renderHook(() => useLeaderboard());
     await act(async () => {});
     expect(mockGetLeaderboard).toHaveBeenCalledWith({ period: 'allTime', limit: 20 });
-    expect(result.current.entries).toEqual(MAPPED_ENTRIES);
+    expect(result.current.entries).toEqual(SAMPLE_ENTRIES);
     expect(result.current.loading).toBe(false);
   });
 
@@ -76,8 +74,8 @@ describe('useLeaderboard', () => {
 
   it('setPeriod to weekly refetches with correct param', async () => {
     mockGetLeaderboard
-      .mockResolvedValueOnce({ entries: SAMPLE_ENTRIES, currentUserRank: 2 })
-      .mockResolvedValueOnce({ entries: SAMPLE_WEEKLY, currentUserRank: 1 });
+      .mockResolvedValueOnce({ entries: SAMPLE_API_ENTRIES, currentUserRank: 2 })
+      .mockResolvedValueOnce({ entries: SAMPLE_WEEKLY_API, currentUserRank: 1 });
 
     const { result } = renderHook(() => useLeaderboard());
     await act(async () => {});
@@ -87,7 +85,7 @@ describe('useLeaderboard', () => {
     });
 
     expect(mockGetLeaderboard).toHaveBeenCalledWith({ period: 'weekly', limit: 20 });
-    expect(result.current.entries).toEqual(MAPPED_WEEKLY);
+    expect(result.current.entries).toEqual(SAMPLE_WEEKLY);
     expect(result.current.period).toBe('weekly');
   });
 
@@ -95,7 +93,7 @@ describe('useLeaderboard', () => {
     const { result } = renderHook(() => useLeaderboard());
     await act(async () => {});
 
-    mockGetLeaderboard.mockResolvedValueOnce({ entries: SAMPLE_ENTRIES, currentUserRank: 3 });
+    mockGetLeaderboard.mockResolvedValueOnce({ entries: SAMPLE_API_ENTRIES, currentUserRank: 3 });
     await act(async () => {
       await result.current.refresh();
     });
@@ -116,7 +114,7 @@ describe('useLeaderboard', () => {
   it('clears error on successful retry', async () => {
     mockGetLeaderboard
       .mockRejectedValueOnce(new Error('fail'))
-      .mockResolvedValueOnce({ entries: SAMPLE_ENTRIES, currentUserRank: 2 });
+      .mockResolvedValueOnce({ entries: SAMPLE_API_ENTRIES, currentUserRank: 2 });
 
     const { result } = renderHook(() => useLeaderboard());
     await act(async () => {});
@@ -126,7 +124,7 @@ describe('useLeaderboard', () => {
       await result.current.refresh();
     });
     expect(result.current.error).toBeNull();
-    expect(result.current.entries).toEqual(MAPPED_ENTRIES);
+    expect(result.current.entries).toEqual(SAMPLE_ENTRIES);
   });
 
   it('handles wix client unavailable (null) gracefully', async () => {

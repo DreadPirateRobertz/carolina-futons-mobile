@@ -46,6 +46,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
 import { CartPointsSummary } from '@/components/CartPointsSummary';
+import { TierProgressBar } from '@/components/TierProgressBar';
+import { useLoyalty } from '@/hooks/useLoyalty';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -76,6 +78,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
+  const { points } = useLoyalty();
   const [promoInput, setPromoInput] = useState('');
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
 
@@ -373,6 +376,12 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           </View>
 
           <CartPointsSummary subtotal={subtotal} isAuthenticated={isAuthenticated} />
+
+          {isAuthenticated && (
+            <View style={styles.loyaltyProgressContainer}>
+              <TierProgressBar points={points} testID="cart-loyalty-progress" />
+            </View>
+          )}
 
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
 
@@ -841,6 +850,10 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     marginVertical: 10,
+  },
+  loyaltyProgressContainer: {
+    marginTop: 12,
+    marginBottom: 4,
   },
   totalLabel: {
     fontSize: 18,
