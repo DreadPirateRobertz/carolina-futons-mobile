@@ -8,10 +8,13 @@
  * No user-supplied memberId — no IDOR risk.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import { useStreak } from '@/hooks/useStreak';
+import { emitStreakExtended } from '@/services/crossRigEventBus';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
 
 export type LoyaltyInitialTab = 'streak' | 'quests' | 'spin';
@@ -31,6 +34,15 @@ const TIER_NEXT: Record<string, { label: string; threshold: number } | null> = {
 export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { points, tier, loading, error, refreshPoints } = useLoyalty();
+  const { streak, loading: streakLoading, wasExtendedToday } = useStreak();
+  const streakEmitted = useRef(false);
+
+  useEffect(() => {
+    if (streakLoading || !wasExtendedToday || streakEmitted.current) return;
+    streakEmitted.current = true;
+    const client = getWixClientSingleton();
+    emitStreakExtended(client, { streak, delta: 1, newTotal: points });
+  }, [wasExtendedToday, streakLoading, streak, points]);
 
   if (loading) {
     return (

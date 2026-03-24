@@ -29,11 +29,14 @@ function daysBetween(a: string, b: string): number {
 export interface UseStreakResult {
   streak: number;
   loading: boolean;
+  /** True only when this session extended the streak (gap from last visit was exactly 1 day). */
+  wasExtendedToday: boolean;
 }
 
 export function useStreak(): UseStreakResult {
   const [streak, setStreak] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [wasExtendedToday, setWasExtendedToday] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,6 +64,7 @@ export function useStreak(): UseStreakResult {
 
         const gap = daysBetween(record.lastVisit, today);
         const newStreak = gap === 1 ? record.streak + 1 : 1;
+        if (gap === 1) setWasExtendedToday(true);
         setStreak(newStreak);
         await AsyncStorage.setItem(
           STORAGE_KEY,
@@ -80,5 +84,5 @@ export function useStreak(): UseStreakResult {
     };
   }, []);
 
-  return { streak, loading };
+  return { streak, loading, wasExtendedToday };
 }
