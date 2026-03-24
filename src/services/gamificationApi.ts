@@ -42,6 +42,17 @@ export interface GamificationEventResult {
   error?: Error;
 }
 
+/** Server-side trigger signals returned from a receiveGamificationEvent response. */
+export interface ServerTriggers {
+  tierChanged: boolean;
+  newTier: string | null;
+  milestoneUnlocked: boolean;
+  /** Badge key unlocked (e.g. 'streak_chip'), or null if none. */
+  badgeUnlocked: string | null;
+  challengeCompleted: Array<{ challengeId: string; title: string; rewardPoints: number }>;
+  streakDanger: boolean;
+}
+
 interface QueuedGamificationEvent {
   eventId: string;
   eventName: GamificationEventName;
