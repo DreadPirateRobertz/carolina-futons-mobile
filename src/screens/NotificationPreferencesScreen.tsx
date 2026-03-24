@@ -11,6 +11,8 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Switch } from 're
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
+import { NotificationToggle } from '@/components/NotificationToggle';
 import {
   NOTIFICATION_TYPE_CONFIG,
   type NotificationType,
@@ -29,10 +31,23 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'cart_reminder',
 ];
 
+const GAMIFICATION_TYPES: NotificationType[] = [
+  'streak_milestone',
+  'quest_complete',
+  'daily_spin_reminder',
+];
+
 /** Per-category notification toggle screen with OS permission handling. */
 export function NotificationPreferencesScreen({ onBack, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const { permissionStatus, preferences, togglePreference, requestPermission } = useNotifications();
+  const {
+    preferences: gamifPrefs,
+    toggle: gamifToggle,
+    isPushSupported,
+    isSaving: gamifSaving,
+    error: gamifError,
+  } = useNotificationPreferences();
 
   const handleToggle = useCallback(
     (key: keyof NotificationPreferences) => {
@@ -191,6 +206,48 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
             );
           })}
         </View>
+
+        {/* Gamification Notifications */}
+        <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
+          <Text
+            testID="gamification-section-header"
+            style={[
+              styles.sectionHeader,
+              {
+                color: darkPalette.textPrimary,
+                fontFamily: typography.headingFamily,
+              },
+            ]}
+          >
+            Rewards & Challenges
+          </Text>
+
+          {gamifError ? (
+            <Text
+              testID="gamification-prefs-error"
+              style={[styles.errorText, { color: colors.sunsetCoral }]}
+            >
+              Failed to save — please try again
+            </Text>
+          ) : null}
+
+          {GAMIFICATION_TYPES.map((type) => {
+            const config = NOTIFICATION_TYPE_CONFIG[type];
+            const prefKey = config.prefKey as keyof typeof gamifPrefs;
+            return (
+              <NotificationToggle
+                key={type}
+                label={config.label}
+                description={config.description}
+                value={Boolean(gamifPrefs[prefKey])}
+                onToggle={() => gamifToggle(prefKey)}
+                testID={`pref-row-${type}`}
+                toggleTestID={`pref-toggle-${type}`}
+                disabled={!isPushSupported || gamifSaving}
+              />
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );
@@ -272,5 +329,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
     lineHeight: 18,
+  },
+  sectionHeader: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  errorText: {
+    fontSize: 13,
+    marginBottom: 8,
   },
 });

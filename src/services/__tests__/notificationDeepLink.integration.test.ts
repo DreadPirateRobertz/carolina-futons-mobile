@@ -220,6 +220,9 @@ describe('Notification preference gating before deep link routing', () => {
       promotions: false,
       backInStock: false,
       cartReminders: false,
+      streakMilestone: false,
+      questComplete: false,
+      dailySpinReminder: false,
     };
 
     for (const type of allTypes) {
@@ -234,6 +237,9 @@ describe('Notification preference gating before deep link routing', () => {
       promotions: true,
       backInStock: true,
       cartReminders: true,
+      streakMilestone: true,
+      questComplete: true,
+      dailySpinReminder: true,
     };
 
     for (const type of allTypes) {

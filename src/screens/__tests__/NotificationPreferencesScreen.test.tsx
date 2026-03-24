@@ -29,11 +29,37 @@ jest.mock('@/hooks/useNotificationStorage', () => ({
       promotions: true,
       backInStock: true,
       cartReminders: false,
+      streakMilestone: true,
+      questComplete: true,
+      dailySpinReminder: false,
     },
     isLoading: false,
     savePreferences: jest.fn().mockResolvedValue(undefined),
   }),
 }));
+
+const mockToggle = jest.fn().mockResolvedValue(undefined);
+const mockUseNotificationPreferences = jest.fn();
+jest.mock('@/hooks/useNotificationPreferences', () => ({
+  useNotificationPreferences: (...args: unknown[]) => mockUseNotificationPreferences(...args),
+}));
+
+const defaultGamifPrefs = {
+  preferences: {
+    orderUpdates: true,
+    promotions: true,
+    backInStock: true,
+    cartReminders: false,
+    streakMilestone: true,
+    questComplete: true,
+    dailySpinReminder: false,
+  },
+  toggle: mockToggle,
+  isPushSupported: true,
+  isLoading: false,
+  isSaving: false,
+  error: null,
+};
 
 function renderNotifPrefs(
   props: Partial<React.ComponentProps<typeof NotificationPreferencesScreen>> = {},
@@ -48,6 +74,10 @@ function renderNotifPrefs(
 }
 
 describe('NotificationPreferencesScreen', () => {
+  beforeEach(() => {
+    mockUseNotificationPreferences.mockReturnValue(defaultGamifPrefs);
+  });
+
   describe('Rendering', () => {
     it('renders with default testID', () => {
       const { getByTestId } = renderNotifPrefs();
@@ -199,6 +229,98 @@ describe('NotificationPreferencesScreen', () => {
       expect(getByTestId('enable-notifications-button').props.accessibilityLabel).toBe(
         'Enable push notifications',
       );
+    });
+  });
+
+  describe('Gamification notifications', () => {
+    describe('rendering', () => {
+      it('renders gamification section header', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('gamification-section-header')).toBeTruthy();
+      });
+
+      it('renders streak milestone toggle row', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-row-streak_milestone')).toBeTruthy();
+      });
+
+      it('renders quest complete toggle row', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-row-quest_complete')).toBeTruthy();
+      });
+
+      it('renders daily spin reminder toggle row', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-row-daily_spin_reminder')).toBeTruthy();
+      });
+
+      it('renders all three gamification toggle switches', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-streak_milestone')).toBeTruthy();
+        expect(getByTestId('pref-toggle-quest_complete')).toBeTruthy();
+        expect(getByTestId('pref-toggle-daily_spin_reminder')).toBeTruthy();
+      });
+    });
+
+    describe('initial values', () => {
+      it('streak milestone toggle starts enabled', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-streak_milestone').props.value).toBe(true);
+      });
+
+      it('quest complete toggle starts enabled', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-quest_complete').props.value).toBe(true);
+      });
+
+      it('daily spin reminder toggle starts disabled', () => {
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-daily_spin_reminder').props.value).toBe(false);
+      });
+    });
+
+    describe('toggle interactions', () => {
+      it('calls toggle with streakMilestone when pressed', async () => {
+        const { getByTestId } = renderNotifPrefs();
+        fireEvent(getByTestId('pref-toggle-streak_milestone'), 'valueChange', false);
+        expect(mockToggle).toHaveBeenCalledWith('streakMilestone');
+      });
+
+      it('calls toggle with questComplete when pressed', async () => {
+        const { getByTestId } = renderNotifPrefs();
+        fireEvent(getByTestId('pref-toggle-quest_complete'), 'valueChange', false);
+        expect(mockToggle).toHaveBeenCalledWith('questComplete');
+      });
+
+      it('calls toggle with dailySpinReminder when pressed', async () => {
+        const { getByTestId } = renderNotifPrefs();
+        fireEvent(getByTestId('pref-toggle-daily_spin_reminder'), 'valueChange', true);
+        expect(mockToggle).toHaveBeenCalledWith('dailySpinReminder');
+      });
+    });
+
+    describe('error state', () => {
+      it('shows error message when toggle fails', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          error: new Error('Failed to save preferences'),
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('gamification-prefs-error')).toBeTruthy();
+      });
+    });
+
+    describe('graceful handling when push not supported', () => {
+      it('disables gamification toggles when isPushSupported is false', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isPushSupported: false,
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-streak_milestone').props.disabled).toBe(true);
+        expect(getByTestId('pref-toggle-quest_complete').props.disabled).toBe(true);
+        expect(getByTestId('pref-toggle-daily_spin_reminder').props.disabled).toBe(true);
+      });
     });
   });
 });

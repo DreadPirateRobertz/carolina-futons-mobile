@@ -11,13 +11,23 @@
  */
 import { Platform } from 'react-native';
 
-export type NotificationType = 'order_update' | 'promotion' | 'back_in_stock' | 'cart_reminder';
+export type NotificationType =
+  | 'order_update'
+  | 'promotion'
+  | 'back_in_stock'
+  | 'cart_reminder'
+  | 'streak_milestone'
+  | 'quest_complete'
+  | 'daily_spin_reminder';
 
 export interface NotificationPreferences {
   orderUpdates: boolean;
   promotions: boolean;
   backInStock: boolean;
   cartReminders: boolean;
+  streakMilestone: boolean;
+  questComplete: boolean;
+  dailySpinReminder: boolean;
 }
 
 export const DEFAULT_PREFERENCES: NotificationPreferences = {
@@ -25,6 +35,9 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   promotions: true,
   backInStock: true,
   cartReminders: false,
+  streakMilestone: true,
+  questComplete: true,
+  dailySpinReminder: false,
 };
 
 export interface PushNotificationData {
@@ -56,6 +69,12 @@ export function getDeepLinkForNotification(
         : 'carolinafutons://wishlist';
     case 'cart_reminder':
       return 'carolinafutons://cart';
+    case 'streak_milestone':
+      return 'carolinafutons://challenges';
+    case 'quest_complete':
+      return 'carolinafutons://challenges';
+    case 'daily_spin_reminder':
+      return 'carolinafutons://daily-spin';
     default:
       return 'carolinafutons://home';
   }
@@ -101,6 +120,21 @@ export const NOTIFICATION_TYPE_CONFIG: Record<
     label: 'Cart Reminders',
     description: 'Gentle nudge when you have items waiting in your cart',
     prefKey: 'cartReminders',
+  },
+  streak_milestone: {
+    label: 'Streak Milestones',
+    description: 'Celebrate hitting a new streak milestone',
+    prefKey: 'streakMilestone',
+  },
+  quest_complete: {
+    label: 'Quest Complete',
+    description: 'Get notified when you complete a daily quest',
+    prefKey: 'questComplete',
+  },
+  daily_spin_reminder: {
+    label: 'Daily Spin',
+    description: 'Reminder to claim your daily spin reward',
+    prefKey: 'dailySpinReminder',
   },
 };
 
@@ -193,6 +227,24 @@ export const ANDROID_CHANNEL_CONFIG: Record<NotificationType, AndroidChannelConf
     name: 'Cart Reminders',
     description: 'Reminders about items waiting in your cart',
     importance: 2, // LOW — gentle nudges should not be intrusive
+  },
+  streak_milestone: {
+    id: 'streak-milestones',
+    name: 'Streak Milestones',
+    description: 'Celebration notifications for streak milestone achievements',
+    importance: 4, // HIGH — achievement moments should feel rewarding
+  },
+  quest_complete: {
+    id: 'quest-complete',
+    name: 'Quest Complete',
+    description: 'Notifications when daily quests are completed',
+    importance: 3, // DEFAULT — positive feedback, not urgent
+  },
+  daily_spin_reminder: {
+    id: 'daily-spin',
+    name: 'Daily Spin',
+    description: 'Reminder to claim your daily spin reward',
+    importance: 2, // LOW — opt-in reminder, should not be intrusive
   },
 };
 
