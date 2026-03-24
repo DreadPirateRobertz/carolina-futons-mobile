@@ -11,6 +11,17 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {
+  emitStreakExtended,
+  emitChallengeStarted,
+  emitRedemptionInitiated,
+  replayCrossRigQueue,
+} from '../crossRigEventBus';
+
+// ── Server 500 failure paths — cfutons_mobile-60f ─────────────────────────
+
+import { captureException } from '@/services/crashReporting';
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
@@ -18,14 +29,6 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 jest.mock('@/services/crashReporting', () => ({
   captureException: jest.fn(),
 }));
-
-import {
-  emitStreakExtended,
-  emitChallengeStarted,
-  emitRedemptionInitiated,
-  replayCrossRigQueue,
-  type CrossRigEventResult,
-} from '../crossRigEventBus';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -124,19 +127,34 @@ describe('emitStreakExtended', () => {
   });
 
   it('returns success:true on 200 response', async () => {
-    const result = await emitStreakExtended(mockClient(), { userId: USER, streak: 5, delta: 50, newTotal: 550 });
+    const result = await emitStreakExtended(mockClient(), {
+      userId: USER,
+      streak: 5,
+      delta: 50,
+      newTotal: 550,
+    });
     expect(result.success).toBe(true);
   });
 
   it('queues and returns queued:true when client is null', async () => {
-    const result = await emitStreakExtended(null, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const result = await emitStreakExtended(null, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
     expect(result.success).toBe(false);
     expect(result.queued).toBe(true);
   });
 
   it('queues and returns queued:true on network error', async () => {
     const client = mockClient({}, new Error('Network timeout'));
-    const result = await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
     expect(result.success).toBe(false);
     expect(result.queued).toBe(true);
   });
@@ -201,7 +219,11 @@ describe('emitRedemptionInitiated', () => {
   });
 
   it('queues when client null', async () => {
-    const result = await emitRedemptionInitiated(null, { userId: USER, pointsRedeemed: 100, newTotal: 900 });
+    const result = await emitRedemptionInitiated(null, {
+      userId: USER,
+      pointsRedeemed: 100,
+      newTotal: 900,
+    });
     expect(result.queued).toBe(true);
   });
 });
@@ -212,7 +234,12 @@ describe('400 rejection handling', () => {
   it('returns error and does NOT queue on 400 (schema validation failure)', async () => {
     const client = mockClient({ success: false, status: 400, error: 'missing eventId' });
     // A 400-like response: success:false, not a thrown error
-    const result = await emitStreakExtended(client, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
     // Should not queue — schema errors are not retriable
     expect(result.queued).toBeUndefined();
   });
@@ -221,7 +248,12 @@ describe('400 rejection handling', () => {
     const err = new Error('Bad Request') as Error & { status?: number };
     err.status = 400;
     const client = mockClient({}, err);
-    const result = await emitStreakExtended(client, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
     expect(result.queued).toBeUndefined();
     expect(result.success).toBe(false);
   });
@@ -283,5 +315,163 @@ describe('replayCrossRigQueue', () => {
     expect(body.eventId).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
+  });
+});
+
+describe('server 500 failure paths', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.clearAllMocks();
+  });
+
+  it('500 thrown as Error → queued for retry', async () => {
+    const err = new Error('Internal Server Error') as Error & { status?: number };
+    err.status = 500;
+    const client = mockClient({}, err);
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
+    expect(result.success).toBe(false);
+    expect(result.queued).toBe(true);
+  });
+
+  it('500 thrown as Error → NOT reported to crashReporting (retriable, not a bug)', async () => {
+    const err = new Error('Internal Server Error') as Error & { status?: number };
+    err.status = 500;
+    const client = mockClient({}, err);
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it('500 response body {success:false, status:500} → queued for retry', async () => {
+    const client = mockClient({ success: false, status: 500, error: 'server error' });
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 3,
+      delta: 30,
+      newTotal: 330,
+    });
+    expect(result.success).toBe(false);
+    expect(result.queued).toBe(true);
+  });
+
+  it('500 response body → event survives in queue for next replay', async () => {
+    const client = mockClient({ success: false, status: 500, error: 'server error' });
+    await emitStreakExtended(client, { userId: USER, streak: 3, delta: 30, newTotal: 330 });
+
+    const replayClient = mockClient();
+    const replayResult = await replayCrossRigQueue(replayClient);
+    expect(replayResult.replayed).toBe(1);
+  });
+});
+
+// ── Malformed response paths — cfutons_mobile-60f ─────────────────────────
+
+describe('malformed response paths', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.clearAllMocks();
+  });
+
+  it('null response → queued (treated as transient failure)', async () => {
+    const client = { callFunction: jest.fn().mockResolvedValue(null) };
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
+    expect(result.success).toBe(false);
+    expect(result.queued).toBe(true);
+  });
+
+  it('string response → queued (not treated as success)', async () => {
+    const client = { callFunction: jest.fn().mockResolvedValue('ok') };
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
+    expect(result.success).toBe(false);
+    expect(result.queued).toBe(true);
+  });
+
+  it('empty object response {} → treated as success (no success:false)', async () => {
+    const client = { callFunction: jest.fn().mockResolvedValue({}) };
+    const result = await emitStreakExtended(client, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
+    expect(result.success).toBe(true);
+  });
+});
+
+// ── Partial queue failure — cfutons_mobile-60f ────────────────────────────
+
+describe('partial queue failure', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    jest.clearAllMocks();
+  });
+
+  it('enqueue: AsyncStorage.setItem throws → captureException called', async () => {
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('storage full'));
+
+    const result = await emitStreakExtended(null, {
+      userId: USER,
+      streak: 1,
+      delta: 10,
+      newTotal: 110,
+    });
+
+    expect(captureException).toHaveBeenCalledWith(expect.any(Error));
+    // Returns queued:true even though storage failed — caller cannot distinguish
+    expect(result.queued).toBe(true);
+  });
+
+  it('replayCrossRigQueue: setItem throws saving failed items → exception caught, replayed count accurate', async () => {
+    // Queue 2 events
+    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+    await emitChallengeStarted(null, { userId: USER, challengeId: 'ch-1' });
+
+    // First event succeeds, second fails
+    let callCount = 0;
+    const partialClient = {
+      callFunction: jest.fn(async () => {
+        callCount++;
+        if (callCount === 2) throw new Error('transient');
+        return { success: true };
+      }),
+    };
+
+    // setItem will throw when trying to persist the failed item
+    jest.spyOn(AsyncStorage, 'setItem').mockRejectedValueOnce(new Error('storage full'));
+
+    const result = await replayCrossRigQueue(partialClient);
+    expect(result.replayed).toBe(1);
+    expect(result.failed).toBe(1);
+  });
+
+  it('replayCrossRigQueue: corrupt queue JSON → throws to caller', async () => {
+    jest.spyOn(AsyncStorage, 'getItem').mockResolvedValueOnce('not-valid-json{{{');
+    await expect(replayCrossRigQueue(mockClient())).rejects.toThrow();
+  });
+
+  it('replayCrossRigQueue: all succeed → queue cleared even if removeItem throws', async () => {
+    await emitStreakExtended(null, { userId: USER, streak: 1, delta: 10, newTotal: 110 });
+
+    jest.spyOn(AsyncStorage, 'removeItem').mockRejectedValueOnce(new Error('storage error'));
+
+    // Should not throw — removeItem failure is non-critical
+    await expect(replayCrossRigQueue(mockClient())).resolves.toMatchObject({
+      replayed: 1,
+      failed: 0,
+    });
   });
 });

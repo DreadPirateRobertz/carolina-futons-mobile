@@ -86,9 +86,20 @@ async function emit(
 
   try {
     const response = await client.callFunction(WIX_FN, 'POST', body);
+    // Guard: non-object responses (null, string, etc.) are malformed → queue
+    if (!response || typeof response !== 'object') {
+      await enqueue(body);
+      return { success: false, queued: true };
+    }
     const res = response as Record<string, unknown>;
-    if (res.success === false && res.status === 400) {
-      return { success: false, error: (res.error as string) ?? 'schema_error' };
+    if (res.success === false) {
+      if (res.status === 400) {
+        // Schema validation failure — permanent, do NOT retry
+        return { success: false, error: (res.error as string) ?? 'schema_error' };
+      }
+      // 5xx or other server failure in response body → queue for retry
+      await enqueue(body);
+      return { success: false, queued: true };
     }
     return { success: true };
   } catch (err) {
@@ -151,15 +162,19 @@ export async function replayCrossRigQueue(client: WixClientLike): Promise<Replay
     try {
       await client.callFunction(item.fnName, 'POST', item.body);
       replayed++;
-    } catch (err) {
+    } catch {
       failed.push(item);
     }
   }
 
-  if (failed.length > 0) {
-    await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(failed));
-  } else {
-    await AsyncStorage.removeItem(QUEUE_KEY);
+  try {
+    if (failed.length > 0) {
+      await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(failed));
+    } else {
+      await AsyncStorage.removeItem(QUEUE_KEY);
+    }
+  } catch (err) {
+    captureException(err instanceof Error ? err : new Error(String(err)));
   }
 
   return { replayed, failed: failed.length };
