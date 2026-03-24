@@ -11,9 +11,10 @@
  *
  * cm-a31
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { WixAuthService } from '@/services/wix/wixAuth';
+import { captureException } from '@/services/crashReporting';
 import type { LoyaltyTier } from '@/hooks/useLoyalty';
 
 export interface LoyaltyCardData {
@@ -31,6 +32,12 @@ export interface UseLoyaltyCardResult extends LoyaltyCardData {
   refresh: () => Promise<void>;
 }
 
+export interface UseLoyaltyCardOptions {
+  onTierUp?: (event: { from: LoyaltyTier; to: LoyaltyTier }) => void;
+}
+
+const TIER_RANK: Record<LoyaltyTier, number> = { bronze: 0, silver: 1, gold: 2 };
+
 const SAFE_DEFAULTS: LoyaltyCardData = {
   points: 0,
   tier: 'bronze',
@@ -45,18 +52,23 @@ function normalizeTier(raw: string): LoyaltyTier {
   return 'bronze';
 }
 
-export function useLoyaltyCard(): UseLoyaltyCardResult {
+export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardResult {
   const [data, setData] = useState<LoyaltyCardData>(SAFE_DEFAULTS);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const onTierUpRef = useRef(options?.onTierUp);
+  onTierUpRef.current = options?.onTierUp;
+  const prevTierRef = useRef<LoyaltyTier | null>(null);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
+    let memberId: string | undefined;
     try {
       const auth = new WixAuthService();
       const member = await auth.getCurrentMember();
-      const memberId = member?.id;
+      memberId = member?.id;
       if (!memberId) {
         setData(SAFE_DEFAULTS);
         return;
@@ -73,10 +85,17 @@ export function useLoyaltyCard(): UseLoyaltyCardResult {
       const points = typeof raw.points === 'number' ? raw.points : 0;
       const totalEarned = typeof raw.totalEarned === 'number' ? raw.totalEarned : 0;
       const hasActivity = raw.hasActivity ?? (points > 0 || totalEarned > 0);
+      const newTier = normalizeTier(raw.tier);
+
+      const prevTier = prevTierRef.current;
+      prevTierRef.current = newTier;
+      if (prevTier !== null && onTierUpRef.current && TIER_RANK[newTier] > TIER_RANK[prevTier]) {
+        onTierUpRef.current({ from: prevTier, to: newTier });
+      }
 
       setData({
         points,
-        tier: normalizeTier(raw.tier),
+        tier: newTier,
         nextTierThreshold: typeof raw.nextTierThreshold === 'number' ? raw.nextTierThreshold : 500,
         progressPercent:
           typeof raw.progressPercent === 'number'
@@ -85,7 +104,10 @@ export function useLoyaltyCard(): UseLoyaltyCardResult {
         hasActivity,
       });
     } catch (err) {
-      console.error('[useLoyaltyCard] Failed to fetch loyalty data:', err);
+      captureException(err instanceof Error ? err : new Error(String(err)), 'error', {
+        action: 'useLoyaltyCard-fetch',
+        memberId,
+      });
       setError(err instanceof Error ? err.message : String(err));
       setData(SAFE_DEFAULTS);
     } finally {
