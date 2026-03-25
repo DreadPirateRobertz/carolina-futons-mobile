@@ -14,6 +14,7 @@ import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
+import { useChallengeProgress } from '@/hooks/useChallengeProgress';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { emitChallengeStarted } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
@@ -47,6 +48,85 @@ function SectionHeader({ label, testID }: { label: string; testID: string }) {
     >
       {label.toUpperCase()}
     </Text>
+  );
+}
+
+// ── Progress summary hero ─────────────────────────────────────────────────────
+
+function ProgressSummary({
+  summary,
+}: {
+  summary: { totalPointsEarned: number; completedCount: number; activeCount: number };
+}) {
+  const { colors, typography, spacing } = useTheme();
+  return (
+    <View
+      style={[
+        styles.summaryCard,
+        { backgroundColor: colors.sandDark, marginHorizontal: spacing.lg, marginTop: spacing.lg },
+      ]}
+      testID="challenge-progress-summary"
+    >
+      <View style={styles.summaryRow}>
+        <View style={styles.summaryItem}>
+          <Text
+            testID="progress-total-points"
+            style={[
+              styles.summaryValue,
+              { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            {String(summary.totalPointsEarned)}
+          </Text>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            Points Earned
+          </Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text
+            testID="progress-completed-count"
+            style={[
+              styles.summaryValue,
+              { color: colors.mountainBlue, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            {String(summary.completedCount)}
+          </Text>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            Completed
+          </Text>
+        </View>
+        <View style={styles.summaryItem}>
+          <Text
+            testID="progress-active-count"
+            style={[
+              styles.summaryValue,
+              { color: colors.sunsetCoral, fontFamily: typography.bodyFamilyBold },
+            ]}
+          >
+            {String(summary.activeCount)}
+          </Text>
+          <Text
+            style={[
+              styles.summaryLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            Active
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -174,6 +254,7 @@ interface Props {
 export function ChallengesScreen({ testID }: Props) {
   const { colors, spacing } = useTheme();
   const { grouped, loading, error } = useChallengeCatalog();
+  const { summary: progressSummary } = useChallengeProgress();
   const { inProgress, available, completed, expired } = grouped;
   const { points } = useLoyalty();
   const challengesEmitted = useRef(false);
@@ -233,6 +314,8 @@ export function ChallengesScreen({ testID }: Props) {
       testID={testID ?? 'challenges-screen'}
       showsVerticalScrollIndicator={false}
     >
+      <ProgressSummary summary={progressSummary} />
+
       {inProgress.length > 0 && (
         <>
           <SectionHeader label="In Progress" testID="section-in-progress" />
@@ -275,6 +358,11 @@ export function ChallengesScreen({ testID }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   centered: { justifyContent: 'center', alignItems: 'center', padding: 32 },
+  summaryCard: { borderRadius: 12, padding: 16, marginBottom: 8 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  summaryItem: { alignItems: 'center' },
+  summaryValue: { fontSize: 22, fontWeight: '700' },
+  summaryLabel: { fontSize: 11, marginTop: 2 },
   sectionHeader: {
     fontSize: 11,
     fontWeight: '700',
