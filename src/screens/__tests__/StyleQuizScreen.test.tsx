@@ -548,6 +548,26 @@ describe('StyleQuizScreen', () => {
       });
     });
 
+    it('handles removeItem rejection gracefully (logs warning, does not throw)', async () => {
+      (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('storage error'));
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      });
+      await waitFor(() => {
+        expect(warnSpy).toHaveBeenCalledWith(
+          '[StyleQuiz] quest cache clear failed',
+          expect.any(Error),
+        );
+      });
+      warnSpy.mockRestore();
+    });
+
     it('onComplete fires even when styleQuizComplete rejects', async () => {
       mockStyleQuizComplete.mockRejectedValue(new Error('network'));
       const { getByTestId } = render(

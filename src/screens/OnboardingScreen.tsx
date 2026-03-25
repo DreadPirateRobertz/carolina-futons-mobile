@@ -162,10 +162,14 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
     try {
       await savePreferences();
       // cm-0l2: fire style quiz gamification event + invalidate quest cache
-      styleQuizComplete(
-        preferences.stylePreference ?? '',
-        preferences.primaryUse ?? '',
-      ).then(() => AsyncStorage.removeItem('daily-quests').catch(() => {})).catch(() => {});
+      // Onboarding doesn't collect sizeNeeds — pass '' so backend gets correct field
+      styleQuizComplete(preferences.stylePreference ?? '', '')
+        .then(() =>
+          AsyncStorage.removeItem('daily-quests').catch((err) =>
+            console.warn('[Onboarding] quest cache clear failed', err),
+          ),
+        )
+        .catch((err) => console.warn('[Onboarding] styleQuizComplete failed', err));
       onComplete();
     } catch (err) {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [

@@ -209,8 +209,12 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
     try {
       await savePreferences();
       styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '')
-        .then(() => AsyncStorage.removeItem('daily-quests').catch(() => {}))
-        .catch(() => {});
+        .then(() =>
+          AsyncStorage.removeItem('daily-quests').catch((err) =>
+            console.warn('[StyleQuiz] quest cache clear failed', err),
+          ),
+        )
+        .catch((err) => console.warn('[StyleQuiz] styleQuizComplete failed', err));
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [

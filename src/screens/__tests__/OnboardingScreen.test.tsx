@@ -220,7 +220,8 @@ describe('OnboardingScreen', () => {
     fireEvent.press(getByTestId('quiz-option-sitting'));
     fireEvent.press(getByTestId('onboarding-get-started-button'));
     await waitFor(() => {
-      expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', 'sitting');
+      // Onboarding doesn't collect sizeNeeds — second arg is always ''
+      expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', '');
     });
   });
 
@@ -242,6 +243,30 @@ describe('OnboardingScreen', () => {
     const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
     fireEvent.press(getByTestId('onboarding-skip-button'));
     expect(mockStyleQuizComplete).not.toHaveBeenCalled();
+  });
+
+  it('handles removeItem rejection gracefully (logs warning, does not throw)', async () => {
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('storage error'));
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[Onboarding] quest cache clear failed',
+        expect.any(Error),
+      );
+    });
+    warnSpy.mockRestore();
   });
 
   it('still calls onComplete even if styleQuizComplete rejects', async () => {
