@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { ShopScreen } from '../ShopScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -17,8 +17,13 @@ async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
       </WishlistProvider>
     </ThemeProvider>,
   );
-  // Flush async effects: useDataCache AsyncStorage + fetchProducts chain
-  await act(async () => {});
+  // Wait for useDataCache async chain (AsyncStorage.getItem → fetcher → setState)
+  // to fully settle before returning. A bare `act(async () => {})` only flushes one
+  // microtask tick, which is insufficient when the event loop is under load in the
+  // full test suite — causing flaky testID lookups.
+  await waitFor(() => {
+    result.getByTestId('product-list');
+  });
   return { ...result, onProductPress };
 }
 
