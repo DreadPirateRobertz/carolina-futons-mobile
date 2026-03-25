@@ -11,6 +11,7 @@
 
 import { useState, useEffect } from 'react';
 import { useOptionalWixClient } from '@/services/wix';
+import { captureException } from '@/services/crashReporting';
 
 export interface Achievement {
   /** Streak milestone in days (7, 14, 30, 60, 100, 365) */
@@ -82,15 +83,15 @@ export function useAchievements(): UseAchievementsResult {
 
     wixClient
       .callFunction<ApiResponse>('/_functions/getAchievements', 'GET')
-      .then((res: unknown) => {
+      .then((data) => {
         if (cancelled) return;
-        const data = res as ApiResponse;
         const raw = Array.isArray(data?.achievements) ? data.achievements : [];
         setAchievements(sortByEarnedAtDesc(raw.map(mapAchievement)));
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (cancelled) return;
+        captureException(err instanceof Error ? err : new Error(String(err)));
         setError('Unable to load achievements. Please try again.');
         setAchievements([]);
         setLoading(false);

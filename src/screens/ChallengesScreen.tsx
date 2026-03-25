@@ -10,7 +10,7 @@
  * cf-rv9 / Phase 7
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
@@ -18,6 +18,15 @@ import { useChallengeProgress } from '@/hooks/useChallengeProgress';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { emitChallengeStarted } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
+import { captureException } from '@/services/crashReporting';
+
+/** Module-level set to prevent duplicate emissions across remounts. */
+const emittedChallengeIds = new Set<string>();
+
+/** @internal Test-only reset for module-level emission state. */
+export function __resetChallengeEmitState() {
+  emittedChallengeIds.clear();
+}
 
 // ── Expiry label ──────────────────────────────────────────────────────────────
 
@@ -257,14 +266,21 @@ export function ChallengesScreen({ testID }: Props) {
   const { summary: progressSummary } = useChallengeProgress();
   const { inProgress, available, completed, expired } = grouped;
   const { points } = useLoyalty();
-  const challengesEmitted = useRef(false);
 
   useEffect(() => {
-    if (loading || challengesEmitted.current || inProgress.length === 0) return;
-    challengesEmitted.current = true;
-    const client = getWixClientSingleton();
-    for (const challenge of inProgress) {
-      emitChallengeStarted(client, { challengeId: challenge.id, currentPoints: points });
+    if (loading || inProgress.length === 0) return;
+    const unemitted = inProgress.filter((c) => !emittedChallengeIds.has(c.id));
+    if (unemitted.length === 0) return;
+    try {
+      const client = getWixClientSingleton();
+      const promises = unemitted.map((challenge) => {
+        emittedChallengeIds.add(challenge.id);
+        return emitChallengeStarted(client, { challengeId: challenge.id, currentPoints: points })
+          .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+      });
+      Promise.allSettled(promises);
+    } catch (err) {
+      captureException(err instanceof Error ? err : new Error(String(err)));
     }
   }, [loading, inProgress, points]);
   const hasAny =

@@ -31,6 +31,11 @@ jest.mock('@/hooks/useLoyalty', () => ({
   useLoyalty: () => mockUseLoyalty(),
 }));
 
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const DEFAULT_LOYALTY = {
@@ -92,5 +97,43 @@ describe('RewardsScreen', () => {
     const { getByTestId } = renderScreen();
     fireEvent.press(getByTestId('rewards-redeem-button'));
     expect(mockEmitRedemptionInitiated).not.toHaveBeenCalled();
+  });
+
+  it('shows error state with retry button when useLoyalty has error', () => {
+    mockUseLoyalty.mockReturnValue({
+      ...DEFAULT_LOYALTY,
+      error: 'Network error',
+    });
+    const { getByTestId, queryByTestId } = renderScreen();
+    expect(getByTestId('rewards-error')).toBeTruthy();
+    expect(getByTestId('rewards-retry')).toBeTruthy();
+    expect(queryByTestId('rewards-redeem-button')).toBeNull();
+  });
+
+  it('calls refreshPoints when retry is pressed', () => {
+    const mockRefresh = jest.fn();
+    mockUseLoyalty.mockReturnValue({
+      ...DEFAULT_LOYALTY,
+      error: 'Network error',
+      refreshPoints: mockRefresh,
+    });
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('rewards-retry'));
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables redeem button styling when points is zero', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 0 });
+    const { getByTestId } = renderScreen();
+    const button = getByTestId('rewards-redeem-button');
+    expect(button.props.accessibilityState?.disabled).toBe(true);
+  });
+
+  it('catches emitRedemptionInitiated rejection without crashing', async () => {
+    mockEmitRedemptionInitiated.mockRejectedValueOnce(new Error('event bus down'));
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('rewards-redeem-button'));
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockCaptureException).toHaveBeenCalled();
   });
 });
