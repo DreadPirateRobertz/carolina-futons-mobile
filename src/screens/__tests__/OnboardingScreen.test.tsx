@@ -39,6 +39,21 @@ jest.mock('@/theme', () => ({
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock useGamificationEvents — cm-0l2
+const mockStyleQuizComplete = jest.fn(() => Promise.resolve({ success: true, newTotal: 100 }));
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    styleQuizComplete: (a: string, b: string) => mockStyleQuizComplete(a, b),
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+    orderPlaced: jest.fn(),
+  }),
 }));
 
 // Mock useGamificationReveal — first-time user by default
@@ -191,6 +206,58 @@ describe('OnboardingScreen', () => {
     });
     expect(mockOnComplete).not.toHaveBeenCalled();
     alertSpy.mockRestore();
+  });
+
+  // ── Style Quiz Gamification Event (cm-0l2) ─────────────────────
+
+  it('fires styleQuizComplete event when Start Shopping is pressed', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', 'sitting');
+    });
+  });
+
+  it('clears daily-quests cache after styleQuizComplete fires', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-bedroom'));
+    fireEvent.press(getByTestId('quiz-option-rustic'));
+    fireEvent.press(getByTestId('quiz-option-both'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('daily-quests');
+    });
+  });
+
+  it('does not fire styleQuizComplete when skip is pressed (no quiz answers)', () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-skip-button'));
+    expect(mockStyleQuizComplete).not.toHaveBeenCalled();
+  });
+
+  it('still calls onComplete even if styleQuizComplete rejects', async () => {
+    mockStyleQuizComplete.mockRejectedValueOnce(new Error('network'));
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-classic'));
+    fireEvent.press(getByTestId('quiz-option-sleeping'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ── Skip & Back ───────────────────────────────────────────────

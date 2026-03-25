@@ -10,6 +10,7 @@
  * Error boundary provided by withScreenErrorBoundary in AppNavigator.
  */
 import React, { useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
@@ -207,7 +208,9 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
   const handleSave = useCallback(async () => {
     try {
       await savePreferences();
-      styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '').catch(() => {});
+      styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '')
+        .then(() => AsyncStorage.removeItem('daily-quests').catch(() => {}))
+        .catch(() => {});
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [

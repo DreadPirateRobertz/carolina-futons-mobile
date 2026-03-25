@@ -547,6 +547,19 @@ describe('HomeScreen', () => {
       expect(mockRefreshSky).toHaveBeenCalledTimes(1);
     });
 
+    it('pull-to-refresh calls useDailyQuests.refresh() (cm-0l2)', () => {
+      const mockRefreshQuests = jest.fn();
+      mockUseDailyQuests.mockReturnValue({
+        quests: [],
+        loading: false,
+        refresh: mockRefreshQuests,
+      });
+      const { getByTestId } = renderHomeScreen();
+      const scrollView = getByTestId('home-screen');
+      act(() => scrollView.props.refreshControl.props.onRefresh());
+      expect(mockRefreshQuests).toHaveBeenCalledTimes(1);
+    });
+
     it('refreshing indicator is false by default', () => {
       const { getByTestId } = renderHomeScreen();
       const scrollView = getByTestId('home-screen');

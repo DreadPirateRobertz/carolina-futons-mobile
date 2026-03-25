@@ -81,6 +81,7 @@ jest.mock('@/theme', () => ({
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
 }));
 
 const mockUseProductBySlug = jest.fn();
@@ -533,6 +534,17 @@ describe('StyleQuizScreen', () => {
       fireEvent.press(getByTestId('style-quiz-save-button'));
       await waitFor(() => {
         expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', 'full');
+      });
+    });
+
+    it('clears daily-quests cache after styleQuizComplete fires', async () => {
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(AsyncStorage.removeItem).toHaveBeenCalledWith('daily-quests');
       });
     });
 
