@@ -37,6 +37,12 @@ jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),
 }));
 
+// cf-ma6v: mock questRefreshBus
+const mockEmitQuestRefresh = jest.fn();
+jest.mock('@/services/questRefreshBus', () => ({
+  emitQuestRefresh: () => mockEmitQuestRefresh(),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockSendGamificationEvent.mockResolvedValue({ success: true, newTotal: 100 });
@@ -299,6 +305,60 @@ describe('useGamificationEvents', () => {
         null,
         expect.objectContaining({ eventName: 'gamification_style_quiz_complete' }),
       );
+    });
+  });
+
+  // ── questRefreshBus emission (cf-ma6v) ───────────────────────────────────
+
+  describe('questRefreshBus', () => {
+    it('emits quest refresh after successful addToCart', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.addToCart('prod-1', 49.99);
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits quest refresh after successful submitReview', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.submitReview('prod-1', 5, false);
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits quest refresh after successful arUsed', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arUsed('prod-1');
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits quest refresh after successful wishlistAdd', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.wishlistAdd('prod-1');
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits quest refresh after successful orderPlaced', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.orderPlaced('order-1', 299.99);
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('emits quest refresh after successful styleQuizComplete', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.styleQuizComplete('modern', 'full');
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does NOT emit quest refresh when event fails', async () => {
+      mockSendGamificationEvent.mockResolvedValue({ success: false });
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.addToCart('prod-1', 49.99);
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
+    });
+
+    it('does NOT emit quest refresh when event throws', async () => {
+      mockSendGamificationEvent.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.addToCart('prod-1', 49.99);
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
     });
   });
 });
