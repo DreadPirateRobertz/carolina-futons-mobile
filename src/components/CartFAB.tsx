@@ -12,14 +12,18 @@
  */
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCart } from '@/hooks/useCart';
 import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { colors, shadows } from '@/theme/tokens';
+
+const BASE_BOTTOM = 24;
 
 /** Floating action button that opens the mini-cart drawer. */
 export function CartFAB() {
   const { itemCount } = useCart();
   const { open } = useMiniCartDrawer();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   if (itemCount === 0) return null;
 
@@ -31,7 +35,7 @@ export function CartFAB() {
       accessibilityRole="button"
       accessibilityLabel={`View cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
       testID="cart-fab"
-      style={styles.fab}
+      style={[styles.fab, { bottom: BASE_BOTTOM + bottomInset }]}
     >
       <Text style={styles.icon}>🛒</Text>
       <View style={styles.badge} testID="cart-fab-badge-container">
@@ -46,7 +50,7 @@ export function CartFAB() {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: BASE_BOTTOM,
     left: 24,
     width: 56,
     height: 56,

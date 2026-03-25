@@ -81,7 +81,39 @@ describe('CartFAB interaction', () => {
   });
 });
 
-// ── Section 4: Accessibility ──────────────────────────────────────────────────
+// ── Section 4: Safe area insets ──────────────────────────────────────────────
+
+describe('CartFAB safe area', () => {
+  it('accounts for bottom safe area inset in position', () => {
+    const mockInset = { top: 47, right: 0, bottom: 34, left: 0 };
+    jest
+      .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
+      .mockReturnValue(mockInset);
+
+    const { getByTestId } = renderFAB();
+    const fab = getByTestId('cart-fab');
+    const flatStyle = Array.isArray(fab.props.style)
+      ? Object.assign({}, ...fab.props.style)
+      : fab.props.style;
+    expect(flatStyle.bottom).toBeGreaterThanOrEqual(24 + 34);
+  });
+
+  it('positions correctly when bottom inset is zero', () => {
+    const mockInset = { top: 0, right: 0, bottom: 0, left: 0 };
+    jest
+      .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
+      .mockReturnValue(mockInset);
+
+    const { getByTestId } = renderFAB();
+    const fab = getByTestId('cart-fab');
+    const flatStyle = Array.isArray(fab.props.style)
+      ? Object.assign({}, ...fab.props.style)
+      : fab.props.style;
+    expect(flatStyle.bottom).toBe(24);
+  });
+});
+
+// ── Section 5: Accessibility ──────────────────────────────────────────────────
 
 describe('CartFAB accessibility', () => {
   it('has button accessibility role', () => {

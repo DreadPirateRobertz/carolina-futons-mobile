@@ -68,6 +68,34 @@ describe('CompareFAB', () => {
     });
   });
 
+  it('accounts for bottom safe area inset in position', () => {
+    const mockInset = { top: 47, right: 0, bottom: 34, left: 0 };
+    jest
+      .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
+      .mockReturnValue(mockInset);
+
+    const { getByTestId } = renderWithProvider(<CompareFAB testID="compare-fab" />, [productA]);
+    const fab = getByTestId('compare-fab');
+    const flatStyle = Array.isArray(fab.props.style)
+      ? Object.assign({}, ...fab.props.style)
+      : fab.props.style;
+    expect(flatStyle.bottom).toBeGreaterThanOrEqual(24 + 34);
+  });
+
+  it('positions correctly when bottom inset is zero', () => {
+    const mockInset = { top: 0, right: 0, bottom: 0, left: 0 };
+    jest
+      .spyOn(require('react-native-safe-area-context'), 'useSafeAreaInsets')
+      .mockReturnValue(mockInset);
+
+    const { getByTestId } = renderWithProvider(<CompareFAB testID="compare-fab" />, [productA]);
+    const fab = getByTestId('compare-fab');
+    const flatStyle = Array.isArray(fab.props.style)
+      ? Object.assign({}, ...fab.props.style)
+      : fab.props.style;
+    expect(flatStyle.bottom).toBe(24);
+  });
+
   it('has accessible label indicating compare action', () => {
     const { getByLabelText } = renderWithProvider(<CompareFAB testID="compare-fab" />, [productA]);
     expect(getByLabelText(/compare/i)).toBeTruthy();
