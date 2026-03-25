@@ -5,8 +5,11 @@
  */
 import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useCompareContext } from '@/contexts/CompareContext';
+
+const BASE_BOTTOM = 24;
 
 interface CompareFABProps {
   testID?: string;
@@ -15,6 +18,7 @@ interface CompareFABProps {
 export function CompareFAB({ testID }: CompareFABProps) {
   const { compareList, count } = useCompareContext();
   const navigation = useNavigation<any>();
+  const { bottom: bottomInset } = useSafeAreaInsets();
 
   if (count === 0) return null;
 
@@ -30,7 +34,7 @@ export function CompareFAB({ testID }: CompareFABProps) {
       accessibilityRole="button"
       accessibilityLabel={`Compare ${count} products`}
       testID={testID}
-      style={styles.fab}
+      style={[styles.fab, { bottom: BASE_BOTTOM + bottomInset }]}
     >
       <Text style={styles.icon}>⚖</Text>
       <View style={styles.badge}>
@@ -43,7 +47,7 @@ export function CompareFAB({ testID }: CompareFABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 24,
+    bottom: BASE_BOTTOM,
     right: 24,
     width: 56,
     height: 56,
