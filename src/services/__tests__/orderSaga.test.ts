@@ -280,4 +280,129 @@ describe('executeOrderSaga', () => {
 
     expect(result.paymentIntentId).toBe('pi_test_123');
   });
+
+  // ── Compensation failure — CRITICAL Sentry + support CTA ──────────────
+
+  it('captures with fatal severity when refund fails', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix down'));
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    await promise;
+
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'fatal',
+      expect.any(Object),
+    );
+  });
+
+  it('includes paymentIntentId in Sentry context on refund failure', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix down'));
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    await promise;
+
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'fatal',
+      expect.objectContaining({ paymentIntentId: 'pi_test_123' }),
+    );
+  });
+
+  it('includes original Wix error in Sentry context on refund failure', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix order failed'));
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    await promise;
+
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'fatal',
+      expect.objectContaining({ originalError: 'Wix order failed' }),
+    );
+  });
+
+  it('returns paymentIntentId in refund_failed result for manual resolution', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix down'));
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    const result = await promise;
+
+    expect(result.paymentIntentId).toBe('pi_test_123');
+    expect(result.requiresManualResolution).toBe(true);
+  });
+
+  it('user-facing error includes support contact CTA on refund failure', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix down'));
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    const result = await promise;
+
+    expect(result.error).toMatch(/contact/i);
+    expect(result.error).toMatch(/support/i);
+  });
+
+  it('handles non-Error thrown by refundPayment (string rejection)', async () => {
+    mockConfirmOrder.mockRejectedValue(new Error('Wix down'));
+    mockRefundPayment.mockRejectedValue('network timeout');
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    const result = await promise;
+
+    expect(result.status).toBe('refund_failed');
+    expect(result.requiresManualResolution).toBe(true);
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'fatal',
+      expect.objectContaining({ paymentIntentId: 'pi_test_123' }),
+    );
+  });
+
+  it('handles non-Error thrown by confirmOrder (string rejection)', async () => {
+    mockConfirmOrder.mockRejectedValue('Wix timeout string');
+    mockRefundPayment.mockRejectedValue(new Error('Stripe refund failed'));
+
+    const promise = executeOrderSaga(baseInput);
+    for (let i = 0; i < 5; i++) {
+      await Promise.resolve();
+      jest.advanceTimersByTime(5000);
+    }
+    const result = await promise;
+
+    expect(result.status).toBe('refund_failed');
+    expect(mockCaptureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      'fatal',
+      expect.objectContaining({ originalError: 'Wix timeout string' }),
+    );
+  });
 });
