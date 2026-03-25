@@ -210,18 +210,24 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
       await savePreferences();
       styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '')
         .then(() =>
-          AsyncStorage.removeItem('daily-quests').catch((err) =>
-            console.warn('[StyleQuiz] quest cache clear failed', err),
+          AsyncStorage.removeItem('daily-quests').catch((e: unknown) =>
+            console.warn('[StyleQuiz] quest cache clear failed', e),
           ),
         )
-        .catch((err) => console.warn('[StyleQuiz] styleQuizComplete failed', err));
+        .catch((e: unknown) => console.warn('[StyleQuiz] styleQuizComplete failed', e));
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference, preferences.sizeNeeds]);
+  }, [
+    savePreferences,
+    onComplete,
+    styleQuizComplete,
+    preferences.stylePreference,
+    preferences.sizeNeeds,
+  ]);
 
   // ── Progress ────────────────────────────────────────────────────
 

@@ -43,10 +43,13 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // Mock useGamificationEvents — cm-0l2
-const mockStyleQuizComplete = jest.fn(() => Promise.resolve({ success: true, newTotal: 100 }));
+const mockStyleQuizComplete = jest.fn<
+  Promise<{ success: boolean; newTotal?: number }>,
+  [string, string]
+>(() => Promise.resolve({ success: true, newTotal: 100 }));
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
-    styleQuizComplete: (a: string, b: string) => mockStyleQuizComplete(a, b),
+    styleQuizComplete: (...args: [string, string]) => mockStyleQuizComplete(...args),
     addToCart: jest.fn(),
     submitReview: jest.fn(),
     referralShared: jest.fn(),
