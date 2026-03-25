@@ -107,41 +107,41 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
 
-// Mock react-native-worklets (v4) — native module not available in Jest
+// Mock react-native-worklets — not installed as a direct dependency;
+// reanimated 3.x bundles its own worklet runtime. Virtual mock avoids
+// "Cannot find module" when reanimated's internals try to resolve it.
 jest.mock('react-native-worklets', () => ({
   NativeWorklets: {},
   WorkletsModule: { isAvailable: false },
-}));
+}), { virtual: true });
 
-// Mock react-native-reanimated (v4) — depends on worklets
+// Mock react-native-reanimated using the library's own mock as a base,
+// with our overrides for animation layout/entering/exiting objects that
+// the built-in mock doesn't cover with the chainable API our components use.
 jest.mock('react-native-reanimated', () => {
-  const React = require('react');
-  const View = require('react-native').View;
+  const mock = require('react-native-reanimated/mock');
+  const chainable = () => {
+    const obj = {};
+    const handler = {
+      get: (_, prop) => {
+        if (prop === Symbol.toPrimitive) return () => '';
+        return (..._args) => new Proxy(obj, handler);
+      },
+    };
+    return new Proxy(obj, handler);
+  };
   return {
-    __esModule: true,
-    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View },
-    useSharedValue: (init) => ({ value: init }),
-    useAnimatedStyle: (fn) => fn(),
-    useDerivedValue: (fn) => ({ value: fn() }),
-    useAnimatedScrollHandler: () => ({}),
-    withTiming: (v) => v,
-    withSpring: (v) => v,
-    withDelay: (_, v) => v,
-    withSequence: (...args) => args[args.length - 1],
-    withRepeat: (v) => v,
-    Easing: { linear: (v) => v, ease: (v) => v, bezier: () => (v) => v },
-    FadeIn: { duration: () => ({ delay: () => ({}) }) },
-    FadeOut: { duration: () => ({ delay: () => ({}) }) },
-    FadeInDown: { duration: () => ({ delay: () => ({}) }) },
-    FadeInUp: { duration: () => ({ delay: () => ({}) }) },
-    SlideInRight: { duration: () => ({}) },
-    SlideOutRight: { duration: () => ({}) },
-    Layout: { duration: () => ({}) },
-    runOnJS: (fn) => fn,
-    runOnUI: (fn) => fn,
-    createAnimatedComponent: (comp) => comp,
-    interpolate: (v) => v,
-    Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend' },
+    ...mock,
+    // Entering/exiting animations use a chainable builder API
+    // (e.g. FadeIn.duration(300).delay(100)) — the built-in mock
+    // doesn't support chaining, so we use a Proxy.
+    FadeIn: chainable(),
+    FadeOut: chainable(),
+    FadeInDown: chainable(),
+    FadeInUp: chainable(),
+    SlideInRight: chainable(),
+    SlideOutRight: chainable(),
+    Layout: chainable(),
   };
 });
 
