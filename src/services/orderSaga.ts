@@ -107,7 +107,8 @@ async function rollback(paymentIntentId: string, originalError: unknown): Promis
 
     return {
       status: 'refund_failed',
-      error: 'Payment charged but order and refund both failed. Manual resolution required.',
+      error:
+        'Payment charged but order and refund both failed. Please contact support for assistance.',
       requiresManualResolution: true,
       paymentIntentId,
     };
