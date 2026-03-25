@@ -107,6 +107,44 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
 
+// Mock react-native-worklets (v4) — native module not available in Jest
+jest.mock('react-native-worklets', () => ({
+  NativeWorklets: {},
+  WorkletsModule: { isAvailable: false },
+}));
+
+// Mock react-native-reanimated (v4) — depends on worklets
+jest.mock('react-native-reanimated', () => {
+  const React = require('react');
+  const View = require('react-native').View;
+  return {
+    __esModule: true,
+    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View },
+    useSharedValue: (init) => ({ value: init }),
+    useAnimatedStyle: (fn) => fn(),
+    useDerivedValue: (fn) => ({ value: fn() }),
+    useAnimatedScrollHandler: () => ({}),
+    withTiming: (v) => v,
+    withSpring: (v) => v,
+    withDelay: (_, v) => v,
+    withSequence: (...args) => args[args.length - 1],
+    withRepeat: (v) => v,
+    Easing: { linear: (v) => v, ease: (v) => v, bezier: () => (v) => v },
+    FadeIn: { duration: () => ({ delay: () => ({}) }) },
+    FadeOut: { duration: () => ({ delay: () => ({}) }) },
+    FadeInDown: { duration: () => ({ delay: () => ({}) }) },
+    FadeInUp: { duration: () => ({ delay: () => ({}) }) },
+    SlideInRight: { duration: () => ({}) },
+    SlideOutRight: { duration: () => ({}) },
+    Layout: { duration: () => ({}) },
+    runOnJS: (fn) => fn,
+    runOnUI: (fn) => fn,
+    createAnimatedComponent: (comp) => comp,
+    interpolate: (v) => v,
+    Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend' },
+  };
+});
+
 // Mock shared transition tags — reanimated's native shared transition layer
 // (registerEventHandler, ProgressTransitionRegister) is not available in Jest.
 // Return undefined so the sharedTransitionTag prop is omitted in tests.
