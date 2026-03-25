@@ -31,10 +31,18 @@ async function renderCategory(props: Partial<React.ComponentProps<typeof Categor
       </WishlistProvider>
     </ThemeProvider>,
   );
-  // Advance past initial loading skeleton (600ms) and flush async SWR cache
+  // Advance past initial loading skeleton (600ms) and fire any pending timers
   await act(async () => {
     jest.advanceTimersByTime(700);
   });
+  // Flush the full useDataCache async chain (AsyncStorage.getItem → fetcher →
+  // AsyncStorage.setItem → multiple setState calls). advanceTimersByTime only
+  // fires timer callbacks — it does NOT resolve the Promise microtask queue,
+  // so state updates from the SWR cache settle on later ticks. Under full-suite
+  // event-loop pressure this caused flaky testID lookup failures.
+  // Multiple act flushes drain the nested promise chain completely.
+  await act(async () => {});
+  await act(async () => {});
   return { ...result, onProductPress, onBack };
 }
 
