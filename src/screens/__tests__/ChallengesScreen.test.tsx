@@ -56,6 +56,16 @@ jest.mock('@/hooks/useChallengeCatalog', () => ({
 }));
 const mockHook = useChallengeCatalog as jest.Mock;
 
+jest.mock('@/hooks/useChallengeProgress', () => ({
+  useChallengeProgress: () => ({
+    progressItems: [],
+    summary: { totalPointsEarned: 0, completedCount: 0, activeCount: 0 },
+    loading: false,
+    error: null,
+    refresh: jest.fn(),
+  }),
+}));
+
 function renderScreen() {
   return render(
     <ThemeProvider>

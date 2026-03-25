@@ -33,6 +33,16 @@ jest.mock('@/hooks/useChallengeCatalog', () => ({
   useChallengeCatalog: () => mockHook(),
 }));
 
+jest.mock('@/hooks/useChallengeProgress', () => ({
+  useChallengeProgress: () => ({
+    progressItems: [],
+    summary: { totalPointsEarned: 0, completedCount: 0, activeCount: 0 },
+    loading: false,
+    error: null,
+    refresh: jest.fn(),
+  }),
+}));
+
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const FUTURE = '2027-01-01T00:00:00Z';
