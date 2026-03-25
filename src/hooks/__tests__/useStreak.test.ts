@@ -140,4 +140,33 @@ describe('useStreak', () => {
     // catch fires with cancelled=true — streak stays at initial 1, loading stays true
     expect(result.current.streak).toBe(1);
   });
+  // ── wasExtendedToday ──────────────────────────────────────────────────────
+
+  it('wasExtendedToday is true when last visit was yesterday (gap === 1)', async () => {
+    mockGetItem.mockResolvedValue(JSON.stringify({ lastVisit: YESTERDAY, streak: 3 }));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.wasExtendedToday).toBe(true);
+  });
+
+  it('wasExtendedToday is false on first ever visit', async () => {
+    mockGetItem.mockResolvedValue(null);
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.wasExtendedToday).toBe(false);
+  });
+
+  it('wasExtendedToday is false when already visited today', async () => {
+    mockGetItem.mockResolvedValue(JSON.stringify({ lastVisit: TODAY, streak: 7 }));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.wasExtendedToday).toBe(false);
+  });
+
+  it('wasExtendedToday is false when streak was reset (gap > 1)', async () => {
+    mockGetItem.mockResolvedValue(JSON.stringify({ lastVisit: TWO_DAYS_AGO, streak: 10 }));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.wasExtendedToday).toBe(false);
+  });
 });

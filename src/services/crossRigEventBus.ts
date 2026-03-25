@@ -143,7 +143,7 @@ async function emit(
 
 export async function emitStreakExtended(
   client: WixClientLike | null,
-  input: { userId: string; streak: number; delta: number; newTotal: number },
+  input: { streak: number; delta: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'streak_extended', {
     // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
@@ -155,7 +155,7 @@ export async function emitStreakExtended(
 
 export async function emitChallengeStarted(
   client: WixClientLike | null,
-  input: { userId: string; challengeId: string; currentPoints: number },
+  input: { challengeId: string; currentPoints: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'challenge_started', {
     // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)
@@ -167,7 +167,7 @@ export async function emitChallengeStarted(
 
 export async function emitRedemptionInitiated(
   client: WixClientLike | null,
-  input: { userId: string; pointsRedeemed: number; newTotal: number },
+  input: { pointsRedeemed: number; newTotal: number },
 ): Promise<CrossRigEventResult> {
   return emit(client, 'redemption_initiated', {
     // userId excluded — server resolves identity from Wix session token (IDOR protection, hq-u35ub)

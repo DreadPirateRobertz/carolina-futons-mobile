@@ -27,6 +27,7 @@ const EARNED_7: Achievement = {
   streakDays: 7,
   earnedAt: '2026-03-01T10:00:00Z',
   badgeLabel: 'Week Warrior',
+  iconUrl: null,
 };
 
 const EARNED_30: Achievement = {
@@ -34,6 +35,7 @@ const EARNED_30: Achievement = {
   streakDays: 30,
   earnedAt: '2026-03-10T12:00:00Z',
   badgeLabel: 'Monthly Master',
+  iconUrl: null,
 };
 
 const LOADED_SOME_EARNED = {
@@ -50,6 +52,7 @@ const LOADED_ALL_EARNED = {
       streakDays: 14,
       earnedAt: '2026-03-05T00:00:00Z',
       badgeLabel: 'Fortnight Fighter',
+      iconUrl: null,
     },
     EARNED_30,
     {
@@ -57,18 +60,21 @@ const LOADED_ALL_EARNED = {
       streakDays: 60,
       earnedAt: '2026-03-15T00:00:00Z',
       badgeLabel: 'Two Month Titan',
+      iconUrl: null,
     },
     {
       milestone: 100,
       streakDays: 100,
       earnedAt: '2026-03-20T00:00:00Z',
       badgeLabel: 'Century Club',
+      iconUrl: null,
     },
     {
       milestone: 365,
       streakDays: 365,
       earnedAt: '2026-03-22T00:00:00Z',
       badgeLabel: 'Year-Round Legend',
+      iconUrl: null,
     },
   ],
   loading: false,

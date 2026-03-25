@@ -10,10 +10,13 @@
  * cf-rv9 / Phase 7
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
+import { useLoyalty } from '@/hooks/useLoyalty';
+import { emitChallengeStarted } from '@/services/crossRigEventBus';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 
 // ── Expiry label ──────────────────────────────────────────────────────────────
 
@@ -172,6 +175,17 @@ export function ChallengesScreen({ testID }: Props) {
   const { colors, spacing } = useTheme();
   const { grouped, loading, error } = useChallengeCatalog();
   const { inProgress, available, completed, expired } = grouped;
+  const { points } = useLoyalty();
+  const challengesEmitted = useRef(false);
+
+  useEffect(() => {
+    if (loading || challengesEmitted.current || inProgress.length === 0) return;
+    challengesEmitted.current = true;
+    const client = getWixClientSingleton();
+    for (const challenge of inProgress) {
+      emitChallengeStarted(client, { challengeId: challenge.id, currentPoints: points });
+    }
+  }, [loading, inProgress, points]);
   const hasAny =
     inProgress.length > 0 || available.length > 0 || completed.length > 0 || expired.length > 0;
 
