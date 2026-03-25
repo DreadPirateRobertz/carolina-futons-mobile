@@ -72,7 +72,7 @@ describe('useStreak', () => {
     await act(async () => {});
     expect(mockSetItem).toHaveBeenCalledWith(
       '@carolina_futons_streak',
-      JSON.stringify({ lastVisit: TODAY, streak: 3 }),
+      JSON.stringify({ lastVisit: TODAY, streak: 3, longestStreak: 3 }),
     );
   });
 
@@ -168,5 +168,93 @@ describe('useStreak', () => {
     const { result } = renderHook(() => useStreak());
     await act(async () => {});
     expect(result.current.wasExtendedToday).toBe(false);
+  });
+
+  // ── longestStreak — cf-qsxp ─────────────────────────────────────────────
+
+  it('longestStreak equals current streak on first visit', async () => {
+    mockGetItem.mockResolvedValue(null);
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.longestStreak).toBe(1);
+  });
+
+  it('longestStreak updates when current streak exceeds it', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ lastVisit: YESTERDAY, streak: 5, longestStreak: 5 }),
+    );
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.streak).toBe(6);
+    expect(result.current.longestStreak).toBe(6);
+  });
+
+  it('longestStreak preserved when streak resets after a break', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ lastVisit: TWO_DAYS_AGO, streak: 10, longestStreak: 30 }),
+    );
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.streak).toBe(1);
+    expect(result.current.longestStreak).toBe(30);
+  });
+
+  it('longestStreak preserved when already visited today', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ lastVisit: TODAY, streak: 3, longestStreak: 15 }),
+    );
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.streak).toBe(3);
+    expect(result.current.longestStreak).toBe(15);
+  });
+
+  it('persists longestStreak to AsyncStorage when streak extends', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ lastVisit: YESTERDAY, streak: 7, longestStreak: 7 }),
+    );
+    renderHook(() => useStreak());
+    await act(async () => {});
+    expect(mockSetItem).toHaveBeenCalledWith(
+      '@carolina_futons_streak',
+      JSON.stringify({ lastVisit: TODAY, streak: 8, longestStreak: 8 }),
+    );
+  });
+
+  it('persists longestStreak to AsyncStorage when streak resets', async () => {
+    mockGetItem.mockResolvedValue(
+      JSON.stringify({ lastVisit: TWO_DAYS_AGO, streak: 5, longestStreak: 20 }),
+    );
+    renderHook(() => useStreak());
+    await act(async () => {});
+    expect(mockSetItem).toHaveBeenCalledWith(
+      '@carolina_futons_streak',
+      JSON.stringify({ lastVisit: TODAY, streak: 1, longestStreak: 20 }),
+    );
+  });
+
+  it('migrates legacy record without longestStreak field', async () => {
+    // Old records have no longestStreak — should default to current streak
+    mockGetItem.mockResolvedValue(JSON.stringify({ lastVisit: YESTERDAY, streak: 12 }));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.streak).toBe(13);
+    expect(result.current.longestStreak).toBe(13);
+  });
+
+  it('migrates legacy record: longestStreak defaults to streak on reset', async () => {
+    mockGetItem.mockResolvedValue(JSON.stringify({ lastVisit: TWO_DAYS_AGO, streak: 8 }));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.streak).toBe(1);
+    // Legacy record had no longestStreak — use the old streak as longest
+    expect(result.current.longestStreak).toBe(8);
+  });
+
+  it('longestStreak defaults to 1 on storage error', async () => {
+    mockGetItem.mockRejectedValue(new Error('Storage error'));
+    const { result } = renderHook(() => useStreak());
+    await act(async () => {});
+    expect(result.current.longestStreak).toBe(1);
   });
 });
