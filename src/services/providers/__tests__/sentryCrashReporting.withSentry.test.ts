@@ -1,10 +1,10 @@
 /**
  * Tests for SentryCrashReportingProvider when @sentry/react-native IS available.
  *
- * jest.mock with { virtual: true } intercepts the require('@sentry/react-native')
- * call in the provider's module-level try/catch so that Sentry = mock object.
- * No jest.resetModules() is needed — Jest gives each test file a fresh module
- * registry, so the provider is always loaded fresh with the mock active.
+ * Uses jest.isolateModules() to guarantee a fresh module registry per test,
+ * preventing state leaks when Jest reuses workers across test files.
+ * The module-level `let Sentry` in sentryCrashReporting.ts retains its value
+ * within a cached module — resetModules + isolateModules ensures a clean load.
  */
 export {};
 
@@ -28,10 +28,6 @@ const mockNavigationIntegration = { registerNavigationContainer: jest.fn() };
 const mockReactNavigationIntegration = jest.fn(() => mockNavigationIntegration);
 const mockMobileReplayIntegration = jest.fn(() => ({ name: 'MobileReplay' }));
 
-// The mock factory must be declared before any require() so the provider's
-// module-level try/catch picks up this mock when the module is first loaded.
-// jest.mock() calls are hoisted above imports/requires by Jest's transform,
-// so this registration is always in effect before require('../sentryCrashReporting').
 jest.mock('@sentry/react-native', () => ({
   init: mockInit,
   captureException: mockCaptureException,
@@ -44,11 +40,30 @@ jest.mock('@sentry/react-native', () => ({
   mobileReplayIntegration: mockMobileReplayIntegration,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { SentryCrashReportingProvider, wrapWithSentry } = require('../sentryCrashReporting');
+// Load the module fresh so the module-level `Sentry` picks up our mock
+let SentryCrashReportingProvider: any;
+let wrapWithSentry: any;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.resetModules();
+  jest.isolateModules(() => {
+    // Re-register the mock inside the isolated registry
+    jest.mock('@sentry/react-native', () => ({
+      init: mockInit,
+      captureException: mockCaptureException,
+      captureMessage: mockCaptureMessage,
+      setUser: mockSetUser,
+      addBreadcrumb: mockAddBreadcrumb,
+      withScope: mockWithScope,
+      wrap: mockWrap,
+      reactNavigationIntegration: mockReactNavigationIntegration,
+      mobileReplayIntegration: mockMobileReplayIntegration,
+    }));
+    const mod = require('../sentryCrashReporting');
+    SentryCrashReportingProvider = mod.SentryCrashReportingProvider;
+    wrapWithSentry = mod.wrapWithSentry;
+  });
 });
 
 describe('SentryCrashReportingProvider (with Sentry)', () => {
