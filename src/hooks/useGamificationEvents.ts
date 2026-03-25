@@ -23,6 +23,7 @@ import { useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useOptionalWixClient } from '@/services/wix';
 import { sendGamificationEvent, type GamificationEventResult } from '@/services/gamificationApi';
+import { emitQuestRefresh } from '@/services/questRefreshBus';
 
 export interface GamificationEvents {
   addToCart: (productId: string, price: number) => Promise<GamificationEventResult>;
@@ -44,6 +45,12 @@ export interface GamificationEvents {
 
 const FALLBACK: GamificationEventResult = { success: false };
 
+/** cf-ma6v: emit quest refresh after any successful gamification event. */
+function withQuestRefresh(result: GamificationEventResult): GamificationEventResult {
+  if (result.success) emitQuestRefresh();
+  return result;
+}
+
 export function useGamificationEvents(): GamificationEvents {
   const wixClient = useOptionalWixClient();
   const { user } = useAuth();
@@ -52,11 +59,11 @@ export function useGamificationEvents(): GamificationEvents {
   const addToCart = useCallback(
     async (productId: string, price: number): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_add_to_cart',
           memberId,
           payload: { product_id: productId, price },
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -71,11 +78,11 @@ export function useGamificationEvents(): GamificationEvents {
       hasPhoto: boolean,
     ): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_submit_review',
           memberId,
           payload: { product_id: productId, rating, has_photo: hasPhoto },
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -86,11 +93,11 @@ export function useGamificationEvents(): GamificationEvents {
   const referralShared = useCallback(
     async (code: string): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_referral_shared',
           memberId,
           payload: { referral_code: code },
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -101,11 +108,11 @@ export function useGamificationEvents(): GamificationEvents {
   const arUsed = useCallback(
     async (productId: string): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_ar_used',
           memberId,
           payload: { product_id: productId },
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -116,11 +123,11 @@ export function useGamificationEvents(): GamificationEvents {
   const wishlistAdd = useCallback(
     async (productId: string): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_wishlist_add',
           memberId,
           payload: { product_id: productId },
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -131,12 +138,12 @@ export function useGamificationEvents(): GamificationEvents {
   const orderPlaced = useCallback(
     async (orderId: string, orderTotal: number): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_order_placed',
           memberId,
           payload: { order_id: orderId, order_total: orderTotal },
           eventId: orderId,
-        });
+        }));
       } catch {
         return FALLBACK;
       }
@@ -147,11 +154,11 @@ export function useGamificationEvents(): GamificationEvents {
   const styleQuizComplete = useCallback(
     async (stylePreference: string, sizeNeeds: string): Promise<GamificationEventResult> => {
       try {
-        return await sendGamificationEvent(wixClient ?? null, {
+        return withQuestRefresh(await sendGamificationEvent(wixClient ?? null, {
           eventName: 'gamification_style_quiz_complete',
           memberId,
           payload: { style_preference: stylePreference, size_needs: sizeNeeds },
-        });
+        }));
       } catch {
         return FALLBACK;
       }

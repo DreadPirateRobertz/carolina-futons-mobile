@@ -11,9 +11,10 @@
  * cf-mz3
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
+import { onQuestRefresh } from '@/services/questRefreshBus';
 
 export type QuestAction =
   | 'purchase'
@@ -154,6 +155,14 @@ export function useDailyQuests(): UseDailyQuestsResult {
   const refresh = useCallback(() => {
     load(true);
   }, [load]);
+
+  // cf-ma6v: subscribe to questRefreshBus so quests re-fetch when a
+  // gamification action completes mid-session (e.g. addToCart, review).
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
+  useEffect(() => {
+    return onQuestRefresh(() => refreshRef.current());
+  }, []);
 
   return { quests, loading, refresh };
 }

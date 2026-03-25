@@ -17,6 +17,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn().mockResolvedValue(undefined),
 }));
 
+// cf-ma6v: mock questRefreshBus so we can test subscription
+const mockOnQuestRefresh = jest.fn();
+jest.mock('@/services/questRefreshBus', () => ({
+  onQuestRefresh: (...args: unknown[]) => mockOnQuestRefresh(...args),
+}));
+
 const mockCallFunction = jest.fn();
 const mockUseOptionalWixClient = jest.fn();
 jest.mock('@/services/wix', () => ({
@@ -295,6 +301,49 @@ describe('useDailyQuests', () => {
     });
     expect(mockCallFunction).toHaveBeenCalledTimes(1);
     expect(result.current.quests[0].id).toBe('api-q1');
+  });
+
+  // ── questRefreshBus subscription (cf-ma6v) ──────────────────────────────
+
+  it('subscribes to questRefreshBus on mount', async () => {
+    mockGetItem.mockResolvedValue(null);
+    renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(mockOnQuestRefresh).toHaveBeenCalledWith(expect.any(Function));
+  });
+
+  it('unsubscribes from questRefreshBus on unmount', async () => {
+    mockGetItem.mockResolvedValue(null);
+    const mockUnsub = jest.fn();
+    mockOnQuestRefresh.mockReturnValue(mockUnsub);
+    const { unmount } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    unmount();
+    expect(mockUnsub).toHaveBeenCalledTimes(1);
+  });
+
+  it('refresh() is called when questRefreshBus emits', async () => {
+    mockGetItem.mockResolvedValue(MOCK_QUESTS_JSON);
+    mockUseOptionalWixClient.mockReturnValue({ callFunction: mockCallFunction });
+    mockCallFunction.mockResolvedValue(API_QUESTS_TODAY);
+    // Capture the callback passed to onQuestRefresh
+    let busCallback: (() => void) | undefined;
+    mockOnQuestRefresh.mockImplementation((cb: () => void) => {
+      busCallback = cb;
+      return jest.fn();
+    });
+
+    renderHook(() => useDailyQuests());
+    await act(async () => {});
+    // Cache hit — API not called yet
+    expect(mockCallFunction).not.toHaveBeenCalled();
+
+    // Simulate bus emission (quest completed mid-session)
+    await act(async () => {
+      busCallback!();
+    });
+    // Bus-triggered refresh bypasses cache → calls API
+    expect(mockCallFunction).toHaveBeenCalledTimes(1);
   });
 
   it('API quest with action "referral" is preserved in mapped quest', async () => {
