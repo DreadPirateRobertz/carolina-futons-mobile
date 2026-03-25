@@ -51,7 +51,7 @@ export interface ServerTriggers {
   milestoneUnlocked: boolean;
   /** Badge key unlocked (e.g. 'streak_chip'), or null if none. */
   badgeUnlocked: string | null;
-  challengeCompleted: Array<{ challengeId: string; title: string; rewardPoints: number }>;
+  challengeCompleted: { challengeId: string; title: string; rewardPoints: number }[];
   streakDanger: boolean;
 }
 

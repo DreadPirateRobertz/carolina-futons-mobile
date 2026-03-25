@@ -281,17 +281,13 @@ describe('useGamificationEvents', () => {
     it('does not throw when unauthenticated (empty memberId)', async () => {
       mockUseAuth.mockReturnValue({ user: null });
       const { result } = renderHook(() => useGamificationEvents());
-      await expect(
-        result.current.styleQuizComplete('modern', 'full'),
-      ).resolves.not.toThrow();
+      await expect(result.current.styleQuizComplete('modern', 'full')).resolves.not.toThrow();
     });
 
     it('does not throw when sendGamificationEvent rejects', async () => {
       mockSendGamificationEvent.mockRejectedValue(new Error('network'));
       const { result } = renderHook(() => useGamificationEvents());
-      await expect(
-        result.current.styleQuizComplete('modern', 'full'),
-      ).resolves.not.toThrow();
+      await expect(result.current.styleQuizComplete('modern', 'full')).resolves.not.toThrow();
     });
 
     it('passes null wixClient when unavailable', async () => {

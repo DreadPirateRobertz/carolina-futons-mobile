@@ -159,5 +159,13 @@ export function useGamificationEvents(): GamificationEvents {
     [wixClient, memberId],
   );
 
-  return { addToCart, submitReview, referralShared, arUsed, wishlistAdd, orderPlaced, styleQuizComplete };
+  return {
+    addToCart,
+    submitReview,
+    referralShared,
+    arUsed,
+    wishlistAdd,
+    orderPlaced,
+    styleQuizComplete,
+  };
 }
