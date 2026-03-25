@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { LoyaltyScreen } from '../LoyaltyScreen';
+import { LoyaltyScreen, __resetStreakEmitState } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -31,6 +31,11 @@ jest.mock('@/hooks/useLoyalty', () => ({
 const mockUseStreak = jest.fn();
 jest.mock('@/hooks/useStreak', () => ({
   useStreak: () => mockUseStreak(),
+}));
+
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
 }));
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
@@ -63,6 +68,7 @@ function renderScreen() {
 describe('LoyaltyScreen — crossRigEventBus', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    __resetStreakEmitState();
     mockUseLoyalty.mockReturnValue(DEFAULT_LOYALTY);
     mockUseStreak.mockReturnValue(STREAK_EXTENDED);
   });
@@ -99,5 +105,25 @@ describe('LoyaltyScreen — crossRigEventBus', () => {
       mockWixClient,
       expect.objectContaining({ newTotal: 1200 }),
     );
+  });
+
+  it('does not re-emit on remount (module-level dedup)', async () => {
+    const { unmount } = renderScreen();
+    await Promise.resolve();
+    expect(mockEmitStreakExtended).toHaveBeenCalledTimes(1);
+
+    unmount();
+    mockEmitStreakExtended.mockClear();
+
+    renderScreen();
+    await Promise.resolve();
+    expect(mockEmitStreakExtended).not.toHaveBeenCalled();
+  });
+
+  it('captures exception when emitStreakExtended rejects', async () => {
+    mockEmitStreakExtended.mockRejectedValueOnce(new Error('event bus down'));
+    renderScreen();
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockCaptureException).toHaveBeenCalled();
   });
 });

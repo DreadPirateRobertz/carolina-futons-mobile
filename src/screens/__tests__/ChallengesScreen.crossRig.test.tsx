@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { ChallengesScreen } from '../ChallengesScreen';
+import { ChallengesScreen, __resetChallengeEmitState } from '../ChallengesScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCatalog';
 
@@ -41,6 +41,11 @@ jest.mock('@/hooks/useChallengeProgress', () => ({
     error: null,
     refresh: jest.fn(),
   }),
+}));
+
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
 }));
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
@@ -95,6 +100,7 @@ function renderScreen() {
 describe('ChallengesScreen — crossRigEventBus', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    __resetChallengeEmitState();
     mockUseLoyalty.mockReturnValue(DEFAULT_LOYALTY);
   });
 
@@ -154,5 +160,37 @@ describe('ChallengesScreen — crossRigEventBus', () => {
       mockWixClient,
       expect.objectContaining({ challengeId: 'ch-abc', currentPoints: 850 }),
     );
+  });
+
+  it('does not re-emit for the same challenge on remount (module-level dedup)', async () => {
+    const ch = makeChallenge({ id: 'ch-dedup' });
+    mockHook.mockReturnValue({
+      grouped: { ...emptyGrouped, inProgress: [ch] },
+      loading: false,
+      error: null,
+    });
+
+    const { unmount } = renderScreen();
+    await Promise.resolve();
+    expect(mockEmitChallengeStarted).toHaveBeenCalledTimes(1);
+
+    unmount();
+    mockEmitChallengeStarted.mockClear();
+
+    renderScreen();
+    await Promise.resolve();
+    expect(mockEmitChallengeStarted).not.toHaveBeenCalled();
+  });
+
+  it('captures exception when emitChallengeStarted rejects', async () => {
+    mockEmitChallengeStarted.mockRejectedValueOnce(new Error('event bus down'));
+    mockHook.mockReturnValue({
+      grouped: { ...emptyGrouped, inProgress: [makeChallenge({ id: 'ch-fail' })] },
+      loading: false,
+      error: null,
+    });
+    renderScreen();
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockCaptureException).toHaveBeenCalled();
   });
 });

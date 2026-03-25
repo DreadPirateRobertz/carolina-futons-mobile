@@ -8,14 +8,23 @@
  * No user-supplied memberId — no IDOR risk.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { useStreak } from '@/hooks/useStreak';
 import { emitStreakExtended } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
+import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
+
+/** Module-level flag to prevent duplicate streak emissions across remounts. */
+let streakEmittedThisSession = false;
+
+/** @internal Test-only reset for module-level emission state. */
+export function __resetStreakEmitState() {
+  streakEmittedThisSession = false;
+}
 
 export type LoyaltyInitialTab = 'streak' | 'quests' | 'spin';
 
@@ -35,13 +44,17 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { points, tier, loading, error, refreshPoints } = useLoyalty();
   const { streak, loading: streakLoading, wasExtendedToday } = useStreak();
-  const streakEmitted = useRef(false);
 
   useEffect(() => {
-    if (streakLoading || !wasExtendedToday || streakEmitted.current) return;
-    streakEmitted.current = true;
-    const client = getWixClientSingleton();
-    emitStreakExtended(client, { streak, delta: 1, newTotal: points });
+    if (streakLoading || !wasExtendedToday || streakEmittedThisSession) return;
+    streakEmittedThisSession = true;
+    try {
+      const client = getWixClientSingleton();
+      emitStreakExtended(client, { streak, delta: 1, newTotal: points })
+        .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+    } catch (err) {
+      captureException(err instanceof Error ? err : new Error(String(err)));
+    }
   }, [wasExtendedToday, streakLoading, streak, points]);
 
   if (loading) {
