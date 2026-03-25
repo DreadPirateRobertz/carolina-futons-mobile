@@ -14,6 +14,7 @@ import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { emitRedemptionInitiated } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
+import { captureException } from '@/services/crashReporting';
 
 interface Props {
   testID?: string;
@@ -21,7 +22,7 @@ interface Props {
 
 export function RewardsScreen({ testID }: Props) {
   const { colors, spacing, typography } = useTheme();
-  const { points, loading } = useLoyalty();
+  const { points, loading, error, refreshPoints } = useLoyalty();
 
   if (loading) {
     return (
@@ -34,10 +35,39 @@ export function RewardsScreen({ testID }: Props) {
     );
   }
 
+  if (error) {
+    return (
+      <View
+        style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
+        testID={testID ?? 'rewards-screen'}
+      >
+        <Text
+          style={[styles.errorText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          testID="rewards-error"
+        >
+          {error}
+        </Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
+          onPress={refreshPoints}
+          testID="rewards-retry"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.retryText, { fontFamily: typography.bodyFamilyBold }]}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   function handleRedeem() {
     if (points <= 0) return;
-    const client = getWixClientSingleton();
-    emitRedemptionInitiated(client, { pointsRedeemed: points, newTotal: 0 });
+    try {
+      const client = getWixClientSingleton();
+      emitRedemptionInitiated(client, { pointsRedeemed: points, newTotal: Math.max(0, points - points) })
+        .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+    } catch (err) {
+      captureException(err instanceof Error ? err : new Error(String(err)));
+    }
   }
 
   return (
@@ -93,4 +123,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   redeemText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  errorText: { fontSize: 15, textAlign: 'center', marginHorizontal: 32, marginBottom: 20 },
+  retryButton: { paddingVertical: 12, paddingHorizontal: 32, borderRadius: 8 },
+  retryText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 });
