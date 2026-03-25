@@ -334,6 +334,75 @@ describe('DailyQuestsCard', () => {
     expect(queryByTestId('daily-quest-row-q-purchase')).toBeNull();
   });
 
+  // ── refreshToken (cm-0l2) ───────────────────────────────────────────────
+
+  it('calls refresh() when refreshToken changes', () => {
+    const mockRefresh = jest.fn();
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: false,
+      refresh: mockRefresh,
+    });
+    const { rerender } = renderCard({ refreshToken: 0 });
+    expect(mockRefresh).not.toHaveBeenCalled();
+
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard refreshToken={1} />
+      </ThemeProvider>,
+    );
+    expect(mockRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT call refresh() on initial mount with refreshToken', () => {
+    const mockRefresh = jest.fn();
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: false,
+      refresh: mockRefresh,
+    });
+    renderCard({ refreshToken: 0 });
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call refresh() when refreshToken stays the same across rerenders', () => {
+    const mockRefresh = jest.fn();
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: false,
+      refresh: mockRefresh,
+    });
+    const { rerender } = renderCard({ refreshToken: 5 });
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard refreshToken={5} />
+      </ThemeProvider>,
+    );
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('calls refresh() each time refreshToken increments', () => {
+    const mockRefresh = jest.fn();
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: false,
+      refresh: mockRefresh,
+    });
+    const { rerender } = renderCard({ refreshToken: 0 });
+
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard refreshToken={1} />
+      </ThemeProvider>,
+    );
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard refreshToken={2} />
+      </ThemeProvider>,
+    );
+    expect(mockRefresh).toHaveBeenCalledTimes(2);
+  });
+
   // ── Accessibility ───────────────────────────────────────────────────────
 
   it('quest rows have accessibilityRole="button"', () => {

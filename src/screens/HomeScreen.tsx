@@ -10,7 +10,7 @@
  * users into the two main engagement paths.
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -89,9 +89,11 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
 
+  const [questRefreshToken, setQuestRefreshToken] = useState(0);
   const handleRefresh = useCallback(() => {
     refreshChallenges();
     skyState.refresh();
+    setQuestRefreshToken((t) => t + 1);
   }, [refreshChallenges, skyState]);
 
   // cf-7l2 — propagate sky nav colours to navigator options (e.g. for status bar theming)
@@ -355,7 +357,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
 
         {/* Daily Quests — cf-mz3 */}
         <View style={[styles.dailyQuestsWrap, { marginHorizontal: spacing.lg }]}>
-          <DailyQuestsCard />
+          <DailyQuestsCard refreshToken={questRefreshToken} />
         </View>
 
         {/* Collection Carousel */}

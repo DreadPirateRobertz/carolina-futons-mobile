@@ -10,6 +10,7 @@
  * Users can skip at any point; preferences are persisted on finish.
  */
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Alert,
   Animated,
@@ -31,6 +32,7 @@ import {
   type PrimaryUse,
 } from '@/hooks/useStyleQuiz';
 import { useGamificationReveal, WELCOME_POINTS } from '@/hooks/useGamificationReveal';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 // ── Brand Story Slides ──────────────────────────────────────────────
 
@@ -109,6 +111,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
     challengeTeasers,
     markRevealShown,
   } = useGamificationReveal();
+  const { styleQuizComplete } = useGamificationEvents();
 
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
@@ -158,13 +161,22 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   const handleFinish = useCallback(async () => {
     try {
       await savePreferences();
+      // cm-0l2: fire style quiz gamification event + invalidate quest cache
+      // Onboarding doesn't collect sizeNeeds — pass '' so backend gets correct field
+      styleQuizComplete(preferences.stylePreference ?? '', '')
+        .then(() =>
+          AsyncStorage.removeItem('daily-quests').catch((e: unknown) =>
+            console.warn('[Onboarding] quest cache clear failed', e),
+          ),
+        )
+        .catch((e: unknown) => console.warn('[Onboarding] styleQuizComplete failed', e));
       onComplete();
-    } catch (err) {
+    } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete]);
+  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference]);
 
   // ── Progress Bar ────────────────────────────────────────────────
 

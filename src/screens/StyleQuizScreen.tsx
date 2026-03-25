@@ -10,6 +10,7 @@
  * Error boundary provided by withScreenErrorBoundary in AppNavigator.
  */
 import React, { useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
@@ -25,6 +26,7 @@ import {
   type SizeNeeds,
   type BudgetRange,
 } from '@/hooks/useStyleQuiz';
+import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 // ── Quiz Questions ────────────────────────────────────────────────
 
@@ -179,6 +181,7 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
     setBudgetRange,
     savePreferences,
   } = useStyleQuiz();
+  const { styleQuizComplete } = useGamificationEvents();
 
   const isCompletion = step === QUESTIONS.length;
 
@@ -205,13 +208,26 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
   const handleSave = useCallback(async () => {
     try {
       await savePreferences();
+      styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '')
+        .then(() =>
+          AsyncStorage.removeItem('daily-quests').catch((e: unknown) =>
+            console.warn('[StyleQuiz] quest cache clear failed', e),
+          ),
+        )
+        .catch((e: unknown) => console.warn('[StyleQuiz] styleQuizComplete failed', e));
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete]);
+  }, [
+    savePreferences,
+    onComplete,
+    styleQuizComplete,
+    preferences.stylePreference,
+    preferences.sizeNeeds,
+  ]);
 
   // ── Progress ────────────────────────────────────────────────────
 

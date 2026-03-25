@@ -24,7 +24,8 @@ export type GamificationEventName =
   | 'gamification_referral_shared'
   | 'gamification_ar_used'
   | 'gamification_wishlist_add'
-  | 'gamification_order_placed';
+  | 'gamification_order_placed'
+  | 'gamification_style_quiz_complete';
 
 export interface GamificationEventInput {
   eventName: GamificationEventName;
@@ -50,7 +51,7 @@ export interface ServerTriggers {
   milestoneUnlocked: boolean;
   /** Badge key unlocked (e.g. 'streak_chip'), or null if none. */
   badgeUnlocked: string | null;
-  challengeCompleted: Array<{ challengeId: string; title: string; rewardPoints: number }>;
+  challengeCompleted: { challengeId: string; title: string; rewardPoints: number }[];
   streakDanger: boolean;
 }
 

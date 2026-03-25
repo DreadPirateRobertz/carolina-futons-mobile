@@ -11,7 +11,7 @@
  * cf-mz3
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -28,6 +28,8 @@ import type { RootStackParamList } from '@/navigation/AppNavigator';
 interface Props {
   /** Override navigation for testing or custom routing */
   onNavigate?: (action: QuestAction) => void;
+  /** Increment to trigger a quest refresh from parent (e.g. pull-to-refresh). cm-0l2 */
+  refreshToken?: number;
 }
 
 const BOUNCE_SCALE = 1.12;
@@ -57,10 +59,19 @@ function navigateForAction(
   }
 }
 
-export function DailyQuestsCard({ onNavigate }: Props) {
+export function DailyQuestsCard({ onNavigate, refreshToken }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { quests, loading } = useDailyQuests();
+  const { quests, loading, refresh } = useDailyQuests();
+
+  // cm-0l2: refresh quests when parent increments refreshToken (e.g. pull-to-refresh)
+  const prevToken = useRef(refreshToken);
+  useEffect(() => {
+    if (refreshToken !== undefined && refreshToken !== prevToken.current) {
+      prevToken.current = refreshToken;
+      refresh();
+    }
+  }, [refreshToken, refresh]);
   const [toastVisible, setToastVisible] = useState(false);
 
   const completedCount = quests.filter((q) => q.completed).length;

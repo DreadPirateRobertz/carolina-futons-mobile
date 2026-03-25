@@ -39,6 +39,24 @@ jest.mock('@/theme', () => ({
 jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(() => Promise.resolve()),
   getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock useGamificationEvents — cm-0l2
+const mockStyleQuizComplete = jest.fn<
+  Promise<{ success: boolean; newTotal?: number }>,
+  [string, string]
+>(() => Promise.resolve({ success: true, newTotal: 100 }));
+jest.mock('@/hooks/useGamificationEvents', () => ({
+  useGamificationEvents: () => ({
+    styleQuizComplete: (...args: [string, string]) => mockStyleQuizComplete(...args),
+    addToCart: jest.fn(),
+    submitReview: jest.fn(),
+    referralShared: jest.fn(),
+    arUsed: jest.fn(),
+    wishlistAdd: jest.fn(),
+    orderPlaced: jest.fn(),
+  }),
 }));
 
 // Mock useGamificationReveal — first-time user by default
@@ -191,6 +209,83 @@ describe('OnboardingScreen', () => {
     });
     expect(mockOnComplete).not.toHaveBeenCalled();
     alertSpy.mockRestore();
+  });
+
+  // ── Style Quiz Gamification Event (cm-0l2) ─────────────────────
+
+  it('fires styleQuizComplete event when Start Shopping is pressed', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      // Onboarding doesn't collect sizeNeeds — second arg is always ''
+      expect(mockStyleQuizComplete).toHaveBeenCalledWith('modern', '');
+    });
+  });
+
+  it('clears daily-quests cache after styleQuizComplete fires', async () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-bedroom'));
+    fireEvent.press(getByTestId('quiz-option-rustic'));
+    fireEvent.press(getByTestId('quiz-option-both'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('daily-quests');
+    });
+  });
+
+  it('does not fire styleQuizComplete when skip is pressed (no quiz answers)', () => {
+    const { getByTestId } = render(<OnboardingScreen onComplete={jest.fn()} />);
+    fireEvent.press(getByTestId('onboarding-skip-button'));
+    expect(mockStyleQuizComplete).not.toHaveBeenCalled();
+  });
+
+  it('handles removeItem rejection gracefully (logs warning, does not throw)', async () => {
+    (AsyncStorage.removeItem as jest.Mock).mockRejectedValueOnce(new Error('storage error'));
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-modern'));
+    fireEvent.press(getByTestId('quiz-option-sitting'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[Onboarding] quest cache clear failed',
+        expect.any(Error),
+      );
+    });
+    warnSpy.mockRestore();
+  });
+
+  it('still calls onComplete even if styleQuizComplete rejects', async () => {
+    mockStyleQuizComplete.mockRejectedValueOnce(new Error('network'));
+    const onComplete = jest.fn();
+    const { getByTestId } = render(<OnboardingScreen onComplete={onComplete} />);
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('onboarding-next-button'));
+    fireEvent.press(getByTestId('quiz-option-living-room'));
+    fireEvent.press(getByTestId('quiz-option-classic'));
+    fireEvent.press(getByTestId('quiz-option-sleeping'));
+    fireEvent.press(getByTestId('onboarding-get-started-button'));
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    });
   });
 
   // ── Skip & Back ───────────────────────────────────────────────
