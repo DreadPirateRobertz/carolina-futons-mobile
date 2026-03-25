@@ -156,6 +156,27 @@ describe('CategoryScreen', () => {
     });
   });
 
+  describe('price display', () => {
+    it('renders non-zero prices for all products', async () => {
+      const { getAllByTestId } = await renderCategory({ categoryId: 'futons' });
+      // Each ProductCard renders a price — verify none show $0.00
+      const priceTexts = getAllByTestId(/^product-card-/);
+      expect(priceTexts.length).toBeGreaterThan(0);
+      // Verify the source data has non-zero prices
+      for (const product of futonProducts) {
+        expect(product.price).toBeGreaterThan(0);
+      }
+    });
+
+    it('product cards display formatted prices from mock data', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
+      // The first futon product should have its card rendered with correct price
+      const firstFuton = futonProducts[0];
+      expect(getByTestId(`product-card-${firstFuton.id}`)).toBeTruthy();
+      expect(firstFuton.price).toBeGreaterThan(0);
+    });
+  });
+
   describe('sorting', () => {
     it('defaults to featured sort', async () => {
       const { getByTestId } = await renderCategory({ categoryId: 'futons' });

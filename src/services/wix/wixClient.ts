@@ -1256,9 +1256,24 @@ function isRetryableError(err: Error): boolean {
 
 // ── Transform functions ────────────────────────────────────────
 
+/** Sanitise a price value that may arrive as a string or NaN from the Wix API. */
+function sanitisePrice(raw: unknown): number {
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /** Convert a raw Wix API product object into the app's local Product shape. */
 export function transformWixProduct(wix: WixProduct): Product {
-  const isDiscounted = wix.price.discountedPrice < wix.price.price;
+  const rawPrice = sanitisePrice(wix.price.price);
+  const rawDiscounted = sanitisePrice(wix.price.discountedPrice);
+  const isDiscounted = rawDiscounted < rawPrice;
+
+  if (rawPrice === 0) {
+    console.warn('Zero price returned from Wix API for product', {
+      id: wix.id,
+      name: wix.name,
+    });
+  }
 
   const images: ProductImage[] = (wix.media?.items ?? [])
     .filter((item) => item.mediaType.toLowerCase() === 'image')
@@ -1284,8 +1299,8 @@ export function transformWixProduct(wix: WixProduct): Product {
     sku: wix.sku ?? '',
     category: 'futons' as ProductCategory, // TODO: resolve via collection mapping once Wix collection IDs are configured
     ...(size ? { size } : {}),
-    price: isDiscounted ? wix.price.discountedPrice : wix.price.price,
-    ...(isDiscounted ? { originalPrice: wix.price.price } : {}),
+    price: isDiscounted ? rawDiscounted : rawPrice,
+    ...(isDiscounted ? { originalPrice: rawPrice } : {}),
     description: wix.description ?? '',
     shortDescription: wix.name,
     images,

@@ -864,6 +864,53 @@ describe('transformWixProduct', () => {
     const product = transformWixProduct(WIX_PRODUCT_FIXTURE);
     expect(product.dimensions).toEqual({ width: 0, depth: 0, height: 0 });
   });
+
+  it('logs warning when Wix returns zero price', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const zeroPriceProduct = {
+      ...WIX_PRODUCT_FIXTURE,
+      price: {
+        ...WIX_PRODUCT_FIXTURE.price,
+        price: 0,
+        discountedPrice: 0,
+      },
+    };
+    const product = transformWixProduct(zeroPriceProduct);
+    expect(product.price).toBe(0);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Zero price'),
+      expect.objectContaining({ id: 'wix-prod-001' }),
+    );
+    warnSpy.mockRestore();
+  });
+
+  it('handles NaN price from Wix API gracefully', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const nanPriceProduct = {
+      ...WIX_PRODUCT_FIXTURE,
+      price: {
+        ...WIX_PRODUCT_FIXTURE.price,
+        price: NaN,
+        discountedPrice: NaN,
+      },
+    };
+    const product = transformWixProduct(nanPriceProduct as WixProduct);
+    expect(product.price).toBe(0);
+    warnSpy.mockRestore();
+  });
+
+  it('handles string price from Wix API by coercing to number', () => {
+    const stringPriceProduct = {
+      ...WIX_PRODUCT_FIXTURE,
+      price: {
+        ...WIX_PRODUCT_FIXTURE.price,
+        price: '349.00' as unknown as number,
+        discountedPrice: '349.00' as unknown as number,
+      },
+    };
+    const product = transformWixProduct(stringPriceProduct as WixProduct);
+    expect(product.price).toBe(349);
+  });
 });
 
 describe('transformWixCollection', () => {
