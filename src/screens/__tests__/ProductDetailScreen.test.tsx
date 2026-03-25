@@ -159,10 +159,12 @@ function renderDetail(props: Partial<React.ComponentProps<typeof ProductDetailSc
 }
 
 beforeEach(() => {
-  mockAddItem.mockClear();
-  mockAlert.mockClear();
-  mockNavigate.mockClear();
+  jest.clearAllMocks();
   mockUseProductReviews.mockReturnValue(mockProductReviewsResult);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe('ProductDetailScreen', () => {
@@ -418,9 +420,10 @@ describe('ProductDetailScreen', () => {
     it('does not throw when Share.share rejects', async () => {
       shareSpy.mockRejectedValueOnce(new Error('share failed'));
       const { getByTestId } = renderDetail();
-      fireEvent.press(getByTestId('detail-share-button'));
-      await new Promise((r) => setTimeout(r, 50));
-      // no crash
+      await act(async () => {
+        fireEvent.press(getByTestId('detail-share-button'));
+      });
+      // no crash — rejection handled gracefully
     });
   });
 
