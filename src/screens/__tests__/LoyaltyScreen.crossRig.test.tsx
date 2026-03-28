@@ -15,9 +15,8 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 jest.mock('@/services/crossRigEventBus', () => ({
   emitStreakExtended: jest.fn(() => Promise.resolve({ success: true })),
 }));
-const mockEmitStreakExtended = jest.requireMock(
-  '@/services/crossRigEventBus',
-).emitStreakExtended as jest.Mock;
+const mockEmitStreakExtended = jest.requireMock('@/services/crossRigEventBus')
+  .emitStreakExtended as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 const mockGetWixClient = jest.fn(() => mockWixClient);
