@@ -231,7 +231,7 @@ describe('CartScreen', () => {
     it('shows BNPL teaser', () => {
       const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(getByTestId('bnpl-teaser')).toBeTruthy();
+      expect(getByTestId('bnpl-hero-cart')).toBeTruthy();
     });
   });
 
@@ -463,7 +463,7 @@ describe('CartScreen', () => {
 
     it('BNPL teaser is shown when cart has items', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      expect(getByTestId('bnpl-teaser')).toBeTruthy();
+      expect(getByTestId('bnpl-hero-cart')).toBeTruthy();
     });
 
     it('BNPL modal is not visible initially', () => {
@@ -473,33 +473,33 @@ describe('CartScreen', () => {
 
     it('tapping BNPL teaser opens the modal', () => {
       const { getByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-hero-cart'));
       expect(getByTestId('bnpl-modal')).toBeTruthy();
     });
 
     it('modal shows installment breakdown after teaser tap', () => {
       const { getByTestId, getByText } = renderCartScreen({}, seed);
-      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-hero-cart'));
       expect(getByText('Pay over time')).toBeTruthy();
       expect(getByText('Today')).toBeTruthy();
     });
 
     it('modal shows Klarna tab by default', () => {
       const { getByTestId, getByText } = renderCartScreen({}, seed);
-      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-hero-cart'));
       expect(getByText('Continue with Klarna')).toBeTruthy();
     });
 
     it('modal closes when close button pressed', () => {
       const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-hero-cart'));
       fireEvent.press(getByTestId('bnpl-modal-close'));
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
     });
 
     it('modal closes when overlay pressed', () => {
       const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
-      fireEvent.press(getByTestId('bnpl-teaser'));
+      fireEvent.press(getByTestId('bnpl-hero-cart'));
       fireEvent.press(getByTestId('bnpl-modal-overlay'));
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
     });
