@@ -141,6 +141,7 @@ jest.mock('@/services/wix', () => ({
   }),
 }));
 
+
 // Mock shippingIntelligenceService — default: no options (ZIP not yet entered)
 const mockFetchShippingOptions = jest.fn().mockResolvedValue({ success: false, options: [] });
 jest.mock('@/services/shippingIntelligenceService', () => ({

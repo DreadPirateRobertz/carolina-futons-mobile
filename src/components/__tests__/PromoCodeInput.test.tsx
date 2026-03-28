@@ -14,8 +14,8 @@ jest.mock('@/theme', () => ({
 }));
 
 const mockValidate = jest.fn();
-jest.mock('@/services/wix/wixProvider', () => ({
-  useWixClient: () => ({ callFunction: mockValidate }),
+jest.mock('@/services/wix', () => ({
+  useOptionalWixClient: () => ({ callFunction: mockValidate }),
 }));
 
 import { PromoCodeInput } from '../PromoCodeInput';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
-import { useWixClient } from '@/services/wix/wixProvider';
+import { useOptionalWixClient } from '@/services/wix';
 
 interface PromoCodeInputProps {
   cartTotal: number;
@@ -12,7 +12,7 @@ type PromoState = 'collapsed' | 'idle' | 'loading' | 'success' | 'error';
 
 export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
   const { colors, spacing, typography, borderRadius } = useTheme();
-  const client = useWixClient();
+  const client = useOptionalWixClient();
   const [state, setState] = useState<PromoState>('collapsed');
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
