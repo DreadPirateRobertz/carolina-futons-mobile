@@ -42,6 +42,7 @@ export function useStampedReviews(productId: string): UseStampedReviewsResult {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const pageRef = useRef(1);
+  const cancelledRef = useRef(false);
 
   const fetchPage = useCallback(
     async (page: number, append: boolean) => {
@@ -51,6 +52,8 @@ export function useStampedReviews(productId: string): UseStampedReviewsResult {
           // Only fetch summary on first page (it doesn't change per page)
           page === 1 ? fetchStampedRatingSummary(productId) : Promise.resolve(null),
         ]);
+
+        if (cancelledRef.current) return;
 
         setReviews((prev) =>
           append ? [...prev, ...reviewsResult.reviews] : reviewsResult.reviews,
@@ -64,6 +67,7 @@ export function useStampedReviews(productId: string): UseStampedReviewsResult {
         setError(null);
         pageRef.current = page;
       } catch (err) {
+        if (cancelledRef.current) return;
         const message = err instanceof Error ? err.message : String(err);
         captureException(err instanceof Error ? err : new Error(message), 'error', {
           action: 'useStampedReviews/fetch',
@@ -89,17 +93,16 @@ export function useStampedReviews(productId: string): UseStampedReviewsResult {
       return;
     }
 
-    let cancelled = false;
-
+    cancelledRef.current = false;
     setIsLoading(true);
     pageRef.current = 1;
 
     fetchPage(1, false).finally(() => {
-      if (!cancelled) setIsLoading(false);
+      if (!cancelledRef.current) setIsLoading(false);
     });
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, [fetchPage]);
 

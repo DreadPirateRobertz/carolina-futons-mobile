@@ -210,7 +210,7 @@ export function ProductDetailScreen({
   const effectiveAggregate = stampedReady
     ? { averageRating: stamped.summary.averageRating, totalReviews: stamped.summary.totalReviews }
     : reviewAggregate;
-  const effectiveAggregateLoading = stamped.isLoading && reviewAggregateLoading;
+  const effectiveAggregateLoading = stamped.isLoading || reviewAggregateLoading;
   const showInlineRating = !effectiveAggregateLoading && effectiveAggregate.totalReviews > 0;
 
   // Scroll ref + reviews section offset for tap-to-scroll from inline rating
