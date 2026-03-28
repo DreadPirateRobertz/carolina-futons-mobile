@@ -11,6 +11,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getSommelierResults, type SommelierResultsData } from '@/services/sommelierResults';
 import { useAuth } from '@/hooks/useAuth';
+import { captureException } from '@/services/crashReporting';
 
 export interface UseSommelierResultsReturn {
   results: SommelierResultsData | null;
@@ -38,12 +39,19 @@ export function useSommelierResults(): UseSommelierResultsReturn {
 
     setIsLoading(true);
 
-    getSommelierResults(user.id).then((data) => {
-      if (cancelledRef.current) return;
-      setResults(data);
-      setIsLoading(false);
-      setError(null);
-    });
+    getSommelierResults(user.id)
+      .then((data) => {
+        if (cancelledRef.current) return;
+        setResults(data);
+        setIsLoading(false);
+        setError(null);
+      })
+      .catch((err: unknown) => {
+        if (cancelledRef.current) return;
+        captureException(err instanceof Error ? err : new Error(String(err)));
+        setError(err instanceof Error ? (err.message ?? 'Failed to load results') : 'Failed to load results');
+        setIsLoading(false);
+      });
 
     return () => {
       cancelledRef.current = true;
