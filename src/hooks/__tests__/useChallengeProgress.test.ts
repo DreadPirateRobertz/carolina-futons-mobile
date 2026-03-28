@@ -156,7 +156,7 @@ describe('useChallengeProgress', () => {
   });
 
   it('returns empty state when no user', async () => {
-    mockUseAuth.mockReturnValue({ user: null });
+    mockUseAuth.mockReturnValue({ user: null } as any);
 
     const { result } = renderHook(() => useChallengeProgress());
 

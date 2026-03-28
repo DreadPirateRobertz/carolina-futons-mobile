@@ -88,7 +88,7 @@ describe('ChallengesScreen — Progress Summary', () => {
       loading: false,
       error: null,
       refresh: mockRefresh,
-    });
+    } as any);
     mockProgress.mockReturnValue({
       progressItems: [],
       summary: { totalPointsEarned: 750, completedCount: 3, activeCount: 2 },
@@ -146,7 +146,7 @@ describe('ChallengesScreen — Progress Summary', () => {
       progressItems: [],
       summary: { totalPointsEarned: 0, completedCount: 0, activeCount: 0 },
       loading: false,
-      error: 'Unable to load challenge progress.',
+      error: 'Unable to load challenge progress.' as unknown as null,
       refresh: mockProgressRefresh,
     });
     const { getByTestId } = renderScreen();
@@ -171,7 +171,7 @@ describe('ChallengesScreen — Progress Summary', () => {
       challenges: [],
       grouped: emptyGrouped,
       loading: false,
-      error: 'Failed to load',
+      error: 'Failed to load' as unknown as null,
       refresh: mockRefresh,
     });
     const { queryByTestId, getByTestId } = renderScreen();
