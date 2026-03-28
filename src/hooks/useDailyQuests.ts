@@ -106,7 +106,8 @@ export function useDailyQuests(): UseDailyQuestsResult {
 
   const load = useCallback(
     async (bustCache = false) => {
-      setLoading(true);
+      const isInitialLoad = quests.length === 0;
+      if (isInitialLoad) setLoading(true);
       try {
         const today = todayDateString();
 
@@ -145,7 +146,7 @@ export function useDailyQuests(): UseDailyQuestsResult {
         setLoading(false);
       }
     },
-    [wixClient],
+    [wixClient, quests.length],
   );
 
   useEffect(() => {

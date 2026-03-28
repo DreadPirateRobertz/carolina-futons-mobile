@@ -183,6 +183,23 @@ describe('useDailyQuests', () => {
     expect(result.current.quests).toHaveLength(3);
   });
 
+  it('does not flash quests to empty during refresh', async () => {
+    mockGetItem.mockResolvedValue(MOCK_QUESTS_JSON);
+    const { result } = renderHook(() => useDailyQuests());
+    await act(async () => {});
+    expect(result.current.quests).toHaveLength(3);
+    expect(result.current.loading).toBe(false);
+
+    // Trigger refresh synchronously — before the async fetch resolves,
+    // loading must NOT go true (which would flash the skeleton over existing quests)
+    act(() => {
+      result.current.refresh();
+    });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.quests).toHaveLength(3);
+  });
+
   // ── Quest shape ─────────────────────────────────────────────────────────
 
   it('returned quests have id, title, action, pointReward, completed fields', async () => {
