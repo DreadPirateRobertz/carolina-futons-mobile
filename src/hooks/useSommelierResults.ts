@@ -49,7 +49,11 @@ export function useSommelierResults(): UseSommelierResultsReturn {
       .catch((err: unknown) => {
         if (cancelledRef.current) return;
         captureException(err instanceof Error ? err : new Error(String(err)));
-        setError(err instanceof Error ? (err.message ?? 'Failed to load results') : 'Failed to load results');
+        setError(
+          err instanceof Error
+            ? (err.message ?? 'Failed to load results')
+            : 'Failed to load results',
+        );
         setIsLoading(false);
       });
 
