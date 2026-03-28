@@ -382,7 +382,9 @@ describe('Deep Linking', () => {
 // --- Screen mocks for new nav-wired screens ---
 
 jest.mock('@/screens/AchievementBadgesScreen', () => ({
-  AchievementBadgesScreen: () => <MockScreen testID="achievement-badges-screen" label="AchievementBadges" />,
+  AchievementBadgesScreen: () => (
+    <MockScreen testID="achievement-badges-screen" label="AchievementBadges" />
+  ),
 }));
 
 jest.mock('@/screens/NotificationsScreen', () => ({
