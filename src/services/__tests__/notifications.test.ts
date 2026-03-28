@@ -4,6 +4,7 @@ import {
   shouldShowNotification,
   formatBadgeCount,
   getChannelId,
+  registerPushToken,
   DEFAULT_PREFERENCES,
   NOTIFICATION_TYPE_CONFIG,
   ANDROID_CHANNEL_CONFIG,
@@ -314,5 +315,120 @@ describe('Notification service', () => {
       const link = getDeepLinkForNotification('daily_spin_reminder');
       expect(link).toMatch(/carolinafutons:\/\//);
     });
+  });
+
+  // ── registerPushToken ───────────────────────────────────────────────────
+
+  describe('registerPushToken', () => {
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+      jest.useRealTimers();
+    });
+
+    it('sends token and platform to push token endpoint', async () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: true });
+
+      await registerPushToken('ExponentPushToken[abc123]');
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        'https://www.wixapis.com/v1/push-tokens',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.stringContaining('ExponentPushToken[abc123]'),
+        }),
+      );
+    });
+
+    it('returns successfully on 200 OK', async () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: true });
+
+      await expect(registerPushToken('token')).resolves.toBeUndefined();
+    });
+
+    it('throws immediately on 4xx client error (no retry)', async () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 400 });
+
+      await expect(registerPushToken('token')).rejects.toThrow(
+        'Push token registration failed: 400',
+      );
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('throws immediately on 403 forbidden', async () => {
+      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 403 });
+
+      await expect(registerPushToken('token')).rejects.toThrow(
+        'Push token registration failed: 403',
+      );
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries on 5xx server error and succeeds', async () => {
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({ ok: false, status: 500 })
+        .mockResolvedValueOnce({ ok: true });
+
+      const promise = registerPushToken('token');
+
+      // Advance past first backoff (2^0 * 1000 = 1s)
+      await jest.advanceTimersByTimeAsync(1000);
+
+      await expect(promise).resolves.toBeUndefined();
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('throws after max retries exhausted on server errors', async () => {
+      jest.useRealTimers();
+      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 });
+
+      // With real timers, the backoff delays are real but the function
+      // retries quickly since we use short delays in test. Override the delay.
+      // Instead: just verify the error after all attempts.
+      await expect(registerPushToken('token')).rejects.toThrow(
+        'Push token registration failed: 503',
+      );
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    }, 15000);
+
+    it('retries on network errors (fetch throws)', async () => {
+      jest.useRealTimers();
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('Network request failed'))
+        .mockResolvedValueOnce({ ok: true });
+
+      await expect(registerPushToken('token')).resolves.toBeUndefined();
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+    }, 10000);
+
+    it('wraps non-Error fetch throws', async () => {
+      jest.useRealTimers();
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce('string error')
+        .mockResolvedValueOnce({ ok: true });
+
+      await expect(registerPushToken('token')).resolves.toBeUndefined();
+    }, 10000);
+
+    it('throws last error after all retries fail on network errors', async () => {
+      jest.useRealTimers();
+      global.fetch = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('offline'))
+        .mockRejectedValueOnce(new Error('offline'))
+        .mockRejectedValueOnce(new Error('offline'));
+
+      await expect(registerPushToken('token')).rejects.toThrow('offline');
+      expect(global.fetch).toHaveBeenCalledTimes(3);
+    }, 15000);
   });
 });

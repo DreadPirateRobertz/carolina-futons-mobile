@@ -292,6 +292,16 @@ describe('deepLink', () => {
       expect(url).not.toContain('utm_medium');
       expect(url).not.toContain('utm_campaign');
     });
+
+    it('includes content and term when provided', () => {
+      const url = buildShareUrlWithUTM('https://carolinafutons.com/shop', {
+        source: 'app',
+        content: 'hero-banner',
+        term: 'futon',
+      });
+      expect(url).toContain('utm_content=hero-banner');
+      expect(url).toContain('utm_term=futon');
+    });
   });
 
   describe('deferred deep links', () => {
