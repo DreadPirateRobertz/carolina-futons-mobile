@@ -82,13 +82,17 @@ describe('useScreenTracking', () => {
    * should be updated — it IS the analytics coverage contract.
    */
   const ALL_SCREENS = [
-    // Tab screens
+    // Tab screens (TabNavigator)
     'Home',
     'Shop',
     'Cart',
     'Account',
-    // Stack screens
+    // Stack screens (AppNavigator)
     'Onboarding',
+    'ProductDetail',
+    'AR',
+    'ARWeb',
+    'AvatarEquip',
     'Category',
     'Checkout',
     'PaymentConfirmation',
@@ -104,16 +108,17 @@ describe('useScreenTracking', () => {
     'StoreLocator',
     'StoreDetail',
     'Collections',
+    'CollectionDetail',
     'Premium',
     'StyleQuiz',
     'Search',
-    'ProductDetail',
-    'AR',
     'Compare',
     'Challenges',
     'Loyalty',
-    'PointsHistory',
-    'Rewards',
+    'Leaderboard',
+    'PrivacyPolicy',
+    'ReferralLanding',
+    'RoomGallery',
   ];
 
   it.each(ALL_SCREENS)('fires screen_view for %s screen', async (screenName) => {
