@@ -15,6 +15,11 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
     return { filePath: wixSdkCjs, type: 'sourceFile' };
   }
 
+  // Strip node: prefix — Metro doesn't support it but packages like jose use it.
+  if (moduleName.startsWith('node:')) {
+    return context.resolveRequest(context, moduleName.slice(5), platform);
+  }
+
   // @stripe/stripe-react-native imports react-native internals that don't
   // exist on web (TextInputState → Platform). Stub it for web builds.
   if (platform === 'web' && moduleName === '@stripe/stripe-react-native') {
