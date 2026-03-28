@@ -203,14 +203,14 @@ export function ProductDetailScreen({
 
   // Effective reviews: Stamped.io first, local/Wix fallback
   const effectiveReviews = stampedReady && stamped.reviews.length > 0 ? stamped.reviews : reviews;
-  const effectiveHasReviews =
-    stampedReady && stamped.reviews.length > 0 ? true : hasReviews;
+  const effectiveHasReviews = stampedReady && stamped.reviews.length > 0 ? true : hasReviews;
   const previewReviews = effectiveReviews.slice(0, 3);
 
   // Effective aggregate for inline star rating near price (CF-wah8)
-  const effectiveAggregate = stampedReady
-    ? { averageRating: stamped.summary.averageRating, totalReviews: stamped.summary.totalReviews }
-    : reviewAggregate;
+  const effectiveAggregate =
+    stampedReady && stamped.summary.totalReviews > 0
+      ? { averageRating: stamped.summary.averageRating, totalReviews: stamped.summary.totalReviews }
+      : reviewAggregate;
   const effectiveAggregateLoading = stamped.isLoading || reviewAggregateLoading;
   const showInlineRating = !effectiveAggregateLoading && effectiveAggregate.totalReviews > 0;
 
