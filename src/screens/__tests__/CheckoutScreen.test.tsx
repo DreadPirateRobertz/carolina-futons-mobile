@@ -1654,5 +1654,18 @@ describe('CheckoutScreen', () => {
       expect(typeof progress.props.accessibilityValue?.now).toBe('number');
       expect(progress.props.accessibilityValue?.max).toBe(3);
     });
+
+    it('line1 submitEditing does not crash when line2 is empty', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      // line2 starts empty — chain should skip to city without error
+      expect(() => fireEvent(getByTestId('shipping-line1'), 'submitEditing')).not.toThrow();
+    });
+
+    it('line1 submitEditing does not crash when line2 is populated', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent.changeText(getByTestId('shipping-line2'), 'Apt 4B');
+      // line2 has value — chain should go to line2 without error
+      expect(() => fireEvent(getByTestId('shipping-line1'), 'submitEditing')).not.toThrow();
+    });
   });
 });
