@@ -36,14 +36,22 @@ describe('SocialProofBadge', () => {
   describe('sold count badge', () => {
     it('renders sold count when > 0', () => {
       const { getByText } = render(
-        <SocialProofBadge soldThisWeek={12} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={12}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(getByText(/12 sold this week/i)).toBeTruthy();
     });
 
     it('does NOT render sold badge when soldThisWeek is 0', () => {
       const { queryByText } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(queryByText(/sold this week/i)).toBeNull();
     });
@@ -57,7 +65,11 @@ describe('SocialProofBadge', () => {
 
     it('has testID for sold badge', () => {
       const { getByTestId } = render(
-        <SocialProofBadge soldThisWeek={5} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={5}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(getByTestId('sold-this-week-badge')).toBeTruthy();
     });
@@ -74,7 +86,11 @@ describe('SocialProofBadge', () => {
 
     it('renders review excerpt when available', () => {
       const { getByText } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={review} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={review}
+          isLoading={false}
+        />,
       );
       expect(getByText(/Jane D\./)).toBeTruthy();
       expect(getByText(/Best futon/)).toBeTruthy();
@@ -82,14 +98,22 @@ describe('SocialProofBadge', () => {
 
     it('renders star rating for review', () => {
       const { getByTestId } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={review} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={review}
+          isLoading={false}
+        />,
       );
       expect(getByTestId('review-excerpt-rating')).toBeTruthy();
     });
 
     it('does NOT render excerpt when topReview is null', () => {
       const { queryByTestId } = render(
-        <SocialProofBadge soldThisWeek={5} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={5}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(queryByTestId('review-excerpt')).toBeNull();
     });
@@ -100,7 +124,11 @@ describe('SocialProofBadge', () => {
         body: 'A'.repeat(200),
       };
       const { getByTestId } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={longReview} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={longReview}
+          isLoading={false}
+        />,
       );
       const excerpt = getByTestId('review-excerpt-body');
       // numberOfLines prop should truncate
@@ -109,7 +137,11 @@ describe('SocialProofBadge', () => {
 
     it('has testID for review excerpt container', () => {
       const { getByTestId } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={review} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={review}
+          isLoading={false}
+        />,
       );
       expect(getByTestId('review-excerpt')).toBeTruthy();
     });
@@ -127,7 +159,11 @@ describe('SocialProofBadge', () => {
 
     it('does NOT render content when loading', () => {
       const { queryByTestId } = render(
-        <SocialProofBadge soldThisWeek={5} topReview={{ authorName: 'X', rating: 5, body: 'Y' }} isLoading={true} />,
+        <SocialProofBadge
+          soldThisWeek={5}
+          topReview={{ authorName: 'X', rating: 5, body: 'Y' }}
+          isLoading={true}
+        />,
       );
       expect(queryByTestId('sold-this-week-badge')).toBeNull();
       expect(queryByTestId('review-excerpt')).toBeNull();
@@ -140,7 +176,11 @@ describe('SocialProofBadge', () => {
     it('renders both sold badge and review excerpt', () => {
       const review = { authorName: 'Jane D.', rating: 5, body: 'Amazing!' };
       const { getByTestId, getByText } = render(
-        <SocialProofBadge soldThisWeek={8} topReview={review} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={8}
+          topReview={review}
+          isLoading={false}
+        />,
       );
       expect(getByTestId('sold-this-week-badge')).toBeTruthy();
       expect(getByTestId('review-excerpt')).toBeTruthy();
@@ -149,7 +189,11 @@ describe('SocialProofBadge', () => {
 
     it('renders nothing when both signals empty and not loading', () => {
       const { queryByTestId } = render(
-        <SocialProofBadge soldThisWeek={0} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={0}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(queryByTestId('social-proof-container')).toBeNull();
     });
@@ -160,7 +204,11 @@ describe('SocialProofBadge', () => {
   describe('accessibility', () => {
     it('sold badge has accessible label', () => {
       const { getByLabelText } = render(
-        <SocialProofBadge soldThisWeek={12} topReview={null} isLoading={false} />,
+        <SocialProofBadge
+          soldThisWeek={12}
+          topReview={null}
+          isLoading={false}
+        />,
       );
       expect(getByLabelText(/12 sold this week/i)).toBeTruthy();
     });
