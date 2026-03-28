@@ -15,6 +15,11 @@ it('routes order_delivered to OrderDetail screen', () => {
   expect(mockNavigate).toHaveBeenCalledWith('OrderDetail', { orderId: 'ord-456' });
 });
 
+it('routes order_refunded to OrderDetail screen', () => {
+  routeNotificationTap({ type: 'order_refunded', orderId: 'ord-789' }, mockNavigation as never);
+  expect(mockNavigate).toHaveBeenCalledWith('OrderDetail', { orderId: 'ord-789' });
+});
+
 it('routes streak_extended to Challenges screen', () => {
   routeNotificationTap({ type: 'streak_extended' }, mockNavigation as never);
   expect(mockNavigate).toHaveBeenCalledWith('Challenges');

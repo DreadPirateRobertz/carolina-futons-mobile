@@ -7,7 +7,7 @@ export type NotificationPayload =
   | { type: 'badge_earned' }
   | { type: 'price_drop'; productSlug: string };
 
-interface NavigationLike {
+export interface NavigationLike {
   navigate: (screen: string, params?: Record<string, unknown>) => void;
 }
 
