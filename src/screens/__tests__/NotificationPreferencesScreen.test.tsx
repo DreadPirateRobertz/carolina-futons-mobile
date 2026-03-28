@@ -95,6 +95,31 @@ describe('NotificationPreferencesScreen', () => {
     });
   });
 
+  describe('Skeleton loading state', () => {
+    it('shows skeleton when gamifPrefs isLoading is true', () => {
+      mockUseNotificationPreferences.mockReturnValueOnce({
+        ...defaultGamifPrefs,
+        isLoading: true,
+      });
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('notif-prefs-skeleton')).toBeTruthy();
+    });
+
+    it('does not show skeleton when loaded', () => {
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('notif-prefs-skeleton')).toBeNull();
+    });
+
+    it('skeleton hides main content while loading', () => {
+      mockUseNotificationPreferences.mockReturnValueOnce({
+        ...defaultGamifPrefs,
+        isLoading: true,
+      });
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('pref-row-order_update')).toBeNull();
+    });
+  });
+
   describe('Permission prompt', () => {
     it('shows permission prompt when undetermined', () => {
       const { getByTestId } = renderNotifPrefs();
@@ -229,6 +254,18 @@ describe('NotificationPreferencesScreen', () => {
       expect(getByTestId('enable-notifications-button').props.accessibilityLabel).toBe(
         'Enable push notifications',
       );
+    });
+
+    it('enabled switch has accessibilityState.checked=true', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const toggle = getByTestId('pref-toggle-order_update');
+      expect(toggle.props.accessibilityState).toEqual(expect.objectContaining({ checked: true }));
+    });
+
+    it('disabled switch has accessibilityState.checked=false', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const toggle = getByTestId('pref-toggle-cart_reminder');
+      expect(toggle.props.accessibilityState).toEqual(expect.objectContaining({ checked: false }));
     });
   });
 
