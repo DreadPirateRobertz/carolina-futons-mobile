@@ -15,10 +15,12 @@ import { useStampedReviews } from '../useStampedReviews';
 
 const mockFetchReviews = jest.fn();
 const mockFetchSummary = jest.fn();
+const mockIsConfigured = jest.fn(() => true);
 
 jest.mock('@/services/stamped', () => ({
   fetchStampedReviews: (...args: unknown[]) => mockFetchReviews(...args),
   fetchStampedRatingSummary: (...args: unknown[]) => mockFetchSummary(...args),
+  isStampedConfigured: () => mockIsConfigured(),
 }));
 
 const MOCK_REVIEW = {
@@ -71,8 +73,12 @@ describe('useStampedReviews', () => {
   });
 
   it('sets error on API failure', async () => {
-    mockFetchReviews.mockRejectedValueOnce(new Error('Stamped.io API error: 500 Internal Server Error'));
-    mockFetchSummary.mockRejectedValueOnce(new Error('Stamped.io API error: 500 Internal Server Error'));
+    mockFetchReviews.mockRejectedValueOnce(
+      new Error('Stamped.io API error: 500 Internal Server Error'),
+    );
+    mockFetchSummary.mockRejectedValueOnce(
+      new Error('Stamped.io API error: 500 Internal Server Error'),
+    );
 
     const { result } = renderHook(() => useStampedReviews('test-product'));
 
@@ -175,10 +181,9 @@ describe('useStampedReviews', () => {
   });
 
   it('refetches when productId changes', async () => {
-    const { result, rerender } = renderHook(
-      ({ productId }) => useStampedReviews(productId),
-      { initialProps: { productId: 'product-a' } },
-    );
+    const { result, rerender } = renderHook(({ productId }) => useStampedReviews(productId), {
+      initialProps: { productId: 'product-a' },
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -198,5 +203,20 @@ describe('useStampedReviews', () => {
     await waitFor(() => {
       expect(mockFetchReviews).toHaveBeenCalledWith('product-b', { page: 1, perPage: 10 });
     });
+  });
+
+  it('skips fetch when Stamped.io is not configured', async () => {
+    mockIsConfigured.mockReturnValue(false);
+
+    const { result } = renderHook(() => useStampedReviews('test-product'));
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(mockFetchReviews).not.toHaveBeenCalled();
+    expect(mockFetchSummary).not.toHaveBeenCalled();
+    expect(result.current.reviews).toEqual([]);
+    expect(result.current.error).toBeNull();
   });
 });

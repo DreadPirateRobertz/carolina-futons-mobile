@@ -8,7 +8,7 @@
  * hq-tcdpe
  */
 
-import { fetchStampedReviews, fetchStampedRatingSummary } from '../stamped';
+import { fetchStampedReviews, fetchStampedRatingSummary, isStampedConfigured } from '../stamped';
 import type { Review } from '@/data/reviews';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -134,9 +134,7 @@ describe('fetchStampedReviews', () => {
   it('throws when API key is not configured', async () => {
     delete process.env.EXPO_PUBLIC_STAMPED_API_KEY;
 
-    await expect(fetchStampedReviews('test')).rejects.toThrow(
-      'Stamped.io API key not configured',
-    );
+    await expect(fetchStampedReviews('test')).rejects.toThrow('Stamped.io API key not configured');
   });
 
   it('throws when store hash is not configured', async () => {
@@ -207,6 +205,19 @@ describe('fetchStampedReviews', () => {
     expect(url).toContain('page=1');
     expect(url).toContain('perPage=10');
   });
+
+  it('passes AbortSignal.timeout to fetch', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [], total: 0 }),
+    });
+
+    await fetchStampedReviews('test');
+
+    const [, init] = mockFetch.mock.calls[0];
+    expect(init).toBeDefined();
+    expect(init.signal).toBeDefined();
+  });
 });
 
 // ── fetchStampedRatingSummary ────────────────────────────────────────────────
@@ -255,5 +266,29 @@ describe('fetchStampedRatingSummary', () => {
     await expect(fetchStampedRatingSummary('test')).rejects.toThrow(
       'Stamped.io API error: 401 Unauthorized',
     );
+  });
+});
+
+// ── isStampedConfigured ──────────────────────────────────────────────────────
+
+describe('isStampedConfigured', () => {
+  it('returns true when both env vars are set', () => {
+    expect(isStampedConfigured()).toBe(true);
+  });
+
+  it('returns false when API key is missing', () => {
+    delete process.env.EXPO_PUBLIC_STAMPED_API_KEY;
+    expect(isStampedConfigured()).toBe(false);
+  });
+
+  it('returns false when store hash is missing', () => {
+    delete process.env.EXPO_PUBLIC_STAMPED_STORE_HASH;
+    expect(isStampedConfigured()).toBe(false);
+  });
+
+  it('returns false when both are missing', () => {
+    delete process.env.EXPO_PUBLIC_STAMPED_API_KEY;
+    delete process.env.EXPO_PUBLIC_STAMPED_STORE_HASH;
+    expect(isStampedConfigured()).toBe(false);
   });
 });

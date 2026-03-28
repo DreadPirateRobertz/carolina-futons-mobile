@@ -9,7 +9,11 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchStampedReviews, fetchStampedRatingSummary } from '@/services/stamped';
+import {
+  fetchStampedReviews,
+  fetchStampedRatingSummary,
+  isStampedConfigured,
+} from '@/services/stamped';
 import type { Review, ReviewSummary } from '@/data/reviews';
 import { captureException } from '@/services/crashReporting';
 
@@ -78,6 +82,13 @@ export function useStampedReviews(productId: string): UseStampedReviewsResult {
   );
 
   useEffect(() => {
+    // Skip fetch entirely when Stamped.io env vars aren't configured —
+    // avoids a doomed request on every PDP mount in dev/unconfigured envs.
+    if (!isStampedConfigured()) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     setIsLoading(true);

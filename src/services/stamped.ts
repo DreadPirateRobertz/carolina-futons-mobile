@@ -15,6 +15,15 @@ import type { Review, ReviewSummary } from '@/data/reviews';
 
 const BASE_URL = 'https://stamped.io/api/v2';
 
+/** Check whether Stamped.io env vars are present (avoids firing doomed requests). */
+export function isStampedConfigured(): boolean {
+  return Boolean(
+    process.env.EXPO_PUBLIC_STAMPED_API_KEY && process.env.EXPO_PUBLIC_STAMPED_STORE_HASH,
+  );
+}
+
+const REQUEST_TIMEOUT_MS = 30_000;
+
 function getConfig() {
   const apiKey = process.env.EXPO_PUBLIC_STAMPED_API_KEY;
   const storeHash = process.env.EXPO_PUBLIC_STAMPED_STORE_HASH;
@@ -110,7 +119,9 @@ export async function fetchStampedReviews(
     perPage: String(perPage),
   });
 
-  const response = await fetch(`${BASE_URL}/${storeHash}/reviews?${params}`);
+  const response = await fetch(`${BASE_URL}/${storeHash}/reviews?${params}`, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
 
   if (!response.ok) {
     throw new Error(`Stamped.io API error: ${response.status} ${response.statusText}`);
@@ -138,7 +149,9 @@ export async function fetchStampedRatingSummary(productId: string): Promise<Revi
     storeUrl: storeHash,
   });
 
-  const response = await fetch(`${BASE_URL}/${storeHash}/badge?${params}`);
+  const response = await fetch(`${BASE_URL}/${storeHash}/badge?${params}`, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
 
   if (!response.ok) {
     throw new Error(`Stamped.io API error: ${response.status} ${response.statusText}`);
