@@ -69,6 +69,9 @@ const mockAuthService = {
 jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn(() => mockAuthService),
 }));
+jest.mock('@/services/wix/wixProvider', () => ({
+  useWixClient: () => ({ callFunction: jest.fn().mockResolvedValue(null) }),
+}));
 
 const mockPremiumValue = {
   isPremium: false,
