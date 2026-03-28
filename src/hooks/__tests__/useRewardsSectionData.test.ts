@@ -10,7 +10,12 @@ const mockLoyalty = {
   error: null as string | null,
   refreshPoints: jest.fn(),
 };
-const mockBadges = { badges: [], loading: true, error: null as string | null, refreshBadges: jest.fn() };
+const mockBadges = {
+  badges: [],
+  loading: true,
+  error: null as string | null,
+  refreshBadges: jest.fn(),
+};
 const mockChallenges = {
   totalPointsEarned: 0,
   completedCount: 0,
