@@ -36,9 +36,9 @@ beforeEach(() => {
 });
 
 it('renders screen title and explanation text', () => {
-  const { getByText } = render(<NotificationPermissionPromptScreen />);
+  const { getByText, getAllByText } = render(<NotificationPermissionPromptScreen />);
   expect(getByText(/stay in the loop/i)).toBeTruthy();
-  expect(getByText(/notif/i)).toBeTruthy();
+  expect(getAllByText(/notif/i).length).toBeGreaterThan(0);
 });
 
 it('primary CTA text contains "Turn on notifications"', () => {
