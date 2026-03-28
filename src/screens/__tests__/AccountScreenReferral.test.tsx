@@ -72,8 +72,6 @@ jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light' },
 }));
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
-
 const mockGamificationReferralShared = jest.fn().mockResolvedValue({ success: true });
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({

@@ -1,18 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
 import { useScreenEntrance } from '../useScreenEntrance';
 
-jest.mock('react-native-reanimated', () => {
-  const actual = jest.requireActual('react-native-reanimated/mock');
-  return {
-    ...actual,
-    useSharedValue: (init: number) => ({ value: init }),
-    useAnimatedStyle: (fn: () => any) => fn(),
-    withTiming: (toValue: number) => toValue,
-    withDelay: (_delay: number, animation: any) => animation,
-    Easing: { out: (fn: any) => fn, cubic: {} },
-  };
-});
-
 describe('useScreenEntrance', () => {
   it('returns an animated style object', () => {
     const { result } = renderHook(() => useScreenEntrance());

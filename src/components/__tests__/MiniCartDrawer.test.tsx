@@ -17,13 +17,6 @@ jest.mock('@/hooks/useCart', () => ({
   useCart: () => mockUseCart(),
 }));
 
-// Mock Reanimated so SlideInDown/SlideOutDown don't crash in Jest
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
-
 function renderDrawer(props: Partial<React.ComponentProps<typeof MiniCartDrawer>> = {}) {
   return render(
     <ThemeProvider>

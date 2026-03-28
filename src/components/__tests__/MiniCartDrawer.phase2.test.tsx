@@ -39,13 +39,6 @@ jest.mock('react-native-gesture-handler', () => {
   };
 });
 
-// ── Reanimated mock ──────────────────────────────────────────────────────────
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
-});
-
 // ── useCart mock ─────────────────────────────────────────────────────────────
 const mockRemoveItem = jest.fn();
 const mockUpdateQuantity = jest.fn();

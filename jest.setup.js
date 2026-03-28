@@ -27,6 +27,7 @@ jest.mock('react-native-safe-area-context', () => {
 // Mock expo-file-system
 jest.mock('expo-file-system', () => ({
   cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
   getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
   makeDirectoryAsync: jest.fn(() => Promise.resolve()),
   readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
@@ -120,7 +121,7 @@ jest.mock('react-native-reanimated', () => {
   const View = require('react-native').View;
   return {
     __esModule: true,
-    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View, createAnimatedComponent: (comp) => comp },
+    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View, createAnimatedComponent: (comp) => comp, call: () => {} },
     useSharedValue: (init) => ({ value: init }),
     useAnimatedStyle: (fn) => fn(),
     useDerivedValue: (fn) => ({ value: fn() }),
@@ -155,6 +156,10 @@ jest.mock('react-native-reanimated', () => {
     FadeInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
     SlideInRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
     SlideOutRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideOutUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideOutDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
     Layout: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
