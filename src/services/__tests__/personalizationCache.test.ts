@@ -55,24 +55,26 @@ it('getCachedSommelierResult returns null when nothing cached', async () => {
 
 it('getCachedSommelierResult returns null when expired', async () => {
   const expired = {
-    memberId: 'member-1', topStyle: 'Modern', flavors: [], recommendations: [],
+    memberId: 'member-1',
+    topStyle: 'Modern',
+    flavors: [],
+    recommendations: [],
     cachedAt: Date.now() - HOUR_MS - 1,
   };
-  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(
-    JSON.stringify({ 'member-1': expired }),
-  );
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify({ 'member-1': expired }));
   const result = await getCachedSommelierResult('member-1');
   expect(result).toBeNull();
 });
 
 it('getCachedSommelierResult returns value within TTL without cachedAt field', async () => {
   const fresh = {
-    memberId: 'member-1', topStyle: 'Cozy', flavors: ['soft'], recommendations: [],
+    memberId: 'member-1',
+    topStyle: 'Cozy',
+    flavors: ['soft'],
+    recommendations: [],
     cachedAt: Date.now() - 1000,
   };
-  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(
-    JSON.stringify({ 'member-1': fresh }),
-  );
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify({ 'member-1': fresh }));
   const result = await getCachedSommelierResult('member-1');
   expect(result).not.toBeNull();
   expect(result).not.toHaveProperty('cachedAt'); // cachedAt stripped from returned value

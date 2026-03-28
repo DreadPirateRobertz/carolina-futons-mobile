@@ -21,7 +21,10 @@ beforeEach(() => jest.clearAllMocks());
 
 it('renders nothing when score is null and not loading', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: null, reasons: [], isLoading: false, error: null,
+    score: null,
+    reasons: [],
+    isLoading: false,
+    error: null,
   });
   const { queryByTestId } = render(<FitScoreBadge productId="prod-1" memberId="mem-1" />);
   expect(queryByTestId('fit-score-badge')).toBeNull();
@@ -30,7 +33,10 @@ it('renders nothing when score is null and not loading', () => {
 
 it('renders skeleton when loading', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: null, reasons: [], isLoading: true, error: null,
+    score: null,
+    reasons: [],
+    isLoading: true,
+    error: null,
   });
   const { getByTestId } = render(<FitScoreBadge productId="prod-1" memberId="mem-1" />);
   expect(getByTestId('fit-score-skeleton')).toBeTruthy();
@@ -38,7 +44,10 @@ it('renders skeleton when loading', () => {
 
 it('renders score badge when score is available', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: 94, reasons: ['firm'], isLoading: false, error: null,
+    score: 94,
+    reasons: ['firm'],
+    isLoading: false,
+    error: null,
   });
   const { getByText, getByTestId } = render(<FitScoreBadge productId="prod-1" memberId="mem-1" />);
   expect(getByText(/94%/)).toBeTruthy();
@@ -47,7 +56,10 @@ it('renders score badge when score is available', () => {
 
 it('renders nothing on error — graceful degradation', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: null, reasons: [], isLoading: false, error: 'network',
+    score: null,
+    reasons: [],
+    isLoading: false,
+    error: 'network',
   });
   const { queryByTestId } = render(<FitScoreBadge productId="prod-1" memberId="mem-1" />);
   expect(queryByTestId('fit-score-badge')).toBeNull();
@@ -55,7 +67,10 @@ it('renders nothing on error — graceful degradation', () => {
 
 it('renders nothing for guest (memberId null)', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: null, reasons: [], isLoading: false, error: null,
+    score: null,
+    reasons: [],
+    isLoading: false,
+    error: null,
   });
   const { queryByTestId } = render(<FitScoreBadge productId="prod-1" memberId={null} />);
   expect(queryByTestId('fit-score-badge')).toBeNull();
@@ -64,7 +79,10 @@ it('renders nothing for guest (memberId null)', () => {
 
 it('badge has accessibilityLabel with percentage', () => {
   (useFitScore as jest.Mock).mockReturnValue({
-    score: 87, reasons: [], isLoading: false, error: null,
+    score: 87,
+    reasons: [],
+    isLoading: false,
+    error: null,
   });
   const { getByTestId } = render(<FitScoreBadge productId="prod-1" memberId="mem-1" />);
   expect(getByTestId('fit-score-badge').props.accessibilityLabel).toContain('87');

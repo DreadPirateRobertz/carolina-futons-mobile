@@ -31,7 +31,11 @@ it('returns empty state when memberId is null', async () => {
 
 it('sets isLoading true while fetching', async () => {
   let resolveA: (v: unknown) => void;
-  mockCallFunction.mockReturnValueOnce(new Promise((r) => { resolveA = r; }));
+  mockCallFunction.mockReturnValueOnce(
+    new Promise((r) => {
+      resolveA = r;
+    }),
+  );
   mockCallFunction.mockReturnValueOnce(new Promise(() => {}));
 
   const { result } = renderHook(() => usePersonalization('member-1'));
@@ -44,7 +48,12 @@ it('sets isLoading true while fetching', async () => {
 
 it('returns sommelierResult on success', async () => {
   mockCallFunction
-    .mockResolvedValueOnce({ memberId: 'member-1', topStyle: 'Modern', flavors: ['firm'], recommendations: [] })
+    .mockResolvedValueOnce({
+      memberId: 'member-1',
+      topStyle: 'Modern',
+      flavors: ['firm'],
+      recommendations: [],
+    })
     .mockResolvedValueOnce([]);
   const { result } = renderHook(() => usePersonalization('member-1'));
   await act(async () => {});
@@ -66,7 +75,12 @@ it('partial failure — sommelier fails but recommendations succeed', async () =
 
 it('partial failure — recommendations fail but sommelier succeeds', async () => {
   mockCallFunction
-    .mockResolvedValueOnce({ memberId: 'member-1', topStyle: 'Cozy', flavors: [], recommendations: [] })
+    .mockResolvedValueOnce({
+      memberId: 'member-1',
+      topStyle: 'Cozy',
+      flavors: [],
+      recommendations: [],
+    })
     .mockRejectedValueOnce(new Error('recs error'));
   const { result } = renderHook(() => usePersonalization('member-1'));
   await act(async () => {});
