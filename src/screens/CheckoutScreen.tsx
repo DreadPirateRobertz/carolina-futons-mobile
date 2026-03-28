@@ -57,6 +57,7 @@ import {
   normalizeShippingOption,
   type NormalizedShippingOption,
 } from '@/services/shippingIntelligenceService';
+import { pollPaymentConfirmation } from '@/services/paymentPoller';
 
 const SHIPPING_ZIP_KEY = 'shipping_zip';
 const ZIP_RE = /^\d{5}(-\d{4})?$/;
@@ -372,6 +373,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   // Card state
   const [cardComplete, setCardComplete] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
+  const [pollerError, setPollerError] = useState<string | null>(null);
 
   // Track whether user has attempted to submit (for showing validation)
   const [_submitAttempted, setSubmitAttempted] = useState(false);
@@ -399,7 +401,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     status === 'processing' ||
     klarnaCheckout.status === 'processing' ||
     klarnaCheckout.status === 'awaiting_redirect';
-  const displayError = error ?? klarnaCheckout.error;
+  const displayError = error ?? klarnaCheckout.error ?? pollerError;
 
   if (!checkoutTracked && items.length > 0) {
     events.beginCheckout(items.length, totals.total);
@@ -500,9 +502,22 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       return;
     }
 
-    const order = await processPayment(selectedMethod);
+    setPollerError(null);
+    let resolvedOrder: import('@/services/payment').OrderConfirmation | null = null;
 
-    if (order) {
+    const pollResult = await pollPaymentConfirmation(
+      async () => {
+        resolvedOrder = await processPayment(selectedMethod);
+        if (resolvedOrder) return true;
+        // processPayment returns null on both hard failure and cancellation;
+        // treat null as false (failed) so the poller stops immediately.
+        return false;
+      },
+      { timeoutMs: 30000, intervalMs: 2000 },
+    );
+
+    if (pollResult === 'success' && resolvedOrder) {
+      const order = resolvedOrder as import('@/services/payment').OrderConfirmation;
       events.purchase(order.orderId, totals.total, items.length);
       addressBook.saveFromCheckout(shippingAddress);
       cancelCartAbandonmentForOrder();
@@ -510,7 +525,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       onOrderComplete?.(order);
+    } else if (pollResult === 'timeout') {
+      setPollerError('Payment is taking longer than expected. Check your email.');
     }
+    // 'failed': usePayment hook already sets its own error state via setState
   }, [
     selectedMethod,
     isProcessing,
