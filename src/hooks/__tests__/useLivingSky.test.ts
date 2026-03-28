@@ -271,12 +271,10 @@ describe('useLivingSky', () => {
     jest.restoreAllMocks();
   });
 
-  it('calling refresh() does not throw', () => {
+  it('calling refresh() does not throw', async () => {
     const { result } = renderHook(() => useLivingSky(720));
-    expect(() => {
-      act(() => {
-        result.current.refresh();
-      });
-    }).not.toThrow();
+    await act(async () => {
+      result.current.refresh();
+    });
   });
 });
