@@ -504,8 +504,16 @@ export function AppNavigator() {
             options={{ title: 'Customize Avatar', ...modalTransition }}
           />
           <Stack.Screen name="Challenges" component={ChallengesScreen} options={fadeTransition} />
-          <Stack.Screen name="AchievementBadges" component={AchievementBadgesScreen} options={fadeTransition} />
-          <Stack.Screen name="Notifications" component={NotificationsScreen} options={fadeTransition} />
+          <Stack.Screen
+            name="AchievementBadges"
+            component={AchievementBadgesScreen}
+            options={fadeTransition}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={fadeTransition}
+          />
           <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
         </Stack.Navigator>
       </Suspense>
