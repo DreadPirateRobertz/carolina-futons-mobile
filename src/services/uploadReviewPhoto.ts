@@ -8,7 +8,7 @@
  * Uses expo-image-manipulator to re-encode the JPEG, which drops all metadata
  * segments (EXIF APP1, GPS, device model, timestamps).
  */
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export interface ReviewPhotoUploadResult {

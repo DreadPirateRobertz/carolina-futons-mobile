@@ -15,7 +15,7 @@ import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCa
 
 const mockEmitChallengeStarted = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitChallengeStarted: (...args: any[]) => mockEmitChallengeStarted(...args),
+  emitChallengeStarted: mockEmitChallengeStarted,
 }));
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };

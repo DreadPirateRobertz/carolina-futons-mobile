@@ -21,7 +21,7 @@ import { addBreadcrumb } from '@/services/crashReporting';
  */
 export function useScreenTracking() {
   const navigationRef = useNavigationContainerRef<RootStackParamList>();
-  const routeNameRef = useRef<string | undefined>();
+  const routeNameRef = useRef<string | undefined>(undefined);
 
   const onReady = useCallback(() => {
     const currentRoute = navigationRef.getCurrentRoute();
