@@ -174,6 +174,16 @@ const ChallengesScreen = lazy(() =>
     default: withScreenErrorBoundary(m.ChallengesScreen, 'Challenges'),
   })),
 );
+const AchievementBadgesScreen = lazy(() =>
+  import('@/screens/AchievementBadgesScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.AchievementBadgesScreen, 'AchievementBadges'),
+  })),
+);
+const NotificationsScreen = lazy(() =>
+  import('@/screens/NotificationsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.NotificationsScreen, 'Notifications'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -222,6 +232,8 @@ export type RootStackParamList = {
   Leaderboard: undefined;
   AvatarEquip: undefined;
   Challenges: undefined;
+  AchievementBadges: undefined;
+  Notifications: undefined;
   ReferralLanding: { code: string };
 };
 
@@ -492,6 +504,8 @@ export function AppNavigator() {
             options={{ title: 'Customize Avatar', ...modalTransition }}
           />
           <Stack.Screen name="Challenges" component={ChallengesScreen} options={fadeTransition} />
+          <Stack.Screen name="AchievementBadges" component={AchievementBadgesScreen} options={fadeTransition} />
+          <Stack.Screen name="Notifications" component={NotificationsScreen} options={fadeTransition} />
           <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
         </Stack.Navigator>
       </Suspense>
