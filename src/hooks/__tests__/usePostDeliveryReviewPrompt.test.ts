@@ -107,7 +107,8 @@ describe('usePostDeliveryReviewPrompt', () => {
 
       // Should schedule with ~1 day remaining delay (not fire immediately)
       expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(1);
-      const trigger = (Notifications.scheduleNotificationAsync as jest.Mock).mock.calls[0][0].trigger;
+      const trigger = (Notifications.scheduleNotificationAsync as jest.Mock).mock.calls[0][0]
+        .trigger;
       // Remaining delay should be roughly 1 day (86400s) — allow ±60s for test execution time
       expect(trigger.seconds).toBeGreaterThan(80000);
       expect(trigger.seconds).toBeLessThanOrEqual(FOURTEEN_DAYS_SECONDS);
@@ -119,7 +120,8 @@ describe('usePostDeliveryReviewPrompt', () => {
 
       // Should schedule with remaining ~0.5 days of delay
       if ((Notifications.scheduleNotificationAsync as jest.Mock).mock.calls.length > 0) {
-        const trigger = (Notifications.scheduleNotificationAsync as jest.Mock).mock.calls[0][0].trigger;
+        const trigger = (Notifications.scheduleNotificationAsync as jest.Mock).mock.calls[0][0]
+          .trigger;
         expect(trigger.seconds).toBeGreaterThan(0);
         expect(trigger.seconds).toBeLessThanOrEqual(FOURTEEN_DAYS_SECONDS);
       }
