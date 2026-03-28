@@ -24,7 +24,21 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// Mock expo-file-system
+// Mock expo-file-system (and /legacy subpath used by some services in Expo 55)
+jest.mock('expo-file-system/legacy', () => ({
+  cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn(() =>
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),
+    ),
+  })),
+}));
 jest.mock('expo-file-system', () => ({
   cacheDirectory: '/mock-cache/',
   EncodingType: { Base64: 'base64', UTF8: 'utf8' },
@@ -150,17 +164,17 @@ jest.mock('react-native-reanimated', () => {
       quad: (v) => v,
       cubic: (v) => v,
     },
-    FadeIn: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    FadeOut: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    FadeInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    FadeInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideInRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideOutRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideOutUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    SlideOutDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
-    Layout: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    FadeIn: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    FadeOut: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    FadeInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    FadeInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideInRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideOutRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideOutUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    SlideOutDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    Layout: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
     createAnimatedComponent: (comp) => comp,
