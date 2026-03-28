@@ -9,9 +9,9 @@ jest.mock('expo-camera', () => ({
   useCameraPermissions: () => [mockPermission, mockRequestPermission],
 }));
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openSettings: jest.fn().mockResolvedValue(undefined),
-}));
+// In RN 0.84 the internal Linking path may not align with the public API;
+// spy on the re-exported object instead of mocking the internal module.
+jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined as never);
 
 describe('useCameraPermission', () => {
   beforeEach(() => {

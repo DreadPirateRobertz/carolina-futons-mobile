@@ -131,11 +131,9 @@ jest.mock('@/services/affirmService', () => ({
 
 const mockInitiateAffirmCheckoutService = jest.fn();
 
-// Mock Linking
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn().mockResolvedValue(undefined),
-  canOpenURL: jest.fn().mockResolvedValue(true),
-}));
+// Mock Linking — spy on re-exported object (RN 0.84 internal paths changed)
+jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined as never);
+jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
