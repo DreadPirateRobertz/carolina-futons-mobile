@@ -74,6 +74,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
 import { FinancingBadge } from '@/components/FinancingBadge';
+import { BNPLHeroSurface } from '@/components/BNPLHeroSurface';
 import { BNPLModal } from '@/components/BNPLModal';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
@@ -800,11 +801,11 @@ export function ProductDetailScreen({
             isAuthenticated={isAuthenticated}
             testID="pdp-points-chip"
           />
-          <FinancingBadge
+          <BNPLHeroSurface
             price={totalPrice}
-            variant="detail"
+            variant="pdp"
             onPress={() => setBnplModalVisible(true)}
-            testID="product-detail-financing-badge"
+            testID="bnpl-hero-pdp"
           />
           {showInlineRating && (
             <TouchableOpacity

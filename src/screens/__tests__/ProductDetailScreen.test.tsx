@@ -1607,7 +1607,7 @@ describe('ProductDetailScreen', () => {
     it('inline rating is positioned after the financing badge', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       // FinancingBadge and inline rating must both be present
-      expect(getByTestId('product-detail-financing-badge')).toBeTruthy();
+      expect(getByTestId('bnpl-hero-pdp')).toBeTruthy();
       expect(getByTestId('price-inline-rating')).toBeTruthy();
     });
 
@@ -1666,39 +1666,39 @@ describe('ProductDetailScreen', () => {
 
     it('tapping financing badge opens BNPL modal', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       expect(getByTestId('bnpl-modal')).toBeTruthy();
     });
 
     it('BNPL modal shows installment breakdown after badge tap', () => {
       const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       expect(getByText('Today')).toBeTruthy();
       expect(getByText('In 2 weeks')).toBeTruthy();
     });
 
     it('BNPL modal shows "Pay over time" header', () => {
       const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       expect(getByText('Pay over time')).toBeTruthy();
     });
 
     it('BNPL modal shows Klarna tab by default', () => {
       const { getByTestId, getByText } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       expect(getByText('Continue with Klarna')).toBeTruthy();
     });
 
     it('BNPL modal closes when close button pressed', () => {
       const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       fireEvent.press(getByTestId('bnpl-modal-close'));
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
     });
 
     it('BNPL modal closes when overlay pressed', () => {
       const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
-      fireEvent.press(getByTestId('product-detail-financing-badge'));
+      fireEvent.press(getByTestId('bnpl-hero-pdp'));
       fireEvent.press(getByTestId('bnpl-modal-overlay'));
       expect(queryByTestId('bnpl-continue-btn')).toBeNull();
     });
