@@ -82,11 +82,10 @@ describe('recordSommelierResult', () => {
 
     const result = await recordSommelierResult('member-123', answers);
 
-    expect(mockCallFunction).toHaveBeenCalledWith(
-      '/_functions/recordSommelierResult',
-      'POST',
-      { memberId: 'member-123', quizAnswers: answers },
-    );
+    expect(mockCallFunction).toHaveBeenCalledWith('/_functions/recordSommelierResult', 'POST', {
+      memberId: 'member-123',
+      quizAnswers: answers,
+    });
     expect(result).toBe(true);
   });
 
