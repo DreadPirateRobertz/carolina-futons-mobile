@@ -38,11 +38,39 @@ jest.mock('@/hooks/useNotificationStorage', () => ({
   }),
 }));
 
+const mockTogglePreference = jest.fn();
+const mockRequestPermission = jest.fn().mockResolvedValue(undefined);
+const mockUseNotifications = jest.fn();
+jest.mock('@/hooks/useNotifications', () => ({
+  NotificationProvider: ({ children }: { children: React.ReactNode }) => children,
+  useNotifications: (...args: unknown[]) => mockUseNotifications(...args),
+}));
+
 const mockToggle = jest.fn().mockResolvedValue(undefined);
 const mockUseNotificationPreferences = jest.fn();
 jest.mock('@/hooks/useNotificationPreferences', () => ({
   useNotificationPreferences: (...args: unknown[]) => mockUseNotificationPreferences(...args),
 }));
+
+const defaultNotifContext = {
+  permissionStatus: 'undetermined' as const,
+  pushToken: null,
+  preferences: {
+    orderUpdates: true,
+    promotions: true,
+    backInStock: true,
+    cartReminders: false,
+    streakMilestone: true,
+    questComplete: true,
+    dailySpinReminder: false,
+  },
+  badgeCount: 0,
+  requestPermission: mockRequestPermission,
+  togglePreference: mockTogglePreference,
+  setPreferences: jest.fn(),
+  setBadgeCount: jest.fn(),
+  clearBadge: jest.fn(),
+};
 
 const defaultGamifPrefs = {
   preferences: {
@@ -75,6 +103,10 @@ function renderNotifPrefs(
 
 describe('NotificationPreferencesScreen', () => {
   beforeEach(() => {
+    mockTogglePreference.mockClear();
+    mockRequestPermission.mockClear();
+    mockToggle.mockClear();
+    mockUseNotifications.mockReturnValue(defaultNotifContext);
     mockUseNotificationPreferences.mockReturnValue(defaultGamifPrefs);
   });
 
@@ -131,11 +163,20 @@ describe('NotificationPreferencesScreen', () => {
       expect(getByTestId('enable-notifications-button')).toBeTruthy();
     });
 
-    it('hides permission prompt after granting', async () => {
-      const { getByTestId, queryByTestId } = renderNotifPrefs();
+    it('hides permission prompt when status is granted', () => {
+      mockUseNotifications.mockReturnValueOnce({
+        ...defaultNotifContext,
+        permissionStatus: 'granted',
+      });
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('permission-prompt')).toBeNull();
+    });
+
+    it('calls requestPermission when enable button pressed', async () => {
+      const { getByTestId } = renderNotifPrefs();
       fireEvent.press(getByTestId('enable-notifications-button'));
       await waitFor(() => {
-        expect(queryByTestId('permission-prompt')).toBeNull();
+        expect(mockRequestPermission).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -172,7 +213,7 @@ describe('NotificationPreferencesScreen', () => {
       const toggle = getByTestId('pref-toggle-order_update');
       expect(toggle.props.value).toBe(true);
       fireEvent(toggle, 'valueChange', false);
-      expect(getByTestId('pref-toggle-order_update').props.value).toBe(false);
+      expect(mockTogglePreference).toHaveBeenCalledWith('orderUpdates');
     });
   });
 
