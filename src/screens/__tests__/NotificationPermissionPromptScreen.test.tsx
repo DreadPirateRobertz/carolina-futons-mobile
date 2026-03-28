@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
 const mockRequest = jest.fn().mockResolvedValue('granted');
 const mockNavigate = jest.fn();
@@ -71,4 +71,11 @@ it('pressing maybe later navigates to Home', () => {
 it('primary CTA has accessibilityRole button', () => {
   const { getByTestId } = render(<NotificationPermissionPromptScreen />);
   expect(getByTestId('notif-prompt-enable').props.accessibilityRole).toBe('button');
+});
+
+it('pressing primary CTA navigates to Home after requestPermission', async () => {
+  const { getByTestId } = render(<NotificationPermissionPromptScreen />);
+  fireEvent.press(getByTestId('notif-prompt-enable'));
+  await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('Home'));
+  expect(mockRequest).toHaveBeenCalled();
 });
