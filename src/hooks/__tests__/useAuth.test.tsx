@@ -2,6 +2,21 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { render, fireEvent, waitFor, act, cleanup } from '@testing-library/react-native';
 import { AuthProvider, useAuth, validateEmail, validatePassword, validateName } from '../useAuth';
+import { registerDeviceToken, deregisterDeviceToken } from '@/services/notificationService';
+
+// --- Mock notificationService ---
+
+jest.mock('@/services/notificationService', () => ({
+  registerDeviceToken: jest.fn().mockResolvedValue(undefined),
+  deregisterDeviceToken: jest.fn().mockResolvedValue(undefined),
+}));
+
+// --- Mock wixClientSingleton ---
+
+const mockWixClientSingleton = { callFunction: jest.fn() };
+jest.mock('@/services/wix/wixClientSingleton', () => ({
+  getWixClientSingleton: jest.fn(() => mockWixClientSingleton),
+}));
 
 // --- Mock WixAuthService ---
 
@@ -339,6 +354,87 @@ describe('useAuth', () => {
       });
       expect(getByTestId('user-email').props.children).toBe('');
       expect(mockAuthService.logout).toHaveBeenCalled();
+    });
+  });
+
+  describe('Push token lifecycle', () => {
+    it('calls registerDeviceToken after successful sign-in', async () => {
+      mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+      await waitFor(() => expect(registerDeviceToken).toHaveBeenCalled());
+    });
+
+    it('does not call registerDeviceToken when sign-in fails', async () => {
+      mockAuthService.loginWithEmail.mockResolvedValue({
+        success: false,
+        error: 'Invalid email or password',
+      });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in-bad'));
+      await waitFor(() => {
+        expect(getByTestId('error').props.children).toBeTruthy();
+      });
+      expect(registerDeviceToken).not.toHaveBeenCalled();
+    });
+
+    it('calls deregisterDeviceToken on sign-out', async () => {
+      mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+
+      fireEvent.press(getByTestId('sign-out'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('false');
+      });
+      await waitFor(() => expect(deregisterDeviceToken).toHaveBeenCalled());
+    });
+
+    it('does not block sign-in if registerDeviceToken rejects', async () => {
+      (registerDeviceToken as jest.Mock).mockRejectedValueOnce(new Error('token error'));
+      mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+      // sign-in succeeds despite registration failure
+      expect(getByTestId('error').props.children).toBe('');
+    });
+
+    it('does not block sign-out if deregisterDeviceToken rejects', async () => {
+      (deregisterDeviceToken as jest.Mock).mockRejectedValueOnce(new Error('dereg error'));
+      mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(mockMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-in'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('true');
+      });
+
+      fireEvent.press(getByTestId('sign-out'));
+      await waitFor(() => {
+        expect(getByTestId('is-auth').props.children).toBe('false');
+      });
     });
   });
 
