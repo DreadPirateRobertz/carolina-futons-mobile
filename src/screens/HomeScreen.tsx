@@ -39,8 +39,8 @@ import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
-import { useSommelierResults } from '@/hooks/useSommelierResults';
+import { useAuth } from '@/hooks/useAuth';
+import { usePersonalization } from '@/hooks/usePersonalization';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { DailyQuestsCard } from '@/components/DailyQuestsCard';
@@ -80,13 +80,15 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { streak, loading: streakLoading } = useStreak();
   const { featured, isLoading: collectionsLoading, error: collectionsError } = useCollections();
   const { recentProducts } = useRecentlyViewed();
+  const { user } = useAuth();
   const {
+    sommelierResult: sommelierResults,
     recommendations: quizRecs,
-    label: quizLabel,
     isLoading: quizLoading,
-    quizTaken,
-  } = useQuizRecommendations();
-  const { results: sommelierResults, hasResults: hasSommelierResults } = useSommelierResults();
+  } = usePersonalization(user?.id ?? null);
+  const quizTaken = quizRecs.length > 0;
+  const hasSommelierResults = sommelierResults !== null;
+  const quizLabel = sommelierResults?.topStyle ?? '';
   const { challenges, refresh: refreshChallenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
@@ -408,7 +410,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         )}
 
         {/* Personalized Picks (quiz-driven or CMS sommelier results) */}
-        {(quizTaken || hasSommelierResults) && (
+        {(quizTaken || quizLoading || hasSommelierResults) && (
           <View style={styles.carouselSection}>
             {quizLoading ? (
               <View testID="skeleton-personalized-picks">
@@ -419,7 +421,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
                 <RecommendationCarousel
                   title={
                     sommelierResults?.topCategory
-                      ? `Your ${sommelierResults.topCategory} Picks`
+                      ? `Your ${sommelierResults.topStyle} Picks`
                       : quizLabel || 'Picked for You'
                   }
                   products={quizRecs}

@@ -73,19 +73,14 @@ jest.mock('@/components/MountainSkyline', () => ({ MountainSkyline: () => null }
 jest.mock('@/components/GlassCard', () => ({ GlassCard: ({ children }: any) => children }));
 jest.mock('@/components/CollectionCard', () => ({ CollectionCard: () => null }));
 
-// Quiz recommendations mock — controlled per test
-const mockQuizRecs = jest.fn();
-jest.mock('@/hooks/useQuizRecommendations', () => ({
-  useQuizRecommendations: () => mockQuizRecs(),
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, isAuthenticated: false }),
 }));
 
-jest.mock('@/hooks/useSommelierResults', () => ({
-  useSommelierResults: () => ({
-    results: null,
-    isLoading: false,
-    error: null,
-    hasResults: false,
-  }),
+// Personalization mock — controlled per test
+const mockPersonalization = jest.fn();
+jest.mock('@/hooks/usePersonalization', () => ({
+  usePersonalization: () => mockPersonalization(),
 }));
 
 const mockProduct = (id: string) => ({
@@ -114,11 +109,11 @@ function renderHome() {
 describe('HomeScreen — personalized recommendations section', () => {
   describe('quiz not taken', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({
+      mockPersonalization.mockReturnValue({
         isLoading: false,
         recommendations: [],
-        quizTaken: false,
-        label: '',
+        sommelierResult: null,
+        topStyle: null,
         error: null,
       });
     });
@@ -136,11 +131,11 @@ describe('HomeScreen — personalized recommendations section', () => {
 
   describe('loading state (quiz taken)', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({
+      mockPersonalization.mockReturnValue({
         isLoading: true,
         recommendations: [],
-        quizTaken: true,
-        label: 'Coastal Minimalist',
+        sommelierResult: null,
+        topStyle: null,
         error: null,
       });
     });
@@ -158,11 +153,11 @@ describe('HomeScreen — personalized recommendations section', () => {
 
   describe('loaded with recommendations', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({
+      mockPersonalization.mockReturnValue({
         isLoading: false,
         recommendations: [mockProduct('a'), mockProduct('b')],
-        quizTaken: true,
-        label: 'Coastal Minimalist',
+        sommelierResult: null,
+        topStyle: null,
         error: null,
       });
     });
@@ -185,11 +180,11 @@ describe('HomeScreen — personalized recommendations section', () => {
 
   describe('loaded with empty recommendations', () => {
     beforeEach(() => {
-      mockQuizRecs.mockReturnValue({
+      mockPersonalization.mockReturnValue({
         isLoading: false,
         recommendations: [],
-        quizTaken: true,
-        label: 'Coastal Minimalist',
+        sommelierResult: null,
+        topStyle: null,
         error: null,
       });
     });
