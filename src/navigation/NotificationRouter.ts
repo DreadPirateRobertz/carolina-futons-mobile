@@ -5,6 +5,7 @@ export type NotificationPayload =
   | { type: 'challenge_started'; challengeId?: string }
   | { type: 'streak_extended' }
   | { type: 'badge_earned' }
+  | { type: 'tier_changed' }
   | { type: 'price_drop'; productSlug: string };
 
 export interface NavigationLike {
@@ -26,6 +27,7 @@ export function routeNotificationTap(
       navigation.navigate('Challenges');
       break;
     case 'badge_earned':
+    case 'tier_changed':
       navigation.navigate('Loyalty');
       break;
     case 'price_drop':

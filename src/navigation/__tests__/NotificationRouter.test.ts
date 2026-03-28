@@ -40,6 +40,11 @@ it('routes challenge_started to Challenges screen', () => {
   expect(mockNavigate).toHaveBeenCalledWith('Challenges');
 });
 
+it('routes tier_changed to Loyalty screen', () => {
+  routeNotificationTap({ type: 'tier_changed' }, mockNavigation as never);
+  expect(mockNavigate).toHaveBeenCalledWith('Loyalty');
+});
+
 it('routes unknown type to Home screen', () => {
   routeNotificationTap({ type: 'unknown_future_type' as never }, mockNavigation as never);
   expect(mockNavigate).toHaveBeenCalledWith('Home');
