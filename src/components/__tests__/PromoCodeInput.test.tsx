@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import * as wixService from '@/services/wix';
 
 jest.mock('@/theme', () => ({
   useTheme: () => ({
@@ -15,13 +14,17 @@ jest.mock('@/theme', () => ({
 }));
 
 const mockValidate = jest.fn();
+let mockClientOverride: { callFunction: jest.Mock } | null = { callFunction: mockValidate };
 jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => ({ callFunction: mockValidate }),
+  useOptionalWixClient: () => mockClientOverride,
 }));
 
 import { PromoCodeInput } from '../PromoCodeInput';
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockClientOverride = { callFunction: mockValidate };
+});
 
 it('is collapsed by default', () => {
   const { getByText, queryByTestId } = render(<PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />);
@@ -86,18 +89,13 @@ it('shows network error message when Wix call fails', async () => {
 });
 
 it('shows unavailable message when no wix client', async () => {
-  // Simulate a null client by having the mock return undefined (optional chaining) so
-  // callFunction resolves to undefined — tests the guard branch added in handleApply.
-  // We override useOptionalWixClient for this test via module mock reset.
-  jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue(null as any);
-  // Force a fresh render so the component picks up the new spy return value
+  // Override the module-level variable so useOptionalWixClient returns null for this test.
+  mockClientOverride = null;
   const { getByText, getByTestId, queryByText } = render(
     <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
   );
   fireEvent.press(getByText(/add promo code/i));
   fireEvent.changeText(getByTestId('promo-input'), 'TEST');
   fireEvent.press(getByTestId('promo-apply-btn'));
-  // Error is set synchronously — no async needed
-  expect(queryByText(/unavailable/i)).toBeTruthy();
-  jest.restoreAllMocks();
+  await waitFor(() => expect(queryByText(/unavailable/i)).toBeTruthy());
 });
