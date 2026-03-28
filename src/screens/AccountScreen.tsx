@@ -488,7 +488,10 @@ export function AccountScreen({
 
         {/* Share & Earn */}
         {user && (
-          <View style={{ paddingHorizontal: spacing.lg, marginBottom: 8 }} testID="share-earn-section">
+          <View
+            style={{ paddingHorizontal: spacing.lg, marginBottom: 8 }}
+            testID="share-earn-section"
+          >
             <ShareSheet />
           </View>
         )}

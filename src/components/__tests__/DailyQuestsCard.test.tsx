@@ -438,7 +438,9 @@ describe('DailyQuestsCard', () => {
       refresh: jest.fn(),
     });
     const { queryByTestId, rerender } = render(
-      <ThemeProvider><DailyQuestsCard /></ThemeProvider>,
+      <ThemeProvider>
+        <DailyQuestsCard />
+      </ThemeProvider>,
     );
     expect(queryByTestId('daily-quests-card')).not.toBeNull();
     expect(queryByTestId('daily-quests-loading')).toBeNull();
@@ -449,7 +451,11 @@ describe('DailyQuestsCard', () => {
       loading: true,
       refresh: jest.fn(),
     });
-    rerender(<ThemeProvider><DailyQuestsCard /></ThemeProvider>);
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard />
+      </ThemeProvider>,
+    );
 
     // Card must still be mounted with existing quests (no flash to skeleton)
     expect(queryByTestId('daily-quests-card')).not.toBeNull();

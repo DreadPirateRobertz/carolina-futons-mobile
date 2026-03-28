@@ -4,7 +4,12 @@ import { Share, Clipboard } from 'react-native';
 
 jest.mock('@/theme', () => ({
   useTheme: () => ({
-    colors: { espresso: '#3A2518', sandBase: '#E8D5B7', sunsetCoral: '#E8845C', offWhite: '#FAF7F2' },
+    colors: {
+      espresso: '#3A2518',
+      sandBase: '#E8D5B7',
+      sunsetCoral: '#E8845C',
+      offWhite: '#FAF7F2',
+    },
     spacing: { sm: 8, md: 16 },
     typography: { bodyFamily: 'System', headingFamily: 'System' },
     borderRadius: { md: 8 },
