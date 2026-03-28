@@ -53,6 +53,8 @@ interface WixClientLike {
 
 const WIX_FN = 'visualSearchExport';
 const CACHE_KEY = '@cf_visual_search_catalog';
+/** First post-cache-clear export runs a full Wix Products query and can be slow. */
+const FETCH_TIMEOUT_MS = 45_000;
 
 // ── Cache ─────────────────────────────────────────────────────────────────────
 
@@ -96,7 +98,7 @@ function isCacheFresh(cached: CachedExport): boolean {
  */
 export async function fetchCatalogExport(
   client: WixClientLike | null,
-  options: { clientId?: string; forceRefresh?: boolean } = {},
+  options: { clientId?: string; forceRefresh?: boolean; timeoutMs?: number } = {},
 ): Promise<CatalogExportResult> {
   const empty: CatalogExportResult = { success: false, products: [] };
 
@@ -131,7 +133,13 @@ export async function fetchCatalogExport(
     const body: Record<string, unknown> = {};
     if (options.clientId) body.clientId = options.clientId;
 
-    const response = await client.callFunction(WIX_FN, 'POST', body);
+    const timeout = options.timeoutMs ?? FETCH_TIMEOUT_MS;
+    const response = await Promise.race([
+      client.callFunction(WIX_FN, 'POST', body),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Export request timed out')), timeout),
+      ),
+    ]);
 
     if (!response || typeof response !== 'object') {
       return { ...empty, error: 'Malformed API response' };

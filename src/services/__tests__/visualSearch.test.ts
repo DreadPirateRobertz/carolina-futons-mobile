@@ -202,6 +202,37 @@ describe('fetchCatalogExport', () => {
     expect(result.error).toContain('Too many requests');
   });
 
+  // ── Timeout ─────────────────────────────────────────────────────────
+
+  it('times out on slow first export (post-cache-clear)', async () => {
+    const client: WixClientLike = {
+      callFunction: jest.fn(() => new Promise((resolve) => setTimeout(resolve, 60_000))),
+    };
+
+    const result = await fetchCatalogExport(client, { timeoutMs: 50 });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Export request timed out');
+  });
+
+  it('returns stale cache on timeout when cache exists', async () => {
+    const cachedData = {
+      products: sampleProducts,
+      staleMinutes: 0,
+      cachedAt: Date.now() - 120_000,
+    };
+    await AsyncStorage.setItem('@cf_visual_search_catalog', JSON.stringify(cachedData));
+
+    const client: WixClientLike = {
+      callFunction: jest.fn(() => new Promise((resolve) => setTimeout(resolve, 60_000))),
+    };
+
+    const result = await fetchCatalogExport(client, { timeoutMs: 50 });
+
+    expect(result.success).toBe(true);
+    expect(result.fromCache).toBe(true);
+  });
+
   // ── Caching ────────────────────────────────────────────────────────────
 
   it('caches API response to AsyncStorage', async () => {
