@@ -106,8 +106,10 @@ jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'member-test' }, isAuthenticated: true }),
 }));
 
+const mockRecordSommelierResult = jest.fn();
 jest.mock('@/services/sommelierResults', () => ({
-  recordSommelierResult: jest.fn(() => Promise.resolve(true)),
+  recordSommelierResult: (memberId: string, answers: unknown) =>
+    mockRecordSommelierResult(memberId, answers),
 }));
 
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
@@ -132,6 +134,7 @@ describe('StyleQuizScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockStyleQuizComplete.mockResolvedValue({ success: true, newTotal: 100 });
+    mockRecordSommelierResult.mockResolvedValue(true);
     // Default: product not found — tests that need thumbnails override this
     mockUseProductBySlug.mockReturnValue({
       product: null,
@@ -586,6 +589,44 @@ describe('StyleQuizScreen', () => {
       await waitFor(() => {
         expect(mockOnComplete).toHaveBeenCalledTimes(1);
       });
+    });
+
+    it('calls recordSommelierResult with memberId and quiz answers on save (hq-5hnml)', async () => {
+      mockRecordSommelierResult.mockResolvedValue(true);
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      });
+      await waitFor(() => {
+        expect(mockRecordSommelierResult).toHaveBeenCalledWith(
+          'member-test',
+          expect.objectContaining({ stylePreference: 'modern' }),
+        );
+      });
+    });
+
+    it('onComplete still fires when recordSommelierResult rejects (hq-5hnml)', async () => {
+      mockRecordSommelierResult.mockRejectedValue(new Error('CMS write failed'));
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const { getByTestId } = render(
+        <StyleQuizScreen onComplete={mockOnComplete} onBack={mockOnBack} />,
+      );
+      completeQuiz(getByTestId);
+      fireEvent.press(getByTestId('style-quiz-save-button'));
+      await waitFor(() => {
+        expect(mockOnComplete).toHaveBeenCalledTimes(1);
+      });
+      await waitFor(() => {
+        expect(warnSpy).toHaveBeenCalledWith(
+          '[StyleQuiz] recordSommelierResult failed',
+          expect.any(Error),
+        );
+      });
+      warnSpy.mockRestore();
     });
   });
 });

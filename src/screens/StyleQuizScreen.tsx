@@ -224,6 +224,12 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
           ),
         )
         .catch((e: unknown) => console.warn('[StyleQuiz] styleQuizComplete failed', e));
+      // Sync to Wix SommelierResults CMS (hq-5hnml) — fire-and-forget, non-blocking
+      if (user?.id) {
+        recordSommelierResult(user.id, preferences).catch((e: unknown) =>
+          console.warn('[StyleQuiz] recordSommelierResult failed', e),
+        );
+      }
       onComplete();
     } catch {
       Alert.alert('Save Failed', 'We couldn\u2019t save your preferences. Please try again.', [
