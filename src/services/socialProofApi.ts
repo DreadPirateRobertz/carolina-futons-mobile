@@ -45,7 +45,9 @@ export async function fetchSoldThisWeek(productId: string): Promise<number> {
  *
  * Returns null if no reviews exist or Stamped is not configured.
  */
-export async function fetchTopReviewExcerpt(productId: string): Promise<ReviewExcerpt | null> {
+export async function fetchTopReviewExcerpt(
+  productId: string,
+): Promise<ReviewExcerpt | null> {
   if (!isStampedConfigured()) return null;
 
   try {
