@@ -658,7 +658,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       maxLength?: number;
       returnKeyType?: 'next' | 'done' | 'go' | 'search' | 'send';
       onSubmitEditing?: () => void;
-      inputRef?: React.RefObject<TextInput>;
+      inputRef?: React.RefObject<TextInput | null>;
     },
   ) => (
     <View style={styles.fieldGroup} key={`${options.testIDPrefix}-${options.fieldName}`}>
@@ -714,12 +714,12 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     onUpdate: (field: keyof Address, value: string) => void,
     testIDPrefix: string,
     fieldRefs?: {
-      fullName?: React.RefObject<TextInput>;
-      line1?: React.RefObject<TextInput>;
-      line2?: React.RefObject<TextInput>;
-      city?: React.RefObject<TextInput>;
-      state?: React.RefObject<TextInput>;
-      zip?: React.RefObject<TextInput>;
+      fullName?: React.RefObject<TextInput | null>;
+      line1?: React.RefObject<TextInput | null>;
+      line2?: React.RefObject<TextInput | null>;
+      city?: React.RefObject<TextInput | null>;
+      state?: React.RefObject<TextInput | null>;
+      zip?: React.RefObject<TextInput | null>;
     },
   ) => (
     <View testID={`${testIDPrefix}-form`}>
