@@ -45,11 +45,7 @@ export function BNPLHeroSurface({ price, variant = 'pdp', onPress, testID = 'bnp
       ]}
     >
       <View style={styles.header}>
-        <Text
-          style={[styles.monthlyLabel, { color: colors.textSecondary }]}
-        >
-          Pay as low as
-        </Text>
+        <Text style={[styles.monthlyLabel, { color: colors.textMuted }]}>Pay as low as</Text>
         <Text
           testID={`${testID}-monthly`}
           style={[
@@ -74,19 +70,14 @@ export function BNPLHeroSurface({ price, variant = 'pdp', onPress, testID = 'bnp
       {variant === 'pdp' && (
         <View style={styles.termsRow}>
           {terms.map((term) => (
-            <Text
-              key={term.months}
-              style={[styles.termOption, { color: colors.textSecondary }]}
-            >
+            <Text key={term.months} style={[styles.termOption, { color: colors.textMuted }]}>
               {term.months}mo: {formatPrice(term.monthlyPayment)}
             </Text>
           ))}
         </View>
       )}
 
-      <Text style={[styles.cta, { color: colors.mountainBlue }]}>
-        See payment options →
-      </Text>
+      <Text style={[styles.cta, { color: colors.mountainBlue }]}>See payment options →</Text>
     </View>
   );
 
