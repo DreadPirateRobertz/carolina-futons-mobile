@@ -38,12 +38,17 @@ export function useSommelierResults(): UseSommelierResultsReturn {
 
     setIsLoading(true);
 
-    getSommelierResults(user.id).then((data) => {
-      if (cancelledRef.current) return;
-      setResults(data);
-      setIsLoading(false);
-      setError(null);
-    });
+    getSommelierResults(user.id)
+      .then((data) => {
+        if (cancelledRef.current) return;
+        setResults(data);
+        setIsLoading(false);
+        setError(null);
+      })
+      .catch(() => {
+        if (cancelledRef.current) return;
+        setIsLoading(false);
+      });
 
     return () => {
       cancelledRef.current = true;

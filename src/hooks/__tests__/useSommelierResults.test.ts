@@ -84,7 +84,7 @@ describe('useSommelierResults', () => {
   });
 
   it('handles API error gracefully', async () => {
-    mockGetResults.mockResolvedValueOnce(null); // getSommelierResults returns null on error
+    mockGetResults.mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => useSommelierResults());
 
