@@ -729,7 +729,13 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           autoComplete: 'street-address',
           returnKeyType: 'next',
           inputRef: fieldRefs?.line1,
-          onSubmitEditing: () => fieldRefs?.line2?.current?.focus(),
+          onSubmitEditing: () => {
+            if (address.line2) {
+              fieldRefs?.line2?.current?.focus();
+            } else {
+              fieldRefs?.city?.current?.focus();
+            }
+          },
         },
       )}
       {renderAddressField(
