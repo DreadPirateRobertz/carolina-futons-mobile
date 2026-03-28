@@ -433,7 +433,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               <View testID="personalized-picks">
                 <RecommendationCarousel
                   title={
-                    sommelierResults?.topCategory
+                    sommelierResults?.topStyle
                       ? `Your ${sommelierResults.topStyle} Picks`
                       : quizLabel || 'Picked for You'
                   }

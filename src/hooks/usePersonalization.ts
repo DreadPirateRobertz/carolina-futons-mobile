@@ -17,10 +17,11 @@ import {
 } from '@/services/personalizationCache';
 import { captureException } from '@/services/crashReporting';
 import type { SommelierCacheEntry } from '@/services/personalizationCache';
+import type { Product } from '@/data/products';
 
 export interface PersonalizationResult {
   sommelierResult: SommelierCacheEntry | null;
-  recommendations: unknown[];
+  recommendations: Product[];
   topStyle: string | null;
   isLoading: boolean;
   error: string | null;
@@ -29,7 +30,7 @@ export interface PersonalizationResult {
 export function usePersonalization(memberId: string | null): PersonalizationResult {
   const client = useWixClient();
   const [sommelierResult, setSommelierResult] = useState<SommelierCacheEntry | null>(null);
-  const [recommendations, setRecommendations] = useState<unknown[]>([]);
+  const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +50,7 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
     const recsNetworkPromise = client!.callFunction(
       `/_functions/getQuizRecommendations?memberId=${encodeURIComponent(memberId!)}`,
       'GET',
-    ) as Promise<unknown[]>;
+    ) as Promise<Product[]>;
 
     async function fetchSommelier(): Promise<SommelierCacheEntry | null> {
       const cached = await getCachedSommelierResult(memberId!);
@@ -59,7 +60,7 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
       return result;
     }
 
-    async function fetchRecommendations(): Promise<unknown[]> {
+    async function fetchRecommendations(): Promise<Product[]> {
       const result = await recsNetworkPromise;
       return result ?? [];
     }
