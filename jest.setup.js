@@ -107,13 +107,16 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
 
-// Mock react-native-worklets — not installed as a direct dependency;
-// reanimated 3.x bundles its own worklet runtime. Virtual mock avoids
-// "Cannot find module" when reanimated's internals try to resolve it.
-jest.mock('react-native-worklets', () => ({
-  NativeWorklets: {},
-  WorkletsModule: { isAvailable: false },
-}), { virtual: true });
+// Mock react-native-worklets — reanimated 4.x imports it at load time and the
+// native module (NativeWorklets) isn't available in Jest. Use the library's
+// own mock to provide a complete JS-only stub.
+jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
+
+// Stub the worklets version validator so reanimated's mock.js doesn't throw
+// a version-mismatch error when loading in Jest.
+jest.mock('react-native-reanimated/scripts/validate-worklets-version', () => {
+  return () => ({ ok: true });
+});
 
 // Mock react-native-reanimated using the library's own mock as a base,
 // with our overrides for animation layout/entering/exiting objects that

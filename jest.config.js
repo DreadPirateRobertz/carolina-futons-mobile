@@ -23,7 +23,7 @@ module.exports = {
   // TDD tests for unimplemented features — skip until modules exist
   testPathIgnorePatterns: [
     '/node_modules/',
-    '/crew/',
+    '<rootDir>/crew/',
     'stores\\.test\\.ts',
     'StoreCard\\.test\\.tsx',
     'StoreLocatorScreen\\.test\\.tsx',
