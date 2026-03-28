@@ -33,6 +33,7 @@ import { initAnalytics } from '@/services/analyticsInit';
 import { initializePurchases } from '@/services/purchases';
 import { prefetchCriticalData } from '@/services/prefetch';
 import { useScreenTracking } from '@/hooks/useScreenTracking';
+import { startFunnelTracking } from '@/services/funnelTracker';
 import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
@@ -87,6 +88,7 @@ function App() {
     initAnalytics({
       mixpanelToken: process.env.EXPO_PUBLIC_MIXPANEL_TOKEN,
     });
+    startFunnelTracking();
     initializePurchases();
   }, []);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
@@ -186,4 +188,3 @@ function App() {
 }
 
 export default wrapWithSentry(App);
-
