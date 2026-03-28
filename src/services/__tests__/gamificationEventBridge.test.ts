@@ -5,10 +5,7 @@
  * layer and translates them into mobile push notification payloads.
  */
 
-import {
-  handleGamificationEvent,
-  type GamificationEvent,
-} from '../gamificationEventBridge';
+import { handleGamificationEvent, type GamificationEvent } from '../gamificationEventBridge';
 
 // ── Mock sendPushNotification ─────────────────────────────────────────────────
 

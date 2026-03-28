@@ -49,9 +49,7 @@ function formatDimensions(d: Product['dimensions'] | undefined): string {
 }
 
 function buildShareMessage(products: Product[]): string {
-  const lines = products.map(
-    (p) => `${p.name} — ${formatPrice(p.price)} (${p.rating} stars)`,
-  );
+  const lines = products.map((p) => `${p.name} — ${formatPrice(p.price)} (${p.rating} stars)`);
   return `Compare Futons:\n${lines.join('\n')}\n\nvia Carolina Futons`;
 }
 
@@ -122,13 +120,7 @@ function SectionHeader({
   );
 }
 
-function Header({
-  onBack,
-  onShare,
-}: {
-  onBack?: () => void;
-  onShare?: () => void;
-}) {
+function Header({ onBack, onShare }: { onBack?: () => void; onShare?: () => void }) {
   const { colors } = useTheme();
   return (
     <View style={[headerStyles.container, { borderBottomColor: colors.sandDark }]}>
@@ -398,8 +390,7 @@ export function CompareScreen({
                       style={[
                         styles.comparisonRow,
                         {
-                          backgroundColor:
-                            index % 2 === 0 ? colors.offWhite : colors.sandBase,
+                          backgroundColor: index % 2 === 0 ? colors.offWhite : colors.sandBase,
                           borderColor: colors.sandDark,
                         },
                         isDiff && { backgroundColor: colors.sandLight + '80' },

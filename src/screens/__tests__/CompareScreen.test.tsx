@@ -167,7 +167,9 @@ describe('CompareScreen', () => {
       badge: undefined,
       stockCount: undefined,
     };
-    const { getByText, getByTestId } = render(<CompareScreen products={[sparseProduct, productB]} />);
+    const { getByText, getByTestId } = render(
+      <CompareScreen products={[sparseProduct, productB]} />,
+    );
     expect(getByText('Sparse Product')).toBeTruthy();
     // Expand Details to see Size row
     fireEvent.press(getByTestId('section-details-header'));
@@ -335,9 +337,7 @@ describe('CompareScreen', () => {
     });
 
     it('toggles Details section on press', () => {
-      const { getByTestId, getByText } = render(
-        <CompareScreen products={[productA, productB]} />,
-      );
+      const { getByTestId, getByText } = render(<CompareScreen products={[productA, productB]} />);
       // Expand Details
       fireEvent.press(getByText('Details'));
       const section = getByTestId('section-details');
@@ -349,9 +349,7 @@ describe('CompareScreen', () => {
     });
 
     it('toggles Basic Info section on press', () => {
-      const { getByTestId, getByText } = render(
-        <CompareScreen products={[productA, productB]} />,
-      );
+      const { getByTestId, getByText } = render(<CompareScreen products={[productA, productB]} />);
       // Collapse Basic Info
       fireEvent.press(getByText('Basic Info'));
       const section = getByTestId('section-basic-info');
@@ -391,9 +389,7 @@ describe('CompareScreen', () => {
         id: 'prod-identical' as any,
         name: 'Identical Futon',
       };
-      const { queryByTestId } = render(
-        <CompareScreen products={[productA, identicalProduct]} />,
-      );
+      const { queryByTestId } = render(<CompareScreen products={[productA, identicalProduct]} />);
       // Same price → no highlight
       expect(queryByTestId(`diff-price-${productA.id}`)).toBeNull();
       expect(queryByTestId('diff-price-prod-identical')).toBeNull();
@@ -416,7 +412,9 @@ describe('CompareScreen', () => {
     });
 
     it('renders one swatch per fabric option', () => {
-      const { getByTestId, getAllByTestId } = render(<CompareScreen products={[productA, productB]} />);
+      const { getByTestId, getAllByTestId } = render(
+        <CompareScreen products={[productA, productB]} />,
+      );
       fireEvent.press(getByTestId('section-details-header'));
       // Each fabric option should have a swatch
       const swatches = getAllByTestId(new RegExp(`^swatch-${productA.id}-`));
@@ -449,9 +447,7 @@ describe('CompareScreen', () => {
       const { getByTestId } = render(<CompareScreen products={[productA, productB]} />);
       fireEvent.press(getByTestId('section-details-header'));
       const swatchContainer = getByTestId(`fabric-swatches-${productA.id}`);
-      expect(
-        within(swatchContainer).getByText(`${productA.fabricOptions.length}`),
-      ).toBeTruthy();
+      expect(within(swatchContainer).getByText(`${productA.fabricOptions.length}`)).toBeTruthy();
     });
   });
 
@@ -491,9 +487,7 @@ describe('CompareScreen', () => {
     });
 
     it('includes all products in share text', async () => {
-      const { getByTestId } = render(
-        <CompareScreen products={[productA, productB, productC]} />,
-      );
+      const { getByTestId } = render(<CompareScreen products={[productA, productB, productC]} />);
       await act(async () => {
         fireEvent.press(getByTestId('compare-share-button'));
       });

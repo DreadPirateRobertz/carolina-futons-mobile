@@ -11,6 +11,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { AccountGamificationHeader } from '../AccountGamificationHeader';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+import { useLoyalty } from '@/hooks/useLoyalty';
+import { useStreak } from '@/hooks/useStreak';
+
 // ── Mock hooks ────────────────────────────────────────────────────────────────
 
 jest.mock('@/hooks/useLoyalty', () => ({
@@ -35,9 +38,6 @@ jest.mock('react-native-reanimated', () => {
     withTiming: (val: number) => val,
   };
 });
-
-import { useLoyalty } from '@/hooks/useLoyalty';
-import { useStreak } from '@/hooks/useStreak';
 
 const mockUseLoyalty = useLoyalty as jest.Mock;
 const mockUseStreak = useStreak as jest.Mock;

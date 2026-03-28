@@ -18,6 +18,8 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
+import { useLoyaltyCard } from '../useLoyaltyCard';
+
 const mockGetLoyaltyData = jest.fn();
 const mockGetCurrentMember = jest.fn();
 const mockCaptureException = jest.fn();
@@ -36,8 +38,6 @@ jest.mock('@/services/wix/wixAuth', () => ({
 jest.mock('@/services/crashReporting', () => ({
   captureException: (...args: unknown[]) => mockCaptureException(...args),
 }));
-
-import { useLoyaltyCard } from '../useLoyaltyCard';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 

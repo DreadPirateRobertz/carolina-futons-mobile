@@ -9,6 +9,8 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
+import { useChatbot } from '../useChatbot';
+
 // Mock wixClientSingleton before importing the hook
 const mockSendMessage = jest.fn();
 jest.mock('@/services/wix/wixClientSingleton', () => ({
@@ -16,8 +18,6 @@ jest.mock('@/services/wix/wixClientSingleton', () => ({
     chatbotMessage: mockSendMessage,
   })),
 }));
-
-import { useChatbot } from '../useChatbot';
 
 // ── Helpers ────────────────────────────────────────────────────────
 

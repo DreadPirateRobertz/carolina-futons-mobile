@@ -50,8 +50,9 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
     streakEmittedThisSession = true;
     try {
       const client = getWixClientSingleton();
-      emitStreakExtended(client, { streak, delta: 1, newTotal: points })
-        .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+      emitStreakExtended(client, { streak, delta: 1, newTotal: points }).catch((err: unknown) =>
+        captureException(err instanceof Error ? err : new Error(String(err))),
+      );
     } catch (err) {
       captureException(err instanceof Error ? err : new Error(String(err)));
     }

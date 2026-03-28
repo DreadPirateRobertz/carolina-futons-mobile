@@ -11,6 +11,8 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 import { PointsHistoryScreen } from '../PointsHistoryScreen';
 import type { PointsEvent } from '@/hooks/usePointsHistory';
 
+import { usePointsHistory } from '@/hooks/usePointsHistory';
+
 // ── Mock usePointsHistory ────────────────────────────────────────────────────
 
 const mockRefresh = jest.fn();
@@ -25,8 +27,6 @@ const defaultHookState = {
 jest.mock('@/hooks/usePointsHistory', () => ({
   usePointsHistory: jest.fn(() => defaultHookState),
 }));
-
-import { usePointsHistory } from '@/hooks/usePointsHistory';
 const mockUsePointsHistory = usePointsHistory as jest.Mock;
 
 const MOCK_EVENTS: PointsEvent[] = [

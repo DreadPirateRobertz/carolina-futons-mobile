@@ -10,11 +10,11 @@ import { render } from '@testing-library/react-native';
 import { BadgeShowcaseSection } from '../BadgeShowcaseSection';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
+import { useMemberBadges } from '@/hooks/useMemberBadges';
+
 // ── Mock useMemberBadges ──────────────────────────────────────────────────────
 
 jest.mock('@/hooks/useMemberBadges', () => ({ useMemberBadges: jest.fn() }));
-
-import { useMemberBadges } from '@/hooks/useMemberBadges';
 const mockUseMemberBadges = useMemberBadges as jest.Mock;
 
 const BADGE_1 = {
