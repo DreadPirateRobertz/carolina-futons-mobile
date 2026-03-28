@@ -39,6 +39,7 @@ import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { AccountGamificationHeader } from '@/components/AccountGamificationHeader';
+import { ShareSheet } from '@/components/ShareSheet';
 import { WixAuthService } from '@/services/wix/wixAuth';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
@@ -484,6 +485,16 @@ export function AccountScreen({
             </View>
           )}
         </View>
+
+        {/* Share & Earn */}
+        {user && (
+          <View
+            style={{ paddingHorizontal: spacing.lg, marginBottom: 8 }}
+            testID="share-earn-section"
+          >
+            <ShareSheet />
+          </View>
+        )}
 
         {/* Menu items */}
         <View style={{ paddingHorizontal: spacing.lg, gap: 8 }}>

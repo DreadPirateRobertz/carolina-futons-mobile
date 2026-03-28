@@ -63,6 +63,9 @@ jest.mock('@/hooks/useBiometricAuth', () => ({
 jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn().mockImplementation(() => ({ syncMemberAddresses: jest.fn() })),
 }));
+jest.mock('@/services/wix/wixProvider', () => ({
+  useWixClient: () => ({ callFunction: jest.fn().mockResolvedValue(null) }),
+}));
 jest.mock('expo-application', () => ({
   nativeApplicationVersion: '1.0.0',
   nativeBuildVersion: '100',
