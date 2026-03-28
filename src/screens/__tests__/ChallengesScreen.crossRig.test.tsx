@@ -16,9 +16,8 @@ import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCa
 jest.mock('@/services/crossRigEventBus', () => ({
   emitChallengeStarted: jest.fn(() => Promise.resolve({ success: true })),
 }));
-const mockEmitChallengeStarted = jest.requireMock(
-  '@/services/crossRigEventBus',
-).emitChallengeStarted as jest.Mock;
+const mockEmitChallengeStarted = jest.requireMock('@/services/crossRigEventBus')
+  .emitChallengeStarted as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 jest.mock('@/services/wix/wixClientSingleton', () => ({
