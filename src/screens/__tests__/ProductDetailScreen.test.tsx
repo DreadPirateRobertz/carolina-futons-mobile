@@ -1439,19 +1439,48 @@ describe('ProductDetailScreen', () => {
     });
 
     it('renders an error fallback view on video error', async () => {
+      // expo-video error handling: player fires statusChange with status 'error'
+      const { useVideoPlayer } = require('expo-video');
+      let statusCallback: (payload: { status: string }) => void;
+      (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
+        const player = {
+          loop: false,
+          muted: false,
+          play: jest.fn(),
+          addListener: jest.fn((event: string, cb: (payload: { status: string }) => void) => {
+            if (event === 'statusChange') statusCallback = cb;
+            return { remove: jest.fn() };
+          }),
+        };
+        if (setup) setup(player);
+        return player;
+      });
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      const video = getByTestId('product-detail-video');
       await act(async () => {
-        video.props.testOnly_onError?.({ error: 'Network failure' });
+        statusCallback!({ status: 'error' });
       });
       expect(getByTestId('product-detail-video-error')).toBeTruthy();
     });
 
     it('hides video player after error', async () => {
-      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
-      const video = getByTestId('product-detail-video');
+      const { useVideoPlayer } = require('expo-video');
+      let statusCallback: (payload: { status: string }) => void;
+      (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
+        const player = {
+          loop: false,
+          muted: false,
+          play: jest.fn(),
+          addListener: jest.fn((event: string, cb: (payload: { status: string }) => void) => {
+            if (event === 'statusChange') statusCallback = cb;
+            return { remove: jest.fn() };
+          }),
+        };
+        if (setup) setup(player);
+        return player;
+      });
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
       await act(async () => {
-        video.props.testOnly_onError?.({ error: 'Decode error' });
+        statusCallback!({ status: 'error' });
       });
       expect(queryByTestId('product-detail-video')).toBeNull();
     });
