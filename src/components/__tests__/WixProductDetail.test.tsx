@@ -488,7 +488,7 @@ describe('WixProductDetail', () => {
       // Skyline is inside an importantForAccessibility="no-hide-descendants" wrapper,
       // so getByTestId won't find it. Search the full tree instead.
       const skylines = UNSAFE_root.findAll(
-        (node) => node.props.testID === 'product-detail-skyline',
+        (node: any) => node.props.testID === 'product-detail-skyline',
       );
       expect(skylines.length).toBeGreaterThan(0);
     });

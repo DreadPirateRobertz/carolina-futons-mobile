@@ -411,11 +411,11 @@ describe('HomeScreen', () => {
       const { getByTestId, UNSAFE_root } = renderHomeScreen();
       expect(getByTestId('home-connection-error')).toBeTruthy();
       // Banner appears near the top — verify it precedes any elements after it
-      const all = UNSAFE_root.findAll((el) => !!el.props.testID);
-      const errorIdx = all.findIndex((el) => el.props.testID === 'home-connection-error');
+      const all = UNSAFE_root.findAll((el: any) => !!el.props.testID);
+      const errorIdx = all.findIndex((el: any) => el.props.testID === 'home-connection-error');
       expect(errorIdx).toBeGreaterThan(-1);
       // If the decorative skyline divider renders, it must be after the banner
-      const dividerIdx = all.findIndex((el) => el.props.testID === 'home-mountain-skyline');
+      const dividerIdx = all.findIndex((el: any) => el.props.testID === 'home-mountain-skyline');
       if (dividerIdx !== -1) {
         expect(errorIdx).toBeLessThan(dividerIdx);
       }
@@ -515,9 +515,9 @@ describe('HomeScreen', () => {
     it('DailyQuestsCard appears after ChallengesRail in render tree', () => {
       const { getByTestId, UNSAFE_root } = renderHomeScreen();
       expect(getByTestId('daily-quests-card')).toBeTruthy();
-      const all = UNSAFE_root.findAll((el) => !!el.props.testID);
-      const challengesIdx = all.findIndex((el) => el.props.testID === 'challenges-rail');
-      const questsIdx = all.findIndex((el) => el.props.testID === 'daily-quests-card');
+      const all = UNSAFE_root.findAll((el: any) => !!el.props.testID);
+      const challengesIdx = all.findIndex((el: any) => el.props.testID === 'challenges-rail');
+      const questsIdx = all.findIndex((el: any) => el.props.testID === 'daily-quests-card');
       // daily-quests-card renders after challenges-rail (or challenges-rail absent)
       if (challengesIdx !== -1) {
         expect(questsIdx).toBeGreaterThan(challengesIdx);
