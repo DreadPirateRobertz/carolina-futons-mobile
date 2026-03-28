@@ -28,6 +28,8 @@ import {
   loadGoogleSession,
   clearGoogleSession,
 } from '@/services/googleAuth';
+import { registerDeviceToken, deregisterDeviceToken } from '@/services/notificationService';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -230,6 +232,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const member = await authService.getCurrentMember();
         if (member) {
           dispatch({ type: 'AUTH_SUCCESS', user: member });
+          const wixClient = getWixClientSingleton();
+          if (wixClient) registerDeviceToken(wixClient).catch(() => {}); // best-effort, logged inside service
         } else {
           dispatch({ type: 'AUTH_ERROR', error: 'Login failed' });
         }
@@ -372,6 +376,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    const wixClient = getWixClientSingleton();
+    if (wixClient) deregisterDeviceToken(wixClient).catch(() => {}); // best-effort
     try {
       await authService.logout();
       await clearGoogleSession();
