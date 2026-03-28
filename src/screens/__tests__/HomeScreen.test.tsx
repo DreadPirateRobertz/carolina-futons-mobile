@@ -91,6 +91,15 @@ jest.mock('@/hooks/useDailyQuests', () => ({
   useDailyQuests: () => mockUseDailyQuests(),
 }));
 
+jest.mock('@/hooks/useSommelierResults', () => ({
+  useSommelierResults: () => ({
+    results: null,
+    isLoading: false,
+    error: null,
+    hasResults: false,
+  }),
+}));
+
 function renderHomeScreen(
   props: {
     onOpenAR?: () => void;
