@@ -64,8 +64,8 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <p class="meta">
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
-Tests: 6936 passing (392 suites, 0 failures) | Session 29 · 2026-03-28<br>
-PRs merged: #357–#370 | PRs in CI: #371 (PDP social proof), #372 (style personalization)
+Tests: 7100+ passing | Session 29 · 2026-03-28 (updated post-epics A/B/C)<br>
+PRs merged: #357–#370 | PRs open: #371 (PDP social proof), #372 (style personalization), #373 (Epic A push), #374 (Epic B AI), #375 (hq-5hnml), #376 (Epic C funnel)
 </p>
 
 <!-- ══════════════════════════════════════════════════
@@ -186,6 +186,10 @@ npx jest --passWithNoTests</pre>
 <tr><td>#370</td><td>Cart Abandonment Dedup Fix</td><td>Removed broken WixClient.setMemberField() call. Replaced with AsyncStorage DEDUP_KEY pattern. Push recovery now idempotent. (hq-k8690) TODO(cf-a220) — Wix sync pending radahn.</td></tr>
 <tr><td>#371 <span style="color:#facc15">CI</span></td><td>PDP Social Proof</td><td>SocialProofBadge component: "X sold this week" badge (Wix OrderItems) + top review excerpt (Stamped.io). useSocialProof hook, parallel fetch, partial failure tolerance. (hq-5yo88)</td></tr>
 <tr><td>#372 <span style="color:#facc15">CI</span></td><td>Style Personalization — SommelierResults CMS</td><td>getSommelierResults() + recordSommelierResult() wired to Wix backend (cf-a220, radahn shipped 2026-03-28). callFunction(/_functions/..., GET/POST) pattern. Powers AI recs on PDP. (hq-5hnml)</td></tr>
+<tr><td>#373 <span style="color:#facc15">CI</span></td><td>Epic A — Push Notification Engine</td><td>Full push stack: useNotificationPermission hook (permission gate + AsyncStorage tracking), notificationService (registerDeviceToken + deregisterDeviceToken via Wix callFunction), NotificationRouter (8-type discriminated union → navigation targets), NotificationPermissionPromptScreen, NotificationPreferencesScreen skeleton, NotificationToggle a11y, useAuth push token lifecycle (all 4 auth paths: email/google/apple/signUp + signOut deregister), crossRigEventBus emitBadgeEarned + emitTierChanged.</td></tr>
+<tr><td>#374 <span style="color:#facc15">CI</span></td><td>Epic B — AI Personalization Layer</td><td>PersonalizationCache (AsyncStorage TTL 1hr, get/set/invalidate for FitScore + Sommelier), useFitScore (cache-first, EXPO_PUBLIC_FIT_SCORE_ENABLED flag, cancellation pattern), FitScoreBadge component (skeleton/score/null states, a11y %), usePersonalization (Promise.allSettled parallel fetch, partial failure tolerance), SommelierHeroCard (dismissed persistence, hero card above recs), HomeScreen consolidated to single usePersonalization call, StyleQuizScreen invalidates cache on save.</td></tr>
+<tr><td>#375 <span style="color:#facc15">CI</span></td><td>hq-5hnml — SommelierResults CMS full sync</td><td>Hicks: getSommelierResults() + recordSommelierResult() fully wired to Wix backend. 100 tests passing.</td></tr>
+<tr><td>#376 <span style="color:#facc15">CI</span></td><td>Epic C — Conversion Funnel</td><td>analyticsEvents.ts (typed event taxonomy), PromoCodeInput (expandable, Wix-validated, a11y live region, null-client guard), PaymentPoller (30s timeout, returns success/failed/timeout), CheckoutScreen: KeyboardAvoidingView + returnKeyType chain (skip optional line2) + a11y progressbar + assertive error regions + PromoCodeInput wired + adjustedTotal for payment, CheckoutFormSkeleton (Stripe init guard), emitCartAbandoned on crossRigEventBus.</td></tr>
 </table>
 </div>
 
@@ -986,8 +990,77 @@ npx jest --passWithNoTests</pre>
   <div class="placeholder">📸 Screenshot pending</div>
   <div class="card-info">
     <h3>Notification Preferences</h3>
-    <p>Toggle switches per category: Order Updates, Shipping Alerts, Promotions, Price Drops, Loyalty Rewards, Streak Reminders. OS-level permission check with "Enable in Settings" fallback.</p>
-    <div class="features"><span class="badge badge-feature">Per-Type Toggles</span></div>
+    <p>Toggle switches per category: Order Updates, Shipping Alerts, Promotions, Price Drops, Loyalty Rewards, Streak Reminders. OS-level permission check with "Enable in Settings" fallback. <strong>Epic A:</strong> useNotificationPreferences hook (pre-existing, extended), skeleton loading state, NotificationToggle with accessibilityState {{checked, disabled}}.</p>
+    <div class="features"><span class="badge badge-feature">Per-Type Toggles</span><span class="badge badge-new">Epic A</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Epic A: Notification Permission Prompt -->
+<div class="section" id="notif-permission-prompt">
+<h2>35b. Notification Permission Prompt</h2>
+<div class="grid">
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic A PR #373)</div>
+  <div class="card-info">
+    <h3>Push Permission Pre-Prompt</h3>
+    <p><strong>Epic A (PR #373).</strong> Pre-prompt screen shown before the OS permission dialog. Explains value prop. "Enable Notifications" CTA (testID="notif-prompt-enable") triggers expo-notifications permission request, then navigates Home. Error-safe: try/catch wraps permission request, still navigates on any failure. useNotificationPermission hook tracks permission status + hasAskedBefore in AsyncStorage.</p>
+    <div class="features"><span class="badge badge-feature">Permission Gate</span><span class="badge badge-new">Epic A · PR #373</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Epic B: Home Screen AI Personalization -->
+<div class="section" id="home-personalization">
+<h2>Home — AI Personalization (Epic B)</h2>
+<div class="grid">
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic B PR #374)</div>
+  <div class="card-info">
+    <h3>SommelierHeroCard</h3>
+    <p><strong>Epic B (PR #374).</strong> Dismissible hero card surfaced on HomeScreen above personalized picks. Shows top style recommendation from Sommelier AI. Dismissed state persisted in AsyncStorage (@cf_sommelier_hero_dismissed) — stays hidden across sessions. testID="sommelier-hero-card", testID="sommelier-hero-dismiss".</p>
+    <div class="features"><span class="badge badge-feature">AI Card</span><span class="badge badge-new">Epic B · PR #374</span></div>
+  </div>
+</div>
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic B PR #374)</div>
+  <div class="card-info">
+    <h3>FitScore Badge</h3>
+    <p><strong>Epic B (PR #374).</strong> Per-user fit score badge rendered on product surfaces (PDP/grid) gated by EXPO_PUBLIC_FIT_SCORE_ENABLED. Cache-first via PersonalizationCache (AsyncStorage, TTL 1hr). States: skeleton (loading), score badge (0–100%), null (guest/error). accessibilityLabel includes percentage.</p>
+    <div class="features"><span class="badge badge-feature">FitScore</span><span class="badge badge-new">Epic B · PR #374</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- Epic C: Checkout Enhancements -->
+<div class="section" id="checkout-epic-c">
+<h2>Checkout — Epic C Enhancements</h2>
+<div class="grid">
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <div class="card-info">
+    <h3>Checkout — Promo Code Input</h3>
+    <p><strong>Epic C (PR #376).</strong> Expandable promo code form embedded in CheckoutScreen order summary. Collapsed by default ("Add promo code ›"). Validates via Wix callFunction /_functions/validatePromoCode. Shows discount row when applied (fixed or percent). accessibilityLiveRegion="assertive" on success/error messages. Null-client guard shows graceful message when unauthenticated.</p>
+    <div class="features"><span class="badge badge-feature">Promo Codes</span><span class="badge badge-new">Epic C · PR #376</span></div>
+  </div>
+</div>
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <div class="card-info">
+    <h3>Checkout — Form Skeleton</h3>
+    <p><strong>Epic C (PR #376).</strong> CheckoutFormSkeleton replaces generic spinner while Stripe SDK initializes. 4 placeholder rows (name, address, city/zip, CTA button). testID="checkout-form-skeleton". Prevents flash of broken payment form on slow devices.</p>
+    <div class="features"><span class="badge badge-feature">Skeleton UX</span><span class="badge badge-new">Epic C · PR #376</span></div>
+  </div>
+</div>
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <div class="card-info">
+    <h3>Checkout — Keyboard + A11y</h3>
+    <p><strong>Epic C (PR #376).</strong> KeyboardAvoidingView (padding/height per platform) + ScrollView keyboardShouldPersistTaps="handled". Focus chain: fullName→line1→city (skips line2 if empty)→state→zip. All intermediate fields returnKeyType="next", zip "done". Progress bar: testID="checkout-progress", accessibilityRole="progressbar", accessibilityValue {{min:1,max:3,now:step}}. Error regions: accessibilityLiveRegion="assertive".</p>
+    <div class="features"><span class="badge badge-feature">Keyboard Chain</span><span class="badge badge-feature">A11y</span><span class="badge badge-new">Epic C · PR #376</span></div>
   </div>
 </div>
 </div>
