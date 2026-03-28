@@ -22,6 +22,7 @@ import Animated, {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useDailyQuests, type QuestAction } from '@/hooks/useDailyQuests';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
@@ -123,8 +124,8 @@ export function DailyQuestsCard({ onNavigate, refreshToken }: Props) {
         </Text>
       </View>
 
-      {/* Loading skeleton */}
-      {loading ? (
+      {/* Loading skeleton — only shown on initial load, not refresh (prevents quest list flash) */}
+      {loading && quests.length === 0 ? (
         <View testID="daily-quests-loading" style={styles.loadingRows}>
           {[0, 1, 2].map((i) => (
             <View
@@ -183,16 +184,22 @@ interface QuestRowProps {
 
 function QuestRow({ quest, onPress, colors, spacing, borderRadius }: QuestRowProps) {
   const { id, title, action, pointReward, completed } = quest;
+  const reducedMotion = useReducedMotion();
 
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const handlePress = () => {
     if (completed) {
-      scale.value = withSequence(
-        withSpring(BOUNCE_SCALE, { damping: 4 }),
-        withSpring(1, { damping: 6 }),
-      );
+      if (reducedMotion) {
+        // Skip bounce animation — respect accessibility preference
+        scale.value = 1;
+      } else {
+        scale.value = withSequence(
+          withSpring(BOUNCE_SCALE, { damping: 4 }),
+          withSpring(1, { damping: 6 }),
+        );
+      }
     }
     onPress(id, action as QuestAction, completed);
   };

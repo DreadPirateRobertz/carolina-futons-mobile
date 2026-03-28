@@ -427,4 +427,33 @@ describe('DailyQuestsCard', () => {
     const row = getByTestId('daily-quest-row-q-purchase');
     expect(row.props.accessibilityLabel).toContain('complete');
   });
+
+  // ── No-flash refresh ────────────────────────────────────────────────────
+
+  it('keeps quests visible during refresh — does not flash to loading skeleton', () => {
+    // Start with quests loaded
+    mockUseDailyQuests.mockReturnValue({
+      quests: [QUEST_PURCHASE, QUEST_REVIEW, QUEST_AR],
+      loading: false,
+      refresh: jest.fn(),
+    });
+    const { queryByTestId, rerender } = render(
+      <ThemeProvider><DailyQuestsCard /></ThemeProvider>,
+    );
+    expect(queryByTestId('daily-quests-card')).not.toBeNull();
+    expect(queryByTestId('daily-quests-loading')).toBeNull();
+
+    // Simulate refresh in progress — loading=true but quests still populated
+    mockUseDailyQuests.mockReturnValue({
+      quests: [QUEST_PURCHASE, QUEST_REVIEW, QUEST_AR],
+      loading: true,
+      refresh: jest.fn(),
+    });
+    rerender(<ThemeProvider><DailyQuestsCard /></ThemeProvider>);
+
+    // Card must still be mounted with existing quests (no flash to skeleton)
+    expect(queryByTestId('daily-quests-card')).not.toBeNull();
+    // Loading skeleton must NOT appear when quests are already populated
+    expect(queryByTestId('daily-quests-loading')).toBeNull();
+  });
 });
