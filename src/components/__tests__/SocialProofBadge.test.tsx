@@ -49,7 +49,9 @@ describe('SocialProofBadge', () => {
     });
 
     it('does NOT render sold badge when soldThisWeek is undefined', () => {
-      const { queryByText } = render(<SocialProofBadge topReview={null} isLoading={false} />);
+      const { queryByText } = render(
+        <SocialProofBadge topReview={null} isLoading={false} />,
+      );
       expect(queryByText(/sold this week/i)).toBeNull();
     });
 
@@ -117,17 +119,15 @@ describe('SocialProofBadge', () => {
 
   describe('loading state', () => {
     it('renders loading skeleton when isLoading is true', () => {
-      const { getByTestId } = render(<SocialProofBadge isLoading={true} topReview={null} />);
+      const { getByTestId } = render(
+        <SocialProofBadge isLoading={true} topReview={null} />,
+      );
       expect(getByTestId('social-proof-loading')).toBeTruthy();
     });
 
     it('does NOT render content when loading', () => {
       const { queryByTestId } = render(
-        <SocialProofBadge
-          soldThisWeek={5}
-          topReview={{ authorName: 'X', rating: 5, body: 'Y' }}
-          isLoading={true}
-        />,
+        <SocialProofBadge soldThisWeek={5} topReview={{ authorName: 'X', rating: 5, body: 'Y' }} isLoading={true} />,
       );
       expect(queryByTestId('sold-this-week-badge')).toBeNull();
       expect(queryByTestId('review-excerpt')).toBeNull();

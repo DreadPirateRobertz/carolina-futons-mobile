@@ -173,14 +173,10 @@ describe('useSocialProof', () => {
       let reviewResolve: (v: any) => void;
 
       mockFetchSoldCount.mockReturnValue(
-        new Promise((r) => {
-          soldResolve = r;
-        }),
+        new Promise((r) => { soldResolve = r; }),
       );
       mockFetchTopReview.mockReturnValue(
-        new Promise((r) => {
-          reviewResolve = r;
-        }),
+        new Promise((r) => { reviewResolve = r; }),
       );
 
       const { result } = renderHook(() => useSocialProof(PRODUCT_ID));
@@ -241,9 +237,10 @@ describe('useSocialProof', () => {
     });
 
     it('refetches when productId changes', async () => {
-      const { rerender } = renderHook(({ id }) => useSocialProof(id), {
-        initialProps: { id: 'prod-1' },
-      });
+      const { rerender } = renderHook(
+        ({ id }) => useSocialProof(id),
+        { initialProps: { id: 'prod-1' } },
+      );
       await act(async () => {});
 
       expect(mockFetchSoldCount).toHaveBeenCalledWith('prod-1');
