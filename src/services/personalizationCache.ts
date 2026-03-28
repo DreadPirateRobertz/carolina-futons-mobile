@@ -30,9 +30,8 @@ export async function getCachedFitScore(
   memberId: string,
 ): Promise<FitScoreCacheEntry | null> {
   try {
-    const cache = await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(
-      FIT_SCORE_KEY,
-    );
+    const cache =
+      await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(FIT_SCORE_KEY);
     const entry = cache[`${productId}_${memberId}`];
     if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
     return { score: entry.score, reasons: entry.reasons };
@@ -47,9 +46,8 @@ export async function setCachedFitScore(
   data: FitScoreCacheEntry,
 ): Promise<void> {
   try {
-    const cache = await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(
-      FIT_SCORE_KEY,
-    );
+    const cache =
+      await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(FIT_SCORE_KEY);
     cache[`${productId}_${memberId}`] = { ...data, cachedAt: Date.now() };
     await AsyncStorage.setItem(FIT_SCORE_KEY, JSON.stringify(cache));
   } catch {
@@ -61,9 +59,8 @@ export async function getCachedSommelierResult(
   memberId: string,
 ): Promise<SommelierCacheEntry | null> {
   try {
-    const cache = await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(
-      SOMMELIER_KEY,
-    );
+    const cache =
+      await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(SOMMELIER_KEY);
     const entry = cache[memberId];
     if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
     const { cachedAt: _, ...rest } = entry;
@@ -78,9 +75,8 @@ export async function setCachedSommelierResult(
   data: SommelierCacheEntry,
 ): Promise<void> {
   try {
-    const cache = await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(
-      SOMMELIER_KEY,
-    );
+    const cache =
+      await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(SOMMELIER_KEY);
     cache[memberId] = { ...data, cachedAt: Date.now() };
     await AsyncStorage.setItem(SOMMELIER_KEY, JSON.stringify(cache));
   } catch {

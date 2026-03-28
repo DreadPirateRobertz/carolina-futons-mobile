@@ -415,7 +415,9 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           <View style={{ paddingHorizontal: spacing.lg }}>
             <SommelierHeroCard
               result={sommelierResults}
-              onSeePicks={() => {/* scroll to product section */}}
+              onSeePicks={() => {
+                /* scroll to product section */
+              }}
             />
           </View>
         )}
