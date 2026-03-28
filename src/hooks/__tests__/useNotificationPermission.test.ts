@@ -35,7 +35,9 @@ it('requestPermission stores asked flag and returns granted', async () => {
   (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
-  await act(async () => { await result.current.requestPermission(); });
+  let returned: string | undefined;
+  await act(async () => { returned = await result.current.requestPermission(); });
+  expect(returned).toBe('granted');
   expect(AsyncStorage.setItem).toHaveBeenCalledWith(ASKED_KEY, 'true');
   expect(result.current.status).toBe('granted');
 });
