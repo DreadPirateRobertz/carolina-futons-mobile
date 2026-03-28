@@ -28,9 +28,7 @@ describe('ProductCardVideo', () => {
 
   describe('player setup', () => {
     it('creates a video player with the provided URI', () => {
-      render(
-        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
-      );
+      render(<ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />);
       expect(useVideoPlayer).toHaveBeenCalledWith(
         'https://example.com/video.mp4',
         expect.any(Function),
@@ -44,9 +42,7 @@ describe('ProductCardVideo', () => {
         return mockSetup;
       });
 
-      render(
-        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
-      );
+      render(<ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />);
 
       expect(mockSetup.loop).toBe(true);
       expect(mockSetup.muted).toBe(true);

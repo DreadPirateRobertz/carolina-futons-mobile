@@ -347,7 +347,9 @@ describe('useProducts', () => {
 
     it('filters by single size', async () => {
       const { result } = await renderLoaded();
-      await act(async () => result.current.setFilters({ sizes: ['twin'], fabrics: [], priceRange: null }));
+      await act(async () =>
+        result.current.setFilters({ sizes: ['twin'], fabrics: [], priceRange: null }),
+      );
       // All sized products should be twin; sizeless products pass through
       result.current.products.forEach((p) => {
         if (p.size) expect(p.size).toBe('twin');
@@ -372,7 +374,9 @@ describe('useProducts', () => {
       // Products without size (e.g. gift cards, accessories) should not be excluded
       const sizelessProducts = PRODUCTS.filter((p) => !p.size);
       if (sizelessProducts.length > 0) {
-        await act(async () => result.current.setFilters({ sizes: ['queen'], fabrics: [], priceRange: null }));
+        await act(async () =>
+          result.current.setFilters({ sizes: ['queen'], fabrics: [], priceRange: null }),
+        );
         const resultIds = result.current.products.map((p) => p.id);
         sizelessProducts.forEach((p) => {
           // Sizeless products should still appear (within pagination)
@@ -410,7 +414,9 @@ describe('useProducts', () => {
 
     it('filters by price range', async () => {
       const { result } = await renderLoaded();
-      await act(async () => result.current.setFilters({ sizes: [], fabrics: [], priceRange: [100, 300] }));
+      await act(async () =>
+        result.current.setFilters({ sizes: [], fabrics: [], priceRange: [100, 300] }),
+      );
       result.current.products.forEach((p) => {
         expect(p.price).toBeGreaterThanOrEqual(100);
         expect(p.price).toBeLessThanOrEqual(300);
@@ -420,7 +426,9 @@ describe('useProducts', () => {
     it('price range is inclusive on boundaries', async () => {
       const { result } = await renderLoaded();
       // Use exact price of a known product (Pisgah Twin = 279)
-      await act(async () => result.current.setFilters({ sizes: [], fabrics: [], priceRange: [279, 279] }));
+      await act(async () =>
+        result.current.setFilters({ sizes: [], fabrics: [], priceRange: [279, 279] }),
+      );
       expect(result.current.products.length).toBeGreaterThanOrEqual(1);
       result.current.products.forEach((p) => {
         expect(p.price).toBe(279);
@@ -461,7 +469,9 @@ describe('useProducts', () => {
       );
       expect(result.current.products.length).toBe(0);
       // Clear filters restores original count
-      await act(async () => result.current.setFilters({ sizes: [], fabrics: [], priceRange: null }));
+      await act(async () =>
+        result.current.setFilters({ sizes: [], fabrics: [], priceRange: null }),
+      );
       expect(result.current.products.length).toBe(allCount);
     });
 
@@ -474,7 +484,9 @@ describe('useProducts', () => {
       });
       const _pageCount = result.current.products.length;
       // Apply filter — should reset to page 1
-      await act(async () => result.current.setFilters({ sizes: ['twin'], fabrics: [], priceRange: null }));
+      await act(async () =>
+        result.current.setFilters({ sizes: ['twin'], fabrics: [], priceRange: null }),
+      );
       expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
   });
@@ -498,7 +510,9 @@ describe('useProducts', () => {
 
     it('counts 1 when only price range is set', async () => {
       const { result } = await renderLoaded();
-      await act(async () => result.current.setFilters({ sizes: [], fabrics: [], priceRange: [100, 500] }));
+      await act(async () =>
+        result.current.setFilters({ sizes: [], fabrics: [], priceRange: [100, 500] }),
+      );
       expect(result.current.activeFilterCount).toBe(1);
     });
 
@@ -524,7 +538,9 @@ describe('useProducts', () => {
         }),
       );
       expect(result.current.activeFilterCount).toBe(3);
-      await act(async () => result.current.setFilters({ sizes: [], fabrics: [], priceRange: null }));
+      await act(async () =>
+        result.current.setFilters({ sizes: [], fabrics: [], priceRange: null }),
+      );
       expect(result.current.activeFilterCount).toBe(0);
     });
   });

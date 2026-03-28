@@ -544,7 +544,15 @@ export function ProductDetailScreen({
         </TouchableOpacity>
       );
     },
-    [model, selectedFabric, colors, handleOpenFullscreen, resolvedVideoUri, videoError, videoPlayer],
+    [
+      model,
+      selectedFabric,
+      colors,
+      handleOpenFullscreen,
+      resolvedVideoUri,
+      videoError,
+      videoPlayer,
+    ],
   );
 
   // Render Wix product detail when no local FutonModel matches

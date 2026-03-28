@@ -311,11 +311,9 @@ describe('useProductBySlug', () => {
 
     it('refresh on static-match slug does not throw', async () => {
       const { result } = renderHook(() => useProductBySlug(knownSlug));
-      expect(() => {
-        await act(async () => {
-          result.current.refresh();
-        });
-      }).not.toThrow();
+      await act(async () => {
+        result.current.refresh();
+      });
     });
   });
 
