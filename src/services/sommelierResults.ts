@@ -26,7 +26,10 @@ export async function getSommelierResults(memberId: string): Promise<SommelierRe
     const client = getWixClientSingleton();
     if (!client) return null;
 
-    const result = await client.callFunction('getSommelierResults', { memberId });
+    const result = await client.callFunction<SommelierResultsData>(
+      `/_functions/getSommelierResults?memberId=${encodeURIComponent(memberId)}`,
+      'GET',
+    );
     if (!result) return null;
 
     return result as SommelierResultsData;
@@ -51,7 +54,10 @@ export async function recordSommelierResult(
     const client = getWixClientSingleton();
     if (!client) return false;
 
-    await client.callFunction('recordSommelierResult', { memberId, quizAnswers });
+    await client.callFunction('/_functions/recordSommelierResult', 'POST', {
+      memberId,
+      quizAnswers,
+    });
     return true;
   } catch (err) {
     captureException(err instanceof Error ? err : new Error(String(err)), 'error', {
