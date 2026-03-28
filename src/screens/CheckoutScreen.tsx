@@ -380,6 +380,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
 
   const scrollRef = useRef<ScrollView>(null);
 
+  // Keyboard chain refs for shipping address fields
+  const shippingFullNameRef = useRef<TextInput>(null);
+  const shippingLine1Ref = useRef<TextInput>(null);
+  const shippingLine2Ref = useRef<TextInput>(null);
+  const shippingCityRef = useRef<TextInput>(null);
+  const shippingStateRef = useRef<TextInput>(null);
+  const shippingZipRef = useRef<TextInput>(null);
+
   const handleFieldFocus = useCallback((e: any) => {
     const target = e.nativeEvent?.target;
     if (!scrollRef.current || !target) return;
@@ -627,6 +635,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       autoCapitalize?: 'none' | 'words' | 'sentences';
       autoComplete?: string;
       maxLength?: number;
+      returnKeyType?: 'next' | 'done' | 'go' | 'search' | 'send';
+      onSubmitEditing?: () => void;
+      inputRef?: React.RefObject<TextInput>;
     },
   ) => (
     <View style={styles.fieldGroup} key={`${options.testIDPrefix}-${options.fieldName}`}>
@@ -639,6 +650,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         {label}
       </Text>
       <TextInput
+        ref={options.inputRef}
         style={[
           styles.input,
           {
@@ -658,6 +670,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         editable={!isProcessing}
         testID={`${options.testIDPrefix}-${options.fieldName}`}
         accessibilityLabel={label}
+        returnKeyType={options.returnKeyType}
+        onSubmitEditing={options.onSubmitEditing}
+        blurOnSubmit={options.returnKeyType === 'done'}
       />
       {fieldError && (
         <Text
@@ -677,6 +692,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     errors: AddressErrors,
     onUpdate: (field: keyof Address, value: string) => void,
     testIDPrefix: string,
+    fieldRefs?: {
+      fullName?: React.RefObject<TextInput>;
+      line1?: React.RefObject<TextInput>;
+      line2?: React.RefObject<TextInput>;
+      city?: React.RefObject<TextInput>;
+      state?: React.RefObject<TextInput>;
+      zip?: React.RefObject<TextInput>;
+    },
   ) => (
     <View testID={`${testIDPrefix}-form`}>
       {renderAddressField(
@@ -689,6 +712,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           fieldName: 'fullName',
           placeholder: 'John Doe',
           autoComplete: 'name',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.fullName,
+          onSubmitEditing: () => fieldRefs?.line1?.current?.focus(),
         },
       )}
       {renderAddressField(
@@ -701,6 +727,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           fieldName: 'line1',
           placeholder: '123 Main St',
           autoComplete: 'street-address',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.line1,
+          onSubmitEditing: () => fieldRefs?.line2?.current?.focus(),
         },
       )}
       {renderAddressField(
@@ -712,6 +741,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           testIDPrefix,
           fieldName: 'line2',
           placeholder: 'Apt 4B',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.line2,
+          onSubmitEditing: () => fieldRefs?.city?.current?.focus(),
         },
       )}
       <View style={styles.rowFields}>
@@ -721,6 +753,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             fieldName: 'city',
             placeholder: 'Asheville',
             autoComplete: 'postal-address-locality',
+            returnKeyType: 'next',
+            inputRef: fieldRefs?.city,
+            onSubmitEditing: () => fieldRefs?.state?.current?.focus(),
           })}
         </View>
         <View style={styles.stateField}>
@@ -735,6 +770,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               placeholder: 'NC',
               autoCapitalize: 'none',
               maxLength: 2,
+              returnKeyType: 'next',
+              inputRef: fieldRefs?.state,
+              onSubmitEditing: () => fieldRefs?.zip?.current?.focus(),
             },
           )}
         </View>
@@ -746,6 +784,8 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             keyboardType: 'numeric',
             autoComplete: 'postal-code',
             maxLength: 10,
+            returnKeyType: 'done',
+            inputRef: fieldRefs?.zip,
           })}
         </View>
       </View>
@@ -787,6 +827,15 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         </Text>
         <View style={styles.headerSpacer} />
       </View>
+
+      {/* A11y progress indicator — checkout is a single-step flow (step 1 of 3: addresses + payment) */}
+      <View
+        testID="checkout-progress"
+        accessibilityRole="progressbar"
+        accessibilityLabel="Checkout step 1 of 3"
+        accessibilityValue={{ min: 1, max: 3, now: 1 }}
+        style={{ height: 3, backgroundColor: colors.sunsetCoral, marginHorizontal: spacing.lg, borderRadius: 2, marginBottom: spacing.xs }}
+      />
 
       <ScrollView
         ref={scrollRef}
@@ -884,7 +933,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             </View>
           )}
 
-          {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping')}
+          {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping', {
+            fullName: shippingFullNameRef,
+            line1: shippingLine1Ref,
+            line2: shippingLine2Ref,
+            city: shippingCityRef,
+            state: shippingStateRef,
+            zip: shippingZipRef,
+          })}
         </View>
 
         {/* Shipping options error — cm-o4i */}
