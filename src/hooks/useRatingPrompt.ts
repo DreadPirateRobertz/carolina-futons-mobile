@@ -107,6 +107,7 @@ export function useRatingPrompt() {
 
         await StoreReview.requestReview();
         const updated = { ...currentState, lastPromptedAt: Date.now() };
+        stateRef.current = updated;
         setState(updated);
         await persistState(updated);
         events.rateApp(trigger);

@@ -25,41 +25,41 @@ describe('useStyleQuiz', () => {
     });
   });
 
-  it('setRoomType updates roomType preference', () => {
+  it('setRoomType updates roomType preference', async () => {
     const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
+    await act(async () => {
       result.current.setRoomType('living-room');
     });
     expect(result.current.preferences.roomType).toBe('living-room');
   });
 
-  it('setStylePreference updates stylePreference', () => {
+  it('setStylePreference updates stylePreference', async () => {
     const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
+    await act(async () => {
       result.current.setStylePreference('rustic');
     });
     expect(result.current.preferences.stylePreference).toBe('rustic');
   });
 
-  it('setPrimaryUse updates primaryUse', () => {
+  it('setPrimaryUse updates primaryUse', async () => {
     const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
+    await act(async () => {
       result.current.setPrimaryUse('both');
     });
     expect(result.current.preferences.primaryUse).toBe('both');
   });
 
-  it('setSizeNeeds updates sizeNeeds', () => {
+  it('setSizeNeeds updates sizeNeeds', async () => {
     const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
+    await act(async () => {
       result.current.setSizeNeeds('queen');
     });
     expect(result.current.preferences.sizeNeeds).toBe('queen');
   });
 
-  it('setBudgetRange updates budgetRange', () => {
+  it('setBudgetRange updates budgetRange', async () => {
     const { result } = renderHook(() => useStyleQuiz());
-    act(() => {
+    await act(async () => {
       result.current.setBudgetRange('500-1000');
     });
     expect(result.current.preferences.budgetRange).toBe('500-1000');
@@ -69,7 +69,7 @@ describe('useStyleQuiz', () => {
     mockSetItem.mockResolvedValue(undefined);
     const { result } = renderHook(() => useStyleQuiz());
 
-    act(() => {
+    await act(async () => {
       result.current.setRoomType('bedroom');
       result.current.setStylePreference('modern');
       result.current.setPrimaryUse('sitting');

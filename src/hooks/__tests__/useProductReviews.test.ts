@@ -424,7 +424,7 @@ describe('useProductReviews', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    act(() => {
+    await act(async () => {
       resolveFirst({
         items: [makeItem({ id: 'r1', productId: 'prod-a', rating: 5 })],
         totalResults: 1,

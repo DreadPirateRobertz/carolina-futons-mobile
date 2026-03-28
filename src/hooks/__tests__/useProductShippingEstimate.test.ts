@@ -3,7 +3,7 @@
  * TDD: tests written before implementation.
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProductShippingEstimate } from '../useProductShippingEstimate';
 
@@ -215,7 +215,9 @@ describe('useProductShippingEstimate (cm-9yn)', () => {
     });
 
     const { result } = renderEstimate();
-    result.current.setZip(ZIP);
+    await act(async () => {
+      result.current.setZip(ZIP);
+    });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     // Error is set, rate stays null — screen does not crash

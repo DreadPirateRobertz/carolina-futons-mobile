@@ -7,14 +7,6 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
 }));
 
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.useSharedValue = jest.fn((init: number) => ({ value: init }));
-  Reanimated.useAnimatedStyle = jest.fn((fn: () => object) => fn());
-  Reanimated.withSpring = jest.fn((val: number) => val);
-  return Reanimated;
-});
-
 jest.mock('react-native-gesture-handler', () => {
   const { View: RNView } = require('react-native');
   return {

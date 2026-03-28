@@ -9,51 +9,51 @@ describe('useCartAnimation', () => {
     expect(result.current.opacity.value).toBe(1);
   });
 
-  it('triggers animation and sets isAnimating', () => {
+  it('triggers animation and sets isAnimating', async () => {
     const { result } = renderHook(() => useCartAnimation());
-    act(() => result.current.trigger());
+    await act(async () => result.current.trigger());
     expect(result.current.isAnimating).toBe(true);
   });
 
-  it('calls onComplete callback after animation', () => {
+  it('calls onComplete callback after animation', async () => {
     jest.useFakeTimers();
     const onComplete = jest.fn();
     const { result } = renderHook(() => useCartAnimation({ onComplete }));
-    act(() => result.current.trigger());
-    act(() => jest.advanceTimersByTime(600));
+    await act(async () => result.current.trigger());
+    await act(async () => jest.advanceTimersByTime(600));
     expect(onComplete).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
   });
 
-  it('resets to idle after animation completes', () => {
+  it('resets to idle after animation completes', async () => {
     jest.useFakeTimers();
     const { result } = renderHook(() => useCartAnimation());
-    act(() => result.current.trigger());
+    await act(async () => result.current.trigger());
     expect(result.current.isAnimating).toBe(true);
-    act(() => jest.advanceTimersByTime(600));
+    await act(async () => jest.advanceTimersByTime(600));
     expect(result.current.isAnimating).toBe(false);
     jest.useRealTimers();
   });
 
-  it('ignores trigger while already animating', () => {
+  it('ignores trigger while already animating', async () => {
     jest.useFakeTimers();
     const onComplete = jest.fn();
     const { result } = renderHook(() => useCartAnimation({ onComplete }));
-    act(() => result.current.trigger());
-    act(() => result.current.trigger()); // second trigger ignored
-    act(() => jest.advanceTimersByTime(600));
+    await act(async () => result.current.trigger());
+    await act(async () => result.current.trigger()); // second trigger ignored
+    await act(async () => jest.advanceTimersByTime(600));
     expect(onComplete).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
   });
 
-  it('accepts custom duration', () => {
+  it('accepts custom duration', async () => {
     jest.useFakeTimers();
     const onComplete = jest.fn();
     const { result } = renderHook(() => useCartAnimation({ duration: 300, onComplete }));
-    act(() => result.current.trigger());
-    act(() => jest.advanceTimersByTime(250));
+    await act(async () => result.current.trigger());
+    await act(async () => jest.advanceTimersByTime(250));
     expect(onComplete).not.toHaveBeenCalled();
-    act(() => jest.advanceTimersByTime(100));
+    await act(async () => jest.advanceTimersByTime(100));
     expect(onComplete).toHaveBeenCalledTimes(1);
     jest.useRealTimers();
   });

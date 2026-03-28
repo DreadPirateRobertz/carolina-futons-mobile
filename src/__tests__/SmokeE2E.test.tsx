@@ -365,7 +365,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('home-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('Shop'));
+      await act(async () => ref.current?.navigate('Shop'));
       await waitFor(() => expect(getByTestId('shop-screen')).toBeTruthy());
     });
 
@@ -385,7 +385,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('shop-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('ProductDetail', { slug: 'asheville-full' }));
+      await act(async () => ref.current?.navigate('ProductDetail', { slug: 'asheville-full' }));
       await waitFor(() => expect(getByTestId('product-detail-screen')).toBeTruthy());
     });
 
@@ -413,7 +413,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       expect(getByTestId('cart-count').props.children).toBe(1);
       expect(getByTestId('cart-subtotal').props.children).toBe(TEST_MODEL.basePrice);
 
-      act(() => ref.current?.navigate('Checkout'));
+      await act(async () => ref.current?.navigate('Checkout'));
       await waitFor(() => expect(getByTestId('checkout-screen')).toBeTruthy());
     });
 
@@ -515,7 +515,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('account-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('Login'));
+      await act(async () => ref.current?.navigate('Login'));
       await waitFor(() => expect(getByTestId('login-screen')).toBeTruthy());
     });
 
@@ -542,7 +542,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       expect(getByTestId('account-screen')).toBeTruthy();
       expect(getByTestId('view-orders-btn')).toBeTruthy();
 
-      act(() => ref.current?.navigate('OrderHistory'));
+      await act(async () => ref.current?.navigate('OrderHistory'));
       await waitFor(() => expect(getByTestId('order-history-screen')).toBeTruthy());
     });
 
@@ -564,7 +564,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('order-history-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('OrderDetail', { orderId: 'ord-123' }));
+      await act(async () => ref.current?.navigate('OrderDetail', { orderId: 'ord-123' }));
       await waitFor(() => expect(getByTestId('order-detail-screen')).toBeTruthy());
     });
   });
@@ -590,7 +590,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('shop-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('Category', { slug: 'living-room' }));
+      await act(async () => ref.current?.navigate('Category', { slug: 'living-room' }));
       await waitFor(() => expect(getByTestId('category-screen')).toBeTruthy());
     });
 
@@ -612,7 +612,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('category-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('ProductDetail', { slug: 'asheville-full' }));
+      await act(async () => ref.current?.navigate('ProductDetail', { slug: 'asheville-full' }));
       await waitFor(() => expect(getByTestId('product-detail-screen')).toBeTruthy());
     });
 
@@ -634,7 +634,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('collections-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('CollectionDetail', { slug: 'bestsellers' }));
+      await act(async () => ref.current?.navigate('CollectionDetail', { slug: 'bestsellers' }));
       await waitFor(() => expect(getByTestId('collection-detail-screen')).toBeTruthy());
     });
   });
@@ -799,7 +799,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('home-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('AR'));
+      await act(async () => ref.current?.navigate('AR'));
       await waitFor(() => expect(getByTestId('ar-screen')).toBeTruthy());
     });
 
@@ -821,7 +821,7 @@ describe('E2E Smoke Tests — Beta Launch', () => {
       );
 
       expect(getByTestId('product-detail-screen')).toBeTruthy();
-      act(() => ref.current?.navigate('AR'));
+      await act(async () => ref.current?.navigate('AR'));
       await waitFor(() => expect(getByTestId('ar-screen')).toBeTruthy());
     });
 
@@ -842,10 +842,10 @@ describe('E2E Smoke Tests — Beta Launch', () => {
         </CartProvider>,
       );
 
-      act(() => ref.current?.navigate('AR'));
+      await act(async () => ref.current?.navigate('AR'));
       await waitFor(() => expect(getByTestId('ar-screen')).toBeTruthy());
 
-      act(() => ref.current?.goBack());
+      await act(async () => ref.current?.goBack());
       await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
     });
 

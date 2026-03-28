@@ -266,7 +266,7 @@ describe('Stack Navigation', () => {
         expect(getByTestId('home-screen')).toBeTruthy();
       });
       // Navigate to ProductDetail programmatically
-      act(() => {
+      await act(async () => {
         ref.current?.navigate('ProductDetail', { slug: 'futon-001' });
       });
       await waitFor(() => {
@@ -284,14 +284,14 @@ describe('Stack Navigation', () => {
       await waitFor(() => {
         expect(getByTestId('home-screen')).toBeTruthy();
       });
-      act(() => {
+      await act(async () => {
         ref.current?.navigate('ProductDetail', { slug: 'futon-001' });
       });
       await waitFor(() => {
         expect(getByTestId('product-detail-screen')).toBeTruthy();
       });
       // Navigate back
-      act(() => {
+      await act(async () => {
         ref.current?.goBack();
       });
       await waitFor(() => {
@@ -312,7 +312,7 @@ describe('Stack Navigation', () => {
       await waitFor(() => {
         expect(getByTestId('home-screen')).toBeTruthy();
       });
-      act(() => {
+      await act(async () => {
         ref.current?.navigate('Category', { slug: 'cat-001' });
       });
       await waitFor(() => {
@@ -432,7 +432,7 @@ describe('PaymentConfirmation navigator wiring', () => {
     await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
 
     // Navigate to PaymentConfirmation (simulating Checkout handing off after payment)
-    act(() => {
+    await act(async () => {
       ref.current?.navigate('PaymentConfirmation', { order: mockOrder });
     });
     await waitFor(() => expect(getByTestId('payment-confirmation-screen')).toBeTruthy());
@@ -478,7 +478,7 @@ describe('PaymentConfirmation navigator wiring', () => {
     );
 
     await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
-    act(() => {
+    await act(async () => {
       ref.current?.navigate('PaymentConfirmation', { order: mockOrder });
     });
     await waitFor(() => expect(getByTestId('payment-confirmation-screen')).toBeTruthy());

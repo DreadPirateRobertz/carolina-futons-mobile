@@ -720,14 +720,14 @@ describe('ARScreen', () => {
       expect(getByText('Wishlist')).toBeTruthy();
     });
 
-    it('wishlist button toggles to "Saved!" on press', () => {
+    it('wishlist button toggles to "Saved!" on press', async () => {
       jest.useFakeTimers();
       const { getByTestId, getByText } = renderARScreen();
       fireEvent.press(getByTestId('ar-wishlist'));
       // Immediately shows "Saved!" feedback
       expect(getByText('Saved!')).toBeTruthy();
       // After 2s, switches to "Wishlisted"
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(2000);
       });
       expect(getByText('Wishlisted')).toBeTruthy();

@@ -9,7 +9,7 @@
  */
 import { uploadReviewPhoto, stripExifFromUri, type WixUploadFn } from '../uploadReviewPhoto';
 
-jest.mock('expo-file-system', () => ({
+jest.mock('expo-file-system/legacy', () => ({
   readAsStringAsync: jest.fn(),
   cacheDirectory: 'file:///cache/',
   EncodingType: { Base64: 'base64' },
@@ -20,7 +20,8 @@ jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg' },
 }));
 
-const mockReadAsStringAsync = jest.requireMock('expo-file-system').readAsStringAsync as jest.Mock;
+const mockReadAsStringAsync = jest.requireMock('expo-file-system/legacy')
+  .readAsStringAsync as jest.Mock;
 const mockManipulateAsync = jest.requireMock('expo-image-manipulator').manipulateAsync as jest.Mock;
 
 const STRIPPED_URI = 'file:///cache/stripped_1234.jpg';

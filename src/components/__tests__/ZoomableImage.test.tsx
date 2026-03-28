@@ -3,14 +3,6 @@ import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { ZoomableImage } from '../ZoomableImage';
 
-jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.useSharedValue = jest.fn((init: number) => ({ value: init }));
-  Reanimated.useAnimatedStyle = jest.fn((fn: () => object) => fn());
-  Reanimated.withSpring = jest.fn((val: number) => val);
-  return Reanimated;
-});
-
 jest.mock('react-native-gesture-handler', () => {
   const { View } = require('react-native');
   return {

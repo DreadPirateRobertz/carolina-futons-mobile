@@ -98,7 +98,7 @@ describe('ErrorBoundary', () => {
       expect(getByTestId('error-boundary-retry')).toBeTruthy();
     });
 
-    it('shows spinner then retries on press', () => {
+    it('shows spinner then retries on press', async () => {
       const { getByTestId, queryByTestId } = render(
         <ErrorBoundary>
           <BrokenComponent />
@@ -107,7 +107,7 @@ describe('ErrorBoundary', () => {
       fireEvent.press(getByTestId('error-boundary-retry'));
       expect(getByTestId('error-boundary-spinner')).toBeTruthy();
 
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(600);
       });
       // After retry, the broken component throws again so fallback re-appears

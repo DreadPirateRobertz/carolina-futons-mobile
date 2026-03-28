@@ -114,7 +114,7 @@ describe('ChallengesScreen — crossRigEventBus', () => {
       error: null,
     });
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitChallengeStarted).toHaveBeenCalledTimes(2);
     expect(mockEmitChallengeStarted).toHaveBeenCalledWith(
       mockWixClient,
@@ -156,7 +156,7 @@ describe('ChallengesScreen — crossRigEventBus', () => {
       error: null,
     });
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitChallengeStarted).toHaveBeenCalledWith(
       mockWixClient,
       expect.objectContaining({ challengeId: 'ch-abc', currentPoints: 850 }),
@@ -172,14 +172,14 @@ describe('ChallengesScreen — crossRigEventBus', () => {
     });
 
     const { unmount } = renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitChallengeStarted).toHaveBeenCalledTimes(1);
 
     unmount();
     mockEmitChallengeStarted.mockClear();
 
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitChallengeStarted).not.toHaveBeenCalled();
   });
 

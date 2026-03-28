@@ -192,7 +192,7 @@ describe('useLivingSky', () => {
     expect(result.current.sunPos.opacity).toBe(0);
   });
 
-  it('updates state after 30 seconds', () => {
+  it('updates state after 30 seconds', async () => {
     // Use a real Date mock so the state actually changes with time
     const baseTime = new Date('2026-06-15T12:00:00').getTime();
     jest.setSystemTime(baseTime);
@@ -202,7 +202,7 @@ describe('useLivingSky', () => {
 
     // Advance clock by 30 minutes so position changes measurably
     jest.setSystemTime(baseTime + 30 * 60 * 1000);
-    act(() => {
+    await act(async () => {
       jest.advanceTimersByTime(30000);
     });
 
@@ -237,9 +237,9 @@ describe('useLivingSky', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
-  it('isLoading remains false after interval tick', () => {
+  it('isLoading remains false after interval tick', async () => {
     const { result } = renderHook(() => useLivingSky());
-    act(() => {
+    await act(async () => {
       jest.advanceTimersByTime(30000);
     });
     expect(result.current.isLoading).toBe(false);
@@ -252,7 +252,7 @@ describe('useLivingSky', () => {
     expect(typeof result.current.refresh).toBe('function');
   });
 
-  it('refresh() re-computes sky state with current time (switches from override to live)', () => {
+  it('refresh() re-computes sky state with current time (switches from override to live)', async () => {
     // Start at midnight
     jest.spyOn(Date.prototype, 'getHours').mockReturnValue(0);
     jest.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0);
@@ -263,7 +263,7 @@ describe('useLivingSky', () => {
     jest.spyOn(Date.prototype, 'getHours').mockReturnValue(12);
     jest.spyOn(Date.prototype, 'getMinutes').mockReturnValue(0);
 
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
 

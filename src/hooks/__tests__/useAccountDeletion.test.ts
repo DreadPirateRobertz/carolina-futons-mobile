@@ -48,16 +48,16 @@ describe('useAccountDeletion', () => {
     expect(result.current.error).toBeNull();
   });
 
-  it('transitions to confirming on requestDeletion', () => {
+  it('transitions to confirming on requestDeletion', async () => {
     const { result } = renderHook(() => useAccountDeletion());
-    act(() => result.current.requestDeletion());
+    await act(async () => result.current.requestDeletion());
     expect(result.current.status).toBe('confirming');
   });
 
-  it('returns to idle on cancel', () => {
+  it('returns to idle on cancel', async () => {
     const { result } = renderHook(() => useAccountDeletion());
-    act(() => result.current.requestDeletion());
-    act(() => result.current.cancel());
+    await act(async () => result.current.requestDeletion());
+    await act(async () => result.current.cancel());
     expect(result.current.status).toBe('idle');
   });
 

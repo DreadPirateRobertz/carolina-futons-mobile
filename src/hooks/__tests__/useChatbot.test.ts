@@ -65,7 +65,7 @@ describe('useChatbot — happy path', () => {
 
     const { result } = renderHook(() => useChatbot());
 
-    act(() => {
+    await act(async () => {
       void result.current.sendMessage('test');
     });
 
@@ -119,7 +119,7 @@ describe('useChatbot — network fail', () => {
 
     const { result } = renderHook(() => useChatbot());
 
-    act(() => {
+    await act(async () => {
       void result.current.sendMessage('first');
     });
 
@@ -298,7 +298,7 @@ describe('useChatbot — clearMessages', () => {
       await result.current.sendMessage('Hello');
     });
 
-    act(() => {
+    await act(async () => {
       result.current.clearMessages();
     });
 

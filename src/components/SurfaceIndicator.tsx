@@ -18,6 +18,7 @@ import Animated, {
   withSequence,
   Easing,
   interpolate,
+  type SharedValue,
 } from 'react-native-reanimated';
 import type { DetectionPhase } from '@/services/surfaceDetection';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -176,7 +177,7 @@ function DotCell({
   col: number;
   color: string;
   phase: DetectionPhase;
-  scanPulse: Animated.SharedValue<number>;
+  scanPulse: SharedValue<number>;
 }) {
   // Stagger the animation based on distance from center
   const centerRow = (DOT_ROWS - 1) / 2;

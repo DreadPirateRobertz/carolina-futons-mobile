@@ -145,7 +145,7 @@ describe('usePromoCode', () => {
     });
     expect(result.current.status).toBe('applied');
 
-    act(() => {
+    await act(async () => {
       result.current.removeCode();
     });
     expect(result.current.status).toBe('idle');

@@ -84,7 +84,7 @@ import { isWixConfigured } from '@/services/wix/config';
 import { useOptionalWixClient } from '@/services/wix';
 import { useProductQA } from '@/hooks/useProductQA';
 import { QuestionCard } from '@/components/QuestionCard';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 import { useProductReviews } from '@/hooks/useProductReviews';
 import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
@@ -227,6 +227,19 @@ export function ProductDetailScreen({
   const resolvedVideoUri = catalogProduct?.videoUri
     ? parseWixVideoUrl(catalogProduct.videoUri)
     : null;
+
+  const videoPlayer = useVideoPlayer(resolvedVideoUri, (p) => {
+    p.loop = false;
+    p.muted = false;
+  });
+
+  useEffect(() => {
+    if (!videoPlayer) return;
+    const sub = videoPlayer.addListener('statusChange', ({ status }) => {
+      if (status === 'error') setVideoError(true);
+    });
+    return () => sub.remove();
+  }, [videoPlayer]);
 
   // Gallery data: standard views + optional video slide at end
   const galleryData: ((typeof GALLERY_VIEWS)[number] | 'Video')[] = resolvedVideoUri
@@ -468,7 +481,7 @@ export function ProductDetailScreen({
 
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof galleryData)[number]; index: number }) => {
-      // cm-xh9: Video slide — render expo-av player with error fallback
+      // cm-xh9: Video slide — render expo-video player with error fallback
       if (item === 'Video' && resolvedVideoUri) {
         return (
           <View
@@ -487,15 +500,12 @@ export function ProductDetailScreen({
                 </Text>
               </View>
             ) : (
-              <Video
+              <VideoView
                 testID="product-detail-video"
-                source={{ uri: resolvedVideoUri }}
+                player={videoPlayer}
                 style={StyleSheet.absoluteFillObject}
-                resizeMode={ResizeMode.CONTAIN}
-                shouldPlay={false}
-                isLooping={false}
-                useNativeControls
-                onError={() => setVideoError(true)}
+                contentFit="contain"
+                nativeControls
               />
             )}
             <View style={styles.galleryLabel}>
@@ -534,7 +544,15 @@ export function ProductDetailScreen({
         </TouchableOpacity>
       );
     },
-    [model, selectedFabric, colors, handleOpenFullscreen, resolvedVideoUri, videoError],
+    [
+      model,
+      selectedFabric,
+      colors,
+      handleOpenFullscreen,
+      resolvedVideoUri,
+      videoError,
+      videoPlayer,
+    ],
   );
 
   // Render Wix product detail when no local FutonModel matches
@@ -779,7 +797,7 @@ export function ProductDetailScreen({
           {showInlineRating && (
             <TouchableOpacity
               onPress={() => {
-                scrollViewRef.current?.scrollTo({
+                scrollViewRef.current?.scrollTo?.({
                   y: reviewsSectionY.current,
                   animated: true,
                 });

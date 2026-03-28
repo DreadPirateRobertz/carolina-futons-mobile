@@ -50,7 +50,7 @@ describe('useModelLoader', () => {
       await result.current.load('prod-asheville-full' as any);
     });
 
-    act(() => {
+    await act(async () => {
       result.current.reset();
     });
 

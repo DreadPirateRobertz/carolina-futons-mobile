@@ -258,7 +258,7 @@ describe('submitQuestion', () => {
     const { result } = renderHook(() => useProductQA(PRODUCT_ID));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    act(() => {
+    await act(async () => {
       result.current.submitQuestion('What fabric is this?');
     });
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
@@ -281,7 +281,7 @@ describe('clearSubmitStatus', () => {
     });
     expect(result.current.submitSuccess).toBe(true);
 
-    act(() => {
+    await act(async () => {
       result.current.clearSubmitStatus();
     });
 

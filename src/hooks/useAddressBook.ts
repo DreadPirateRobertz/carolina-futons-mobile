@@ -8,7 +8,7 @@
  * Optional wixSync callback (cm-v54): when provided, fire-and-forget syncs
  * the full address array to Wix member contact after each local mutation.
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@carolina_futons_addresses';
@@ -60,6 +60,10 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
   const { wixSync } = options ?? {};
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [loading, setLoading] = useState(true);
+  // Keep a ref in sync so callbacks can read latest without depending on
+  // React's state-updater scheduling (React 19 may defer updater callbacks).
+  const addressesRef = useRef(addresses);
+  addressesRef.current = addresses;
 
   // Load from storage on mount
   useEffect(() => {
@@ -67,7 +71,9 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         if (stored) {
-          setAddresses(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          setAddresses(parsed);
+          addressesRef.current = parsed;
         }
       } catch {
         // Ignore load errors
@@ -77,29 +83,19 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
     })();
   }, []);
 
-  const _persist = useCallback(async (updated: SavedAddress[]) => {
-    setAddresses(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  }, []);
-
   const addAddress = useCallback(
     async (address: Omit<SavedAddress, 'id' | 'isDefault'>) => {
+      const prev = addressesRef.current;
+      const isFirst = prev.length === 0;
       const newAddr: SavedAddress = {
         ...address,
         id: generateId(),
-        isDefault: false, // will be corrected by setAddresses below
+        isDefault: isFirst,
       };
-      // Use a ref-based pattern: capture computed result via closure
-      let computed: SavedAddress[] = [];
-      setAddresses((prev) => {
-        const isFirst = prev.length === 0;
-        const withDefault = { ...newAddr, isDefault: isFirst };
-        computed = [...prev, withDefault].slice(-MAX_ADDRESSES);
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
-        return computed;
-      });
-      // Yield to allow state updater to run, then sync
-      await Promise.resolve();
+      const computed = [...prev, newAddr].slice(-MAX_ADDRESSES);
+      addressesRef.current = computed;
+      setAddresses(computed);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
       if (wixSync) {
         wixSync(computed).catch(() => {});
       }
@@ -109,13 +105,10 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
 
   const updateAddress = useCallback(
     async (id: string, updates: Partial<Omit<SavedAddress, 'id'>>) => {
-      let computed: SavedAddress[] = [];
-      setAddresses((prev) => {
-        computed = prev.map((a) => (a.id === id ? { ...a, ...updates } : a));
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
-        return computed;
-      });
-      await Promise.resolve();
+      const computed = addressesRef.current.map((a) => (a.id === id ? { ...a, ...updates } : a));
+      addressesRef.current = computed;
+      setAddresses(computed);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));
       if (wixSync) {
         wixSync(computed).catch(() => {});
       }
@@ -125,16 +118,13 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
 
   const deleteAddress = useCallback(
     async (id: string) => {
-      let updated: SavedAddress[] = [];
-      setAddresses((prev) => {
-        updated = prev.filter((a) => a.id !== id);
-        // If deleted was default and others remain, promote first
-        if (updated.length > 0 && !updated.some((a) => a.isDefault)) {
-          updated = [{ ...updated[0], isDefault: true }, ...updated.slice(1)];
-        }
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
+      let updated = addressesRef.current.filter((a) => a.id !== id);
+      if (updated.length > 0 && !updated.some((a) => a.isDefault)) {
+        updated = [{ ...updated[0], isDefault: true }, ...updated.slice(1)];
+      }
+      addressesRef.current = updated;
+      setAddresses(updated);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       if (wixSync) {
         wixSync(updated).catch(() => {});
       }
@@ -143,11 +133,10 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
   );
 
   const setDefault = useCallback(async (id: string) => {
-    setAddresses((prev) => {
-      const updated = prev.map((a) => ({ ...a, isDefault: a.id === id }));
-      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    const updated = addressesRef.current.map((a) => ({ ...a, isDefault: a.id === id }));
+    addressesRef.current = updated;
+    setAddresses(updated);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
   }, []);
 
   const saveFromCheckout = useCallback(
@@ -159,17 +148,16 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
       state: string;
       zip: string;
     }) => {
-      setAddresses((prev) => {
-        // Don't save duplicates (match on line1 + zip)
-        const exists = prev.some((a) => a.line1 === address.line1 && a.zip === address.zip);
-        if (exists) return prev;
+      const prev = addressesRef.current;
+      const exists = prev.some((a) => a.line1 === address.line1 && a.zip === address.zip);
+      if (exists) return;
 
-        const isFirst = prev.length === 0;
-        const newAddr: SavedAddress = { ...address, id: generateId(), isDefault: isFirst };
-        const updated = [...prev, newAddr].slice(-MAX_ADDRESSES);
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        return updated;
-      });
+      const isFirst = prev.length === 0;
+      const newAddr: SavedAddress = { ...address, id: generateId(), isDefault: isFirst };
+      const updated = [...prev, newAddr].slice(-MAX_ADDRESSES);
+      addressesRef.current = updated;
+      setAddresses(updated);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     },
     [],
   );

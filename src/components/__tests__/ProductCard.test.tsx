@@ -13,9 +13,8 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
 }));
 
-// Prevent expo-av workspace-pollution: mayor/rig/__mocks__/expo-av.js uses
-// mayor/rig/node_modules/react-native (non-test build) and crashes the suite.
-// Stub preserves testID so existing video-presence tests continue to pass.
+// Prevent expo-video workspace-pollution: stub preserves testID so existing
+// video-presence tests continue to pass.
 jest.mock('../ProductCardVideo', () => {
   const React = require('react');
   const { View } = require('react-native');

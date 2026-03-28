@@ -27,86 +27,86 @@ describe('useBadgeToast', () => {
   });
 
   describe('showBadgeToast', () => {
-    it('sets visible to true', () => {
+    it('sets visible to true', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Explorer Badge');
       });
       expect(result.current.visible).toBe(true);
     });
 
-    it('sets badgeName to the provided name', () => {
+    it('sets badgeName to the provided name', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Night Owl');
       });
       expect(result.current.badgeName).toBe('Night Owl');
     });
 
-    it('auto-hides after the display duration', () => {
+    it('auto-hides after the display duration', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Explorer Badge');
       });
       expect(result.current.visible).toBe(true);
 
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(3000);
       });
       expect(result.current.visible).toBe(false);
     });
 
-    it('badgeName persists after hide (for exit animation)', () => {
+    it('badgeName persists after hide (for exit animation)', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Trail Blazer');
       });
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(3000);
       });
       // Name persists so exit animation can still show the name
       expect(result.current.badgeName).toBe('Trail Blazer');
     });
 
-    it('calling showBadgeToast again resets the timer', () => {
+    it('calling showBadgeToast again resets the timer', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Badge One');
       });
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(1500);
       });
       // Show a second badge before the first expires
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('Badge Two');
       });
       expect(result.current.badgeName).toBe('Badge Two');
       expect(result.current.visible).toBe(true);
 
       // Original timer would have fired at 3000ms from start, but was reset
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(1600);
       });
       // Should still be visible (timer reset from Badge Two call)
       expect(result.current.visible).toBe(true);
 
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(1500);
       });
       expect(result.current.visible).toBe(false);
     });
 
-    it('empty string does not show toast', () => {
+    it('empty string does not show toast', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('');
       });
       expect(result.current.visible).toBe(false);
     });
 
-    it('whitespace-only string does not show toast', () => {
+    it('whitespace-only string does not show toast', async () => {
       const { result } = renderHook(() => useBadgeToast());
-      act(() => {
+      await act(async () => {
         result.current.showBadgeToast('   ');
       });
       expect(result.current.visible).toBe(false);

@@ -91,7 +91,7 @@ describe('useNetworkErrorRecovery', () => {
     });
 
     let retryPromise: Promise<unknown>;
-    act(() => {
+    await act(async () => {
       retryPromise = result.current.retry();
     });
     expect(result.current.isRetrying).toBe(true);
@@ -112,7 +112,7 @@ describe('useNetworkErrorRecovery', () => {
     });
     expect(result.current.error).toBe('Oops');
 
-    act(() => {
+    await act(async () => {
       result.current.clearError();
     });
     expect(result.current.error).toBeNull();

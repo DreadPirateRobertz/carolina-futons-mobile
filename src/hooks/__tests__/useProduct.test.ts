@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-native';
+import { renderHook, act } from '@testing-library/react-native';
 import { useProduct } from '../useProduct';
 import { PRODUCTS } from '@/data/products';
 
@@ -118,12 +118,14 @@ describe('useProduct', () => {
     expect(result.current.product).toBeNull();
   });
 
-  it('refresh after rerender returns correct product', () => {
+  it('refresh after rerender returns correct product', async () => {
     const { result, rerender } = renderHook(({ id }: { id: string }) => useProduct(id), {
       initialProps: { id: PRODUCTS[0].id },
     });
     rerender({ id: PRODUCTS[1].id });
-    result.current.refresh();
+    await act(async () => {
+      result.current.refresh();
+    });
     expect(result.current.product?.id).toBe(PRODUCTS[1].id);
   });
 });

@@ -22,78 +22,78 @@ describe('CompareProvider', () => {
     expect(result.current.isFull).toBe(false);
   });
 
-  it('adds a product to the compare list', () => {
+  it('adds a product to the compare list', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
     });
     expect(result.current.compareList).toEqual([productA]);
     expect(result.current.count).toBe(1);
   });
 
-  it('prevents duplicate products', () => {
+  it('prevents duplicate products', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
       result.current.addToCompare(productA);
     });
     expect(result.current.count).toBe(1);
   });
 
-  it('caps at 3 items', () => {
+  it('caps at 3 items', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
       result.current.addToCompare(productB);
       result.current.addToCompare(productC);
     });
     expect(result.current.isFull).toBe(true);
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productD);
     });
     expect(result.current.count).toBe(3);
   });
 
-  it('removes a product by id', () => {
+  it('removes a product by id', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
       result.current.addToCompare(productB);
     });
-    act(() => {
+    await act(async () => {
       result.current.removeFromCompare(productA.id);
     });
     expect(result.current.compareList).toEqual([productB]);
   });
 
-  it('clears all products', () => {
+  it('clears all products', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
       result.current.addToCompare(productB);
     });
-    act(() => {
+    await act(async () => {
       result.current.clearCompare();
     });
     expect(result.current.compareList).toEqual([]);
     expect(result.current.count).toBe(0);
   });
 
-  it('isInCompare returns correct boolean', () => {
+  it('isInCompare returns correct boolean', async () => {
     const { result } = renderHook(() => useCompareContext(), { wrapper });
-    act(() => {
+    await act(async () => {
       result.current.addToCompare(productA);
     });
     expect(result.current.isInCompare(productA.id)).toBe(true);
     expect(result.current.isInCompare(productB.id)).toBe(false);
   });
 
-  it('shares state between multiple consumers', () => {
+  it('shares state between multiple consumers', async () => {
     const { result: consumer1 } = renderHook(() => useCompareContext(), { wrapper });
     // Note: In a real tree both consumers share the same Provider.
     // With renderHook, each gets its own wrapper instance.
     // This test validates the API shape — integration tests cover shared state.
-    act(() => {
+    await act(async () => {
       consumer1.current.addToCompare(productA);
     });
     expect(consumer1.current.count).toBe(1);

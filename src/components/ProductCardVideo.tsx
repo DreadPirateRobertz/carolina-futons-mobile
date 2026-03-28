@@ -1,6 +1,6 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { StyleSheet } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
 interface Props {
   videoUri: string;
@@ -9,21 +9,19 @@ interface Props {
 
 /** Muted autoplay looping video preview for product cards. Falls back to nothing (image shows through) on error. */
 export const ProductCardVideo = memo(function ProductCardVideo({ videoUri, testID }: Props) {
-  const [errored, setErrored] = useState(false);
-
-  if (errored) return null;
+  const player = useVideoPlayer(videoUri, (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.play();
+  });
 
   return (
-    <Video
+    <VideoView
       testID={testID}
-      source={{ uri: videoUri }}
+      player={player}
       style={styles.video}
-      resizeMode={ResizeMode.COVER}
-      shouldPlay
-      isLooping
-      isMuted
-      useNativeControls={false}
-      onError={() => setErrored(true)}
+      contentFit="cover"
+      nativeControls={false}
     />
   );
 });

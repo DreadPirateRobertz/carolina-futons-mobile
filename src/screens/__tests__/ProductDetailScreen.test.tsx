@@ -1438,17 +1438,55 @@ describe('ProductDetailScreen', () => {
       expect(videoSlide.props.accessibilityLabel).toBeDefined();
     });
 
-    it('renders an error fallback view on video error', () => {
+    it('renders an error fallback view on video error', async () => {
+      // expo-video error handling: player fires statusChange with status 'error'
+      const { useVideoPlayer } = require('expo-video');
+      let statusCallback: ((payload: { status: string }) => void) | null = null;
+      (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
+        const player = {
+          loop: false,
+          muted: false,
+          play: jest.fn(),
+          addListener: jest.fn((event: string, cb: (payload: { status: string }) => void) => {
+            if (event === 'statusChange') statusCallback = cb;
+            return { remove: jest.fn() };
+          }),
+        };
+        if (setup) setup(player);
+        return player;
+      });
+
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
-      const video = getByTestId('product-detail-video');
-      video.props.testOnly_onError?.({ error: 'Network failure' });
+      // Effects run after render — statusCallback should be set
+      await waitFor(() => expect(statusCallback).not.toBeNull());
+      await act(async () => {
+        statusCallback!({ status: 'error' });
+      });
       expect(getByTestId('product-detail-video-error')).toBeTruthy();
     });
 
-    it('hides video player after error', () => {
-      const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
-      const video = getByTestId('product-detail-video');
-      video.props.testOnly_onError?.({ error: 'Decode error' });
+    it('hides video player after error', async () => {
+      const { useVideoPlayer } = require('expo-video');
+      let statusCallback: ((payload: { status: string }) => void) | null = null;
+      (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
+        const player = {
+          loop: false,
+          muted: false,
+          play: jest.fn(),
+          addListener: jest.fn((event: string, cb: (payload: { status: string }) => void) => {
+            if (event === 'statusChange') statusCallback = cb;
+            return { remove: jest.fn() };
+          }),
+        };
+        if (setup) setup(player);
+        return player;
+      });
+
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      await waitFor(() => expect(statusCallback).not.toBeNull());
+      await act(async () => {
+        statusCallback!({ status: 'error' });
+      });
       expect(queryByTestId('product-detail-video')).toBeNull();
     });
   });

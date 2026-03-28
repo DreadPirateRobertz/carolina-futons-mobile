@@ -5,7 +5,7 @@
  * cf-rv9 / Phase 7 gamification
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useChallengeCatalog } from '../useChallengeCatalog';
 
 const mockCallFunction = jest.fn();
@@ -172,7 +172,9 @@ describe('useChallengeCatalog', () => {
     const { result } = renderHook(() => useChallengeCatalog());
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    result.current.refresh();
+    await act(async () => {
+      result.current.refresh();
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockCallFunction).toHaveBeenCalledTimes(2);
   });

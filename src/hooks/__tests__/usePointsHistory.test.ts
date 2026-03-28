@@ -5,7 +5,7 @@
  * cf-g4r / Phase 7 gamification
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { usePointsHistory } from '../usePointsHistory';
 
 const mockCallFunction = jest.fn();
@@ -108,7 +108,9 @@ describe('usePointsHistory', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(typeof result.current.refresh).toBe('function');
-    result.current.refresh();
+    await act(async () => {
+      result.current.refresh();
+    });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockCallFunction).toHaveBeenCalledTimes(2);
   });

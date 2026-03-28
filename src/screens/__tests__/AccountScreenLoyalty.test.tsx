@@ -84,8 +84,6 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success' },
 }));
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
-
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
 const AUTH_USER = {

@@ -45,10 +45,10 @@ const emptyGrouped: GroupedChallenges = {
 
 const mockRefresh = jest.fn();
 const mockCatalog = jest.fn(() => ({
-  challenges: [],
-  grouped: emptyGrouped,
+  challenges: [] as CatalogChallenge[],
+  grouped: emptyGrouped as GroupedChallenges,
   loading: false,
-  error: null,
+  error: null as string | null,
   refresh: mockRefresh,
 }));
 
@@ -61,7 +61,7 @@ const mockProgress = jest.fn(() => ({
   progressItems: [],
   summary: { totalPointsEarned: 0, completedCount: 0, activeCount: 0 },
   loading: false,
-  error: null,
+  error: null as string | null,
   refresh: mockProgressRefresh,
 }));
 

@@ -25,7 +25,7 @@ jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
   return { __esModule: true, default: MockSwipeable };
 });
 
-// Mock ProductCard to avoid expo-av transitive dependency chain.
+// Mock ProductCard to avoid expo-video transitive dependency chain.
 // WishlistScreen only uses the testID, onPress, and onLongPress props.
 jest.mock('@/components/ProductCard', () => {
   const React = require('react');

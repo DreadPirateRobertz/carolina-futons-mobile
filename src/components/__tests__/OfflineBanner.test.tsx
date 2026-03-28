@@ -66,22 +66,22 @@ describe('OfflineBanner', () => {
     expect(getByTestId('my-banner')).toBeTruthy();
   });
 
-  it('auto-dismisses when connectivity is restored', () => {
+  it('auto-dismisses when connectivity is restored', async () => {
     const { queryByTestId, setOnline } = renderWithControl(false);
     expect(queryByTestId('offline-banner')).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       setOnline(true);
     });
 
     expect(queryByTestId('offline-banner')).toBeNull();
   });
 
-  it('reappears when connectivity is lost again', () => {
+  it('reappears when connectivity is lost again', async () => {
     const { queryByTestId, setOnline } = renderWithControl(true);
     expect(queryByTestId('offline-banner')).toBeNull();
 
-    act(() => {
+    await act(async () => {
       setOnline(false);
     });
     expect(queryByTestId('offline-banner')).toBeTruthy();

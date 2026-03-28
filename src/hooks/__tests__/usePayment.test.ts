@@ -185,7 +185,7 @@ describe('usePayment', () => {
     expect(result.current.payment.status).toBe('error');
 
     // Reset error state to allow retry
-    act(() => result.current.payment.resetPayment());
+    await act(async () => result.current.payment.resetPayment());
 
     // Second attempt — same cart, should use same key
     await act(async () => {
@@ -389,7 +389,7 @@ describe('usePayment', () => {
 
     expect(result.current.payment.status).toBe('error');
 
-    act(() => {
+    await act(async () => {
       result.current.payment.resetPayment();
     });
 

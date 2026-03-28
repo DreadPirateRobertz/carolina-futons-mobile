@@ -79,36 +79,36 @@ describe('useReviews', () => {
   });
 
   describe('sorting', () => {
-    it('sorts by helpful (descending helpful count)', () => {
+    it('sorts by helpful (descending helpful count)', async () => {
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setSort('helpful'));
+      await act(async () => result.current.setSort('helpful'));
       const helpfulCounts = result.current.reviews.map((r) => r.helpful);
       for (let i = 1; i < helpfulCounts.length; i++) {
         expect(helpfulCounts[i]).toBeLessThanOrEqual(helpfulCounts[i - 1]);
       }
     });
 
-    it('sorts by recent (descending date)', () => {
+    it('sorts by recent (descending date)', async () => {
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setSort('recent'));
+      await act(async () => result.current.setSort('recent'));
       const dates = result.current.reviews.map((r) => new Date(r.createdAt).getTime());
       for (let i = 1; i < dates.length; i++) {
         expect(dates[i]).toBeLessThanOrEqual(dates[i - 1]);
       }
     });
 
-    it('sorts by highest rating', () => {
+    it('sorts by highest rating', async () => {
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setSort('highest'));
+      await act(async () => result.current.setSort('highest'));
       const ratings = result.current.reviews.map((r) => r.rating);
       for (let i = 1; i < ratings.length; i++) {
         expect(ratings[i]).toBeLessThanOrEqual(ratings[i - 1]);
       }
     });
 
-    it('sorts by lowest rating', () => {
+    it('sorts by lowest rating', async () => {
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setSort('lowest'));
+      await act(async () => result.current.setSort('lowest'));
       const ratings = result.current.reviews.map((r) => r.rating);
       for (let i = 1; i < ratings.length; i++) {
         expect(ratings[i]).toBeGreaterThanOrEqual(ratings[i - 1]);
@@ -215,7 +215,7 @@ describe('useReviews', () => {
 
     it('hides form after successful submission', async () => {
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setShowForm(true));
+      await act(async () => result.current.setShowForm(true));
       expect(result.current.showForm).toBe(true);
 
       await act(async () => {
@@ -323,7 +323,7 @@ describe('useReviews', () => {
 
       // Start submit — should add optimistic review
       let submitPromise: Promise<boolean>;
-      act(() => {
+      await act(async () => {
         submitPromise = result.current.submitReview({
           rating: 5,
           title: 'Optimistic review',
@@ -458,7 +458,7 @@ describe('useReviews', () => {
       mockCreateReview.mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useReviews(productId));
-      act(() => result.current.setShowForm(true));
+      await act(async () => result.current.setShowForm(true));
 
       await act(async () => {
         await result.current.submitReview({
@@ -490,7 +490,7 @@ describe('useReviews', () => {
 
       expect(result.current.submitSuccess).toBe(true);
 
-      act(() => result.current.clearSubmitStatus());
+      await act(async () => result.current.clearSubmitStatus());
 
       expect(result.current.submitSuccess).toBe(false);
       expect(result.current.submitError).toBeNull();
@@ -498,21 +498,21 @@ describe('useReviews', () => {
   });
 
   describe('show/hide form', () => {
-    it('toggles form visibility', () => {
+    it('toggles form visibility', async () => {
       const { result } = renderHook(() => useReviews(productId));
       expect(result.current.showForm).toBe(false);
-      act(() => result.current.setShowForm(true));
+      await act(async () => result.current.setShowForm(true));
       expect(result.current.showForm).toBe(true);
-      act(() => result.current.setShowForm(false));
+      await act(async () => result.current.setShowForm(false));
       expect(result.current.showForm).toBe(false);
     });
   });
 
   describe('helpful votes', () => {
-    it('tracks helpful_vote analytics event', () => {
+    it('tracks helpful_vote analytics event', async () => {
       const { result } = renderHook(() => useReviews(productId));
       const reviewId = result.current.reviews[0].id;
-      act(() => result.current.markHelpful(reviewId));
+      await act(async () => result.current.markHelpful(reviewId));
 
       const voteEvents = getEventBuffer().filter((e) => e.name === 'helpful_vote');
       expect(voteEvents.length).toBeGreaterThan(0);

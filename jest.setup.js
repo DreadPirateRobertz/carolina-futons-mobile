@@ -2,8 +2,8 @@
 // Built-in matchers from @testing-library/react-native v12.4+
 // No need for deprecated @testing-library/jest-native
 
-// Mock expo-av — uses __mocks__/expo-av.js (manual mock file)
-jest.mock('expo-av');
+// Mock expo-video — uses __mocks__/expo-video.js (manual mock file)
+jest.mock('expo-video');
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
@@ -24,9 +24,24 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// Mock expo-file-system
+// Mock expo-file-system (and /legacy subpath used by some services in Expo 55)
+jest.mock('expo-file-system/legacy', () => ({
+  cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn(() =>
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),
+    ),
+  })),
+}));
 jest.mock('expo-file-system', () => ({
   cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
   getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
   makeDirectoryAsync: jest.fn(() => Promise.resolve()),
   readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
@@ -106,6 +121,68 @@ jest.mock('@react-native-community/netinfo', () => ({
   addEventListener: jest.fn(() => jest.fn()),
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
+
+// Mock react-native-worklets (v4) — native module not available in Jest
+jest.mock('react-native-worklets', () => ({
+  NativeWorklets: {},
+  WorkletsModule: { isAvailable: false },
+  createSerializable: (fn) => fn,
+}));
+
+// Mock react-native-reanimated (v4) — depends on worklets
+jest.mock('react-native-reanimated', () => {
+  const React = require('react');
+  const View = require('react-native').View;
+  return {
+    __esModule: true,
+    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View, createAnimatedComponent: (comp) => comp, call: () => {} },
+    useSharedValue: (init) => ({ value: init }),
+    useAnimatedStyle: (fn) => fn(),
+    useDerivedValue: (fn) => ({ value: fn() }),
+    useAnimatedScrollHandler: () => ({}),
+    useAnimatedRef: () => ({ current: null }),
+    useEvent: () => () => {},
+    withTiming: (v) => v,
+    withSpring: (v) => v,
+    withDelay: (_, v) => v,
+    withSequence: (...args) => args[args.length - 1],
+    withRepeat: (v) => v,
+    Easing: {
+      linear: (v) => v,
+      ease: (v) => v,
+      bezier: () => (v) => v,
+      in: (easing) => easing || ((v) => v),
+      out: (easing) => easing || ((v) => v),
+      inOut: (easing) => easing || ((v) => v),
+      circle: (v) => v,
+      back: () => (v) => v,
+      elastic: () => (v) => v,
+      bounce: (v) => v,
+      poly: () => (v) => v,
+      sin: (v) => v,
+      exp: (v) => v,
+      quad: (v) => v,
+      cubic: (v) => v,
+    },
+    ...((() => {
+      // Fluent animation-builder stub — every config method returns `self` for unlimited chaining.
+      // Covers: .duration().delay(), .springify().damping().stiffness().mass(), etc.
+      const self = {};
+      const methods = ['duration', 'delay', 'springify', 'damping', 'stiffness', 'mass',
+        'overshootClamping', 'restDisplacementThreshold', 'restSpeedThreshold',
+        'withInitialValues', 'easing', 'reduceMotion'];
+      methods.forEach((m) => { self[m] = () => self; });
+      const names = ['FadeIn','FadeOut','FadeInDown','FadeInUp','SlideInRight','SlideOutRight',
+        'SlideInUp','SlideOutUp','SlideInDown','SlideOutDown','Layout'];
+      return Object.fromEntries(names.map((n) => [n, { ...self, toString: () => n }]));
+    })()),
+    runOnJS: (fn) => fn,
+    runOnUI: (fn) => fn,
+    createAnimatedComponent: (comp) => comp,
+    interpolate: (v) => v,
+    Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend' },
+  };
+});
 
 // Mock shared transition tags — reanimated's native shared transition layer
 // (registerEventHandler, ProgressTransitionRegister) is not available in Jest.

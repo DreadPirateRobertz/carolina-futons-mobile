@@ -139,7 +139,7 @@ describe('useGamificationFeed', () => {
     const { result } = renderHook(() => useGamificationFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.notifications[0].read).toBe(false);
-    act(() => {
+    await act(async () => {
       result.current.markAllRead();
     });
     expect(result.current.notifications.every((n) => n.read)).toBe(true);
@@ -148,7 +148,7 @@ describe('useGamificationFeed', () => {
   it('markAllRead fires a best-effort POST to the server', async () => {
     const { result } = renderHook(() => useGamificationFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    act(() => {
+    await act(async () => {
       result.current.markAllRead();
     });
     expect(mockCallFunction).toHaveBeenCalledWith('/_functions/markAllNotificationsRead', 'POST', {
@@ -162,11 +162,11 @@ describe('useGamificationFeed', () => {
       .mockRejectedValueOnce(new Error('Server error'));
     const { result } = renderHook(() => useGamificationFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await expect(
-      act(() => {
-        result.current.markAllRead();
-      }),
-    ).resolves.toBeUndefined();
+    // act() returns a resolved value (not a Promise) in React 19's async path.
+    // Just verify it doesn't throw.
+    await act(async () => {
+      result.current.markAllRead();
+    });
     expect(result.current.notifications.every((n) => n.read)).toBe(true);
   });
 
@@ -174,7 +174,7 @@ describe('useGamificationFeed', () => {
     const { result } = renderHook(() => useGamificationFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
     const callsBefore = mockCallFunction.mock.calls.length;
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
     await waitFor(() => expect(result.current.loading).toBe(false));

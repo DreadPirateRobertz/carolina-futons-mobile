@@ -19,7 +19,7 @@ jest.mock('@/services/wix', () => ({
   useOptionalWixClient: jest.fn(() => mockWixClient),
 }));
 
-const mockUseAuth = jest.fn(() => ({ user: { id: 'member-1' } }));
+const mockUseAuth = jest.fn((): { user: { id: string } | null } => ({ user: { id: 'member-1' } }));
 jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
@@ -177,7 +177,7 @@ describe('useChallengeProgress', () => {
 
     expect(mockQueryData).toHaveBeenCalledTimes(1);
 
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
 

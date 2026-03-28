@@ -12,7 +12,7 @@
  * Leaderboard sync deferred — awaiting CF-leaderboard-endpoint bead.
  */
 
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useMemberBadges } from '../useMemberBadges';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -190,7 +190,9 @@ describe('refresh', () => {
     const { result } = renderHook(() => useMemberBadges(MEMBER_ID));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    result.current.refreshBadges();
+    await act(async () => {
+      result.current.refreshBadges();
+    });
     await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
   });
 });
