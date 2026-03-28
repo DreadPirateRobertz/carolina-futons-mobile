@@ -59,6 +59,7 @@ export function NotificationToggle({
         testID={toggleTestID}
         accessibilityRole="switch"
         accessibilityLabel={`${label}: ${value ? 'enabled' : 'disabled'}`}
+        accessibilityState={{ checked: value, disabled: !!disabled }}
         trackColor={{ false: darkPalette.surfaceElevated, true: colors.mountainBlue }}
         thumbColor={colors.white}
       />
