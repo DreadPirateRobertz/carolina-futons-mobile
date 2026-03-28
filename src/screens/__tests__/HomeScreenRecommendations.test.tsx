@@ -79,6 +79,15 @@ jest.mock('@/hooks/useQuizRecommendations', () => ({
   useQuizRecommendations: () => mockQuizRecs(),
 }));
 
+jest.mock('@/hooks/useSommelierResults', () => ({
+  useSommelierResults: () => ({
+    results: null,
+    isLoading: false,
+    error: null,
+    hasResults: false,
+  }),
+}));
+
 const mockProduct = (id: string) => ({
   id,
   name: `Product ${id}`,

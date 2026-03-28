@@ -40,6 +40,7 @@ import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
+import { useSommelierResults } from '@/hooks/useSommelierResults';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { DailyQuestsCard } from '@/components/DailyQuestsCard';
@@ -85,6 +86,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     isLoading: quizLoading,
     quizTaken,
   } = useQuizRecommendations();
+  const { results: sommelierResults, hasResults: hasSommelierResults } = useSommelierResults();
   const { challenges, refresh: refreshChallenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
@@ -405,8 +407,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           </View>
         )}
 
-        {/* Personalized Picks (quiz-driven) */}
-        {quizTaken && (
+        {/* Personalized Picks (quiz-driven or CMS sommelier results) */}
+        {(quizTaken || hasSommelierResults) && (
           <View style={styles.carouselSection}>
             {quizLoading ? (
               <View testID="skeleton-personalized-picks">
@@ -415,7 +417,11 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
             ) : quizRecs.length > 0 ? (
               <View testID="personalized-picks">
                 <RecommendationCarousel
-                  title={quizLabel || 'Picked for You'}
+                  title={
+                    sommelierResults?.topCategory
+                      ? `Your ${sommelierResults.topCategory} Picks`
+                      : quizLabel || 'Picked for You'
+                  }
                   products={quizRecs}
                   onProductPress={handleProductPress}
                   testID="personalized-picks-carousel"

@@ -102,6 +102,14 @@ jest.mock('@/hooks/useGamificationEvents', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: { id: 'member-test' }, isAuthenticated: true }),
+}));
+
+jest.mock('@/services/sommelierResults', () => ({
+  recordSommelierResult: jest.fn(() => Promise.resolve(true)),
+}));
+
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 /**

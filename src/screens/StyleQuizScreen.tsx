@@ -27,6 +27,8 @@ import {
   type BudgetRange,
 } from '@/hooks/useStyleQuiz';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
+import { useAuth } from '@/hooks/useAuth';
+import { recordSommelierResult } from '@/services/sommelierResults';
 
 // ── Quiz Questions ────────────────────────────────────────────────
 
@@ -182,6 +184,7 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
     savePreferences,
   } = useStyleQuiz();
   const { styleQuizComplete } = useGamificationEvents();
+  const { user } = useAuth();
 
   const isCompletion = step === QUESTIONS.length;
 
@@ -208,6 +211,12 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
   const handleSave = useCallback(async () => {
     try {
       await savePreferences();
+      // Sync to Wix SommelierResults CMS (hq-5hnml) — fire-and-forget, non-blocking
+      if (user?.id) {
+        recordSommelierResult(user.id, preferences).catch((e: unknown) =>
+          console.warn('[StyleQuiz] recordSommelierResult failed', e),
+        );
+      }
       styleQuizComplete(preferences.stylePreference ?? '', preferences.sizeNeeds ?? '')
         .then(() =>
           AsyncStorage.removeItem('daily-quests').catch((e: unknown) =>
@@ -221,13 +230,7 @@ export function StyleQuizScreen({ onComplete, onBack, onProductPress, testID }: 
         { text: 'OK' },
       ]);
     }
-  }, [
-    savePreferences,
-    onComplete,
-    styleQuizComplete,
-    preferences.stylePreference,
-    preferences.sizeNeeds,
-  ]);
+  }, [savePreferences, onComplete, styleQuizComplete, preferences, user?.id]);
 
   // ── Progress ────────────────────────────────────────────────────
 
