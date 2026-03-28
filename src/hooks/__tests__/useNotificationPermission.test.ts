@@ -8,9 +8,6 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn(),
 }));
 
-// Use spyOn instead of mocking the whole react-native module (RN 0.84 compat)
-jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined as never);
-
 import * as Notifications from 'expo-notifications';
 import { useNotificationPermission } from '../useNotificationPermission';
 
@@ -20,6 +17,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
   (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
+  jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined as never);
 });
 
 it('returns undetermined status on first load', async () => {
@@ -46,7 +44,7 @@ it('openSettings calls Linking.openSettings', async () => {
   (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
-  result.current.openSettings();
+  await act(async () => { await result.current.openSettings(); });
   expect(Linking.openSettings).toHaveBeenCalled();
 });
 
@@ -56,4 +54,12 @@ it('hasAskedBefore is true when AsyncStorage flag is set', async () => {
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
   expect(result.current.hasAskedBefore).toBe(true);
+});
+
+it('does not throw when AsyncStorage fails on init', async () => {
+  (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('storage error'));
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'undetermined' });
+  const { result } = renderHook(() => useNotificationPermission());
+  await act(async () => {});
+  expect(result.current.status).toBe('undetermined'); // stays at initial default
 });
