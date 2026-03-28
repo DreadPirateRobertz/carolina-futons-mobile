@@ -36,6 +36,7 @@ import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { BNPLModal } from '@/components/BNPLModal';
+import { BNPLHeroSurface } from '@/components/BNPLHeroSurface';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { CartItemDeliveryEstimate } from '@/components/CartItemDeliveryEstimate';
 import { EmptyState } from '@/components/EmptyState';
@@ -406,27 +407,15 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           </View>
         </View>
 
-        {/* BNPL teaser — tap to open installment breakdown modal */}
-        <TouchableOpacity
-          style={[
-            styles.bnplTeaser,
-            {
-              backgroundColor: colors.mountainBlueLight,
-              borderRadius: borderRadius.md,
-              marginHorizontal: spacing.lg,
-            },
-          ]}
-          onPress={() => setBnplModalVisible(true)}
-          testID="bnpl-teaser"
-          accessibilityRole="button"
-          accessibilityLabel="View payment options — pay over time with Klarna or Affirm"
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.bnplText, { color: colors.mountainBlueDark }]}>
-            Or 4 interest-free payments of{' '}
-            <Text style={styles.bnplAmount}>{formatPrice(total / 4)}</Text> with Klarna or Affirm
-          </Text>
-        </TouchableOpacity>
+        {/* BNPL hero — prominent installment messaging */}
+        <View style={{ paddingHorizontal: spacing.lg }}>
+          <BNPLHeroSurface
+            price={total}
+            variant="cart"
+            onPress={() => setBnplModalVisible(true)}
+            testID="bnpl-hero-cart"
+          />
+        </View>
 
         {/* Checkout button */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
