@@ -21,9 +21,14 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
   async function handleApply() {
     const trimmed = code.trim().toUpperCase();
     if (!trimmed) return;
+    if (!client) {
+      setState('error');
+      setErrorMsg('Promo codes unavailable — please sign in to apply');
+      return;
+    }
     setState('loading');
     try {
-      const result = (await client?.callFunction('/_functions/validatePromoCode', 'POST', {
+      const result = (await client.callFunction('/_functions/validatePromoCode', 'POST', {
         code: trimmed,
         cartTotal,
       })) as { valid: boolean; discount: number; type: 'percent' | 'fixed'; error?: string };

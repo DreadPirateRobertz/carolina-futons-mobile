@@ -1669,4 +1669,35 @@ describe('CheckoutScreen', () => {
       expect(() => fireEvent(getByTestId('shipping-line1'), 'submitEditing')).not.toThrow();
     });
   });
+
+  describe('PromoCode discount', () => {
+    it('applies fixed discount to displayed grand total', async () => {
+      const wixService = require('@/services/wix');
+      const mockCallFunction = jest.fn().mockResolvedValue({
+        valid: true,
+        discount: 20,
+        type: 'fixed',
+      });
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: mockCallFunction,
+      });
+
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      // Expand promo input and apply a $20 fixed discount
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+
+      // adjustedTotal = 422.43 - 20 = 402.43
+      await waitFor(() =>
+        expect(getByTestId('checkout-total').props.children).toBe('$402.43'),
+      );
+
+      jest.restoreAllMocks();
+    });
+  });
 });

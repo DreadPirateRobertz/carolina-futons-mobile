@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import * as wixService from '@/services/wix';
 
 jest.mock('@/theme', () => ({
   useTheme: () => ({
@@ -82,4 +83,21 @@ it('shows network error message when Wix call fails', async () => {
   fireEvent.changeText(getByTestId('promo-input'), 'CODE');
   fireEvent.press(getByTestId('promo-apply-btn'));
   await waitFor(() => expect(getByText(/unable to verify/i)).toBeTruthy());
+});
+
+it('shows unavailable message when no wix client', async () => {
+  // Simulate a null client by having the mock return undefined (optional chaining) so
+  // callFunction resolves to undefined — tests the guard branch added in handleApply.
+  // We override useOptionalWixClient for this test via module mock reset.
+  jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue(null as any);
+  // Force a fresh render so the component picks up the new spy return value
+  const { getByText, getByTestId, queryByText } = render(
+    <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
+  );
+  fireEvent.press(getByText(/add promo code/i));
+  fireEvent.changeText(getByTestId('promo-input'), 'TEST');
+  fireEvent.press(getByTestId('promo-apply-btn'));
+  // Error is set synchronously — no async needed
+  expect(queryByText(/unavailable/i)).toBeTruthy();
+  jest.restoreAllMocks();
 });

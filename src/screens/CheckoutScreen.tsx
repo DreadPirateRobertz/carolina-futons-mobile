@@ -300,6 +300,12 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     type: 'percent' | 'fixed';
   } | null>(null);
 
+  const adjustedTotal = promoDiscount
+    ? promoDiscount.type === 'percent'
+      ? Math.round(totals.total * (1 - promoDiscount.amount / 100) * 100) / 100
+      : Math.max(0, totals.total - promoDiscount.amount)
+    : totals.total;
+
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -1394,7 +1400,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               ]}
               testID="checkout-total"
             >
-              {formatPrice(totals.total)}
+              {formatPrice(adjustedTotal)}
             </Text>
           </View>
         </View>
@@ -1605,7 +1611,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             {selectedMethod === 'klarna' ? (
               <>
                 <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
-                  4 payments of {formatPrice(totals.total / 4)}
+                  4 payments of {formatPrice(adjustedTotal / 4)}
                 </Text>
                 <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
                   No interest. No fees if paid on time.
@@ -1673,7 +1679,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               isProcessing
                 ? 'Processing payment'
                 : selectedMethod
-                  ? `Place order for ${formatPrice(totals.total)}`
+                  ? `Place order for ${formatPrice(adjustedTotal)}`
                   : 'Select a payment method to continue'
             }
             accessibilityRole="button"
@@ -1687,7 +1693,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             ) : (
               <Text style={styles.placeOrderText}>
                 {selectedMethod
-                  ? `Place Order — ${formatPrice(totals.total)}`
+                  ? `Place Order — ${formatPrice(adjustedTotal)}`
                   : 'Select Payment Method'}
               </Text>
             )}
