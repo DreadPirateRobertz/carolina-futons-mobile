@@ -23,6 +23,17 @@ jest.mock('@/hooks/useProductReviews', () => ({
     error: null,
   }),
 }));
+jest.mock('@/hooks/useStampedReviews', () => ({
+  useStampedReviews: jest.fn(() => ({
+    reviews: [],
+    summary: { averageRating: 0, totalReviews: 0, distribution: [0, 0, 0, 0, 0] },
+    isLoading: false,
+    error: null,
+    hasMore: false,
+    loadMore: jest.fn(),
+    refresh: jest.fn(),
+  })),
+}));
 jest.mock('expo-image', () => ({ Image: 'Image' }));
 jest.mock('expo-video');
 jest.mock('expo-haptics', () => ({

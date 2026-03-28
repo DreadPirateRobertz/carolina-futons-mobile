@@ -87,6 +87,7 @@ import { QuestionCard } from '@/components/QuestionCard';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { parseWixVideoUrl } from '@/utils/parseWixVideoUrl';
 import { useProductReviews } from '@/hooks/useProductReviews';
+import { useStampedReviews } from '@/hooks/useStampedReviews';
 import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
 import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
@@ -191,16 +192,27 @@ export function ProductDetailScreen({
     submitSuccess: reviewSubmitSuccess,
     clearSubmitStatus: clearReviewSubmitStatus,
   } = useReviews(model.id);
-  const previewReviews = reviews.slice(0, 3);
 
-  // CF-wah8: server-side aggregate for inline star rating near price
-  const {
-    aggregate: reviewAggregate,
-    isLoading: reviewAggregateLoading,
-    error: reviewAggregateError,
-  } = useProductReviews(model.id);
-  const showInlineRating =
-    !reviewAggregateLoading && !reviewAggregateError && reviewAggregate.totalReviews > 0;
+  // Stamped.io reviews integration (hq-tcdpe)
+  // Prefer Stamped.io when configured; fall back to Wix CMS (useProductReviews).
+  const stamped = useStampedReviews(catalogProduct?.id ?? model.id);
+  const { aggregate: reviewAggregate, isLoading: reviewAggregateLoading } = useProductReviews(
+    model.id,
+  );
+  const stampedReady = !stamped.isLoading && !stamped.error;
+
+  // Effective reviews: Stamped.io first, local/Wix fallback
+  const effectiveReviews = stampedReady && stamped.reviews.length > 0 ? stamped.reviews : reviews;
+  const effectiveHasReviews = stampedReady && stamped.reviews.length > 0 ? true : hasReviews;
+  const previewReviews = effectiveReviews.slice(0, 3);
+
+  // Effective aggregate for inline star rating near price (CF-wah8)
+  const effectiveAggregate =
+    stampedReady && stamped.summary.totalReviews > 0
+      ? { averageRating: stamped.summary.averageRating, totalReviews: stamped.summary.totalReviews }
+      : reviewAggregate;
+  const effectiveAggregateLoading = stamped.isLoading || reviewAggregateLoading;
+  const showInlineRating = !effectiveAggregateLoading && effectiveAggregate.totalReviews > 0;
 
   // Scroll ref + reviews section offset for tap-to-scroll from inline rating
   const scrollViewRef = useRef<Animated.ScrollView>(null);
@@ -807,8 +819,8 @@ export function ProductDetailScreen({
               accessibilityLabel="Jump to reviews"
             >
               <StarRating
-                rating={reviewAggregate.averageRating}
-                count={reviewAggregate.totalReviews}
+                rating={effectiveAggregate.averageRating}
+                count={effectiveAggregate.totalReviews}
                 showValue
                 size="sm"
                 testID="price-inline-rating"
@@ -1049,7 +1061,7 @@ export function ProductDetailScreen({
             Reviews
           </Text>
 
-          {!hasReviews ? (
+          {!effectiveHasReviews ? (
             <EmptyState
               title="No Reviews Yet"
               message="Be the first to share your experience with this product."
@@ -1060,7 +1072,10 @@ export function ProductDetailScreen({
             />
           ) : (
             <>
-              <ReviewSummary summary={reviewSummary} testID="review-summary" />
+              <ReviewSummary
+                summary={stampedReady ? stamped.summary : reviewSummary}
+                testID="review-summary"
+              />
 
               {/* Sort pills */}
               <View style={styles.sortRow} testID="review-sort-options">
@@ -1104,7 +1119,7 @@ export function ProductDetailScreen({
               ))}
 
               {/* View all reviews link */}
-              {reviews.length > 3 && (
+              {effectiveReviews.length > 3 && (
                 <TouchableOpacity
                   style={[
                     styles.viewAllButton,
@@ -1112,11 +1127,11 @@ export function ProductDetailScreen({
                   ]}
                   onPress={() => onViewAllReviews?.(model.id)}
                   testID="view-all-reviews"
-                  accessibilityLabel={`View all ${reviewSummary.totalReviews} reviews`}
+                  accessibilityLabel={`View all ${effectiveAggregate.totalReviews} reviews`}
                   accessibilityRole="button"
                 >
                   <Text style={[styles.viewAllText, { color: colors.espresso }]}>
-                    View All {reviewSummary.totalReviews} Reviews
+                    View All {effectiveAggregate.totalReviews} Reviews
                   </Text>
                 </TouchableOpacity>
               )}
