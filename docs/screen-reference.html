@@ -65,7 +65,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
 Tests: 6936 passing (392 suites, 0 failures) | Session 29 · 2026-03-28<br>
-PRs merged: #357 (Expo 55), #358–#369 (session 29 features)
+PRs merged: #357–#370 | PRs in CI: #371 (PDP social proof), #372 (style personalization)
 </p>
 
 <!-- ══════════════════════════════════════════════════
@@ -183,6 +183,9 @@ npx jest --passWithNoTests</pre>
 <tr><td>#363→#364</td><td>Navigation Breadcrumbs</td><td>Breadcrumb trail on nested screens (Category → Collection → PDP). Ripley's work — cherry-picked from branching fix.</td></tr>
 <tr><td>#366→#368</td><td>Product Comparison Enhancements</td><td>Burke: accessibility improvements to Compare screen. Keyboard nav, VoiceOver labels, contrast fixes.</td></tr>
 <tr><td>#367→#369</td><td>BNPL Hero Surface</td><td>Prominent Affirm/Afterpay banner on PDP + cart. BNPLHeroSurface component, monthly installment display, tap-to-learn modal. (cm-vud)</td></tr>
+<tr><td>#370</td><td>Cart Abandonment Dedup Fix</td><td>Removed broken WixClient.setMemberField() call. Replaced with AsyncStorage DEDUP_KEY pattern. Push recovery now idempotent. (hq-k8690) TODO(cf-a220) — Wix sync pending radahn.</td></tr>
+<tr><td>#371 <span style="color:#facc15">CI</span></td><td>PDP Social Proof</td><td>SocialProofBadge component: "X sold this week" badge (Wix OrderItems) + top review excerpt (Stamped.io). useSocialProof hook, parallel fetch, partial failure tolerance. (hq-5yo88)</td></tr>
+<tr><td>#372 <span style="color:#facc15">CI</span></td><td>Style Personalization — SommelierResults CMS</td><td>getSommelierResults() + recordSommelierResult() wired to Wix backend (cf-a220, radahn shipped 2026-03-28). callFunction(/_functions/..., GET/POST) pattern. Powers AI recs on PDP. (hq-5hnml)</td></tr>
 </table>
 </div>
 
@@ -267,8 +270,8 @@ npx jest --passWithNoTests</pre>
 <tr><td>Planned</td><td>Wishlist Price-Drop Alerts</td><td class="status-warn">Story filed</td><td>cm-wishlist-alerts — needs Wix price webhook</td></tr>
 <tr><td>Planned</td><td>Cart Abandonment Enrichment</td><td class="status-warn">Story filed</td><td>cm-cart-abandon-enrich — push + email combo</td></tr>
 <tr><td>Planned</td><td>Search Zero-Results UX</td><td class="status-warn">Story filed</td><td>cm-search-empty — spell-correct + category suggestions</td></tr>
-<tr><td>Planned</td><td>PDP Social Proof</td><td class="status-warn">Story filed</td><td>cm-pdp-social — "X people viewing this", recent purchase count</td></tr>
-<tr><td>Planned</td><td>Style Personalization Onboarding</td><td class="status-warn">Story filed</td><td>cm-style-onboard — extended quiz, preference persistence</td></tr>
+<tr><td>Commerce/Discovery</td><td>PDP Social Proof</td><td class="status-warn">In CI (PR #371)</td><td>SocialProofBadge: sold this week badge + Stamped top review excerpt. Wix sold count stub (TODO: wire to real endpoint). ViewerTracker counter blocked on cf-n4ne (radahn).</td></tr>
+<tr><td>Commerce/Discovery</td><td>Style Personalization — SommelierResults</td><td class="status-warn">In CI (PR #372)</td><td>getSommelierResults / recordSommelierResult via Wix /_functions. Unblocked by cf-a220 (radahn, 2026-03-28). Powers AI recs + quiz result persistence.</td></tr>
 <tr><td>Planned</td><td>Room Planner (2D)</td><td class="status-pending">Blocked</td><td>cm-5iq — blocked on CF-fnv9 web-side work by melania</td></tr>
 <tr><td>Planned</td><td>WWEX LTL Live Rates</td><td class="status-pending">Planned</td><td>Display-only now; live quote API pending BD</td></tr>
 <tr><td>Planned</td><td>Order Tracking Push</td><td class="status-pending">Planned</td><td>Real-time carrier push (currently shows carrier + number only)</td></tr>
@@ -490,12 +493,24 @@ npx jest --passWithNoTests</pre>
   <div class="placeholder">📸 Screenshot pending</div>
   <div class="card-info">
     <h3>PDP — Features & AR</h3>
-    <p>"See It In Your Room" AR CTA (coral button). Fabric swatches (7+ colors). "Request Free Swatches" button. Dimensions display. Size Guide modal. Freight notice banner for large items (≥54" width). Reviews section. Recommendations carousel.</p>
+    <p>"See It In Your Room" AR CTA (coral button). Fabric swatches (7+ colors). "Request Free Swatches" button. Dimensions display. Size Guide modal. Freight notice banner for large items (≥54" width). Reviews section (Stamped.io). Recommendations carousel.</p>
     <div class="features">
       <span class="badge badge-ar">AR CTA</span>
       <span class="badge badge-feature">Fabric Swatches</span>
-      <span class="badge badge-feature">Reviews</span>
+      <span class="badge badge-feature">Stamped Reviews</span>
       <span class="badge badge-feature">Freight Notice</span>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending — CI: PR #371</div>
+  <div class="card-info">
+    <h3>PDP — Social Proof Badge (In CI)</h3>
+    <p>SocialProofBadge below Add-to-Cart: "X sold this week" coral badge (Wix OrderItems, stub until cf-n4ne ViewerTracker lands). Top Stamped review excerpt (author, star rating, 2-line snippet). Both signals fetched in parallel via useSocialProof. Graceful: either signal can fail independently. Loading skeleton while fetching.</p>
+    <div class="features">
+      <span class="badge badge-new">PR #371 CI</span>
+      <span class="badge badge-feature">Sold This Week</span>
+      <span class="badge badge-feature">Review Excerpt</span>
     </div>
   </div>
 </div>
@@ -832,10 +847,11 @@ npx jest --passWithNoTests</pre>
   <div class="placeholder">📸 Screenshot pending</div>
   <div class="card-info">
     <h3>Style Quiz</h3>
-    <p>Multi-step style preference questionnaire. Questions: Room type, color palette, budget range, style (rustic / modern / minimalist / eclectic). Progress indicator. AI-generated product recommendations based on answers. Style Personalization Onboarding story filed to extend.</p>
+    <p>Multi-step style preference questionnaire. Questions: Room type, color palette, budget range, style (rustic / modern / minimalist / eclectic). Progress indicator. AI-generated product recommendations on completion. <strong>SommelierResults CMS integration (PR #372, in CI):</strong> quiz answers persisted to Wix /_functions/recordSommelierResult → getSommelierResults powers PDP personalized recs. topCategory, flavors[], recommendations[] stored per memberId.</p>
     <div class="features">
       <span class="badge badge-feature">AI Recommendations</span>
       <span class="badge badge-feature">5-Step Flow</span>
+      <span class="badge badge-new">SommelierResults CMS PR #372</span>
     </div>
   </div>
 </div>
@@ -1044,12 +1060,27 @@ npx jest --passWithNoTests</pre>
 <h2>Known Issues</h2>
 <table>
 <tr><th>Priority</th><th>Issue</th><th>Status</th><th>Notes</th></tr>
-<tr><td class="status-warn">P2</td><td>Emulator SwiftShader image decode failures (HWUI)</td><td>Open</td><td>"Failed to create image decoder" on some CDN images in Android emulator. Not reproducible on real device. Low priority.</td></tr>
-<tr><td class="status-warn">P2</td><td>Metro warning: EXPO_PUBLIC_WIX_CLIENT_ID not set</td><td>Open</td><td>Config warning only — products load fine via REST API key. Client ID is for OAuth SDK only.</td></tr>
-<tr><td class="status-warn">P3</td><td>RevenueCat API key not set in dev</td><td>Expected</td><td>CF+ premium feature disabled in dev builds. Expected. Purchases disabled = no crash (fixed session 16).</td></tr>
-<tr><td class="status-warn">P3</td><td>New Architecture disabled</td><td>Monitoring</td><td>newArchEnabled: false in Podfile.properties.json. All deps confirmed old-arch compatible. Flip to true is next milestone.</td></tr>
-<tr><td class="status-pending">P3</td><td>LTL freight: display-only</td><td>Planned</td><td>Shows freight notice banner, no live rate quotes. WWEX BD pending.</td></tr>
-<tr><td class="status-pending">Info</td><td>Screenshots pending</td><td>In progress</td><td>All screen cards show placeholders. Run Android build on linux to populate (see Build Commands above).</td></tr>
+<tr><td class="status-err">P1</td><td>14 TS errors on main (expo-file-system + Expo 55 migration)</td><td>Open</td><td>expo-file-system import/namespace mismatches (3 errors) + misc Expo 55 type drift. Blocks strict CI. Bishop: fix before next epic starts.</td></tr>
+<tr><td class="status-err">P1</td><td>Checkout/Cart/Account missing loading skeletons</td><td>Open</td><td>Ripley + Hicks: CheckoutScreen (2103 lines), CartScreen (891 lines), AccountScreen (1219 lines) have no skeleton loading. High-traffic screens. Users see blank → flash. Priority for Epic 1.</td></tr>
+<tr><td class="status-err">P1</td><td>Checkout keyboard hides bottom form fields</td><td>Open</td><td>Burke: No KeyboardAwareScrollView on CheckoutScreen. Bottom address fields (City, State, ZIP, card) hidden behind keyboard on smaller devices. returnKeyType not set between fields. Blocking UX for checkout completion.</td></tr>
+<tr><td class="status-warn">P2</td><td>CategoryScreen + CompareScreen + CollectionDetailScreen: no skeletons</td><td>Open</td><td>Hicks: High-traffic screens with flash-of-empty-content. SkeletonProductCard exists but unused here.</td></tr>
+<tr><td class="status-warn">P2</td><td>9 screens with zero accessibilityLabels</td><td>Open</td><td>Ripley: AchievementBadges, Challenges, Collections, Leaderboard, Loyalty, Rewards, Referral, Shop, StoreLocator. testIDs exist but no VoiceOver labels. WCAG gap.</td></tr>
+<tr><td class="status-warn">P2</td><td>66 ESLint warnings (51 unused vars, 13 exhaustive-deps, 2 display-name)</td><td>Open</td><td>Bishop: Tech debt accumulating since Expo 55 upgrade. Non-blocking but growing.</td></tr>
+<tr><td class="status-warn">P2</td><td>AR gesture conflicts (pinch vs scroll, VoiceOver)</td><td>Open</td><td>Burke: Pinch-to-zoom on 3D model conflicts with scroll. No gestureHandlerRootHOC wrapper. VoiceOver users can't access AR controls (no a11y actions on canvas).</td></tr>
+<tr><td class="status-warn">P2</td><td>No gh CLI PR creation from agent sessions (SSH remote)</td><td>Open</td><td>Bishop: gh CLI can't detect SSH remote for DreadPirateRobertz org. Must use HTTPS or -R flag workaround. Slows all PR workflows.</td></tr>
+<tr><td class="status-warn">P2</td><td>Visual search embedding pipeline not started (hq-r1251)</td><td>Planned</td><td>Bishop: catalog export service done (hq-8p0y8) but Supabase/pgvector similarity search layer not started. Blocks actual visual search feature.</td></tr>
+<tr><td class="status-warn">P2</td><td>Cart stepper: no haptic + no a11y adjustable trait</td><td>Open</td><td>Burke: +/- buttons lack haptic feedback and accessibilityRole="adjustable". Screen reader users must navigate to separate buttons.</td></tr>
+<tr><td class="status-warn">P2</td><td>PDP review skeleton missing (Stamped.io section)</td><td>Open</td><td>Hicks: Stamped reviews load independently with no skeleton. Empty section → pop-in. SkeletonReviewCard should be added.</td></tr>
+<tr><td class="status-warn">P2</td><td>OrderHistoryScreen: BrandedSpinner instead of SkeletonOrderRow</td><td>Open</td><td>Hicks: SkeletonOrderRow component exists but unused here. Inconsistent loading pattern.</td></tr>
+<tr><td class="status-warn">P2</td><td>AsyncStorage catalog cache won't scale</td><td>Monitoring</td><td>Bishop: Works for current 88 products but won't scale with large catalogs + images. Evaluate SQLite/MMKV for Epic 2.</td></tr>
+<tr><td class="status-warn">P3</td><td>No unified empty state component</td><td>Open</td><td>Ripley: Every screen rolls its own empty state. No standardized EmptyState component with icon + message + CTA pattern.</td></tr>
+<tr><td class="status-warn">P3</td><td>No pull-to-refresh on Account, Wishlist, Collections</td><td>Open</td><td>Ripley: Three high-visibility screens missing RefreshControl.</td></tr>
+<tr><td class="status-warn">P3</td><td>ReferralLandingScreen thin (85 lines)</td><td>Open</td><td>Ripley: Near-stub. Shows spinner + text. Needs share CTA, points display, referral status tracking.</td></tr>
+<tr><td class="status-warn">P2</td><td>Emulator SwiftShader image decode failures (HWUI)</td><td>Open</td><td>"Failed to create image decoder" on some CDN images in Android emulator. Not reproducible on real device.</td></tr>
+<tr><td class="status-warn">P3</td><td>RevenueCat API key not set in dev</td><td>Expected</td><td>CF+ premium disabled in dev builds. Expected. Purchases disabled = no crash.</td></tr>
+<tr><td class="status-warn">P3</td><td>New Architecture disabled</td><td>Monitoring</td><td>newArchEnabled: false. All deps confirmed old-arch compatible. Flip to true is next milestone.</td></tr>
+<tr><td class="status-pending">P3</td><td>LTL freight: display-only</td><td>Planned</td><td>Freight notice banner shows, no live WWEX rate quotes. BD pending.</td></tr>
+<tr><td class="status-pending">Info</td><td>Screenshots pending Android build</td><td>In progress</td><td>All screen cards show placeholders. Run <code>npx expo run:android</code> on linux to populate (see Build Commands above). This is a standing gate after each epic.</td></tr>
 </table>
 </div>
 
@@ -1060,23 +1091,72 @@ npx jest --passWithNoTests</pre>
 <h2>Filed Stories — Next Sprint Queue</h2>
 <table>
 <tr><th>Bead</th><th>Story</th><th>Screen(s)</th><th>Notes</th></tr>
-<tr><td>cm-bnpl-flow</td><td>BNPL Checkout Flow</td><td>Checkout #13</td><td>Full Affirm/Afterpay checkout integration. Needs Wix eCommerce + Stripe BNPL API docs from melania.</td></tr>
-<tr><td>cm-wishlist-alerts</td><td>Wishlist Price-Drop Alerts</td><td>Wishlist #12</td><td>Push notification when wishlisted item price drops. Needs Wix price-change webhook contract from melania.</td></tr>
-<tr><td>cm-cart-abandon-enrich</td><td>Cart Abandonment Enrichment</td><td>Cart #4</td><td>Combine push + email reminder (currently push-only). Needs sendgrid/nodemailer integration.</td></tr>
-<tr><td>cm-search-empty</td><td>Search Zero-Results UX</td><td>Search #7</td><td>Spell-correct suggestions + "browse category" fallback when 0 results. Needs Wix search API enhancement.</td></tr>
-<tr><td>cm-pdp-social</td><td>PDP Social Proof</td><td>PDP #6</td><td>"X people viewing" live counter + recent purchase count. Needs Wix real-time events or polling endpoint.</td></tr>
-<tr><td>cm-style-onboard</td><td>Style Personalization Onboarding</td><td>Style Quiz #26, Onboarding #1</td><td>Extended quiz on first login: room type, budget, aesthetic. Persist as user preference. Powers recommendations + homepage curation.</td></tr>
-<tr><td>cm-5iq</td><td>Room Planner (2D)</td><td>New Screen</td><td>Drag-and-drop 2D room layout. BLOCKED on CF-fnv9 (web-side by melania).</td></tr>
+<tr><td>cm-bnpl-flow</td><td>BNPL Full Checkout Flow</td><td>Checkout #13</td><td>Full Affirm/Afterpay checkout. Tab toggle needs accessibilityRole="tab" (burke). Wix eCommerce + Stripe BNPL API contract from melania pending.</td></tr>
+<tr><td>cm-wishlist-alerts</td><td>Wishlist Price-Drop Alerts</td><td>Wishlist #12</td><td>Push when wishlisted item price drops. Blocked on cf-zubx (PriceDropQueue cron, melania wave 2). Data contract: PriceDropQueue { memberId, productId, targetPrice }.</td></tr>
+<tr><td>cm-cart-unified-recovery</td><td>Cart Recovery Unified (Push + Email)</td><td>Cart #4</td><td>Melania (cf-ji7j): CartSessions Wix collection (memberId + items + updatedAt). Mobile reads same collection web writes. Push (exists) + email combo. Nodemailer integration.</td></tr>
+<tr><td>cm-search-empty</td><td>Search Zero-Results UX</td><td>Search #7</td><td>Spell-correct + "browse category" fallback when 0 results. Wix search API enhancement needed.</td></tr>
+<tr><td>cm-pdp-viewer-counter</td><td>PDP Live Viewer Counter</td><td>PDP #6</td><td>"X people viewing" real-time counter. Blocked on cf-n4ne (ViewerTracker, radahn in_progress). SocialProofBadge component ready (PR #371) — wire once cf-n4ne ships.</td></tr>
+<tr><td>cm-checkout-keyboard</td><td>Checkout Keyboard UX Fix</td><td>Checkout #13</td><td>Burke P1: KeyboardAwareScrollView, returnKeyType field-to-field, fix bottom fields hidden behind keyboard. Small devices blocking checkout completion.</td></tr>
+<tr><td>cm-skeleton-screens</td><td>Loading Skeleton Pass (7 screens)</td><td>Checkout, Cart, Account, Category, Compare, CollectionDetail, OrderHistory</td><td>Ripley+Hicks: Add SkeletonProductCard/SkeletonOrderRow to 7 high-traffic screens. Use existing skeleton primitives — not new work, just adoption.</td></tr>
+<tr><td>cm-a11y-labels</td><td>A11y Labels Pass (9 screens)</td><td>AchievementBadges, Challenges, Collections, Leaderboard, Loyalty, Rewards, Referral, Shop, StoreLocator</td><td>Ripley: testIDs exist, accessibilityLabels missing. VoiceOver/TalkBack gap. Follow AccountScreen pattern.</td></tr>
+<tr><td>cm-referral-polish</td><td>Referral Landing Polish</td><td>Referral #33</td><td>Ripley: Currently 85-line stub. Needs: share CTA with deeplink, points breakdown display, referred-user status, share to social.</td></tr>
+<tr><td>cm-personalization-engine</td><td>Personalization Engine — PDP Real-Time Recs</td><td>PDP #6, Home #2</td><td>Melania (cf-tj6f): SommelierResults CMS now live (cf-a220). Wire quiz results → PDP "Recommended for You" carousel. Same data as HomeScreen recs but PDP-contextual.</td></tr>
+<tr><td>cm-loyalty-deep-funnel</td><td>Loyalty Deep Funnel — Tier Widget</td><td>Home #2, Loyalty #27</td><td>Melania (cf-nru7 web Thank You shipped): Mobile tier progress widget on HomeScreen, inline streak display, challenge cards. Coordinates with cf-n4ne ViewerTracker.</td></tr>
+<tr><td>cm-5iq</td><td>Room Planner (2D)</td><td>New Screen</td><td>Drag-and-drop 2D room layout. BLOCKED on CF-fnv9 (web-side by melania, no ETA).</td></tr>
+<tr><td>cm-empty-state</td><td>Unified EmptyState Component</td><td>All screens</td><td>Ripley: Standardize empty state pattern (icon + message + CTA). Replace 15+ custom empty states across app.</td></tr>
+<tr><td>cm-pull-refresh</td><td>Pull-to-Refresh: Account, Wishlist, Collections</td><td>#5, #12, #9</td><td>Ripley: Add RefreshControl to three high-visibility screens. Simple but noticeable UX gap.</td></tr>
 </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     CROSS-PLATFORM DATA CONTRACTS (Melania / cfutons web)
+══════════════════════════════════════════════════ -->
+<div class="section">
+<h2>Cross-Platform Data Contracts (Web ↔ Mobile)</h2>
+<p style="font-size:12px;color:#888;margin-bottom:16px">Source: melania (cfutons/crew/melania) · 2026-03-28. These are the Wix CMS collections and endpoints shared between the web app and mobile.</p>
+<table>
+<tr><th>Collection / Endpoint</th><th>Schema</th><th>Status</th><th>Mobile Usage</th></tr>
+<tr><td>SommelierResults</td><td>{ memberId, topCategory, flavors[], recommendations[] }</td><td class="status-ok">LIVE</td><td>getSommelierResults / recordSommelierResult (PR #372). Powers style quiz persistence + PDP personalized recs.</td></tr>
+<tr><td>MemberPoints</td><td>{ memberId, balance, tier, longestStreak }</td><td class="status-ok">LIVE</td><td>useLoyaltyCard, Loyalty screen, leaderboard endpoint stable.</td></tr>
+<tr><td>MemberBadges</td><td>{ memberId, badges[] }</td><td class="status-ok">LIVE</td><td>AchievementBadges screen, badge showcase on leaderboard.</td></tr>
+<tr><td>Referrals</td><td>{ referrerMemberId, referralCode, status, referredMemberId }</td><td class="status-ok">LIVE</td><td>Referral landing screen, deep-link pre-fill, 500pt bonus.</td></tr>
+<tr><td>CartSessions</td><td>{ memberId, items[], subtotal, updatedAt }</td><td class="status-warn">Planned</td><td>cf-ji7j (melania web queue). Mobile reads same collection web writes. Unifies cart recovery push+email.</td></tr>
+<tr><td>PriceDropQueue</td><td>{ memberId, productId, targetPrice }</td><td class="status-warn">Planned</td><td>cf-zubx (melania wave 2). Unblocks cm-wishlist-alerts push notifications on price drop.</td></tr>
+<tr><td>/_functions/getSommelierResults</td><td>GET ?memberId=... → SommelierResultsData</td><td class="status-ok">LIVE (cf-a220)</td><td>PR #372. Radahn shipped 2026-03-28.</td></tr>
+<tr><td>/_functions/recordSommelierResult</td><td>POST { memberId, quizAnswers } → void</td><td class="status-ok">LIVE (cf-a220)</td><td>PR #372.</td></tr>
+<tr><td>/_functions/loyalty/:memberId</td><td>GET → loyalty data</td><td class="status-ok">LIVE</td><td>useLoyaltyCard GET pattern. Stable.</td></tr>
+</table>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     EPIC GATES — screen doc is a mandatory dependency
+══════════════════════════════════════════════════ -->
+<div class="section">
+<h2>Epic Quality Gates</h2>
+<div class="box box-warn">
+<h3>⚠️ Screen Doc is a Mandatory Gate After Each Epic</h3>
+<p><strong>Before any epic is marked DONE:</strong></p>
+<p>1. Android build on linux: <code>ssh pop-os && npx expo run:android -- --device cfutons_pixel7</code></p>
+<p>2. Screenshot walk-through: <code>bash scripts/capture-screenshots.sh</code></p>
+<p>3. Copy screenshots → <code>docs/screenshots/sNN-YYYYMMDD/</code></p>
+<p>4. Update all &lt;img&gt; src tags in this doc for affected screens</p>
+<p>5. Update session table: add PRs merged in epic, flip "planned" rows to "shipped"</p>
+<p>6. Update known issues: remove resolved items, add new findings</p>
+<p>7. Commit: <code>git add docs/ && git commit -m "docs(screen-guide): Epic N complete — screenshots + feature log"</code></p>
+<p><strong>CI must be green. Zero placeholder screenshot slots for shipped screens. This doc is what the overseer uses to demo the app.</strong></p>
+</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════
      FOOTER
 ══════════════════════════════════════════════════ -->
 <div style="font-size:11px;color:#555;margin-top:40px;padding-top:16px;border-top:1px solid #2a1f19;line-height:2">
-Generated by dallas (cfutons_mobile/crew/dallas) · Session 29 · 2026-03-28<br>
+Generated by dallas (cfutons_mobile/crew/dallas) · Session 29 · 2026-03-28 (updated hourly)<br>
 39 screens documented · Expo SDK 55 + React Native 0.84 + React 19 · 6936 tests passing<br>
-PRs #357–#369 merged this session · Screenshots pending Android build on linux (ssh pop-os)<br>
+PRs merged: #357–#370 · PRs in CI: #371 (social proof), #372 (style personalization)<br>
+Cross-platform data contracts: 4 live (SommelierResults, MemberPoints, MemberBadges, Referrals) · 2 planned (CartSessions, PriceDropQueue)<br>
+Next gate: Android build on linux → screenshots → update all screen cards<br>
+Crew: bishop (arch/CI), ripley (UX/loading), hicks (perf/skeleton), burke (a11y/gestures) · Web PM: melania<br>
 To demo to Stilgar: see Discord Escalation box above
 </div>
 
