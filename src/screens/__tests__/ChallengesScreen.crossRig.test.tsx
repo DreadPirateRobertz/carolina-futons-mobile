@@ -13,10 +13,12 @@ import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCa
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockEmitChallengeStarted = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitChallengeStarted: (...args: any[]) => mockEmitChallengeStarted.apply(undefined, args),
+  emitChallengeStarted: jest.fn(() => Promise.resolve({ success: true })),
 }));
+const mockEmitChallengeStarted = jest.requireMock(
+  '@/services/crossRigEventBus',
+).emitChallengeStarted as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 jest.mock('@/services/wix/wixClientSingleton', () => ({
