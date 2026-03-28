@@ -1456,16 +1456,13 @@ describe('ProductDetailScreen', () => {
         return player;
       });
 
-      let getByTestId: ReturnType<typeof renderDetail>['getByTestId'];
-      await act(async () => {
-        ({ getByTestId } = renderDetail({ productId: 'asheville-full' }));
-      });
-
-      expect(statusCallback).not.toBeNull();
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      // Effects run after render — statusCallback should be set
+      await waitFor(() => expect(statusCallback).not.toBeNull());
       await act(async () => {
         statusCallback!({ status: 'error' });
       });
-      expect(getByTestId!('product-detail-video-error')).toBeTruthy();
+      expect(getByTestId('product-detail-video-error')).toBeTruthy();
     });
 
     it('hides video player after error', async () => {
@@ -1485,16 +1482,12 @@ describe('ProductDetailScreen', () => {
         return player;
       });
 
-      let queryByTestId: ReturnType<typeof renderDetail>['queryByTestId'];
-      await act(async () => {
-        ({ queryByTestId } = renderDetail({ productId: 'asheville-full' }));
-      });
-
-      expect(statusCallback).not.toBeNull();
+      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+      await waitFor(() => expect(statusCallback).not.toBeNull());
       await act(async () => {
         statusCallback!({ status: 'error' });
       });
-      expect(queryByTestId!('product-detail-video')).toBeNull();
+      expect(queryByTestId('product-detail-video')).toBeNull();
     });
   });
 
