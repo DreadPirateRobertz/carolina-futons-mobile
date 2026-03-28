@@ -1629,4 +1629,30 @@ describe('CheckoutScreen', () => {
       expect(AsyncStorage.setItem).not.toHaveBeenCalledWith(SHIPPING_ZIP_KEY, '123');
     });
   });
+
+  describe('Keyboard chain and accessibility', () => {
+    it('fullName input has returnKeyType next', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const input = getByTestId('shipping-fullName');
+      expect(input.props.returnKeyType).toBe('next');
+    });
+
+    it('line1 (street address) input has returnKeyType next', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-line1').props.returnKeyType).toBe('next');
+    });
+
+    it('zip (last) input has returnKeyType done', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-zip').props.returnKeyType).toBe('done');
+    });
+
+    it('progress indicator has accessibilityRole progressbar', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const progress = getByTestId('checkout-progress');
+      expect(progress.props.accessibilityRole).toBe('progressbar');
+      expect(typeof progress.props.accessibilityValue?.now).toBe('number');
+      expect(progress.props.accessibilityValue?.max).toBe(3);
+    });
+  });
 });
