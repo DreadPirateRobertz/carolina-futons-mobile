@@ -1441,7 +1441,7 @@ describe('ProductDetailScreen', () => {
     it('renders an error fallback view on video error', async () => {
       // expo-video error handling: player fires statusChange with status 'error'
       const { useVideoPlayer } = require('expo-video');
-      let statusCallback: (payload: { status: string }) => void;
+      let statusCallback: ((payload: { status: string }) => void) | null = null;
       (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
         const player = {
           loop: false,
@@ -1455,16 +1455,22 @@ describe('ProductDetailScreen', () => {
         if (setup) setup(player);
         return player;
       });
-      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+
+      let getByTestId: ReturnType<typeof renderDetail>['getByTestId'];
+      await act(async () => {
+        ({ getByTestId } = renderDetail({ productId: 'asheville-full' }));
+      });
+
+      expect(statusCallback).not.toBeNull();
       await act(async () => {
         statusCallback!({ status: 'error' });
       });
-      expect(getByTestId('product-detail-video-error')).toBeTruthy();
+      expect(getByTestId!('product-detail-video-error')).toBeTruthy();
     });
 
     it('hides video player after error', async () => {
       const { useVideoPlayer } = require('expo-video');
-      let statusCallback: (payload: { status: string }) => void;
+      let statusCallback: ((payload: { status: string }) => void) | null = null;
       (useVideoPlayer as jest.Mock).mockImplementation((_src: string, setup: Function) => {
         const player = {
           loop: false,
@@ -1478,11 +1484,17 @@ describe('ProductDetailScreen', () => {
         if (setup) setup(player);
         return player;
       });
-      const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
+
+      let queryByTestId: ReturnType<typeof renderDetail>['queryByTestId'];
+      await act(async () => {
+        ({ queryByTestId } = renderDetail({ productId: 'asheville-full' }));
+      });
+
+      expect(statusCallback).not.toBeNull();
       await act(async () => {
         statusCallback!({ status: 'error' });
       });
-      expect(queryByTestId('product-detail-video')).toBeNull();
+      expect(queryByTestId!('product-detail-video')).toBeNull();
     });
   });
 
