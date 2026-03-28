@@ -50,6 +50,7 @@ import { ChallengeCompletedToast } from '@/components/ChallengeCompletedToast';
 import { TierUpgradeToast } from '@/components/TierUpgradeToast';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { ProductCard } from '@/components/ProductCard';
+import { SommelierHeroCard } from '@/components/SommelierHeroCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -406,6 +407,16 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
                 ))}
               </ScrollView>
             )}
+          </View>
+        )}
+
+        {/* Sommelier Hero Card — shown when quiz is complete and card not dismissed */}
+        {sommelierResults && (
+          <View style={{ paddingHorizontal: spacing.lg }}>
+            <SommelierHeroCard
+              result={sommelierResults}
+              onSeePicks={() => {/* scroll to product section */}}
+            />
           </View>
         )}
 
