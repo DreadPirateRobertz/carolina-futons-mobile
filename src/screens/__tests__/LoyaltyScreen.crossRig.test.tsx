@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { render, waitFor, act } from '@testing-library/react-native';
 import { LoyaltyScreen, __resetStreakEmitState } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
@@ -14,7 +14,7 @@ import { ThemeProvider } from '@/theme/ThemeProvider';
 
 const mockEmitStreakExtended = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitStreakExtended: mockEmitStreakExtended,
+  emitStreakExtended: (...args: any) => mockEmitStreakExtended(...args),
 }));
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
@@ -75,7 +75,7 @@ describe('LoyaltyScreen — crossRigEventBus', () => {
 
   it('calls emitStreakExtended when wasExtendedToday is true', async () => {
     renderScreen();
-    await Promise.resolve(); // flush effects
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).toHaveBeenCalledTimes(1);
     expect(mockEmitStreakExtended).toHaveBeenCalledWith(
       mockWixClient,
@@ -86,21 +86,21 @@ describe('LoyaltyScreen — crossRigEventBus', () => {
   it('does not call emitStreakExtended when wasExtendedToday is false', async () => {
     mockUseStreak.mockReturnValue(STREAK_SAME_DAY);
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).not.toHaveBeenCalled();
   });
 
   it('does not call emitStreakExtended while streak is still loading', async () => {
     mockUseStreak.mockReturnValue(STREAK_LOADING);
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).not.toHaveBeenCalled();
   });
 
   it('passes newTotal from loyalty points to emitStreakExtended', async () => {
     mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 1200 });
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).toHaveBeenCalledWith(
       mockWixClient,
       expect.objectContaining({ newTotal: 1200 }),
@@ -109,14 +109,14 @@ describe('LoyaltyScreen — crossRigEventBus', () => {
 
   it('does not re-emit on remount (module-level dedup)', async () => {
     const { unmount } = renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).toHaveBeenCalledTimes(1);
 
     unmount();
     mockEmitStreakExtended.mockClear();
 
     renderScreen();
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 10));
     expect(mockEmitStreakExtended).not.toHaveBeenCalled();
   });
 

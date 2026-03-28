@@ -162,11 +162,11 @@ describe('useGamificationFeed', () => {
       .mockRejectedValueOnce(new Error('Server error'));
     const { result } = renderHook(() => useGamificationFeed());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    await expect(
-      await act(async () => {
-        result.current.markAllRead();
-      }),
-    ).resolves.toBeUndefined();
+    // act() returns a resolved value (not a Promise) in React 19's async path.
+    // Just verify it doesn't throw.
+    await act(async () => {
+      result.current.markAllRead();
+    });
     expect(result.current.notifications.every((n) => n.read)).toBe(true);
   });
 
