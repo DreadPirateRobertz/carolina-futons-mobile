@@ -13,7 +13,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useOptionalWixClient } from '@/services/wix';
 import type { CartItem } from '@/hooks/useCart';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -22,6 +21,9 @@ import type { CartItem } from '@/hooks/useCart';
 export const RECOVERY_TRIGGER_MS = 60 * 60 * 1000;
 
 const STORAGE_KEY = '@cart_recovery_state';
+/** Dedup flag: push was sent — web email (cf-ji7j) should be suppressed.
+ *  TODO(cf-a220): write to Wix member field once melania's setCartRecoveryFlag endpoint ships. */
+export const DEDUP_KEY = '@cart_recovery_push_sent';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,7 +73,6 @@ export function buildRecoveryPayload(
 
 export function useCartAbandonmentRecovery(options: Options) {
   const { items, subtotal, cartId, userId, pushPermitted } = options;
-  const wixClient = useOptionalWixClient();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scheduledIdRef = useRef<string | null>(null);
 
@@ -81,7 +82,6 @@ export function useCartAbandonmentRecovery(options: Options) {
   const cartIdRef = useRef(cartId);
   const userIdRef = useRef(userId);
   const pushPermittedRef = useRef(pushPermitted);
-  const wixClientRef = useRef(wixClient);
 
   useEffect(() => {
     itemsRef.current = items;
@@ -89,8 +89,7 @@ export function useCartAbandonmentRecovery(options: Options) {
     cartIdRef.current = cartId;
     userIdRef.current = userId;
     pushPermittedRef.current = pushPermitted;
-    wixClientRef.current = wixClient;
-  }, [items, subtotal, cartId, userId, pushPermitted, wixClient]);
+  }, [items, subtotal, cartId, userId, pushPermitted]);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -116,7 +115,6 @@ export function useCartAbandonmentRecovery(options: Options) {
     const currentItems = itemsRef.current;
     const currentUserId = userIdRef.current;
     const currentPushPermitted = pushPermittedRef.current;
-    const client = wixClientRef.current;
 
     // Guard: don't send if conditions aren't met
     if (currentItems.length === 0 || !currentUserId || !currentPushPermitted) {
@@ -149,10 +147,9 @@ export function useCartAbandonmentRecovery(options: Options) {
       scheduledIdRef.current = notifId;
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ scheduledNotificationId: notifId }));
 
-      // Set dedup flag to suppress web email
-      if (client?.setMemberField) {
-        await client.setMemberField(currentUserId, 'cartRecoveryPushSent', true);
-      }
+      // Dedup flag: mobile push sent — web email should be suppressed.
+      // TODO(cf-a220): sync to Wix member field once melania's endpoint ships.
+      await AsyncStorage.setItem(DEDUP_KEY, currentUserId);
     } catch {
       // Non-critical — don't crash the app for a notification failure
     }
@@ -178,16 +175,9 @@ export function useCartAbandonmentRecovery(options: Options) {
 
     await AsyncStorage.removeItem(STORAGE_KEY);
 
-    // Clear dedup flag so web email can fire for future carts
-    const currentUserId = userIdRef.current;
-    const client = wixClientRef.current;
-    if (client?.setMemberField && currentUserId) {
-      try {
-        await client.setMemberField(currentUserId, 'cartRecoveryPushSent', false);
-      } catch {
-        // Non-critical
-      }
-    }
+    // Clear dedup flag so web email can fire for future carts.
+    // TODO(cf-a220): sync removal to Wix member field once melania's endpoint ships.
+    await AsyncStorage.removeItem(DEDUP_KEY);
   }, [clearTimer]);
 
   // Cleanup timer on unmount

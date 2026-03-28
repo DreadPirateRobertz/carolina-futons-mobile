@@ -3,7 +3,7 @@
  *
  * 1hr cart abandonment recovery push with web email dedup.
  * Rich payload: cart_items[0..2], total_price, cart_id.
- * Sets dedup flag on Wix member to suppress web email (cf-ji7j).
+ * Sets dedup flag in AsyncStorage to suppress web email (cf-ji7j). TODO(cf-a220): sync to Wix.
  *
  * Bead: hq-8k690
  */
@@ -16,6 +16,7 @@ import {
   useCartAbandonmentRecovery,
   buildRecoveryPayload,
   RECOVERY_TRIGGER_MS,
+  DEDUP_KEY,
 } from '../useCartAbandonmentRecovery';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
@@ -28,14 +29,6 @@ jest.mock('expo-notifications', () => ({
 
 const mockSchedule = Notifications.scheduleNotificationAsync as jest.Mock;
 const mockCancel = Notifications.cancelScheduledNotificationAsync as jest.Mock;
-
-const mockSetDedupFlag = jest.fn(() => Promise.resolve());
-
-jest.mock('@/services/wix', () => ({
-  useOptionalWixClient: () => ({
-    setMemberField: mockSetDedupFlag,
-  }),
-}));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(() => Promise.resolve(null)),
@@ -165,7 +158,7 @@ describe('useCartAbandonmentRecovery', () => {
       expect(payload.total_price).toBe(2397);
     });
 
-    it('sets dedup flag on Wix member after scheduling push', async () => {
+    it('sets dedup flag in AsyncStorage after scheduling push', async () => {
       const { result } = renderHook(() => useCartAbandonmentRecovery(DEFAULT_OPTS));
 
       await act(async () => {
@@ -175,7 +168,7 @@ describe('useCartAbandonmentRecovery', () => {
       jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
       await act(async () => {});
 
-      expect(mockSetDedupFlag).toHaveBeenCalledWith('member-1', 'cartRecoveryPushSent', true);
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(DEDUP_KEY, 'member-1');
     });
   });
 
@@ -225,7 +218,7 @@ describe('useCartAbandonmentRecovery', () => {
       jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
       await act(async () => {});
 
-      expect(mockSetDedupFlag).not.toHaveBeenCalled();
+      expect(AsyncStorage.setItem).not.toHaveBeenCalledWith(DEDUP_KEY, expect.any(String));
     });
   });
 
@@ -265,7 +258,7 @@ describe('useCartAbandonmentRecovery', () => {
         result.current.onOrderPlaced();
       });
 
-      expect(mockSetDedupFlag).toHaveBeenLastCalledWith('member-1', 'cartRecoveryPushSent', false);
+      expect(AsyncStorage.removeItem).toHaveBeenCalledWith(DEDUP_KEY);
     });
   });
 
