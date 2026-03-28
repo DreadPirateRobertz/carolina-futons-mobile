@@ -587,7 +587,11 @@ describe('emitBadgeEarned', () => {
     expect(client.callFunction).toHaveBeenCalledWith(
       'crossRigEvent',
       'POST',
-      expect.objectContaining({ event: 'badge_earned', badgeId: 'badge-1', badgeName: 'First Purchase' }),
+      expect.objectContaining({
+        event: 'badge_earned',
+        badgeId: 'badge-1',
+        badgeName: 'First Purchase',
+      }),
     );
   });
 
@@ -610,6 +614,8 @@ describe('emitTierChanged', () => {
   });
 
   it('emitTierChanged does not throw when client is null', async () => {
-    await expect(emitTierChanged(null, { oldTier: 'bronze', newTier: 'silver' })).resolves.not.toThrow();
+    await expect(
+      emitTierChanged(null, { oldTier: 'bronze', newTier: 'silver' }),
+    ).resolves.not.toThrow();
   });
 });

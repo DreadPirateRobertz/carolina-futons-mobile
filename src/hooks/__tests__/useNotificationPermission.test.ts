@@ -34,7 +34,9 @@ it('requestPermission stores asked flag and returns granted', async () => {
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
   let returned: string | undefined;
-  await act(async () => { returned = await result.current.requestPermission(); });
+  await act(async () => {
+    returned = await result.current.requestPermission();
+  });
   expect(returned).toBe('granted');
   expect(AsyncStorage.setItem).toHaveBeenCalledWith(ASKED_KEY, 'true');
   expect(result.current.status).toBe('granted');
@@ -44,7 +46,9 @@ it('openSettings calls Linking.openSettings', async () => {
   (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
-  await act(async () => { await result.current.openSettings(); });
+  await act(async () => {
+    await result.current.openSettings();
+  });
   expect(Linking.openSettings).toHaveBeenCalled();
 });
 
