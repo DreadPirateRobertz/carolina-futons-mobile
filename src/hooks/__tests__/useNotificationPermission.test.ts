@@ -1,18 +1,17 @@
 // src/hooks/__tests__/useNotificationPermission.test.ts
 import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Linking } from 'react-native';
 
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn(),
   requestPermissionsAsync: jest.fn(),
 }));
-jest.mock('react-native', () => ({
-  ...jest.requireActual('react-native'),
-  Linking: { openSettings: jest.fn() },
-}));
+
+// Use spyOn instead of mocking the whole react-native module (RN 0.84 compat)
+jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined as never);
 
 import * as Notifications from 'expo-notifications';
-import { Linking } from 'react-native';
 import { useNotificationPermission } from '../useNotificationPermission';
 
 const ASKED_KEY = '@cf_notif_asked';
