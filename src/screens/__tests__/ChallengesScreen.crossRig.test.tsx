@@ -6,17 +6,19 @@
  */
 
 import React from 'react';
-import { render, waitFor, act } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { ChallengesScreen, __resetChallengeEmitState } from '../ChallengesScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { CatalogChallenge, GroupedChallenges } from '@/hooks/useChallengeCatalog';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockEmitChallengeStarted = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitChallengeStarted: (...args: any) => mockEmitChallengeStarted(...args),
+  emitChallengeStarted: jest.fn(() => Promise.resolve({ success: true })),
 }));
+const mockEmitChallengeStarted = jest.requireMock(
+  '@/services/crossRigEventBus',
+).emitChallengeStarted as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 jest.mock('@/services/wix/wixClientSingleton', () => ({
@@ -193,5 +195,4 @@ describe('ChallengesScreen — crossRigEventBus', () => {
     await new Promise((r) => setTimeout(r, 10));
     expect(mockCaptureException).toHaveBeenCalled();
   });
-
 });

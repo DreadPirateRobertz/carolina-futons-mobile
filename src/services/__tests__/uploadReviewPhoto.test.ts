@@ -20,7 +20,8 @@ jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg' },
 }));
 
-const mockReadAsStringAsync = jest.requireMock('expo-file-system/legacy').readAsStringAsync as jest.Mock;
+const mockReadAsStringAsync = jest.requireMock('expo-file-system/legacy')
+  .readAsStringAsync as jest.Mock;
 const mockManipulateAsync = jest.requireMock('expo-image-manipulator').manipulateAsync as jest.Mock;
 
 const STRIPPED_URI = 'file:///cache/stripped_1234.jpg';

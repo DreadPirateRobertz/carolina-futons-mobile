@@ -6,16 +6,18 @@
  */
 
 import React from 'react';
-import { render, waitFor, act } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { LoyaltyScreen, __resetStreakEmitState } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockEmitStreakExtended = jest.fn(() => Promise.resolve({ success: true }));
 jest.mock('@/services/crossRigEventBus', () => ({
-  emitStreakExtended: (...args: any) => mockEmitStreakExtended(...args),
+  emitStreakExtended: jest.fn(() => Promise.resolve({ success: true })),
 }));
+const mockEmitStreakExtended = jest.requireMock(
+  '@/services/crossRigEventBus',
+).emitStreakExtended as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 const mockGetWixClient = jest.fn(() => mockWixClient);
