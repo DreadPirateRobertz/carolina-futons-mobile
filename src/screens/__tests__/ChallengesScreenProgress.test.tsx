@@ -46,7 +46,7 @@ const emptyGrouped: GroupedChallenges = {
 const mockRefresh = jest.fn();
 const mockCatalog = jest.fn(() => ({
   challenges: [] as CatalogChallenge[],
-  grouped: emptyGrouped,
+  grouped: emptyGrouped as GroupedChallenges,
   loading: false,
   error: null as string | null,
   refresh: mockRefresh,
