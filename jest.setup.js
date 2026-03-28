@@ -111,6 +111,7 @@ jest.mock('@react-native-community/netinfo', () => ({
 jest.mock('react-native-worklets', () => ({
   NativeWorklets: {},
   WorkletsModule: { isAvailable: false },
+  createSerializable: (fn) => fn,
 }));
 
 // Mock react-native-reanimated (v4) — depends on worklets
@@ -124,6 +125,8 @@ jest.mock('react-native-reanimated', () => {
     useAnimatedStyle: (fn) => fn(),
     useDerivedValue: (fn) => ({ value: fn() }),
     useAnimatedScrollHandler: () => ({}),
+    useAnimatedRef: () => ({ current: null }),
+    useEvent: () => () => {},
     withTiming: (v) => v,
     withSpring: (v) => v,
     withDelay: (_, v) => v,
@@ -146,13 +149,13 @@ jest.mock('react-native-reanimated', () => {
       quad: (v) => v,
       cubic: (v) => v,
     },
-    FadeIn: { duration: () => ({ delay: () => ({}) }) },
-    FadeOut: { duration: () => ({ delay: () => ({}) }) },
-    FadeInDown: { duration: () => ({ delay: () => ({}) }) },
-    FadeInUp: { duration: () => ({ delay: () => ({}) }) },
-    SlideInRight: { duration: () => ({}) },
-    SlideOutRight: { duration: () => ({}) },
-    Layout: { duration: () => ({}) },
+    FadeIn: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    FadeOut: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    FadeInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    FadeInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideInRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    SlideOutRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
+    Layout: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }) },
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
     createAnimatedComponent: (comp) => comp,
