@@ -10,8 +10,13 @@ export function NotificationPermissionPromptScreen() {
   const { requestPermission } = useNotificationPermission();
 
   async function handleEnable() {
-    await requestPermission();
-    navigation.navigate('Home' as never);
+    try {
+      await requestPermission();
+      navigation.navigate('Home' as never);
+    } catch {
+      // requestPermission error is non-fatal — still navigate away
+      navigation.navigate('Home' as never);
+    }
   }
 
   function handleLater() {
