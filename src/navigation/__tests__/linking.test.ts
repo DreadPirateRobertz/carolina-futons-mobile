@@ -288,5 +288,35 @@ describe('deep link route resolution (getStateFromPath)', () => {
     it('resolves /style-quiz', () => {
       expect(getScreen('style-quiz')).toBe('StyleQuiz');
     });
+
+    it('resolves /achievements to AchievementBadges', () => {
+      expect(getScreen('achievements')).toBe('AchievementBadges');
+    });
+
+    it('resolves /alerts to Notifications', () => {
+      expect(getScreen('alerts')).toBe('Notifications');
+    });
+  });
+});
+
+describe('linkingConfig — AchievementBadges and Notifications', () => {
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps AchievementBadges screen', () => {
+    expect(screens.AchievementBadges).toBe('achievements');
+  });
+
+  it('maps Notifications screen', () => {
+    expect(screens.Notifications).toBe('alerts');
+  });
+});
+
+describe('SUPPORTED_PATHS — AchievementBadges and Notifications', () => {
+  it('includes achievements', () => {
+    expect(SUPPORTED_PATHS).toContain('achievements');
+  });
+
+  it('includes alerts', () => {
+    expect(SUPPORTED_PATHS).toContain('alerts');
   });
 });

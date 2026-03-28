@@ -379,6 +379,139 @@ describe('Deep Linking', () => {
   });
 });
 
+// --- Screen mocks for new nav-wired screens ---
+
+jest.mock('@/screens/AchievementBadgesScreen', () => ({
+  AchievementBadgesScreen: () => <MockScreen testID="achievement-badges-screen" label="AchievementBadges" />,
+}));
+
+jest.mock('@/screens/NotificationsScreen', () => ({
+  NotificationsScreen: () => <MockScreen testID="notifications-screen" label="Notifications" />,
+}));
+
+// Test navigator that includes the new screens
+function TestNavWithNewScreens() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Tabs">
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen name="AchievementBadges">
+        {() => <MockScreen testID="achievement-badges-screen" label="AchievementBadges" />}
+      </Stack.Screen>
+      <Stack.Screen name="Notifications">
+        {() => <MockScreen testID="notifications-screen" label="Notifications" />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
+describe('AchievementBadges + Notifications navigation wiring', () => {
+  it('navigates to AchievementBadges screen', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('AchievementBadges');
+    });
+    await waitFor(() => {
+      expect(getByTestId('achievement-badges-screen')).toBeTruthy();
+    });
+  });
+
+  it('navigates back from AchievementBadges to tabs', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId, queryByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('AchievementBadges');
+    });
+    await waitFor(() => expect(getByTestId('achievement-badges-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.goBack();
+    });
+    await waitFor(() => {
+      expect(queryByTestId('achievement-badges-screen')).toBeFalsy();
+      expect(getByTestId('home-screen')).toBeTruthy();
+    });
+  });
+
+  it('navigates to Notifications screen', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('Notifications');
+    });
+    await waitFor(() => {
+      expect(getByTestId('notifications-screen')).toBeTruthy();
+    });
+  });
+
+  it('navigates back from Notifications to tabs', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId, queryByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('Notifications');
+    });
+    await waitFor(() => expect(getByTestId('notifications-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.goBack();
+    });
+    await waitFor(() => {
+      expect(queryByTestId('notifications-screen')).toBeFalsy();
+      expect(getByTestId('home-screen')).toBeTruthy();
+    });
+  });
+
+  it('opens AchievementBadges from deep link initial state', async () => {
+    const { getByTestId } = render(
+      <NavigationContainer
+        initialState={{
+          routes: [{ name: 'Tabs' }, { name: 'AchievementBadges' }],
+          index: 1,
+        }}
+      >
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => {
+      expect(getByTestId('achievement-badges-screen')).toBeTruthy();
+    });
+  });
+
+  it('opens Notifications from deep link initial state', async () => {
+    const { getByTestId } = render(
+      <NavigationContainer
+        initialState={{
+          routes: [{ name: 'Tabs' }, { name: 'Notifications' }],
+          index: 1,
+        }}
+      >
+        <TestNavWithNewScreens />
+      </NavigationContainer>,
+    );
+    await waitFor(() => {
+      expect(getByTestId('notifications-screen')).toBeTruthy();
+    });
+  });
+});
+
 // Mirror the AppNavigator PaymentConfirmation screen wiring so we can test
 // that onRetry is actually passed (the prop was missing in production — PR #120 issue #1).
 const mockOrder = {
