@@ -38,7 +38,7 @@ it('returns null when feature flag is disabled', async () => {
 });
 
 it('returns cached score without calling Wix', async () => {
-  (getCachedFitScore as jest.Mock).mockResolvedValue({ score: 88, reasons: ['firm'] });
+  (getCachedFitScore as jest.Mock).mockResolvedValueOnce({ score: 88, reasons: ['firm'] });
   const { result } = renderHook(() => useFitScore('prod-1', 'member-1'));
   await act(async () => {});
   expect(result.current.score).toBe(88);
