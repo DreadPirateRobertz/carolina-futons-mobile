@@ -16,8 +16,15 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   }
 
   // Strip node: prefix — Metro doesn't support it but packages like jose use it.
+  // Route to browser build for jose so node:crypto/buffer are never needed.
   if (moduleName.startsWith('node:')) {
     return context.resolveRequest(context, moduleName.slice(5), platform);
+  }
+
+  // jose ships node and browser builds; force browser build to avoid node:crypto.
+  if (moduleName.startsWith('jose/dist/node/')) {
+    const browserPath = moduleName.replace('jose/dist/node/', 'jose/dist/browser/');
+    return context.resolveRequest(context, browserPath, platform);
   }
 
   // @stripe/stripe-react-native imports react-native internals that don't
