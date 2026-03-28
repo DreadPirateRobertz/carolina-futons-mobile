@@ -343,4 +343,63 @@ describe('malformed payload guard → goBack() fallback', () => {
     expect(mockGoBack).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it('calls goBack when deep link resolves to NotFound (e.g. daily_spin_reminder)', async () => {
+    // daily_spin_reminder → carolinafutons://daily-spin → resolveRoute returns NotFound
+    render(<HookHarness navRef={makeNavRef()} />);
+
+    const callback = mockAddNotificationResponseReceivedListener.mock.calls[0][0];
+    await act(async () => {
+      callback(makeResponse({ type: 'daily_spin_reminder' }));
+    });
+
+    expect(mockGoBack).toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
+// ── Listener error handling ─────────────────────────────────────────────────
+
+describe('listener error handling', () => {
+  it('captures Error thrown during listener handleResponse', async () => {
+    const throwingNav = {
+      isReady: () => true,
+      navigate: jest.fn().mockImplementation(() => {
+        throw new Error('navigation crashed');
+      }),
+      goBack: jest.fn(),
+    } as any;
+
+    render(<HookHarness navRef={throwingNav} />);
+
+    const callback = mockAddNotificationResponseReceivedListener.mock.calls[0][0];
+    await act(async () => {
+      callback(makeResponse({ type: 'order_update', orderId: 'x' }));
+    });
+
+    expect(require('@/services/crashReporting').captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+    );
+  });
+
+  it('wraps non-Error thrown in listener catch before captureException', async () => {
+    const throwingNav = {
+      isReady: () => true,
+      navigate: jest.fn().mockImplementation(() => {
+        throw 'string error';
+      }),
+      goBack: jest.fn(),
+    } as any;
+
+    render(<HookHarness navRef={throwingNav} />);
+
+    const callback = mockAddNotificationResponseReceivedListener.mock.calls[0][0];
+    await act(async () => {
+      callback(makeResponse({ type: 'order_update', orderId: 'x' }));
+    });
+
+    expect(require('@/services/crashReporting').captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+    );
+  });
 });
