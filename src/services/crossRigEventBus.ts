@@ -176,6 +176,18 @@ export async function emitRedemptionInitiated(
   });
 }
 
+export async function emitCartAbandoned(
+  client: WixClientLike | null,
+  input: { cartTotal: number; itemCount: number },
+): Promise<CrossRigEventResult> {
+  return emit(client, 'cart_abandoned', {
+    cartTotal: input.cartTotal,
+    itemCount: input.itemCount,
+    delta: 0,
+    newTotal: 0,
+  });
+}
+
 export async function replayCrossRigQueue(client: WixClientLike): Promise<ReplayResult> {
   const raw = await AsyncStorage.getItem(QUEUE_KEY);
   if (!raw) return { replayed: 0, failed: 0 };

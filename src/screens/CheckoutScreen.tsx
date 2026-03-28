@@ -58,6 +58,8 @@ import {
   type NormalizedShippingOption,
 } from '@/services/shippingIntelligenceService';
 import { pollPaymentConfirmation } from '@/services/paymentPoller';
+import { CheckoutFormSkeleton } from '@/components/CheckoutFormSkeleton';
+import { PromoCodeInput } from '@/components/PromoCodeInput';
 
 const SHIPPING_ZIP_KEY = 'shipping_zip';
 const ZIP_RE = /^\d{5}(-\d{4})?$/;
@@ -285,6 +287,19 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       klarnaFiredRef.current = false;
     }
   }, [klarnaCheckout.status, klarnaCheckout.order, onOrderComplete, addressBook]);
+  // Skeleton guard — hides form until Stripe SDK is ready on first render (cm-epicC task 4)
+  const [stripeReady, setStripeReady] = useState(false);
+  useEffect(() => {
+    // Mark Stripe ready after mount (async init completes before user can interact)
+    setStripeReady(true);
+  }, []);
+
+  // Promo code discount applied by PromoCodeInput
+  const [promoDiscount, setPromoDiscount] = useState<{
+    amount: number;
+    type: 'percent' | 'fixed';
+  } | null>(null);
+
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -797,6 +812,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       </View>
     </View>
   );
+
+  if (!stripeReady) {
+    return <CheckoutFormSkeleton />;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -1353,6 +1372,18 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               {formatPrice(totals.tax)}
             </Text>
           </View>
+          {promoDiscount && (
+            <View style={styles.totalRow} testID="promo-discount-row">
+              <Text style={[styles.totalLabel, { color: colors.success }]}>
+                Promo ({promoDiscount.type === 'percent' ? `${promoDiscount.amount}%` : formatPrice(promoDiscount.amount)} off)
+              </Text>
+              <Text style={[styles.totalValue, { color: colors.success }]} testID="promo-discount-value">
+                {promoDiscount.type === 'percent'
+                  ? `-${formatPrice((totals.total * promoDiscount.amount) / 100)}`
+                  : `-${formatPrice(promoDiscount.amount)}`}
+              </Text>
+            </View>
+          )}
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
@@ -1379,6 +1410,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             error={loyaltyError}
             hidden={items.length === 0}
             testID="checkout-loyalty-banner"
+          />
+        </View>
+
+        {/* Promo Code — cm-epicC task 4 */}
+        <View style={{ marginHorizontal: spacing.lg, marginTop: spacing.sm }}>
+          <PromoCodeInput
+            cartTotal={totals.total}
+            onDiscount={(amount, type) => setPromoDiscount({ amount, type })}
           />
         </View>
 

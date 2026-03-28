@@ -15,6 +15,7 @@ import {
   emitStreakExtended,
   emitChallengeStarted,
   emitRedemptionInitiated,
+  emitCartAbandoned,
   replayCrossRigQueue,
 } from '../crossRigEventBus';
 
@@ -573,5 +574,46 @@ describe('401 auth error handling', () => {
     const body1 = callFunction.mock.calls[0][2] as Record<string, unknown>;
     const body2 = callFunction.mock.calls[1][2] as Record<string, unknown>;
     expect(body1.eventId).toBe(body2.eventId);
+  });
+});
+
+// ── emitCartAbandoned ──────────────────────────────────────────────────────
+
+// mockCallFunction helper for emitCartAbandoned tests
+let mockCallFunction: jest.Mock;
+const mockWixClient = { callFunction: (...args: unknown[]) => mockCallFunction(...args) };
+
+describe('emitCartAbandoned', () => {
+  beforeEach(() => {
+    mockCallFunction = jest.fn();
+  });
+
+  it('emitCartAbandoned sends cart_abandoned event', async () => {
+    mockCallFunction.mockResolvedValue({ success: true });
+    await emitCartAbandoned(mockWixClient, { cartTotal: 299, itemCount: 2 });
+    expect(mockCallFunction).toHaveBeenCalledWith(
+      'crossRigEvent',
+      'POST',
+      expect.objectContaining({ event: 'cart_abandoned', cartTotal: 299, itemCount: 2 }),
+    );
+  });
+
+  it('returns success:true on 200', async () => {
+    mockCallFunction.mockResolvedValue({ success: true });
+    const result = await emitCartAbandoned(mockWixClient, { cartTotal: 499, itemCount: 3 });
+    expect(result.success).toBe(true);
+  });
+
+  it('queues and returns queued:true when client is null', async () => {
+    const result = await emitCartAbandoned(null, { cartTotal: 199, itemCount: 1 });
+    expect(result.success).toBe(false);
+    expect(result.queued).toBe(true);
+  });
+
+  it('does not include userId in body (IDOR protection)', async () => {
+    mockCallFunction.mockResolvedValue({ success: true });
+    await emitCartAbandoned(mockWixClient, { cartTotal: 299, itemCount: 2 });
+    const body = mockCallFunction.mock.calls[0][2] as Record<string, unknown>;
+    expect(body).not.toHaveProperty('userId');
   });
 });
