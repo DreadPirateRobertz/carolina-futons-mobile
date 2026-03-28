@@ -865,7 +865,13 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         accessibilityRole="progressbar"
         accessibilityLabel="Checkout step 1 of 3"
         accessibilityValue={{ min: 1, max: 3, now: 1 }}
-        style={{ height: 3, backgroundColor: colors.sunsetCoral, marginHorizontal: spacing.lg, borderRadius: 2, marginBottom: spacing.xs }}
+        style={{
+          height: 3,
+          backgroundColor: colors.sunsetCoral,
+          marginHorizontal: spacing.lg,
+          borderRadius: 2,
+          marginBottom: spacing.xs,
+        }}
       />
 
       <ScrollView
@@ -1381,9 +1387,16 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           {promoDiscount && (
             <View style={styles.totalRow} testID="promo-discount-row">
               <Text style={[styles.totalLabel, { color: colors.success }]}>
-                Promo ({promoDiscount.type === 'percent' ? `${promoDiscount.amount}%` : formatPrice(promoDiscount.amount)} off)
+                Promo (
+                {promoDiscount.type === 'percent'
+                  ? `${promoDiscount.amount}%`
+                  : formatPrice(promoDiscount.amount)}{' '}
+                off)
               </Text>
-              <Text style={[styles.totalValue, { color: colors.success }]} testID="promo-discount-value">
+              <Text
+                style={[styles.totalValue, { color: colors.success }]}
+                testID="promo-discount-value"
+              >
                 {promoDiscount.type === 'percent'
                   ? `-${formatPrice((totals.total * promoDiscount.amount) / 100)}`
                   : `-${formatPrice(promoDiscount.amount)}`}
