@@ -19,29 +19,29 @@ describe('useMiniCartDrawer', () => {
     expect(result.current.isOpen).toBe(false);
   });
 
-  it('open() sets isOpen to true', () => {
+  it('open() sets isOpen to true', async () => {
     const { result } = renderHook(() => useMiniCartDrawer(), { wrapper });
-    act(() => result.current.open());
+    await act(async () => result.current.open());
     expect(result.current.isOpen).toBe(true);
   });
 
-  it('close() sets isOpen to false after open', () => {
+  it('close() sets isOpen to false after open', async () => {
     const { result } = renderHook(() => useMiniCartDrawer(), { wrapper });
-    act(() => result.current.open());
-    act(() => result.current.close());
+    await act(async () => result.current.open());
+    await act(async () => result.current.close());
     expect(result.current.isOpen).toBe(false);
   });
 
-  it('toggle() opens when closed', () => {
+  it('toggle() opens when closed', async () => {
     const { result } = renderHook(() => useMiniCartDrawer(), { wrapper });
-    act(() => result.current.toggle());
+    await act(async () => result.current.toggle());
     expect(result.current.isOpen).toBe(true);
   });
 
-  it('toggle() closes when open', () => {
+  it('toggle() closes when open', async () => {
     const { result } = renderHook(() => useMiniCartDrawer(), { wrapper });
-    act(() => result.current.open());
-    act(() => result.current.toggle());
+    await act(async () => result.current.open());
+    await act(async () => result.current.toggle());
     expect(result.current.isOpen).toBe(false);
   });
 

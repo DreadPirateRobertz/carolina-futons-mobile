@@ -533,21 +533,21 @@ describe('HomeScreen', () => {
       expect(scrollView.props.refreshControl).toBeTruthy();
     });
 
-    it('pull-to-refresh calls useActiveChallenges.refresh()', () => {
+    it('pull-to-refresh calls useActiveChallenges.refresh()', async () => {
       const { getByTestId } = renderHomeScreen();
       const scrollView = getByTestId('home-screen');
-      act(() => scrollView.props.refreshControl.props.onRefresh());
+      await act(async () => scrollView.props.refreshControl.props.onRefresh());
       expect(mockRefreshChallenges).toHaveBeenCalledTimes(1);
     });
 
-    it('pull-to-refresh calls useLivingSky.refresh()', () => {
+    it('pull-to-refresh calls useLivingSky.refresh()', async () => {
       const { getByTestId } = renderHomeScreen();
       const scrollView = getByTestId('home-screen');
-      act(() => scrollView.props.refreshControl.props.onRefresh());
+      await act(async () => scrollView.props.refreshControl.props.onRefresh());
       expect(mockRefreshSky).toHaveBeenCalledTimes(1);
     });
 
-    it('pull-to-refresh calls useDailyQuests.refresh() (cm-0l2)', () => {
+    it('pull-to-refresh calls useDailyQuests.refresh() (cm-0l2)', async () => {
       const mockRefreshQuests = jest.fn();
       mockUseDailyQuests.mockReturnValue({
         quests: [],
@@ -556,7 +556,7 @@ describe('HomeScreen', () => {
       });
       const { getByTestId } = renderHomeScreen();
       const scrollView = getByTestId('home-screen');
-      act(() => scrollView.props.refreshControl.props.onRefresh());
+      await act(async () => scrollView.props.refreshControl.props.onRefresh());
       expect(mockRefreshQuests).toHaveBeenCalledTimes(1);
     });
 

@@ -177,7 +177,7 @@ describe('useChallengeProgress', () => {
 
     expect(mockQueryData).toHaveBeenCalledTimes(1);
 
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
 

@@ -120,7 +120,7 @@ describe('useDeepLink', () => {
       await act(async () => {});
 
       const urlHandler = mockAddEventListener.mock.calls[0][1];
-      act(() => {
+      await act(async () => {
         urlHandler({ url: 'carolinafutons://orders/ord-456' });
       });
 
@@ -137,12 +137,12 @@ describe('useDeepLink', () => {
 
       const urlHandler = mockAddEventListener.mock.calls[0][1];
 
-      act(() => {
+      await act(async () => {
         urlHandler({ url: 'carolinafutons://cart' });
       });
       expect(result.current.lastRoute).toEqual({ screen: 'Cart' });
 
-      act(() => {
+      await act(async () => {
         urlHandler({ url: 'carolinafutons://wishlist' });
       });
       expect(result.current.lastRoute).toEqual({ screen: 'Wishlist' });
@@ -280,7 +280,7 @@ describe('useDeepLink', () => {
       await act(async () => {});
 
       const urlHandler = mockAddEventListener.mock.calls[0][1];
-      act(() => {
+      await act(async () => {
         urlHandler({ url: 'carolinafutons://cart' });
       });
 
@@ -308,7 +308,7 @@ describe('useDeepLink', () => {
       await act(async () => {});
 
       const urlHandler = mockAddEventListener.mock.calls[0][1];
-      act(() => {
+      await act(async () => {
         urlHandler({ url: '' });
       });
 

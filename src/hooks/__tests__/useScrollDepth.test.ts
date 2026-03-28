@@ -25,10 +25,10 @@ describe('useScrollDepth', () => {
     expect(typeof result.current).toBe('function');
   });
 
-  it('tracks scroll depth when scrolled', () => {
+  it('tracks scroll depth when scrolled', async () => {
     const { result } = renderHook(() => useScrollDepth('TestScreen'));
 
-    act(() => {
+    await act(async () => {
       // Content is 2000px tall, viewport is 800px, scrolled to 600px
       // Depth = 600 / (2000 - 800) = 0.5
       result.current(createScrollEvent(600, 2000, 800));
@@ -41,10 +41,10 @@ describe('useScrollDepth', () => {
     expect(entry!.maxDepth).toBe(0.5);
   });
 
-  it('ignores non-scrollable content', () => {
+  it('ignores non-scrollable content', async () => {
     const { result } = renderHook(() => useScrollDepth('TestScreen'));
 
-    act(() => {
+    await act(async () => {
       // Content fits in viewport — no scrollable height
       result.current(createScrollEvent(0, 800, 800));
     });

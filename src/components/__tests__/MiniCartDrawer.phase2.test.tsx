@@ -217,28 +217,28 @@ describe('remove button', () => {
 // ── Section 4: Swipe-down dismiss ────────────────────────────────────────────
 
 describe('swipe-down dismiss gesture', () => {
-  it('swipe down exceeding 100px translation calls onClose', () => {
+  it('swipe down exceeding 100px translation calls onClose', async () => {
     const onClose = jest.fn();
     renderDrawer({ onClose });
-    act(() => {
+    await act(async () => {
       capturedPanOnEnd?.({ translationY: 150, velocityY: 100 });
     });
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('fast downward swipe (velocity ≥ 500) calls onClose even below translation threshold', () => {
+  it('fast downward swipe (velocity ≥ 500) calls onClose even below translation threshold', async () => {
     const onClose = jest.fn();
     renderDrawer({ onClose });
-    act(() => {
+    await act(async () => {
       capturedPanOnEnd?.({ translationY: 30, velocityY: 600 });
     });
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('small slow swipe (< threshold) does NOT call onClose', () => {
+  it('small slow swipe (< threshold) does NOT call onClose', async () => {
     const onClose = jest.fn();
     renderDrawer({ onClose });
-    act(() => {
+    await act(async () => {
       capturedPanOnEnd?.({ translationY: 30, velocityY: 50 });
     });
     expect(onClose).not.toHaveBeenCalled();

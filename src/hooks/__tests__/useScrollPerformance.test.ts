@@ -42,40 +42,40 @@ beforeEach(() => {
 });
 
 describe('useScrollPerformance', () => {
-  it('starts a scroll session on begin drag', () => {
+  it('starts a scroll session on begin drag', async () => {
     const { result } = renderHook(() => useScrollPerformance('ShopScreen'));
 
-    act(() => {
+    await act(async () => {
       result.current.onScrollBeginDrag();
     });
 
     expect(perf.startScrollSession).toHaveBeenCalledWith('ShopScreen');
   });
 
-  it('ends session on momentum scroll end', () => {
+  it('ends session on momentum scroll end', async () => {
     const { result } = renderHook(() => useScrollPerformance('ShopScreen'));
 
-    act(() => {
+    await act(async () => {
       result.current.onScrollBeginDrag();
     });
 
-    act(() => {
+    await act(async () => {
       result.current.onMomentumScrollEnd();
     });
 
     expect(perf.endScrollSession).toHaveBeenCalled();
   });
 
-  it('records frames during scrolling', () => {
+  it('records frames during scrolling', async () => {
     const { result } = renderHook(() => useScrollPerformance('ShopScreen'));
 
-    act(() => {
+    await act(async () => {
       mockNow = 0;
       result.current.onScrollBeginDrag();
     });
 
     // Simulate a raf tick
-    act(() => {
+    await act(async () => {
       mockNow = 16;
       if (rafCallbacks.length > 0) {
         rafCallbacks[0](mockNow);
@@ -85,18 +85,18 @@ describe('useScrollPerformance', () => {
     expect(perf.recordFrame).toHaveBeenCalled();
   });
 
-  it('warns on 3+ consecutive slow frames (below 55fps)', () => {
+  it('warns on 3+ consecutive slow frames (below 55fps)', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { result } = renderHook(() => useScrollPerformance('ShopScreen'));
 
-    act(() => {
+    await act(async () => {
       mockNow = 0;
       result.current.onScrollBeginDrag();
     });
 
     // Simulate 3 consecutive slow frames (~20ms each = 50fps < 55fps threshold)
     for (let i = 0; i < 3; i++) {
-      act(() => {
+      await act(async () => {
         mockNow += 20; // 20ms per frame = 50fps
         if (rafCallbacks.length > 0) {
           const cb = rafCallbacks[rafCallbacks.length - 1];
@@ -112,18 +112,18 @@ describe('useScrollPerformance', () => {
     warnSpy.mockRestore();
   });
 
-  it('resets slow frame counter on fast frame', () => {
+  it('resets slow frame counter on fast frame', async () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const { result } = renderHook(() => useScrollPerformance('ShopScreen'));
 
-    act(() => {
+    await act(async () => {
       mockNow = 0;
       result.current.onScrollBeginDrag();
     });
 
     // 2 slow frames
     for (let i = 0; i < 2; i++) {
-      act(() => {
+      await act(async () => {
         mockNow += 20;
         if (rafCallbacks.length > 0) {
           rafCallbacks[rafCallbacks.length - 1](mockNow);
@@ -132,7 +132,7 @@ describe('useScrollPerformance', () => {
     }
 
     // 1 fast frame resets counter
-    act(() => {
+    await act(async () => {
       mockNow += 10; // 10ms = 100fps, well above threshold
       if (rafCallbacks.length > 0) {
         rafCallbacks[rafCallbacks.length - 1](mockNow);
@@ -141,7 +141,7 @@ describe('useScrollPerformance', () => {
 
     // 2 more slow frames — should NOT warn (counter was reset)
     for (let i = 0; i < 2; i++) {
-      act(() => {
+      await act(async () => {
         mockNow += 20;
         if (rafCallbacks.length > 0) {
           rafCallbacks[rafCallbacks.length - 1](mockNow);

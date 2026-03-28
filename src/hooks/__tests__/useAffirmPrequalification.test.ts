@@ -163,7 +163,7 @@ describe('useAffirmPrequalification', () => {
     });
 
     // Resolve the promise
-    act(() => {
+    await act(async () => {
       resolvePrequal({ eligible: true, error: undefined });
     });
 

@@ -107,44 +107,41 @@ jest.mock('@react-native-community/netinfo', () => ({
   fetch: jest.fn(() => Promise.resolve({ isConnected: true, isInternetReachable: true })),
 }));
 
-// Mock react-native-worklets — reanimated 4.x imports it at load time and the
-// native module (NativeWorklets) isn't available in Jest. Use the library's
-// own mock to provide a complete JS-only stub.
-jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'));
+// Mock react-native-worklets (v4) — native module not available in Jest
+jest.mock('react-native-worklets', () => ({
+  NativeWorklets: {},
+  WorkletsModule: { isAvailable: false },
+}));
 
-// Stub the worklets version validator so reanimated's mock.js doesn't throw
-// a version-mismatch error when loading in Jest.
-jest.mock('react-native-reanimated/scripts/validate-worklets-version', () => {
-  return () => ({ ok: true });
-});
-
-// Mock react-native-reanimated using the library's own mock as a base,
-// with our overrides for animation layout/entering/exiting objects that
-// the built-in mock doesn't cover with the chainable API our components use.
+// Mock react-native-reanimated (v4) — depends on worklets
 jest.mock('react-native-reanimated', () => {
-  const mock = require('react-native-reanimated/mock');
-  const chainable = () => {
-    const obj = {};
-    const handler = {
-      get: (_, prop) => {
-        if (prop === Symbol.toPrimitive) return () => '';
-        return (..._args) => new Proxy(obj, handler);
-      },
-    };
-    return new Proxy(obj, handler);
-  };
+  const React = require('react');
+  const View = require('react-native').View;
   return {
-    ...mock,
-    // Entering/exiting animations use a chainable builder API
-    // (e.g. FadeIn.duration(300).delay(100)) — the built-in mock
-    // doesn't support chaining, so we use a Proxy.
-    FadeIn: chainable(),
-    FadeOut: chainable(),
-    FadeInDown: chainable(),
-    FadeInUp: chainable(),
-    SlideInRight: chainable(),
-    SlideOutRight: chainable(),
-    Layout: chainable(),
+    __esModule: true,
+    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View, createAnimatedComponent: (comp) => comp },
+    useSharedValue: (init) => ({ value: init }),
+    useAnimatedStyle: (fn) => fn(),
+    useDerivedValue: (fn) => ({ value: fn() }),
+    useAnimatedScrollHandler: () => ({}),
+    withTiming: (v) => v,
+    withSpring: (v) => v,
+    withDelay: (_, v) => v,
+    withSequence: (...args) => args[args.length - 1],
+    withRepeat: (v) => v,
+    Easing: { linear: (v) => v, ease: (v) => v, bezier: () => (v) => v },
+    FadeIn: { duration: () => ({ delay: () => ({}) }) },
+    FadeOut: { duration: () => ({ delay: () => ({}) }) },
+    FadeInDown: { duration: () => ({ delay: () => ({}) }) },
+    FadeInUp: { duration: () => ({ delay: () => ({}) }) },
+    SlideInRight: { duration: () => ({}) },
+    SlideOutRight: { duration: () => ({}) },
+    Layout: { duration: () => ({}) },
+    runOnJS: (fn) => fn,
+    runOnUI: (fn) => fn,
+    createAnimatedComponent: (comp) => comp,
+    interpolate: (v) => v,
+    Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend' },
   };
 });
 

@@ -60,7 +60,7 @@ describe.skip('Empty state illustrations', () => {
   });
 
   describe('ShopScreen (no results)', () => {
-    it('renders search illustration when no results', () => {
+    it('renders search illustration when no results', async () => {
       const { getByTestId } = render(
         <ThemeProvider>
           <WishlistProvider>
@@ -69,7 +69,7 @@ describe.skip('Empty state illustrations', () => {
         </ThemeProvider>,
       );
       // Advance past loading skeleton
-      act(() => {
+      await act(async () => {
         jest.advanceTimersByTime(700);
       });
       // Search for nonexistent term

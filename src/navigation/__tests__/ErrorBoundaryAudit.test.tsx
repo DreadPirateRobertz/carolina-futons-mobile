@@ -263,7 +263,7 @@ describe('TabNavigator — tab screen error boundaries', () => {
         <TabNavigator />
       </NavigationContainer>,
     );
-    act(() => {
+    await act(async () => {
       ref.current?.navigate('Shop');
     });
     await waitFor(() => {
@@ -278,7 +278,7 @@ describe('TabNavigator — tab screen error boundaries', () => {
         <TabNavigator />
       </NavigationContainer>,
     );
-    act(() => {
+    await act(async () => {
       ref.current?.navigate('Cart');
     });
     await waitFor(() => {
@@ -293,7 +293,7 @@ describe('TabNavigator — tab screen error boundaries', () => {
         <TabNavigator />
       </NavigationContainer>,
     );
-    act(() => {
+    await act(async () => {
       ref.current?.navigate('Account');
     });
     await waitFor(() => {

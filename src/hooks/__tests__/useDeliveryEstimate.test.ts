@@ -78,7 +78,7 @@ describe('useDeliveryEstimate', () => {
 
     expect(result.current.isLoading).toBe(true);
 
-    act(() => {
+    await act(async () => {
       resolve(SUCCESS_FALLBACK);
     });
 
@@ -156,7 +156,7 @@ describe('useDeliveryEstimate', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       result.current.refresh();
     });
 

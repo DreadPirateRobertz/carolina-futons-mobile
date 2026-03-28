@@ -84,7 +84,7 @@ describe('startCheckout — session creation', () => {
     expect(result.current.status).toBe('idle');
 
     let promise: Promise<unknown>;
-    act(() => {
+    await act(async () => {
       promise = result.current.startCheckout(
         [{ id: 'prod-001', quantity: 1, price: 299 }],
         MOCK_TOTALS,
@@ -487,7 +487,7 @@ describe('startCheckout — error states', () => {
 
     const { result } = renderHook(() => useKlarnaCheckout());
 
-    act(() => {
+    await act(async () => {
       result.current.startCheckout([{ id: 'prod-001', quantity: 1, price: 299 }], MOCK_TOTALS);
       result.current.startCheckout([{ id: 'prod-001', quantity: 1, price: 299 }], MOCK_TOTALS);
     });
@@ -548,7 +548,7 @@ describe('reset', () => {
 
     expect(result.current.status).toBe('error');
 
-    act(() => {
+    await act(async () => {
       result.current.reset();
     });
 

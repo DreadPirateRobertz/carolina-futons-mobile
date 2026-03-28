@@ -51,9 +51,9 @@ describe('useAROnboarding', () => {
     await act(async () => {});
 
     expect(result.current.currentStep).toBe(0);
-    act(() => result.current.nextStep());
+    await act(async () => result.current.nextStep());
     expect(result.current.currentStep).toBe(1);
-    act(() => result.current.nextStep());
+    await act(async () => result.current.nextStep());
     expect(result.current.currentStep).toBe(2);
   });
 
@@ -69,11 +69,11 @@ describe('useAROnboarding', () => {
     const { result } = renderHook(() => useAROnboarding());
     await act(async () => {});
 
-    act(() => result.current.prevStep());
+    await act(async () => result.current.prevStep());
     expect(result.current.currentStep).toBe(0);
 
-    act(() => result.current.nextStep());
-    act(() => result.current.prevStep());
+    await act(async () => result.current.nextStep());
+    await act(async () => result.current.prevStep());
     expect(result.current.currentStep).toBe(0);
   });
 

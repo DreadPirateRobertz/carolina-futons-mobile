@@ -34,9 +34,9 @@ describe('useARScene', () => {
     expect(result.current.activeIndex).toBe(-1);
   });
 
-  it('adds item to scene', () => {
+  it('adds item to scene', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
     expect(result.current.items).toHaveLength(1);
@@ -44,27 +44,27 @@ describe('useARScene', () => {
     expect(result.current.activeIndex).toBe(0);
   });
 
-  it('adds multiple items', () => {
+  it('adds multiple items', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel2 as any, mockFabric as any);
     });
     expect(result.current.items).toHaveLength(2);
     expect(result.current.totalPrice).toBe(648);
   });
 
-  it('enforces max 3 items', () => {
+  it('enforces max 3 items', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
     const added = result.current.addItem(mockModel as any, mockFabric as any);
@@ -72,73 +72,73 @@ describe('useARScene', () => {
     expect(added).toBe(false);
   });
 
-  it('removes item by index', () => {
+  it('removes item by index', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel2 as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.removeItem(0);
     });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].model.id).toBe('asheville-full');
   });
 
-  it('selects active item for editing', () => {
+  it('selects active item for editing', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel2 as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.setActiveIndex(1);
     });
     expect(result.current.activeIndex).toBe(1);
   });
 
-  it('adjusts activeIndex when removing active item', () => {
+  it('adjusts activeIndex when removing active item', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel2 as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.setActiveIndex(1);
     });
-    act(() => {
+    await act(async () => {
       result.current.removeItem(1);
     });
     expect(result.current.activeIndex).toBe(0);
   });
 
-  it('sets activeIndex to -1 when last item removed', () => {
+  it('sets activeIndex to -1 when last item removed', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.removeItem(0);
     });
     expect(result.current.activeIndex).toBe(-1);
     expect(result.current.items).toHaveLength(0);
   });
 
-  it('clears all items', () => {
+  it('clears all items', async () => {
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel2 as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.clearScene();
     });
     expect(result.current.items).toHaveLength(0);
@@ -146,26 +146,26 @@ describe('useARScene', () => {
     expect(result.current.activeIndex).toBe(-1);
   });
 
-  it('calculates total price including fabric premiums', () => {
+  it('calculates total price including fabric premiums', async () => {
     const premiumFabric = { ...mockFabric, id: 'velvet', name: 'Velvet', price: 50 };
     const { result } = renderHook(() => useARScene());
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, premiumFabric as any);
     });
     expect(result.current.totalPrice).toBe(399); // 349 + 50
   });
 
-  it('canAddMore returns true when under max', () => {
+  it('canAddMore returns true when under max', async () => {
     const { result } = renderHook(() => useARScene());
     expect(result.current.canAddMore).toBe(true);
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
     expect(result.current.canAddMore).toBe(true);
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel as any, mockFabric as any);
     });
     expect(result.current.canAddMore).toBe(false);

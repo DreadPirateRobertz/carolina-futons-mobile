@@ -83,7 +83,7 @@ describe('useConnectivity', () => {
       expect(NetInfo.addEventListener).not.toHaveBeenCalled();
     });
 
-    it('updates isOnline when NetInfo reports change', () => {
+    it('updates isOnline when NetInfo reports change', async () => {
       let listener: (state: { isConnected: boolean }) => void;
       NetInfo.addEventListener.mockImplementation((cb: typeof listener) => {
         listener = cb;
@@ -97,11 +97,11 @@ describe('useConnectivity', () => {
       );
 
       // Simulate going offline
-      act(() => listener!({ isConnected: false }));
+      await act(async () => listener!({ isConnected: false }));
       expect(getByTestId('online').props.children).toBe('false');
 
       // Simulate going online
-      act(() => listener!({ isConnected: true }));
+      await act(async () => listener!({ isConnected: true }));
       expect(getByTestId('online').props.children).toBe('true');
     });
   });

@@ -100,7 +100,7 @@ describe('useBiometricAuth', () => {
     await act(async () => {});
 
     let promptPromise: Promise<boolean>;
-    act(() => {
+    await act(async () => {
       promptPromise = result.current.promptBiometric('Test prompt');
     });
 

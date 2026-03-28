@@ -37,11 +37,11 @@ describe('useStagedItems', () => {
     expect(result.current.canAdd).toBe(true);
   });
 
-  it('adds an item and sets it as active', () => {
+  it('adds an item and sets it as active', async () => {
     const { result } = renderHook(() => useStagedItems());
 
     let added: any;
-    act(() => {
+    await act(async () => {
       added = result.current.addItem(mockModel, mockFabric);
     });
 
@@ -52,10 +52,10 @@ describe('useStagedItems', () => {
     expect(result.current.activeItem?.model.id).toBe('asheville-full');
   });
 
-  it('adds multiple items', () => {
+  it('adds multiple items', async () => {
     const { result } = renderHook(() => useStagedItems());
 
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel, mockFabric);
       result.current.addItem(mockModel2, mockFabric);
     });
@@ -63,10 +63,10 @@ describe('useStagedItems', () => {
     expect(result.current.items).toHaveLength(2);
   });
 
-  it('enforces max items limit', () => {
+  it('enforces max items limit', async () => {
     const { result } = renderHook(() => useStagedItems());
 
-    act(() => {
+    await act(async () => {
       for (let i = 0; i < 5; i++) {
         result.current.addItem(mockModel, mockFabric);
       }
@@ -76,7 +76,7 @@ describe('useStagedItems', () => {
     expect(result.current.canAdd).toBe(false);
 
     let overflow: any;
-    act(() => {
+    await act(async () => {
       overflow = result.current.addItem(mockModel, mockFabric);
     });
 
@@ -84,16 +84,16 @@ describe('useStagedItems', () => {
     expect(result.current.items).toHaveLength(5);
   });
 
-  it('removes an item by id', () => {
+  it('removes an item by id', async () => {
     const { result } = renderHook(() => useStagedItems());
 
     let item1: any;
-    act(() => {
+    await act(async () => {
       item1 = result.current.addItem(mockModel, mockFabric);
       result.current.addItem(mockModel2, mockFabric);
     });
 
-    act(() => {
+    await act(async () => {
       result.current.removeItem(item1.id);
     });
 
@@ -101,33 +101,33 @@ describe('useStagedItems', () => {
     expect(result.current.items[0].model.id).toBe('blue-ridge-queen');
   });
 
-  it('clears active when removing active item', () => {
+  it('clears active when removing active item', async () => {
     const { result } = renderHook(() => useStagedItems());
 
     let item: any;
-    act(() => {
+    await act(async () => {
       item = result.current.addItem(mockModel, mockFabric);
     });
 
     expect(result.current.activeId).toBe(item.id);
 
-    act(() => {
+    await act(async () => {
       result.current.removeItem(item.id);
     });
 
     expect(result.current.activeId).toBeNull();
   });
 
-  it('selects an item by id', () => {
+  it('selects an item by id', async () => {
     const { result } = renderHook(() => useStagedItems());
 
     let item1: any;
-    act(() => {
+    await act(async () => {
       item1 = result.current.addItem(mockModel, mockFabric);
       result.current.addItem(mockModel2, mockFabric);
     });
 
-    act(() => {
+    await act(async () => {
       result.current.selectItem(item1.id);
     });
 
@@ -135,15 +135,15 @@ describe('useStagedItems', () => {
     expect(result.current.activeItem?.model.id).toBe('asheville-full');
   });
 
-  it('clears all items', () => {
+  it('clears all items', async () => {
     const { result } = renderHook(() => useStagedItems());
 
-    act(() => {
+    await act(async () => {
       result.current.addItem(mockModel, mockFabric);
       result.current.addItem(mockModel2, mockFabric);
     });
 
-    act(() => {
+    await act(async () => {
       result.current.clearAll();
     });
 

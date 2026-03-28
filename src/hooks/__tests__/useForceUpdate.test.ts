@@ -125,7 +125,7 @@ describe('useForceUpdate', () => {
     await act(async () => {});
     expect(result.current.visible).toBe(true);
 
-    act(() => result.current.dismiss());
+    await act(async () => result.current.dismiss());
     expect(result.current.visible).toBe(false);
   });
 
@@ -138,7 +138,7 @@ describe('useForceUpdate', () => {
     await act(async () => {});
     expect(result.current.visible).toBe(true);
 
-    act(() => result.current.dismiss());
+    await act(async () => result.current.dismiss());
     expect(result.current.visible).toBe(true);
   });
 

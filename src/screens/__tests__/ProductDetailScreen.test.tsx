@@ -1438,19 +1438,19 @@ describe('ProductDetailScreen', () => {
       expect(videoSlide.props.accessibilityLabel).toBeDefined();
     });
 
-    it('renders an error fallback view on video error', () => {
+    it('renders an error fallback view on video error', async () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const video = getByTestId('product-detail-video');
-      act(() => {
+      await act(async () => {
         video.props.testOnly_onError?.({ error: 'Network failure' });
       });
       expect(getByTestId('product-detail-video-error')).toBeTruthy();
     });
 
-    it('hides video player after error', () => {
+    it('hides video player after error', async () => {
       const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
       const video = getByTestId('product-detail-video');
-      act(() => {
+      await act(async () => {
         video.props.testOnly_onError?.({ error: 'Decode error' });
       });
       expect(queryByTestId('product-detail-video')).toBeNull();

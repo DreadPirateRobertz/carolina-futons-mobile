@@ -68,48 +68,48 @@ describe('useSwatchRequest', () => {
       expect(result.current.selectedFabrics).toEqual([]);
     });
 
-    it('toggles a fabric on', () => {
+    it('toggles a fabric on', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
       expect(result.current.selectedFabrics).toEqual([mockFabrics[0]]);
     });
 
-    it('toggles a fabric off', () => {
+    it('toggles a fabric off', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
       expect(result.current.selectedFabrics).toEqual([]);
     });
 
-    it('enforces max 3 fabric selections', () => {
+    it('enforces max 3 fabric selections', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[1]));
-      act(() => result.current.toggleFabric(mockFabrics[2]));
-      act(() => result.current.toggleFabric(mockFabrics[3]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.toggleFabric(mockFabrics[2]));
+      await act(async () => result.current.toggleFabric(mockFabrics[3]));
       expect(result.current.selectedFabrics).toHaveLength(3);
       expect(result.current.selectedFabrics).not.toContainEqual(mockFabrics[3]);
     });
 
-    it('allows removing a fabric when at max to make room', () => {
+    it('allows removing a fabric when at max to make room', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[1]));
-      act(() => result.current.toggleFabric(mockFabrics[2]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.toggleFabric(mockFabrics[2]));
       // Remove one
-      act(() => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
       expect(result.current.selectedFabrics).toHaveLength(2);
       // Now can add a new one
-      act(() => result.current.toggleFabric(mockFabrics[3]));
+      await act(async () => result.current.toggleFabric(mockFabrics[3]));
       expect(result.current.selectedFabrics).toHaveLength(3);
       expect(result.current.selectedFabrics).toContainEqual(mockFabrics[3]);
     });
 
-    it('clears all selected fabrics', () => {
+    it('clears all selected fabrics', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[1]));
-      act(() => result.current.clearSelection());
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.clearSelection());
       expect(result.current.selectedFabrics).toEqual([]);
     });
   });
@@ -117,7 +117,7 @@ describe('useSwatchRequest', () => {
   describe('submission', () => {
     it('submits successfully with valid data', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         const success = await result.current.submitRequest(validAddress);
@@ -129,7 +129,7 @@ describe('useSwatchRequest', () => {
 
     it('fires haptic success feedback on submission', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -142,8 +142,8 @@ describe('useSwatchRequest', () => {
 
     it('fires analytics event on submission', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -158,7 +158,7 @@ describe('useSwatchRequest', () => {
 
     it('persists request to AsyncStorage', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -186,7 +186,7 @@ describe('useSwatchRequest', () => {
 
     it('rejects submission with missing address fields', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       const incompleteAddress = { ...validAddress, fullName: '' };
 
@@ -200,7 +200,7 @@ describe('useSwatchRequest', () => {
 
     it('rejects submission with invalid zip code', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       const badZip = { ...validAddress, zip: 'abc' };
 
@@ -227,7 +227,7 @@ describe('useSwatchRequest', () => {
 
     it('is not submitting after request completes', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -291,7 +291,7 @@ describe('useSwatchRequest', () => {
       (AsyncStorage.setItem as jest.Mock).mockRejectedValue(new Error('Write error'));
 
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         const success = await result.current.submitRequest(validAddress);
@@ -307,7 +307,7 @@ describe('useSwatchRequest', () => {
         .mockResolvedValueOnce(undefined);
 
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -325,13 +325,13 @@ describe('useSwatchRequest', () => {
   describe('reset', () => {
     it('resets all state', async () => {
       const { result } = renderHook(() => useSwatchRequest('prod-asheville'));
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
       });
 
-      act(() => result.current.reset());
+      await act(async () => result.current.reset());
 
       expect(result.current.selectedFabrics).toEqual([]);
       expect(result.current.status).toBe('idle');
@@ -344,8 +344,8 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[1]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[1]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -365,7 +365,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(addressWithLine2);
@@ -382,7 +382,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress); // line2: ''
@@ -397,8 +397,8 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[2]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[2]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -412,8 +412,8 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
-      act(() => result.current.toggleFabric(mockFabrics[2]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[2]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -427,7 +427,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville Deluxe', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);
@@ -442,7 +442,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         const success = await result.current.submitRequest(validAddress);
@@ -458,7 +458,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         const success = await result.current.submitRequest(validAddress);
@@ -477,7 +477,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', null),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         const success = await result.current.submitRequest(validAddress);
@@ -493,7 +493,7 @@ describe('useSwatchRequest', () => {
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', undefined, mockWixClient as any),
       );
-      act(() => result.current.toggleFabric(mockFabrics[0]));
+      await act(async () => result.current.toggleFabric(mockFabrics[0]));
 
       await act(async () => {
         await result.current.submitRequest(validAddress);

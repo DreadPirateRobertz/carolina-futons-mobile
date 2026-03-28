@@ -92,7 +92,7 @@ describe('useGalleryFallback', () => {
     });
     expect(result.current.isGalleryMode).toBe(true);
 
-    act(() => {
+    await act(async () => {
       result.current.clearImage();
     });
 

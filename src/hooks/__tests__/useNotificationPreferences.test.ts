@@ -142,7 +142,7 @@ describe('useNotificationPreferences', () => {
         }),
       );
       const { result } = renderHook(() => useNotificationPreferences());
-      act(() => {
+      await act(async () => {
         result.current.toggle('dailySpinReminder');
       });
       expect(result.current.isSaving).toBe(true);

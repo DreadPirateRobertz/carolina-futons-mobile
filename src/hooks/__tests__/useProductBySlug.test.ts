@@ -300,7 +300,7 @@ describe('useProductBySlug', () => {
         expect(mockGetProductBySlug).toHaveBeenCalledTimes(1);
       });
 
-      act(() => {
+      await act(async () => {
         result.current.refresh();
       });
 
@@ -309,10 +309,10 @@ describe('useProductBySlug', () => {
       });
     });
 
-    it('refresh on static-match slug does not throw', () => {
+    it('refresh on static-match slug does not throw', async () => {
       const { result } = renderHook(() => useProductBySlug(knownSlug));
       expect(() => {
-        act(() => {
+        await act(async () => {
           result.current.refresh();
         });
       }).not.toThrow();

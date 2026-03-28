@@ -22,26 +22,26 @@ describe('ProductCardVideo', () => {
   });
 
   describe('error handling', () => {
-    it('renders null after video error (fallback to underlying image)', () => {
+    it('renders null after video error (fallback to underlying image)', async () => {
       const { getByTestId, queryByTestId } = render(
         <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
       );
 
       const onError = getByTestId('card-video').props.testOnly_onError;
       expect(onError).toBeDefined();
-      act(() => {
+      await act(async () => {
         onError();
       });
 
       expect(queryByTestId('card-video')).toBeNull();
     });
 
-    it('does not crash when onError fires with an error payload', () => {
+    it('does not crash when onError fires with an error payload', async () => {
       const { getByTestId, queryByTestId } = render(
         <ProductCardVideo videoUri="https://broken.example.com/video.mp4" testID="card-video" />,
       );
 
-      act(() => {
+      await act(async () => {
         getByTestId('card-video').props.testOnly_onError({ error: 'NETWORK_ERROR' });
       });
 
@@ -55,7 +55,7 @@ describe('ProductCardVideo', () => {
       expect(getByTestId('card-video')).toBeTruthy();
     });
 
-    it('error state is per-instance — two cards with same URI fail independently', () => {
+    it('error state is per-instance — two cards with same URI fail independently', async () => {
       const { getByTestId: getVideo1, queryByTestId: queryVideo1 } = render(
         <ProductCardVideo videoUri="https://example.com/video.mp4" testID="video-1" />,
       );
@@ -63,7 +63,7 @@ describe('ProductCardVideo', () => {
         <ProductCardVideo videoUri="https://example.com/video.mp4" testID="video-2" />,
       );
 
-      act(() => {
+      await act(async () => {
         getVideo1('video-1').props.testOnly_onError();
       });
 

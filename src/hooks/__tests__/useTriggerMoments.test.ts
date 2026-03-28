@@ -115,7 +115,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('tierChanged');
       });
       expect(result.current.triggers.tierChanged).toBeNull();
@@ -127,7 +127,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('tierChanged');
       });
       // setItem should be called with the new tier
@@ -140,7 +140,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(getItem).toHaveBeenCalled());
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('tierChanged');
       });
       expect(result.current.triggers.tierChanged).toBeNull();
@@ -191,7 +191,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('streakDanger');
       });
       expect(result.current.triggers.streakDanger).toBe(false);
@@ -203,7 +203,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(result.current.triggers.streakDanger).toBe(true));
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('streakDanger');
       });
       // setItem is only ever called for tier persistence, not streakDanger
@@ -219,7 +219,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(getItem).toHaveBeenCalled());
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('streakDanger');
       });
       expect(result.current.triggers.streakDanger).toBe(false);
@@ -245,92 +245,92 @@ describe('useTriggerMoments', () => {
       expect(result.current.triggers.challengeCompleted).toBeNull();
     });
 
-    it('surfaces first challenge after reportChallengesCompleted([item])', () => {
+    it('surfaces first challenge after reportChallengesCompleted([item])', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1]);
       });
 
       expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
     });
 
-    it('surfaces first challenge when multiple are reported', () => {
+    it('surfaces first challenge when multiple are reported', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1, challenge2]);
       });
 
       expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
     });
 
-    it('dismiss("challengeCompleted") advances to the next queued challenge', () => {
+    it('dismiss("challengeCompleted") advances to the next queued challenge', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1, challenge2]);
       });
       expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('challengeCompleted');
       });
       expect(result.current.triggers.challengeCompleted).toEqual(challenge2);
     });
 
-    it('dismiss("challengeCompleted") returns null when last item is dismissed', () => {
+    it('dismiss("challengeCompleted") returns null when last item is dismissed', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1]);
       });
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('challengeCompleted');
       });
       expect(result.current.triggers.challengeCompleted).toBeNull();
     });
 
-    it('dismiss("challengeCompleted") with empty queue is a no-op', () => {
+    it('dismiss("challengeCompleted") with empty queue is a no-op', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('challengeCompleted');
       });
       expect(result.current.triggers.challengeCompleted).toBeNull();
     });
 
-    it('reportChallengesCompleted([]) is a no-op', () => {
+    it('reportChallengesCompleted([]) is a no-op', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([]);
       });
       expect(result.current.triggers.challengeCompleted).toBeNull();
     });
 
-    it('successive reportChallengesCompleted calls append to the queue', () => {
+    it('successive reportChallengesCompleted calls append to the queue', async () => {
       mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
       const { result } = renderHook(() => useTriggerMoments());
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1]);
       });
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge2]);
       });
 
       // First challenge is still showing
       expect(result.current.triggers.challengeCompleted).toEqual(challenge1);
 
-      act(() => {
+      await act(async () => {
         result.current.dismiss('challengeCompleted');
       });
       // Second challenge is now showing
@@ -343,7 +343,7 @@ describe('useTriggerMoments', () => {
       const { result } = renderHook(() => useTriggerMoments());
       await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
 
-      act(() => {
+      await act(async () => {
         result.current.reportChallengesCompleted([challenge1]);
       });
 
@@ -370,7 +370,7 @@ describe('useTriggerMoments', () => {
       await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
 
       // dismiss should still reset state even if storage write fails
-      act(() => {
+      await act(async () => {
         result.current.dismiss('tierChanged');
       });
       expect(result.current.triggers.tierChanged).toBeNull();
@@ -413,51 +413,51 @@ describe('useTriggerMoments', () => {
         expect(result.current.triggers.badgeUnlocked).toBeNull();
       });
 
-      it('sets badgeUnlocked after reportTriggers with a badge key', () => {
+      it('sets badgeUnlocked after reportTriggers with a badge key', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(badgeTrigger);
         });
 
         expect(result.current.triggers.badgeUnlocked).toBe('streak_chip');
       });
 
-      it('dismiss("badgeUnlocked") resets badgeUnlocked to null', () => {
+      it('dismiss("badgeUnlocked") resets badgeUnlocked to null', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(badgeTrigger);
         });
         expect(result.current.triggers.badgeUnlocked).toBe('streak_chip');
 
-        act(() => {
+        await act(async () => {
           result.current.dismiss('badgeUnlocked');
         });
         expect(result.current.triggers.badgeUnlocked).toBeNull();
       });
 
-      it('does not set badgeUnlocked when badgeUnlocked is null in server triggers', () => {
+      it('does not set badgeUnlocked when badgeUnlocked is null in server triggers', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(emptyTrigger);
         });
 
         expect(result.current.triggers.badgeUnlocked).toBeNull();
       });
 
-      it('overwrites previous badgeUnlocked when a new badge is reported', () => {
+      it('overwrites previous badgeUnlocked when a new badge is reported', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers({ ...badgeTrigger, badgeUnlocked: 'week_wanderer' });
         });
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers({ ...badgeTrigger, badgeUnlocked: 'trail_regular' });
         });
 
@@ -473,37 +473,37 @@ describe('useTriggerMoments', () => {
         expect(result.current.triggers.milestoneUnlocked).toBe(false);
       });
 
-      it('sets milestoneUnlocked to true after reportTriggers', () => {
+      it('sets milestoneUnlocked to true after reportTriggers', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(milestoneTrigger);
         });
 
         expect(result.current.triggers.milestoneUnlocked).toBe(true);
       });
 
-      it('dismiss("milestoneUnlocked") resets milestoneUnlocked to false', () => {
+      it('dismiss("milestoneUnlocked") resets milestoneUnlocked to false', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(milestoneTrigger);
         });
         expect(result.current.triggers.milestoneUnlocked).toBe(true);
 
-        act(() => {
+        await act(async () => {
           result.current.dismiss('milestoneUnlocked');
         });
         expect(result.current.triggers.milestoneUnlocked).toBe(false);
       });
 
-      it('does not set milestoneUnlocked when false in server triggers', () => {
+      it('does not set milestoneUnlocked when false in server triggers', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(emptyTrigger);
         });
 
@@ -512,11 +512,11 @@ describe('useTriggerMoments', () => {
     });
 
     describe('challengeCompleted via reportTriggers', () => {
-      it('enqueues challenges from server triggers', () => {
+      it('enqueues challenges from server triggers', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers({
             ...emptyTrigger,
             challengeCompleted: [{ challengeId: 'c1', title: 'Challenge One', rewardPoints: 100 }],
@@ -530,11 +530,11 @@ describe('useTriggerMoments', () => {
         });
       });
 
-      it('does not enqueue when challengeCompleted is empty in server triggers', () => {
+      it('does not enqueue when challengeCompleted is empty in server triggers', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(emptyTrigger);
         });
 
@@ -543,11 +543,11 @@ describe('useTriggerMoments', () => {
     });
 
     describe('compound server triggers', () => {
-      it('fires badge and milestone simultaneously', () => {
+      it('fires badge and milestone simultaneously', async () => {
         mockUseLoyalty.mockReturnValue(loyaltyOf('bronze'));
         const { result } = renderHook(() => useTriggerMoments());
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers({
             ...emptyTrigger,
             badgeUnlocked: 'curator',
@@ -565,7 +565,7 @@ describe('useTriggerMoments', () => {
         const { result } = renderHook(() => useTriggerMoments());
         await waitFor(() => expect(result.current.triggers.tierChanged).toBe('silver'));
 
-        act(() => {
+        await act(async () => {
           result.current.reportTriggers(badgeTrigger);
         });
 

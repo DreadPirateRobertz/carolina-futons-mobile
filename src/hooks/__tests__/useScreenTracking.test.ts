@@ -26,47 +26,47 @@ describe('useScreenTracking', () => {
     expect(typeof result.current.onReady).toBe('function');
   });
 
-  it('sets initial route name on onReady', () => {
+  it('sets initial route name on onReady', async () => {
     mockGetCurrentRoute.mockReturnValue({ name: 'Home' });
     const { result } = renderHook(() => useScreenTracking());
-    act(() => result.current.onReady());
+    await act(async () => result.current.onReady());
     // No tracking on ready — just stores the initial route
     expect(trackScreenView).not.toHaveBeenCalled();
   });
 
-  it('tracks screen view when route changes', () => {
+  it('tracks screen view when route changes', async () => {
     mockGetCurrentRoute.mockReturnValue({ name: 'Home' });
     const { result } = renderHook(() => useScreenTracking());
 
-    act(() => result.current.onReady());
+    await act(async () => result.current.onReady());
 
     mockGetCurrentRoute.mockReturnValue({ name: 'ProductDetail', params: { slug: 'asheville' } });
-    act(() => result.current.onStateChange());
+    await act(async () => result.current.onStateChange());
 
     expect(trackScreenView).toHaveBeenCalledWith('ProductDetail', { slug: 'asheville' });
   });
 
-  it('does not track when route stays the same', () => {
+  it('does not track when route stays the same', async () => {
     mockGetCurrentRoute.mockReturnValue({ name: 'Home' });
     const { result } = renderHook(() => useScreenTracking());
 
-    act(() => result.current.onReady());
-    act(() => result.current.onStateChange());
+    await act(async () => result.current.onReady());
+    await act(async () => result.current.onStateChange());
 
     expect(trackScreenView).not.toHaveBeenCalled();
   });
 
-  it('tracks multiple route changes', () => {
+  it('tracks multiple route changes', async () => {
     mockGetCurrentRoute.mockReturnValue({ name: 'Home' });
     const { result } = renderHook(() => useScreenTracking());
 
-    act(() => result.current.onReady());
+    await act(async () => result.current.onReady());
 
     mockGetCurrentRoute.mockReturnValue({ name: 'Category' });
-    act(() => result.current.onStateChange());
+    await act(async () => result.current.onStateChange());
 
     mockGetCurrentRoute.mockReturnValue({ name: 'ProductDetail' });
-    act(() => result.current.onStateChange());
+    await act(async () => result.current.onStateChange());
 
     expect(trackScreenView).toHaveBeenCalledTimes(2);
     expect(trackScreenView).toHaveBeenCalledWith('Category', undefined);
