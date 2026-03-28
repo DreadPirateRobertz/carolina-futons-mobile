@@ -241,10 +241,9 @@ describe('useSocialProof', () => {
     });
 
     it('refetches when productId changes', async () => {
-      const { rerender } = renderHook(
-        ({ id }) => useSocialProof(id),
-        { initialProps: { id: 'prod-1' } },
-      );
+      const { rerender } = renderHook(({ id }) => useSocialProof(id), {
+        initialProps: { id: 'prod-1' },
+      });
       await act(async () => {});
 
       expect(mockFetchSoldCount).toHaveBeenCalledWith('prod-1');
