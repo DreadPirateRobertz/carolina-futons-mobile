@@ -419,6 +419,43 @@ describe('useAuth', () => {
       expect(getByTestId('error').props.children).toBe('');
     });
 
+    it('calls registerDeviceToken after successful Google sign-in', async () => {
+      mockGooglePromptAsync.mockResolvedValue({
+        type: 'success',
+        params: { id_token: 'mock.google.idtoken' },
+      });
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('google'));
+      await waitFor(() => expect(getByTestId('is-auth').props.children).toBe('true'));
+      await waitFor(() => expect(registerDeviceToken).toHaveBeenCalled());
+    });
+
+    it('calls registerDeviceToken after successful Apple sign-in', async () => {
+      const appleMember = { ...mockMember, displayName: 'Apple User' };
+      mockAuthService.loginWithApple.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(appleMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('apple'));
+      await waitFor(() => expect(getByTestId('is-auth').props.children).toBe('true'));
+      await waitFor(() => expect(registerDeviceToken).toHaveBeenCalled());
+    });
+
+    it('calls registerDeviceToken after successful sign-up', async () => {
+      const newMember = { ...mockMember, displayName: 'New User', email: 'new@test.com' };
+      mockAuthService.register.mockResolvedValue({ success: true });
+      mockAuthService.getCurrentMember.mockResolvedValue(newMember);
+
+      const { getByTestId } = await renderAuth();
+
+      fireEvent.press(getByTestId('sign-up'));
+      await waitFor(() => expect(getByTestId('is-auth').props.children).toBe('true'));
+      await waitFor(() => expect(registerDeviceToken).toHaveBeenCalled());
+    });
+
     it('does not block sign-out if deregisterDeviceToken rejects', async () => {
       (deregisterDeviceToken as jest.Mock).mockRejectedValueOnce(new Error('dereg error'));
       mockAuthService.loginWithEmail.mockResolvedValue({ success: true });
