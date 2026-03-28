@@ -164,17 +164,18 @@ jest.mock('react-native-reanimated', () => {
       quad: (v) => v,
       cubic: (v) => v,
     },
-    FadeIn: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    FadeOut: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    FadeInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    FadeInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideInRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideOutRight: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideInUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideOutUp: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideInDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    SlideOutDown: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
-    Layout: { duration: () => ({ delay: () => ({}) }), delay: () => ({ duration: () => ({}) }), springify: () => ({}) },
+    ...((() => {
+      // Fluent animation-builder stub — every config method returns `self` for unlimited chaining.
+      // Covers: .duration().delay(), .springify().damping().stiffness().mass(), etc.
+      const self = {};
+      const methods = ['duration', 'delay', 'springify', 'damping', 'stiffness', 'mass',
+        'overshootClamping', 'restDisplacementThreshold', 'restSpeedThreshold',
+        'withInitialValues', 'easing', 'reduceMotion'];
+      methods.forEach((m) => { self[m] = () => self; });
+      const names = ['FadeIn','FadeOut','FadeInDown','FadeInUp','SlideInRight','SlideOutRight',
+        'SlideInUp','SlideOutUp','SlideInDown','SlideOutDown','Layout'];
+      return Object.fromEntries(names.map((n) => [n, { ...self, toString: () => n }]));
+    })()),
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
     createAnimatedComponent: (comp) => comp,
