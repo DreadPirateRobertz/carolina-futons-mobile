@@ -15,10 +15,10 @@
  * Bead: cm-cf-m1c
  */
 
+import type { LoyaltyInitialTab } from '@/screens/LoyaltyScreen';
 export type GamificationNotificationType = 'streak_milestone' | 'quest_complete' | 'spin_reminder';
 
 export type { LoyaltyInitialTab as GamificationInitialTab } from '@/screens/LoyaltyScreen';
-import type { LoyaltyInitialTab } from '@/screens/LoyaltyScreen';
 
 export type GamificationRoute = {
   screen: 'Loyalty';

@@ -275,8 +275,12 @@ export function ChallengesScreen({ testID }: Props) {
       const client = getWixClientSingleton();
       const promises = unemitted.map((challenge) => {
         emittedChallengeIds.add(challenge.id);
-        return emitChallengeStarted(client, { challengeId: challenge.id, currentPoints: points })
-          .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+        return emitChallengeStarted(client, {
+          challengeId: challenge.id,
+          currentPoints: points,
+        }).catch((err: unknown) =>
+          captureException(err instanceof Error ? err : new Error(String(err))),
+        );
       });
       Promise.allSettled(promises);
     } catch (err) {

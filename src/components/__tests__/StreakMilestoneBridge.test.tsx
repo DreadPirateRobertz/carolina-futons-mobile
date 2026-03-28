@@ -8,6 +8,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { StreakMilestoneBridge } from '../StreakMilestoneBridge';
+
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 const mockUseStreakMilestonePush = jest.fn();
@@ -27,8 +29,6 @@ const mockUseNotifications = jest.fn(() => ({
 jest.mock('@/hooks/useNotifications', () => ({
   useNotifications: () => mockUseNotifications(),
 }));
-
-import { StreakMilestoneBridge } from '../StreakMilestoneBridge';
 
 beforeEach(() => {
   jest.clearAllMocks();

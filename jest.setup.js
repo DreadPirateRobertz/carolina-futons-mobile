@@ -110,7 +110,7 @@ jest.mock('@react-native-community/netinfo', () => ({
 // Mock react-native-worklets — reanimated 4.x imports it at load time and the
 // native module (NativeWorklets) isn't available in Jest. Use the library's
 // own mock to provide a complete JS-only stub.
-jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
+jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'));
 
 // Stub the worklets version validator so reanimated's mock.js doesn't throw
 // a version-mismatch error when loading in Jest.

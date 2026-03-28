@@ -1441,14 +1441,18 @@ describe('ProductDetailScreen', () => {
     it('renders an error fallback view on video error', () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       const video = getByTestId('product-detail-video');
-      act(() => { video.props.testOnly_onError?.({ error: 'Network failure' }); });
+      act(() => {
+        video.props.testOnly_onError?.({ error: 'Network failure' });
+      });
       expect(getByTestId('product-detail-video-error')).toBeTruthy();
     });
 
     it('hides video player after error', () => {
       const { getByTestId, queryByTestId } = renderDetail({ productId: 'asheville-full' });
       const video = getByTestId('product-detail-video');
-      act(() => { video.props.testOnly_onError?.({ error: 'Decode error' }); });
+      act(() => {
+        video.props.testOnly_onError?.({ error: 'Decode error' });
+      });
       expect(queryByTestId('product-detail-video')).toBeNull();
     });
   });

@@ -29,7 +29,9 @@ describe('ProductCardVideo', () => {
 
       const onError = getByTestId('card-video').props.testOnly_onError;
       expect(onError).toBeDefined();
-      act(() => { onError(); });
+      act(() => {
+        onError();
+      });
 
       expect(queryByTestId('card-video')).toBeNull();
     });
@@ -39,7 +41,9 @@ describe('ProductCardVideo', () => {
         <ProductCardVideo videoUri="https://broken.example.com/video.mp4" testID="card-video" />,
       );
 
-      act(() => { getByTestId('card-video').props.testOnly_onError({ error: 'NETWORK_ERROR' }); });
+      act(() => {
+        getByTestId('card-video').props.testOnly_onError({ error: 'NETWORK_ERROR' });
+      });
 
       expect(queryByTestId('card-video')).toBeNull();
     });
@@ -59,7 +63,9 @@ describe('ProductCardVideo', () => {
         <ProductCardVideo videoUri="https://example.com/video.mp4" testID="video-2" />,
       );
 
-      act(() => { getVideo1('video-1').props.testOnly_onError(); });
+      act(() => {
+        getVideo1('video-1').props.testOnly_onError();
+      });
 
       expect(queryVideo1('video-1')).toBeNull();
       expect(getVideo2('video-2')).toBeTruthy();

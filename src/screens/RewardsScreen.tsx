@@ -42,7 +42,10 @@ export function RewardsScreen({ testID }: Props) {
         testID={testID ?? 'rewards-screen'}
       >
         <Text
-          style={[styles.errorText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.errorText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
           testID="rewards-error"
         >
           {error}
@@ -63,8 +66,12 @@ export function RewardsScreen({ testID }: Props) {
     if (points <= 0) return;
     try {
       const client = getWixClientSingleton();
-      emitRedemptionInitiated(client, { pointsRedeemed: points, newTotal: Math.max(0, points - points) })
-        .catch((err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))));
+      emitRedemptionInitiated(client, {
+        pointsRedeemed: points,
+        newTotal: Math.max(0, points - points),
+      }).catch((err: unknown) =>
+        captureException(err instanceof Error ? err : new Error(String(err))),
+      );
     } catch (err) {
       captureException(err instanceof Error ? err : new Error(String(err)));
     }

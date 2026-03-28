@@ -105,9 +105,7 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
 
   const updateAddress = useCallback(
     async (id: string, updates: Partial<Omit<SavedAddress, 'id'>>) => {
-      const computed = addressesRef.current.map((a) =>
-        a.id === id ? { ...a, ...updates } : a,
-      );
+      const computed = addressesRef.current.map((a) => (a.id === id ? { ...a, ...updates } : a));
       addressesRef.current = computed;
       setAddresses(computed);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(computed));

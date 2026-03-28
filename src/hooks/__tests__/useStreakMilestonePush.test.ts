@@ -8,6 +8,8 @@
 
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useStreakMilestonePush } from '../useStreakMilestonePush';
+
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 const mockScheduleNotificationAsync = jest.fn();
@@ -27,8 +29,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: (...args: unknown[]) => mockSetItem(...args),
   removeItem: (...args: unknown[]) => mockRemoveItem(...args),
 }));
-
-import { useStreakMilestonePush } from '../useStreakMilestonePush';
 
 const DAY_SECONDS = 24 * 60 * 60;
 
