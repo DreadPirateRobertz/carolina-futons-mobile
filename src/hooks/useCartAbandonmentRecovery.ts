@@ -123,11 +123,7 @@ export function useCartAbandonmentRecovery(options: Options) {
       return;
     }
 
-    const payload = buildRecoveryPayload(
-      currentItems,
-      subtotalRef.current,
-      cartIdRef.current,
-    );
+    const payload = buildRecoveryPayload(currentItems, subtotalRef.current, cartIdRef.current);
 
     const itemCount = currentItems.length;
     const itemWord = itemCount === 1 ? 'item' : 'items';
@@ -151,10 +147,7 @@ export function useCartAbandonmentRecovery(options: Options) {
       });
 
       scheduledIdRef.current = notifId;
-      await AsyncStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ scheduledNotificationId: notifId }),
-      );
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ scheduledNotificationId: notifId }));
 
       // Set dedup flag to suppress web email
       if (client?.setMemberField) {

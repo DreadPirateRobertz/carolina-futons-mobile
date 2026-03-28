@@ -11,6 +11,7 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 
+import type { CartItem } from '@/hooks/useCart';
 import {
   useCartAbandonmentRecovery,
   buildRecoveryPayload,
@@ -44,12 +45,41 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
+// Partial fixtures — hook only needs id/name from model, cast to satisfy type
 const CART_ITEMS = [
-  { id: 'asheville:linen', model: { id: 'asheville', name: 'The Asheville' }, fabric: { id: 'linen', name: 'Natural Linen' }, quantity: 1, unitPrice: 899, imageUrl: 'https://cdn.example.com/asheville.jpg' },
-  { id: 'coastal:gray', model: { id: 'coastal', name: 'The Coastal' }, fabric: { id: 'gray', name: 'Slate Gray' }, quantity: 2, unitPrice: 749, imageUrl: 'https://cdn.example.com/coastal.jpg' },
-  { id: 'mountain:blue', model: { id: 'mountain', name: 'The Mountain' }, fabric: { id: 'blue', name: 'Mountain Blue' }, quantity: 1, unitPrice: 599, imageUrl: 'https://cdn.example.com/mountain.jpg' },
-  { id: 'rustic:coral', model: { id: 'rustic', name: 'The Rustic' }, fabric: { id: 'coral', name: 'Sunset Coral' }, quantity: 1, unitPrice: 449, imageUrl: null },
-];
+  {
+    id: 'asheville:linen',
+    model: { id: 'asheville', name: 'The Asheville' },
+    fabric: { id: 'linen', name: 'Natural Linen' },
+    quantity: 1,
+    unitPrice: 899,
+    imageUrl: 'https://cdn.example.com/asheville.jpg',
+  },
+  {
+    id: 'coastal:gray',
+    model: { id: 'coastal', name: 'The Coastal' },
+    fabric: { id: 'gray', name: 'Slate Gray' },
+    quantity: 2,
+    unitPrice: 749,
+    imageUrl: 'https://cdn.example.com/coastal.jpg',
+  },
+  {
+    id: 'mountain:blue',
+    model: { id: 'mountain', name: 'The Mountain' },
+    fabric: { id: 'blue', name: 'Mountain Blue' },
+    quantity: 1,
+    unitPrice: 599,
+    imageUrl: 'https://cdn.example.com/mountain.jpg',
+  },
+  {
+    id: 'rustic:coral',
+    model: { id: 'rustic', name: 'The Rustic' },
+    fabric: { id: 'coral', name: 'Sunset Coral' },
+    quantity: 1,
+    unitPrice: 449,
+    imageUrl: null,
+  },
+] as unknown as CartItem[];
 
 const DEFAULT_OPTS = {
   items: CART_ITEMS.slice(0, 2),
@@ -145,11 +175,7 @@ describe('useCartAbandonmentRecovery', () => {
       jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
       await act(async () => {});
 
-      expect(mockSetDedupFlag).toHaveBeenCalledWith(
-        'member-1',
-        'cartRecoveryPushSent',
-        true,
-      );
+      expect(mockSetDedupFlag).toHaveBeenCalledWith('member-1', 'cartRecoveryPushSent', true);
     });
   });
 
@@ -239,11 +265,7 @@ describe('useCartAbandonmentRecovery', () => {
         result.current.onOrderPlaced();
       });
 
-      expect(mockSetDedupFlag).toHaveBeenLastCalledWith(
-        'member-1',
-        'cartRecoveryPushSent',
-        false,
-      );
+      expect(mockSetDedupFlag).toHaveBeenLastCalledWith('member-1', 'cartRecoveryPushSent', false);
     });
   });
 
