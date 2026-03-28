@@ -1,0 +1,58 @@
+// src/hooks/__tests__/useNotificationPermission.test.ts
+import { renderHook, act } from '@testing-library/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+jest.mock('expo-notifications', () => ({
+  getPermissionsAsync: jest.fn(),
+  requestPermissionsAsync: jest.fn(),
+}));
+jest.mock('react-native', () => ({
+  ...jest.requireActual('react-native'),
+  Linking: { openSettings: jest.fn() },
+}));
+
+import * as Notifications from 'expo-notifications';
+import { Linking } from 'react-native';
+import { useNotificationPermission } from '../useNotificationPermission';
+
+const ASKED_KEY = '@cf_notif_asked';
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+  (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
+});
+
+it('returns undetermined status on first load', async () => {
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'undetermined' });
+  const { result } = renderHook(() => useNotificationPermission());
+  await act(async () => {});
+  expect(result.current.status).toBe('undetermined');
+  expect(result.current.hasAskedBefore).toBe(false);
+});
+
+it('requestPermission stores asked flag and returns granted', async () => {
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'undetermined' });
+  (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
+  const { result } = renderHook(() => useNotificationPermission());
+  await act(async () => {});
+  await act(async () => { await result.current.requestPermission(); });
+  expect(AsyncStorage.setItem).toHaveBeenCalledWith(ASKED_KEY, 'true');
+  expect(result.current.status).toBe('granted');
+});
+
+it('openSettings calls Linking.openSettings', async () => {
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
+  const { result } = renderHook(() => useNotificationPermission());
+  await act(async () => {});
+  result.current.openSettings();
+  expect(Linking.openSettings).toHaveBeenCalled();
+});
+
+it('hasAskedBefore is true when AsyncStorage flag is set', async () => {
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue('true');
+  (Notifications.getPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'denied' });
+  const { result } = renderHook(() => useNotificationPermission());
+  await act(async () => {});
+  expect(result.current.hasAskedBefore).toBe(true);
+});
