@@ -8,11 +8,7 @@
  * cf-ma6v
  */
 
-import {
-  questRefreshBus,
-  onQuestRefresh,
-  emitQuestRefresh,
-} from '../questRefreshBus';
+import { questRefreshBus, onQuestRefresh, emitQuestRefresh } from '../questRefreshBus';
 
 describe('questRefreshBus', () => {
   afterEach(() => {
