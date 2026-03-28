@@ -203,7 +203,8 @@ export function ProductDetailScreen({
 
   // Effective reviews: Stamped.io first, local/Wix fallback
   const effectiveReviews = stampedReady && stamped.reviews.length > 0 ? stamped.reviews : reviews;
-  const effectiveHasReviews = stampedReady ? stamped.reviews.length > 0 : hasReviews;
+  const effectiveHasReviews =
+    stampedReady && stamped.reviews.length > 0 ? true : hasReviews;
   const previewReviews = effectiveReviews.slice(0, 3);
 
   // Effective aggregate for inline star rating near price (CF-wah8)
