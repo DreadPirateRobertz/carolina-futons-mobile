@@ -112,6 +112,10 @@ jest.mock('@/services/sommelierResults', () => ({
     mockRecordSommelierResult(memberId, answers),
 }));
 
+jest.mock('@/services/personalizationCache', () => ({
+  invalidatePersonalizationCache: jest.fn(() => Promise.resolve()),
+}));
+
 const mockSetItem = AsyncStorage.setItem as jest.Mock;
 
 /**
