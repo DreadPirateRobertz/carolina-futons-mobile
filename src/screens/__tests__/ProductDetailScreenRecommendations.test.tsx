@@ -24,7 +24,7 @@ jest.mock('@/hooks/useProductReviews', () => ({
   }),
 }));
 jest.mock('expo-image', () => ({ Image: 'Image' }));
-jest.mock('expo-av', () => ({}));
+jest.mock('expo-video');
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: 'light' },

@@ -2,8 +2,8 @@
 // Built-in matchers from @testing-library/react-native v12.4+
 // No need for deprecated @testing-library/jest-native
 
-// Mock expo-av — uses __mocks__/expo-av.js (manual mock file)
-jest.mock('expo-av');
+// Mock expo-video — uses __mocks__/expo-video.js (manual mock file)
+jest.mock('expo-video');
 
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {

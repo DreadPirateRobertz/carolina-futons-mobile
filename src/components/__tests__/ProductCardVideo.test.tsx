@@ -1,10 +1,15 @@
 import React from 'react';
-import { render, act } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 import { ProductCardVideo } from '../ProductCardVideo';
+import { useVideoPlayer } from 'expo-video';
 
-// expo-av is mocked in jest.setup.js — Video renders as a View with testOnly_onError prop
+// expo-video is mocked in jest.setup.js — VideoView renders as a View
 
 describe('ProductCardVideo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('rendering', () => {
     it('renders when videoUri is provided', () => {
       const { getByTestId } = render(
@@ -21,54 +26,31 @@ describe('ProductCardVideo', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('renders null after video error (fallback to underlying image)', async () => {
-      const { getByTestId, queryByTestId } = render(
+  describe('player setup', () => {
+    it('creates a video player with the provided URI', () => {
+      render(
+        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
+      );
+      expect(useVideoPlayer).toHaveBeenCalledWith(
+        'https://example.com/video.mp4',
+        expect.any(Function),
+      );
+    });
+
+    it('configures player for muted looping autoplay', () => {
+      const mockSetup = { loop: false, muted: false, play: jest.fn() };
+      (useVideoPlayer as jest.Mock).mockImplementation((_src, setup) => {
+        if (setup) setup(mockSetup);
+        return mockSetup;
+      });
+
+      render(
         <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
       );
 
-      const onError = getByTestId('card-video').props.testOnly_onError;
-      expect(onError).toBeDefined();
-      await act(async () => {
-        onError();
-      });
-
-      expect(queryByTestId('card-video')).toBeNull();
-    });
-
-    it('does not crash when onError fires with an error payload', async () => {
-      const { getByTestId, queryByTestId } = render(
-        <ProductCardVideo videoUri="https://broken.example.com/video.mp4" testID="card-video" />,
-      );
-
-      await act(async () => {
-        getByTestId('card-video').props.testOnly_onError({ error: 'NETWORK_ERROR' });
-      });
-
-      expect(queryByTestId('card-video')).toBeNull();
-    });
-
-    it('renders normally before any error occurs', () => {
-      const { getByTestId } = render(
-        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="card-video" />,
-      );
-      expect(getByTestId('card-video')).toBeTruthy();
-    });
-
-    it('error state is per-instance — two cards with same URI fail independently', async () => {
-      const { getByTestId: getVideo1, queryByTestId: queryVideo1 } = render(
-        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="video-1" />,
-      );
-      const { getByTestId: getVideo2 } = render(
-        <ProductCardVideo videoUri="https://example.com/video.mp4" testID="video-2" />,
-      );
-
-      await act(async () => {
-        getVideo1('video-1').props.testOnly_onError();
-      });
-
-      expect(queryVideo1('video-1')).toBeNull();
-      expect(getVideo2('video-2')).toBeTruthy();
+      expect(mockSetup.loop).toBe(true);
+      expect(mockSetup.muted).toBe(true);
+      expect(mockSetup.play).toHaveBeenCalled();
     });
   });
 
