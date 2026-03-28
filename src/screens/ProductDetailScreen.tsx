@@ -797,7 +797,7 @@ export function ProductDetailScreen({
           {showInlineRating && (
             <TouchableOpacity
               onPress={() => {
-                scrollViewRef.current?.scrollTo({
+                scrollViewRef.current?.scrollTo?.({
                   y: reviewsSectionY.current,
                   animated: true,
                 });
