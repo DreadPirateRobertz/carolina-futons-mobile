@@ -25,7 +25,12 @@ interface Props {
 
 const TIER_CONFIG: Record<
   ShippingTier,
-  { label: string; icon: string; colorKey: 'success' | 'mountainBlue' | 'sunsetCoral'; subtitle: string | null }
+  {
+    label: string;
+    icon: string;
+    colorKey: 'success' | 'mountainBlue' | 'sunsetCoral';
+    subtitle: string | null;
+  }
 > = {
   fastest: { label: 'Fastest', icon: '⚡', colorKey: 'success', subtitle: null },
   standard: { label: 'Standard', icon: '🚚', colorKey: 'mountainBlue', subtitle: null },
