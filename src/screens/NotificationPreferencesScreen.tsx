@@ -13,6 +13,7 @@ import { darkPalette } from '@/theme/tokens';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useNotificationPreferences } from '@/hooks/useNotificationPreferences';
 import { NotificationToggle } from '@/components/NotificationToggle';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
 import {
   NOTIFICATION_TYPE_CONFIG,
   type NotificationType,
@@ -47,6 +48,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
     preferences: gamifPrefs,
     toggle: gamifToggle,
     isPushSupported,
+    isLoading: gamifLoading,
     isSaving: gamifSaving,
     isLoading: gamifLoading,
     error: gamifError,
@@ -258,22 +260,30 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
             </Text>
           ) : null}
 
-          {GAMIFICATION_TYPES.map((type) => {
-            const config = NOTIFICATION_TYPE_CONFIG[type];
-            const prefKey = config.prefKey as keyof typeof gamifPrefs;
-            return (
-              <NotificationToggle
-                key={type}
-                label={config.label}
-                description={config.description}
-                value={Boolean(gamifPrefs[prefKey])}
-                onToggle={() => gamifToggle(prefKey)}
-                testID={`pref-row-${type}`}
-                toggleTestID={`pref-toggle-${type}`}
-                disabled={!isPushSupported || gamifSaving}
-              />
-            );
-          })}
+          {gamifLoading ? (
+            <View testID="gamification-skeleton">
+              <SkeletonLoader height={56} style={{ marginBottom: 8 }} />
+              <SkeletonLoader height={56} style={{ marginBottom: 8 }} />
+              <SkeletonLoader height={56} />
+            </View>
+          ) : (
+            GAMIFICATION_TYPES.map((type) => {
+              const config = NOTIFICATION_TYPE_CONFIG[type];
+              const prefKey = config.prefKey as keyof typeof gamifPrefs;
+              return (
+                <NotificationToggle
+                  key={type}
+                  label={config.label}
+                  description={config.description}
+                  value={Boolean(gamifPrefs[prefKey])}
+                  onToggle={() => gamifToggle(prefKey)}
+                  testID={`pref-row-${type}`}
+                  toggleTestID={`pref-toggle-${type}`}
+                  disabled={!isPushSupported || gamifSaving}
+                />
+              );
+            })
+          )}
         </View>
       </ScrollView>
     </View>

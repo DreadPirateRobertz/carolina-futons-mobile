@@ -21,6 +21,9 @@ dolt/
 .env.local
 .env.production
 
+# Generated artifacts (never commit these)
+metadata.json
+
 # Pipeline secrets and generated output
 scripts/pipeline/generate.config.json
 scripts/pipeline/input/*.glb
