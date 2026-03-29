@@ -16,6 +16,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useOptionalWixClient } from '@/services/wix';
 import { isWixConfigured } from '@/services/wix/config';
+import { captureException } from '@/services/crashReporting';
 
 const MIN_QUERY_LENGTH = 2;
 const SUGGESTION_LIMIT = 5;
@@ -87,8 +88,9 @@ export function useSearchSuggestions(
 
         setSuggestions(unique);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (controller.signal.aborted) return;
+        captureException(err instanceof Error ? err : new Error(String(err)));
         // Network/API error — fall back to local suggestions
         setSuggestions(fallbackRef.current);
       })
@@ -100,7 +102,7 @@ export function useSearchSuggestions(
     return () => {
       controller.abort();
     };
-  }, [query, useWix]);
+  }, [query, useWix, wixClient]);
 
   return { suggestions, isLoading };
 }
