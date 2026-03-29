@@ -98,6 +98,7 @@ export function useCollection(slug: string): {
   collection: EditorialCollection | undefined;
   products: Product[];
   isLoading: boolean;
+  refresh: () => void;
 } {
   const { collections } = useCollections();
   const client = useOptionalWixClient();
@@ -128,7 +129,7 @@ export function useCollection(slug: string): {
       .filter((p): p is Product => p !== undefined);
   }, [collection, client]);
 
-  const { data, isLoading } = useDataCache<Product[]>(
+  const { data, isLoading, refresh } = useDataCache<Product[]>(
     `collection-products-${slug}`,
     productFetcher,
     { maxAge: COLLECTION_CACHE_MAX_AGE },
@@ -139,7 +140,8 @@ export function useCollection(slug: string): {
       collection,
       products: data ?? [],
       isLoading,
+      refresh,
     }),
-    [collection, data, isLoading],
+    [collection, data, isLoading, refresh],
   );
 }
