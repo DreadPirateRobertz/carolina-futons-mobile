@@ -22,6 +22,7 @@ import {
   type SortOption,
 } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { SearchBar } from '@/components/SearchBar';
 import { ProductCard } from '@/components/ProductCard';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
@@ -62,7 +63,7 @@ export function SearchScreen({ testID }: Props) {
     categories,
     searchQuery,
     sortBy,
-    suggestions,
+    suggestions: localSuggestions,
     isLoading,
     fetchError,
     setSearchQuery,
@@ -70,6 +71,7 @@ export function SearchScreen({ testID }: Props) {
     loadMore,
     refresh,
   } = useProducts();
+  const { suggestions } = useSearchSuggestions(searchQuery, localSuggestions);
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { trendingSearches } = useConfig();
   const [hasSearched, setHasSearched] = useState(false);
