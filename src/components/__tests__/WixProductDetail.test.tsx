@@ -226,6 +226,31 @@ describe('WixProductDetail', () => {
       jest.restoreAllMocks();
     });
 
+    it('includes the product URL in the share payload', async () => {
+      const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      const { getByTestId } = renderComponent();
+      await fireEvent.press(getByTestId('detail-share-button'));
+      expect(shareSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://carolinafutons.com/product/asheville-futon',
+        }),
+      );
+      shareSpy.mockRestore();
+    });
+
+    it('includes the product URL in the message on Android', async () => {
+      const Platform = require('react-native').Platform;
+      const originalOS = Platform.OS;
+      Platform.OS = 'android';
+      const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      const { getByTestId } = renderComponent();
+      await fireEvent.press(getByTestId('detail-share-button'));
+      const callArg = shareSpy.mock.calls[0][0] as { message: string };
+      expect(callArg.message).toContain('https://carolinafutons.com/product/asheville-futon');
+      Platform.OS = originalOS;
+      shareSpy.mockRestore();
+    });
+
     it('has accessible label with product name', () => {
       const { getByTestId } = renderComponent();
       expect(getByTestId('detail-share-button').props.accessibilityLabel).toContain(
