@@ -3,7 +3,9 @@ import { usePromoCode } from '../usePromoCode';
 import { WixApiError } from '@/services/wix/wixClient';
 
 const mockApplyCoupon = jest.fn();
-const mockUseOptionalWixClient = jest.fn(() => ({ applyCoupon: mockApplyCoupon }));
+const mockUseOptionalWixClient = jest.fn<{ applyCoupon: jest.Mock } | null, []>(() => ({
+  applyCoupon: mockApplyCoupon,
+}));
 
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => mockUseOptionalWixClient(),
