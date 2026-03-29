@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useWixClient } from '@/services/wix/wixProvider';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { getCachedFitScore, setCachedFitScore } from '@/services/personalizationCache';
 import { captureException } from '@/services/crashReporting';
 
@@ -11,7 +11,7 @@ export interface FitScoreResult {
 }
 
 export function useFitScore(productId: string, memberId: string | null): FitScoreResult {
-  const client = useWixClient();
+  const client = useOptionalWixClient();
   const [score, setScore] = useState<number | null>(null);
   const [reasons, setReasons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);

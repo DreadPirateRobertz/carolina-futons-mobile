@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useWixClient } from '@/services/wix/wixProvider';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import {
   getCachedSommelierResult,
   setCachedSommelierResult,
@@ -27,7 +27,7 @@ export interface PersonalizationResult {
 }
 
 export function usePersonalization(memberId: string | null): PersonalizationResult {
-  const client = useWixClient();
+  const client = useOptionalWixClient();
   const [sommelierResult, setSommelierResult] = useState<SommelierCacheEntry | null>(null);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
