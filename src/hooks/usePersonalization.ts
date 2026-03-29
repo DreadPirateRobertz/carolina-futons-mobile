@@ -24,7 +24,6 @@ export interface PersonalizationResult {
   recommendations: Product[];
   topStyle: string | null;
   isLoading: boolean;
-  error: string | null;
 }
 
 export function usePersonalization(memberId: string | null): PersonalizationResult {
@@ -32,7 +31,6 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
   const [sommelierResult, setSommelierResult] = useState<SommelierCacheEntry | null>(null);
   const [recommendations, setRecommendations] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!memberId || !client) return;
@@ -83,13 +81,12 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
     return () => {
       cancelled = true;
     };
-  }, [memberId]);
+  }, [memberId, client]);
 
   return {
     sommelierResult,
     recommendations,
     topStyle: sommelierResult?.topStyle ?? null,
     isLoading,
-    error,
   };
 }
