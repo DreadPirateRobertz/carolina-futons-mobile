@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,9 @@ interface PromoCodeInputProps {
 }
 
 type PromoState = 'collapsed' | 'idle' | 'loading' | 'success' | 'error';
+
+// Promo codes are short alphanumeric strings; 30 chars is generous
+const PROMO_MAX_LENGTH = 30;
 
 export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
   const { colors, spacing, typography, borderRadius } = useTheme();
@@ -54,35 +57,45 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
     }
   }
 
-  const s = StyleSheet.create({
-    row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
-    expandText: { color: colors.espresso, fontFamily: typography.bodyFamily, fontSize: 14 },
-    inputRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
-    input: {
-      flex: 1,
-      borderWidth: 1,
-      borderColor: colors.sandDark,
-      borderRadius: borderRadius.sm,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: spacing.xs,
-      fontFamily: typography.bodyFamily,
-      marginRight: spacing.sm,
-    },
-    applyBtn: {
-      backgroundColor: colors.sunsetCoral,
-      borderRadius: borderRadius.sm,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-    },
-    applyText: { color: colors.offWhite, fontFamily: typography.bodyFamily, fontWeight: '600' },
-    error: { color: 'red', fontFamily: typography.bodyFamily, fontSize: 13, marginTop: spacing.xs },
-    success: {
-      color: colors.success ?? '#4A7C59',
-      fontFamily: typography.bodyFamily,
-      fontSize: 13,
-      marginTop: spacing.xs,
-    },
-  });
+  // Memoized so StyleSheet.create is not called on every render
+  const s = useMemo(
+    () =>
+      StyleSheet.create({
+        row: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
+        expandText: { color: colors.espresso, fontFamily: typography.bodyFamily, fontSize: 14 },
+        inputRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm },
+        input: {
+          flex: 1,
+          borderWidth: 1,
+          borderColor: colors.sandDark,
+          borderRadius: borderRadius.sm,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.xs,
+          fontFamily: typography.bodyFamily,
+          marginRight: spacing.sm,
+        },
+        applyBtn: {
+          backgroundColor: colors.sunsetCoral,
+          borderRadius: borderRadius.sm,
+          paddingHorizontal: spacing.md,
+          paddingVertical: spacing.sm,
+        },
+        applyText: { color: colors.offWhite, fontFamily: typography.bodyFamily, fontWeight: '600' },
+        error: {
+          color: 'red',
+          fontFamily: typography.bodyFamily,
+          fontSize: 13,
+          marginTop: spacing.xs,
+        },
+        success: {
+          color: colors.success ?? '#4A7C59',
+          fontFamily: typography.bodyFamily,
+          fontSize: 13,
+          marginTop: spacing.xs,
+        },
+      }),
+    [colors, spacing, typography, borderRadius],
+  );
 
   if (state === 'collapsed') {
     return (
@@ -102,6 +115,7 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
           onChangeText={setCode}
           placeholder="Enter promo code"
           autoCapitalize="characters"
+          maxLength={PROMO_MAX_LENGTH}
           returnKeyType="done"
           onSubmitEditing={handleApply}
           accessibilityLabel="Promo code input"

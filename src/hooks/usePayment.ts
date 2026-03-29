@@ -153,11 +153,15 @@ export function usePayment() {
   }, [isPlatformPaySupported]);
 
   const processPayment = useCallback(
-    async (method: PaymentMethod): Promise<OrderConfirmation | null> => {
+    async (method: PaymentMethod, discountedTotal?: number): Promise<OrderConfirmation | null> => {
       if (items.length === 0 || processingRef.current) return null;
 
       processingRef.current = true;
       setState({ status: 'processing', error: null, order: null });
+
+      // Apply promo discount override when provided
+      const effectiveTotals =
+        discountedTotal !== undefined ? { ...totals, total: discountedTotal } : totals;
 
       try {
         // 1. Create PaymentIntent via Wix eCommerce API
@@ -165,7 +169,7 @@ export function usePayment() {
           throw new PaymentError('Payment service unavailable', 'NETWORK_ERROR');
         }
         const { clientSecret, ephemeralKey, customerId, paymentIntentId } =
-          await createPaymentIntent(wixClient, items, totals, idempotencyKeyRef.current);
+          await createPaymentIntent(wixClient, items, effectiveTotals, idempotencyKeyRef.current);
 
         if (method === 'apple-pay') {
           // 2a. Apple Pay flow via confirmPlatformPayPayment
@@ -173,7 +177,7 @@ export function usePayment() {
             applePay: {
               merchantCountryCode: 'US',
               currencyCode: 'USD',
-              cartItems: buildApplePayCartItems(totals),
+              cartItems: buildApplePayCartItems(effectiveTotals),
             },
           });
 
@@ -240,11 +244,17 @@ export function usePayment() {
         }
 
         // 3. Confirm order via Wix eCommerce API
-        const confirmation = await confirmOrder(wixClient, paymentIntentId, items, totals, method);
+        const confirmation = await confirmOrder(
+          wixClient,
+          paymentIntentId,
+          items,
+          effectiveTotals,
+          method,
+        );
 
         // 4. Fire gamification event (fire-and-forget; never blocks checkout success)
         gamificationEvents
-          .orderPlaced(confirmation.orderId, confirmation.totals?.total ?? totals.total)
+          .orderPlaced(confirmation.orderId, confirmation.totals?.total ?? effectiveTotals.total)
           .catch(() => {});
 
         // 5. Clear cart and set success state
