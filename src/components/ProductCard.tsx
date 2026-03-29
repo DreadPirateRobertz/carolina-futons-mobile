@@ -168,7 +168,8 @@ export const ProductCard = memo(function ProductCard({
                 wixImageUrl(product.lifestyleImageUri || product.images[0]?.uri, {
                   width: 400,
                   height: 300,
-                }) ?? (product.lifestyleImageUri || product.images[0]?.uri),
+                }) ??
+                (product.lifestyleImageUri || product.images[0]?.uri),
             }}
             style={styles.image}
             contentFit="cover"
