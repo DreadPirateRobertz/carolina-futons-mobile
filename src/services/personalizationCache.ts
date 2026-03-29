@@ -85,8 +85,12 @@ export async function setCachedSommelierResult(
 }
 
 export async function invalidatePersonalizationCache(): Promise<void> {
-  await Promise.all([
-    AsyncStorage.removeItem(FIT_SCORE_KEY),
-    AsyncStorage.removeItem(SOMMELIER_KEY),
-  ]);
+  try {
+    await Promise.all([
+      AsyncStorage.removeItem(FIT_SCORE_KEY),
+      AsyncStorage.removeItem(SOMMELIER_KEY),
+    ]);
+  } catch (e) {
+    console.error('[personalizationCache] invalidate failed:', e);
+  }
 }

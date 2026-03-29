@@ -86,3 +86,19 @@ it('dismiss button has accessibilityLabel', async () => {
   await waitFor(() => expect(getByTestId('sommelier-hero-dismiss')).toBeTruthy());
   expect(getByTestId('sommelier-hero-dismiss').props.accessibilityLabel).toBeTruthy();
 });
+
+it('renders without crashing when flavors is null', async () => {
+  const resultNullFlavors = { ...sampleResult, flavors: null as unknown as string[] };
+  const { getByTestId } = render(
+    <SommelierHeroCard result={resultNullFlavors} onSeePicks={mockOnSeePicks} />,
+  );
+  await waitFor(() => expect(getByTestId('sommelier-hero-card')).toBeTruthy());
+});
+
+it('renders without crashing when flavors is undefined', async () => {
+  const resultUndefinedFlavors = { ...sampleResult, flavors: undefined as unknown as string[] };
+  const { getByTestId } = render(
+    <SommelierHeroCard result={resultUndefinedFlavors} onSeePicks={mockOnSeePicks} />,
+  );
+  await waitFor(() => expect(getByTestId('sommelier-hero-card')).toBeTruthy());
+});
