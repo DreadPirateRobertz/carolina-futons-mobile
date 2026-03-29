@@ -73,4 +73,23 @@ describe('LeaderboardRow', () => {
     const { getByTestId } = wrap(<LeaderboardRow {...base} rank={1} />);
     expect(getByTestId('leaderboard-row-rank').props.children).toBe(1);
   });
+
+  it('has composite accessibilityLabel with rank, name, points, and tier', () => {
+    const { getByTestId } = wrap(<LeaderboardRow {...base} />);
+    const label = getByTestId('leaderboard-row-1').props.accessibilityLabel;
+    expect(label).toContain('1');
+    expect(label).toContain('Alice');
+    expect(label).toContain('2,500');
+    expect(label).toContain('gold');
+  });
+
+  it('accessibilityLabel includes "you" when isCurrentUser', () => {
+    const { getByTestId } = wrap(<LeaderboardRow {...base} isCurrentUser />);
+    expect(getByTestId('leaderboard-row-1').props.accessibilityLabel).toContain('you');
+  });
+
+  it('does not include "you" in accessibilityLabel for other users', () => {
+    const { getByTestId } = wrap(<LeaderboardRow {...base} />);
+    expect(getByTestId('leaderboard-row-1').props.accessibilityLabel).not.toContain('you');
+  });
 });

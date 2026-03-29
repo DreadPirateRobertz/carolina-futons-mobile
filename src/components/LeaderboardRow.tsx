@@ -31,10 +31,13 @@ export function LeaderboardRow({
 }: LeaderboardRowProps) {
   const { colors, spacing, borderRadius } = useTheme();
   const formattedPoints = points.toLocaleString('en-US');
+  const a11yLabel = `Rank ${rank}, ${nickname}, ${formattedPoints} points, ${tier} tier${isCurrentUser ? ', you' : ''}`;
 
   return (
     <View
       testID={testID ?? `leaderboard-row-${rank}`}
+      accessible
+      accessibilityLabel={a11yLabel}
       style={[
         styles.row,
         {

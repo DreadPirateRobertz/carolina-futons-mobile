@@ -39,7 +39,12 @@ export const ShippingEstimateBadge = memo(function ShippingEstimateBadge({
   const pillColor = (badgeStyle && BADGE_STYLE_COLORS[badgeStyle]) ?? '#555555';
 
   return (
-    <View style={styles.row} testID={testID}>
+    <View
+      style={styles.row}
+      testID={testID}
+      accessible
+      accessibilityLabel={`Ships in ${label}${badge ? `, ${badge}` : ''}`}
+    >
       <Text style={styles.icon}>{icon}</Text>
       <EstimateLabel label={label} />
       {badge ? (

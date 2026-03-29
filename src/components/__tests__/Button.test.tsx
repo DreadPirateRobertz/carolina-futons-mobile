@@ -111,5 +111,15 @@ describe('Button', () => {
       const button = getByRole('button');
       expect(button.props.accessibilityState?.disabled).toBe(true);
     });
+
+    it('has accessibilityLabel matching label text', () => {
+      const { getByRole } = render(<Button label="Add to Cart" onPress={() => {}} />);
+      expect(getByRole('button').props.accessibilityLabel).toBe('Add to Cart');
+    });
+
+    it('has accessibilityLabel with loading suffix when loading', () => {
+      const { getByRole } = render(<Button label="Add to Cart" onPress={() => {}} loading />);
+      expect(getByRole('button').props.accessibilityLabel).toBe('Add to Cart, loading');
+    });
   });
 });

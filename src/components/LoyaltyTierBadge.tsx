@@ -27,7 +27,12 @@ export function LoyaltyTierBadge({ points, testID }: Props) {
   const color = TIER_COLORS[tierIndex];
 
   return (
-    <View testID={testID ?? 'loyalty-tier-badge'} style={styles.container}>
+    <View
+      testID={testID ?? 'loyalty-tier-badge'}
+      accessible
+      accessibilityLabel={`${tierName} tier, ${points.toLocaleString()} points`}
+      style={styles.container}
+    >
       <View
         style={[styles.badge, { backgroundColor: color, borderRadius: borderRadius.pill }]}
         testID="loyalty-tier-badge-inner"
