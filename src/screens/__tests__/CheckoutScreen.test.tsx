@@ -1629,4 +1629,161 @@ describe('CheckoutScreen', () => {
       expect(AsyncStorage.setItem).not.toHaveBeenCalledWith(SHIPPING_ZIP_KEY, '123');
     });
   });
+
+  describe('Keyboard chain and accessibility', () => {
+    it('fullName input has returnKeyType next', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const input = getByTestId('shipping-fullName');
+      expect(input.props.returnKeyType).toBe('next');
+    });
+
+    it('line1 (street address) input has returnKeyType next', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-line1').props.returnKeyType).toBe('next');
+    });
+
+    it('zip (last) input has returnKeyType done', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      expect(getByTestId('shipping-zip').props.returnKeyType).toBe('done');
+    });
+
+    it('progress indicator has accessibilityRole progressbar', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      const progress = getByTestId('checkout-progress');
+      expect(progress.props.accessibilityRole).toBe('progressbar');
+      expect(typeof progress.props.accessibilityValue?.now).toBe('number');
+      expect(progress.props.accessibilityValue?.max).toBe(3);
+    });
+
+    it('line1 submitEditing does not crash when line2 is empty', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      // line2 starts empty — chain should skip to city without error
+      expect(() => fireEvent(getByTestId('shipping-line1'), 'submitEditing')).not.toThrow();
+    });
+
+    it('line1 submitEditing does not crash when line2 is populated', () => {
+      const { getByTestId } = renderCheckout({}, seed);
+      fireEvent.changeText(getByTestId('shipping-line2'), 'Apt 4B');
+      // line2 has value — chain should go to line2 without error
+      expect(() => fireEvent(getByTestId('shipping-line1'), 'submitEditing')).not.toThrow();
+    });
+  });
+
+  describe('PromoCode discount', () => {
+    it('applies fixed discount to displayed grand total', async () => {
+      const wixService = require('@/services/wix');
+      const mockCallFunction = jest.fn().mockResolvedValue({
+        valid: true,
+        discount: 20,
+        type: 'fixed',
+      });
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: mockCallFunction,
+      });
+
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      // Expand promo input and apply a $20 fixed discount
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+
+      // adjustedTotal = 422.43 - 20 = 402.43
+      await waitFor(() => expect(getByTestId('checkout-total').props.children).toBe('$402.43'));
+
+      jest.restoreAllMocks();
+    });
+
+    it('passes adjustedTotal (not full total) to createPaymentIntent after promo applied', async () => {
+      // seed: Asheville ($349) + $49 shipping + $24.43 tax = $422.43
+      // After $20 fixed discount: adjustedTotal = $402.43
+      const wixService = require('@/services/wix');
+      const mockCallFunction = jest.fn().mockResolvedValue({
+        valid: true,
+        discount: 20,
+        type: 'fixed',
+      });
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: mockCallFunction,
+      });
+
+      const utils = renderCheckout({}, seed);
+      const { getByTestId, getByText } = utils;
+
+      // Apply $20 discount
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'SAVE20');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+      await waitFor(() => expect(getByTestId('checkout-total').props.children).toBe('$402.43'));
+
+      // Select card and place order
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-card'));
+      fireEvent.press(getByTestId('card-field-complete-trigger'));
+
+      await act(async () => {
+        fireEvent.press(getByTestId('place-order-button'));
+      });
+
+      // createPaymentIntent must receive totals with total = 402.43 (discounted), not 422.43
+      expect(mockCreatePaymentIntent).toHaveBeenCalledTimes(1);
+      const [, , effectiveTotals] = mockCreatePaymentIntent.mock.calls[0];
+      expect(effectiveTotals.total).toBeCloseTo(402.43, 2);
+
+      jest.restoreAllMocks();
+    });
+
+    it('promo code TextInput enforces maxLength', async () => {
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+
+      const input = getByTestId('promo-input');
+      expect(input.props.maxLength).toBe(30);
+    });
+  });
+
+  describe('Double-submit guard (placingOrderRef)', () => {
+    it('calls createPaymentIntent only once when Place Order is tapped rapidly', async () => {
+      // Simulate rapid double-tap: press Place Order before isProcessing (state) becomes true
+      let resolveIntent: (v: unknown) => void;
+      mockCreatePaymentIntent.mockReturnValue(
+        new Promise((resolve) => {
+          resolveIntent = resolve;
+        }),
+      );
+
+      const utils = renderCheckout({}, seed);
+      const { getByTestId } = utils;
+      fillShippingAddress(utils);
+      fireEvent.press(getByTestId('payment-card'));
+      fireEvent.press(getByTestId('card-field-complete-trigger'));
+
+      // Tap twice before the promise resolves (before state updates to 'processing')
+      fireEvent.press(getByTestId('place-order-button'));
+      fireEvent.press(getByTestId('place-order-button'));
+
+      // Resolve the intent so the test can complete
+      resolveIntent!({
+        clientSecret: 'pi_test_secret',
+        ephemeralKey: 'ek_test',
+        customerId: 'cus_test',
+        paymentIntentId: 'pi_test',
+      });
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // Despite two presses, payment was initiated only once
+      expect(mockCreatePaymentIntent).toHaveBeenCalledTimes(1);
+    });
+  });
 });

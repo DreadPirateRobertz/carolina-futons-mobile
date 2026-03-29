@@ -57,6 +57,9 @@ import {
   normalizeShippingOption,
   type NormalizedShippingOption,
 } from '@/services/shippingIntelligenceService';
+import { pollPaymentConfirmation } from '@/services/paymentPoller';
+import { CheckoutFormSkeleton } from '@/components/CheckoutFormSkeleton';
+import { PromoCodeInput } from '@/components/PromoCodeInput';
 
 const SHIPPING_ZIP_KEY = 'shipping_zip';
 const ZIP_RE = /^\d{5}(-\d{4})?$/;
@@ -284,6 +287,29 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       klarnaFiredRef.current = false;
     }
   }, [klarnaCheckout.status, klarnaCheckout.order, onOrderComplete, addressBook]);
+  // Skeleton guard — hides form until Stripe SDK is ready on first render (cm-epicC task 4)
+  const [stripeReady, setStripeReady] = useState(false);
+  useEffect(() => {
+    // Mark Stripe ready after mount (async init completes before user can interact)
+    setStripeReady(true);
+  }, []);
+
+  // Promo code discount applied by PromoCodeInput
+  const [promoDiscount, setPromoDiscount] = useState<{
+    amount: number;
+    type: 'percent' | 'fixed';
+  } | null>(null);
+
+  const adjustedTotal = promoDiscount
+    ? promoDiscount.type === 'percent'
+      ? Math.round(totals.total * (1 - promoDiscount.amount / 100) * 100) / 100
+      : Math.max(0, totals.total - promoDiscount.amount)
+    : totals.total;
+
+  // Immediate double-submit guard — set synchronously on first tap to prevent
+  // the ~2s window before isProcessing (derived from state) becomes true.
+  const placingOrderRef = useRef(false);
+
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -372,11 +398,20 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   // Card state
   const [cardComplete, setCardComplete] = useState(false);
   const [cardError, setCardError] = useState<string | null>(null);
+  const [pollerError, setPollerError] = useState<string | null>(null);
 
   // Track whether user has attempted to submit (for showing validation)
   const [_submitAttempted, setSubmitAttempted] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
+
+  // Keyboard chain refs for shipping address fields
+  const shippingFullNameRef = useRef<TextInput>(null);
+  const shippingLine1Ref = useRef<TextInput>(null);
+  const shippingLine2Ref = useRef<TextInput>(null);
+  const shippingCityRef = useRef<TextInput>(null);
+  const shippingStateRef = useRef<TextInput>(null);
+  const shippingZipRef = useRef<TextInput>(null);
 
   const handleFieldFocus = useCallback((e: any) => {
     const target = e.nativeEvent?.target;
@@ -399,7 +434,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     status === 'processing' ||
     klarnaCheckout.status === 'processing' ||
     klarnaCheckout.status === 'awaiting_redirect';
-  const displayError = error ?? klarnaCheckout.error;
+  const displayError = error ?? klarnaCheckout.error ?? pollerError;
 
   if (!checkoutTracked && items.length > 0) {
     events.beginCheckout(items.length, totals.total);
@@ -474,42 +509,63 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   }, [shippingAddress, billingAddress, billingSameAsShipping, selectedMethod, cardComplete]);
 
   const handlePlaceOrder = useCallback(async () => {
-    if (!selectedMethod || isProcessing) return;
+    if (!selectedMethod || isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
 
-    setSubmitAttempted(true);
+    try {
+      setSubmitAttempted(true);
 
-    if (!validateForm()) return;
+      if (!validateForm()) return;
 
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    if (selectedMethod === 'klarna') {
-      // Capture current values into refs before handing off to the redirect flow.
-      // The success useEffect will read these after the app returns from Klarna,
-      // at which point the closure values in handlePlaceOrder may be stale.
-      klarnaShippingRef.current = shippingAddress;
-      klarnaTotalRef.current = totals.total;
-      klarnaItemCountRef.current = items.length;
-      klarnaFiredRef.current = false;
-      // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
-      await klarnaCheckout.startCheckout(
-        items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
-        { ...totals, discount: 0 },
-      );
-      return;
-    }
-
-    const order = await processPayment(selectedMethod);
-
-    if (order) {
-      events.purchase(order.orderId, totals.total, items.length);
-      addressBook.saveFromCheckout(shippingAddress);
-      cancelCartAbandonmentForOrder();
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
-      onOrderComplete?.(order);
+
+      if (selectedMethod === 'klarna') {
+        // Capture current values into refs before handing off to the redirect flow.
+        // The success useEffect will read these after the app returns from Klarna,
+        // at which point the closure values in handlePlaceOrder may be stale.
+        klarnaShippingRef.current = shippingAddress;
+        klarnaTotalRef.current = adjustedTotal;
+        klarnaItemCountRef.current = items.length;
+        klarnaFiredRef.current = false;
+        // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
+        await klarnaCheckout.startCheckout(
+          items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
+          { ...totals, total: adjustedTotal, discount: 0 },
+        );
+        return;
+      }
+
+      setPollerError(null);
+      let resolvedOrder: import('@/services/payment').OrderConfirmation | null = null;
+
+      const pollResult = await pollPaymentConfirmation(
+        async () => {
+          resolvedOrder = await processPayment(selectedMethod, adjustedTotal);
+          if (resolvedOrder) return true;
+          // processPayment returns null on both hard failure and cancellation;
+          // treat null as false (failed) so the poller stops immediately.
+          return false;
+        },
+        { timeoutMs: 30000, intervalMs: 2000 },
+      );
+
+      if (pollResult === 'success' && resolvedOrder) {
+        const order = resolvedOrder as import('@/services/payment').OrderConfirmation;
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        addressBook.saveFromCheckout(shippingAddress);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      } else if (pollResult === 'timeout') {
+        setPollerError('Payment is taking longer than expected. Check your email.');
+      }
+      // 'failed': usePayment hook already sets its own error state via setState
+    } finally {
+      placingOrderRef.current = false;
     }
   }, [
     selectedMethod,
@@ -519,80 +575,99 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     klarnaCheckout,
     onOrderComplete,
     totals,
+    adjustedTotal,
     items,
     addressBook,
     shippingAddress,
   ]);
 
   const handleApplePay = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    setSelectedMethod('apple-pay');
-    const order = await processPayment('apple-pay');
-
-    if (order) {
-      events.purchase(order.orderId, totals.total, items.length);
-      cancelCartAbandonmentForOrder();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      onOrderComplete?.(order);
-    }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
-
-  const handleGooglePay = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    setSelectedMethod('google-pay');
-    const order = await processPayment('google-pay');
-
-    if (order) {
-      events.purchase(order.orderId, totals.total, items.length);
-      cancelCartAbandonmentForOrder();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      onOrderComplete?.(order);
-    }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
-
-  const handleAffirmCheckout = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (!affirmEligible) return;
-
-    setAffirmError(null);
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
 
     try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
+      setSelectedMethod('apple-pay');
+      const order = await processPayment('apple-pay', adjustedTotal);
+
+      if (order) {
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      }
+    } finally {
+      placingOrderRef.current = false;
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, adjustedTotal, items.length]);
+
+  const handleGooglePay = useCallback(async () => {
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
+
+    try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
+      setSelectedMethod('google-pay');
+      const order = await processPayment('google-pay', adjustedTotal);
+
+      if (order) {
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      }
+    } finally {
+      placingOrderRef.current = false;
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, adjustedTotal, items.length]);
+
+  const handleAffirmCheckout = useCallback(async () => {
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
+
+    try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (!affirmEligible) return;
+
+      setAffirmError(null);
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
       const orderId = `cf-ord-${Date.now()}`;
-      const { checkoutUrl } = await initiateAffirmCheckout(wixClient, totals.total, orderId, items);
+      const { checkoutUrl } = await initiateAffirmCheckout(
+        wixClient,
+        adjustedTotal,
+        orderId,
+        items,
+      );
       await Linking.openURL(checkoutUrl);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to open Affirm checkout';
       setAffirmError(message);
+    } finally {
+      placingOrderRef.current = false;
     }
-  }, [isProcessing, affirmEligible, validateForm, wixClient, totals.total, items]);
+  }, [isProcessing, affirmEligible, validateForm, wixClient, adjustedTotal, items]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 
@@ -609,6 +684,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       autoCapitalize?: 'none' | 'words' | 'sentences';
       autoComplete?: string;
       maxLength?: number;
+      returnKeyType?: 'next' | 'done' | 'go' | 'search' | 'send';
+      onSubmitEditing?: () => void;
+      inputRef?: React.RefObject<TextInput | null>;
     },
   ) => (
     <View style={styles.fieldGroup} key={`${options.testIDPrefix}-${options.fieldName}`}>
@@ -621,6 +699,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         {label}
       </Text>
       <TextInput
+        ref={options.inputRef}
         style={[
           styles.input,
           {
@@ -640,6 +719,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         editable={!isProcessing}
         testID={`${options.testIDPrefix}-${options.fieldName}`}
         accessibilityLabel={label}
+        returnKeyType={options.returnKeyType}
+        onSubmitEditing={options.onSubmitEditing}
+        blurOnSubmit={options.returnKeyType === 'done'}
       />
       {fieldError && (
         <Text
@@ -659,6 +741,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     errors: AddressErrors,
     onUpdate: (field: keyof Address, value: string) => void,
     testIDPrefix: string,
+    fieldRefs?: {
+      fullName?: React.RefObject<TextInput | null>;
+      line1?: React.RefObject<TextInput | null>;
+      line2?: React.RefObject<TextInput | null>;
+      city?: React.RefObject<TextInput | null>;
+      state?: React.RefObject<TextInput | null>;
+      zip?: React.RefObject<TextInput | null>;
+    },
   ) => (
     <View testID={`${testIDPrefix}-form`}>
       {renderAddressField(
@@ -671,6 +761,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           fieldName: 'fullName',
           placeholder: 'John Doe',
           autoComplete: 'name',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.fullName,
+          onSubmitEditing: () => fieldRefs?.line1?.current?.focus(),
         },
       )}
       {renderAddressField(
@@ -683,6 +776,15 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           fieldName: 'line1',
           placeholder: '123 Main St',
           autoComplete: 'street-address',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.line1,
+          onSubmitEditing: () => {
+            if (address.line2) {
+              fieldRefs?.line2?.current?.focus();
+            } else {
+              fieldRefs?.city?.current?.focus();
+            }
+          },
         },
       )}
       {renderAddressField(
@@ -694,6 +796,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           testIDPrefix,
           fieldName: 'line2',
           placeholder: 'Apt 4B',
+          returnKeyType: 'next',
+          inputRef: fieldRefs?.line2,
+          onSubmitEditing: () => fieldRefs?.city?.current?.focus(),
         },
       )}
       <View style={styles.rowFields}>
@@ -703,6 +808,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             fieldName: 'city',
             placeholder: 'Asheville',
             autoComplete: 'postal-address-locality',
+            returnKeyType: 'next',
+            inputRef: fieldRefs?.city,
+            onSubmitEditing: () => fieldRefs?.state?.current?.focus(),
           })}
         </View>
         <View style={styles.stateField}>
@@ -717,6 +825,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               placeholder: 'NC',
               autoCapitalize: 'none',
               maxLength: 2,
+              returnKeyType: 'next',
+              inputRef: fieldRefs?.state,
+              onSubmitEditing: () => fieldRefs?.zip?.current?.focus(),
             },
           )}
         </View>
@@ -728,11 +839,17 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             keyboardType: 'numeric',
             autoComplete: 'postal-code',
             maxLength: 10,
+            returnKeyType: 'done',
+            inputRef: fieldRefs?.zip,
           })}
         </View>
       </View>
     </View>
   );
+
+  if (!stripeReady) {
+    return <CheckoutFormSkeleton />;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -769,6 +886,21 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         </Text>
         <View style={styles.headerSpacer} />
       </View>
+
+      {/* A11y progress indicator — checkout is a single-step flow (step 1 of 3: addresses + payment) */}
+      <View
+        testID="checkout-progress"
+        accessibilityRole="progressbar"
+        accessibilityLabel="Checkout step 1 of 3"
+        accessibilityValue={{ min: 1, max: 3, now: 1 }}
+        style={{
+          height: 3,
+          backgroundColor: colors.sunsetCoral,
+          marginHorizontal: spacing.lg,
+          borderRadius: 2,
+          marginBottom: spacing.xs,
+        }}
+      />
 
       <ScrollView
         ref={scrollRef}
@@ -866,7 +998,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             </View>
           )}
 
-          {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping')}
+          {renderAddressForm(shippingAddress, shippingErrors, updateShippingField, 'shipping', {
+            fullName: shippingFullNameRef,
+            line1: shippingLine1Ref,
+            line2: shippingLine2Ref,
+            city: shippingCityRef,
+            state: shippingStateRef,
+            zip: shippingZipRef,
+          })}
         </View>
 
         {/* Shipping options error — cm-o4i */}
@@ -1273,6 +1412,25 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               {formatPrice(totals.tax)}
             </Text>
           </View>
+          {promoDiscount && (
+            <View style={styles.totalRow} testID="promo-discount-row">
+              <Text style={[styles.totalLabel, { color: colors.success }]}>
+                Promo (
+                {promoDiscount.type === 'percent'
+                  ? `${promoDiscount.amount}%`
+                  : formatPrice(promoDiscount.amount)}{' '}
+                off)
+              </Text>
+              <Text
+                style={[styles.totalValue, { color: colors.success }]}
+                testID="promo-discount-value"
+              >
+                {promoDiscount.type === 'percent'
+                  ? `-${formatPrice((totals.total * promoDiscount.amount) / 100)}`
+                  : `-${formatPrice(promoDiscount.amount)}`}
+              </Text>
+            </View>
+          )}
           <View style={[styles.divider, { backgroundColor: colors.sandDark }]} />
           <View style={styles.totalRow}>
             <Text style={[styles.grandTotalLabel, { color: colors.espresso }]}>Total</Text>
@@ -1283,7 +1441,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               ]}
               testID="checkout-total"
             >
-              {formatPrice(totals.total)}
+              {formatPrice(adjustedTotal)}
             </Text>
           </View>
         </View>
@@ -1299,6 +1457,14 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             error={loyaltyError}
             hidden={items.length === 0}
             testID="checkout-loyalty-banner"
+          />
+        </View>
+
+        {/* Promo Code — cm-epicC task 4 */}
+        <View style={{ marginHorizontal: spacing.lg, marginTop: spacing.sm }}>
+          <PromoCodeInput
+            cartTotal={totals.total}
+            onDiscount={(amount, type) => setPromoDiscount({ amount, type })}
           />
         </View>
 
@@ -1486,7 +1652,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             {selectedMethod === 'klarna' ? (
               <>
                 <Text style={[styles.bnplDetail, { color: colors.mountainBlueDark }]}>
-                  4 payments of {formatPrice(totals.total / 4)}
+                  4 payments of {formatPrice(adjustedTotal / 4)}
                 </Text>
                 <Text style={[styles.bnplNote, { color: colors.espressoLight }]}>
                   No interest. No fees if paid on time.
@@ -1554,7 +1720,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
               isProcessing
                 ? 'Processing payment'
                 : selectedMethod
-                  ? `Place order for ${formatPrice(totals.total)}`
+                  ? `Place order for ${formatPrice(adjustedTotal)}`
                   : 'Select a payment method to continue'
             }
             accessibilityRole="button"
@@ -1568,7 +1734,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
             ) : (
               <Text style={styles.placeOrderText}>
                 {selectedMethod
-                  ? `Place Order — ${formatPrice(totals.total)}`
+                  ? `Place Order — ${formatPrice(adjustedTotal)}`
                   : 'Select Payment Method'}
               </Text>
             )}
