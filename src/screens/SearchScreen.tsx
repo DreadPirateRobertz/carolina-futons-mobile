@@ -18,7 +18,6 @@ import {
   useProducts,
   type Product,
   type ProductCategory,
-  type SortOption,
 } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
@@ -50,7 +49,7 @@ interface Props {
 }
 
 export function SearchScreen({ testID }: Props) {
-  const { colors, spacing, typography, borderRadius } = useTheme();
+  const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scrollPerf = useScrollPerformance('SearchScreen');
@@ -69,7 +68,6 @@ export function SearchScreen({ testID }: Props) {
   const { suggestions } = useSearchSuggestions(searchQuery, localSuggestions);
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { trendingSearches } = useConfig();
-  const [hasSearched, setHasSearched] = useState(false);
   // cm-c00: local input text for responsive UI; debounced before hitting useProducts
   const [inputText, setInputText] = useState('');
 
@@ -98,7 +96,6 @@ export function SearchScreen({ testID }: Props) {
       setInputText(query);
       setSearchQuery(query);
       addSearch(query);
-      setHasSearched(true);
       events.search(query, products.length);
     },
     [setSearchQuery, addSearch, products.length],
@@ -117,7 +114,6 @@ export function SearchScreen({ testID }: Props) {
       setInputText(term);
       setSearchQuery(term);
       addSearch(term);
-      setHasSearched(true);
       events.search(term, 0);
     },
     [setSearchQuery, addSearch],
@@ -126,9 +122,6 @@ export function SearchScreen({ testID }: Props) {
   const handleChangeText = useCallback((text: string) => {
     // Update local input immediately; debounce effect propagates to useProducts
     setInputText(text);
-    if (text.length === 0) {
-      setHasSearched(false);
-    }
   }, []);
 
   const renderProduct = useCallback(
