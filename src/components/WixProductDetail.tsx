@@ -139,6 +139,8 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
                     contentFit="cover"
                     placeholder={{ blurhash: item.blurhash ?? DEFAULT_BLURHASH }}
                     transition={300}
+                    recyclingKey={item.uri}
+                    cachePolicy="memory-disk"
                     testID={`gallery-image-${index}`}
                   />
                 ) : (

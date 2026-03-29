@@ -43,3 +43,20 @@ export function parseWixImageUrl(url: string): string | null {
 
   return WIXSTATIC_BASE + mediaId;
 }
+
+/**
+ * Convert a Wix CDN transform URL to request WebP format.
+ *
+ * For URLs matching the pattern:
+ *   https://static.wixstatic.com/media/.../.../file.{jpg|jpeg|png}
+ * replaces the terminal extension with `.webp`.
+ *
+ * Non-Wix URLs and URLs without a recognised image extension are returned
+ * unchanged. Null/undefined inputs are returned as-is.
+ */
+export function asWebP(url: string): string {
+  if (!url) return url;
+  if (!url.includes('static.wixstatic.com')) return url;
+  // Only transform if the URL ends with a transform path file segment
+  return url.replace(/\/file\.(jpg|jpeg|png)$/, '/file.webp');
+}

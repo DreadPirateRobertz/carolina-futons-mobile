@@ -1,4 +1,4 @@
-import { parseWixImageUrl } from '../parseWixImageUrl';
+import { parseWixImageUrl, asWebP } from '../parseWixImageUrl';
 
 describe('parseWixImageUrl', () => {
   describe('valid wix:image:// URLs', () => {
@@ -81,5 +81,41 @@ describe('parseWixImageUrl', () => {
     it('returns null for completely invalid string', () => {
       expect(parseWixImageUrl('not-a-url-at-all')).toBeNull();
     });
+  });
+});
+
+describe('asWebP', () => {
+  const BASE = 'https://static.wixstatic.com/media/cc389e_abc/v1/fit/w_640,h_480,q_90';
+
+  it('converts file.jpg to file.webp', () => {
+    expect(asWebP(`${BASE}/file.jpg`)).toBe(`${BASE}/file.webp`);
+  });
+
+  it('converts file.jpeg to file.webp', () => {
+    expect(asWebP(`${BASE}/file.jpeg`)).toBe(`${BASE}/file.webp`);
+  });
+
+  it('converts file.png to file.webp', () => {
+    expect(asWebP(`${BASE}/file.png`)).toBe(`${BASE}/file.webp`);
+  });
+
+  it('leaves file.webp unchanged', () => {
+    const url = `${BASE}/file.webp`;
+    expect(asWebP(url)).toBe(url);
+  });
+
+  it('leaves non-wixstatic URLs unchanged', () => {
+    const url = 'https://example.com/photo.jpg';
+    expect(asWebP(url)).toBe(url);
+  });
+
+  it('leaves bare wixstatic mediaId URL unchanged (no transform path)', () => {
+    const url = 'https://static.wixstatic.com/media/cc389e_abc123';
+    expect(asWebP(url)).toBe(url);
+  });
+
+  it('handles null/undefined gracefully by returning input', () => {
+    expect(asWebP(null as unknown as string)).toBeNull();
+    expect(asWebP(undefined as unknown as string)).toBeUndefined();
   });
 });

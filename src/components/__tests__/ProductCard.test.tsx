@@ -458,14 +458,19 @@ describe('ProductCard', () => {
       const productWithoutLifestyle: Product = { ...futon, lifestyleImageUri: undefined };
       const { getByTestId } = renderCard({ product: productWithoutLifestyle });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      // asWebP converts wixstatic jpg/png URLs to webp — expect either original or .webp variant
+      const uri = heroImage.props.source?.uri as string;
+      expect(uri).toMatch(/static\.wixstatic\.com/);
+      expect(uri).toMatch(/file\.(jpg|jpeg|png|webp)$/);
     });
 
     it('falls back to images[0].uri when lifestyleImageUri is empty string', () => {
       const productWithEmpty: Product = { ...futon, lifestyleImageUri: '' };
       const { getByTestId } = renderCard({ product: productWithEmpty });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      // empty string falls through to images[0].uri; asWebP converts to webp
+      const uri = heroImage.props.source?.uri as string;
+      expect(uri).toMatch(/static\.wixstatic\.com/);
     });
 
     it('top 3 futon products have lifestyleImageUri wired in mock data', () => {

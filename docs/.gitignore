@@ -1,0 +1,6 @@
+# Ignore loose/unsorted screenshots at the flat root of screenshots/.
+# Named session subdirectories (s26/, s29-*/,  s30-*/ etc.) ARE committed
+# so that screen-reference.html works without a local build step.
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.webp
