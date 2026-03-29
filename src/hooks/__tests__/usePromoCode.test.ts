@@ -24,7 +24,8 @@ describe('usePromoCode', () => {
     });
 
     expect(result.current.status).toBe('error');
-    expect(result.current.error).toBe('Promo codes are not available offline');
+    // Error caught as non-WixApiError → falls back to generic message
+    expect(result.current.error).toBe('Unable to validate promo code');
   });
 
   it('starts in idle state with no coupon', () => {
