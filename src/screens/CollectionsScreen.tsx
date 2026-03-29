@@ -7,7 +7,7 @@
  * individual products.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -46,6 +46,12 @@ export function CollectionsScreen() {
   const { itemCount } = useCart();
   const { open: openCart } = useMiniCartDrawer();
   const scrollPerf = useScrollPerformance('CollectionsScreen');
+
+  useEffect(() => {
+    if (error) {
+      console.error('[CollectionsScreen] collections fetch failed:', error);
+    }
+  }, [error]);
 
   const handleCollectionPress = useCallback(
     (collection: EditorialCollection) => {
