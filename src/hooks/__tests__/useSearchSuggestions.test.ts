@@ -18,6 +18,10 @@ jest.mock('@/services/wix/config', () => ({
   isWixConfigured: jest.fn(),
 }));
 
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
 import { useOptionalWixClient } from '@/services/wix';
 import { isWixConfigured } from '@/services/wix/config';
 
@@ -148,6 +152,18 @@ describe('useSearchSuggestions', () => {
       });
 
       expect(result.current.suggestions).toEqual(FALLBACK);
+    });
+
+    it('calls captureException on Wix API error', async () => {
+      const { captureException } = jest.requireMock('@/services/crashReporting');
+      const error = new Error('network error');
+      mockQueryProducts.mockRejectedValue(error);
+
+      renderHook(() => useSearchSuggestions('ash', FALLBACK));
+
+      await waitFor(() => {
+        expect(captureException).toHaveBeenCalledWith(error);
+      });
     });
 
     it('returns empty array when Wix returns no products', async () => {
