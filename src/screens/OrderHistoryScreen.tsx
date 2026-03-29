@@ -16,6 +16,8 @@ import { CategoryIllustration } from '@/components/illustrations/CategoryIllustr
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
+import { useCart } from '@/hooks/useCart';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import {
   MountainRefreshControl,
   MountainRefreshIndicator,
@@ -39,6 +41,7 @@ export function OrderHistoryScreen({
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
+  const { addItem } = useCart();
 
   // Use prop orders or fall back to hook data (already sorted newest-first)
   const orders = ordersProp
@@ -61,6 +64,19 @@ export function OrderHistoryScreen({
       year: 'numeric',
     });
   }, []);
+
+  const handleReorder = useCallback(
+    (order: Order) => {
+      for (const lineItem of order.items) {
+        const model = FUTON_MODELS.find((m) => m.id === lineItem.modelId);
+        const fabric = FABRICS.find((f) => f.id === lineItem.fabricId);
+        if (model && fabric) {
+          addItem(model, fabric, lineItem.quantity);
+        }
+      }
+    },
+    [addItem],
+  );
 
   const renderOrder = useCallback(
     ({ item }: { item: Order }) => {
@@ -140,10 +156,23 @@ export function OrderHistoryScreen({
               {formatPrice(item.total)}
             </Text>
           </View>
+
+          <TouchableOpacity
+            style={[
+              styles.reorderButton,
+              { borderColor: colors.sunsetCoral, borderRadius: borderRadius.sm },
+            ]}
+            onPress={() => handleReorder(item)}
+            testID={`order-reorder-${item.id}`}
+            accessibilityLabel={`Reorder ${item.orderNumber}`}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.reorderText, { color: colors.sunsetCoral }]}>Reorder</Text>
+          </TouchableOpacity>
         </TouchableOpacity>
       );
     },
-    [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate],
+    [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate, handleReorder],
   );
 
   if (isLoading && !ordersProp) {
@@ -335,5 +364,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
+  },
+  reorderButton: {
+    marginTop: 10,
+    borderWidth: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    alignSelf: 'flex-end',
+  },
+  reorderText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
