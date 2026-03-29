@@ -21,6 +21,10 @@
  *   carolinafutons://referral/{code}   → ReferralLanding (stores code, then goes to Account)
  *   carolinafutons://achievements      → AchievementBadgesScreen
  *   carolinafutons://alerts            → NotificationsScreen (gamification feed)
+ *   carolinafutons://leaderboard       → LeaderboardScreen
+ *   carolinafutons://challenges        → ChallengesScreen
+ *   carolinafutons://avatar            → AvatarEquipScreen
+ *   carolinafutons://gallery           → RoomGalleryScreen
  */
 
 import type { LinkingOptions } from '@react-navigation/native';
@@ -110,4 +114,8 @@ export const SUPPORTED_PATHS = [
   'avatar',
   'gallery',
   'referral',
+  'leaderboard',
+  'challenges',
+  'avatar',
+  'gallery',
 ] as const;
