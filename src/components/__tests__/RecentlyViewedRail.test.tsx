@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { RecentlyViewedRail } from '../RecentlyViewedRail';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { PRODUCTS } from '@/data/products';
 
 const SLUGS = [
   'asheville-full-futon',
@@ -120,6 +121,51 @@ describe('RecentlyViewedRail', () => {
       });
       const card = getByTestId('recently-viewed-card-asheville-full-futon');
       expect(card.props.accessibilityRole).toBe('button');
+    });
+  });
+
+  describe('image optimization (expo-image)', () => {
+    it('image has a placeholder prop for progressive loading', () => {
+      const { getByTestId } = renderRail({
+        slugs: ['asheville-full-futon'],
+        currentSlug: 'pisgah-twin-futon',
+      });
+      const img = getByTestId('recently-viewed-img-asheville-full-futon');
+      // expo-image exposes placeholder as a prop
+      expect(img.props.placeholder).toBeDefined();
+    });
+
+    it('image has cachePolicy set', () => {
+      const { getByTestId } = renderRail({
+        slugs: ['asheville-full-futon'],
+        currentSlug: 'pisgah-twin-futon',
+      });
+      const img = getByTestId('recently-viewed-img-asheville-full-futon');
+      expect(img.props.cachePolicy).toBe('memory-disk');
+    });
+
+    it('image has contentFit set to cover', () => {
+      const { getByTestId } = renderRail({
+        slugs: ['asheville-full-futon'],
+        currentSlug: 'pisgah-twin-futon',
+      });
+      const img = getByTestId('recently-viewed-img-asheville-full-futon');
+      expect(img.props.contentFit).toBe('cover');
+    });
+
+    it('image has accessibilityLabel from product alt text or name', () => {
+      const product = PRODUCTS.find((p) => p.slug === 'asheville-full-futon')!;
+      const { getByTestId } = renderRail({
+        slugs: ['asheville-full-futon'],
+        currentSlug: 'pisgah-twin-futon',
+      });
+      const img = getByTestId('recently-viewed-img-asheville-full-futon');
+      const label = img.props.accessibilityLabel;
+      expect(typeof label).toBe('string');
+      expect(label.length).toBeGreaterThan(0);
+      // Should use the alt text from images[0] or fall back to product name
+      const expected = product.images[0]?.alt ?? product.name;
+      expect(label).toBe(expected);
     });
   });
 });

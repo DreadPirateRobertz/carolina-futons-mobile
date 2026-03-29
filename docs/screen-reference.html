@@ -64,7 +64,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <p class="meta">
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
-Tests: 495 passing (new baseline) | Session 30 · 2026-03-29<br>
+Tests: 6936 passing (392 suites, 0 failures) | Session 29 · 2026-03-28<br>
 PRs merged: #357–#370 | PRs in CI: #371 (PDP social proof), #372 (style personalization)
 </p>
 
@@ -171,15 +171,6 @@ npx jest --passWithNoTests</pre>
 <!-- ══════════════════════════════════════════════════
      SESSION 29 FEATURES SHIPPED
 ══════════════════════════════════════════════════ -->
-<div class="section">
-<h2>Session 30 Features Shipped <span class="session-tag">2026-03-29</span></h2>
-<table>
-<tr><th>PR</th><th>Feature</th><th>Description</th></tr>
-<tr><td>#392</td><td>WildlifeLayer hookup</td><td>Birds, fireflies, owls animated above LivingSky background on HomeScreen. Absolute overlay using useLivingSky() state — 2s fade transitions, zero CPU when opacity=0.</td></tr>
-<tr><td>#394</td><td>Deep Links</td><td>carolinafutons:// URL scheme + Universal Links. 20 routes including leaderboard, challenges, avatar, gallery. Real share URL in WixProductDetail. Products normalizer /products/→/product/.</td></tr>
-<tr><td>#390</td><td>LivingSky Engine</td><td>16-keyframe sky engine (computeLivingSky) + useLivingSkyState hook. Tracks sun/moon/stars/clouds/wildlife/precipitation by time of day. CF+ golden hour perk shifts 60min earlier.</td></tr>
-<tr><td>#387</td><td>Image Optimization (cm-c27)</td><td>WebP encoding + progressive loading across product grid + PDP gallery. wixImageUrl() utility rewrites CDN URLs for correct dimensions + enc_webp. Blurhash placeholders on all images.</td></tr>
-</table>
 <div class="section">
 <h2>Session 29 Features Shipped <span class="session-tag">2026-03-28</span></h2>
 <table>
@@ -370,27 +361,49 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Tab Bar → Home (default) | Contains: Hero, AR entry, CF+ promo, streak badge, recommendations</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/04-home.png" alt="04 Home" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/02_home_top.png" alt="Home Top" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Home — Hero & Features</h3>
     <p>Mountain skyline hero with search icon. "HANDCRAFTED IN NC" pill. Streak badge (day count + flame). CF+ free trial promo carousel. "Try in Your Room" AR button. "Browse Products" entry. AI-driven product recommendations carousel.</p>
+    <p style="margin-top:8px;font-size:11px;color:#aaa;"><strong style="color:#e8845c;">LivingSky Animations (S30):</strong> Full-screen dynamic sky gradient (LivingSkyBackground) shifts through 16 keyframes across the day. LivingSkyMountainSkyline SVG shows sun arc, moon phase, ridge colours, star field, clouds, and precipitation by time of day. WildlifeLayer (NEW) renders animated wildlife above the sky: 🐦 birds (daytime), 🌟 fireflies (dusk/night), 🦉 owl (night). All opacity-driven fades over 2s transitions from useLivingSky state. CF+ members get golden hour 60 min earlier.</p>
     <div class="features">
       <span class="badge badge-feature">Streak Badge</span>
       <span class="badge badge-feature">CF+ Trial CTA</span>
       <span class="badge badge-ar">AR Entry</span>
       <span class="badge badge-feature">AI Recommendations</span>
+      <span class="badge badge-new">LivingSky Animations</span>
+      <span class="badge badge-new">Wildlife Layer S30</span>
     </div>
   </div>
 </div>
 <div class="card">
-  <img src="screenshots/s30-20260329/05-home-quests.png" alt="05 Home Quests" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/02_home_mid.png" alt="Home Mid" style="width:100%;height:auto;display:block;">
   <div class="card-info">
-    <h3>Home — Daily Quests Card</h3>
-    <p>DailyQuestsCard: shows today's quests with progress bars. Auto-refreshes when a gamification action completes (S29: no manual pull-to-refresh needed). Taps through to Challenges screen.</p>
+    <h3>Home — Mid Scroll (Collections)</h3>
+    <p>Mid-scroll: CF+ promo banner, Browse Collections grid entry, RecommendationCarousel. DailyQuestsCard embedded with today's quest progress bars.</p>
     <div class="features">
       <span class="badge badge-gamification">Daily Quests</span>
-      <span class="badge badge-new">Auto-Refresh S29</span>
+      <span class="badge badge-feature">Collections Grid</span>
     </div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/02_home_bottom.png" alt="Home Bottom" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Home — Bottom (AI Recs)</h3>
+    <p>AI-driven recommendations carousel. Recently Viewed Rail. Footer links. Auto-refreshes quests when gamification action completes (S29: no manual pull-to-refresh).</p>
+    <div class="features">
+      <span class="badge badge-new">Auto-Refresh S29</span>
+      <span class="badge badge-feature">AI Recommendations</span>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/02_home_collections.png" alt="Home Collections" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Home — Collections Entry</h3>
+    <p>Browse Collections section showing curated collection cards from the home feed.</p>
+    <div class="features"><span class="badge badge-commerce">Curated Collections</span></div>
   </div>
 </div>
 </div>
@@ -402,7 +415,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Tab Bar → Shop | Product grid with Wix catalog data</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/06-shop.png" alt="06 Shop" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/03_shop_top.png" alt="Shop Top" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Shop — Product Grid</h3>
     <p>88 real Wix products from Carolina Futons catalog. Category filter chips: All, Futons, Murphy Beds, Covers, Mattresses. Sort: Price, Name, Newest. Product badges (NEW, BESTSELLER, LOW_STOCK, SALE, CF_PLUS_EXCLUSIVE). Real CDN photos from static.wixstatic.com. Skeleton loading on first fetch.</p>
@@ -411,6 +424,14 @@ npx jest --passWithNoTests</pre>
       <span class="badge badge-feature">Category Filters</span>
       <span class="badge badge-feature">Product Badges</span>
     </div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/03_shop_scrolled.png" alt="Shop Scrolled" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Shop — Scrolled Grid</h3>
+    <p>Product grid scrolled further, showing more catalog items. ProductCard components with image, badge, rating, price, WishlistButton overlay, Compare button.</p>
+    <div class="features"><span class="badge badge-feature">Infinite Scroll</span></div>
   </div>
 </div>
 </div>
@@ -422,7 +443,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Tab Bar → Cart | Shows items, subtotal, BNPL, checkout CTA</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/07-cart-empty.png" alt="07 Cart Empty" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/05_cart_scrolled.png" alt="Cart Empty/Scrolled" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Cart — Empty State</h3>
     <p>Mountain skyline header. Cart icon with "Your cart is empty" message. Browse CTA (coral button).</p>
@@ -430,7 +451,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <img src="screenshots/s30-20260329/48-cart-items.png" alt="48 Cart Items" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/05_cart_with_items.png" alt="Cart With Items" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Cart — With Items</h3>
     <p>Product thumbnail, name, quantity selector (+/-), remove button. Subtotal. Delivery mode indicator (parcel/freight). BNPL Hero Surface banner (Affirm/Afterpay monthly estimate, S29). "Proceed to Checkout" CTA (coral).</p>
@@ -450,7 +471,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Tab Bar → Account | Auth state determines content</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/08-account-signedout.png" alt="08 Account Signedout" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/06_account_top.png" alt="Account Top" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Account — Signed Out</h3>
     <p>Mountain skyline header. Sign-in prompt with value props. Coral "Sign In" CTA. Browse-only links visible.</p>
@@ -458,7 +479,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <img src="screenshots/s30-20260329/49-account-signedin.png" alt="49 Account Signedin" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/06_account_bottom.png" alt="Account Bottom" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Account — Signed In</h3>
     <p>User name + avatar. Loyalty tier badge (Bronze/Silver/Gold/Platinum) + points balance. Links: Order History, Wishlist, Saved Addresses, Notification Preferences, Privacy Policy. Referral code display. Loyalty/Rewards entry. CF+ membership status.</p>
@@ -543,7 +564,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <img src="screenshots/s30-20260329/14-search-results.png" alt="14 Search Results" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/08_search_results.png" alt="Search Results" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Search — Results</h3>
     <p>Type → debounced search → results as product cards. Skeleton loading states. "No results" empty state (zero-results UX story filed for enhancement).</p>
@@ -559,7 +580,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Search category tap → Category | Filtered product grid</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/09-category-futons.png" alt="09 Category Futons" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/09-category-futons.png" alt="09 Category Futons" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Category — Filtered Grid</h3>
     <p>Category title + product count. Wix catalog filtered by category. Sort controls. Product badges visible. Breadcrumb shows: Search → Category.</p>
@@ -575,11 +596,19 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Home → Browse Collections | Curated product groups</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/15-collections.png" alt="15 Collections" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/09_collections.png" alt="Collections" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Collections — Grid</h3>
     <p>Curated collection cards with cover images. "Living Room Essentials", "Bedroom Collection", "Mountain Lodge", etc. Collection title + item count.</p>
     <div class="features"><span class="badge badge-commerce">Curated Sets</span></div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/09_collections_scrolled.png" alt="Collections Scrolled" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Collections — Scrolled</h3>
+    <p>More collection cards visible on scroll. ScreenDataState skeleton→error→retry wrapper active (S30).</p>
+    <div class="features"><span class="badge badge-new">ScreenDataState S30</span></div>
   </div>
 </div>
 </div>
@@ -591,11 +620,19 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Collections → tap → Collection Detail | Products in collection</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/16-collection-detail.png" alt="16 Collection Detail" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/10_collection_detail_top.png" alt="Collection Detail Top" style="width:100%;height:auto;display:block;">
   <div class="card-info">
-    <h3>Collection Detail</h3>
-    <p>Collection header image + description. Product grid filtered to this collection. Sort controls. All standard product card features.</p>
+    <h3>Collection Detail — Header</h3>
+    <p>Collection header image + description. Parallax header with collection name. Breadcrumb: Collections → [Name].</p>
     <div class="features"><span class="badge badge-commerce">Wix Collection</span></div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/10_collection_detail_products.png" alt="Collection Detail Products" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Collection Detail — Product Grid</h3>
+    <p>Products grid filtered to this collection. Sort controls. All standard product card features (badges, wishlist, compare).</p>
+    <div class="features"><span class="badge badge-feature">Sort Controls</span></div>
   </div>
 </div>
 </div>
@@ -607,7 +644,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">PDP → Compare button | Side-by-side product comparison</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/17-compare.png" alt="17 Compare" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/17-compare.png" alt="17 Compare" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Compare — Side by Side</h3>
     <p>Up to 3 products. Price, dimensions, materials, ratings comparison table. "Add to Cart" per product column. Remove product button. S29: Full keyboard navigation, VoiceOver labels, WCAG contrast improvements.</p>
@@ -626,7 +663,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">Account → Wishlist | Saved products</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/18-wishlist.png" alt="18 Wishlist" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/11_wishlist.png" alt="Wishlist" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Wishlist</h3>
     <p>Saved product cards with price. "Move to Cart" swipe action. Remove button. Empty state with "Start Browsing" CTA. Skeleton loading. Price-drop alert story filed for future push notifications.</p>
@@ -677,7 +714,7 @@ npx jest --passWithNoTests</pre>
 <h2>15. Order Success</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/24-order-success.png" alt="24 Order Success" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/24-order-success.png" alt="24 Order Success" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Order Success</h3>
     <p>Confetti animation (coral / espresso colors). Order number display. Points earned notification (gamification). "Continue Shopping" and "View Order" CTAs.</p>
@@ -738,7 +775,7 @@ npx jest --passWithNoTests</pre>
 <p class="nav-flow">PDP → "See It In Your Room" | Camera-based AR product placement</p>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/34-ar-camera.png" alt="34 Ar Camera" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/34-ar-camera.png" alt="34 Ar Camera" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>AR Camera — Room Placement</h3>
     <p>Camera view with 3D model overlay (GLB/GLTF). Tap to place on floor. Pinch to resize. Two-finger rotate. Product info overlay with "Add to Cart" CTA. Screenshot button (saves to Room Gallery). Permission request flow for camera access.</p>
@@ -764,7 +801,7 @@ npx jest --passWithNoTests</pre>
 <h2>20. AR Web Viewer</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/36-ar-web-viewer.png" alt="36 Ar Web Viewer" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/36-ar-web-viewer.png" alt="36 Ar Web Viewer" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>AR Web Viewer</h3>
     <p>WebView-based 3D model viewer for devices without AR support or camera permission. 360-degree rotate, zoom, lighting controls. Fallback when expo-three not supported.</p>
@@ -778,7 +815,7 @@ npx jest --passWithNoTests</pre>
 <h2>21. Room Gallery</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/37-room-gallery.png" alt="37 Room Gallery" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/21_room_gallery_attempt.png" alt="Room Gallery" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Room Gallery</h3>
     <p>Grid of user's saved AR screenshots. Tap to view full screen. Share to social (native share sheet). Delete with confirmation. Empty state with "Try AR" CTA.</p>
@@ -793,7 +830,7 @@ npx jest --passWithNoTests</pre>
 <h2>22. Login</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/19-login.png" alt="19 Login" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/07_login.png" alt="Login" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Login</h3>
     <p>Carolina Futons logo. Email + password form. "Sign In" CTA (coral). Google OAuth button. "Forgot Password?" link. "Create Account" link. Error states: invalid credentials, network error, account locked.</p>
@@ -810,7 +847,7 @@ npx jest --passWithNoTests</pre>
 <h2>23. Sign Up</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/20-signup.png" alt="20 Signup" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/07_signup.png" alt="Signup" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Sign Up</h3>
     <p>Name, email, password fields. Password strength indicator. Terms acceptance checkbox. "Create Account" CTA. Referral code pre-filled if deep-link entry. Error: email already in use.</p>
@@ -824,7 +861,7 @@ npx jest --passWithNoTests</pre>
 <h2>24. Forgot Password</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/21-forgot-password.png" alt="21 Forgot Password" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/07_forgot_password.png" alt="Forgot Password" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Forgot Password</h3>
     <p>Email input. "Send Reset Link" CTA. Success state: "Check your email" confirmation. Back to login link.</p>
@@ -839,7 +876,7 @@ npx jest --passWithNoTests</pre>
 <h2>25. CF+ Premium</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/32-premium.png" alt="32 Premium" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/32-premium.png" alt="32 Premium" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>CF+ Premium Membership</h3>
     <p>Tier benefits table: free shipping, exclusive products, early access, bonus points. Free trial CTA. Monthly / annual pricing. Exclusive CF_PLUS_EXCLUSIVE product badge shown on eligible items. RevenueCat subscription integration.</p>
@@ -856,15 +893,23 @@ npx jest --passWithNoTests</pre>
 <h2>26. Style Quiz</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/33-style-quiz.png" alt="33 Style Quiz" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/15_style_quiz_q1.png" alt="Style Quiz Q1" style="width:100%;height:auto;display:block;">
   <div class="card-info">
-    <h3>Style Quiz</h3>
+    <h3>Style Quiz — Question 1</h3>
     <p>Multi-step style preference questionnaire. Questions: Room type, color palette, budget range, style (rustic / modern / minimalist / eclectic). Progress indicator. AI-generated product recommendations on completion. <strong>SommelierResults CMS integration (PR #372, in CI):</strong> quiz answers persisted to Wix /_functions/recordSommelierResult → getSommelierResults powers PDP personalized recs. topCategory, flavors[], recommendations[] stored per memberId.</p>
     <div class="features">
       <span class="badge badge-feature">AI Recommendations</span>
       <span class="badge badge-feature">5-Step Flow</span>
       <span class="badge badge-new">SommelierResults CMS PR #372</span>
     </div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/15_style_quiz_q2.png" alt="Style Quiz Q2" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Style Quiz — Question 2</h3>
+    <p>Subsequent question step with progress bar advancing. Tap/select answers → next question → personalized recommendations on completion.</p>
+    <div class="features"><span class="badge badge-feature">Progress Bar</span></div>
   </div>
 </div>
 </div>
@@ -924,11 +969,19 @@ npx jest --passWithNoTests</pre>
 <h2>30. Achievement Badges</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/42-achievements.png" alt="42 Achievements" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/16_achievements_top.png" alt="Achievements Top" style="width:100%;height:auto;display:block;">
   <div class="card-info">
-    <h3>Achievement Badges</h3>
+    <h3>Achievement Badges — Top</h3>
     <p>2-column grid: earned badges (colored) + locked badges (grayscale). Tap any badge for detail sheet: requirements, unlock date (if earned), share option. Categories: Purchase, AR, Social, Streak, Style.</p>
     <div class="features"><span class="badge badge-gamification">25+ Badge Types</span></div>
+  </div>
+</div>
+<div class="card">
+  <img src="screenshots/s30-20260329/16_achievements_scrolled.png" alt="Achievements Scrolled" style="width:100%;height:auto;display:block;">
+  <div class="card-info">
+    <h3>Achievement Badges — Scrolled</h3>
+    <p>More locked/earned badges visible on scroll. Categories filter at top.</p>
+    <div class="features"><span class="badge badge-gamification">Badge Categories</span></div>
   </div>
 </div>
 </div>
@@ -966,7 +1019,7 @@ npx jest --passWithNoTests</pre>
 <h2>33. Referral Landing</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/45-referral-landing.png" alt="45 Referral Landing" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s29-20260329/45-referral-landing.png" alt="45 Referral Landing" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Referral Landing</h3>
     <p>Deep-link entry point (carolinafutons://referral?code=XXXX). Reward explanation: "You get 500 points, they get 10% off." Sign-up prompt with referral code pre-filled. Also accessible from Account tab.</p>
@@ -995,7 +1048,7 @@ npx jest --passWithNoTests</pre>
 <h2>35. Notification Preferences</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/31-notification-preferences.png" alt="31 Notification Preferences" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/18_notification_prefs.png" alt="Notification Prefs" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Notification Preferences</h3>
     <p>Toggle switches per category: Order Updates, Shipping Alerts, Promotions, Price Drops, Loyalty Rewards, Streak Reminders. OS-level permission check with "Enable in Settings" fallback.</p>
@@ -1024,7 +1077,7 @@ npx jest --passWithNoTests</pre>
 <h2>37. Store Detail</h2>
 <div class="grid">
 <div class="card">
-  <img src="screenshots/s30-20260329/29-store-detail.png" alt="29 Store Detail" style="width:100%;height:auto;display:block;">
+  <img src="screenshots/s30-20260329/20_store_detail.png" alt="Store Detail" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Store Detail</h3>
     <p>Store name, full address, phone number, hours table (Mon-Sun). Embedded map. Photo gallery. "Call Store" (tel: link) and "Get Directions" (Maps deep link) CTAs.</p>
@@ -1182,7 +1235,7 @@ npx jest --passWithNoTests</pre>
      FOOTER
 ══════════════════════════════════════════════════ -->
 <div style="font-size:11px;color:#555;margin-top:40px;padding-top:16px;border-top:1px solid #2a1f19;line-height:2">
-Generated by dallas (cfutons_mobile/crew/dallas) · Session 30 · 2026-03-29 (updated hourly)<br>
+Generated by dallas (cfutons_mobile/crew/dallas) · Session 29 · 2026-03-28 (updated hourly)<br>
 39 screens documented · Expo SDK 55 + React Native 0.84 + React 19 · 6936 tests passing<br>
 PRs merged: #357–#370 · PRs in CI: #371 (social proof), #372 (style personalization)<br>
 Cross-platform data contracts: 4 live (SommelierResults, MemberPoints, MemberBadges, Referrals) · 2 planned (CartSessions, PriceDropQueue)<br>

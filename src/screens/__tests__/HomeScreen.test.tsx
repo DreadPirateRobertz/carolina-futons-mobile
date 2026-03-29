@@ -9,6 +9,12 @@ jest.mock('@/components/LivingSkyBackground', () => {
   return { LivingSkyBackground: () => <View testID="living-sky-background" /> };
 });
 
+jest.mock('@/components/WildlifeLayer', () => {
+  const { View } = require('react-native');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { WildlifeLayer: ({ skyState }: any) => <View testID="wildlife-layer" accessibilityLabel={`birdOpacity:${skyState.birdOpacity}`} /> };
+});
+
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   return {
@@ -588,6 +594,21 @@ describe('HomeScreen', () => {
   it('imports LivingSkyMountainSkyline without crashing', () => {
     const mod = require('../../components/LivingSkyMountainSkyline');
     expect(mod.LivingSkyMountainSkyline).toBeDefined();
+  });
+
+  // WildlifeLayer hookup — birds, fireflies, owls animated overlay
+  describe('WildlifeLayer integration', () => {
+    it('renders WildlifeLayer inside hero backdrop', () => {
+      const { getByTestId } = renderHomeScreen();
+      expect(getByTestId('wildlife-layer')).toBeTruthy();
+    });
+
+    it('passes skyState to WildlifeLayer', () => {
+      const { getByTestId } = renderHomeScreen();
+      const layer = getByTestId('wildlife-layer');
+      // birdOpacity from mock is 0 — verify skyState is forwarded
+      expect(layer.props.accessibilityLabel).toBe('birdOpacity:0');
+    });
   });
 
   // cf-7l2 — LivingSkyBackground integration
