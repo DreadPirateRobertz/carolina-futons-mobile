@@ -3,16 +3,31 @@ import { usePromoCode } from '../usePromoCode';
 import { WixApiError } from '@/services/wix/wixClient';
 
 const mockApplyCoupon = jest.fn();
+const mockUseOptionalWixClient = jest.fn<{ applyCoupon: jest.Mock } | null, []>(() => ({
+  applyCoupon: mockApplyCoupon,
+}));
 
 jest.mock('@/services/wix/wixProvider', () => ({
-  useOptionalWixClient: () => ({
-    applyCoupon: mockApplyCoupon,
-  }),
+  useOptionalWixClient: () => mockUseOptionalWixClient(),
 }));
 
 describe('usePromoCode', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseOptionalWixClient.mockReturnValue({ applyCoupon: mockApplyCoupon });
+  });
+
+  it('sets error when offline (no wixClient)', async () => {
+    mockUseOptionalWixClient.mockReturnValueOnce(null);
+
+    const { result } = renderHook(() => usePromoCode());
+    await act(async () => {
+      await result.current.applyCode('SAVE10');
+    });
+
+    expect(result.current.status).toBe('error');
+    // Error caught as non-WixApiError → falls back to generic message
+    expect(result.current.error).toBe('Unable to validate promo code');
   });
 
   it('starts in idle state with no coupon', () => {
