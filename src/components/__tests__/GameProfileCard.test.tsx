@@ -224,3 +224,49 @@ describe('Navigation callbacks', () => {
     expect(() => fireEvent.press(getByTestId('points-chip'))).not.toThrow();
   });
 });
+
+// ── Accessibility ─────────────────────────────────────────────────────────────
+
+describe('Accessibility', () => {
+  it('streak chip has descriptive accessibilityLabel', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    const chip = getByTestId('streak-chip');
+    expect(chip.props.accessibilityLabel).toContain('14');
+    expect(chip.props.accessibilityLabel).toContain('streak');
+  });
+
+  it('streak chip has accessibilityRole button', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    expect(getByTestId('streak-chip').props.accessibilityRole).toBe('button');
+  });
+
+  it('rank chip has descriptive accessibilityLabel', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    const chip = getByTestId('rank-chip');
+    expect(chip.props.accessibilityLabel).toContain('5');
+  });
+
+  it('rank chip has accessibilityRole button', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    expect(getByTestId('rank-chip').props.accessibilityRole).toBe('button');
+  });
+
+  it('points chip has descriptive accessibilityLabel', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    const chip = getByTestId('points-chip');
+    expect(chip.props.accessibilityLabel).toContain('1250');
+  });
+
+  it('points chip has accessibilityRole button', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    expect(getByTestId('points-chip').props.accessibilityRole).toBe('button');
+  });
+
+  it('close button in streak sheet has accessibilityLabel', () => {
+    const { getByTestId } = wrap(<GameProfileCard />);
+    fireEvent.press(getByTestId('streak-chip'));
+    const closeBtn = getByTestId('streak-sheet-close');
+    expect(closeBtn.props.accessibilityLabel).toBeTruthy();
+    expect(closeBtn.props.accessibilityRole).toBe('button');
+  });
+});

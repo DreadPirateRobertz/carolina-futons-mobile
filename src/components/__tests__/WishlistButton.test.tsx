@@ -70,4 +70,12 @@ describe('WishlistButton', () => {
     const { getByTestId } = renderButton({ size: 'lg' });
     expect(getByTestId(`wishlist-btn-${product.id}`)).toBeTruthy();
   });
+
+  it('does not throw when pressed with reduce motion enabled', () => {
+    jest.mock('@/hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
+    expect(() => {
+      const { getByTestId } = renderButton();
+      fireEvent.press(getByTestId(`wishlist-btn-${product.id}`));
+    }).not.toThrow();
+  });
 });

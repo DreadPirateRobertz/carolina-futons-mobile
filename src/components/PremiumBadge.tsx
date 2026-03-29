@@ -21,6 +21,8 @@ export function PremiumBadge({ size = 'md', testID }: Props) {
   return (
     <View
       testID={testID ?? 'premium-badge'}
+      accessible
+      accessibilityLabel="Carolina Futons Plus member"
       style={[
         styles.badge,
         {
