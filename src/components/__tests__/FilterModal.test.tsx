@@ -10,7 +10,12 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
 }));
 
-const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], priceRange: null };
+const EMPTY_FILTERS: ProductFilters = {
+  sizes: [],
+  fabrics: [],
+  colorFamilies: [],
+  priceRange: null,
+};
 const FABRICS = ['Natural Linen', 'Slate Gray', 'Mountain Blue'];
 const PRICE_EXTENT: [number, number] = [12, 1899];
 
@@ -71,6 +76,16 @@ describe('FilterModal', () => {
     expect(getByText('Mountain Blue')).toBeTruthy();
   });
 
+  it('shows color section with all color families', () => {
+    const { getByText, getByTestId } = renderFilterModal();
+    expect(getByText('Color')).toBeTruthy();
+    expect(getByTestId('filter-color-neutral')).toBeTruthy();
+    expect(getByTestId('filter-color-warm')).toBeTruthy();
+    expect(getByTestId('filter-color-cool')).toBeTruthy();
+    expect(getByTestId('filter-color-dark')).toBeTruthy();
+    expect(getByTestId('filter-color-light')).toBeTruthy();
+  });
+
   it('shows price range section', () => {
     const { getByText, getByTestId } = renderFilterModal();
     expect(getByText('Price Range')).toBeTruthy();
@@ -93,6 +108,42 @@ describe('FilterModal', () => {
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ fabrics: ['Slate Gray'] }));
   });
 
+  it('toggles color family selection on press', () => {
+    const onApply = jest.fn();
+    const { getByTestId } = renderFilterModal({ onApply });
+    fireEvent.press(getByTestId('filter-color-warm'));
+    fireEvent.press(getByTestId('filter-apply'));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ colorFamilies: ['warm'] }));
+  });
+
+  it('deselects color family on second press', () => {
+    const onApply = jest.fn();
+    const { getByTestId } = renderFilterModal({ onApply });
+    fireEvent.press(getByTestId('filter-color-cool'));
+    fireEvent.press(getByTestId('filter-color-cool'));
+    fireEvent.press(getByTestId('filter-apply'));
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ colorFamilies: [] }));
+  });
+
+  it('supports multiple color family selections', () => {
+    const onApply = jest.fn();
+    const { getByTestId } = renderFilterModal({ onApply });
+    fireEvent.press(getByTestId('filter-color-warm'));
+    fireEvent.press(getByTestId('filter-color-neutral'));
+    fireEvent.press(getByTestId('filter-apply'));
+    expect(onApply).toHaveBeenCalledWith(
+      expect.objectContaining({ colorFamilies: ['warm', 'neutral'] }),
+    );
+  });
+
+  it('color chips have accessible state', () => {
+    const { getByTestId } = renderFilterModal({
+      filters: { ...EMPTY_FILTERS, colorFamilies: ['cool'] },
+    });
+    expect(getByTestId('filter-color-cool').props.accessibilityState).toEqual({ selected: true });
+    expect(getByTestId('filter-color-warm').props.accessibilityState).toEqual({ selected: false });
+  });
+
   it('deselects size on second press', () => {
     const onApply = jest.fn();
     const { getByTestId } = renderFilterModal({ onApply });
@@ -111,11 +162,12 @@ describe('FilterModal', () => {
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ sizes: ['twin', 'queen'] }));
   });
 
-  it('clear all resets all filters', () => {
+  it('clear all resets all filters including color', () => {
     const onApply = jest.fn();
     const { getByTestId } = renderFilterModal({ onApply });
     fireEvent.press(getByTestId('filter-size-queen'));
     fireEvent.press(getByTestId('filter-fabric-slate-gray'));
+    fireEvent.press(getByTestId('filter-color-warm'));
     fireEvent.press(getByTestId('filter-clear-all'));
     fireEvent.press(getByTestId('filter-apply'));
     expect(onApply).toHaveBeenCalledWith(EMPTY_FILTERS);
@@ -157,6 +209,7 @@ describe('FilterModal', () => {
     const existingFilters: ProductFilters = {
       sizes: ['full'],
       fabrics: ['Natural Linen'],
+      colorFamilies: ['neutral'],
       priceRange: [100, 500],
     };
     const onApply = jest.fn();

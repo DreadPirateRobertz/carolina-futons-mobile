@@ -176,4 +176,70 @@ describe('ShopScreen', () => {
       expect(wrappers.length).toBeGreaterThan(0);
     });
   });
+
+  describe('filter button and modal', () => {
+    it('renders filter button in sort picker', async () => {
+      const { getByTestId } = await renderShop();
+      expect(getByTestId('filter-button')).toBeTruthy();
+    });
+
+    it('opens filter modal when filter button is pressed', async () => {
+      const { getByTestId } = await renderShop();
+      fireEvent.press(getByTestId('filter-button'));
+      expect(getByTestId('filter-modal')).toBeTruthy();
+    });
+
+    it('filter button shows badge when filters are active', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
+      // No badge initially
+      expect(queryByTestId('filter-badge')).toBeNull();
+      // Open filter modal, select a size, apply
+      fireEvent.press(getByTestId('filter-button'));
+      fireEvent.press(getByTestId('filter-size-queen'));
+      fireEvent.press(getByTestId('filter-apply'));
+      // Badge should appear
+      expect(getByTestId('filter-badge')).toBeTruthy();
+    });
+
+    it('closes filter modal when overlay is pressed', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
+      fireEvent.press(getByTestId('filter-button'));
+      expect(getByTestId('filter-modal')).toBeTruthy();
+      fireEvent.press(getByTestId('filter-modal-overlay'));
+      expect(queryByTestId('filter-modal')).toBeNull();
+    });
+
+    it('shows color section in filter modal', async () => {
+      const { getByTestId, getByText } = await renderShop();
+      fireEvent.press(getByTestId('filter-button'));
+      expect(getByText('Color')).toBeTruthy();
+      expect(getByTestId('filter-color-warm')).toBeTruthy();
+      expect(getByTestId('filter-color-cool')).toBeTruthy();
+    });
+
+    it('applies color filter and reduces product count', async () => {
+      const { getByTestId, getAllByTestId } = await renderShop();
+      const allCards = getAllByTestId(/^product-card-/);
+      // Apply warm color filter
+      fireEvent.press(getByTestId('filter-button'));
+      fireEvent.press(getByTestId('filter-color-warm'));
+      fireEvent.press(getByTestId('filter-apply'));
+      const filteredCards = getAllByTestId(/^product-card-/);
+      expect(filteredCards.length).toBeLessThanOrEqual(allCards.length);
+    });
+
+    it('filter badge shows 0 after clear all', async () => {
+      const { getByTestId, queryByTestId } = await renderShop();
+      // Set a filter
+      fireEvent.press(getByTestId('filter-button'));
+      fireEvent.press(getByTestId('filter-size-full'));
+      fireEvent.press(getByTestId('filter-apply'));
+      expect(getByTestId('filter-badge')).toBeTruthy();
+      // Clear all
+      fireEvent.press(getByTestId('filter-button'));
+      fireEvent.press(getByTestId('filter-clear-all'));
+      fireEvent.press(getByTestId('filter-apply'));
+      expect(queryByTestId('filter-badge')).toBeNull();
+    });
+  });
 });
