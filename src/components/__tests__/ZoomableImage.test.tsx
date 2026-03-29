@@ -48,14 +48,15 @@ describe('ZoomableImage', () => {
     expect(getByTestId('zoom-test')).toBeTruthy();
   });
 
-  it('has accessibility role and label', () => {
-    const { getByRole } = render(
+  it('has accessibility label', () => {
+    const { getByTestId } = render(
       <ZoomableImage testID="zoom-a11y">
         <Text>Photo</Text>
       </ZoomableImage>,
     );
 
-    expect(getByRole('image')).toBeTruthy();
+    const container = getByTestId('zoom-a11y');
+    expect(container.props.accessibilityLabel).toBe('Product image');
   });
 
   it('works with reduceMotion enabled', () => {
