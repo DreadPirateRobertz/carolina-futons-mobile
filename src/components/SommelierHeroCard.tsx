@@ -75,7 +75,7 @@ export function SommelierHeroCard({ result, onSeePicks }: SommelierHeroCardProps
       </Text>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md }}>
-        {result.flavors.map((f) => (
+        {(result.flavors ?? []).map((f) => (
           <View
             key={f}
             style={{

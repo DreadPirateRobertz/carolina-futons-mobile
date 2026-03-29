@@ -117,3 +117,8 @@ it('does not throw when AsyncStorage fails', async () => {
   (AsyncStorage.getItem as jest.Mock).mockRejectedValue(new Error('storage error'));
   await expect(getCachedFitScore('prod-1', 'member-1')).resolves.toBeNull();
 });
+
+it('invalidatePersonalizationCache does not throw when AsyncStorage.removeItem fails', async () => {
+  (AsyncStorage.removeItem as jest.Mock).mockRejectedValue(new Error('remove failed'));
+  await expect(invalidatePersonalizationCache()).resolves.toBeUndefined();
+});
