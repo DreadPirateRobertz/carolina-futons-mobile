@@ -25,46 +25,50 @@ from pathlib import Path
 # If a screenshot file exists, the placeholder is replaced. Otherwise skipped.
 # ---------------------------------------------------------------------------
 SECTION_SCREENSHOTS = {
-    "onboarding":       ["01-onboarding-welcome", "02-onboarding-slides", "03-onboarding-signup"],
-    "home":             ["04-home", "05-home-quests"],
-    "shop":             ["06-shop"],
-    "cart":             ["07-cart-empty", "48-cart-items"],
-    "account":          ["08-account-signedout", "49-account-signedin"],
-    "pdp":              ["10-pdp-gallery", "11-pdp-bnpl", "12-pdp-features-ar"],
-    "search":           ["13-search-empty", "14-search-results"],
-    "category":         ["09-category-futons"],
-    "collections":      ["15-collections"],
-    "collection-detail":["16-collection-detail"],
-    "compare":          ["17-compare"],
-    "wishlist":         ["18-wishlist"],
-    "checkout":         ["22-checkout"],
-    "payment":          ["23-payment-confirmation"],
-    "order-success":    ["24-order-success"],
-    "order-confirm":    ["25-order-confirmation"],
-    "order-history":    ["26-order-history"],
-    "order-detail":     ["27-order-detail"],
-    "ar":               ["34-ar-camera", "35-ar-permission-denied"],
-    "ar-web":           ["36-ar-web-viewer"],
-    "room-gallery":     ["37-room-gallery"],
-    "login":            ["19-login"],
-    "signup":           ["20-signup"],
-    "forgot-password":  ["21-forgot-password"],
-    "premium":          ["32-premium"],
-    "style-quiz":       ["33-style-quiz"],
-    "loyalty":          ["38-loyalty"],
-    "leaderboard":      ["41-leaderboard"],
-    "challenges":       ["40-challenges"],
-    "achievements":     ["42-achievements"],
-    "points-history":   ["43-points-history"],
-    "avatar":           ["44-avatar-equip"],
-    "referral":         ["45-referral-landing"],
-    "notifications":    ["30-notifications-inbox"],
-    "notif-prefs":      ["31-notification-preferences"],
-    "store-locator":    ["28-store-locator"],
-    "store-detail":     ["29-store-detail"],
-    "privacy":          ["47-privacy-policy"],
-    "rewards":          ["46-rewards"],
-    "notif-prompt":     [],  # nav hookup pending
+    # Keys match <div class="section" id="..."> in screen-reference.html
+    # Values are stem names (without .png) that capture-screenshots.sh outputs.
+    # Multiple entries fill multiple placeholder cards in section order.
+    # --- s30 filenames (2026-03-29) ---
+    "onboarding":        ["01_onboarding", "01_onboarding_slide2", "01_onboarding_slide3"],
+    "home":              ["02_home_top", "02_home_mid", "02_home_collections", "02_home_bottom"],
+    "shop":              ["03_shop_top", "03_shop_scrolled"],
+    "cart":              ["05_cart_with_items", "05_cart_scrolled"],
+    "account":           ["06_account_top", "06_account_bottom"],
+    "pdp":               ["04_pdp_top", "04_pdp_mid", "04_pdp_bottom", "04_pdp_gallery_fullscreen"],
+    "search":            ["08_search_empty", "08_search_results"],
+    "category":          [],  # no deep link — navigate from Shop filter
+    "collections":       ["09_collections", "09_collections_scrolled"],
+    "collection-detail": ["10_collection_detail_top", "10_collection_detail_products"],
+    "compare":           [],  # needs productSlugs params — navigate from PDP
+    "wishlist":          ["11_wishlist"],
+    "checkout":          ["12_checkout"],
+    "payment":           [],  # requires completed order
+    "order-success":     [],  # requires completed order
+    "order-confirm":     [],  # requires completed order
+    "order-history":     ["13_order_history"],
+    "order-detail":      [],  # requires orderId
+    "ar":                ["14_ar"],
+    "ar-web":            [],  # launched from PDP via ARViewer
+    "room-gallery":      ["21_room_gallery_attempt"],
+    "login":             ["07_login"],
+    "signup":            ["07_signup"],
+    "forgot-password":   ["07_forgot_password"],
+    "premium":           [],  # navigate from Account
+    "style-quiz":        ["15_style_quiz_q1", "15_style_quiz_q2"],
+    "loyalty":           [],  # navigate from Account
+    "leaderboard":       ["16_leaderboard"],
+    "challenges":        ["16_challenges"],
+    "achievements":      ["16_achievements_top", "16_achievements_scrolled"],
+    "points-history":    [],  # navigate from Account
+    "avatar":            [],  # deep link added — recapture next run
+    "referral":          [],  # needs referral code
+    "notifications":     ["17_notifications_inbox"],
+    "notif-prefs":       ["18_notification_prefs"],
+    "store-locator":     ["19_store_locator"],
+    "store-detail":      ["20_store_detail"],
+    "privacy":           [],  # navigate from Account → Settings
+    "rewards":           [],  # navigate from Account
+    "notif-prompt":      [],  # OS permission dialog — not ADB-capturable
 }
 
 PLACEHOLDER_RE = re.compile(

@@ -72,6 +72,10 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       StyleQuiz: 'style-quiz',
       AchievementBadges: 'achievements',
       Notifications: 'alerts',
+      Leaderboard: 'leaderboard',
+      Challenges: 'challenges',
+      AvatarEquip: 'avatar',
+      RoomGallery: 'gallery',
       ReferralLanding: {
         path: 'referral/:code',
         parse: { code: (code: string) => code },
@@ -101,5 +105,9 @@ export const SUPPORTED_PATHS = [
   'style-quiz',
   'achievements',
   'alerts',
+  'leaderboard',
+  'challenges',
+  'avatar',
+  'gallery',
   'referral',
 ] as const;
