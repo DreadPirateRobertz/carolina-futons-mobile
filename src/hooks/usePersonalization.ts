@@ -81,7 +81,8 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
     return () => {
       cancelled = true;
     };
-  }, [memberId, client]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberId]);
 
   return {
     sommelierResult,
