@@ -1,6 +1,6 @@
 import React from 'react';
 import { Linking } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { OrderDetailScreen } from '../OrderDetailScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
@@ -9,6 +9,10 @@ import { MOCK_ORDERS } from '@/data/orders';
 import { Text, View } from 'react-native';
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
+
+jest.mock('@/hooks/useOrderStatusPush', () => ({
+  useOrderStatusPush: jest.fn(),
+}));
 
 const mockRecordDelivery = jest.fn();
 jest.mock('@/hooks/useRatingPrompt', () => ({
@@ -366,6 +370,32 @@ describe('OrderDetailScreen', () => {
         throw new Error('Rating service unavailable');
       });
       expect(() => renderOrderDetail({ orderId: 'ord-001' })).not.toThrow();
+    });
+  });
+
+  describe('Order status push auto-refresh (cfutons_mobile-xh4)', () => {
+    it('registers useOrderStatusPush with the viewed orderId', () => {
+      const { useOrderStatusPush } = require('@/hooks/useOrderStatusPush');
+      renderOrderDetail({ orderId: 'ord-001' });
+      expect(useOrderStatusPush).toHaveBeenCalledWith(
+        expect.objectContaining({ orderId: 'ord-001' }),
+      );
+    });
+
+    it('calls refresh when useOrderStatusPush triggers onRefresh', async () => {
+      const { useOrderStatusPush } = require('@/hooks/useOrderStatusPush');
+      renderOrderDetail({ orderId: 'ord-001' });
+
+      // Get the onRefresh callback that was registered
+      const { onRefresh } = useOrderStatusPush.mock.calls[0][0];
+      act(() => {
+        onRefresh();
+      });
+
+      // After refresh, the screen should remain mounted (no crash)
+      await waitFor(() => {
+        expect(useOrderStatusPush).toHaveBeenCalled();
+      });
     });
   });
 

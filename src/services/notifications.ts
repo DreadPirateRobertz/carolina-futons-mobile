@@ -13,6 +13,10 @@ import { Platform } from 'react-native';
 
 export type NotificationType =
   | 'order_update'
+  | 'order_confirmed'
+  | 'order_shipped'
+  | 'order_delivered'
+  | 'order_refunded'
   | 'promotion'
   | 'back_in_stock'
   | 'cart_reminder'
@@ -58,6 +62,10 @@ export function getDeepLinkForNotification(
 
   switch (type) {
     case 'order_update':
+    case 'order_confirmed':
+    case 'order_shipped':
+    case 'order_delivered':
+    case 'order_refunded':
       return data?.orderId ? `carolinafutons://orders/${data.orderId}` : 'carolinafutons://orders';
     case 'promotion':
       return data?.productId
@@ -104,6 +112,26 @@ export const NOTIFICATION_TYPE_CONFIG: Record<
   order_update: {
     label: 'Order Updates',
     description: 'Get notified when your order ships or is delivered',
+    prefKey: 'orderUpdates',
+  },
+  order_confirmed: {
+    label: 'Order Confirmed',
+    description: 'Your order has been confirmed and is being prepared',
+    prefKey: 'orderUpdates',
+  },
+  order_shipped: {
+    label: 'Order Shipped',
+    description: 'Your order is on its way',
+    prefKey: 'orderUpdates',
+  },
+  order_delivered: {
+    label: 'Order Delivered',
+    description: 'Your order has been delivered',
+    prefKey: 'orderUpdates',
+  },
+  order_refunded: {
+    label: 'Order Refunded',
+    description: 'A refund has been issued for your order',
     prefKey: 'orderUpdates',
   },
   promotion: {
@@ -209,6 +237,30 @@ export const ANDROID_CHANNEL_CONFIG: Record<NotificationType, AndroidChannelConf
     name: 'Order Updates',
     description: 'Shipping confirmations, delivery updates, and order status changes',
     importance: 4, // HIGH — order updates are time-sensitive
+  },
+  order_confirmed: {
+    id: 'orders',
+    name: 'Order Updates',
+    description: 'Order confirmation notifications',
+    importance: 4,
+  },
+  order_shipped: {
+    id: 'orders',
+    name: 'Order Updates',
+    description: 'Shipping notifications',
+    importance: 4,
+  },
+  order_delivered: {
+    id: 'orders',
+    name: 'Order Updates',
+    description: 'Delivery notifications',
+    importance: 4,
+  },
+  order_refunded: {
+    id: 'orders',
+    name: 'Order Updates',
+    description: 'Refund notifications',
+    importance: 4,
   },
   promotion: {
     id: 'promotions',

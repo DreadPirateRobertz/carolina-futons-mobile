@@ -26,6 +26,7 @@ import { useRatingPrompt } from '@/hooks/useRatingPrompt';
 import { formatPrice } from '@/utils';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
 import { SkeletonOrderDetail } from '@/components/SkeletonOrderDetail';
+import { useOrderStatusPush } from '@/hooks/useOrderStatusPush';
 
 // ── Status Timeline ──────────────────────────────────────────
 
@@ -220,6 +221,9 @@ export function OrderDetailScreen({
   const [refreshing, setRefreshing] = useState(false);
   // cm-tsh: guard prevents recordDelivery firing on every re-render
   const deliveryRecordedRef = useRef(false);
+
+  // cfutons_mobile-xh4: auto-refresh timeline when a push arrives for this order
+  useOrderStatusPush({ orderId, onRefresh: refresh });
 
   const order = ordersProp ? ordersProp.find((o) => o.id === orderId) : getOrder(orderId);
 
