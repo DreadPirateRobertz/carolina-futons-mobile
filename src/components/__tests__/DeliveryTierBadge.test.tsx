@@ -53,33 +53,25 @@ describe('DeliveryTierBadge', () => {
   });
 
   it('renders "Standard" for national zip', () => {
-    const { getByText } = render(
-      <DeliveryTierBadge zip="10001" dimensions={PARCEL_DIMS} />,
-    );
+    const { getByText } = render(<DeliveryTierBadge zip="10001" dimensions={PARCEL_DIMS} />);
     expect(getByText(/Standard/i)).toBeTruthy();
     expect(getByText(/5–7 business days/i)).toBeTruthy();
   });
 
   it('renders "Standard" for Southeast zip (3–5 days)', () => {
-    const { getByText } = render(
-      <DeliveryTierBadge zip="30301" dimensions={PARCEL_DIMS} />,
-    );
+    const { getByText } = render(<DeliveryTierBadge zip="30301" dimensions={PARCEL_DIMS} />);
     expect(getByText(/Standard/i)).toBeTruthy();
     expect(getByText(/3–5 business days/i)).toBeTruthy();
   });
 
   it('renders "Freight" for freight-size item regardless of zip', () => {
-    const { getByText } = render(
-      <DeliveryTierBadge zip="10001" dimensions={FREIGHT_DIMS} />,
-    );
+    const { getByText } = render(<DeliveryTierBadge zip="10001" dimensions={FREIGHT_DIMS} />);
     expect(getByText(/Freight/i)).toBeTruthy();
     expect(getByText(/carrier/i)).toBeTruthy();
   });
 
   it('renders "Freight" for NC zip when item is freight-size', () => {
-    const { getByText } = render(
-      <DeliveryTierBadge zip="28801" dimensions={FREIGHT_DIMS} />,
-    );
+    const { getByText } = render(<DeliveryTierBadge zip="28801" dimensions={FREIGHT_DIMS} />);
     expect(getByText(/Freight/i)).toBeTruthy();
   });
 
