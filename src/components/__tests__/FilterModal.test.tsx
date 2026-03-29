@@ -10,7 +10,12 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
 }));
 
-const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], colorFamilies: [], priceRange: null };
+const EMPTY_FILTERS: ProductFilters = {
+  sizes: [],
+  fabrics: [],
+  colorFamilies: [],
+  priceRange: null,
+};
 const FABRICS = ['Natural Linen', 'Slate Gray', 'Mountain Blue'];
 const PRICE_EXTENT: [number, number] = [12, 1899];
 

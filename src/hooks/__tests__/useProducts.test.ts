@@ -341,14 +341,24 @@ describe('useProducts', () => {
   describe('product filters', () => {
     it('starts with empty filters and zero active count', async () => {
       const { result } = await renderLoaded();
-      expect(result.current.filters).toEqual({ sizes: [], fabrics: [], colorFamilies: [], priceRange: null });
+      expect(result.current.filters).toEqual({
+        sizes: [],
+        fabrics: [],
+        colorFamilies: [],
+        priceRange: null,
+      });
       expect(result.current.activeFilterCount).toBe(0);
     });
 
     it('filters by single size', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: ['twin'], fabrics: [], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: ['twin'],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       // All sized products should be twin; sizeless products pass through
       result.current.products.forEach((p) => {
@@ -362,7 +372,12 @@ describe('useProducts', () => {
     it('filters by multiple sizes', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: ['twin', 'full'], fabrics: [], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: ['twin', 'full'],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       result.current.products.forEach((p) => {
         if (p.size) expect(['twin', 'full']).toContain(p.size);
@@ -375,7 +390,12 @@ describe('useProducts', () => {
       const sizelessProducts = PRODUCTS.filter((p) => !p.size);
       if (sizelessProducts.length > 0) {
         await act(async () =>
-          result.current.setFilters({ sizes: ['queen'], fabrics: [], colorFamilies: [], priceRange: null }),
+          result.current.setFilters({
+            sizes: ['queen'],
+            fabrics: [],
+            colorFamilies: [],
+            priceRange: null,
+          }),
         );
         const resultIds = result.current.products.map((p) => p.id);
         sizelessProducts.forEach((p) => {
@@ -390,7 +410,12 @@ describe('useProducts', () => {
     it('filters by fabric', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: ['Natural Linen'], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: ['Natural Linen'],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       result.current.products.forEach((p) => {
         expect(p.fabricOptions).toEqual(expect.arrayContaining(['Natural Linen']));
@@ -416,7 +441,12 @@ describe('useProducts', () => {
     it('filters by price range', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: [], priceRange: [100, 300] }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: [100, 300],
+        }),
       );
       result.current.products.forEach((p) => {
         expect(p.price).toBeGreaterThanOrEqual(100);
@@ -428,7 +458,12 @@ describe('useProducts', () => {
       const { result } = await renderLoaded();
       // Use exact price of a known product (Pisgah Twin = 279)
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: [], priceRange: [279, 279] }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: [279, 279],
+        }),
       );
       expect(result.current.products.length).toBeGreaterThanOrEqual(1);
       result.current.products.forEach((p) => {
@@ -457,7 +492,12 @@ describe('useProducts', () => {
     it('filters by color family', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: ['warm'], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: ['warm'],
+          priceRange: null,
+        }),
       );
       result.current.products.forEach((p) => {
         expect(p.colorFamily).toBe('warm');
@@ -467,7 +507,12 @@ describe('useProducts', () => {
     it('filters by multiple color families (OR semantics)', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: ['warm', 'cool'], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: ['warm', 'cool'],
+          priceRange: null,
+        }),
       );
       result.current.products.forEach((p) => {
         expect(['warm', 'cool']).toContain(p.colorFamily);
@@ -477,7 +522,12 @@ describe('useProducts', () => {
     it('excludes products without colorFamily when color filter is active', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: ['dark'], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: ['dark'],
+          priceRange: null,
+        }),
       );
       result.current.products.forEach((p) => {
         expect(p.colorFamily).toBeDefined();
@@ -488,7 +538,12 @@ describe('useProducts', () => {
     it('returns empty array when no products match filters', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: [], priceRange: [999999, 999999] }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: [999999, 999999],
+        }),
       );
       expect(result.current.products).toEqual([]);
     });
@@ -498,7 +553,12 @@ describe('useProducts', () => {
       const allCount = result.current.products.length;
       // Use a restrictive filter that will reduce results below page size
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: [], priceRange: [999999, 999999] }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: [999999, 999999],
+        }),
       );
       expect(result.current.products.length).toBe(0);
       // Clear filters restores original count
@@ -518,7 +578,12 @@ describe('useProducts', () => {
       const _pageCount = result.current.products.length;
       // Apply filter — should reset to page 1
       await act(async () =>
-        result.current.setFilters({ sizes: ['twin'], fabrics: [], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: ['twin'],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       expect(result.current.products.length).toBeLessThanOrEqual(24);
     });
@@ -528,7 +593,12 @@ describe('useProducts', () => {
     it('counts 1 when only sizes are set', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: ['twin', 'queen'], fabrics: [], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: ['twin', 'queen'],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       expect(result.current.activeFilterCount).toBe(1);
     });
@@ -536,7 +606,12 @@ describe('useProducts', () => {
     it('counts 1 when only fabrics are set', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: ['Natural Linen'], colorFamilies: [], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: ['Natural Linen'],
+          colorFamilies: [],
+          priceRange: null,
+        }),
       );
       expect(result.current.activeFilterCount).toBe(1);
     });
@@ -544,7 +619,12 @@ describe('useProducts', () => {
     it('counts 1 when only price range is set', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: [], priceRange: [100, 500] }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: [],
+          priceRange: [100, 500],
+        }),
       );
       expect(result.current.activeFilterCount).toBe(1);
     });
@@ -552,7 +632,12 @@ describe('useProducts', () => {
     it('counts 1 when only color families are set', async () => {
       const { result } = await renderLoaded();
       await act(async () =>
-        result.current.setFilters({ sizes: [], fabrics: [], colorFamilies: ['warm'], priceRange: null }),
+        result.current.setFilters({
+          sizes: [],
+          fabrics: [],
+          colorFamilies: ['warm'],
+          priceRange: null,
+        }),
       );
       expect(result.current.activeFilterCount).toBe(1);
     });

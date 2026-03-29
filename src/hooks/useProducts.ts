@@ -101,7 +101,12 @@ interface UseProductsOptions {
  *
  * When Wix is not configured, falls back to mock data with client-side filtering.
  */
-const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], colorFamilies: [], priceRange: null };
+const EMPTY_FILTERS: ProductFilters = {
+  sizes: [],
+  fabrics: [],
+  colorFamilies: [],
+  priceRange: null,
+};
 
 function countActiveFilters(f: ProductFilters): number {
   let count = 0;
