@@ -133,6 +133,10 @@ interface CartContextValue {
   isSyncing: boolean;
   /** Replace all cart items atomically (used by sync to load server state). */
   loadItems: (items: CartItem[]) => void;
+  /** Non-null when a cart sync to the server failed (online path). Cleared by clearSyncError. */
+  syncError: string | null;
+  /** Clear the sync error banner. */
+  clearSyncError: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -212,6 +216,7 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const authCtx = useContext(AuthContext);
   const user = authCtx?.user ?? null;
   const prevUserRef = useRef<typeof user>(null);
@@ -371,8 +376,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (isOnlineRef.current) {
         const client = wixClientRef.current;
         if (client) {
+          const itemId = `${model.id}:${fabric.id}`;
           client.addToCart(model.id, quantity, fabric.id).catch(() => {
-            // Fire-and-forget: local cart is source of truth
+            // Optimistic rollback: remove item from local cart if server sync failed
+            dispatch({ type: 'REMOVE_ITEM', itemId });
+            setSyncError("Couldn't add item to cart. Please try again.");
           });
         }
       } else {
@@ -438,6 +446,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [state.items],
   );
 
+  const clearSyncError = useCallback(() => setSyncError(null), []);
+
   const value = useMemo<CartContextValue>(
     () => ({
       items: state.items,
@@ -451,6 +461,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingSync: pendingCount,
       isSyncing,
       loadItems,
+      syncError,
+      clearSyncError,
     }),
     [
       state.items,
@@ -464,6 +476,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingCount,
       isSyncing,
       loadItems,
+      syncError,
+      clearSyncError,
     ],
   );
 

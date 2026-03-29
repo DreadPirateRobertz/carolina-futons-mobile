@@ -24,6 +24,7 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { ProductCard } from '@/components/ProductCard';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
+import { NetworkErrorState } from '@/components/NetworkErrorState';
 import { SortPicker } from '@/components/SortPicker';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { events } from '@/services/analytics';
@@ -61,9 +62,11 @@ export function SearchScreen({ testID }: Props) {
     sortBy,
     suggestions,
     isLoading,
+    fetchError,
     setSearchQuery,
     setSortBy,
     loadMore,
+    refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { trendingSearches } = useConfig();
@@ -280,8 +283,17 @@ export function SearchScreen({ testID }: Props) {
       {/* Search results skeleton while loading */}
       {showResults && isLoading && <SkeletonProductGrid count={4} />}
 
+      {/* Error state when fetch failed */}
+      {showResults && fetchError && !isLoading && (
+        <NetworkErrorState
+          message={fetchError.message || "Couldn't load search results."}
+          onRetry={refresh}
+          testID="network-error-state"
+        />
+      )}
+
       {/* Search results grid */}
-      {showResults && !isLoading && (
+      {showResults && !isLoading && !fetchError && (
         <FlatList
           data={products}
           renderItem={renderProduct}
