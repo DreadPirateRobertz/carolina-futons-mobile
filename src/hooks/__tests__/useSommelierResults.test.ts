@@ -21,6 +21,10 @@ jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => mockUseAuth(),
 }));
 
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseAuth.mockReturnValue({ user: { id: 'member-123' }, isAuthenticated: true });
@@ -84,7 +88,7 @@ describe('useSommelierResults', () => {
   });
 
   it('handles API error gracefully', async () => {
-    mockGetResults.mockResolvedValueOnce(null); // getSommelierResults returns null on error
+    mockGetResults.mockRejectedValueOnce(new Error('Network error'));
 
     const { result } = renderHook(() => useSommelierResults());
 
@@ -94,6 +98,7 @@ describe('useSommelierResults', () => {
 
     expect(result.current.results).toBeNull();
     expect(result.current.hasResults).toBe(false);
+    expect(result.current.error).toBeTruthy();
   });
 
   it('refetches when user changes', async () => {

@@ -7,12 +7,25 @@ const config = getSentryExpoConfig(__dirname);
 // Force Metro to use the CJS entry (cjs/build/index.js) instead.
 const wixSdkCjs = path.resolve(__dirname, 'node_modules/@wix/sdk/cjs/build/index.js');
 
+// jose browser build avoids node:crypto/node:buffer which Metro can't resolve.
+const joseBrowser = path.resolve(__dirname, 'node_modules/jose/dist/browser/index.js');
+
 // Stub for native-only modules that break web builds (deep RN imports)
 const emptyModule = require.resolve('./web/empty-module.js');
 
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === '@wix/sdk') {
     return { filePath: wixSdkCjs, type: 'sourceFile' };
+  }
+
+  // jose CJS (used by @wix/sdk) requires node:crypto — redirect to browser build.
+  if (moduleName === 'jose' || moduleName.startsWith('jose/dist/node/')) {
+    return { filePath: joseBrowser, type: 'sourceFile' };
+  }
+
+  // Strip node: prefix — Metro doesn't support it but some packages use it.
+  if (moduleName.startsWith('node:')) {
+    return context.resolveRequest(context, moduleName.slice(5), platform);
   }
 
   // @stripe/stripe-react-native imports react-native internals that don't

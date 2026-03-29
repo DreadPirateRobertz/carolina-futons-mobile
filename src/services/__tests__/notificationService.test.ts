@@ -8,10 +8,7 @@ jest.mock('expo-notifications', () => ({
 jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
 
 import * as Notifications from 'expo-notifications';
-import {
-  registerDeviceToken,
-  deregisterDeviceToken,
-} from '../notificationService';
+import { registerDeviceToken, deregisterDeviceToken } from '../notificationService';
 
 const mockWixClient = {
   callFunction: jest.fn(),
