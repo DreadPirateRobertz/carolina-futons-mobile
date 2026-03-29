@@ -1531,12 +1531,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </View>
         )}
 
-        {/* Delivery tier badge (cm-ej2) */}
-        <DeliveryTierBadge
-          zip={shippingAddress.zip}
-          dimensions={items[0]?.model?.dimensions}
-          testID="delivery-estimate"
-        />
+        {/* Delivery tier badge (cm-ej2) — zip-based estimate only;
+            freight classification is handled by the shipping options section */}
+        <DeliveryTierBadge zip={shippingAddress.zip} testID="delivery-estimate" />
 
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
