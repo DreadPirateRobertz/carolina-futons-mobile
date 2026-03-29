@@ -166,7 +166,7 @@ describe('CollectionsScreen — skeleton loading', () => {
       isLoading: true,
     });
     const { queryByTestId } = renderCollectionsScreen();
-    expect(queryByTestId('collections-error')).toBeNull();
+    expect(queryByTestId('network-error-state')).toBeNull();
   });
 
   it('does not show empty state while loading', () => {
@@ -191,7 +191,7 @@ describe('CollectionsScreen — error state', () => {
       error: new Error('Network error'),
     });
     const { getByTestId } = renderCollectionsScreen();
-    expect(getByTestId('collections-error')).toBeTruthy();
+    expect(getByTestId('network-error-state')).toBeTruthy();
   });
 
   it('shows error message text', () => {
@@ -201,8 +201,8 @@ describe('CollectionsScreen — error state', () => {
       isLoading: false,
       error: new Error('Network error'),
     });
-    const { getByTestId } = renderCollectionsScreen();
-    expect(getByTestId('collections-error-message')).toBeTruthy();
+    const { getByText } = renderCollectionsScreen();
+    expect(getByText('Network error')).toBeTruthy();
   });
 
   it('shows retry button on error', () => {
@@ -213,7 +213,7 @@ describe('CollectionsScreen — error state', () => {
       error: new Error('Network error'),
     });
     const { getByTestId } = renderCollectionsScreen();
-    expect(getByTestId('collections-retry-btn')).toBeTruthy();
+    expect(getByTestId('network-error-retry')).toBeTruthy();
   });
 
   it('calls refresh when retry button is pressed', () => {
@@ -226,7 +226,7 @@ describe('CollectionsScreen — error state', () => {
       refresh: mockRefresh,
     });
     const { getByTestId } = renderCollectionsScreen();
-    fireEvent.press(getByTestId('collections-retry-btn'));
+    fireEvent.press(getByTestId('network-error-retry'));
     expect(mockRefresh).toHaveBeenCalledTimes(1);
   });
 
@@ -277,7 +277,7 @@ describe('CollectionsScreen — empty state', () => {
     });
     const { queryByTestId } = renderCollectionsScreen();
     expect(queryByTestId('collections-skeleton')).toBeNull();
-    expect(queryByTestId('collections-error')).toBeNull();
+    expect(queryByTestId('network-error-state')).toBeNull();
   });
 });
 
