@@ -6,6 +6,22 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
+jest.mock('@/hooks/useRecentlyViewed');
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+
+const mockUseRecentlyViewed = useRecentlyViewed as jest.Mock;
+
+const emptyRecentlyViewed = {
+  recentProducts: [],
+  addViewed: jest.fn(),
+  clearAll: jest.fn(),
+  count: 0,
+};
+
+beforeEach(() => {
+  mockUseRecentlyViewed.mockReturnValue(emptyRecentlyViewed);
+});
+
 async function renderShop(props: { onProductPress?: jest.Mock } = {}) {
   const onProductPress = props.onProductPress ?? jest.fn();
   const result = render(
@@ -240,6 +256,56 @@ describe('ShopScreen', () => {
       fireEvent.press(getByTestId('filter-clear-all'));
       fireEvent.press(getByTestId('filter-apply'));
       expect(queryByTestId('filter-badge')).toBeNull();
+    });
+  });
+
+  describe('recently viewed section', () => {
+    it('hides recently viewed section when list is empty', async () => {
+      mockUseRecentlyViewed.mockReturnValue(emptyRecentlyViewed);
+      const { queryByTestId } = await renderShop();
+      expect(queryByTestId('shop-recently-viewed-section')).toBeNull();
+    });
+
+    it('shows recently viewed section when products exist', async () => {
+      mockUseRecentlyViewed.mockReturnValue({
+        ...emptyRecentlyViewed,
+        recentProducts: [PRODUCTS[0]],
+        count: 1,
+      });
+      const { getByTestId } = await renderShop();
+      expect(getByTestId('shop-recently-viewed-section')).toBeTruthy();
+    });
+
+    it('renders Recently Viewed heading when products exist', async () => {
+      mockUseRecentlyViewed.mockReturnValue({
+        ...emptyRecentlyViewed,
+        recentProducts: [PRODUCTS[0]],
+        count: 1,
+      });
+      const { getByText } = await renderShop();
+      expect(getByText('Recently Viewed')).toBeTruthy();
+    });
+
+    it('renders a horizontal carousel with products', async () => {
+      mockUseRecentlyViewed.mockReturnValue({
+        ...emptyRecentlyViewed,
+        recentProducts: PRODUCTS.slice(0, 3),
+        count: 3,
+      });
+      const { getByTestId } = await renderShop();
+      expect(getByTestId('shop-recently-viewed-carousel')).toBeTruthy();
+    });
+
+    it('caps displayed products at 10 even if hook returns more', async () => {
+      const twelveProducts = PRODUCTS.slice(0, Math.min(12, PRODUCTS.length));
+      mockUseRecentlyViewed.mockReturnValue({
+        ...emptyRecentlyViewed,
+        recentProducts: twelveProducts,
+        count: twelveProducts.length,
+      });
+      const { getAllByTestId } = await renderShop();
+      const cards = getAllByTestId(/^shop-recent-product-/);
+      expect(cards.length).toBeLessThanOrEqual(10);
     });
   });
 });

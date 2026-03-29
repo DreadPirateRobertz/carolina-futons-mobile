@@ -8,7 +8,7 @@
  * for smooth scrolling on lower-end devices.
  */
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, Text, FlatList } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -29,6 +29,7 @@ import {
   type SortOption,
 } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
@@ -86,6 +87,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const { recentProducts } = useRecentlyViewed();
   const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -177,6 +179,40 @@ export function ShopScreen({ onProductPress, testID }: Props) {
             <FilterButton activeCount={activeFilterCount} onPress={() => setShowFilters(true)} />
           }
         />
+
+        {/* Recently Viewed */}
+        {recentProducts.length > 0 && (
+          <View testID="shop-recently-viewed-section" style={{ marginTop: spacing.md }}>
+            <Text
+              style={[
+                styles.sectionTitle,
+                {
+                  color: colors.espresso,
+                  fontFamily: typography.headingFamily,
+                  paddingHorizontal: spacing.md,
+                },
+              ]}
+              accessibilityRole="header"
+            >
+              Recently Viewed
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm }}
+              testID="shop-recently-viewed-carousel"
+              accessibilityRole="adjustable"
+              accessibilityLabel="Recently viewed products"
+              accessibilityHint="Swipe left or right to browse recently viewed products"
+            >
+              {recentProducts.slice(0, 10).map((product) => (
+                <View key={product.id} testID={`shop-recent-product-${product.id}`} style={styles.recentCard}>
+                  <ProductCard product={product} onPress={() => handleProductPress(product)} />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </View>
     ),
     [
@@ -189,8 +225,10 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       categories,
       colors,
       spacing,
+      typography,
       suggestions,
       recentSearches,
+      recentProducts,
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
@@ -198,6 +236,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       handleSubmitSearch,
       removeSearch,
       clearAll,
+      handleProductPress,
     ],
   );
 
@@ -379,5 +418,13 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  recentCard: {
+    width: 140,
   },
 });
