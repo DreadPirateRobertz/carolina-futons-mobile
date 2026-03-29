@@ -212,3 +212,58 @@ export async function replayGamificationQueue(client: WixClientLike): Promise<Re
 
   return result;
 }
+
+// ── Section fetch helpers (used by useRewardsSectionData) ──────────────────
+
+export interface PointsSummary {
+  total: number;
+  tier: string;
+  nextTierThreshold: number;
+  progressPercent: number;
+}
+
+export interface MemberBadge {
+  id: string;
+  label: string;
+  earnedAt: string;
+}
+
+export interface ActiveChallenge {
+  id: string;
+  title: string;
+  progress: number;
+  expiresAt: number;
+}
+
+type LoyaltyDataClient = { getLoyaltyData: (id: string) => Promise<{ points: number; tier: string; nextTierThreshold: number; progressPercent: number }> };
+
+export async function fetchPoints(memberId: string): Promise<PointsSummary> {
+  const { getWixClientSingleton } = await import('@/services/wix/wixClientSingleton');
+  const client = getWixClientSingleton() as LoyaltyDataClient | null;
+  if (!client) throw new Error('Wix client not available');
+  const data = await client.getLoyaltyData(memberId);
+  return {
+    total: data.points,
+    tier: data.tier,
+    nextTierThreshold: data.nextTierThreshold,
+    progressPercent: data.progressPercent,
+  };
+}
+
+export async function fetchBadges(memberId: string): Promise<MemberBadge[]> {
+  const { getWixClientSingleton } = await import('@/services/wix/wixClientSingleton');
+  const client = getWixClientSingleton();
+  if (!client) throw new Error('Wix client not available');
+  const res = await (client as { callFunction: <T>(path: string, method: string, body?: unknown) => Promise<T> })
+    .callFunction<{ badges: MemberBadge[] }>('/_functions/getMemberBadges', 'POST', { memberId });
+  return res.badges ?? [];
+}
+
+export async function fetchChallenges(memberId: string): Promise<ActiveChallenge[]> {
+  const { getWixClientSingleton } = await import('@/services/wix/wixClientSingleton');
+  const client = getWixClientSingleton();
+  if (!client) throw new Error('Wix client not available');
+  const res = await (client as { callFunction: <T>(path: string, method: string, body?: unknown) => Promise<T> })
+    .callFunction<{ challenges: ActiveChallenge[] }>('/_functions/getMemberChallenges', 'POST', { memberId });
+  return res.challenges ?? [];
+}
