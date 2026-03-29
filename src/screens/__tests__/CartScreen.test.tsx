@@ -6,6 +6,14 @@ import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 
+jest.mock('@/hooks/useCartCrossSell', () => ({
+  useCartCrossSell: () => ({ recommendations: [], isLoading: false, error: null }),
+}));
+
+jest.mock('@/components/RecommendationCarousel', () => ({
+  RecommendationCarousel: () => null,
+}));
+
 const mockUseLoyalty = jest.fn();
 jest.mock('@/hooks/useLoyalty', () => ({
   useLoyalty: () => mockUseLoyalty(),

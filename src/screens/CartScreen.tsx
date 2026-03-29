@@ -49,6 +49,9 @@ import { events } from '@/services/analytics';
 import { CartPointsSummary } from '@/components/CartPointsSummary';
 import { TierProgressBar } from '@/components/TierProgressBar';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import { RecommendationCarousel } from '@/components/RecommendationCarousel';
+import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
+import { useCartCrossSell } from '@/hooks/useCartCrossSell';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -63,6 +66,8 @@ interface Props {
   onCheckout?: () => void;
   /** Callback for the "Start Shopping" action in the empty state. */
   onContinueShopping?: () => void;
+  /** Callback when user taps a cross-sell product recommendation. */
+  onProductPress?: (productId: string) => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -74,12 +79,13 @@ interface Props {
  * @param props - {@link Props}
  * @returns The cart screen view with items or the empty-cart illustration.
  */
-export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
+export function CartScreen({ onCheckout, onContinueShopping, onProductPress, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
   const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
   const { points } = useLoyalty();
+  const { recommendations: crossSell, isLoading: isCrossSellLoading } = useCartCrossSell(items);
   const [promoInput, setPromoInput] = useState('');
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
 
@@ -406,6 +412,22 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
             </Text>
           </View>
         </View>
+
+        {/* Customers also bought — cross-sell carousel */}
+        {isCrossSellLoading ? (
+          <View style={{ marginTop: spacing.lg }} testID="skeleton-cross-sell">
+            <SkeletonCarouselRow />
+          </View>
+        ) : crossSell.length > 0 ? (
+          <View style={{ marginTop: spacing.lg }}>
+            <RecommendationCarousel
+              title="Customers also bought"
+              products={crossSell}
+              onProductPress={(product) => onProductPress?.(product.id)}
+              testID="cart-cross-sell-carousel"
+            />
+          </View>
+        ) : null}
 
         {/* BNPL hero — prominent installment messaging */}
         <View style={{ paddingHorizontal: spacing.lg }}>
