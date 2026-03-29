@@ -132,13 +132,15 @@ describe('ShopScreen — error recovery', () => {
     consoleSpy.mockRestore();
   });
 
-  it('does not show product list or skeleton when error', () => {
+  it('does not show skeleton when error (error wins over skeleton when not initial-loading)', () => {
     spy.mockReturnValue({
       ...BASE,
       fetchError: new Error('Network error'),
+      isInitialLoading: false,
     });
     const { queryByTestId } = renderShopError();
-    expect(queryByTestId('product-list')).toBeNull();
+    // Error state is shown; skeleton is never rendered when isInitialLoading is false
+    expect(queryByTestId('network-error-state')).toBeTruthy();
     expect(queryByTestId('shop-skeleton')).toBeNull();
   });
 });
