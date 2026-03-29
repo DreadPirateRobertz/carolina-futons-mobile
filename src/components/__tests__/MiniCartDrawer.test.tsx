@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 import { MiniCartDrawer } from '../MiniCartDrawer';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
@@ -175,6 +176,14 @@ describe('MiniCartDrawer', () => {
       const { getByTestId } = renderDrawer();
       const row = getByTestId('cartItemRow-asheville:natural-linen');
       expect(row.props.accessibilityLabel).toContain('Natural Linen');
+    });
+  });
+
+  describe('Reduced motion', () => {
+    it('renders without crash when reduced motion is enabled', () => {
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+      expect(() => renderDrawer()).not.toThrow();
+      jest.restoreAllMocks();
     });
   });
 });

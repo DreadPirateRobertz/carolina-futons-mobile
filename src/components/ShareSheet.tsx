@@ -78,6 +78,8 @@ export function ShareSheet() {
         onPress={handleShare}
         disabled={!link}
         accessibilityRole="button"
+        accessibilityLabel="Share referral link and earn rewards"
+        accessibilityState={{ disabled: !link }}
       >
         <Text style={s.shareBtnText}>Share & Earn</Text>
       </TouchableOpacity>
@@ -87,6 +89,8 @@ export function ShareSheet() {
         onPress={handleCopy}
         disabled={!link}
         accessibilityRole="button"
+        accessibilityLabel={copied ? 'Referral link copied' : 'Copy referral link'}
+        accessibilityState={{ disabled: !link }}
       >
         <Text style={s.copyBtnText}>{copied ? 'Copied!' : 'Copy link'}</Text>
       </TouchableOpacity>

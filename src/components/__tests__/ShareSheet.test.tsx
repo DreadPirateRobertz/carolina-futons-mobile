@@ -65,3 +65,28 @@ it('shows error when generateReferralLink returns null', async () => {
   const { getByText } = render(<ShareSheet />);
   await waitFor(() => expect(getByText(/unable to generate link/i)).toBeTruthy());
 });
+
+describe('accessibility', () => {
+  beforeEach(() => {
+    mockGenerate.mockResolvedValue('carolinafutons://referral/ABC123');
+  });
+
+  it('share button has accessibilityLabel', async () => {
+    const { getByTestId } = render(<ShareSheet />);
+    await waitFor(() => expect(getByTestId('share-btn')).toBeTruthy());
+    expect(getByTestId('share-btn').props.accessibilityLabel).toBeTruthy();
+  });
+
+  it('copy button has accessibilityLabel', async () => {
+    const { getByTestId } = render(<ShareSheet />);
+    await waitFor(() => expect(getByTestId('copy-link-btn')).toBeTruthy());
+    expect(getByTestId('copy-link-btn').props.accessibilityLabel).toBeTruthy();
+  });
+
+  it('copy button accessibilityLabel reflects copied state after press', async () => {
+    const { getByTestId } = render(<ShareSheet />);
+    await waitFor(() => expect(getByTestId('copy-link-btn')).toBeTruthy());
+    fireEvent.press(getByTestId('copy-link-btn'));
+    expect(getByTestId('copy-link-btn').props.accessibilityLabel).toMatch(/copied/i);
+  });
+});

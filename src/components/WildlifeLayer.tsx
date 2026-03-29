@@ -12,6 +12,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { LivingSkyState } from '@/types/livingSky';
 
 const FADE_DURATION = 2000;
@@ -22,25 +23,27 @@ interface Props {
 }
 
 export function WildlifeLayer({ skyState }: Props) {
+  const reduceMotion = useReducedMotion();
   const birdAnim = useRef(new Animated.Value(skyState.birdOpacity)).current;
   const fireflyAnim = useRef(new Animated.Value(skyState.fireflyOpacity)).current;
   const owlAnim = useRef(new Animated.Value(skyState.owlOpacity)).current;
 
   useEffect(() => {
+    const duration = reduceMotion ? 0 : FADE_DURATION;
     Animated.parallel([
       Animated.timing(birdAnim, {
         toValue: skyState.birdOpacity,
-        duration: FADE_DURATION,
+        duration,
         useNativeDriver: true,
       }),
       Animated.timing(fireflyAnim, {
         toValue: skyState.fireflyOpacity,
-        duration: FADE_DURATION,
+        duration,
         useNativeDriver: true,
       }),
       Animated.timing(owlAnim, {
         toValue: skyState.owlOpacity,
-        duration: FADE_DURATION,
+        duration,
         useNativeDriver: true,
       }),
     ]).start();
@@ -51,6 +54,7 @@ export function WildlifeLayer({ skyState }: Props) {
     birdAnim,
     fireflyAnim,
     owlAnim,
+    reduceMotion,
   ]);
 
   const showBirds = skyState.birdOpacity > VISIBILITY_THRESHOLD;

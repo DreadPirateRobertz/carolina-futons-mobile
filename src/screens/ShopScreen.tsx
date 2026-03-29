@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import {
   MountainRefreshControl,
@@ -53,6 +54,7 @@ interface Props {
 /** Two-column product grid with search, category filters, sort, and infinite scroll. */
 export function ShopScreen({ onProductPress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
+  const reduceMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -118,12 +120,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={FadeInDown.delay(index * 80).duration(400)}
+        entering={reduceMotion ? undefined : FadeInDown.delay(index * 80).duration(400)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress],
+    [handleProductPress, reduceMotion],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
