@@ -241,6 +241,23 @@ describe('CollectionsScreen — error state', () => {
     expect(queryByTestId('collections-skeleton')).toBeNull();
     expect(queryByTestId('collections-list')).toBeNull();
   });
+
+  it('logs error to console.error with [CollectionsScreen] prefix when fetch fails', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const error = new Error('Network timeout');
+    mockUseCollections.mockReturnValue({
+      ...COLLECTIONS_LOADED,
+      collections: [],
+      isLoading: false,
+      error,
+    });
+    renderCollectionsScreen();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[CollectionsScreen]'),
+      error,
+    );
+    consoleSpy.mockRestore();
+  });
 });
 
 // ── Empty state ───────────────────────────────────────────────────────────────
