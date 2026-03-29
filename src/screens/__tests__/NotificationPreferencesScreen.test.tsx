@@ -38,11 +38,39 @@ jest.mock('@/hooks/useNotificationStorage', () => ({
   }),
 }));
 
+const mockTogglePreference = jest.fn();
+const mockRequestPermission = jest.fn().mockResolvedValue(undefined);
+const mockUseNotifications = jest.fn();
+jest.mock('@/hooks/useNotifications', () => ({
+  NotificationProvider: ({ children }: { children: React.ReactNode }) => children,
+  useNotifications: (...args: unknown[]) => mockUseNotifications(...args),
+}));
+
 const mockToggle = jest.fn().mockResolvedValue(undefined);
 const mockUseNotificationPreferences = jest.fn();
 jest.mock('@/hooks/useNotificationPreferences', () => ({
   useNotificationPreferences: (...args: unknown[]) => mockUseNotificationPreferences(...args),
 }));
+
+const defaultNotifContext = {
+  permissionStatus: 'undetermined' as const,
+  pushToken: null,
+  preferences: {
+    orderUpdates: true,
+    promotions: true,
+    backInStock: true,
+    cartReminders: false,
+    streakMilestone: true,
+    questComplete: true,
+    dailySpinReminder: false,
+  },
+  badgeCount: 0,
+  requestPermission: mockRequestPermission,
+  togglePreference: mockTogglePreference,
+  setPreferences: jest.fn(),
+  setBadgeCount: jest.fn(),
+  clearBadge: jest.fn(),
+};
 
 const defaultGamifPrefs = {
   preferences: {
@@ -75,6 +103,10 @@ function renderNotifPrefs(
 
 describe('NotificationPreferencesScreen', () => {
   beforeEach(() => {
+    mockTogglePreference.mockClear();
+    mockRequestPermission.mockClear();
+    mockToggle.mockClear();
+    mockUseNotifications.mockReturnValue(defaultNotifContext);
     mockUseNotificationPreferences.mockReturnValue(defaultGamifPrefs);
   });
 
@@ -95,6 +127,31 @@ describe('NotificationPreferencesScreen', () => {
     });
   });
 
+  describe('Skeleton loading state', () => {
+    it('shows skeleton when gamifPrefs isLoading is true', () => {
+      mockUseNotificationPreferences.mockReturnValueOnce({
+        ...defaultGamifPrefs,
+        isLoading: true,
+      });
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('notif-prefs-skeleton')).toBeTruthy();
+    });
+
+    it('does not show skeleton when loaded', () => {
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('notif-prefs-skeleton')).toBeNull();
+    });
+
+    it('skeleton hides main content while loading', () => {
+      mockUseNotificationPreferences.mockReturnValueOnce({
+        ...defaultGamifPrefs,
+        isLoading: true,
+      });
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('pref-row-order_update')).toBeNull();
+    });
+  });
+
   describe('Permission prompt', () => {
     it('shows permission prompt when undetermined', () => {
       const { getByTestId } = renderNotifPrefs();
@@ -106,11 +163,20 @@ describe('NotificationPreferencesScreen', () => {
       expect(getByTestId('enable-notifications-button')).toBeTruthy();
     });
 
-    it('hides permission prompt after granting', async () => {
-      const { getByTestId, queryByTestId } = renderNotifPrefs();
+    it('hides permission prompt when status is granted', () => {
+      mockUseNotifications.mockReturnValueOnce({
+        ...defaultNotifContext,
+        permissionStatus: 'granted',
+      });
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('permission-prompt')).toBeNull();
+    });
+
+    it('calls requestPermission when enable button pressed', async () => {
+      const { getByTestId } = renderNotifPrefs();
       fireEvent.press(getByTestId('enable-notifications-button'));
       await waitFor(() => {
-        expect(queryByTestId('permission-prompt')).toBeNull();
+        expect(mockRequestPermission).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -147,7 +213,7 @@ describe('NotificationPreferencesScreen', () => {
       const toggle = getByTestId('pref-toggle-order_update');
       expect(toggle.props.value).toBe(true);
       fireEvent(toggle, 'valueChange', false);
-      expect(getByTestId('pref-toggle-order_update').props.value).toBe(false);
+      expect(mockTogglePreference).toHaveBeenCalledWith('orderUpdates');
     });
   });
 
@@ -229,6 +295,18 @@ describe('NotificationPreferencesScreen', () => {
       expect(getByTestId('enable-notifications-button').props.accessibilityLabel).toBe(
         'Enable push notifications',
       );
+    });
+
+    it('enabled switch has accessibilityState.checked=true', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const toggle = getByTestId('pref-toggle-order_update');
+      expect(toggle.props.accessibilityState).toEqual(expect.objectContaining({ checked: true }));
+    });
+
+    it('disabled switch has accessibilityState.checked=false', () => {
+      const { getByTestId } = renderNotifPrefs();
+      const toggle = getByTestId('pref-toggle-cart_reminder');
+      expect(toggle.props.accessibilityState).toEqual(expect.objectContaining({ checked: false }));
     });
   });
 
