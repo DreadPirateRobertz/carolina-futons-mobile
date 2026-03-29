@@ -10,7 +10,7 @@
  * Bead: cfutons_mobile-c8h
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Product } from '@/data/products';
 import { PRODUCTS } from '@/data/products';
 import { captureException } from '@/services/crashReporting';
@@ -36,9 +36,6 @@ async function resolveStorage(adapter?: ProductStorage): Promise<ProductStorage 
 
 export function useRecentlyViewed(storage?: ProductStorage) {
   const [recentIds, setRecentIds] = useState<string[]>([]);
-  // Ref so addViewed always reads latest IDs without stale closure
-  const recentIdsRef = useRef<string[]>([]);
-  recentIdsRef.current = recentIds;
 
   // Load from storage on mount
   useEffect(() => {
@@ -66,9 +63,14 @@ export function useRecentlyViewed(storage?: ProductStorage) {
       const trimmed = productId.trim();
       if (!trimmed) return;
 
-      const filtered = recentIdsRef.current.filter((id) => id !== trimmed);
-      const updated = [trimmed, ...filtered].slice(0, MAX_ITEMS);
-      setRecentIds(updated);
+      // Capture updated list synchronously via functional updater so that
+      // rapid sequential calls each see the correct previous state.
+      let updated: string[] = [];
+      setRecentIds((prev) => {
+        const filtered = prev.filter((id: string) => id !== trimmed);
+        updated = [trimmed, ...filtered].slice(0, MAX_ITEMS);
+        return updated;
+      });
 
       const s = await resolveStorage(storage);
       if (!s) return;
