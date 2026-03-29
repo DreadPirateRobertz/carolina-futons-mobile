@@ -36,6 +36,7 @@ export { getStockStatus, LOW_STOCK_THRESHOLD };
 export interface ProductFilters {
   sizes: ProductSize[];
   fabrics: string[];
+  colorFamilies: string[];
   priceRange: [number, number] | null;
 }
 
@@ -100,12 +101,13 @@ interface UseProductsOptions {
  *
  * When Wix is not configured, falls back to mock data with client-side filtering.
  */
-const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], priceRange: null };
+const EMPTY_FILTERS: ProductFilters = { sizes: [], fabrics: [], colorFamilies: [], priceRange: null };
 
 function countActiveFilters(f: ProductFilters): number {
   let count = 0;
   if (f.sizes.length > 0) count++;
   if (f.fabrics.length > 0) count++;
+  if (f.colorFamilies.length > 0) count++;
   if (f.priceRange !== null) count++;
   return count;
 }
@@ -120,6 +122,13 @@ function applyFilters(products: Product[], filters: ProductFilters): Product[] {
 
   if (filters.fabrics.length > 0) {
     result = result.filter((p) => p.fabricOptions.some((f) => filters.fabrics.includes(f)));
+  }
+
+  if (filters.colorFamilies.length > 0) {
+    // Products without a colorFamily (unclassified) are excluded when a color filter is active
+    result = result.filter(
+      (p) => p.colorFamily !== undefined && filters.colorFamilies.includes(p.colorFamily),
+    );
   }
 
   if (filters.priceRange !== null) {
