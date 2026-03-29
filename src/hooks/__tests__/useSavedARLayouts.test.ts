@@ -89,7 +89,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('My Room', [ITEM_A, ITEM_B]);
     });
@@ -121,7 +121,10 @@ describe('useSavedARLayouts — saveLayout', () => {
       await result.current.saveLayout('Bedroom', [ITEM_B]);
     });
 
-    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('Bedroom'));
+    expect(mockSetItem).toHaveBeenCalledWith(
+      STORAGE_KEY,
+      expect.stringContaining('Bedroom'),
+    );
   });
 
   it('saves optional thumbnailUri', async () => {
@@ -148,7 +151,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('One More Room', [ITEM_B]);
     });
@@ -162,7 +165,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('Fails', [ITEM_A]);
     });
@@ -307,7 +310,10 @@ describe('useSavedARLayouts — renameLayout', () => {
       await result.current.renameLayout('layout-rp', 'New');
     });
 
-    expect(mockSetItem).toHaveBeenCalledWith(STORAGE_KEY, expect.stringContaining('New'));
+    expect(mockSetItem).toHaveBeenCalledWith(
+      STORAGE_KEY,
+      expect.stringContaining('New'),
+    );
   });
 });
 
@@ -376,10 +382,7 @@ describe('useSavedARLayouts — cloud sync', () => {
   it('sets syncStatus to syncing during syncToCloud', async () => {
     let resolvePush!: () => void;
     (pushLayouts as jest.Mock).mockImplementationOnce(
-      () =>
-        new Promise<void>((r) => {
-          resolvePush = r;
-        }),
+      () => new Promise<void>((r) => { resolvePush = r; }),
     );
 
     const { result } = renderHook(() => useSavedARLayouts());
@@ -390,9 +393,7 @@ describe('useSavedARLayouts — cloud sync', () => {
     });
 
     expect(result.current.syncStatus).toBe('syncing');
-    await act(async () => {
-      resolvePush();
-    });
+    await act(async () => { resolvePush(); });
     expect(result.current.syncStatus).toBe('idle');
   });
 
