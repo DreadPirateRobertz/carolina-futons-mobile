@@ -14,11 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
-import {
-  useProducts,
-  type Product,
-  type ProductCategory,
-} from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { SearchBar } from '@/components/SearchBar';
