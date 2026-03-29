@@ -7,6 +7,8 @@
 
 import { renderHook, waitFor, act } from '@testing-library/react-native';
 import { useSearchSuggestions } from '../useSearchSuggestions';
+import { useOptionalWixClient } from '@/services/wix';
+import { isWixConfigured } from '@/services/wix/config';
 
 const mockQueryProducts = jest.fn();
 
@@ -22,8 +24,6 @@ jest.mock('@/services/crashReporting', () => ({
   captureException: jest.fn(),
 }));
 
-import { useOptionalWixClient } from '@/services/wix';
-import { isWixConfigured } from '@/services/wix/config';
 
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 const mockIsWixConfigured = isWixConfigured as jest.Mock;
