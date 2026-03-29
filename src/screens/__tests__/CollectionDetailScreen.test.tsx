@@ -83,6 +83,51 @@ describe('CollectionDetailScreen', () => {
   });
 });
 
+describe('CollectionDetailScreen — hero image error recovery', () => {
+  it('shows hero image error fallback when hero image fails to load', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    const heroImage = getByTestId('hero-image');
+    fireEvent(heroImage, 'onError');
+    expect(getByTestId('hero-image-error-fallback')).toBeTruthy();
+  });
+
+  it('shows retry button when hero image fails', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    fireEvent(getByTestId('hero-image'), 'onError');
+    expect(getByTestId('hero-image-retry-btn')).toBeTruthy();
+  });
+
+  it('hides hero image error fallback after retry is pressed', () => {
+    const { getByTestId, queryByTestId } = renderCollectionDetail('mountain-lodge-living');
+    fireEvent(getByTestId('hero-image'), 'onError');
+    fireEvent.press(getByTestId('hero-image-retry-btn'));
+    expect(queryByTestId('hero-image-error-fallback')).toBeNull();
+  });
+
+  it('shows hero image again after retry is pressed', () => {
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    fireEvent(getByTestId('hero-image'), 'onError');
+    fireEvent.press(getByTestId('hero-image-retry-btn'));
+    expect(getByTestId('hero-image')).toBeTruthy();
+  });
+
+  it('does not show hero image error fallback on success', () => {
+    const { queryByTestId } = renderCollectionDetail('mountain-lodge-living');
+    expect(queryByTestId('hero-image-error-fallback')).toBeNull();
+  });
+
+  it('logs hero image error to console.error with screen prefix', () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
+    fireEvent(getByTestId('hero-image'), 'onError');
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[CollectionDetailScreen]'),
+      expect.anything(),
+    );
+    consoleSpy.mockRestore();
+  });
+});
+
 describe('CollectionDetailScreen — cart icon opens mini-cart', () => {
   it('renders a header cart icon', () => {
     const { getByTestId } = renderCollectionDetail('mountain-lodge-living');
