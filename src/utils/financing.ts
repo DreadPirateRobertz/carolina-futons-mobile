@@ -53,3 +53,41 @@ export function getFinancingTerms(price: number): FinancingOption[] {
     monthlyPayment: calculateMonthlyPayment(price, months),
   }));
 }
+
+// ── Afterpay (Pay in 4) ───────────────────────────────────────────────────────
+
+/** Maximum price eligible for Afterpay Pay in 4 */
+export const AFTERPAY_MAX_AMOUNT = 2000;
+
+/** Number of Afterpay installments */
+export const AFTERPAY_INSTALLMENT_COUNT = 4;
+
+export interface AfterpayInstallment {
+  number: number;
+  amount: number;
+  label: string;
+}
+
+/** Returns true if the price is eligible for Afterpay Pay in 4. */
+export function isAfterpayEligible(price: number): boolean {
+  return price > 0 && price <= AFTERPAY_MAX_AMOUNT;
+}
+
+/**
+ * Returns 4 equal installments for Afterpay Pay in 4.
+ * First installment absorbs any rounding remainder so all 4 sum exactly to price.
+ * Labels: Today, In 2 weeks, In 4 weeks, In 6 weeks.
+ */
+export function getAfterpayInstallments(price: number): AfterpayInstallment[] {
+  if (!isAfterpayEligible(price)) return [];
+
+  const base = Math.floor((price / AFTERPAY_INSTALLMENT_COUNT) * 100) / 100;
+  const first = Math.round((price - base * 3) * 100) / 100;
+  const labels = ['Today', 'In 2 weeks', 'In 4 weeks', 'In 6 weeks'];
+
+  return Array.from({ length: AFTERPAY_INSTALLMENT_COUNT }, (_, i) => ({
+    number: i + 1,
+    amount: i === 0 ? first : base,
+    label: labels[i],
+  }));
+}
