@@ -18,8 +18,7 @@ const WIXSTATIC_BASE = 'https://static.wixstatic.com/media/';
 const WIX_IMAGE_PREFIX = 'wix:image://v1/';
 
 /** Captures the mediaId from a wixstatic CDN URL (with or without a transform segment). */
-const WIXSTATIC_RE =
-  /^https:\/\/static\.wixstatic\.com\/media\/([^/?]+)(?:\/v1\/[^?]*)?(?:\?.*)?$/;
+const WIXSTATIC_RE = /^https:\/\/static\.wixstatic\.com\/media\/([^/?]+)(?:\/v1\/[^?]*)?(?:\?.*)?$/;
 
 export interface WixImageOptions {
   /** Target render width in pixels. */
