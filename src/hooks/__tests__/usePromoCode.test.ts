@@ -3,16 +3,28 @@ import { usePromoCode } from '../usePromoCode';
 import { WixApiError } from '@/services/wix/wixClient';
 
 const mockApplyCoupon = jest.fn();
+const mockUseOptionalWixClient = jest.fn(() => ({ applyCoupon: mockApplyCoupon }));
 
 jest.mock('@/services/wix/wixProvider', () => ({
-  useOptionalWixClient: () => ({
-    applyCoupon: mockApplyCoupon,
-  }),
+  useOptionalWixClient: () => mockUseOptionalWixClient(),
 }));
 
 describe('usePromoCode', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseOptionalWixClient.mockReturnValue({ applyCoupon: mockApplyCoupon });
+  });
+
+  it('sets error when offline (no wixClient)', async () => {
+    mockUseOptionalWixClient.mockReturnValueOnce(null);
+
+    const { result } = renderHook(() => usePromoCode());
+    await act(async () => {
+      await result.current.applyCode('SAVE10');
+    });
+
+    expect(result.current.status).toBe('error');
+    expect(result.current.error).toBe('Promo codes are not available offline');
   });
 
   it('starts in idle state with no coupon', () => {
