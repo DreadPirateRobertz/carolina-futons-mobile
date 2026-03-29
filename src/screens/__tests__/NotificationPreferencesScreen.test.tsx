@@ -322,5 +322,47 @@ describe('NotificationPreferencesScreen', () => {
         expect(getByTestId('pref-toggle-daily_spin_reminder').props.disabled).toBe(true);
       });
     });
+
+    describe('skeleton loading state', () => {
+      it('shows gamification skeleton when isLoading is true', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isLoading: true,
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('gamification-skeleton')).toBeTruthy();
+      });
+
+      it('hides gamification skeleton when isLoading is false', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isLoading: false,
+        });
+        const { queryByTestId } = renderNotifPrefs();
+        expect(queryByTestId('gamification-skeleton')).toBeNull();
+      });
+
+      it('does not render gamification toggles while loading', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isLoading: true,
+        });
+        const { queryByTestId } = renderNotifPrefs();
+        expect(queryByTestId('pref-toggle-streak_milestone')).toBeNull();
+        expect(queryByTestId('pref-toggle-quest_complete')).toBeNull();
+        expect(queryByTestId('pref-toggle-daily_spin_reminder')).toBeNull();
+      });
+
+      it('renders gamification toggles once loading is done', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isLoading: false,
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-streak_milestone')).toBeTruthy();
+        expect(getByTestId('pref-toggle-quest_complete')).toBeTruthy();
+        expect(getByTestId('pref-toggle-daily_spin_reminder')).toBeTruthy();
+      });
+    });
   });
 });
