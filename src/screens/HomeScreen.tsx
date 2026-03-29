@@ -39,8 +39,8 @@ import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { useQuizRecommendations } from '@/hooks/useQuizRecommendations';
-import { useSommelierResults } from '@/hooks/useSommelierResults';
+import { useAuth } from '@/hooks/useAuth';
+import { usePersonalization } from '@/hooks/usePersonalization';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
 import { DailyQuestsCard } from '@/components/DailyQuestsCard';
@@ -50,6 +50,7 @@ import { ChallengeCompletedToast } from '@/components/ChallengeCompletedToast';
 import { TierUpgradeToast } from '@/components/TierUpgradeToast';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { ProductCard } from '@/components/ProductCard';
+import { SommelierHeroCard } from '@/components/SommelierHeroCard';
 import type { EditorialCollection } from '@/data/collections';
 import type { Product } from '@/data/products';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
@@ -80,13 +81,15 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { streak, loading: streakLoading } = useStreak();
   const { featured, isLoading: collectionsLoading, error: collectionsError } = useCollections();
   const { recentProducts } = useRecentlyViewed();
+  const { user } = useAuth();
   const {
+    sommelierResult: sommelierResults,
     recommendations: quizRecs,
-    label: quizLabel,
     isLoading: quizLoading,
-    quizTaken,
-  } = useQuizRecommendations();
-  const { results: sommelierResults, hasResults: hasSommelierResults } = useSommelierResults();
+  } = usePersonalization(user?.id ?? null);
+  const quizTaken = quizRecs.length > 0;
+  const hasSommelierResults = sommelierResults !== null;
+  const quizLabel = sommelierResults?.topStyle ?? '';
   const { challenges, refresh: refreshChallenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
@@ -407,8 +410,20 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           </View>
         )}
 
+        {/* Sommelier Hero Card — shown when quiz is complete and card not dismissed */}
+        {sommelierResults && (
+          <View style={{ paddingHorizontal: spacing.lg }}>
+            <SommelierHeroCard
+              result={sommelierResults}
+              onSeePicks={() => {
+                /* scroll to product section */
+              }}
+            />
+          </View>
+        )}
+
         {/* Personalized Picks (quiz-driven or CMS sommelier results) */}
-        {(quizTaken || hasSommelierResults) && (
+        {(quizTaken || quizLoading || hasSommelierResults) && (
           <View style={styles.carouselSection}>
             {quizLoading ? (
               <View testID="skeleton-personalized-picks">
@@ -418,8 +433,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               <View testID="personalized-picks">
                 <RecommendationCarousel
                   title={
-                    sommelierResults?.topCategory
-                      ? `Your ${sommelierResults.topCategory} Picks`
+                    sommelierResults?.topStyle
+                      ? `Your ${sommelierResults.topStyle} Picks`
                       : quizLabel || 'Picked for You'
                   }
                   products={quizRecs}

@@ -91,12 +91,17 @@ jest.mock('@/hooks/useDailyQuests', () => ({
   useDailyQuests: () => mockUseDailyQuests(),
 }));
 
-jest.mock('@/hooks/useSommelierResults', () => ({
-  useSommelierResults: () => ({
-    results: null,
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({ user: null, isAuthenticated: false }),
+}));
+
+jest.mock('@/hooks/usePersonalization', () => ({
+  usePersonalization: () => ({
+    sommelierResult: null,
+    recommendations: [],
+    topStyle: null,
     isLoading: false,
     error: null,
-    hasResults: false,
   }),
 }));
 
