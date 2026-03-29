@@ -81,6 +81,32 @@ it('getCachedSommelierResult returns value within TTL without cachedAt field', a
   expect(result?.topStyle).toBe('Cozy');
 });
 
+it('setCachedSommelierResult writes with timestamp', async () => {
+  (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+  await setCachedSommelierResult('member-1', {
+    memberId: 'member-1',
+    topStyle: 'Boho',
+    flavors: ['cozy'],
+    recommendations: [],
+  });
+  expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+    '@cf_sommelier_cache',
+    expect.stringContaining('"topStyle":"Boho"'),
+  );
+});
+
+it('setCachedSommelierResult does not throw when AsyncStorage.setItem fails', async () => {
+  (AsyncStorage.setItem as jest.Mock).mockRejectedValue(new Error('write error'));
+  await expect(
+    setCachedSommelierResult('member-1', {
+      memberId: 'member-1',
+      topStyle: 'Modern',
+      flavors: [],
+      recommendations: [],
+    }),
+  ).resolves.toBeUndefined();
+});
+
 it('invalidatePersonalizationCache removes both cache keys', async () => {
   await invalidatePersonalizationCache();
   expect(AsyncStorage.removeItem).toHaveBeenCalledWith('@cf_fit_score_cache');

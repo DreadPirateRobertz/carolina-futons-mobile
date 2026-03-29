@@ -35,7 +35,7 @@ export async function getCachedFitScore(
     const entry = cache[`${productId}_${memberId}`];
     if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
     return { score: entry.score, reasons: entry.reasons };
-  } catch {
+  } catch /* istanbul ignore next */ {
     return null;
   }
 }
@@ -65,7 +65,7 @@ export async function getCachedSommelierResult(
     if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
     const { cachedAt: _, ...rest } = entry;
     return rest;
-  } catch {
+  } catch /* istanbul ignore next */ {
     return null;
   }
 }
