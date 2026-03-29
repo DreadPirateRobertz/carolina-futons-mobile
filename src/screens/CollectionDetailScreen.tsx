@@ -7,8 +7,8 @@
  * A footer card shows the combined price for the entire collection.
  */
 
-import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, {
   useSharedValue,
@@ -28,6 +28,7 @@ import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { ProductCard } from '@/components/ProductCard';
 import { Header } from '@/components/Header';
 import { EmptyState } from '@/components/EmptyState';
+import { MountainSkyline } from '@/components/MountainSkyline';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { Product } from '@/data/products';
 
@@ -55,6 +56,18 @@ export function CollectionDetailScreen() {
   const route = useRoute<RouteParams>();
   const insets = useSafeAreaInsets();
   const { collection, products } = useCollection(route.params.slug);
+  const [heroImageError, setHeroImageError] = useState(false);
+  const [heroRetryKey, setHeroRetryKey] = useState(0);
+
+  const handleHeroImageError = useCallback(() => {
+    console.error('[CollectionDetailScreen] hero image failed to load:', collection?.heroImage.uri);
+    setHeroImageError(true);
+  }, [collection?.heroImage.uri]);
+
+  const handleHeroRetry = useCallback(() => {
+    setHeroImageError(false);
+    setHeroRetryKey((k) => k + 1);
+  }, []);
   const { itemCount } = useCart();
   const { open: openCart } = useMiniCartDrawer();
 
@@ -115,15 +128,32 @@ export function CollectionDetailScreen() {
     <View>
       {/* Hero Image */}
       <Animated.View testID="parallax-hero" style={[styles.heroContainer, heroAnimatedStyle]}>
-        <Image
-          source={{ uri: collection.heroImage.uri }}
-          style={styles.heroImage}
-          contentFit="cover"
-          transition={300}
-          accessibilityLabel={collection.heroImage.alt}
-          cachePolicy="memory-disk"
-          placeholder={{ blurhash: collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH }}
-        />
+        {heroImageError ? (
+          <View testID="hero-image-error-fallback" style={styles.heroImageError}>
+            <MountainSkyline variant="sunset" height={HERO_HEIGHT} />
+            <TouchableOpacity
+              testID="hero-image-retry-btn"
+              onPress={handleHeroRetry}
+              style={styles.heroRetryBtn}
+              accessibilityLabel="Retry loading image"
+            >
+              <Text style={styles.heroRetryText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Image
+            key={heroRetryKey}
+            testID="hero-image"
+            source={{ uri: collection.heroImage.uri }}
+            style={styles.heroImage}
+            contentFit="cover"
+            transition={300}
+            accessibilityLabel={collection.heroImage.alt}
+            cachePolicy="memory-disk"
+            placeholder={{ blurhash: collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH }}
+            onError={handleHeroImageError}
+          />
+        )}
         <View style={[styles.heroOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.moodRow, { marginBottom: spacing.sm }]}>
             {collection.mood.map((tag) => (
@@ -291,6 +321,24 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     ...StyleSheet.absoluteFillObject,
+  },
+  heroImageError: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 16,
+  },
+  heroRetryBtn: {
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  heroRetryText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   heroOverlay: {
     ...StyleSheet.absoluteFillObject,

@@ -7,7 +7,7 @@
  * scroll pagination. Uses virtualized FlatList with tuned batch sizes
  * for smooth scrolling on lower-end devices.
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, FlatList } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
@@ -39,6 +39,7 @@ import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
 import { CompareTray } from '@/components/CompareTray';
+import { NetworkErrorState } from '@/components/NetworkErrorState';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /** Estimated height of a product row for getItemLayout optimization */
@@ -78,6 +79,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     isLoading,
     isInitialLoading,
     suggestions,
+    fetchError,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
@@ -89,6 +91,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    if (fetchError) {
+      console.error('[ShopScreen] product fetch failed:', fetchError);
+    }
+  }, [fetchError]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -221,7 +229,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const renderEmpty = useCallback(
     () =>
       isInitialLoading ? (
-        <SkeletonProductGrid count={6} />
+        <SkeletonProductGrid count={6} testID="shop-skeleton" />
+      ) : fetchError && !isInitialLoading ? (
+        <NetworkErrorState
+          message={fetchError.message || 'Could not load products.'}
+          onRetry={refresh}
+        />
       ) : searchQuery ? (
         <SearchEmptyState
           query={searchQuery}
@@ -258,6 +271,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       ),
     [
       isInitialLoading,
+      fetchError,
+      refresh,
       searchQuery,
       colors,
       categories,
