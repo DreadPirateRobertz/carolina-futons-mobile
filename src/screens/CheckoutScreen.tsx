@@ -49,7 +49,7 @@ import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
+import { DeliveryTierBadge } from '@/components/DeliveryTierBadge';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { CheckoutLoyaltyBanner } from '@/components/CheckoutLoyaltyBanner';
 import {
@@ -1531,28 +1531,19 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </View>
         )}
 
-        {/* Delivery window estimate (cm-mk8) */}
-        {(() => {
-          const estimate = getDeliveryEstimate(shippingAddress.zip);
-          return estimate ? (
-            <View
-              style={[
-                styles.deliveryEstimateRow,
-                { marginHorizontal: spacing.lg, marginBottom: spacing.md },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.deliveryEstimateText,
-                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
-                ]}
-                testID="delivery-estimate"
-              >
-                {`Ships in ${estimate}`}
-              </Text>
-            </View>
-          ) : null;
-        })()}
+        {/* Delivery tier badge (cm-ej2) */}
+        <View
+          style={[
+            styles.deliveryEstimateRow,
+            { marginHorizontal: spacing.lg, marginBottom: spacing.md },
+          ]}
+          testID="delivery-estimate"
+        >
+          <DeliveryTierBadge
+            zip={shippingAddress.zip}
+            dimensions={items[0]?.model?.dimensions}
+          />
+        </View>
 
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
