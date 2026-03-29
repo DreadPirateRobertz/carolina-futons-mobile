@@ -8,7 +8,7 @@
  * - Empty / whitespace zip → null
  * - Invalid format → null
  */
-import { getDeliveryEstimate, getDeliveryMode } from '../deliveryEstimate';
+import { getDeliveryEstimate, getDeliveryMode, getShippingTier } from '../deliveryEstimate';
 
 describe('getDeliveryEstimate', () => {
   describe('returns null for missing or invalid zip', () => {
@@ -189,5 +189,49 @@ describe('getDeliveryMode', () => {
     it('accepts zip+4 format for parcel', () => {
       expect(getDeliveryMode('10001-1234', PARCEL_DIMS)).toBe('parcel');
     });
+  });
+});
+
+// ── getShippingTier ────────────────────────────────────────────────────────────
+
+describe('getShippingTier', () => {
+  it('returns null for invalid zip', () => {
+    expect(getShippingTier('')).toBeNull();
+    expect(getShippingTier('ABCDE')).toBeNull();
+    expect(getShippingTier('2880')).toBeNull();
+  });
+
+  it('returns "fastest" for NC/SC zip with small item', () => {
+    expect(getShippingTier('28801', PARCEL_DIMS)).toBe('fastest');
+    expect(getShippingTier('29201', PARCEL_DIMS)).toBe('fastest');
+    expect(getShippingTier('27601', PARCEL_DIMS)).toBe('fastest');
+  });
+
+  it('returns "fastest" for NC zip with no dimensions', () => {
+    expect(getShippingTier('28801')).toBe('fastest');
+  });
+
+  it('returns "standard" for non-local parcel zip', () => {
+    expect(getShippingTier('10001', PARCEL_DIMS)).toBe('standard');
+    expect(getShippingTier('30301', PARCEL_DIMS)).toBe('standard');
+    expect(getShippingTier('90210', PARCEL_DIMS)).toBe('standard');
+  });
+
+  it('returns "standard" for non-local zip with no dimensions', () => {
+    expect(getShippingTier('60601')).toBe('standard');
+  });
+
+  it('returns "freight" for freight-size item regardless of zip', () => {
+    expect(getShippingTier('28801', FREIGHT_DIMS)).toBe('freight');
+    expect(getShippingTier('10001', FREIGHT_DIMS)).toBe('freight');
+    expect(getShippingTier('90210', QUEEN_DIMS)).toBe('freight');
+  });
+
+  it('returns "freight" for exactly-54-inch item', () => {
+    expect(getShippingTier('10001', { width: 54, depth: 30, height: 30 })).toBe('freight');
+  });
+
+  it('returns "standard" for 53-inch item (just under freight threshold)', () => {
+    expect(getShippingTier('10001', { width: 53, depth: 30, height: 30 })).toBe('standard');
   });
 });
