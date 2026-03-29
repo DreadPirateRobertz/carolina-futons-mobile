@@ -16,6 +16,12 @@ web-build/
 dolt-access.lock
 dolt/
 
+# Agent memory (not project code)
+memory/
+
+# Scratch/working files
+src/data/catalog-MASTER.ts
+
 # Environment variables (never commit real keys)
 .env
 .env.local
