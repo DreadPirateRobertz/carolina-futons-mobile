@@ -22,6 +22,7 @@ import Animated, {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useDailyQuests, type QuestAction } from '@/hooks/useDailyQuests';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
@@ -74,6 +75,9 @@ export function DailyQuestsCard({ onNavigate, refreshToken }: Props) {
   }, [refreshToken, refresh]);
   const [toastVisible, setToastVisible] = useState(false);
 
+  // Show skeleton only on initial load; during refresh keep existing quests visible
+  const isInitialLoad = loading && quests.length === 0;
+
   const completedCount = quests.filter((q) => q.completed).length;
 
   const handleRowPress = useCallback(
@@ -123,8 +127,8 @@ export function DailyQuestsCard({ onNavigate, refreshToken }: Props) {
         </Text>
       </View>
 
-      {/* Loading skeleton */}
-      {loading ? (
+      {/* Loading skeleton — only on initial load, not refresh */}
+      {isInitialLoad ? (
         <View testID="daily-quests-loading" style={styles.loadingRows}>
           {[0, 1, 2].map((i) => (
             <View
@@ -137,8 +141,8 @@ export function DailyQuestsCard({ onNavigate, refreshToken }: Props) {
           ))}
         </View>
       ) : (
-        /* Quest rows */
-        <View style={styles.rows}>
+        /* Quest rows stay mounted during refresh — in-place state update */
+        <View testID="daily-quests-rows" style={[styles.rows, loading && styles.rowsRefreshing]}>
           {quests.map((quest) => (
             <QuestRow
               key={quest.id}
@@ -183,16 +187,22 @@ interface QuestRowProps {
 
 function QuestRow({ quest, onPress, colors, spacing, borderRadius }: QuestRowProps) {
   const { id, title, action, pointReward, completed } = quest;
+  const reducedMotion = useReducedMotion();
 
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   const handlePress = () => {
     if (completed) {
-      scale.value = withSequence(
-        withSpring(BOUNCE_SCALE, { damping: 4 }),
-        withSpring(1, { damping: 6 }),
-      );
+      if (reducedMotion) {
+        scale.value = BOUNCE_SCALE;
+        scale.value = 1;
+      } else {
+        scale.value = withSequence(
+          withSpring(BOUNCE_SCALE, { damping: 4 }),
+          withSpring(1, { damping: 6 }),
+        );
+      }
     }
     onPress(id, action as QuestAction, completed);
   };
@@ -295,6 +305,9 @@ const styles = StyleSheet.create({
   },
   rows: {
     gap: 2,
+  },
+  rowsRefreshing: {
+    opacity: 0.6,
   },
   row: {
     flexDirection: 'row',

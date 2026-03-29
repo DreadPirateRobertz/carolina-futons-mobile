@@ -427,4 +427,31 @@ describe('DailyQuestsCard', () => {
     const row = getByTestId('daily-quest-row-q-purchase');
     expect(row.props.accessibilityLabel).toContain('complete');
   });
+
+  it('keeps quest rows mounted during refresh — no remount flash', () => {
+    // Start with quests loaded
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: false,
+      refresh: jest.fn(),
+    });
+    const { getByTestId, rerender, queryByTestId } = renderCard();
+    expect(getByTestId('daily-quests-rows')).toBeTruthy();
+
+    // Simulate refresh: loading=true but quests still present
+    mockUseDailyQuests.mockReturnValue({
+      quests: ALL_QUESTS,
+      loading: true,
+      refresh: jest.fn(),
+    });
+    rerender(
+      <ThemeProvider>
+        <DailyQuestsCard />
+      </ThemeProvider>,
+    );
+
+    // Rows must remain mounted — skeleton must NOT appear
+    expect(queryByTestId('daily-quests-loading')).toBeNull();
+    expect(getByTestId('daily-quests-rows')).toBeTruthy();
+  });
 });

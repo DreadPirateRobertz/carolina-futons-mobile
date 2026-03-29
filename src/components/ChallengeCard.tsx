@@ -13,6 +13,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { Challenge } from '@/data/challenges';
 
 const CARD_WIDTH = 160;
@@ -35,6 +36,7 @@ function formatCountdown(expiresAt: number, now: number): string {
 export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const { id, title, description, reward, progress, expiresAt, isActive } = challenge;
+  const reducedMotion = useReducedMotion();
 
   const countdown = useMemo(() => formatCountdown(expiresAt, Date.now()), [expiresAt]);
 
@@ -45,10 +47,10 @@ export const ChallengeCard = memo(function ChallengeCard({ challenge, onPress }:
 
   useEffect(() => {
     animatedProgress.value = withTiming(clampedProgress, {
-      duration: PROGRESS_DURATION_MS,
+      duration: reducedMotion ? 0 : PROGRESS_DURATION_MS,
       easing: Easing.out(Easing.cubic),
     });
-  }, [clampedProgress]);
+  }, [clampedProgress, reducedMotion]);
 
   const fillStyle = useAnimatedStyle(() => ({
     width: `${animatedProgress.value * 100}%`,
