@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   useProducts,
   type Product,
@@ -51,6 +52,7 @@ interface Props {
 
 export function SearchScreen({ testID }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
+  const reduceMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scrollPerf = useScrollPerformance('SearchScreen');
@@ -136,12 +138,12 @@ export function SearchScreen({ testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={FadeInDown.delay(index * 60).duration(350)}
+        entering={reduceMotion ? undefined : FadeInDown.delay(index * 60).duration(350)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress],
+    [handleProductPress, reduceMotion],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);

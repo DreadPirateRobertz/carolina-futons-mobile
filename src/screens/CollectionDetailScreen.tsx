@@ -21,6 +21,7 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useCollection } from '@/hooks/useCollections';
 import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
 import { useCart } from '@/hooks/useCart';
@@ -52,6 +53,7 @@ const keyExtractor = (item: Product) => item.id;
  */
 export function CollectionDetailScreen() {
   const { colors, spacing, typography, shadows, borderRadius } = useTheme();
+  const reduceMotion = useReducedMotion();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteParams>();
   const insets = useSafeAreaInsets();
@@ -81,12 +83,14 @@ export function CollectionDetailScreen() {
   const heroAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY: interpolate(
-          scrollY.value,
-          [0, HERO_HEIGHT],
-          [0, HERO_HEIGHT * PARALLAX_RATE],
-          Extrapolation.CLAMP,
-        ),
+        translateY: reduceMotion
+          ? 0
+          : interpolate(
+              scrollY.value,
+              [0, HERO_HEIGHT],
+              [0, HERO_HEIGHT * PARALLAX_RATE],
+              Extrapolation.CLAMP,
+            ),
       },
     ],
   }));

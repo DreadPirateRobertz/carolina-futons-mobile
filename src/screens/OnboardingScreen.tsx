@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { GlassCard } from '@/components/GlassCard';
 import { LoyaltyTierBadge } from '@/components/LoyaltyTierBadge';
@@ -101,6 +102,7 @@ interface Props {
 /** Multi-step onboarding: brand story slides followed by a style-preference quiz. */
 export function OnboardingScreen({ onComplete, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
+  const reduceMotion = useReducedMotion();
   const [step, setStep] = useState(0);
   const { preferences, setRoomType, setStylePreference, setPrimaryUse, savePreferences } =
     useStyleQuiz();
@@ -132,12 +134,12 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
     if (showReveal) {
       Animated.timing(tierBarAnim, {
         toValue: tierData.progressFraction,
-        duration: 800,
-        delay: 300,
+        duration: reduceMotion ? 0 : 800,
+        delay: reduceMotion ? 0 : 300,
         useNativeDriver: false,
       }).start();
     }
-  }, [showReveal, tierBarAnim, tierData.progressFraction]);
+  }, [showReveal, tierBarAnim, tierData.progressFraction, reduceMotion]);
 
   const handleNext = useCallback(() => {
     setStep((s) => s + 1);

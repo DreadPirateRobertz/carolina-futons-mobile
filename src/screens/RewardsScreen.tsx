@@ -55,6 +55,7 @@ export function RewardsScreen({ testID }: Props) {
           onPress={refreshPoints}
           testID="rewards-retry"
           accessibilityRole="button"
+          accessibilityLabel="Retry loading rewards"
         >
           <Text style={[styles.retryText, { fontFamily: typography.bodyFamilyBold }]}>Retry</Text>
         </TouchableOpacity>
@@ -107,6 +108,8 @@ export function RewardsScreen({ testID }: Props) {
         onPress={handleRedeem}
         testID="rewards-redeem-button"
         accessibilityRole="button"
+        accessibilityLabel={`Redeem ${points} points`}
+        accessibilityState={{ disabled: points <= 0 }}
         disabled={points <= 0}
       >
         <Text style={[styles.redeemText, { fontFamily: typography.bodyFamilyBold }]}>

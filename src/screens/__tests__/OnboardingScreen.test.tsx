@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, AccessibilityInfo } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { OnboardingScreen } from '../OnboardingScreen';
@@ -447,5 +447,13 @@ describe('Gamification Reveal — returning user (hasSeenReveal: true)', () => {
     navigateToCompletion(getByTestId);
     await waitFor(() => {}, { timeout: 200 });
     expect(mockMarkRevealShown).not.toHaveBeenCalled();
+  });
+});
+
+describe('OnboardingScreen — reduced motion', () => {
+  it('renders without crash when reduced motion is enabled', () => {
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    expect(() => render(<OnboardingScreen onComplete={jest.fn()} />)).not.toThrow();
+    jest.restoreAllMocks();
   });
 });

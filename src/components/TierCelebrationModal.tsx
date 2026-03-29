@@ -35,6 +35,7 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { LoyaltyTier } from '@/hooks/useLoyalty';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
@@ -164,6 +165,7 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
   onDismiss,
 }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
+  const reduceMotion = useReducedMotion();
   const particles = useMemo(buildParticles, []);
 
   const badgeScale = useSharedValue(0);
@@ -177,10 +179,17 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
       contentOpacity.value = 0;
       return;
     }
+    if (reduceMotion) {
+      // Skip animations — show content immediately
+      badgeScale.value = 1;
+      badgeOpacity.value = 1;
+      contentOpacity.value = 1;
+      return;
+    }
     badgeScale.value = withDelay(200, withSpring(1, { damping: 8, stiffness: 120 }));
     badgeOpacity.value = withDelay(200, withTiming(1, { duration: 200 }));
     contentOpacity.value = withDelay(500, withTiming(1, { duration: 400 }));
-  }, [newTier]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [newTier, reduceMotion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const badgeStyle = useAnimatedStyle(() => ({
     transform: [{ scale: badgeScale.value }],
@@ -203,16 +212,18 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
         style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.85)' }]}
         accessibilityViewIsModal
       >
-        {/* Confetti layer */}
-        <View
-          testID="tier-celebration-confetti"
-          style={StyleSheet.absoluteFillObject}
-          pointerEvents="none"
-        >
-          {particles.map((p, i) => (
-            <ConfettiPiece key={i} particle={p} run />
-          ))}
-        </View>
+        {/* Confetti layer — hidden when reduce motion is enabled */}
+        {!reduceMotion && (
+          <View
+            testID="tier-celebration-confetti"
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+          >
+            {particles.map((p, i) => (
+              <ConfettiPiece key={i} particle={p} run />
+            ))}
+          </View>
+        )}
 
         {/* Card */}
         <View
