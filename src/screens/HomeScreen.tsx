@@ -35,6 +35,7 @@ import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { LivingSkyBackground } from '@/components/LivingSkyBackground';
 import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline';
+import { WildlifeLayer } from '@/components/WildlifeLayer';
 import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
 import { useCollections } from '@/hooks/useCollections';
@@ -148,6 +149,8 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
     <View style={styles.root}>
       {/* cf-7l2 — full-screen sky gradient, absolute behind all content */}
       <LivingSkyBackground />
+      {/* Wildlife overlay — birds, fireflies, owls animated above sky */}
+      <WildlifeLayer skyState={skyState} />
       <ScrollView
         style={styles.container}
         contentContainerStyle={[
