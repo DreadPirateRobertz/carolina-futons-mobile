@@ -123,7 +123,7 @@ npx jest --passWithNoTests</pre>
      TABLE OF CONTENTS
 ══════════════════════════════════════════════════ -->
 <div class="toc">
-<h3>Screen Index (39 screens)</h3>
+<h3>Screen Index (40 screens)</h3>
 <ul>
 <li><a href="#onboarding">1. Onboarding (7 slides)</a></li>
 <li><a href="#home">2. Home Tab</a></li>
@@ -164,6 +164,7 @@ npx jest --passWithNoTests</pre>
 <li><a href="#store-detail">37. Store Detail</a></li>
 <li><a href="#privacy">38. Privacy Policy</a></li>
 <li><a href="#rewards">39. Rewards</a></li>
+<li><a href="#notif-prompt">40. Notification Permission Prompt</a></li>
 </ul>
 </div>
 
@@ -186,6 +187,8 @@ npx jest --passWithNoTests</pre>
 <tr><td>#370</td><td>Cart Abandonment Dedup Fix</td><td>Removed broken WixClient.setMemberField() call. Replaced with AsyncStorage DEDUP_KEY pattern. Push recovery now idempotent. (hq-k8690) TODO(cf-a220) — Wix sync pending radahn.</td></tr>
 <tr><td>#371 <span style="color:#facc15">CI</span></td><td>PDP Social Proof</td><td>SocialProofBadge component: "X sold this week" badge (Wix OrderItems) + top review excerpt (Stamped.io). useSocialProof hook, parallel fetch, partial failure tolerance. (hq-5yo88)</td></tr>
 <tr><td>#372 <span style="color:#facc15">CI</span></td><td>Style Personalization — SommelierResults CMS</td><td>getSommelierResults() + recordSommelierResult() wired to Wix backend (cf-a220, radahn shipped 2026-03-28). callFunction(/_functions/..., GET/POST) pattern. Powers AI recs on PDP. (hq-5hnml)</td></tr>
+<tr><td>#373</td><td>Epic A: Push Notification Engine</td><td>notificationService (Expo Notifications), useNotificationPermission hook, NotificationPermissionPromptScreen, NotificationRouter, personalizationCache. Order updates, loyalty events, streak reminders. (cm-epicA)</td></tr>
+<tr><td>#374</td><td>Epic B: AI Personalization Layer</td><td>Fit Score engine (useFitScore), Sommelier parallel fetch (useSommelierResults), personalizationCache with TTL, AI-driven product recommendations on Home + PDP. (cm-epicB)</td></tr>
 </table>
 </div>
 
@@ -1047,6 +1050,25 @@ npx jest --passWithNoTests</pre>
     <div class="features">
       <span class="badge badge-gamification">Points Redemption</span>
       <span class="badge badge-auth">Auth Required</span>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- 40. Notification Permission Prompt -->
+<div class="section" id="notif-prompt">
+<h2>40. Notification Permission Prompt</h2>
+<p class="nav-flow">Onboarding exit → Notification prompt → Home Tab (Epic A)</p>
+<div class="grid">
+<div class="card">
+  <div class="placeholder">📸 Screenshot pending<div class="build-hint">Triggered post-onboarding via Epic A nav flow — nav hookup pending</div></div>
+  <div class="card-info">
+    <h3>Notification Permission Prompt</h3>
+    <p>Custom pre-permission screen shown before OS notification dialog. Explains benefits: order updates, loyalty streak reminders, price drops, flash sales. "Enable Notifications" coral CTA triggers system permission request. "Maybe Later" skips to Home. Part of Epic A push notification onboarding flow.</p>
+    <div class="features">
+      <span class="badge badge-feature">Epic A: Push</span>
+      <span class="badge badge-new">New Screen</span>
     </div>
   </div>
 </div>

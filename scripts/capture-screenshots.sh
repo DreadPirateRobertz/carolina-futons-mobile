@@ -2,34 +2,34 @@
 # capture-screenshots.sh — automated screenshot capture for all app screens
 #
 # Usage:
-#   ./scripts/capture-screenshots.sh [--device SERIAL] [--delay SECONDS]
+#   ./scripts/capture-screenshots.sh [--device SERIAL] [--delay SECONDS] [--out-dir DIR]
 #
 # Requires:
 #   - adb in PATH
 #   - Android emulator/device running with the app installed
-#   - App package: com.carolinafutons.mobile (adjust PACKAGE below)
+#   - App package: com.carolinafutons.mobile
 #
-# Output: docs/screenshots/s28/<screen-name>.png
-#
-# The script navigates to each screen via deep links (carolinafutons://)
-# and falls back to adb shell am start for screens without deep link routes.
+# Run on pop-os where Android emulator lives:
+#   ssh pop-os "cd ~/cfutons_mobile && bash scripts/capture-screenshots.sh"
 
 set -euo pipefail
 
 # --- Configuration ---
 PACKAGE="com.carolinafutons.mobile"
 SCHEME="carolinafutons"
-OUT_DIR="docs/screenshots/s28"
+DATESTAMP="$(date +%Y%m%d)"
+OUT_DIR="docs/screenshots/s29-${DATESTAMP}"
 DELAY=3          # seconds to wait after navigation before capture
 DEVICE=""        # optional: adb -s <serial>
 
 # --- Parse args ---
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --device) DEVICE="$2"; shift 2 ;;
-    --delay)  DELAY="$2"; shift 2 ;;
+    --device)  DEVICE="$2"; shift 2 ;;
+    --delay)   DELAY="$2"; shift 2 ;;
+    --out-dir) OUT_DIR="$2"; shift 2 ;;
     -h|--help)
-      echo "Usage: $0 [--device SERIAL] [--delay SECONDS]"
+      echo "Usage: $0 [--device SERIAL] [--delay SECONDS] [--out-dir DIR]"
       exit 0
       ;;
     *) echo "Unknown arg: $1"; exit 1 ;;
@@ -70,6 +70,11 @@ press_back() {
   sleep 0.5
 }
 
+scroll_down() {
+  $ADB shell input swipe 540 1800 540 800 300 2>/dev/null || true
+  sleep 0.5
+}
+
 # --- Preflight ---
 
 echo "🔍 Checking adb connectivity..."
@@ -106,38 +111,56 @@ screenshot() {
 echo ""
 echo "═══════════════════════════════════════════"
 echo "  Carolina Futons — Screenshot Capture"
+echo "  Build: s29-${DATESTAMP}"
 echo "  Output: ${OUT_DIR}/"
 echo "  Delay:  ${DELAY}s per screen"
 echo "═══════════════════════════════════════════"
 echo ""
 
-# 1. Onboarding (cold start — clear data to trigger)
+# 1. Onboarding — requires fresh install to trigger
 echo "── Onboarding ──"
-# NOTE: Onboarding only shows on first launch. To capture it:
-#   $ADB shell pm clear "$PACKAGE"
-# Uncomment the line above if you want a fresh-install capture.
-# For now, skip to avoid clearing user data.
-echo "  ⏭  Skipping onboarding (requires fresh install). Uncomment pm clear to enable."
+echo "  ℹ️  Clearing app data to trigger onboarding..."
+$ADB shell pm clear "$PACKAGE" 2>/dev/null || true
+$ADB shell am start -n "$PACKAGE/.MainActivity" 2>/dev/null || true
+wait_settle 4
+screenshot "01-onboarding-welcome"
+# Swipe to feature slides
+$ADB shell input swipe 800 1000 200 1000 200 2>/dev/null || true
+wait_settle 1
+screenshot "02-onboarding-slides"
+# Swipe to last slide
+for _ in 2 3 4 5; do
+  $ADB shell input swipe 800 1000 200 1000 200 2>/dev/null || true
+  sleep 0.4
+done
+wait_settle 1
+screenshot "03-onboarding-signup"
 
-# 2. Tab screens — navigate via deep links
+# 2. Tab screens
 echo ""
 echo "── Tab Screens ──"
 
 deep_link "home"
 wait_settle
-screenshot "01-home"
+screenshot "04-home"
+
+scroll_down
+wait_settle 1
+screenshot "05-home-quests"
+deep_link "home"
+wait_settle 1
 
 deep_link "shop"
 wait_settle
-screenshot "02-shop"
+screenshot "06-shop"
 
 deep_link "cart"
 wait_settle
-screenshot "03-cart"
+screenshot "07-cart-empty"
 
 deep_link "account"
 wait_settle
-screenshot "04-account"
+screenshot "08-account-signedout"
 
 # 3. Product browsing
 echo ""
@@ -145,41 +168,32 @@ echo "── Product Browsing ──"
 
 deep_link "category/futons"
 wait_settle
-screenshot "05-category-futons"
-
-deep_link "category/murphy-beds"
-wait_settle
-screenshot "06-category-murphy-beds"
+screenshot "09-category-futons"
 
 deep_link "product/asheville-full-futon"
 wait_settle
-screenshot "07-product-detail-futon"
-
-deep_link "product/hendersonville-queen-murphy-cabinet-bed"
-wait_settle
-screenshot "08-product-detail-murphy"
-
-deep_link "product/mountain-weave-cover"
-wait_settle
-screenshot "09-product-detail-accessory"
+screenshot "10-pdp-gallery"
+scroll_down
+wait_settle 1
+screenshot "11-pdp-bnpl"
+scroll_down
+wait_settle 1
+screenshot "12-pdp-features-ar"
 
 # 4. Search
 echo ""
 echo "── Search ──"
 
-# Search doesn't have a deep link — navigate from Shop tab
 deep_link "shop"
 wait_settle 1
-# Tap the search icon (top-right area of shop screen)
-# Coordinates depend on device resolution — 1080x2400 default
+# Tap search icon (top-right ~1080px wide screen)
 $ADB shell input tap 980 180 2>/dev/null || true
 wait_settle 2
-screenshot "10-search-empty"
+screenshot "13-search-empty"
 
-# Type a query
 $ADB shell input text "futon" 2>/dev/null || true
 wait_settle 2
-screenshot "11-search-results"
+screenshot "14-search-results"
 press_back
 press_back
 
@@ -189,24 +203,21 @@ echo "── Collections ──"
 
 deep_link "collections"
 wait_settle
-screenshot "12-collections"
+screenshot "15-collections"
 
-# First collection — use a known slug if available, else skip
 deep_link "collections/best-sellers"
 wait_settle
-screenshot "13-collection-detail"
+screenshot "16-collection-detail"
 
 # 6. Compare
 echo ""
 echo "── Compare ──"
 
-# Compare requires product slugs as params — navigate via deep link
-# The Compare screen needs productSlugs query params
 $ADB shell am start -a android.intent.action.VIEW \
   -d "${SCHEME}://compare?slugs=asheville-full-futon,blue-ridge-queen-futon" \
   "$PACKAGE" 2>/dev/null || true
 wait_settle
-screenshot "14-compare"
+screenshot "17-compare"
 
 # 7. Wishlist
 echo ""
@@ -214,7 +225,7 @@ echo "── Wishlist ──"
 
 deep_link "wishlist"
 wait_settle
-screenshot "15-wishlist"
+screenshot "18-wishlist"
 
 # 8. Auth screens
 echo ""
@@ -222,35 +233,50 @@ echo "── Authentication ──"
 
 deep_link "login"
 wait_settle
-screenshot "16-login"
+screenshot "19-login"
 press_back
 
 deep_link "signup"
 wait_settle
-screenshot "17-signup"
+screenshot "20-signup"
 press_back
 
 deep_link "forgot-password"
 wait_settle
-screenshot "18-forgot-password"
+screenshot "21-forgot-password"
 press_back
 
-# 9. Checkout flow (may show empty cart state)
+# 9. Checkout flow
 echo ""
 echo "── Checkout Flow ──"
 
 deep_link "checkout"
 wait_settle
-screenshot "19-checkout"
+screenshot "22-checkout"
+
+deep_link "payment-confirmation"
+wait_settle
+screenshot "23-payment-confirmation"
+
+$ADB shell am start -a android.intent.action.VIEW \
+  -d "${SCHEME}://order-success?orderId=CF-TEST-001" \
+  "$PACKAGE" 2>/dev/null || true
+wait_settle
+screenshot "24-order-success"
 
 deep_link "order-confirmation"
 wait_settle
-screenshot "20-order-confirmation"
+screenshot "25-order-confirmation"
 
-# Order success — requires param, may show error state
 deep_link "orders"
 wait_settle
-screenshot "21-order-history"
+screenshot "26-order-history"
+
+$ADB shell am start -a android.intent.action.VIEW \
+  -d "${SCHEME}://orders/CF-TEST-001" \
+  "$PACKAGE" 2>/dev/null || true
+wait_settle
+screenshot "27-order-detail"
 
 # 10. Store locator
 echo ""
@@ -258,7 +284,12 @@ echo "── Store Locator ──"
 
 deep_link "stores"
 wait_settle
-screenshot "22-store-locator"
+screenshot "28-store-locator"
+
+$ADB shell input tap 540 600 2>/dev/null || true
+wait_settle 2
+screenshot "29-store-detail"
+press_back
 
 # 11. Notifications
 echo ""
@@ -266,20 +297,24 @@ echo "── Notifications ──"
 
 deep_link "notifications"
 wait_settle
-screenshot "23-notification-preferences"
+screenshot "30-notifications-inbox"
 
-# 12. Premium / Subscription
+deep_link "notification-preferences"
+wait_settle
+screenshot "31-notification-preferences"
+press_back
+
+# NotificationPermissionPromptScreen — navigation hookup pending
+# Will be added when screen is registered in navigator
+echo "  ⏭  Skipping notif-permission-prompt (not yet in navigation)"
+
+# 12. Premium
 echo ""
 echo "── Premium ──"
 
-# Premium doesn't have a deep link — navigate from Account
-deep_link "account"
-wait_settle 1
-# Scroll down and tap Premium option — approximate
-$ADB shell input swipe 540 1800 540 800 300 2>/dev/null || true
-wait_settle 1
-screenshot "24-premium"
-press_back
+deep_link "premium"
+wait_settle
+screenshot "32-premium"
 
 # 13. Style Quiz
 echo ""
@@ -287,104 +322,121 @@ echo "── Style Quiz ──"
 
 deep_link "style-quiz"
 wait_settle
-screenshot "25-style-quiz"
+screenshot "33-style-quiz"
 
 # 14. AR screens
 echo ""
 echo "── AR Experience ──"
 
 deep_link "ar"
-wait_settle 4  # AR needs extra time to load
-screenshot "26-ar-camera"
+wait_settle 4
+screenshot "34-ar-camera"
 press_back
 
-# 15. Room Gallery
+# AR permission denied — should show if camera permission not granted
+# Emulator may show this automatically
+deep_link "ar"
+wait_settle 2
+screenshot "35-ar-permission-denied"
+press_back
+
+# 15. AR Web Viewer
+echo ""
+echo "── AR Web Viewer ──"
+
+deep_link "ar-web?productSlug=asheville-full-futon"
+wait_settle 4
+screenshot "36-ar-web-viewer"
+press_back
+
+# 16. Room Gallery
 echo ""
 echo "── Room Gallery ──"
 
-# No deep link — navigate from product detail
-deep_link "product/asheville-full-futon"
-wait_settle 2
-# Look for Room Gallery / "See in room" button — scroll down
-$ADB shell input swipe 540 1800 540 600 300 2>/dev/null || true
-wait_settle 1
-screenshot "27-room-gallery-entry"
+deep_link "room-gallery"
+wait_settle
+screenshot "37-room-gallery"
 press_back
 
-# 16. Gamification / Loyalty
+# 17. Gamification / Loyalty
 echo ""
 echo "── Gamification & Loyalty ──"
 
-# Loyalty has a deep link via notification handlers but also direct navigation
 $ADB shell am start -a android.intent.action.VIEW \
   -d "${SCHEME}://loyalty" \
   "$PACKAGE" 2>/dev/null || true
 wait_settle
-screenshot "28-loyalty-streak"
+screenshot "38-loyalty"
 
-# Loyalty with quests tab
 $ADB shell am start -a android.intent.action.VIEW \
   -d "${SCHEME}://loyalty?tab=quests" \
   "$PACKAGE" 2>/dev/null || true
 wait_settle
-screenshot "29-loyalty-quests"
-
+screenshot "39-loyalty-quests"
 press_back
 
-# Challenges
-deep_link "account"
-wait_settle 1
-# Navigate to Challenges from account
-$ADB shell input swipe 540 1800 540 800 300 2>/dev/null || true
-wait_settle 1
-screenshot "30-challenges"
+deep_link "challenges"
+wait_settle
+screenshot "40-challenges"
 press_back
 
-# Leaderboard — no deep link, try from account
-deep_link "account"
-wait_settle 1
-screenshot "31-leaderboard-entry"
+deep_link "leaderboard"
+wait_settle
+screenshot "41-leaderboard"
 press_back
 
-# 17. Achievement Badges
+deep_link "achievements"
+wait_settle
+screenshot "42-achievements"
+press_back
+
+deep_link "points-history"
+wait_settle
+screenshot "43-points-history"
+press_back
+
+deep_link "avatar"
+wait_settle
+screenshot "44-avatar-equip"
+press_back
+
+# 18. Referral
 echo ""
-echo "── Achievements ──"
-# Accessed from Loyalty or Account sub-navigation
-screenshot "32-achievement-badges"
+echo "── Referral ──"
 
-# 18. Points History
-echo ""
-echo "── Points History ──"
-screenshot "33-points-history"
+deep_link "referral/TESTCODE123"
+wait_settle
+screenshot "45-referral-landing"
+press_back
 
 # 19. Rewards
 echo ""
 echo "── Rewards ──"
-screenshot "34-rewards"
 
-# 20. Referral
-echo ""
-echo "── Referral ──"
-deep_link "referral/TESTCODE123"
+deep_link "rewards"
 wait_settle
-screenshot "35-referral-landing"
+screenshot "46-rewards"
 press_back
 
-# 21. Privacy Policy
+# 20. Privacy Policy
 echo ""
 echo "── Privacy Policy ──"
 
-deep_link "account"
-wait_settle 1
-$ADB shell input swipe 540 1800 540 400 300 2>/dev/null || true
-wait_settle 1
-screenshot "36-privacy-policy-entry"
+deep_link "privacy"
+wait_settle
+screenshot "47-privacy-policy"
 
-# 22. Avatar Equip
+# 21. Cart with items
 echo ""
-echo "── Avatar ──"
-# Modal — accessed from loyalty/gamification
-screenshot "37-avatar-equip"
+echo "── Cart (with items) ──"
+
+deep_link "product/asheville-full-futon"
+wait_settle 2
+$ADB shell input tap 540 1900 2>/dev/null || true
+wait_settle 2
+deep_link "cart"
+wait_settle
+screenshot "48-cart-items"
 
 # --- Summary ---
 echo ""
