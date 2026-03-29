@@ -458,14 +458,17 @@ describe('ProductCard', () => {
       const productWithoutLifestyle: Product = { ...futon, lifestyleImageUri: undefined };
       const { getByTestId } = renderCard({ product: productWithoutLifestyle });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      // wixImageUrl optimizes the URL — verify it contains the original mediaId and enc_webp
+      expect(heroImage.props.source?.uri).toContain('enc_webp');
+      expect(heroImage.props.source?.uri).toContain('cc389e_b524b0ad680c4c65b91c2339633c5208');
     });
 
     it('falls back to images[0].uri when lifestyleImageUri is empty string', () => {
       const productWithEmpty: Product = { ...futon, lifestyleImageUri: '' };
       const { getByTestId } = renderCard({ product: productWithEmpty });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      expect(heroImage.props.source?.uri).toContain('enc_webp');
+      expect(heroImage.props.source?.uri).toContain('cc389e_b524b0ad680c4c65b91c2339633c5208');
     });
 
     it('top 3 futon products have lifestyleImageUri wired in mock data', () => {

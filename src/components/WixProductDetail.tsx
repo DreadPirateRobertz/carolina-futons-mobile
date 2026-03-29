@@ -27,6 +27,7 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import type { Product } from '@/data/products';
 import { InventoryBadge } from '@/components/InventoryBadge';
 import { useInventoryBadge } from '@/hooks/useInventoryBadge';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -130,7 +131,13 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
               >
                 {item.uri ? (
                   <Image
-                    source={{ uri: item.uri }}
+                    source={{
+                      uri:
+                        wixImageUrl(item.uri, {
+                          width: Math.round(SCREEN_WIDTH),
+                          height: GALLERY_HEIGHT,
+                        }) ?? item.uri,
+                    }}
                     style={styles.galleryImage}
                     contentFit="cover"
                     placeholder={{ blurhash: item.blurhash ?? DEFAULT_BLURHASH }}
@@ -329,7 +336,9 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
         }}
         renderImage={(image) => (
           <Image
-            source={{ uri: image.uri }}
+            source={{
+              uri: wixImageUrl(image.uri, { width: 1200, quality: 90 }) ?? image.uri,
+            }}
             style={{ width: '100%', height: '100%' }}
             contentFit="contain"
             transition={300}
