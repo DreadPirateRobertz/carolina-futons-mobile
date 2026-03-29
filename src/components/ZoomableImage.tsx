@@ -9,6 +9,7 @@ import React from 'react';
 import { StyleSheet, type ViewStyle } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export function ZoomableImage({ children, style, testID }: Props) {
+  const reduceMotion = useReducedMotion();
   const scale = useSharedValue(1);
   const savedScale = useSharedValue(1);
   const translateX = useSharedValue(0);
@@ -63,14 +65,14 @@ export function ZoomableImage({ children, style, testID }: Props) {
     .numberOfTaps(2)
     .onEnd(() => {
       if (scale.value > MIN_SCALE) {
-        scale.value = withSpring(MIN_SCALE, SPRING_CONFIG);
+        scale.value = reduceMotion ? MIN_SCALE : withSpring(MIN_SCALE, SPRING_CONFIG);
         savedScale.value = MIN_SCALE;
-        translateX.value = withSpring(0, SPRING_CONFIG);
-        translateY.value = withSpring(0, SPRING_CONFIG);
+        translateX.value = reduceMotion ? 0 : withSpring(0, SPRING_CONFIG);
+        translateY.value = reduceMotion ? 0 : withSpring(0, SPRING_CONFIG);
         savedTranslateX.value = 0;
         savedTranslateY.value = 0;
       } else {
-        scale.value = withSpring(2, SPRING_CONFIG);
+        scale.value = reduceMotion ? 2 : withSpring(2, SPRING_CONFIG);
         savedScale.value = 2;
       }
     });
@@ -90,6 +92,8 @@ export function ZoomableImage({ children, style, testID }: Props) {
       <Animated.View
         style={[styles.container, style, animatedStyle]}
         testID={testID}
+        accessibilityRole="image"
+        accessibilityLabel="Product image"
         accessibilityHint="Double-tap to zoom in or out. Pinch to zoom."
       >
         {children}

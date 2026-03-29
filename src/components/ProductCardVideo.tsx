@@ -22,6 +22,7 @@ export const ProductCardVideo = memo(function ProductCardVideo({ videoUri, testI
       style={styles.video}
       contentFit="cover"
       nativeControls={false}
+      importantForAccessibility="no-hide-descendants"
     />
   );
 });

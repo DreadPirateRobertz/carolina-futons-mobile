@@ -18,6 +18,7 @@ import Animated, {
 import * as Haptics from 'expo-haptics';
 import { type Product } from '@/data/products';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface Props {
   product: Product;
@@ -47,6 +48,7 @@ const SPRING_CONFIG = { damping: 10, stiffness: 400 };
 export function WishlistButton({ product, size = 'md', overlay = false, testID }: Props) {
   const { isInWishlist, toggle } = useWishlist();
   const active = isInWishlist(product.id);
+  const reduceMotion = useReducedMotion();
 
   const scale = useSharedValue(1);
 
@@ -60,8 +62,10 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
     const wasActive = isInWishlist(product.id);
     toggle(product);
 
-    // Spring bounce: quick overshoot then settle
-    scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
+    // Spring bounce: quick overshoot then settle (skipped when reduce motion is on)
+    if (!reduceMotion) {
+      scale.value = withSequence(withSpring(1.3, SPRING_CONFIG), withSpring(1, SPRING_CONFIG));
+    }
 
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -69,7 +73,7 @@ export function WishlistButton({ product, size = 'md', overlay = false, testID }
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     }
-  }, [toggle, product, isInWishlist, scale]);
+  }, [toggle, product, isInWishlist, scale, reduceMotion]);
 
   return (
     <Pressable

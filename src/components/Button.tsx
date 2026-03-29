@@ -88,6 +88,7 @@ export function Button({
       disabled={isDisabled}
       testID={testID}
       accessibilityRole="button"
+      accessibilityLabel={loading ? `${label}, loading` : label}
       accessibilityState={{ disabled: isDisabled }}
     >
       {loading ? (

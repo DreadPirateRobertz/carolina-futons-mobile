@@ -100,6 +100,8 @@ export function GameProfileCard({
           <TouchableOpacity
             testID="streak-chip"
             onPress={openStreakSheet}
+            accessibilityLabel={`${streakDays}-day streak, tap for details`}
+            accessibilityRole="button"
             style={[
               styles.chip,
               {
@@ -125,6 +127,8 @@ export function GameProfileCard({
           <TouchableOpacity
             testID="rank-chip"
             onPress={onNavigateToLeaderboard}
+            accessibilityLabel={`Leaderboard rank ${rank ?? 'unranked'}, tap to view`}
+            accessibilityRole="button"
             style={[
               styles.chip,
               {
@@ -150,6 +154,8 @@ export function GameProfileCard({
           <TouchableOpacity
             testID="points-chip"
             onPress={onNavigateToPointsHistory}
+            accessibilityLabel={`${totalPoints} points, ${TIER_LABELS[tier]} tier, tap to view history`}
+            accessibilityRole="button"
             style={[
               styles.chip,
               {
@@ -171,6 +177,7 @@ export function GameProfileCard({
         {/* Tier badge */}
         <View
           testID="tier-badge"
+          accessibilityLabel={`${TIER_LABELS[tier]} tier`}
           style={[
             styles.tierBadge,
             {
@@ -230,6 +237,8 @@ export function GameProfileCard({
               <TouchableOpacity
                 testID="streak-sheet-close"
                 onPress={closeStreakSheet}
+                accessibilityLabel="Close streak details"
+                accessibilityRole="button"
                 style={[
                   styles.closeBtn,
                   {
