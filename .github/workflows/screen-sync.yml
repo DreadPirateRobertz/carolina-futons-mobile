@@ -1,0 +1,76 @@
+name: Screen Reference Sync
+
+# Runs after epic merges land on main and updates screen-reference.html
+# with any newly-available screenshots.
+#
+# Two triggers:
+#   1. Push to main touching screen/component/screenshots files (epic merge side-effect)
+#   2. workflow_dispatch — manually supply a screenshots dir after a capture run
+#
+# The commit written back uses [skip ci] to prevent re-triggering this workflow.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/screens/**'
+      - 'src/components/**'
+      - 'docs/screenshots/**'
+  workflow_dispatch:
+    inputs:
+      screenshots_dir:
+        description: 'Screenshots dir to embed (e.g. docs/screenshots/s30-20260329). Leave blank to auto-detect latest.'
+        required: false
+        default: ''
+
+concurrency:
+  group: screen-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-html:
+    name: Embed screenshots → screen-reference.html
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run update-screen-html.py
+        env:
+          SCREENSHOTS_DIR: ${{ inputs.screenshots_dir }}
+        run: |
+          if [ -n "$SCREENSHOTS_DIR" ]; then
+            python3 scripts/update-screen-html.py --screenshots-dir "$SCREENSHOTS_DIR"
+          else
+            python3 scripts/update-screen-html.py
+          fi
+
+      - name: Check for HTML changes
+        id: diff
+        run: |
+          if git diff --quiet docs/screen-reference.html; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No screenshot changes to commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "screen-reference.html updated — will commit."
+          fi
+
+      - name: Commit and push updated HTML
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/screen-reference.html
+          git commit -m "auto(screen-ref): embed screenshots after epic merge [skip ci]"
+          git push

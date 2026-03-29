@@ -173,12 +173,14 @@ def main():
         if not docs_screenshots.exists():
             print("❌ No docs/screenshots directory found")
             sys.exit(1)
+        # Match any sNN-YYYYMMDD directory (e.g. s29-20260329, s30-20260329)
+        session_re = re.compile(r'^s\d+-\d{8}$')
         candidates = sorted([
             d for d in docs_screenshots.iterdir()
-            if d.is_dir() and d.name.startswith("s29-")
+            if d.is_dir() and session_re.match(d.name)
         ], reverse=True)
         if not candidates:
-            print("❌ No s29-* screenshot directories found")
+            print("❌ No sNN-YYYYMMDD screenshot directories found")
             sys.exit(1)
         screenshots_dir = candidates[0]
 
