@@ -8,12 +8,12 @@
  * No user-supplied memberId — no IDOR risk.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { useStreak } from '@/hooks/useStreak';
-import { emitStreakExtended } from '@/services/crossRigEventBus';
+import { emitStreakExtended, emitTierChanged } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
@@ -21,9 +21,17 @@ import { LoyaltyBadge } from '@/components/LoyaltyBadge';
 /** Module-level flag to prevent duplicate streak emissions across remounts. */
 let streakEmittedThisSession = false;
 
+/** Module-level flag to prevent duplicate tier-change emissions across remounts. */
+let tierEmittedThisSession = false;
+
 /** @internal Test-only reset for module-level emission state. */
 export function __resetStreakEmitState() {
   streakEmittedThisSession = false;
+}
+
+/** @internal Test-only reset for tier emit state. */
+export function __resetTierEmitState() {
+  tierEmittedThisSession = false;
 }
 
 export type LoyaltyInitialTab = 'streak' | 'quests' | 'spin';
@@ -44,6 +52,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { points, tier, loading, error, refreshPoints } = useLoyalty();
   const { streak, loading: streakLoading, wasExtendedToday } = useStreak();
+  const prevTierRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (streakLoading || !wasExtendedToday || streakEmittedThisSession) return;
@@ -57,6 +66,23 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       captureException(err instanceof Error ? err : new Error(String(err)));
     }
   }, [wasExtendedToday, streakLoading, streak, points]);
+
+  useEffect(() => {
+    if (loading) return;
+    const prevTier = prevTierRef.current;
+    if (prevTier !== null && prevTier !== tier && !tierEmittedThisSession) {
+      tierEmittedThisSession = true;
+      try {
+        const client = getWixClientSingleton();
+        emitTierChanged(client, { oldTier: prevTier, newTier: tier }).catch((err: unknown) =>
+          captureException(err instanceof Error ? err : new Error(String(err))),
+        );
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)));
+      }
+    }
+    prevTierRef.current = tier;
+  }, [tier, loading]);
 
   if (loading) {
     return (
