@@ -972,7 +972,7 @@ describe('CheckoutScreen', () => {
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
       await act(async () => {});
-      expect(utils.getByTestId('delivery-estimate').props.children).toContain('2–3 business days');
+      expect(utils.getByText(/2–3 business days/i)).toBeTruthy();
     });
 
     it('displays correct estimate text for national zip', async () => {
@@ -980,7 +980,7 @@ describe('CheckoutScreen', () => {
       await act(async () => {});
       fireEvent.changeText(utils.getByTestId('shipping-zip'), '90210');
       await act(async () => {});
-      expect(utils.getByTestId('delivery-estimate').props.children).toContain('5–7 business days');
+      expect(utils.getByText(/5–7 business days/i)).toBeTruthy();
     });
 
     it('does not show estimate when zip is empty', async () => {

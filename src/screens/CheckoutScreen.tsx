@@ -1532,18 +1532,11 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
         )}
 
         {/* Delivery tier badge (cm-ej2) */}
-        <View
-          style={[
-            styles.deliveryEstimateRow,
-            { marginHorizontal: spacing.lg, marginBottom: spacing.md },
-          ]}
+        <DeliveryTierBadge
+          zip={shippingAddress.zip}
+          dimensions={items[0]?.model?.dimensions}
           testID="delivery-estimate"
-        >
-          <DeliveryTierBadge
-            zip={shippingAddress.zip}
-            dimensions={items[0]?.model?.dimensions}
-          />
-        </View>
+        />
 
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
