@@ -24,7 +24,6 @@ jest.mock('@/services/crashReporting', () => ({
   captureException: jest.fn(),
 }));
 
-
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 const mockIsWixConfigured = isWixConfigured as jest.Mock;
 
@@ -129,7 +128,11 @@ describe('useSearchSuggestions', () => {
 
     it('sets isLoading=true while fetching', async () => {
       let resolve: (v: unknown) => void;
-      mockQueryProducts.mockReturnValue(new Promise((r) => { resolve = r; }));
+      mockQueryProducts.mockReturnValue(
+        new Promise((r) => {
+          resolve = r;
+        }),
+      );
 
       const { result } = renderHook(() => useSearchSuggestions('ash', FALLBACK));
 
@@ -201,13 +204,20 @@ describe('useSearchSuggestions', () => {
       let resolveSecond: (v: unknown) => void;
 
       mockQueryProducts
-        .mockReturnValueOnce(new Promise((r) => { resolveFirst = r; }))
-        .mockReturnValueOnce(new Promise((r) => { resolveSecond = r; }));
+        .mockReturnValueOnce(
+          new Promise((r) => {
+            resolveFirst = r;
+          }),
+        )
+        .mockReturnValueOnce(
+          new Promise((r) => {
+            resolveSecond = r;
+          }),
+        );
 
-      const { result, rerender } = renderHook(
-        ({ q }) => useSearchSuggestions(q, FALLBACK),
-        { initialProps: { q: 'ash' } },
-      );
+      const { result, rerender } = renderHook(({ q }) => useSearchSuggestions(q, FALLBACK), {
+        initialProps: { q: 'ash' },
+      });
 
       // Change query before first resolves
       rerender({ q: 'bri' });
