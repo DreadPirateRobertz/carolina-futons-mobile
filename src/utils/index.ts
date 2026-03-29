@@ -26,3 +26,5 @@ export {
   modelIdToProductId,
 } from '@/data/productId';
 export { parseWixImageUrl } from './parseWixImageUrl';
+export { wixOptimizedUrl } from './wixOptimizedUrl';
+export type { WixOptimizeOptions } from './wixOptimizedUrl';

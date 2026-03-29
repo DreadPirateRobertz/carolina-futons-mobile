@@ -16,7 +16,7 @@ import {
   DEFAULT_PRODUCT_BLURHASH,
 } from '@/data/products';
 import { hasARModel } from '@/data/models3d';
-import { formatPrice } from '@/utils';
+import { formatPrice, wixOptimizedUrl } from '@/utils';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_PADDING = 12;
@@ -73,7 +73,7 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
           accessibilityState={{ selected: isSelected }}
         >
           <Image
-            source={{ uri: item.images[0]?.uri }}
+            source={{ uri: wixOptimizedUrl(item.images[0]?.uri, { width: 200, height: 200 }) ?? undefined }}
             style={styles.tileImage}
             contentFit="cover"
             recyclingKey={item.id}

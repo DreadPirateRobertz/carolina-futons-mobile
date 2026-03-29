@@ -13,6 +13,7 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { StarRating } from './StarRating';
 import { Product, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
+import { wixOptimizedUrl } from '@/utils';
 
 interface RecommendationCarouselProps {
   title: string;
@@ -56,7 +57,7 @@ export function RecommendationCarousel({
       >
         {item.images[0] && (
           <Image
-            source={{ uri: item.images[0].uri }}
+            source={{ uri: wixOptimizedUrl(item.images[0].uri, { width: 300, height: 300 }) ?? undefined }}
             style={[
               styles.image,
               { borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md },

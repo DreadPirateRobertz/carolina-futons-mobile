@@ -23,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { useCollection } from '@/hooks/useCollections';
 import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
+import { wixOptimizedUrl } from '@/utils';
 import { useCart } from '@/hooks/useCart';
 import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { ProductCard } from '@/components/ProductCard';
@@ -144,7 +145,7 @@ export function CollectionDetailScreen() {
           <Image
             key={heroRetryKey}
             testID="hero-image"
-            source={{ uri: collection.heroImage.uri }}
+            source={{ uri: wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 400 }) ?? collection.heroImage.uri }}
             style={styles.heroImage}
             contentFit="cover"
             transition={300}

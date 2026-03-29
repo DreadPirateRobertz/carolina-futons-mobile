@@ -6,6 +6,7 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS, type Product } from '@/data/products';
 import { productId } from '@/data/productId';
+import { wixOptimizedUrl } from '@/utils';
 import * as Haptics from 'expo-haptics';
 
 jest.mock('expo-haptics', () => ({
@@ -458,14 +459,16 @@ describe('ProductCard', () => {
       const productWithoutLifestyle: Product = { ...futon, lifestyleImageUri: undefined };
       const { getByTestId } = renderCard({ product: productWithoutLifestyle });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      const expectedUri = wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
+      expect(heroImage.props.source?.uri).toBe(expectedUri);
     });
 
     it('falls back to images[0].uri when lifestyleImageUri is empty string', () => {
       const productWithEmpty: Product = { ...futon, lifestyleImageUri: '' };
       const { getByTestId } = renderCard({ product: productWithEmpty });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      expect(heroImage.props.source?.uri).toBe(futon.images[0].uri);
+      const expectedUri = wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
+      expect(heroImage.props.source?.uri).toBe(expectedUri);
     });
 
     it('top 3 futon products have lifestyleImageUri wired in mock data', () => {

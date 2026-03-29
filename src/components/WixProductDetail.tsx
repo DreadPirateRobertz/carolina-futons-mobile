@@ -20,7 +20,7 @@ import {
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { MountainSkyline } from '@/components/MountainSkyline';
-import { formatPrice } from '@/utils';
+import { formatPrice, wixOptimizedUrl } from '@/utils';
 import { WishlistButton } from '@/components/WishlistButton';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
@@ -134,7 +134,7 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
               >
                 {item.uri ? (
                   <Image
-                    source={{ uri: item.uri }}
+                    source={{ uri: wixOptimizedUrl(item.uri) ?? undefined }}
                     style={styles.galleryImage}
                     contentFit="cover"
                     placeholder={{ blurhash: item.blurhash ?? DEFAULT_BLURHASH }}
@@ -333,7 +333,7 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
         }}
         renderImage={(image) => (
           <Image
-            source={{ uri: image.uri }}
+            source={{ uri: wixOptimizedUrl(image.uri) ?? undefined }}
             style={{ width: '100%', height: '100%' }}
             contentFit="contain"
             transition={300}

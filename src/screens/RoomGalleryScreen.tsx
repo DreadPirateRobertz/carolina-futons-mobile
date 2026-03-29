@@ -15,6 +15,7 @@ import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
+import { wixOptimizedUrl } from '@/utils';
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
@@ -53,9 +54,11 @@ function RoomCard({
       accessibilityRole="button"
     >
       <Image
-        source={{ uri: item.imageUrl }}
+        source={{ uri: wixOptimizedUrl(item.imageUrl, { width: 400, height: 400 }) ?? item.imageUrl }}
         style={styles.image}
         contentFit="cover"
+        transition={200}
+        recyclingKey={item.roomId}
         cachePolicy="memory-disk"
         placeholder={{ blurhash: DEFAULT_ROOM_BLURHASH }}
         testID={`room-image-${item.roomId}`}

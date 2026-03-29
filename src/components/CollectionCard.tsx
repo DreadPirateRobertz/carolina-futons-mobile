@@ -13,6 +13,7 @@ import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import type { EditorialCollection } from '@/data/collections';
 import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
+import { wixOptimizedUrl } from '@/utils';
 
 type Variant = 'featured' | 'compact';
 
@@ -58,7 +59,7 @@ export const CollectionCard = memo(function CollectionCard({
         </View>
       ) : (
         <Image
-          source={{ uri: collection.heroImage.uri }}
+          source={{ uri: wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 300 }) ?? collection.heroImage.uri }}
           style={styles.image}
           contentFit="cover"
           transition={200}

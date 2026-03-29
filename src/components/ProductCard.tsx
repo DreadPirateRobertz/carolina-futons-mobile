@@ -20,7 +20,7 @@ import {
   type StockStatus,
 } from '@/data/products';
 import { productIdToModelId } from '@/data/productId';
-import { formatPrice } from '@/utils';
+import { formatPrice, wixOptimizedUrl } from '@/utils';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { useImageLoadTracking } from '@/hooks/useImageLoadTracking';
 import { WishlistButton } from './WishlistButton';
@@ -163,7 +163,7 @@ export const ProductCard = memo(function ProductCard({
         >
           <Image
             testID={`product-hero-image-${product.id}`}
-            source={{ uri: product.lifestyleImageUri || product.images[0]?.uri }}
+            source={{ uri: wixOptimizedUrl(product.lifestyleImageUri || product.images[0]?.uri, { width: 400, height: 400 }) ?? undefined }}
             style={styles.image}
             contentFit="cover"
             transition={200}
