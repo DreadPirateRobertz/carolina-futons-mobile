@@ -52,6 +52,24 @@ export function getDeliveryMode(zip: string, dimensions?: ItemDimensions): Deliv
  * Returns a human-readable delivery estimate string for the given ZIP code,
  * or null if the ZIP is missing or invalid.
  */
+/**
+ * Shipping tier for a given ZIP and optional product dimensions.
+ *
+ * - fastest  NC/SC ZIP (270–299), non-freight — 2–3 business days
+ * - standard All other valid ZIPs, non-freight — 3–7 business days
+ * - freight  Item width ≥ 54" — LTL freight, carrier scheduling required
+ * - null     Invalid or missing ZIP
+ */
+export type ShippingTier = 'fastest' | 'standard' | 'freight';
+
+export function getShippingTier(zip: string, dimensions?: ItemDimensions): ShippingTier | null {
+  const mode = getDeliveryMode(zip, dimensions);
+  if (mode === 'no-zip') return null;
+  if (mode === 'freight') return 'freight';
+  if (mode === 'local') return 'fastest';
+  return 'standard';
+}
+
 export function getDeliveryEstimate(zip: string): string | null {
   const trimmed = zip.trim();
   if (!ZIP_RE.test(trimmed)) return null;
