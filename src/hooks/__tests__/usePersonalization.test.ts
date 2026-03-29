@@ -7,7 +7,7 @@ import { renderHook, act } from '@testing-library/react-native';
 
 const mockCallFunction = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
-  useWixClient: () => ({ callFunction: mockCallFunction }),
+  useOptionalWixClient: () => ({ callFunction: mockCallFunction }),
 }));
 jest.mock('@/services/personalizationCache', () => ({
   getCachedSommelierResult: jest.fn().mockResolvedValue(null),
