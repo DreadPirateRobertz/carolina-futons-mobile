@@ -54,7 +54,9 @@ function RoomCard({
       accessibilityRole="button"
     >
       <Image
-        source={{ uri: wixOptimizedUrl(item.imageUrl, { width: 400, height: 400 }) ?? item.imageUrl }}
+        source={{
+          uri: wixOptimizedUrl(item.imageUrl, { width: 400, height: 400 }) ?? item.imageUrl,
+        }}
         style={styles.image}
         contentFit="cover"
         transition={200}

@@ -59,7 +59,11 @@ export const CollectionCard = memo(function CollectionCard({
         </View>
       ) : (
         <Image
-          source={{ uri: wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 300 }) ?? collection.heroImage.uri }}
+          source={{
+            uri:
+              wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 300 }) ??
+              collection.heroImage.uri,
+          }}
           style={styles.image}
           contentFit="cover"
           transition={200}

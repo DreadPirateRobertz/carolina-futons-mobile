@@ -163,7 +163,13 @@ export const ProductCard = memo(function ProductCard({
         >
           <Image
             testID={`product-hero-image-${product.id}`}
-            source={{ uri: wixOptimizedUrl(product.lifestyleImageUri || product.images[0]?.uri, { width: 400, height: 400 }) ?? undefined }}
+            source={{
+              uri:
+                wixOptimizedUrl(product.lifestyleImageUri || product.images[0]?.uri, {
+                  width: 400,
+                  height: 400,
+                }) ?? undefined,
+            }}
             style={styles.image}
             contentFit="cover"
             transition={200}

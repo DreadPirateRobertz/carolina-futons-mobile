@@ -73,7 +73,9 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
           accessibilityState={{ selected: isSelected }}
         >
           <Image
-            source={{ uri: wixOptimizedUrl(item.images[0]?.uri, { width: 200, height: 200 }) ?? undefined }}
+            source={{
+              uri: wixOptimizedUrl(item.images[0]?.uri, { width: 200, height: 200 }) ?? undefined,
+            }}
             style={styles.tileImage}
             contentFit="cover"
             recyclingKey={item.id}

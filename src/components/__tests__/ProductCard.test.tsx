@@ -17,7 +17,9 @@ jest.mock('expo-haptics', () => ({
 // Prevent expo-video workspace-pollution: stub preserves testID so existing
 // video-presence tests continue to pass.
 jest.mock('../ProductCardVideo', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
   return {
     ProductCardVideo: ({ testID }: { testID?: string }) => React.createElement(View, { testID }),
@@ -25,7 +27,9 @@ jest.mock('../ProductCardVideo', () => {
 });
 
 jest.mock('../BNPLModal', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
   return {
     BNPLModal: ({ visible, testID }: { visible: boolean; testID?: string }) =>
@@ -359,6 +363,7 @@ describe('ProductCard', () => {
       // Slot must render
       expect(getByTestId(`product-lifestyle-photo-${lifestyleProduct.id}`)).toBeTruthy();
       // At least one Image in the tree should have the lifestyleUri as its source
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { Image: ExpoImage } = require('expo-image');
       const images = UNSAFE_getAllByType(ExpoImage);
       const hasLifestyleSource = images.some(
@@ -459,7 +464,8 @@ describe('ProductCard', () => {
       const productWithoutLifestyle: Product = { ...futon, lifestyleImageUri: undefined };
       const { getByTestId } = renderCard({ product: productWithoutLifestyle });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      const expectedUri = wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
+      const expectedUri =
+        wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
       expect(heroImage.props.source?.uri).toBe(expectedUri);
     });
 
@@ -467,7 +473,8 @@ describe('ProductCard', () => {
       const productWithEmpty: Product = { ...futon, lifestyleImageUri: '' };
       const { getByTestId } = renderCard({ product: productWithEmpty });
       const heroImage = getByTestId(`product-hero-image-${futon.id}`);
-      const expectedUri = wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
+      const expectedUri =
+        wixOptimizedUrl(futon.images[0].uri, { width: 400, height: 400 }) ?? undefined;
       expect(heroImage.props.source?.uri).toBe(expectedUri);
     });
 

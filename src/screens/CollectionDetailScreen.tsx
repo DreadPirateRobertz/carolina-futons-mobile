@@ -36,6 +36,7 @@ import type { Product } from '@/data/products';
 const HERO_HEIGHT = 320;
 const PARALLAX_RATE = 0.5;
 const AnimatedFlatList = Animated.createAnimatedComponent(
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('react-native').FlatList,
 ) as unknown as typeof import('react-native').FlatList;
 
@@ -145,7 +146,11 @@ export function CollectionDetailScreen() {
           <Image
             key={heroRetryKey}
             testID="hero-image"
-            source={{ uri: wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 400 }) ?? collection.heroImage.uri }}
+            source={{
+              uri:
+                wixOptimizedUrl(collection.heroImage.uri, { width: 800, height: 400 }) ??
+                collection.heroImage.uri,
+            }}
             style={styles.heroImage}
             contentFit="cover"
             transition={300}

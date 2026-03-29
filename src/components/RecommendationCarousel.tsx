@@ -57,7 +57,9 @@ export function RecommendationCarousel({
       >
         {item.images[0] && (
           <Image
-            source={{ uri: wixOptimizedUrl(item.images[0].uri, { width: 300, height: 300 }) ?? undefined }}
+            source={{
+              uri: wixOptimizedUrl(item.images[0].uri, { width: 300, height: 300 }) ?? undefined,
+            }}
             style={[
               styles.image,
               { borderTopLeftRadius: borderRadius.md, borderTopRightRadius: borderRadius.md },
