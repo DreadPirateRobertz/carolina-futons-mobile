@@ -42,7 +42,7 @@ describe('computeLivingSky', () => {
 
   it('CF+ perk shifts golden hour 60 min earlier', () => {
     const regular = computeLivingSky(18.5 * 60, { isCFPlus: false });
-    const cfplus   = computeLivingSky(17.5 * 60, { isCFPlus: false });
+    const cfplus = computeLivingSky(17.5 * 60, { isCFPlus: false });
     const cfplusEarly = computeLivingSky(18.5 * 60, { isCFPlus: true });
     // CF+ at 18:30 should match non-CF+ at 17:30
     expect(cfplusEarly.birdOpacity).toBeCloseTo(cfplus.birdOpacity, 2);

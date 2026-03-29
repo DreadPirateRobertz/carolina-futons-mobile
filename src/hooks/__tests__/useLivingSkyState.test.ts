@@ -18,7 +18,9 @@ describe('useLivingSkyState', () => {
     const { result } = renderHook(() => useLivingSkyState());
     const initial = result.current.weatherLabel;
     // Advance 60 s — should re-compute (even if the label is identical it re-runs)
-    act(() => { jest.advanceTimersByTime(60_000); });
+    act(() => {
+      jest.advanceTimersByTime(60_000);
+    });
     // Hook should not throw and state should be a valid object
     expect(result.current.skyColors).toHaveLength(4);
     expect(result.current.weatherLabel).toBeTruthy();
@@ -34,7 +36,7 @@ describe('useLivingSkyState', () => {
 
   it('accepts isCFPlus option', () => {
     const regular = renderHook(() => useLivingSkyState({ isCFPlus: false }));
-    const premium  = renderHook(() => useLivingSkyState({ isCFPlus: true }));
+    const premium = renderHook(() => useLivingSkyState({ isCFPlus: true }));
     // Both should return valid state objects
     expect(regular.result.current.skyColors).toHaveLength(4);
     expect(premium.result.current.skyColors).toHaveLength(4);
