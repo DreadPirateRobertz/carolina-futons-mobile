@@ -81,7 +81,7 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberId]);
 
   return {
