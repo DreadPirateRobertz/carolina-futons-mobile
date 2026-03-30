@@ -186,4 +186,68 @@ describe('MiniCartDrawer', () => {
       jest.restoreAllMocks();
     });
   });
+
+  describe('Image Optimization (cm-c27)', () => {
+    const CART_WITH_WIX_IMAGES = {
+      itemCount: 1,
+      subtotal: 349,
+      items: [
+        {
+          id: 'wix-item-1',
+          model: { name: 'Asheville' },
+          fabric: { name: 'Natural Linen', color: '#D4C5A9' },
+          fabricName: 'Natural Linen',
+          quantity: 1,
+          unitPrice: 349,
+          price: 349,
+          imageUrl:
+            'https://static.wixstatic.com/media/cc389e_abc123~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+        },
+      ],
+      removeItem: jest.fn(),
+      updateQuantity: jest.fn(),
+    };
+
+    it('optimizes Wix image URIs with WebP encoding for cart thumbnails', () => {
+      mockUseCart.mockReturnValue(CART_WITH_WIX_IMAGES);
+      const { getByTestId } = renderDrawer();
+      const img = getByTestId('cartItemImage-wix-item-1');
+      const uri = img.props.source?.uri;
+      expect(uri).toContain('enc_webp');
+    });
+
+    it('requests right-sized dimensions for 56px thumbnails (not original 2000px)', () => {
+      mockUseCart.mockReturnValue(CART_WITH_WIX_IMAGES);
+      const { getByTestId } = renderDrawer();
+      const img = getByTestId('cartItemImage-wix-item-1');
+      const uri = img.props.source?.uri;
+      expect(uri).not.toContain('w_2000');
+      expect(uri).toMatch(/w_\d+/);
+    });
+
+    it('passes through non-Wix imageUrls unchanged', () => {
+      mockUseCart.mockReturnValue(CART_WITH_ITEMS);
+      const { getByTestId } = renderDrawer();
+      const img = getByTestId('cartItemImage-asheville:natural-linen');
+      expect(img.props.source?.uri).toBe('https://cdn.wix.com/asheville-150.jpg');
+    });
+
+    it('renders color swatch when imageUrl is null after wixImageUrl', () => {
+      const cartNoImage = {
+        ...CART_WITH_ITEMS,
+        items: [
+          {
+            ...CART_WITH_ITEMS.items[1], // item without imageUrl
+          },
+        ],
+        itemCount: 1,
+        subtotal: 449,
+      };
+      mockUseCart.mockReturnValue(cartNoImage);
+      const { getByTestId } = renderDrawer();
+      // Should render color swatch (View) instead of Image
+      const img = getByTestId('cartItemImage-blue-ridge:natural-linen');
+      expect(img).toBeTruthy();
+    });
+  });
 });

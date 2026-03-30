@@ -75,4 +75,52 @@ describe('ParallaxHeader', () => {
     );
     expect(getByTestId('custom-parallax')).toBeTruthy();
   });
+
+  describe('Image Optimization (cm-c27)', () => {
+    const WIX_URI =
+      'https://static.wixstatic.com/media/cc389e_abc123~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg';
+
+    it('optimizes Wix image URIs with WebP encoding', () => {
+      const { getByTestId } = render(
+        <ParallaxHeader
+          imageUri={WIX_URI}
+          height={400}
+          scrollY={scrollY}
+          testID="parallax-opt"
+        />,
+      );
+      const img = getByTestId('parallax-hero-image');
+      const uri = img.props.source?.uri;
+      expect(uri).toContain('enc_webp');
+    });
+
+    it('requests right-sized width (not original 2000px)', () => {
+      const { getByTestId } = render(
+        <ParallaxHeader
+          imageUri={WIX_URI}
+          height={400}
+          scrollY={scrollY}
+          testID="parallax-size"
+        />,
+      );
+      const img = getByTestId('parallax-hero-image');
+      const uri = img.props.source?.uri;
+      expect(uri).not.toContain('w_2000');
+      expect(uri).toMatch(/w_\d+/);
+    });
+
+    it('passes through non-Wix URLs unchanged', () => {
+      const nonWixUri = 'https://example.com/photo.jpg';
+      const { getByTestId } = render(
+        <ParallaxHeader
+          imageUri={nonWixUri}
+          height={400}
+          scrollY={scrollY}
+          testID="parallax-non-wix"
+        />,
+      );
+      const img = getByTestId('parallax-hero-image');
+      expect(img.props.source?.uri).toBe(nonWixUri);
+    });
+  });
 });

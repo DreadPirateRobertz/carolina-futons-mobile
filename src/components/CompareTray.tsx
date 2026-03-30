@@ -26,6 +26,7 @@ import { useTheme } from '@/theme';
 import { useCompareContext } from '@/contexts/CompareContext';
 import type { Product } from '@/data/products';
 import { formatPrice } from '@/utils';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 interface Props {
   /** Called when the "Compare" CTA button is pressed. */
@@ -96,7 +97,13 @@ function CompareMiniCard({
         testID={`compare-tray-card-${product.id}`}
       >
         <Image
-          source={{ uri: product.images[0]?.uri }}
+          source={{
+            uri:
+              wixImageUrl(product.images[0]?.uri, {
+                width: MINI_CARD_WIDTH * 2,
+                height: MINI_IMAGE_HEIGHT * 2,
+              }) ?? product.images[0]?.uri,
+          }}
           style={styles.miniImage}
           contentFit="cover"
           testID={`compare-tray-image-${product.id}`}

@@ -17,6 +17,7 @@ import {
 } from '@/data/products';
 import { hasARModel } from '@/data/models3d';
 import { formatPrice } from '@/utils';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_PADDING = 12;
@@ -73,12 +74,19 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
           accessibilityState={{ selected: isSelected }}
         >
           <Image
-            source={{ uri: item.images[0]?.uri }}
+            source={{
+              uri:
+                wixImageUrl(item.images[0]?.uri, {
+                  width: Math.round(TILE_WIDTH * 2),
+                  height: Math.round(TILE_WIDTH * 1.5),
+                }) ?? item.images[0]?.uri,
+            }}
             style={styles.tileImage}
             contentFit="cover"
             recyclingKey={item.id}
             cachePolicy="memory-disk"
             placeholder={{ blurhash: item.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
+            testID={`ar-picker-image-${item.id}`}
           />
           {item.badge && (
             <View style={styles.badge}>
