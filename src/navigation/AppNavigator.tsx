@@ -184,6 +184,16 @@ const NotificationsScreen = lazy(() =>
     default: withScreenErrorBoundary(m.NotificationsScreen, 'Notifications'),
   })),
 );
+const VisualSearchScreen = lazy(() =>
+  import('@/screens/VisualSearchScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.VisualSearchScreen, 'VisualSearch'),
+  })),
+);
+const VisualSearchResultsScreen = lazy(() =>
+  import('@/screens/VisualSearchResultsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.VisualSearchResultsScreen, 'VisualSearchResults'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -235,6 +245,8 @@ export type RootStackParamList = {
   AchievementBadges: undefined;
   Notifications: undefined;
   ReferralLanding: { code: string };
+  VisualSearch: undefined;
+  VisualSearchResults: { imageUri: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -515,6 +527,16 @@ export function AppNavigator() {
             options={fadeTransition}
           />
           <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
+          <Stack.Screen
+            name="VisualSearch"
+            component={VisualSearchScreen}
+            options={{ presentation: 'fullScreenModal', animation: 'fade' }}
+          />
+          <Stack.Screen
+            name="VisualSearchResults"
+            component={VisualSearchResultsScreen}
+            options={fadeTransition}
+          />
         </Stack.Navigator>
       </Suspense>
     </BadgeToastProvider>
