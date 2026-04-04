@@ -99,6 +99,7 @@ import { useProductResources } from '@/hooks/useProductResources';
 import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PointsToast } from '@/components/PointsToast';
+import { PriceAlertButton } from '@/components/PriceAlertButton';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -831,6 +832,13 @@ export function ProductDetailScreen({
               />
             </TouchableOpacity>
           )}
+          {/* Price-drop alert subscription — cm-pda */}
+          <PriceAlertButton
+            productId={catalogProduct?.id ?? model.id}
+            productSlug={catalogProduct?.slug ?? String(model.id)}
+            currentPrice={totalPrice}
+            testID="price-alert-button"
+          />
           <ShippingEstimateBadge
             icon={shippingEstimate.icon}
             label={shippingEstimate.label}
