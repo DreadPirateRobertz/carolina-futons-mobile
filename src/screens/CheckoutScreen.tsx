@@ -49,7 +49,7 @@ import { initiateAffirmCheckout } from '@/services/affirmService';
 import { useOptionalWixClient } from '@/services/wix';
 import { useKlarnaCheckout } from '@/hooks/useKlarnaCheckout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDeliveryEstimate } from '@/utils/deliveryEstimate';
+import { DeliveryTierBadge } from '@/components/DeliveryTierBadge';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { CheckoutLoyaltyBanner } from '@/components/CheckoutLoyaltyBanner';
 import {
@@ -306,6 +306,10 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
       : Math.max(0, totals.total - promoDiscount.amount)
     : totals.total;
 
+  // Immediate double-submit guard — set synchronously on first tap to prevent
+  // the ~2s window before isProcessing (derived from state) becomes true.
+  const placingOrderRef = useRef(false);
+
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
   const [checkoutTracked, setCheckoutTracked] = useState(false);
   const [usingSavedAddress, setUsingSavedAddress] = useState(false);
@@ -505,59 +509,64 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
   }, [shippingAddress, billingAddress, billingSameAsShipping, selectedMethod, cardComplete]);
 
   const handlePlaceOrder = useCallback(async () => {
-    if (!selectedMethod || isProcessing) return;
+    if (!selectedMethod || isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
 
-    setSubmitAttempted(true);
+    try {
+      setSubmitAttempted(true);
 
-    if (!validateForm()) return;
+      if (!validateForm()) return;
 
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    if (selectedMethod === 'klarna') {
-      // Capture current values into refs before handing off to the redirect flow.
-      // The success useEffect will read these after the app returns from Klarna,
-      // at which point the closure values in handlePlaceOrder may be stale.
-      klarnaShippingRef.current = shippingAddress;
-      klarnaTotalRef.current = totals.total;
-      klarnaItemCountRef.current = items.length;
-      klarnaFiredRef.current = false;
-      // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
-      await klarnaCheckout.startCheckout(
-        items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
-        { ...totals, discount: 0 },
-      );
-      return;
-    }
-
-    setPollerError(null);
-    let resolvedOrder: import('@/services/payment').OrderConfirmation | null = null;
-
-    const pollResult = await pollPaymentConfirmation(
-      async () => {
-        resolvedOrder = await processPayment(selectedMethod);
-        if (resolvedOrder) return true;
-        // processPayment returns null on both hard failure and cancellation;
-        // treat null as false (failed) so the poller stops immediately.
-        return false;
-      },
-      { timeoutMs: 30000, intervalMs: 2000 },
-    );
-
-    if (pollResult === 'success' && resolvedOrder) {
-      const order = resolvedOrder as import('@/services/payment').OrderConfirmation;
-      events.purchase(order.orderId, totals.total, items.length);
-      addressBook.saveFromCheckout(shippingAddress);
-      cancelCartAbandonmentForOrder();
       if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
-      onOrderComplete?.(order);
-    } else if (pollResult === 'timeout') {
-      setPollerError('Payment is taking longer than expected. Check your email.');
+
+      if (selectedMethod === 'klarna') {
+        // Capture current values into refs before handing off to the redirect flow.
+        // The success useEffect will read these after the app returns from Klarna,
+        // at which point the closure values in handlePlaceOrder may be stale.
+        klarnaShippingRef.current = shippingAddress;
+        klarnaTotalRef.current = adjustedTotal;
+        klarnaItemCountRef.current = items.length;
+        klarnaFiredRef.current = false;
+        // Klarna uses a redirect flow — result arrives via deep link (see useEffect above)
+        await klarnaCheckout.startCheckout(
+          items.map((i) => ({ id: i.id, quantity: i.quantity, price: i.unitPrice })),
+          { ...totals, total: adjustedTotal, discount: 0 },
+        );
+        return;
+      }
+
+      setPollerError(null);
+      let resolvedOrder: import('@/services/payment').OrderConfirmation | null = null;
+
+      const pollResult = await pollPaymentConfirmation(
+        async () => {
+          resolvedOrder = await processPayment(selectedMethod, adjustedTotal);
+          if (resolvedOrder) return true;
+          // processPayment returns null on both hard failure and cancellation;
+          // treat null as false (failed) so the poller stops immediately.
+          return false;
+        },
+        { timeoutMs: 30000, intervalMs: 2000 },
+      );
+
+      if (pollResult === 'success' && resolvedOrder) {
+        const order = resolvedOrder as import('@/services/payment').OrderConfirmation;
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        addressBook.saveFromCheckout(shippingAddress);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      } else if (pollResult === 'timeout') {
+        setPollerError('Payment is taking longer than expected. Check your email.');
+      }
+      // 'failed': usePayment hook already sets its own error state via setState
+    } finally {
+      placingOrderRef.current = false;
     }
-    // 'failed': usePayment hook already sets its own error state via setState
   }, [
     selectedMethod,
     isProcessing,
@@ -566,80 +575,99 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     klarnaCheckout,
     onOrderComplete,
     totals,
+    adjustedTotal,
     items,
     addressBook,
     shippingAddress,
   ]);
 
   const handleApplePay = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    setSelectedMethod('apple-pay');
-    const order = await processPayment('apple-pay');
-
-    if (order) {
-      events.purchase(order.orderId, totals.total, items.length);
-      cancelCartAbandonmentForOrder();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      onOrderComplete?.(order);
-    }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
-
-  const handleGooglePay = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
-
-    setSelectedMethod('google-pay');
-    const order = await processPayment('google-pay');
-
-    if (order) {
-      events.purchase(order.orderId, totals.total, items.length);
-      cancelCartAbandonmentForOrder();
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      onOrderComplete?.(order);
-    }
-  }, [isProcessing, validateForm, processPayment, onOrderComplete, totals.total, items.length]);
-
-  const handleAffirmCheckout = useCallback(async () => {
-    if (isProcessing) return;
-
-    setSubmitAttempted(true);
-    if (!validateForm()) return;
-
-    if (!affirmEligible) return;
-
-    setAffirmError(null);
-
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
 
     try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
+      setSelectedMethod('apple-pay');
+      const order = await processPayment('apple-pay', adjustedTotal);
+
+      if (order) {
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      }
+    } finally {
+      placingOrderRef.current = false;
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, adjustedTotal, items.length]);
+
+  const handleGooglePay = useCallback(async () => {
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
+
+    try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
+      setSelectedMethod('google-pay');
+      const order = await processPayment('google-pay', adjustedTotal);
+
+      if (order) {
+        events.purchase(order.orderId, adjustedTotal, items.length);
+        cancelCartAbandonmentForOrder();
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+        onOrderComplete?.(order);
+      }
+    } finally {
+      placingOrderRef.current = false;
+    }
+  }, [isProcessing, validateForm, processPayment, onOrderComplete, adjustedTotal, items.length]);
+
+  const handleAffirmCheckout = useCallback(async () => {
+    if (isProcessing || placingOrderRef.current) return;
+    placingOrderRef.current = true;
+
+    try {
+      setSubmitAttempted(true);
+      if (!validateForm()) return;
+
+      if (!affirmEligible) return;
+
+      setAffirmError(null);
+
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+
       const orderId = `cf-ord-${Date.now()}`;
-      const { checkoutUrl } = await initiateAffirmCheckout(wixClient, totals.total, orderId, items);
+      const { checkoutUrl } = await initiateAffirmCheckout(
+        wixClient,
+        adjustedTotal,
+        orderId,
+        items,
+      );
       await Linking.openURL(checkoutUrl);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to open Affirm checkout';
       setAffirmError(message);
+    } finally {
+      placingOrderRef.current = false;
     }
-  }, [isProcessing, affirmEligible, validateForm, wixClient, totals.total, items]);
+  }, [isProcessing, affirmEligible, validateForm, wixClient, adjustedTotal, items]);
 
   const isBNPL = selectedMethod === 'affirm' || selectedMethod === 'klarna';
 
@@ -1669,28 +1697,9 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
           </View>
         )}
 
-        {/* Delivery window estimate (cm-mk8) */}
-        {(() => {
-          const estimate = getDeliveryEstimate(shippingAddress.zip);
-          return estimate ? (
-            <View
-              style={[
-                styles.deliveryEstimateRow,
-                { marginHorizontal: spacing.lg, marginBottom: spacing.md },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.deliveryEstimateText,
-                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
-                ]}
-                testID="delivery-estimate"
-              >
-                {`Ships in ${estimate}`}
-              </Text>
-            </View>
-          ) : null;
-        })()}
+        {/* Delivery tier badge (cm-ej2) — zip-based estimate only;
+            freight classification is handled by the shipping options section */}
+        <DeliveryTierBadge zip={shippingAddress.zip} testID="delivery-estimate" />
 
         {/* Place Order */}
         <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>

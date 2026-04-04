@@ -2,7 +2,8 @@
  * Tests for TierCelebrationModal — Phase 5
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 import { TierCelebrationModal } from '../TierCelebrationModal';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { LoyaltyTier } from '@/hooks/useLoyalty';
@@ -85,6 +86,20 @@ describe('TierCelebrationModal', () => {
       const { getByTestId } = renderModal('silver');
       const modal = getByTestId('tier-celebration-modal');
       expect(modal.props.accessibilityViewIsModal).toBe(true);
+    });
+
+    it('renders without crash when reduced motion is enabled', () => {
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+      expect(() => renderModal('gold')).not.toThrow();
+      jest.restoreAllMocks();
+    });
+
+    it('confetti is hidden when reduced motion is enabled', async () => {
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+      const { queryByTestId } = renderModal('gold');
+      // Wait for the async isReduceMotionEnabled to resolve and state to update
+      await waitFor(() => expect(queryByTestId('tier-celebration-confetti')).toBeNull());
+      jest.restoreAllMocks();
     });
   });
 });

@@ -11,6 +11,14 @@ const SIZE_OPTIONS: { value: ProductSize; label: string }[] = [
   { value: 'queen', label: 'Queen' },
 ];
 
+const COLOR_FAMILY_OPTIONS: { value: string; label: string }[] = [
+  { value: 'neutral', label: 'Neutral' },
+  { value: 'warm', label: 'Warm' },
+  { value: 'cool', label: 'Cool' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'light', label: 'Light' },
+];
+
 interface Props {
   visible: boolean;
   filters: ProductFilters;
@@ -58,12 +66,22 @@ export function FilterModal({
     }));
   }, []);
 
+  const toggleColorFamily = useCallback((family: string) => {
+    Haptics.selectionAsync();
+    setDraft((prev) => ({
+      ...prev,
+      colorFamilies: prev.colorFamilies.includes(family)
+        ? prev.colorFamilies.filter((c) => c !== family)
+        : [...prev.colorFamilies, family],
+    }));
+  }, []);
+
   const setPriceRange = useCallback((low: number, high: number) => {
     setDraft((prev) => ({ ...prev, priceRange: [low, high] }));
   }, []);
 
   const clearAll = useCallback(() => {
-    setDraft({ sizes: [], fabrics: [], priceRange: null });
+    setDraft({ sizes: [], fabrics: [], colorFamilies: [], priceRange: null });
   }, []);
 
   const handleApply = useCallback(() => {
@@ -180,6 +198,42 @@ export function FilterModal({
                         ]}
                       >
                         {fabric}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Color Section */}
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Color</Text>
+              <View style={styles.chipRow}>
+                {COLOR_FAMILY_OPTIONS.map((opt) => {
+                  const selected = draft.colorFamilies.includes(opt.value);
+                  return (
+                    <TouchableOpacity
+                      key={opt.value}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: selected ? colors.espresso : colors.sandLight,
+                          borderRadius: borderRadius.pill,
+                        },
+                      ]}
+                      onPress={() => toggleColorFamily(opt.value)}
+                      testID={`filter-color-${opt.value}`}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      accessibilityLabel={`Color ${opt.label}`}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          { color: selected ? colors.white : colors.espresso },
+                        ]}
+                      >
+                        {opt.label}
                       </Text>
                     </TouchableOpacity>
                   );

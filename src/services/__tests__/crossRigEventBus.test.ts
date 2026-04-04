@@ -15,6 +15,8 @@ import {
   emitStreakExtended,
   emitChallengeStarted,
   emitRedemptionInitiated,
+  emitBadgeEarned,
+  emitTierChanged,
   emitCartAbandoned,
   replayCrossRigQueue,
 } from '../crossRigEventBus';
@@ -574,6 +576,48 @@ describe('401 auth error handling', () => {
     const body1 = callFunction.mock.calls[0][2] as Record<string, unknown>;
     const body2 = callFunction.mock.calls[1][2] as Record<string, unknown>;
     expect(body1.eventId).toBe(body2.eventId);
+  });
+});
+
+// ── emitBadgeEarned ───────────────────────────────────────────────────────
+
+describe('emitBadgeEarned', () => {
+  it('emitBadgeEarned sends badge_earned event', async () => {
+    const client = mockClient();
+    await emitBadgeEarned(client, { badgeId: 'badge-1', badgeName: 'First Purchase' });
+    expect(client.callFunction).toHaveBeenCalledWith(
+      'crossRigEvent',
+      'POST',
+      expect.objectContaining({
+        event: 'badge_earned',
+        badgeId: 'badge-1',
+        badgeName: 'First Purchase',
+      }),
+    );
+  });
+
+  it('emitBadgeEarned does not throw when client is null', async () => {
+    await expect(emitBadgeEarned(null, { badgeId: 'b', badgeName: 'Test' })).resolves.not.toThrow();
+  });
+});
+
+// ── emitTierChanged ───────────────────────────────────────────────────────
+
+describe('emitTierChanged', () => {
+  it('emitTierChanged sends tier_changed event', async () => {
+    const client = mockClient();
+    await emitTierChanged(client, { oldTier: 'bronze', newTier: 'silver' });
+    expect(client.callFunction).toHaveBeenCalledWith(
+      'crossRigEvent',
+      'POST',
+      expect.objectContaining({ event: 'tier_changed', oldTier: 'bronze', newTier: 'silver' }),
+    );
+  });
+
+  it('emitTierChanged does not throw when client is null', async () => {
+    await expect(
+      emitTierChanged(null, { oldTier: 'bronze', newTier: 'silver' }),
+    ).resolves.not.toThrow();
   });
 });
 

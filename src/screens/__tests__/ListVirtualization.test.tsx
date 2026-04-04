@@ -98,8 +98,8 @@ async function renderShop() {
   return result;
 }
 
-function renderCategory() {
-  return render(
+async function renderCategory() {
+  const result = render(
     <ThemeProvider>
       <WishlistProvider>
         <CompareProvider>
@@ -108,6 +108,9 @@ function renderCategory() {
       </WishlistProvider>
     </ThemeProvider>,
   );
+  // Flush async effects: useDataCache AsyncStorage + fetchProducts chain
+  await act(async () => {});
+  return result;
 }
 
 function renderCollections() {
@@ -192,35 +195,35 @@ describe('List Virtualization Audit', () => {
   });
 
   describe('CategoryScreen FlatList', () => {
-    it('has windowSize tuned for performance', () => {
-      const { getByTestId } = renderCategory();
+    it('has windowSize tuned for performance', async () => {
+      const { getByTestId } = await renderCategory();
       const flatList = getByTestId('category-product-list');
       expect(flatList.props.windowSize).toBeLessThanOrEqual(7);
       expect(flatList.props.windowSize).toBeGreaterThanOrEqual(3);
     });
 
-    it('has maxToRenderPerBatch set', () => {
-      const { getByTestId } = renderCategory();
+    it('has maxToRenderPerBatch set', async () => {
+      const { getByTestId } = await renderCategory();
       const flatList = getByTestId('category-product-list');
       expect(flatList.props.maxToRenderPerBatch).toBeGreaterThanOrEqual(4);
       expect(flatList.props.maxToRenderPerBatch).toBeLessThanOrEqual(10);
     });
 
-    it('has removeClippedSubviews enabled', () => {
-      const { getByTestId } = renderCategory();
+    it('has removeClippedSubviews enabled', async () => {
+      const { getByTestId } = await renderCategory();
       const flatList = getByTestId('category-product-list');
       expect(flatList.props.removeClippedSubviews).toBe(true);
     });
 
-    it('has getItemLayout for fixed-height product rows', () => {
-      const { getByTestId } = renderCategory();
+    it('has getItemLayout for fixed-height product rows', async () => {
+      const { getByTestId } = await renderCategory();
       const flatList = getByTestId('category-product-list');
       expect(flatList.props.getItemLayout).toBeDefined();
       expect(typeof flatList.props.getItemLayout).toBe('function');
     });
 
-    it('has scroll performance tracking handlers', () => {
-      const { getByTestId } = renderCategory();
+    it('has scroll performance tracking handlers', async () => {
+      const { getByTestId } = await renderCategory();
       const flatList = getByTestId('category-product-list');
       expect(flatList.props.onScrollBeginDrag).toBeDefined();
       expect(flatList.props.onMomentumScrollEnd).toBeDefined();

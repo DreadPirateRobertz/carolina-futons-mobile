@@ -136,4 +136,27 @@ describe('RewardsScreen', () => {
     await new Promise((r) => setTimeout(r, 10));
     expect(mockCaptureException).toHaveBeenCalled();
   });
+
+  describe('accessibility', () => {
+    it('redeem button has accessibilityLabel', () => {
+      mockUseLoyalty.mockReturnValue(DEFAULT_LOYALTY);
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('rewards-redeem-button');
+      expect(btn.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('retry button has accessibilityLabel', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: 'Network error' });
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('rewards-retry');
+      expect(btn.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('redeem button accessibilityLabel includes points count', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 500 });
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('rewards-redeem-button');
+      expect(btn.props.accessibilityLabel).toMatch(/500/);
+    });
+  });
 });

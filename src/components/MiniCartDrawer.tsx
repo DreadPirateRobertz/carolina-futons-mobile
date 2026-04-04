@@ -16,10 +16,17 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, { SlideInDown, SlideOutDown, runOnJS } from 'react-native-reanimated';
+import Animated, {
+  SlideInDown,
+  SlideOutDown,
+  FadeIn,
+  FadeOut,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { formatPrice } from '@/utils';
 
 const SWIPE_DISMISS_TRANSLATION = 100;
@@ -203,6 +210,7 @@ const itemStyles = StyleSheet.create({
 export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const { itemCount, subtotal, items, removeItem, updateQuantity } = useCart();
+  const reduceMotion = useReducedMotion();
 
   const handleCheckout = useCallback(() => {
     onClose();
@@ -240,8 +248,8 @@ export function MiniCartDrawer({ visible, onClose, onCheckout, testID }: Props) 
       {/* Drawer panel — wrapped with swipe-down gesture */}
       <GestureDetector gesture={swipeGesture}>
         <Animated.View
-          entering={SlideInDown.springify().damping(20)}
-          exiting={SlideOutDown.duration(220)}
+          entering={reduceMotion ? FadeIn.duration(150) : SlideInDown.springify().damping(20)}
+          exiting={reduceMotion ? FadeOut.duration(150) : SlideOutDown.duration(220)}
           style={[
             styles.drawer,
             {

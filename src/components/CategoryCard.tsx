@@ -70,6 +70,7 @@ export const CategoryCard = memo(function CategoryCard({
           onError={handleImageError}
           contentFit="cover"
           transition={200}
+          recyclingKey={category.id}
           cachePolicy="memory-disk"
           placeholder={{ blurhash: DEFAULT_PRODUCT_BLURHASH }}
         />

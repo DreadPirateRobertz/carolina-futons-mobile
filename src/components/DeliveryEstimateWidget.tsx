@@ -10,15 +10,19 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, ActivityIndicator, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 import { useDeliveryEstimate } from '@/hooks/useDeliveryEstimate';
+import { DeliveryTierBadge } from './DeliveryTierBadge';
+import type { ItemDimensions } from '@/utils/deliveryEstimate';
 
 interface Props {
   /** Wix product IDs to estimate delivery for */
   productIds: string[];
+  /** Optional item dimensions for freight tier detection */
+  dimensions?: ItemDimensions;
   testID?: string;
 }
 
-export function DeliveryEstimateWidget({ productIds, testID }: Props) {
-  const { colors, spacing, typography, borderRadius } = useTheme();
+export function DeliveryEstimateWidget({ productIds, dimensions, testID }: Props) {
+  const { colors, typography, borderRadius } = useTheme();
   const [zip, setZip] = useState('');
 
   const { estimate, isLoading, error } = useDeliveryEstimate(zip, productIds);
@@ -66,28 +70,31 @@ export function DeliveryEstimateWidget({ productIds, testID }: Props) {
       ) : null}
 
       {!isLoading && estimate && zip.length > 0 ? (
-        <View style={styles.resultRow} testID="delivery-estimate-result">
-          <Text style={[styles.truckIcon]}>🚚</Text>
-          <View style={styles.resultText}>
-            <Text
-              style={[
-                styles.estimateText,
-                { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
-              ]}
-            >
-              {estimate.displayText}
-            </Text>
-            {estimate.service ? (
+        <View testID="delivery-estimate-result">
+          <View style={styles.resultRow}>
+            <Text style={[styles.truckIcon]}>🚚</Text>
+            <View style={styles.resultText}>
               <Text
                 style={[
-                  styles.serviceText,
-                  { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                  styles.estimateText,
+                  { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
                 ]}
               >
-                {estimate.service}
+                {estimate.displayText}
               </Text>
-            ) : null}
+              {estimate.service ? (
+                <Text
+                  style={[
+                    styles.serviceText,
+                    { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+                  ]}
+                >
+                  {estimate.service}
+                </Text>
+              ) : null}
+            </View>
           </View>
+          <DeliveryTierBadge zip={zip} dimensions={dimensions} />
         </View>
       ) : null}
 

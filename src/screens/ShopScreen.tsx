@@ -7,8 +7,8 @@
  * scroll pagination. Uses virtualized FlatList with tuned batch sizes
  * for smooth scrolling on lower-end devices.
  */
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, Text, FlatList } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import {
   MountainRefreshControl,
@@ -32,11 +33,15 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SortPicker } from '@/components/SortPicker';
+import { FilterButton } from '@/components/FilterButton';
+import { FilterModal } from '@/components/FilterModal';
 import { ProductCard } from '@/components/ProductCard';
 import { events } from '@/services/analytics';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
 import { CompareTray } from '@/components/CompareTray';
+import { NetworkErrorState } from '@/components/NetworkErrorState';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /** Estimated height of a product row for getItemLayout optimization */
@@ -50,6 +55,7 @@ interface Props {
 /** Two-column product grid with search, category filters, sort, and infinite scroll. */
 export function ShopScreen({ onProductPress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
+  const reduceMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -69,18 +75,32 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     searchQuery,
     selectedCategory,
     sortBy,
+    filters,
+    activeFilterCount,
+    availableFabrics,
+    priceExtent,
     isLoading,
     isInitialLoading,
     suggestions,
+    fetchError,
     setSearchQuery,
     setSelectedCategory,
     setSortBy,
+    setFilters,
     loadMore,
     refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
+  const { recentProducts } = useRecentlyViewed();
   const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    if (fetchError) {
+      console.error('[ShopScreen] product fetch failed:', fetchError);
+    }
+  }, [fetchError]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -102,12 +122,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={FadeInDown.delay(index * 80).duration(400)}
+        entering={reduceMotion ? undefined : FadeInDown.delay(index * 80).duration(400)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress],
+    [handleProductPress, reduceMotion],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -157,7 +177,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
           }}
         />
 
-        {/* Sort + count */}
+        {/* Sort + filter + count */}
         <SortPicker
           value={sortBy}
           onChange={(sort: SortOption) => {
@@ -165,7 +185,33 @@ export function ShopScreen({ onProductPress, testID }: Props) {
             events.sortProducts(sort);
           }}
           resultCount={products.length}
+          leftContent={
+            <FilterButton activeCount={activeFilterCount} onPress={() => setShowFilters(true)} />
+          }
         />
+
+        {/* Recently viewed rail — surfaces last 10 viewed products */}
+        {recentProducts.length > 0 && (
+          <View testID="shop-recently-viewed-rail">
+            <Text
+              style={[styles.recentlyViewedTitle, { color: colors.espresso }]}
+              accessibilityRole="header"
+            >
+              Recently Viewed
+            </Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: spacing.sm }}
+            >
+              {recentProducts.slice(0, 10).map((product) => (
+                <View key={product.id} style={styles.recentProductCard}>
+                  <ProductCard product={product} onPress={onProductPress} />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </View>
     ),
     [
@@ -173,7 +219,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       searchQuery,
       selectedCategory,
       sortBy,
+      activeFilterCount,
       products.length,
+      recentProducts,
       categories,
       colors,
       spacing,
@@ -182,6 +230,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       setSearchQuery,
       setSelectedCategory,
       setSortBy,
+      setShowFilters,
       handleSubmitSearch,
       removeSearch,
       clearAll,
@@ -208,7 +257,12 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   const renderEmpty = useCallback(
     () =>
       isInitialLoading ? (
-        <SkeletonProductGrid count={6} />
+        <SkeletonProductGrid count={6} testID="shop-skeleton" />
+      ) : fetchError && !isInitialLoading ? (
+        <NetworkErrorState
+          message={fetchError.message || 'Could not load products.'}
+          onRetry={refresh}
+        />
       ) : searchQuery ? (
         <SearchEmptyState
           query={searchQuery}
@@ -245,6 +299,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       ),
     [
       isInitialLoading,
+      fetchError,
+      refresh,
       searchQuery,
       colors,
       categories,
@@ -308,6 +364,14 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         testID="product-list"
       />
       <CompareTray onNavigateToCompare={handleNavigateToCompare} testID="shop-compare-tray" />
+      <FilterModal
+        visible={showFilters}
+        filters={filters}
+        availableFabrics={availableFabrics}
+        priceExtent={priceExtent}
+        onApply={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
     </View>
   );
 }
@@ -358,5 +422,15 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  recentlyViewedTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  recentProductCard: {
+    width: 140,
   },
 });

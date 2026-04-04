@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import {
   useProducts,
   type Product,
@@ -24,6 +25,7 @@ import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { SearchBar } from '@/components/SearchBar';
 import { ProductCard } from '@/components/ProductCard';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
+import { NetworkErrorState } from '@/components/NetworkErrorState';
 import { SortPicker } from '@/components/SortPicker';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { events } from '@/services/analytics';
@@ -50,6 +52,7 @@ interface Props {
 
 export function SearchScreen({ testID }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
+  const reduceMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const scrollPerf = useScrollPerformance('SearchScreen');
@@ -61,9 +64,11 @@ export function SearchScreen({ testID }: Props) {
     sortBy,
     suggestions,
     isLoading,
+    fetchError,
     setSearchQuery,
     setSortBy,
     loadMore,
+    refresh,
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { trendingSearches } = useConfig();
@@ -133,12 +138,12 @@ export function SearchScreen({ testID }: Props) {
     ({ item, index }: { item: Product; index: number }) => (
       <Animated.View
         testID={`product-card-animated-${item.id}`}
-        entering={FadeInDown.delay(index * 60).duration(350)}
+        entering={reduceMotion ? undefined : FadeInDown.delay(index * 60).duration(350)}
       >
         <ProductCard product={item} onPress={handleProductPress} />
       </Animated.View>
     ),
-    [handleProductPress],
+    [handleProductPress, reduceMotion],
   );
 
   const keyExtractor = useCallback((item: Product) => item.id, []);
@@ -280,8 +285,17 @@ export function SearchScreen({ testID }: Props) {
       {/* Search results skeleton while loading */}
       {showResults && isLoading && <SkeletonProductGrid count={4} />}
 
+      {/* Error state when fetch failed */}
+      {showResults && fetchError && !isLoading && (
+        <NetworkErrorState
+          message={fetchError.message || "Couldn't load search results."}
+          onRetry={refresh}
+          testID="network-error-state"
+        />
+      )}
+
       {/* Search results grid */}
-      {showResults && !isLoading && (
+      {showResults && !isLoading && !fetchError && (
         <FlatList
           data={products}
           renderItem={renderProduct}

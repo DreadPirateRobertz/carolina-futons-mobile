@@ -25,4 +25,4 @@ export {
   productIdToModelId,
   modelIdToProductId,
 } from '@/data/productId';
-export { parseWixImageUrl } from './parseWixImageUrl';
+export { parseWixImageUrl, asWebP } from './parseWixImageUrl';

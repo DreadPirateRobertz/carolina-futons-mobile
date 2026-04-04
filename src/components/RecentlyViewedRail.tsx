@@ -6,9 +6,11 @@
  * match the current product.
  */
 import React, { memo, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
-import { PRODUCTS, type Product } from '@/data/products';
+import { PRODUCTS, DEFAULT_PRODUCT_BLURHASH, type Product } from '@/data/products';
+import { asWebP } from '@/utils';
 
 const CARD_IMAGE_SIZE = 120;
 const MAX_DISPLAY = 5;
@@ -74,9 +76,13 @@ export const RecentlyViewedRail = memo(function RecentlyViewedRail({
             accessibilityLabel={`View ${product.name}`}
           >
             <Image
-              source={{ uri: product.images[0]?.uri }}
+              source={{ uri: asWebP(product.images[0]?.uri ?? '') }}
               style={[styles.image, { borderRadius: borderRadius.card }]}
-              resizeMode="cover"
+              contentFit="cover"
+              transition={200}
+              recyclingKey={product.slug}
+              cachePolicy="memory-disk"
+              placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
               testID={`recently-viewed-img-${product.slug}`}
               accessibilityLabel={product.images[0]?.alt ?? product.name}
             />

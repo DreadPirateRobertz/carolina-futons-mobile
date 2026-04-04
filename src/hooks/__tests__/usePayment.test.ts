@@ -635,4 +635,48 @@ describe('usePayment', () => {
       expect(mockConfirmPlatformPayPayment).not.toHaveBeenCalled();
     });
   });
+
+  describe('discountedTotal override (promo code)', () => {
+    it('passes discountedTotal to createPaymentIntent when provided', async () => {
+      mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+      mockInitPaymentSheet.mockResolvedValue({ error: null });
+      mockPresentPaymentSheet.mockResolvedValue({ error: null });
+      mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
+
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
+
+      await addCartItem(result);
+
+      await act(async () => {
+        await result.current.payment.processPayment('card', 299);
+      });
+
+      // createPaymentIntent should receive totals with overridden total
+      const calledTotals = mockedCreatePaymentIntent.mock.calls[0][2] as { total: number };
+      expect(calledTotals.total).toBe(299);
+    });
+
+    it('uses original totals when discountedTotal is not provided', async () => {
+      mockedCreatePaymentIntent.mockResolvedValue(INTENT_RESPONSE);
+      mockInitPaymentSheet.mockResolvedValue({ error: null });
+      mockPresentPaymentSheet.mockResolvedValue({ error: null });
+      mockedConfirmOrder.mockResolvedValue(ORDER_CONFIRMATION);
+
+      const { result } = renderHook(() => ({ cart: useCart(), payment: usePayment() }), {
+        wrapper,
+      });
+
+      await addCartItem(result);
+
+      await act(async () => {
+        await result.current.payment.processPayment('card');
+      });
+
+      // createPaymentIntent should receive the original cart totals (not a discount override)
+      const calledTotals = mockedCreatePaymentIntent.mock.calls[0][2] as { total: number };
+      expect(calledTotals.total).toBeGreaterThan(0);
+    });
+  });
 });

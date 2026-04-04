@@ -176,6 +176,30 @@ export async function emitRedemptionInitiated(
   });
 }
 
+export async function emitBadgeEarned(
+  client: WixClientLike | null,
+  input: { badgeId: string; badgeName: string },
+): Promise<CrossRigEventResult> {
+  return emit(client, 'badge_earned', {
+    badgeId: input.badgeId,
+    badgeName: input.badgeName,
+    delta: 0,
+    newTotal: 0,
+  });
+}
+
+export async function emitTierChanged(
+  client: WixClientLike | null,
+  input: { oldTier: string; newTier: string },
+): Promise<CrossRigEventResult> {
+  return emit(client, 'tier_changed', {
+    oldTier: input.oldTier,
+    newTier: input.newTier,
+    delta: 0,
+    newTotal: 0,
+  });
+}
+
 export async function emitCartAbandoned(
   client: WixClientLike | null,
   input: { cartTotal: number; itemCount: number },

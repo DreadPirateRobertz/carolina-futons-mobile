@@ -26,8 +26,8 @@ scripts/pipeline/generate.config.json
 scripts/pipeline/input/*.glb
 scripts/pipeline/output/
 
-# Screenshot automation output
-screenshots/
+# Screenshot automation output (root-level only; docs/screenshots/ IS committed)
+/screenshots/
 
 # Gas Town (added by gt)
 .claude/

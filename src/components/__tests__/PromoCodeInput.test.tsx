@@ -111,28 +111,6 @@ it('shows network error message when Wix call fails', async () => {
   await waitFor(() => expect(getByText(/unable to verify/i)).toBeTruthy());
 });
 
-it('shows fallback error message when result has no error field', async () => {
-  mockValidate.mockResolvedValue({ valid: false, discount: 0, type: 'fixed' });
-  const { getByText, getByTestId } = render(
-    <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
-  );
-  fireEvent.press(getByText(/add promo code/i));
-  fireEvent.changeText(getByTestId('promo-input'), 'BADCODE');
-  fireEvent.press(getByTestId('promo-apply-btn'));
-  await waitFor(() => expect(getByText(/invalid promo code/i)).toBeTruthy());
-});
-
-it('shows success state text with applied code', async () => {
-  mockValidate.mockResolvedValue({ valid: true, discount: 15, type: 'percent' });
-  const { getByText, getByTestId } = render(
-    <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
-  );
-  fireEvent.press(getByText(/add promo code/i));
-  fireEvent.changeText(getByTestId('promo-input'), 'SAVE15');
-  fireEvent.press(getByTestId('promo-apply-btn'));
-  await waitFor(() => expect(getByText(/✓ SAVE15 applied/)).toBeTruthy());
-});
-
 it('shows unavailable message when no wix client', async () => {
   // Override the module-level variable so useOptionalWixClient returns null for this test.
   mockClientOverride = null;

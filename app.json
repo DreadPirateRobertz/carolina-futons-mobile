@@ -1,284 +1,352 @@
 {
-  "expo": {
-    "name": "Carolina Futons",
-    "slug": "carolina-futons-mobile",
-    "version": "0.1.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "backgroundColor": "#E8D5B7",
-      "resizeMode": "contain"
-    },
-    "assetBundlePatterns": [
-      "assets/*"
-    ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.carolinafutons.mobile",
-      "usesAppleSignIn": true,
-      "associatedDomains": [
-        "applinks:carolinafutons.com",
-        "applinks:www.carolinafutons.com"
-      ]
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#E8D5B7"
-      },
-      "package": "com.carolinafutons.mobile",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/product"
+    "expo": {
+        "name": "Carolina Futons",
+        "slug": "carolina-futons-mobile",
+        "version": "0.1.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#E8D5B7",
+            "resizeMode": "contain"
+        },
+        "assetBundlePatterns": [
+            "assets/*"
+        ],
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.carolinafutons.mobile",
+            "usesAppleSignIn": true,
+            "associatedDomains": [
+                "applinks:carolinafutons.com",
+                "applinks:www.carolinafutons.com"
+            ]
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#E8D5B7"
             },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/product"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/products"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/products"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/category"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/category"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/collections"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/collections"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/orders"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/orders"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/stores"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/stores"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/cart"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/cart"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/checkout"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/checkout"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/account"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/account"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/login"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/login"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/signup"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/signup"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/wishlist"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/wishlist"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/ar"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/ar"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/notifications"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/notifications"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/forgot-password"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/forgot-password"
-            },
-            {
-              "scheme": "https",
-              "host": "carolinafutons.com",
-              "pathPrefix": "/shop"
-            },
-            {
-              "scheme": "https",
-              "host": "www.carolinafutons.com",
-              "pathPrefix": "/shop"
+            "package": "com.carolinafutons.mobile",
+            "intentFilters": [
+                {
+                    "action": "VIEW",
+                    "autoVerify": true,
+                    "data": [
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/product"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/product"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/products"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/products"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/category"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/category"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/collections"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/collections"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/orders"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/orders"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/stores"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/stores"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/cart"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/cart"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/checkout"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/checkout"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/account"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/account"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/login"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/login"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/signup"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/signup"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/wishlist"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/wishlist"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/ar"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/ar"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/notifications"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/notifications"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/forgot-password"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/forgot-password"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/shop"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/shop"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/leaderboard"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/leaderboard"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/challenges"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/challenges"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/avatar"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/avatar"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "carolinafutons.com",
+                            "pathPrefix": "/gallery"
+                        },
+                        {
+                            "scheme": "https",
+                            "host": "www.carolinafutons.com",
+                            "pathPrefix": "/gallery"
+                        }
+                    ],
+                    "category": [
+                        "BROWSABLE",
+                        "DEFAULT"
+                    ]
+                },
+                {
+                    "action": "VIEW",
+                    "data": [
+                        {
+                            "scheme": "carolinafutons"
+                        },
+                        {
+                            "scheme": "carolinafutons",
+                            "host": "leaderboard"
+                        },
+                        {
+                            "scheme": "carolinafutons",
+                            "host": "challenges"
+                        },
+                        {
+                            "scheme": "carolinafutons",
+                            "host": "avatar"
+                        },
+                        {
+                            "scheme": "carolinafutons",
+                            "host": "gallery"
+                        }
+                    ],
+                    "category": [
+                        "BROWSABLE",
+                        "DEFAULT"
+                    ]
+                }
+            ]
+        },
+        "runtimeVersion": {
+            "policy": "appVersion"
+        },
+        "updates": {
+            "url": "https://u.expo.dev/eaa288da-8d17-4ff4-90c2-04fe225a252d"
+        },
+        "extra": {
+            "eas": {
+                "projectId": "eaa288da-8d17-4ff4-90c2-04fe225a252d"
             }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ]
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/eaa288da-8d17-4ff4-90c2-04fe225a252d"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "eaa288da-8d17-4ff4-90c2-04fe225a252d"
-      }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "scheme": "carolinafutons",
-    "plugins": [
-      "expo-apple-authentication",
-      "expo-asset",
-      "expo-secure-store",
-      "expo-font",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/splash-icon.png",
-          "backgroundColor": "#E8D5B7",
-          "resizeMode": "contain"
-        }
-      ],
-      [
-        "@stripe/stripe-react-native",
-        {
-          "merchantIdentifier": "merchant.com.carolinafutons",
-          "enableGooglePay": true
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icon.png",
-          "color": "#E8D5B7"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow Carolina Futons to access your photos for profile and reviews.",
-          "cameraPermission": "Allow Carolina Futons to take photos for reviews."
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow Carolina Futons to use the camera for AR furniture preview."
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow Carolina Futons to save AR screenshots to your photo library.",
-          "savePhotosPermission": "Allow Carolina Futons to save AR screenshots to your photo library."
-        }
-      ],
-      [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "Allow Carolina Futons to use Face ID for secure checkout."
-        }
-      ],
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "carolina-futons-mobile",
-          "organization": "carolina-futons"
-        }
-      ]
-    ]
-  }
+        },
+        "web": {
+            "favicon": "./assets/favicon.png",
+            "bundler": "metro"
+        },
+        "scheme": "carolinafutons",
+        "plugins": [
+            "expo-apple-authentication",
+            "expo-asset",
+            "expo-secure-store",
+            "expo-font",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/splash-icon.png",
+                    "backgroundColor": "#E8D5B7",
+                    "resizeMode": "contain"
+                }
+            ],
+            [
+                "@stripe/stripe-react-native",
+                {
+                    "merchantIdentifier": "merchant.com.carolinafutons",
+                    "enableGooglePay": true
+                }
+            ],
+            [
+                "expo-notifications",
+                {
+                    "icon": "./assets/icon.png",
+                    "color": "#E8D5B7"
+                }
+            ],
+            [
+                "expo-image-picker",
+                {
+                    "photosPermission": "Allow Carolina Futons to access your photos for profile and reviews.",
+                    "cameraPermission": "Allow Carolina Futons to take photos for reviews."
+                }
+            ],
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Allow Carolina Futons to use the camera for AR furniture preview."
+                }
+            ],
+            [
+                "expo-media-library",
+                {
+                    "photosPermission": "Allow Carolina Futons to save AR screenshots to your photo library.",
+                    "savePhotosPermission": "Allow Carolina Futons to save AR screenshots to your photo library."
+                }
+            ],
+            [
+                "expo-local-authentication",
+                {
+                    "faceIDPermission": "Allow Carolina Futons to use Face ID for secure checkout."
+                }
+            ],
+            [
+                "@sentry/react-native/expo",
+                {
+                    "url": "https://sentry.io/",
+                    "project": "carolina-futons-mobile",
+                    "organization": "carolina-futons"
+                }
+            ]
+        ]
+    }
 }

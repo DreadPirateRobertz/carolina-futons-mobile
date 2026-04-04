@@ -54,13 +54,17 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
   }, []);
 
   const handleShare = useCallback(async () => {
-    const message = `Check out ${product.name} from Carolina Futons`;
+    const url = `https://carolinafutons.com/product/${product.slug}`;
+    const message =
+      Platform.OS === 'android'
+        ? `Check out ${product.name} from Carolina Futons\n${url}`
+        : `Check out ${product.name} from Carolina Futons`;
     try {
-      await Share.share(Platform.OS === 'ios' ? { message } : { message });
+      await Share.share({ message, url, title: product.name });
     } catch {
       // User cancelled
     }
-  }, [product.name]);
+  }, [product.name, product.slug]);
 
   if (isLoading) {
     return <SkeletonProductDetail testID="product-detail-skeleton" />;
@@ -135,6 +139,8 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
                     contentFit="cover"
                     placeholder={{ blurhash: item.blurhash ?? DEFAULT_BLURHASH }}
                     transition={300}
+                    recyclingKey={item.uri}
+                    cachePolicy="memory-disk"
                     testID={`gallery-image-${index}`}
                   />
                 ) : (

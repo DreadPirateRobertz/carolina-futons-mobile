@@ -64,6 +64,7 @@ export function ZoomableImage({ children, style, testID }: Props) {
   const doubleTapGesture = Gesture.Tap()
     .numberOfTaps(2)
     .onEnd(() => {
+      /* istanbul ignore next -- gesture callbacks require device/E2E testing */
       if (scale.value > MIN_SCALE) {
         scale.value = reduceMotion ? MIN_SCALE : withSpring(MIN_SCALE, SPRING_CONFIG);
         savedScale.value = MIN_SCALE;

@@ -132,4 +132,21 @@ describe('useCollection', () => {
     expect(result.current.products.length).toBeGreaterThan(0);
     expect(result.current.products[0].id).toContain('prod-');
   });
+
+  it('exposes a refresh function for retry', async () => {
+    const { result } = renderHook(() => useCollection('mountain-lodge-living'));
+    await act(async () => {});
+    expect(typeof result.current.refresh).toBe('function');
+  });
+
+  it('re-fetches products when refresh is called', async () => {
+    const { result } = renderHook(() => useCollection('mountain-lodge-living'));
+    await act(async () => {});
+    const callCount = mockQueryProducts.mock.calls.length;
+    await act(async () => {
+      result.current.refresh();
+    });
+    await act(async () => {});
+    expect(mockQueryProducts.mock.calls.length).toBeGreaterThan(callCount);
+  });
 });

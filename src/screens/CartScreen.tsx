@@ -76,7 +76,16 @@ interface Props {
  */
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
-  const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart } = useCart();
+  const {
+    items,
+    itemCount,
+    subtotal,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    syncError,
+    clearSyncError,
+  } = useCart();
   const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
   const { points } = useLoyalty();
@@ -137,6 +146,25 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         style={[styles.root, { backgroundColor: darkPalette.background }]}
         testID={testID ?? 'cart-screen'}
       >
+        {syncError && (
+          <View
+            style={[styles.syncErrorBanner, { backgroundColor: colors.sunsetCoral }]}
+            testID="cart-sync-error"
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+          >
+            <Text style={styles.syncErrorText}>{syncError}</Text>
+            <TouchableOpacity
+              onPress={clearSyncError}
+              testID="cart-sync-dismiss"
+              accessibilityLabel="Dismiss cart sync error"
+              accessibilityRole="button"
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.syncErrorDismiss}>✕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
         <View accessible={false} importantForAccessibility="no-hide-descendants">
           <MountainSkyline variant="sunrise" height={80} testID="cart-empty-skyline" />
         </View>
@@ -191,6 +219,26 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
           <Text style={[styles.clearText, { color: colors.mountainBlue }]}>Clear All</Text>
         </TouchableOpacity>
       </View>
+
+      {syncError && (
+        <View
+          style={[styles.syncErrorBanner, { backgroundColor: colors.sunsetCoral }]}
+          testID="cart-sync-error"
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+        >
+          <Text style={styles.syncErrorText}>{syncError}</Text>
+          <TouchableOpacity
+            onPress={clearSyncError}
+            testID="cart-sync-dismiss"
+            accessibilityLabel="Dismiss cart sync error"
+            accessibilityRole="button"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.syncErrorDismiss}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView
         style={styles.scrollView}
@@ -863,6 +911,26 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   bnplAmount: {
+    fontWeight: '700',
+  },
+  // Sync error banner
+  syncErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  syncErrorText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+    marginRight: 8,
+  },
+  syncErrorDismiss: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '700',
   },
   // Checkout

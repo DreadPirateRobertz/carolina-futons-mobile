@@ -29,6 +29,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'promotion',
   'back_in_stock',
   'cart_reminder',
+  'cart_recovery',
 ];
 
 const GAMIFICATION_TYPES: NotificationType[] = [
@@ -46,6 +47,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
     toggle: gamifToggle,
     isPushSupported,
     isSaving: gamifSaving,
+    isLoading: gamifLoading,
     error: gamifError,
   } = useNotificationPreferences();
 
@@ -55,6 +57,29 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
     },
     [togglePreference],
   );
+
+  if (gamifLoading) {
+    return (
+      <View
+        style={[styles.root, { backgroundColor: darkPalette.background }]}
+        testID={testID ?? 'notification-prefs-screen'}
+      >
+        <View testID="notif-prefs-skeleton" style={{ padding: spacing.md }}>
+          {[0, 1, 2, 3].map((i) => (
+            <View
+              key={i}
+              style={{
+                height: 48,
+                backgroundColor: '#D4BC96',
+                borderRadius: borderRadius.md,
+                marginBottom: spacing.sm,
+              }}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -201,6 +226,7 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
                   testID={`pref-toggle-${type}`}
                   accessibilityLabel={`${config.label}: ${isEnabled ? 'enabled' : 'disabled'}`}
                   accessibilityRole="switch"
+                  accessibilityState={{ checked: isEnabled }}
                 />
               </View>
             );

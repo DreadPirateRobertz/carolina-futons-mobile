@@ -320,3 +320,61 @@ describe('SUPPORTED_PATHS — AchievementBadges and Notifications', () => {
     expect(SUPPORTED_PATHS).toContain('alerts');
   });
 });
+
+// --- NEW: gamification deep links ---
+
+describe('linkingConfig — gamification screens', () => {
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps Leaderboard screen', () => {
+    expect(screens.Leaderboard).toBe('leaderboard');
+  });
+
+  it('maps Challenges screen', () => {
+    expect(screens.Challenges).toBe('challenges');
+  });
+
+  it('maps AvatarEquip screen', () => {
+    expect(screens.AvatarEquip).toBe('avatar');
+  });
+
+  it('maps RoomGallery screen', () => {
+    expect(screens.RoomGallery).toBe('gallery');
+  });
+});
+
+describe('deep link route resolution — gamification screens', () => {
+  it('resolves /leaderboard to Leaderboard', () => {
+    expect(getScreen('leaderboard')).toBe('Leaderboard');
+  });
+
+  it('resolves /challenges to Challenges', () => {
+    expect(getScreen('challenges')).toBe('Challenges');
+  });
+
+  it('resolves /avatar to AvatarEquip', () => {
+    expect(getScreen('avatar')).toBe('AvatarEquip');
+  });
+
+  it('resolves /gallery to RoomGallery', () => {
+    expect(getScreen('gallery')).toBe('RoomGallery');
+  });
+});
+
+describe('SUPPORTED_PATHS — gamification screens', () => {
+  it('includes leaderboard', () => {
+    expect(SUPPORTED_PATHS).toContain('leaderboard');
+  });
+
+  it('includes challenges', () => {
+    expect(SUPPORTED_PATHS).toContain('challenges');
+  });
+
+  it('includes avatar', () => {
+    expect(SUPPORTED_PATHS).toContain('avatar');
+  });
+
+  it('includes gallery', () => {
+    expect(SUPPORTED_PATHS).toContain('gallery');
+  });
+});
