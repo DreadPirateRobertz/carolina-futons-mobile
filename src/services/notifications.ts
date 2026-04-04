@@ -16,6 +16,7 @@ export type NotificationType =
   | 'promotion'
   | 'back_in_stock'
   | 'cart_reminder'
+  | 'cart_recovery'
   | 'streak_milestone'
   | 'quest_complete'
   | 'daily_spin_reminder';
@@ -25,6 +26,7 @@ export interface NotificationPreferences {
   promotions: boolean;
   backInStock: boolean;
   cartReminders: boolean;
+  cartRecovery: boolean;
   streakMilestone: boolean;
   questComplete: boolean;
   dailySpinReminder: boolean;
@@ -35,6 +37,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   promotions: true,
   backInStock: true,
   cartReminders: false,
+  cartRecovery: false,
   streakMilestone: true,
   questComplete: true,
   dailySpinReminder: false,
@@ -68,6 +71,7 @@ export function getDeepLinkForNotification(
         ? `carolinafutons://product/${data.productId}`
         : 'carolinafutons://wishlist';
     case 'cart_reminder':
+    case 'cart_recovery':
       return 'carolinafutons://cart';
     case 'streak_milestone':
       return 'carolinafutons://challenges';
@@ -120,6 +124,11 @@ export const NOTIFICATION_TYPE_CONFIG: Record<
     label: 'Cart Reminders',
     description: 'Gentle nudge when you have items waiting in your cart',
     prefKey: 'cartReminders',
+  },
+  cart_recovery: {
+    label: 'Cart Recovery',
+    description: 'Reminder to complete your purchase after leaving items in your cart',
+    prefKey: 'cartRecovery',
   },
   streak_milestone: {
     label: 'Streak Milestones',
@@ -227,6 +236,12 @@ export const ANDROID_CHANNEL_CONFIG: Record<NotificationType, AndroidChannelConf
     name: 'Cart Reminders',
     description: 'Reminders about items waiting in your cart',
     importance: 2, // LOW — gentle nudges should not be intrusive
+  },
+  cart_recovery: {
+    id: 'cart-recovery',
+    name: 'Cart Recovery',
+    description: 'Recovery notifications for abandoned carts',
+    importance: 2, // LOW — recovery nudges should not be intrusive
   },
   streak_milestone: {
     id: 'streak-milestones',

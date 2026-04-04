@@ -29,6 +29,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'promotion',
   'back_in_stock',
   'cart_reminder',
+  'cart_recovery',
 ];
 
 const GAMIFICATION_TYPES: NotificationType[] = [

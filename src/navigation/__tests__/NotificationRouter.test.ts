@@ -45,6 +45,11 @@ it('routes tier_changed to Loyalty screen', () => {
   expect(mockNavigate).toHaveBeenCalledWith('Loyalty');
 });
 
+it('routes cart_recovery to Cart tab', () => {
+  routeNotificationTap({ type: 'cart_recovery' }, mockNavigation as never);
+  expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Cart' });
+});
+
 it('routes unknown type to Home screen', () => {
   routeNotificationTap({ type: 'unknown_future_type' as never }, mockNavigation as never);
   expect(mockNavigate).toHaveBeenCalledWith('Home');
