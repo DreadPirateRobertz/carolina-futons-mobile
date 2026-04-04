@@ -28,47 +28,50 @@ SECTION_SCREENSHOTS = {
     # Keys match <div class="section" id="..."> in screen-reference.html
     # Values are stem names (without .png) that capture-screenshots.sh outputs.
     # Multiple entries fill multiple placeholder cards in section order.
-    # --- s30 filenames (2026-03-29) ---
-    "onboarding":        ["01_onboarding", "01_onboarding_slide2", "01_onboarding_slide3"],
-    "home":              ["02_home_top", "02_home_mid", "02_home_collections", "02_home_bottom"],
-    "shop":              ["03_shop_top", "03_shop_scrolled"],
-    "cart":              ["05_cart_with_items", "05_cart_scrolled"],
-    "account":           ["06_account_top", "06_account_bottom"],
-    "pdp":               ["04_pdp_top", "04_pdp_mid", "04_pdp_bottom", "04_pdp_gallery_fullscreen"],
-    "search":            ["08_search_empty", "08_search_results"],
-    "category":          [],  # no deep link — navigate from Shop filter
-    "collections":       ["09_collections", "09_collections_scrolled"],
-    "collection-detail": ["10_collection_detail_top", "10_collection_detail_products"],
-    "compare":           [],  # needs productSlugs params — navigate from PDP
-    "wishlist":          ["11_wishlist"],
-    "checkout":          ["12_checkout"],
-    "payment":           [],  # requires completed order
-    "order-success":     [],  # requires completed order
-    "order-confirm":     [],  # requires completed order
-    "order-history":     ["13_order_history"],
-    "order-detail":      [],  # requires orderId
-    "ar":                ["14_ar"],
-    "ar-web":            [],  # launched from PDP via ARViewer
-    "room-gallery":      ["21_room_gallery_attempt"],
-    "login":             ["07_login"],
-    "signup":            ["07_signup"],
-    "forgot-password":   ["07_forgot_password"],
-    "premium":           [],  # navigate from Account
-    "style-quiz":        ["15_style_quiz_q1", "15_style_quiz_q2"],
-    "loyalty":           [],  # navigate from Account
-    "leaderboard":       ["16_leaderboard"],
-    "challenges":        ["16_challenges"],
-    "achievements":      ["16_achievements_top", "16_achievements_scrolled"],
-    "points-history":    [],  # navigate from Account
-    "avatar":            [],  # deep link added — recapture next run
-    "referral":          [],  # needs referral code
-    "notifications":     ["17_notifications_inbox"],
-    "notif-prefs":       ["18_notification_prefs"],
-    "store-locator":     ["19_store_locator"],
-    "store-detail":      ["20_store_detail"],
-    "privacy":           [],  # navigate from Account → Settings
-    "rewards":           [],  # navigate from Account
-    "notif-prompt":      [],  # OS permission dialog — not ADB-capturable
+    # --- s31 filenames (2026-04-04) ---
+    "onboarding":        ["01-onboarding-welcome", "02-onboarding-slide2", "03-onboarding-slide3"],
+    "home":              ["04-home-hero", "05-home-quests", "06-home-collections", "07-home-bottom"],
+    "shop":              ["08-shop-grid", "09-shop-scrolled"],
+    "cart":              ["14-cart-with-items", "15-cart-scrolled"],
+    "account":           ["16-account-signed-out", "17-account-bottom"],
+    "pdp":               ["10-pdp-gallery", "11-pdp-bnpl", "12-pdp-features-ar", "13-pdp-gallery-fullscreen"],
+    "search":            ["21-search-empty", "22-search-results"],
+    "category":          ["46-category-filtered-grid", "47-category-scrolled"],
+    "collections":       ["23-collections-grid", "24-collections-scrolled"],
+    "collection-detail": ["25-collection-detail-hero", "26-collection-detail-products", "27-collection-detail-total"],
+    "compare":           ["48-compare-side-by-side"],
+    "wishlist":          ["28-wishlist"],
+    "checkout":          ["29-checkout"],
+    "payment":           ["49-payment-confirmation"],
+    "order-success":     ["50-order-success"],
+    "order-confirm":     ["51-order-confirmation"],
+    "order-history":     ["30-order-history"],
+    "order-detail":      ["52-order-detail"],
+    "ar":                ["31-ar-camera"],
+    "ar-web":            ["53-ar-web-viewer"],
+    "room-gallery":      ["43-room-gallery", "44-room-gallery-scrolled"],
+    "login":             ["18-login"],
+    "signup":            ["19-signup"],
+    "forgot-password":   ["20-forgot-password"],
+    "premium":           ["54-cf-plus-premium"],
+    "style-quiz":        ["32-style-quiz-q1", "33-style-quiz-q2"],
+    "loyalty":           ["55-loyalty-program"],
+    "leaderboard":       ["36-leaderboard"],
+    "challenges":        ["37-challenges"],
+    "achievements":      ["34-achievements-top", "35-achievements-scrolled"],
+    "points-history":    ["56-points-history"],
+    "avatar":            ["38-avatar-equip"],
+    "referral":          ["45-referral-landing"],
+    "notifications":     ["39-notifications-inbox"],
+    "notif-prefs":       ["40-notification-prefs"],
+    "store-locator":     ["41-store-locator"],
+    "store-detail":      ["42-store-detail"],
+    "privacy":           ["62-privacy-policy"],
+    "rewards":           ["57-rewards-catalog"],
+    "notif-prompt":      ["58-push-permission-prompt"],
+    "checkout-promo":    ["60-checkout-promo-code"],
+    "checkout-skeleton": ["59-checkout-form-skeleton"],
+    "checkout-a11y":     ["61-checkout-keyboard-a11y"],
 }
 
 PLACEHOLDER_RE = re.compile(

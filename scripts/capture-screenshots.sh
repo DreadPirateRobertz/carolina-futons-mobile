@@ -275,6 +275,70 @@ echo ""
 echo "── 21. Referral + Premium ──"
 nav "referral/DEMO2026"; sleep 2; shot "45-referral-landing"
 
+# ── 22. Category (Filtered Grid) ───────────────────────────────
+echo ""
+echo "── 22. Category ──"
+nav "category/living-room-futons"; shot "46-category-filtered-grid"
+swipe_up; shot "47-category-scrolled"
+
+# ── 23. Compare (Side by Side) ─────────────────────────────────
+echo ""
+echo "── 23. Compare ──"
+nav "compare"; shot "48-compare-side-by-side"
+
+# ── 24. Payment Confirmation / Order Success ───────────────────
+echo ""
+echo "── 24. Payment + Order Flow ──"
+nav "payment-confirmation"; sleep 2; shot "49-payment-confirmation"
+nav "order-success"; sleep 2; shot "50-order-success"
+nav "order-confirmation"; sleep 2; shot "51-order-confirmation"
+nav "orders/ORD-001"; sleep 2; shot "52-order-detail"
+
+# ── 25. AR Web Viewer ──────────────────────────────────────────
+echo ""
+echo "── 25. AR Web Viewer ──"
+nav "ar-web"; sleep 3; shot "53-ar-web-viewer"
+
+# ── 26. CF+ Premium ────────────────────────────────────────────
+echo ""
+echo "── 26. CF+ Premium ──"
+nav "premium"; sleep 2; shot "54-cf-plus-premium"
+
+# ── 27. Loyalty / Points ───────────────────────────────────────
+echo ""
+echo "── 27. Loyalty ──"
+nav "loyalty"; sleep 2; shot "55-loyalty-program"
+nav "points-history"; sleep 2; shot "56-points-history"
+
+# ── 28. Rewards Catalog ────────────────────────────────────────
+echo ""
+echo "── 28. Rewards Catalog ──"
+nav "rewards"; sleep 2; shot "57-rewards-catalog"
+
+# ── 29. Push Permission Pre-Prompt ─────────────────────────────
+echo ""
+echo "── 29. Push Permission ──"
+nav "notification-permission"; sleep 2; shot "58-push-permission-prompt"
+
+# ── 30. Checkout Details ───────────────────────────────────────
+echo ""
+echo "── 30. Checkout Details ──"
+# Promo code input — navigate to cart first, ensure items, then checkout
+nav "cart"; sleep 1
+nav "checkout"; sleep 3
+shot "59-checkout-form-skeleton"
+sleep 3
+shot "60-checkout-promo-code"
+# Keyboard focus on a field
+tap 540 800; sleep 2
+shot "61-checkout-keyboard-a11y"
+back
+
+# ── 31. Privacy Policy ─────────────────────────────────────────
+echo ""
+echo "── 31. Privacy ──"
+nav "privacy-policy"; sleep 2; shot "62-privacy-policy"
+
 # --- Summary ---
 echo ""
 echo "═══════════════════════════════════════════════════"
