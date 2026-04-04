@@ -59,13 +59,14 @@ jest.mock('@/hooks/useCartAbandonmentReminder', () => ({
   }),
 }));
 
-const mockUseCartAbandonmentRecovery = jest.fn(() => ({
+const mockUseCartAbandonmentRecovery = jest.fn((_opts: Record<string, unknown>) => ({
   onCartActivity: mockOnCartActivity,
   onOrderPlaced: mockOnRecoveryOrderPlaced,
 }));
 
 jest.mock('@/hooks/useCartAbandonmentRecovery', () => ({
-  useCartAbandonmentRecovery: (...args: unknown[]) => mockUseCartAbandonmentRecovery(...args),
+  useCartAbandonmentRecovery: (opts: Record<string, unknown>) =>
+    mockUseCartAbandonmentRecovery(opts),
 }));
 
 describe('CartAbandonmentBridge', () => {
@@ -100,7 +101,7 @@ describe('CartAbandonmentBridge', () => {
     // Already tested via the mock — the bridge logic derives this from permissionStatus
     // This test verifies the bridge correctly computes pushPermitted
     render(<CartAbandonmentBridge />);
-    const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0][0];
+    const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
     expect(callArgs).toHaveProperty('pushPermitted');
   });
 });

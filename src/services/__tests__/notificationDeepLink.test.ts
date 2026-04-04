@@ -214,6 +214,7 @@ describe('Notification preferences gate deep link generation', () => {
     'promotion',
     'back_in_stock',
     'cart_reminder',
+    'cart_recovery',
   ];
 
   it('all enabled notification types produce valid deep link URLs', () => {
@@ -222,6 +223,7 @@ describe('Notification preferences gate deep link generation', () => {
       promotions: true,
       backInStock: true,
       cartReminders: true,
+      cartRecovery: true,
       streakMilestone: true,
       questComplete: true,
       dailySpinReminder: true,
@@ -242,6 +244,7 @@ describe('Notification preferences gate deep link generation', () => {
       promotions: false,
       backInStock: false,
       cartReminders: false,
+      cartRecovery: false,
       streakMilestone: false,
       questComplete: false,
       dailySpinReminder: false,
@@ -252,14 +255,14 @@ describe('Notification preferences gate deep link generation', () => {
     }
   });
 
-  it('only cart_reminder is disabled by default', () => {
+  it('only cart_reminder and cart_recovery are disabled by default', () => {
     const enabledByDefault = allTypes.filter((t) => shouldShowNotification(t, DEFAULT_PREFERENCES));
     const disabledByDefault = allTypes.filter(
       (t) => !shouldShowNotification(t, DEFAULT_PREFERENCES),
     );
 
     expect(enabledByDefault).toEqual(['order_update', 'promotion', 'back_in_stock']);
-    expect(disabledByDefault).toEqual(['cart_reminder']);
+    expect(disabledByDefault).toEqual(['cart_reminder', 'cart_recovery']);
   });
 });
 
