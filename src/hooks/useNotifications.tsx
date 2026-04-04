@@ -403,3 +403,8 @@ export function useNotifications(): NotificationContextValue {
   }
   return ctx;
 }
+
+/** Returns null when called outside a NotificationProvider — safe for optional push features. */
+export function useOptionalNotifications(): NotificationContextValue | null {
+  return useContext(NotificationContext);
+}

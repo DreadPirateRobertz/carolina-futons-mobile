@@ -28,6 +28,7 @@ const NOTIFICATION_TYPES: NotificationType[] = [
   'order_update',
   'promotion',
   'back_in_stock',
+  'price_drop',
   'cart_reminder',
   'cart_recovery',
 ];
