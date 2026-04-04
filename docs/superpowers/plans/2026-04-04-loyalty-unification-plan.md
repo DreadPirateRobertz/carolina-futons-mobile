@@ -59,8 +59,8 @@ describe('Loyalty tier unification', () => {
     expect(getTierForPoints(1499).name).toBe('Mountain Guide');
   });
 
-  it('Summit Master is 1500-4999 points', () => {
-    expect(getTierForPoints(1500).name).toBe('Summit Master');
+  it('Summit Master is 2000-4999 points', () => {
+    expect(getTierForPoints(2000).name).toBe('Summit Master');
     expect(getTierForPoints(4999).name).toBe('Summit Master');
   });
 
@@ -122,7 +122,7 @@ export const LOYALTY_TIERS: LoyaltyTierConfig[] = [
   },
   {
     name: 'Summit Master',
-    minPoints: 1500,
+    minPoints: 2000,
     color: '#E8845C',
     icon: 'summit-master',
     perks: ['Earn 2x points per $1', 'Free expedited shipping', 'Free styling consultation', 'Exclusive member pricing'],
