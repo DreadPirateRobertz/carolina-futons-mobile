@@ -205,6 +205,7 @@ describe('Notification preference gating before deep link routing', () => {
     'promotion',
     'back_in_stock',
     'cart_reminder',
+    'cart_recovery',
   ];
 
   it('default preferences allow order_update, promotion, back_in_stock but not cart_reminder', () => {
@@ -220,6 +221,7 @@ describe('Notification preference gating before deep link routing', () => {
       promotions: false,
       backInStock: false,
       cartReminders: false,
+      cartRecovery: false,
       streakMilestone: false,
       questComplete: false,
       dailySpinReminder: false,
@@ -237,6 +239,7 @@ describe('Notification preference gating before deep link routing', () => {
       promotions: true,
       backInStock: true,
       cartReminders: true,
+      cartRecovery: true,
       streakMilestone: true,
       questComplete: true,
       dailySpinReminder: true,
