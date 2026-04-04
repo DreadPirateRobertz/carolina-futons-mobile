@@ -220,6 +220,7 @@ describe('Notification preference gating before deep link routing', () => {
       orderUpdates: false,
       promotions: false,
       backInStock: false,
+      priceDropAlerts: false,
       cartReminders: false,
       cartRecovery: false,
       streakMilestone: false,

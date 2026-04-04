@@ -19,7 +19,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp, RouteProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import { fetchCatalogExport } from '@/services/visualSearch';
 import { searchByImage } from '@/services/visualSearchEmbedding';
 import type { VisualSearchMatch } from '@/services/visualSearchEmbedding';
