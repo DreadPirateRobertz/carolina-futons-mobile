@@ -4,7 +4,8 @@ import { wixImageUrl } from '../wixImageUrl';
 const BARE = 'https://static.wixstatic.com/media/cc389e_abc123~mv2.jpg';
 const WITH_TRANSFORM =
   'https://static.wixstatic.com/media/cc389e_abc123~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg';
-const WIX_SCHEME = 'wix:image://v1/cc389e_abc123~mv2.jpg/photo.jpg#originWidth=2000&originHeight=1330';
+const WIX_SCHEME =
+  'wix:image://v1/cc389e_abc123~mv2.jpg/photo.jpg#originWidth=2000&originHeight=1330';
 const NON_WIX = 'https://example.com/image.jpg';
 
 describe('wixImageUrl', () => {

@@ -82,12 +82,7 @@ describe('ParallaxHeader', () => {
 
     it('optimizes Wix image URIs with WebP encoding', () => {
       const { getByTestId } = render(
-        <ParallaxHeader
-          imageUri={WIX_URI}
-          height={400}
-          scrollY={scrollY}
-          testID="parallax-opt"
-        />,
+        <ParallaxHeader imageUri={WIX_URI} height={400} scrollY={scrollY} testID="parallax-opt" />,
       );
       const img = getByTestId('parallax-hero-image');
       const uri = img.props.source?.uri;
@@ -96,12 +91,7 @@ describe('ParallaxHeader', () => {
 
     it('requests right-sized width (not original 2000px)', () => {
       const { getByTestId } = render(
-        <ParallaxHeader
-          imageUri={WIX_URI}
-          height={400}
-          scrollY={scrollY}
-          testID="parallax-size"
-        />,
+        <ParallaxHeader imageUri={WIX_URI} height={400} scrollY={scrollY} testID="parallax-size" />,
       );
       const img = getByTestId('parallax-hero-image');
       const uri = img.props.source?.uri;
