@@ -141,9 +141,12 @@ describe('routeNotificationTap — price_drop', () => {
 
   it('uses the exact productSlug value from payload', () => {
     const mockNavigate = jest.fn();
-    routeNotificationTap({ type: 'price_drop', productSlug: 'biltmore-loveseat' }, {
-      navigate: mockNavigate,
-    });
+    routeNotificationTap(
+      { type: 'price_drop', productSlug: 'biltmore-loveseat' },
+      {
+        navigate: mockNavigate,
+      },
+    );
     expect(mockNavigate).toHaveBeenCalledWith('ProductDetail', { slug: 'biltmore-loveseat' });
   });
 });

@@ -226,7 +226,8 @@ describe('Notification preferences gate deep link generation', () => {
       cartRecovery: true,
       streakMilestone: true,
       questComplete: true,
-      dailySpinReminder: true, priceDropAlerts: true,
+      dailySpinReminder: true,
+      priceDropAlerts: true,
     };
 
     for (const type of allTypes) {
@@ -247,7 +248,8 @@ describe('Notification preferences gate deep link generation', () => {
       cartRecovery: false,
       streakMilestone: false,
       questComplete: false,
-      dailySpinReminder: false, priceDropAlerts: false,
+      dailySpinReminder: false,
+      priceDropAlerts: false,
     };
 
     for (const type of allTypes) {

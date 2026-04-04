@@ -299,7 +299,11 @@ describe('VisualSearchResultsScreen — empty state', () => {
 
 describe('VisualSearchResultsScreen — error state (catalog fetch fails)', () => {
   it('shows error state when catalog fetch fails', async () => {
-    mockFetchCatalogExport.mockResolvedValue({ success: false, products: [], error: 'Network error' });
+    mockFetchCatalogExport.mockResolvedValue({
+      success: false,
+      products: [],
+      error: 'Network error',
+    });
 
     const { getByTestId } = renderScreen();
 
@@ -309,7 +313,11 @@ describe('VisualSearchResultsScreen — error state (catalog fetch fails)', () =
   });
 
   it('shows error message', async () => {
-    mockFetchCatalogExport.mockResolvedValue({ success: false, products: [], error: 'Network error' });
+    mockFetchCatalogExport.mockResolvedValue({
+      success: false,
+      products: [],
+      error: 'Network error',
+    });
 
     const { getByText } = renderScreen();
 

@@ -229,9 +229,7 @@ describe('searchByImage — network error', () => {
     const { readAsStringAsync } = require('expo-file-system');
     manipulateAsync.mockResolvedValue({ uri: RESIZED_URI });
     readAsStringAsync.mockResolvedValue(BASE64_DATA);
-    mockFetch.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 60_000)),
-    );
+    mockFetch.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 60_000)));
 
     const resultPromise = searchByImage(IMAGE_URI, CATALOG, { timeoutMs: 10_000 });
     await jest.advanceTimersByTimeAsync(11_000);
@@ -295,7 +293,9 @@ describe('searchByImage — malformed API response', () => {
     readAsStringAsync.mockResolvedValue(BASE64_DATA);
     mockFetch.mockResolvedValue({
       ok: true,
-      json: async () => { throw new SyntaxError('Unexpected token'); },
+      json: async () => {
+        throw new SyntaxError('Unexpected token');
+      },
     });
 
     const result = await searchByImage(IMAGE_URI, CATALOG);

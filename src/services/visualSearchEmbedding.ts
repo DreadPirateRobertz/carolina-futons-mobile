@@ -84,7 +84,7 @@ export async function searchByImage(
   let imageBase64: string;
   try {
     imageBase64 = await FileSystem.readAsStringAsync(resizedUri, {
-      encoding: "base64",
+      encoding: 'base64',
     });
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));

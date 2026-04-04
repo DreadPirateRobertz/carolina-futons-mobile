@@ -186,10 +186,7 @@ function ResultsList({ matches, onProductPress }: ResultsListProps) {
             </Text>
             <Text style={styles.productPrice}>${item.product.price.toFixed(2)}</Text>
           </View>
-          <View
-            testID={`visual-search-result-score-${item.product.id}`}
-            style={styles.scoreBadge}
-          >
+          <View testID={`visual-search-result-score-${item.product.id}`} style={styles.scoreBadge}>
             <Text style={styles.scoreText}>{Math.round(item.score * 100)}%</Text>
           </View>
         </TouchableOpacity>

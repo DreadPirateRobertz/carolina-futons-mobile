@@ -268,7 +268,10 @@ describe('VisualSearchScreen — photo capture', () => {
     mockPermission(true, 'granted');
     let resolveCapture!: (v: any) => void;
     mockTakePicture.mockImplementation(
-      () => new Promise((resolve) => { resolveCapture = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveCapture = resolve;
+        }),
     );
 
     const { getByTestId } = renderScreen();
@@ -327,7 +330,10 @@ describe('VisualSearchScreen — photo capture', () => {
     mockPermission(true, 'granted');
     let resolveCapture!: (v: any) => void;
     mockTakePicture.mockImplementation(
-      () => new Promise((resolve) => { resolveCapture = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveCapture = resolve;
+        }),
     );
 
     const { getByTestId } = renderScreen();
