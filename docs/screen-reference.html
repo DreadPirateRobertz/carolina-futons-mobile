@@ -1002,7 +1002,7 @@ npx jest --passWithNoTests</pre>
 <h2>35b. Notification Permission Prompt</h2>
 <div class="grid">
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic A PR #373)</div>
+  <img src="screenshots/s31-20260404/63-push-permission-prompt.png" alt="Push Permission Pre-Prompt" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Push Permission Pre-Prompt</h3>
     <p><strong>Epic A (PR #373).</strong> Pre-prompt screen shown before the OS permission dialog. Explains value prop. "Enable Notifications" CTA (testID="notif-prompt-enable") triggers expo-notifications permission request, then navigates Home. Error-safe: try/catch wraps permission request, still navigates on any failure. useNotificationPermission hook tracks permission status + hasAskedBefore in AsyncStorage.</p>
@@ -1017,7 +1017,7 @@ npx jest --passWithNoTests</pre>
 <h2>Home — AI Personalization (Epic B)</h2>
 <div class="grid">
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic B PR #374)</div>
+  <img src="screenshots/s31-20260404/64-sommelier-hero.png" alt="SommelierHeroCard" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>SommelierHeroCard</h3>
     <p><strong>Epic B (PR #374).</strong> Dismissible hero card surfaced on HomeScreen above personalized picks. Shows top style recommendation from Sommelier AI. Dismissed state persisted in AsyncStorage (@cf_sommelier_hero_dismissed) — stays hidden across sessions. testID="sommelier-hero-card", testID="sommelier-hero-dismiss".</p>
@@ -1025,7 +1025,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic B PR #374)</div>
+  <img src="screenshots/s31-20260404/65-fitscore-badge.png" alt="FitScore Badge" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>FitScore Badge</h3>
     <p><strong>Epic B (PR #374).</strong> Per-user fit score badge rendered on product surfaces (PDP/grid) gated by EXPO_PUBLIC_FIT_SCORE_ENABLED. Cache-first via PersonalizationCache (AsyncStorage, TTL 1hr). States: skeleton (loading), score badge (0–100%), null (guest/error). accessibilityLabel includes percentage.</p>
