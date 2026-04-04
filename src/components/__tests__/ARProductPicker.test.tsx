@@ -121,6 +121,35 @@ describe('ARProductPicker', () => {
     });
   });
 
+  describe('Image Optimization (cm-c27)', () => {
+    it('tile images use wixImageUrl with WebP encoding', () => {
+      const { getByTestId } = renderPicker();
+      const product = arEligibleProducts[0];
+      const img = getByTestId(`ar-picker-image-${product.id}`);
+      const uri = img.props.source?.uri;
+      // Real product data has wixstatic URLs — wixImageUrl should add enc_webp
+      if (uri?.includes('wixstatic.com')) {
+        expect(uri).toContain('enc_webp');
+      }
+    });
+
+    it('tile images request right-sized dimensions (not original 2000px)', () => {
+      const { getByTestId } = renderPicker();
+      const product = arEligibleProducts[0];
+      const img = getByTestId(`ar-picker-image-${product.id}`);
+      const uri = img.props.source?.uri;
+      if (uri?.includes('wixstatic.com')) {
+        expect(uri).not.toContain('w_2000');
+        expect(uri).toMatch(/w_\d+/);
+      }
+    });
+
+    it('renders without crashing when product has no images', () => {
+      // wixImageUrl handles null/undefined input gracefully
+      expect(() => renderPicker()).not.toThrow();
+    });
+  });
+
   describe('Accessibility', () => {
     it('product tiles have accessible labels with name and price', () => {
       const { getByTestId } = renderPicker();

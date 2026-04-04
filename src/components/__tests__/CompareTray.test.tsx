@@ -287,6 +287,46 @@ describe('CompareTray', () => {
     });
   });
 
+  // ── Image Optimization (cm-c27) ──────────────────────────────────────────────
+
+  describe('image optimization (cm-c27)', () => {
+    const WIX_PRODUCT: Product = {
+      ...PRODUCT_A,
+      id: 'prod-wix-opt',
+      images: [
+        {
+          uri: 'https://static.wixstatic.com/media/cc389e_abc123~mv2.jpg/v1/fit/w_2000,h_1330,q_90/file.jpg',
+          alt: 'Wix product',
+          blurhash: 'LEHV6n',
+        },
+      ],
+    } as unknown as Product;
+
+    it('optimizes Wix image URIs with WebP encoding', () => {
+      withCompare([WIX_PRODUCT]);
+      const { getByTestId } = renderTray();
+      const img = getByTestId(`compare-tray-image-${WIX_PRODUCT.id}`);
+      const uri = img.props.source?.uri;
+      expect(uri).toContain('enc_webp');
+    });
+
+    it('requests right-sized dimensions for mini cards (not original 2000px)', () => {
+      withCompare([WIX_PRODUCT]);
+      const { getByTestId } = renderTray();
+      const img = getByTestId(`compare-tray-image-${WIX_PRODUCT.id}`);
+      const uri = img.props.source?.uri;
+      expect(uri).not.toContain('w_2000');
+      expect(uri).toMatch(/w_\d+/);
+    });
+
+    it('passes through non-Wix URLs unchanged', () => {
+      withCompare([PRODUCT_A]);
+      const { getByTestId } = renderTray();
+      const img = getByTestId(`compare-tray-image-${PRODUCT_A.id}`);
+      expect(img.props.source?.uri).toBe('https://example.com/a.jpg');
+    });
+  });
+
   // ── Thumbnail size (cm-a9g) ─────────────────────────────────────────────────
 
   describe('thumbnail size', () => {

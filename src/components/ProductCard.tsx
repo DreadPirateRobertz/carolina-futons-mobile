@@ -33,6 +33,7 @@ import { ProductBadge } from './ProductBadge';
 import { useInventoryBadge } from '@/hooks/useInventoryBadge';
 import { normalizeBadgeType } from '@/data/productBadgeTypes';
 import { ProductContextMenu } from './ProductContextMenu';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 // ── Lifestyle photo placeholder ────────────────────────────────────────────
 //
@@ -65,12 +66,11 @@ function LifestylePhotoSlot({ lifestyleUri, productId: pId }: LifestylePhotoSlot
       accessibilityLabel="Lifestyle room setting photo"
     >
       <Image
-        source={{ uri }}
+        source={{ uri: wixImageUrl(uri, { width: 120, height: 80 }) ?? uri }}
         style={styles.lifestyleImage}
         contentFit="cover"
-        // TODO(stilgar): Replace placeholder with real CF lifestyle imagery from Wix Media Manager.
-        // PLACEHOLDER: Using Unsplash royalty-free image — not for production use.
-        // SOURCE: Will come from manufacturer image banks + Wix Media uploads.
+        transition={150}
+        placeholder={{ blurhash: DEFAULT_PRODUCT_BLURHASH }}
         cachePolicy="memory-disk"
       />
     </View>
@@ -163,7 +163,14 @@ export const ProductCard = memo(function ProductCard({
         >
           <Image
             testID={`product-hero-image-${product.id}`}
-            source={{ uri: asWebP((product.lifestyleImageUri || product.images[0]?.uri) ?? '') }}
+            source={{
+              uri:
+                wixImageUrl(product.lifestyleImageUri || product.images[0]?.uri, {
+                  width: 400,
+                  height: 300,
+                }) ??
+                (product.lifestyleImageUri || product.images[0]?.uri),
+            }}
             style={styles.image}
             contentFit="cover"
             transition={200}
