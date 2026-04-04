@@ -43,8 +43,11 @@ export function FinancingCalculator({ price, testID = 'financing-calculator' }: 
   // If only one provider is eligible, lock to it
   const showAfterpaytab = afterpayEligible;
   const showBothTabs = affirmEligible && afterpayEligible;
-  const activeProvider: Provider =
-    !affirmEligible ? 'afterpay' : !afterpayEligible ? 'affirm' : provider;
+  const activeProvider: Provider = !affirmEligible
+    ? 'afterpay'
+    : !afterpayEligible
+      ? 'affirm'
+      : provider;
 
   const affirmTerms = affirmEligible ? getFinancingTerms(price) : [];
   const afterpayInstallments = afterpayEligible ? getAfterpayInstallments(price) : [];
@@ -119,12 +122,20 @@ export function FinancingCalculator({ price, testID = 'financing-calculator' }: 
 
       {/* Single-provider header when only one tab */}
       {!showBothTabs && affirmEligible && (
-        <View testID="fin-tab-affirm" accessibilityState={{ selected: true }} style={styles.singleLabel}>
+        <View
+          testID="fin-tab-affirm"
+          accessibilityState={{ selected: true }}
+          style={styles.singleLabel}
+        >
           <Text style={[styles.singleLabelText, { color: colors.mountainBlue }]}>Affirm</Text>
         </View>
       )}
       {!showBothTabs && showAfterpaytab && !affirmEligible && (
-        <View testID="fin-tab-afterpay" accessibilityState={{ selected: true }} style={styles.singleLabel}>
+        <View
+          testID="fin-tab-afterpay"
+          accessibilityState={{ selected: true }}
+          style={styles.singleLabel}
+        >
           <Text style={[styles.singleLabelText, { color: colors.mountainBlue }]}>Afterpay</Text>
         </View>
       )}
