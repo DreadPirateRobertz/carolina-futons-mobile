@@ -17,7 +17,7 @@ import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
 import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
 import { useCart } from '@/hooks/useCart';
-import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import { useFutonModels } from '@/hooks/useFutonModels';
 import {
   MountainRefreshControl,
   MountainRefreshIndicator,
@@ -42,6 +42,7 @@ export function OrderHistoryScreen({
   const [refreshing, setRefreshing] = useState(false);
   const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
   const { addItem } = useCart();
+  const { getModel, getFabric } = useFutonModels();
 
   // Use prop orders or fall back to hook data (already sorted newest-first)
   const orders = ordersProp
@@ -68,14 +69,14 @@ export function OrderHistoryScreen({
   const handleReorder = useCallback(
     (order: Order) => {
       for (const lineItem of order.items) {
-        const model = FUTON_MODELS.find((m) => m.id === lineItem.modelId);
-        const fabric = FABRICS.find((f) => f.id === lineItem.fabricId);
+        const model = getModel(lineItem.modelId);
+        const fabric = getFabric(lineItem.fabricId);
         if (model && fabric) {
           addItem(model, fabric, lineItem.quantity);
         }
       }
     },
-    [addItem],
+    [addItem, getModel, getFabric],
   );
 
   const renderOrder = useCallback(

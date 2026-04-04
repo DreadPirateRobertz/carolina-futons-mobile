@@ -13,6 +13,40 @@ jest.mock('@/hooks/useOrders', () => ({
   useOrders: () => mockUseOrders(),
 }));
 
+jest.mock('@/hooks/useCart', () => ({
+  ...jest.requireActual('@/hooks/useCart'),
+  useCart: () => ({
+    addItem: jest.fn(),
+    items: [],
+    itemCount: 0,
+    subtotal: 0,
+    syncing: false,
+    removeItem: jest.fn(),
+    updateQuantity: jest.fn(),
+    clearCart: jest.fn(),
+    pendingSync: 0,
+    isSyncing: false,
+    loadItems: jest.fn(),
+    syncError: null,
+    clearSyncError: jest.fn(),
+  }),
+}));
+
+jest.mock('@/hooks/useFutonModels', () => ({
+  ...jest.requireActual('@/hooks/useFutonModels'),
+  useFutonModels: () => ({
+    models: [],
+    fabrics: [],
+    isLoading: false,
+    error: null,
+    getModel: jest.fn((id: string) => ({ id, name: `Model ${id}`, basePrice: 349 })),
+    getModelById: jest.fn((id: string) => ({ id, name: `Model ${id}`, basePrice: 349 })),
+    getFabric: jest.fn((id: string) => ({ id, name: `Fabric ${id}`, price: 0 })),
+    getModelForProduct: jest.fn(),
+    refresh: jest.fn(),
+  }),
+}));
+
 function renderOrderHistory(props: Partial<React.ComponentProps<typeof OrderHistoryScreen>> = {}) {
   return render(
     <ThemeProvider>

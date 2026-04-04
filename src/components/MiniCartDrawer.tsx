@@ -16,7 +16,13 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { Image } from 'expo-image';
-import Animated, { SlideInDown, SlideOutDown, FadeIn, FadeOut, runOnJS } from 'react-native-reanimated';
+import Animated, {
+  SlideInDown,
+  SlideOutDown,
+  FadeIn,
+  FadeOut,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';

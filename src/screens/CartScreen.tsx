@@ -76,7 +76,16 @@ interface Props {
  */
 export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
-  const { items, itemCount, subtotal, removeItem, updateQuantity, clearCart, syncError, clearSyncError } = useCart();
+  const {
+    items,
+    itemCount,
+    subtotal,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    syncError,
+    clearSyncError,
+  } = useCart();
   const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
   const { points } = useLoyalty();
