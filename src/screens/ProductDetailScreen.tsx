@@ -76,6 +76,7 @@ import { usePremium } from '@/hooks/usePremium';
 import { FinancingBadge } from '@/components/FinancingBadge';
 import { BNPLHeroSurface } from '@/components/BNPLHeroSurface';
 import { BNPLModal } from '@/components/BNPLModal';
+import { FinancingCalculator } from '@/components/FinancingCalculator';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
@@ -807,6 +808,8 @@ export function ProductDetailScreen({
             onPress={() => setBnplModalVisible(true)}
             testID="bnpl-hero-pdp"
           />
+          {/* cfutons_mobile-lub: Financing calculator — Affirm/Afterpay monthly breakdown, display only */}
+          <FinancingCalculator price={totalPrice} testID="pdp-financing-calculator" />
           {showInlineRating && (
             <TouchableOpacity
               onPress={() => {
