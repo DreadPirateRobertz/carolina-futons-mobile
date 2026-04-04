@@ -61,13 +61,19 @@ describe('Afterpay installment calculator', () => {
 
     it('installments sum to the total price', () => {
       const installments = getAfterpayInstallments(400);
-      const sum = installments.reduce((acc: number, inst: { amount: number }) => acc + inst.amount, 0);
+      const sum = installments.reduce(
+        (acc: number, inst: { amount: number }) => acc + inst.amount,
+        0,
+      );
       expect(Math.round(sum * 100) / 100).toBe(400);
     });
 
     it('installments sum correctly for odd price (rounding)', () => {
       const installments = getAfterpayInstallments(399);
-      const sum = installments.reduce((acc: number, inst: { amount: number }) => acc + inst.amount, 0);
+      const sum = installments.reduce(
+        (acc: number, inst: { amount: number }) => acc + inst.amount,
+        0,
+      );
       expect(Math.round(sum * 100) / 100).toBe(399);
     });
 
