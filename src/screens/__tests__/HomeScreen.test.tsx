@@ -12,7 +12,11 @@ jest.mock('@/components/LivingSkyBackground', () => {
 jest.mock('@/components/WildlifeLayer', () => {
   const { View } = require('react-native');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { WildlifeLayer: ({ skyState }: any) => <View testID="wildlife-layer" accessibilityLabel={`birdOpacity:${skyState.birdOpacity}`} /> };
+  return {
+    WildlifeLayer: ({ skyState }: any) => (
+      <View testID="wildlife-layer" accessibilityLabel={`birdOpacity:${skyState.birdOpacity}`} />
+    ),
+  };
 });
 
 jest.mock('react-native-reanimated', () => {

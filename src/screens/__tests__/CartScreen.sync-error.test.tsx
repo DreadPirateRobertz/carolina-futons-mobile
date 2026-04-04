@@ -35,8 +35,13 @@ jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
   const { View } = require('react-native');
   const MockSwipeable = React.forwardRef(
     ({ children, onSwipeableOpen, testID, renderRightActions }: any, _ref: any) => (
-      <View testID={testID} onSwipeableOpen={() => onSwipeableOpen?.('right', { close: jest.fn() })}>
-        {renderRightActions ? renderRightActions({ value: 1 }, { value: -100 }, { close: jest.fn() }) : null}
+      <View
+        testID={testID}
+        onSwipeableOpen={() => onSwipeableOpen?.('right', { close: jest.fn() })}
+      >
+        {renderRightActions
+          ? renderRightActions({ value: 1 }, { value: -100 }, { close: jest.fn() })
+          : null}
         {children}
       </View>
     ),
@@ -128,9 +133,7 @@ describe('CartScreen — sync error recovery (cm-vjz)', () => {
 
       // Wait for rollback — item disappears after rejection propagates
       await waitFor(() => {
-        expect(
-          queryByTestId(`cart-item-${asheville.id}:${naturalLinen.id}`),
-        ).toBeNull();
+        expect(queryByTestId(`cart-item-${asheville.id}:${naturalLinen.id}`)).toBeNull();
       });
     });
 

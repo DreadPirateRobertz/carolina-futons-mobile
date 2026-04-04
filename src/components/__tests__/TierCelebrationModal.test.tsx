@@ -98,9 +98,7 @@ describe('TierCelebrationModal', () => {
       jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
       const { queryByTestId } = renderModal('gold');
       // Wait for the async isReduceMotionEnabled to resolve and state to update
-      await waitFor(() =>
-        expect(queryByTestId('tier-celebration-confetti')).toBeNull(),
-      );
+      await waitFor(() => expect(queryByTestId('tier-celebration-confetti')).toBeNull());
       jest.restoreAllMocks();
     });
   });

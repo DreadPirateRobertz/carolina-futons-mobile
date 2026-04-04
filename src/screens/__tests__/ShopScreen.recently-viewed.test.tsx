@@ -45,7 +45,12 @@ describe('ShopScreen — recently viewed rail', () => {
   });
 
   it('does not show recently viewed rail when no products viewed', () => {
-    spy.mockReturnValue({ recentProducts: [], addViewed: jest.fn(), clearAll: jest.fn(), count: 0 });
+    spy.mockReturnValue({
+      recentProducts: [],
+      addViewed: jest.fn(),
+      clearAll: jest.fn(),
+      count: 0,
+    });
     const { queryByTestId } = renderShop();
     expect(queryByTestId('shop-recently-viewed-rail')).toBeNull();
   });
