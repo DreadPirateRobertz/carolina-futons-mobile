@@ -64,7 +64,11 @@ describe('DeepLinkProvider', () => {
       );
       renderHook(() => useDeepLinkContext(), { wrapper });
 
-      const parsedLink = { raw: 'cfutons://product/asheville', path: '/product/asheville', params: {} };
+      const parsedLink = {
+        raw: 'cfutons://product/asheville',
+        path: '/product/asheville',
+        params: {},
+      };
       const route = { screen: 'ProductDetail', params: { slug: 'asheville' } };
 
       act(() => {

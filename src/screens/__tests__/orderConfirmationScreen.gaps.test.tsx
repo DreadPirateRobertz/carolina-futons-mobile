@@ -35,7 +35,9 @@ const baseOrder: OrderConfirmation = {
   estimatedDelivery: 'April 15-20, 2026',
 };
 
-function renderConfirmation(props: Partial<React.ComponentProps<typeof OrderConfirmationScreen>> = {}) {
+function renderConfirmation(
+  props: Partial<React.ComponentProps<typeof OrderConfirmationScreen>> = {},
+) {
   return render(
     <ThemeProvider>
       <OrderConfirmationScreen order={baseOrder} {...props} />

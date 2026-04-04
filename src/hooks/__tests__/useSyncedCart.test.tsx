@@ -366,7 +366,6 @@ describe('useSyncedCart', () => {
   });
 });
 
-
 describe('useSyncedCart — removeItem and updateQuantity', () => {
   it('removeItem removes the item from cart', async () => {
     mockMutationSuccess();
@@ -382,7 +381,9 @@ describe('useSyncedCart — removeItem and updateQuantity', () => {
       mockMutationSuccess();
       fireEvent.press(getByTestId('remove-item'));
     });
-    await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
 
     expect(getByTestId('item-count').props.children).toBe(0);
   });
@@ -400,7 +401,9 @@ describe('useSyncedCart — removeItem and updateQuantity', () => {
       mockMutationSuccess();
       fireEvent.press(getByTestId('update-qty'));
     });
-    await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
 
     const items = JSON.parse(getByTestId('items-json').props.children);
     expect(items[0].quantity).toBe(2);
@@ -417,7 +420,9 @@ describe('useSyncedCart — clearCart', () => {
     expect(getByTestId('item-count').props.children).toBe(1);
 
     mockMutationSuccess();
-    await act(async () => { fireEvent.press(getByTestId('clear')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('clear'));
+    });
 
     expect(getByTestId('item-count').props.children).toBe(0);
   });
@@ -425,19 +430,29 @@ describe('useSyncedCart — clearCart', () => {
   it('queues SYNC action when clearCart called offline', async () => {
     const { getByTestId } = renderSynced(false);
 
-    await act(async () => { fireEvent.press(getByTestId('add-item')); });
-    await act(async () => { fireEvent.press(getByTestId('clear')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('add-item'));
+    });
+    await act(async () => {
+      fireEvent.press(getByTestId('clear'));
+    });
 
     expect(getByTestId('item-count').props.children).toBe(0);
   });
 
   it('calls captureException when clearCart online push fails', async () => {
     const { getByTestId } = renderSynced(true);
-    await act(async () => { await new Promise((r) => setTimeout(r, 10)); });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
 
     mockFetch.mockRejectedValueOnce(new Error('clear push failed'));
-    await act(async () => { fireEvent.press(getByTestId('clear')); });
-    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    await act(async () => {
+      fireEvent.press(getByTestId('clear'));
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 50));
+    });
 
     expect(mockCaptureException).toHaveBeenCalled();
   });
@@ -453,7 +468,9 @@ describe('useSyncedCart — client=null', () => {
         </CartProvider>
       </ConnectivityProvider>,
     );
-    await waitFor(() => { expect(getByTestId('item-count').props.children).toBe(0); });
+    await waitFor(() => {
+      expect(getByTestId('item-count').props.children).toBe(0);
+    });
   });
 
   it('add item works with null client', async () => {
@@ -465,7 +482,9 @@ describe('useSyncedCart — client=null', () => {
         </CartProvider>
       </ConnectivityProvider>,
     );
-    await act(async () => { fireEvent.press(getByTestId('add-item')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('add-item'));
+    });
     expect(getByTestId('item-count').props.children).toBe(1);
   });
 });

@@ -32,7 +32,12 @@ const mockPremiumValue = {
 };
 
 jest.mock('@/hooks/useMiniCartDrawer', () => ({
-  useMiniCartDrawer: () => ({ open: jest.fn(), close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+  useMiniCartDrawer: () => ({
+    open: jest.fn(),
+    close: jest.fn(),
+    toggle: jest.fn(),
+    isOpen: false,
+  }),
 }));
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => ({ itemCount: 0, items: [], subtotal: 0 }),
@@ -95,7 +100,9 @@ describe('CollectionsScreen — collection navigation', () => {
   it('pressing a non-earlyAccess collection navigates to CollectionDetail', () => {
     const { getByTestId } = renderCollections();
     fireEvent.press(getByTestId('collection-card-mountain-lodge-living'));
-    expect(mockNavigate).toHaveBeenCalledWith('CollectionDetail', { slug: 'mountain-lodge-living' });
+    expect(mockNavigate).toHaveBeenCalledWith('CollectionDetail', {
+      slug: 'mountain-lodge-living',
+    });
   });
 
   it('pressing earlyAccess collection as non-premium shows Alert', () => {

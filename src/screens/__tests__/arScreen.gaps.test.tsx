@@ -57,7 +57,13 @@ jest.mock('react-native-reanimated', () => {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
-    useAnimatedStyle: (fn: any) => { try { return fn(); } catch { return {}; } },
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     withSpring: (val: any) => val,
     withRepeat: (val: any) => val,
     withSequence: (...vals: any[]) => vals[0],
@@ -251,7 +257,9 @@ describe('ARScreen — product picker toggle', () => {
 
 describe('ARScreen — surface detection analytics', () => {
   it('fires arSurfaceDetected when detectionState is detected', () => {
-    const arSurfaceDetectedSpy = jest.spyOn(analytics.events, 'arSurfaceDetected').mockImplementation(() => {});
+    const arSurfaceDetectedSpy = jest
+      .spyOn(analytics.events, 'arSurfaceDetected')
+      .mockImplementation(() => {});
     mockSurfaceDetection.detectionState = 'detected';
     mockSurfaceDetection.planes = [
       {
@@ -271,7 +279,9 @@ describe('ARScreen — surface detection analytics', () => {
   });
 
   it('fires arLightingWarning when lightingWarning is set', () => {
-    const lightingWarningSpy = jest.spyOn(analytics.events, 'arLightingWarning').mockImplementation(() => {});
+    const lightingWarningSpy = jest
+      .spyOn(analytics.events, 'arLightingWarning')
+      .mockImplementation(() => {});
     mockSurfaceDetection.lightingWarning = 'dim';
     mockSurfaceDetection.lightingCondition = 'dim' as any;
     renderARScreen();

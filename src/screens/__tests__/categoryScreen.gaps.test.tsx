@@ -26,16 +26,14 @@ async function renderCategory(props: Partial<React.ComponentProps<typeof Categor
     <ThemeProvider>
       <WishlistProvider>
         <CompareProvider>
-          <CategoryScreen
-            onProductPress={jest.fn()}
-            onBack={jest.fn()}
-            {...props}
-          />
+          <CategoryScreen onProductPress={jest.fn()} onBack={jest.fn()} {...props} />
         </CompareProvider>
       </WishlistProvider>
     </ThemeProvider>,
   );
-  await act(async () => { jest.advanceTimersByTime(700); });
+  await act(async () => {
+    jest.advanceTimersByTime(700);
+  });
   await act(async () => {});
   await act(async () => {});
   return result;
@@ -49,7 +47,9 @@ describe('CategoryScreen — pull-to-refresh handler', () => {
     await act(async () => {
       refreshControl.props.onRefresh();
     });
-    await act(async () => { jest.advanceTimersByTime(700); });
+    await act(async () => {
+      jest.advanceTimersByTime(700);
+    });
     // After completion refreshing should be false
     expect(list.props.refreshControl.props.refreshing).toBeFalsy();
   });
@@ -66,7 +66,11 @@ describe('CategoryScreen — getItemLayout', () => {
     const { getByTestId } = await renderCategory({ categoryId: 'futons' });
     const list = getByTestId('category-product-list');
     const result = list.props.getItemLayout(null, 0);
-    expect(result).toMatchObject({ index: 0, length: expect.any(Number), offset: expect.any(Number) });
+    expect(result).toMatchObject({
+      index: 0,
+      length: expect.any(Number),
+      offset: expect.any(Number),
+    });
   });
 
   it('getItemLayout returns correct shape for index 3', async () => {

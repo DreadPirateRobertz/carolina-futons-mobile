@@ -90,7 +90,9 @@ describe('useProducts — Wix path', () => {
     mockQueryProducts.mockResolvedValue({ products: MOCK_PRODUCTS, totalResults: 100 });
     const { result } = await renderLoaded();
     const callsBefore = mockQueryProducts.mock.calls.length;
-    await act(async () => { result.current.loadMore(); });
+    await act(async () => {
+      result.current.loadMore();
+    });
     await act(async () => {});
     expect(mockQueryProducts.mock.calls.length).toBeGreaterThan(callsBefore);
   });
@@ -98,7 +100,9 @@ describe('useProducts — Wix path', () => {
   it('loadMore no-ops when hasMore=false', async () => {
     const { result } = await renderLoaded();
     const callsBefore = mockQueryProducts.mock.calls.length;
-    await act(async () => { result.current.loadMore(); });
+    await act(async () => {
+      result.current.loadMore();
+    });
     await act(async () => {});
     expect(mockQueryProducts.mock.calls.length).toBe(callsBefore);
   });
@@ -109,7 +113,9 @@ describe('useProducts — Wix path', () => {
       products: MOCK_PRODUCTS,
       totalResults: MOCK_PRODUCTS.length,
     });
-    await act(async () => { result.current.refresh(); });
+    await act(async () => {
+      result.current.refresh();
+    });
     await act(async () => {});
     expect(mockQueryProducts.mock.calls.length).toBeGreaterThanOrEqual(2);
   });

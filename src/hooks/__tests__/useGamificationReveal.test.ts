@@ -3,11 +3,7 @@
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  useGamificationReveal,
-  WELCOME_POINTS,
-  CHALLENGE_TEASERS,
-} from '../useGamificationReveal';
+import { useGamificationReveal, WELCOME_POINTS, CHALLENGE_TEASERS } from '../useGamificationReveal';
 import { TIER_NAMES, TIER_THRESHOLDS } from '../../public/gamificationTokens.js';
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
