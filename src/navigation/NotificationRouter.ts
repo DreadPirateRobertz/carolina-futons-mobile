@@ -6,7 +6,8 @@ export type NotificationPayload =
   | { type: 'streak_extended' }
   | { type: 'badge_earned' }
   | { type: 'tier_changed' }
-  | { type: 'price_drop'; productSlug: string };
+  | { type: 'price_drop'; productSlug: string }
+  | { type: 'cart_recovery' };
 
 export interface NavigationLike {
   navigate: (screen: string, params?: Record<string, unknown>) => void;
@@ -32,6 +33,9 @@ export function routeNotificationTap(
       break;
     case 'price_drop':
       navigation.navigate('ProductDetail', { slug: payload.productSlug });
+      break;
+    case 'cart_recovery':
+      navigation.navigate('Tabs', { screen: 'Cart' });
       break;
     default:
       navigation.navigate('Home');
