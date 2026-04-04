@@ -14,13 +14,7 @@
  */
 
 import React, { useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useTheme } from '@/theme';
 import { usePriceAlertSubscription } from '@/hooks/usePriceAlertSubscription';
 
@@ -84,10 +78,7 @@ export function PriceAlertButton({
           />
         ) : (
           <Text
-            style={[
-              styles.label,
-              { color: isSubscribed ? colors.mountainBlue : colors.espresso },
-            ]}
+            style={[styles.label, { color: isSubscribed ? colors.mountainBlue : colors.espresso }]}
           >
             {isSubscribed ? '🔔 ' : '🔔 '}
             {label}

@@ -107,11 +107,10 @@ export function usePriceAlertSubscription(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to subscribe to price alerts';
       setError(message);
-      captureException(
-        err instanceof Error ? err : new Error(message),
-        'error',
-        { action: 'usePriceAlertSubscription/subscribe', productId },
-      );
+      captureException(err instanceof Error ? err : new Error(message), 'error', {
+        action: 'usePriceAlertSubscription/subscribe',
+        productId,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -133,11 +132,10 @@ export function usePriceAlertSubscription(
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to remove price alert';
       setError(message);
-      captureException(
-        err instanceof Error ? err : new Error(message),
-        'error',
-        { action: 'usePriceAlertSubscription/unsubscribe', productId },
-      );
+      captureException(err instanceof Error ? err : new Error(message), 'error', {
+        action: 'usePriceAlertSubscription/unsubscribe',
+        productId,
+      });
     } finally {
       setIsLoading(false);
     }

@@ -36,9 +36,7 @@ jest.mock('@/hooks/usePriceAlertSubscription', () => ({
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function renderButton(
-  props: Partial<React.ComponentProps<typeof PriceAlertButton>> = {},
-) {
+function renderButton(props: Partial<React.ComponentProps<typeof PriceAlertButton>> = {}) {
   return render(
     <ThemeProvider>
       <PriceAlertButton
