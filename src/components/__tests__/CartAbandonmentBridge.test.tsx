@@ -39,11 +39,18 @@ jest.mock('@/hooks/useNotifications', () => ({
   }),
 }));
 
-jest.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({
+jest.mock('@/hooks/useAuth', () => {
+  const { createContext } = require('react');
+  const AuthContext = createContext({
     user: { id: 'member-1', email: 'test@example.com' },
-  }),
-}));
+  });
+  return {
+    AuthContext,
+    useAuth: () => ({
+      user: { id: 'member-1', email: 'test@example.com' },
+    }),
+  };
+});
 
 jest.mock('@/hooks/useCartAbandonmentReminder', () => ({
   useCartAbandonmentReminder: () => ({
