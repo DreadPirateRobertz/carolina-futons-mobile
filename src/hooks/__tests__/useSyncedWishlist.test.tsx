@@ -302,6 +302,57 @@ describe('useSyncedWishlist', () => {
   });
 });
 
+
+describe('useSyncedWishlist — clear', () => {
+  it('clears local wishlist when clear called', async () => {
+    const { getByTestId } = renderSynced();
+    await act(async () => { fireEvent.press(getByTestId('add')); });
+    expect(getByTestId('count').props.children).toBe(1);
+    await act(async () => { fireEvent.press(getByTestId('clear')); });
+    expect(getByTestId('count').props.children).toBe(0);
+  });
+
+  it('queues SYNC action when clear called offline', async () => {
+    const { getByTestId } = renderSynced(false);
+    await act(async () => { fireEvent.press(getByTestId('add')); });
+    await act(async () => { fireEvent.press(getByTestId('clear')); });
+    expect(getByTestId('count').props.children).toBe(0);
+  });
+
+  it('calls pushWishlist with empty array when clear called online', async () => {
+    const { getByTestId } = renderSynced(true);
+    await act(async () => { fireEvent.press(getByTestId('add')); });
+    await act(async () => { fireEvent.press(getByTestId('clear')); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+    expect(getByTestId('count').props.children).toBe(0);
+  });
+});
+
+describe('useSyncedWishlist — client=null', () => {
+  it('renders without crashing when client is null', async () => {
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true}>
+        <WishlistProvider>
+          <SyncedWishlistHarness client={null as any} />
+        </WishlistProvider>
+      </ConnectivityProvider>,
+    );
+    await waitFor(() => { expect(getByTestId('count').props.children).toBe(0); });
+  });
+
+  it('toggle works with null client', async () => {
+    const { getByTestId } = render(
+      <ConnectivityProvider initialOnline={true}>
+        <WishlistProvider>
+          <SyncedWishlistHarness client={null as any} />
+        </WishlistProvider>
+      </ConnectivityProvider>,
+    );
+    await act(async () => { fireEvent.press(getByTestId('toggle')); });
+    expect(getByTestId('in-wishlist').props.children).toBe('true');
+  });
+});
+
 describe('validateServerWishlistItems', () => {
   it('returns null for non-array input', () => {
     expect(validateServerWishlistItems('not-an-array')).toBeNull();
