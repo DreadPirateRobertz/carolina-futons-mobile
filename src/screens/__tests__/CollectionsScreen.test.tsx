@@ -252,10 +252,7 @@ describe('CollectionsScreen — error state', () => {
       error,
     });
     renderCollectionsScreen();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[CollectionsScreen]'),
-      error,
-    );
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[CollectionsScreen]'), error);
     consoleSpy.mockRestore();
   });
 });
