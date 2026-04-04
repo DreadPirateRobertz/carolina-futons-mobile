@@ -1040,7 +1040,7 @@ npx jest --passWithNoTests</pre>
 <h2>Checkout — Epic C Enhancements</h2>
 <div class="grid">
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <img src="screenshots/s31-20260404/67-checkout-promo-code.png" alt="Checkout Promo Code Input" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Checkout — Promo Code Input</h3>
     <p><strong>Epic C (PR #376).</strong> Expandable promo code form embedded in CheckoutScreen order summary. Collapsed by default ("Add promo code ›"). Validates via Wix callFunction /_functions/validatePromoCode. Shows discount row when applied (fixed or percent). accessibilityLiveRegion="assertive" on success/error messages. Null-client guard shows graceful message when unauthenticated.</p>
@@ -1048,7 +1048,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <img src="screenshots/s31-20260404/66-checkout-form-skeleton.png" alt="Checkout Form Skeleton" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Checkout — Form Skeleton</h3>
     <p><strong>Epic C (PR #376).</strong> CheckoutFormSkeleton replaces generic spinner while Stripe SDK initializes. 4 placeholder rows (name, address, city/zip, CTA button). testID="checkout-form-skeleton". Prevents flash of broken payment form on slow devices.</p>
@@ -1056,7 +1056,7 @@ npx jest --passWithNoTests</pre>
   </div>
 </div>
 <div class="card">
-  <div class="placeholder">📸 Screenshot pending (Epic C PR #376)</div>
+  <img src="screenshots/s31-20260404/68-checkout-keyboard-a11y.png" alt="Checkout Keyboard A11y" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>Checkout — Keyboard + A11y</h3>
     <p><strong>Epic C (PR #376).</strong> KeyboardAvoidingView (padding/height per platform) + ScrollView keyboardShouldPersistTaps="handled". Focus chain: fullName→line1→city (skips line2 if empty)→state→zip. All intermediate fields returnKeyType="next", zip "done". Progress bar: testID="checkout-progress", accessibilityRole="progressbar", accessibilityValue {{min:1,max:3,now:step}}. Error regions: accessibilityLiveRegion="assertive".</p>
