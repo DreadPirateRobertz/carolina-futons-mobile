@@ -243,7 +243,7 @@ describe('Notification preference gating before deep link routing', () => {
       cartRecovery: true,
       streakMilestone: true,
       questComplete: true,
-      dailySpinReminder: true,
+      dailySpinReminder: true, priceDropAlerts: true,
     };
 
     for (const type of allTypes) {
