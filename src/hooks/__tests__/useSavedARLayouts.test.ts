@@ -89,7 +89,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('My Room', [ITEM_A, ITEM_B]);
     });
@@ -148,7 +148,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('One More Room', [ITEM_B]);
     });
@@ -162,7 +162,7 @@ describe('useSavedARLayouts — saveLayout', () => {
     const { result } = renderHook(() => useSavedARLayouts());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    let saved: Awaited<ReturnType<typeof result.current.saveLayout>>;
+    let saved!: Awaited<ReturnType<typeof result.current.saveLayout>>;
     await act(async () => {
       saved = await result.current.saveLayout('Fails', [ITEM_A]);
     });
