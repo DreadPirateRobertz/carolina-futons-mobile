@@ -47,6 +47,10 @@ describe('Notification service', () => {
       expect(getDeepLinkForNotification('cart_reminder')).toBe('carolinafutons://cart');
     });
 
+    it('returns cart link for cart_recovery', () => {
+      expect(getDeepLinkForNotification('cart_recovery')).toBe('carolinafutons://cart');
+    });
+
     it('prefers snake_case payload keys over type-based routing', () => {
       expect(getDeepLinkForNotification('promotion', { product_id: 'asheville-full' })).toBe(
         'carolinafutons://product/asheville-full',
@@ -141,6 +145,13 @@ describe('Notification service', () => {
         shouldShowNotification('cart_reminder', { ...DEFAULT_PREFERENCES, cartReminders: true }),
       ).toBe(true);
     });
+
+    it('respects cartRecovery preference (default off)', () => {
+      expect(shouldShowNotification('cart_recovery', DEFAULT_PREFERENCES)).toBe(false);
+      expect(
+        shouldShowNotification('cart_recovery', { ...DEFAULT_PREFERENCES, cartRecovery: true }),
+      ).toBe(true);
+    });
   });
 
   describe('formatBadgeCount', () => {
@@ -178,6 +189,7 @@ describe('Notification service', () => {
       'promotion',
       'back_in_stock',
       'cart_reminder',
+      'cart_recovery',
       'streak_milestone',
       'quest_complete',
       'daily_spin_reminder',
@@ -205,6 +217,10 @@ describe('Notification service', () => {
 
     it('cart_reminder has LOW importance', () => {
       expect(ANDROID_CHANNEL_CONFIG.cart_reminder.importance).toBe(2);
+    });
+
+    it('cart_recovery has LOW importance', () => {
+      expect(ANDROID_CHANNEL_CONFIG.cart_recovery.importance).toBe(2);
     });
 
     it('gamification channels have DEFAULT or higher importance', () => {
@@ -235,6 +251,7 @@ describe('Notification service', () => {
       'promotion',
       'back_in_stock',
       'cart_reminder',
+      'cart_recovery',
       'streak_milestone',
       'quest_complete',
       'daily_spin_reminder',
