@@ -103,11 +103,11 @@ function BundleSuggestionInner({
       <View
         style={[
           styles.savingsRow,
-          { backgroundColor: colors.successLight ?? '#E8F5E9', borderRadius: borderRadius.sm },
+          { backgroundColor: colors.sandLight, borderRadius: borderRadius.sm },
         ]}
         testID={`${rootTestID}-savings`}
       >
-        <Text style={[styles.savingsText, { color: colors.success ?? '#2E7D32' }]}>
+        <Text style={[styles.savingsText, { color: colors.mountainBlue }]}>
           {`Save ${pricing.savingsPercent}% — `}
           <Text style={styles.savingsAmount}>{formatPrice(pricing.savings)}</Text>
           {' off'}
@@ -123,7 +123,7 @@ function BundleSuggestionInner({
         >
           {formatPrice(pricing.bundlePrice)}
         </Text>
-        <Text style={[styles.originalPrice, { color: colors.textMuted ?? colors.espresso }]}>
+        <Text style={[styles.originalPrice, { color: colors.muted }]}>
           {formatPrice(pricing.originalTotal)}
         </Text>
       </View>
@@ -140,7 +140,7 @@ function BundleSuggestionInner({
 
       {addSuccess ? (
         <View testID={`${rootTestID}-success`}>
-          <Text style={[styles.successText, { color: colors.success ?? '#2E7D32' }]}>
+          <Text style={[styles.successText, { color: colors.mountainBlue }]}>
             Bundle added to cart!
           </Text>
         </View>
@@ -150,7 +150,7 @@ function BundleSuggestionInner({
             styles.cta,
             {
               backgroundColor: isAddingToCart
-                ? (colors.textMuted ?? '#999')
+                ? colors.muted
                 : (colors.mountainBlue ?? colors.espresso),
               borderRadius: borderRadius.sm,
               paddingVertical: spacing.sm,

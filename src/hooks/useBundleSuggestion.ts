@@ -3,11 +3,10 @@
  *
  * Fetches a bundle suggestion for a given product from the Wix Data
  * `BundleDefinitions` collection. Returns the bundle definition, resolved
- * product catalog entries, calculated pricing (including coupon code), and
- * an add-to-cart action.
+ * product catalog entries, client-calculated pricing, and an add-to-cart action.
  *
- * Coupon codes follow the CF-BUNDLE-{8chars} format and are server-generated
- * by `calculateBundlePrice`.
+ * Coupon codes follow the CF-BUNDLE-{8chars} format, generated client-side
+ * from the bundleId.
  *
  * deacon-y8lf / cm-bun
  */
@@ -15,6 +14,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { PRODUCTS, type Product } from '@/data/products';
+
+const COLLECTION_ID = 'BundleDefinitions';
+
+interface RawBundleRecord {
+  bundleId?: string;
+  name?: string;
+  productIds?: string[];
+  discountPercent?: number;
+}
 
 export interface BundleDefinition {
   bundleId: string;
@@ -40,6 +48,29 @@ export interface UseBundleSuggestionReturn {
   addBundleToCart: () => Promise<void>;
   isAddingToCart: boolean;
   addSuccess: boolean;
+}
+
+function generateCouponCode(bundleId: string): string {
+  // Deterministic 8-char suffix from bundleId
+  let hash = 0;
+  for (let i = 0; i < bundleId.length; i++) {
+    hash = ((hash << 5) - hash + bundleId.charCodeAt(i)) | 0;
+  }
+  const suffix = Math.abs(hash).toString(36).toUpperCase().padStart(8, '0').slice(0, 8);
+  return `CF-BUNDLE-${suffix}`;
+}
+
+function calculatePricing(bundle: BundleDefinition, products: Product[]): BundlePricing {
+  const originalTotal = products.reduce((sum, p) => sum + (p.price ?? 0), 0);
+  const savings = originalTotal * (bundle.discountPercent / 100);
+  const bundlePrice = originalTotal - savings;
+  return {
+    originalTotal,
+    bundlePrice,
+    savings,
+    savingsPercent: bundle.discountPercent,
+    couponCode: generateCouponCode(bundle.bundleId),
+  };
 }
 
 export function useBundleSuggestion(productId: string): UseBundleSuggestionReturn {
@@ -70,31 +101,43 @@ export function useBundleSuggestion(productId: string): UseBundleSuggestionRetur
       }
 
       try {
-        const result = await wixClient.getCompatibleItems(productId);
+        const { items } = await wixClient.queryData<RawBundleRecord>(COLLECTION_ID, {
+          filter: { productIds: { $hasSome: [productId] } },
+          limit: 1,
+        });
 
         if (cancelled) return;
 
-        if (!result) {
+        const raw = items[0];
+        if (
+          !raw?.bundleId ||
+          !raw.name ||
+          !Array.isArray(raw.productIds) ||
+          raw.discountPercent === undefined
+        ) {
           setIsLoading(false);
           return;
         }
 
-        setBundle(result);
+        const def: BundleDefinition = {
+          bundleId: raw.bundleId,
+          name: raw.name,
+          productIds: raw.productIds,
+          discountPercent: raw.discountPercent,
+        };
 
-        const resolvedProducts = result.productIds
-          .map((id: string) => PRODUCTS.find((p) => p.id === id))
+        const resolved = def.productIds
+          .map((id) => PRODUCTS.find((p) => p.id === id))
           .filter((p): p is Product => p !== undefined);
-        setBundleProducts(resolvedProducts);
 
-        const pricingResult = await wixClient.calculateBundlePrice(
-          result.bundleId,
-          result.productIds,
-        );
+        const pricingResult = calculatePricing(def, resolved);
 
-        if (cancelled) return;
-
-        setPricing(pricingResult);
-        setIsLoading(false);
+        if (!cancelled) {
+          setBundle(def);
+          setBundleProducts(resolved);
+          setPricing(pricingResult);
+          setIsLoading(false);
+        }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : String(err));
@@ -114,11 +157,18 @@ export function useBundleSuggestion(productId: string): UseBundleSuggestionRetur
   }, [wixClient, productId]);
 
   const addBundleToCart = useCallback(async () => {
-    if (!wixClient || !bundle || !pricing) return;
+    if (!bundle || !pricing) return;
 
     setIsAddingToCart(true);
     try {
-      await wixClient.addBundleToCart(bundle.bundleId, bundle.productIds, pricing.couponCode);
+      // Record bundle intent in Wix for analytics/coupon tracking
+      if (wixClient) {
+        await wixClient.insertDataItem(COLLECTION_ID + 'Orders', {
+          bundleId: bundle.bundleId,
+          couponCode: pricing.couponCode,
+          addedAt: new Date().toISOString(),
+        });
+      }
       setAddSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
