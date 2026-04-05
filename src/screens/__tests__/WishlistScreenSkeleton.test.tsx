@@ -13,6 +13,15 @@ import { CompareProvider } from '@/contexts/CompareContext';
 
 jest.mock('@/components/ProductCard', () => ({ ProductCard: () => null }));
 
+// useSyncedWishlist wraps useWishlist + Wix sync. Screen tests cover UI only;
+// sync behaviour is tested in useSyncedWishlist.test.tsx.
+jest.mock('@/hooks/useSyncedWishlist', () => ({
+  useSyncedWishlist: (_opts: unknown) => {
+    const { useWishlist } = require('@/hooks/useWishlist');
+    return { ...useWishlist(), pendingCount: 0, isSyncing: false, syncNow: jest.fn() };
+  },
+}));
+
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => ({
     items: [],

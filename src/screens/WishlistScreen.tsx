@@ -23,8 +23,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import { MountainRefreshControl } from '@/components/MountainRefreshControl';
-import { useWishlist } from '@/hooks/useWishlist';
+import { useSyncedWishlist } from '@/hooks/useSyncedWishlist';
 import { useCart } from '@/hooks/useCart';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { type Product } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/ProductCard';
 import { EmptyState } from '@/components/EmptyState';
@@ -52,7 +53,8 @@ type WishlistProduct = Product & { savedPrice: number; priceDrop: number };
 export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
-  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useWishlist();
+  const wixClient = useOptionalWixClient();
+  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useSyncedWishlist({ client: wixClient });
   const { addItem } = useCart();
   const { getModelForProduct } = useFutonModels();
 
