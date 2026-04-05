@@ -384,7 +384,7 @@ describe('ProductDetailScreen', () => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { Share } = require('react-native');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const FileSystem = require('expo-file-system');
+      const FileSystem = require('expo-file-system/legacy');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const analytics = require('@/services/analytics');
       sharingAvailableSpy = jest.spyOn(Sharing, 'isAvailableAsync').mockResolvedValue(true);
