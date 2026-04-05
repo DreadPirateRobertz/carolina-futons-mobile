@@ -73,23 +73,17 @@ describe('useBookingCancellation', () => {
 
   describe('initial state', () => {
     it('bookings is empty array initially', () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
       expect(result.current.bookings).toHaveLength(0);
     });
 
     it('isLoadingBookings is false initially', () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
       expect(result.current.isLoadingBookings).toBe(false);
     });
 
     it('cancelledBooking is null initially', () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
       expect(result.current.cancelledBooking).toBeNull();
     });
   });
@@ -98,9 +92,7 @@ describe('useBookingCancellation', () => {
 
   describe('loadBookings', () => {
     it('queries ConsultationBookings by memberEmail', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -116,9 +108,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('excludes already-cancelled bookings', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
 
@@ -128,9 +118,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('populates bookings array on success', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -142,9 +130,7 @@ describe('useBookingCancellation', () => {
     it('sets loadError on query failure', async () => {
       mockQueryData.mockRejectedValue(new Error('Network error'));
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -155,9 +141,7 @@ describe('useBookingCancellation', () => {
     it('returns empty bookings when none found', async () => {
       mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -170,9 +154,7 @@ describe('useBookingCancellation', () => {
 
   describe('cancelBooking', () => {
     it('calls updateDataItem with status cancelled', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -187,9 +169,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('includes cancelledAt timestamp in update', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -202,9 +182,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('includes cancellationReason when provided', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -216,9 +194,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('sends cancellation email after successful cancel', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -236,9 +212,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('sets cancelledBooking on success', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -259,9 +233,7 @@ describe('useBookingCancellation', () => {
         totalResults: 2,
       });
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.bookings).toHaveLength(2));
@@ -272,9 +244,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('returns true on successful cancellation', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -298,9 +268,7 @@ describe('useBookingCancellation', () => {
         totalResults: 1,
       });
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -315,9 +283,7 @@ describe('useBookingCancellation', () => {
     });
 
     it('returns false when bookingId not found in loaded bookings', async () => {
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -341,9 +307,7 @@ describe('useBookingCancellation', () => {
         totalResults: 1,
       });
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -365,9 +329,7 @@ describe('useBookingCancellation', () => {
     it('sets cancelError when updateDataItem fails', async () => {
       mockUpdateDataItem.mockRejectedValue(new Error('Update failed'));
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -381,9 +343,7 @@ describe('useBookingCancellation', () => {
     it('returns false when updateDataItem fails', async () => {
       mockUpdateDataItem.mockRejectedValue(new Error('Server error'));
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -399,9 +359,7 @@ describe('useBookingCancellation', () => {
     it('does not throw if cancellation email fails (fire-and-forget)', async () => {
       mockSendCancellationEmail.mockRejectedValue(new Error('Email error'));
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
@@ -418,9 +376,7 @@ describe('useBookingCancellation', () => {
     it('is a no-op when Wix client is not available', async () => {
       mockWixClient = null;
 
-      const { result } = renderHook(() =>
-        useBookingCancellation({ getNow: getNowToday }),
-      );
+      const { result } = renderHook(() => useBookingCancellation({ getNow: getNowToday }));
 
       await act(async () => result.current.loadBookings(EMAIL));
       await waitFor(() => expect(result.current.isLoadingBookings).toBe(false));
