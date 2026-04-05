@@ -1,18 +1,28 @@
 /**
  * @module useProductQA
  *
- * Product Q&A hook — cm-wf3.
+ * Product Q&A hook — cm-wf3 / deacon-qbl.
  *
- * Fetches questions for a product from the Wix CF-0b22 Questions collection
- * and exposes a submitQuestion action with optimistic UI, input validation,
- * and error handling.
+ * Fetches approved questions for a product from the Wix CF-0b22 collection
+ * and exposes a submitQuestion action with:
+ *   - Input validation (empty, max length)
+ *   - XSS sanitization (HTML tag stripping before submit)
+ *   - Rate limiting (3 questions / hr, backed by AsyncStorage)
+ *   - Optimistic UI insert
+ *   - Error handling
+ *
+ * Clock injection via `options.getNow` enables deterministic rate-limit tests.
  */
 import { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from '@/hooks/useAuth';
 
 const COLLECTION_ID = 'CF-0b22';
 const MAX_QUESTION_LENGTH = 500;
+const RATE_LIMIT_KEY = '@cfutons/qa-rl';
+const RATE_LIMIT_MAX = 3;
+const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export interface ProductQuestion {
   id?: string;
@@ -22,6 +32,7 @@ export interface ProductQuestion {
   authorName: string;
   createdDate: string;
   answered: boolean;
+  status?: 'approved' | 'pending' | 'rejected';
 }
 
 export interface UseProductQAResult {
@@ -35,7 +46,76 @@ export interface UseProductQAResult {
   clearSubmitStatus: () => void;
 }
 
-export function useProductQA(productId: string): UseProductQAResult {
+export interface UseProductQAOptions {
+  /** Injectable clock for rate-limit tests. Defaults to Date.now. */
+  getNow?: () => number;
+}
+
+/** Strip HTML tags (including script/style block content) and trim. */
+function sanitizeText(raw: string): string {
+  return raw
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // strip script blocks + content
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')   // strip style blocks + content
+    .replace(/<[^>]*>/g, '')  // strip remaining tags
+    .trim();
+}
+
+/**
+ * Check rate limit. Returns `null` if allowed, or an error message string
+ * (with retry hint) if the user has hit the 3/hr cap.
+ */
+async function checkRateLimit(getNow: () => number): Promise<string | null> {
+  const now = getNow();
+  let timestamps: number[] = [];
+
+  try {
+    const stored = await AsyncStorage.getItem(RATE_LIMIT_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as number[];
+      timestamps = Array.isArray(parsed) ? parsed : [];
+    }
+  } catch {
+    // If storage read fails, don't block the user
+    return null;
+  }
+
+  const recent = timestamps.filter((t) => t > now - ONE_HOUR_MS);
+
+  if (recent.length >= RATE_LIMIT_MAX) {
+    // Oldest of the recent 3 — when it ages out the user gets a slot back
+    const oldestRecent = Math.min(...recent);
+    const msUntilSlot = ONE_HOUR_MS - (now - oldestRecent);
+    const minutesLeft = Math.ceil(msUntilSlot / 60_000);
+    return `You've asked 3 questions this hour. Try again in ${minutesLeft} min.`;
+  }
+
+  return null;
+}
+
+async function recordSubmitTimestamp(getNow: () => number): Promise<void> {
+  const now = getNow();
+  let timestamps: number[] = [];
+
+  try {
+    const stored = await AsyncStorage.getItem(RATE_LIMIT_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as number[];
+      timestamps = Array.isArray(parsed) ? parsed : [];
+    }
+    // Prune old entries to keep storage tidy
+    const recent = timestamps.filter((t) => t > now - ONE_HOUR_MS);
+    await AsyncStorage.setItem(RATE_LIMIT_KEY, JSON.stringify([...recent, now]));
+  } catch {
+    // Non-fatal — rate limit tracking is best-effort
+  }
+}
+
+export function useProductQA(
+  productId: string,
+  options?: UseProductQAOptions,
+): UseProductQAResult {
+  const getNow = options?.getNow ?? Date.now;
+
   const wixClient = useOptionalWixClient() as {
     queryData: <T>(
       collectionId: string,
@@ -67,7 +147,7 @@ export function useProductQA(productId: string): UseProductQAResult {
     (async () => {
       try {
         const result = await wixClient.queryData<ProductQuestion>(COLLECTION_ID, {
-          filter: { productId },
+          filter: { productId, status: 'approved' },
           limit: 50,
         });
         if (!cancelled) {
@@ -91,14 +171,22 @@ export function useProductQA(productId: string): UseProductQAResult {
 
   const submitQuestion = useCallback(
     async (text: string) => {
-      const trimmed = text?.trim() ?? '';
+      // Sanitize first, then validate
+      const sanitized = sanitizeText(text ?? '');
 
-      if (!trimmed) {
+      if (!sanitized) {
         setSubmitError('Question is required — please enter your question');
         return;
       }
-      if (trimmed.length > MAX_QUESTION_LENGTH) {
+      if (sanitized.length > MAX_QUESTION_LENGTH) {
         setSubmitError(`Question must be 500 characters or fewer (too long)`);
+        return;
+      }
+
+      // Rate limit check
+      const rateLimitError = await checkRateLimit(getNow);
+      if (rateLimitError) {
+        setSubmitError(rateLimitError);
         return;
       }
 
@@ -108,7 +196,7 @@ export function useProductQA(productId: string): UseProductQAResult {
 
       const newQuestion: ProductQuestion = {
         productId,
-        question: trimmed,
+        question: sanitized,
         answer: '',
         authorName: user?.displayName ?? 'Anonymous',
         createdDate: new Date().toISOString(),
@@ -122,12 +210,13 @@ export function useProductQA(productId: string): UseProductQAResult {
         if (!wixClient) throw new Error('Q&A service unavailable');
         await wixClient.insertDataItem(COLLECTION_ID, {
           productId,
-          question: trimmed,
+          question: sanitized,
           answer: '',
           authorName: newQuestion.authorName,
           createdDate: newQuestion.createdDate,
           answered: false,
         });
+        await recordSubmitTimestamp(getNow);
         setSubmitSuccess(true);
       } catch (err) {
         // Roll back optimistic insert
@@ -138,7 +227,7 @@ export function useProductQA(productId: string): UseProductQAResult {
         setIsSubmitting(false);
       }
     },
-    [productId, user, wixClient],
+    [productId, user, wixClient, getNow],
   );
 
   const clearSubmitStatus = useCallback(() => {

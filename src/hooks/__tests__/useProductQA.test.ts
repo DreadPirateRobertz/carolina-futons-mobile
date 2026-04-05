@@ -269,7 +269,178 @@ describe('submitQuestion', () => {
   });
 });
 
-// ── Section 7: clearSubmitStatus ─────────────────────────────────────────────
+// ── Section 7: XSS sanitization ─────────────────────────────────────────────
+
+describe('XSS sanitization', () => {
+  it('strips HTML script tags before submitting', async () => {
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('<script>alert("xss")</script>Is it washable?');
+    });
+
+    const submitted = mockInsertDataItem.mock.calls[0][1] as Record<string, unknown>;
+    expect(submitted.question as string).not.toContain('<script>');
+    expect(submitted.question as string).not.toContain('</script>');
+    expect(submitted.question as string).toContain('Is it washable?');
+  });
+
+  it('strips inline HTML event handlers', async () => {
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('<img onload="evil()" src="x">Does this ship free?');
+    });
+
+    const submitted = mockInsertDataItem.mock.calls[0][1] as Record<string, unknown>;
+    expect(submitted.question as string).not.toContain('<img');
+    expect(submitted.question as string).not.toContain('onload');
+    expect(submitted.question as string).toContain('Does this ship free?');
+  });
+
+  it('rejects question that is empty after stripping HTML', async () => {
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('<script>evil()</script>   ');
+    });
+
+    expect(mockInsertDataItem).not.toHaveBeenCalled();
+    expect(result.current.submitError).toMatch(/empty|required/i);
+  });
+
+  it('trims whitespace before submitting', async () => {
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('   Is it comfortable?   ');
+    });
+
+    const submitted = mockInsertDataItem.mock.calls[0][1] as Record<string, unknown>;
+    expect(submitted.question as string).toBe('Is it comfortable?');
+  });
+});
+
+// ── Section 8: Rate limiting (3/hr) ─────────────────────────────────────────
+
+describe('rate limiting', () => {
+  const AsyncStorage = require('@react-native-async-storage/async-storage');
+  const RATE_LIMIT_KEY = '@cfutons/qa-rl';
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+
+  it('blocks submission when 3 questions sent in the past hour', async () => {
+    const now = 1_700_000_000_000;
+    const recentTimestamps = [now - 100, now - 200, now - 300];
+    AsyncStorage.getItem.mockResolvedValue(JSON.stringify(recentTimestamps));
+
+    const { result } = renderHook(() =>
+      useProductQA(PRODUCT_ID, { getNow: () => now }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('What is the weight limit?');
+    });
+
+    expect(mockInsertDataItem).not.toHaveBeenCalled();
+    expect(result.current.submitError).toMatch(/3 questions|limit/i);
+  });
+
+  it('allows submission when only 2 questions sent in the past hour', async () => {
+    const now = 1_700_000_000_000;
+    const recentTimestamps = [now - 100, now - 200];
+    AsyncStorage.getItem.mockResolvedValue(JSON.stringify(recentTimestamps));
+
+    const { result } = renderHook(() =>
+      useProductQA(PRODUCT_ID, { getNow: () => now }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('Is the frame solid wood?');
+    });
+
+    expect(mockInsertDataItem).toHaveBeenCalled();
+    expect(result.current.submitSuccess).toBe(true);
+  });
+
+  it('ignores timestamps older than 1 hour when computing rate limit', async () => {
+    const now = 1_700_000_000_000;
+    // 3 timestamps, all more than 1 hour ago — should NOT be rate-limited
+    const oldTimestamps = [now - ONE_HOUR_MS - 1, now - ONE_HOUR_MS - 2, now - ONE_HOUR_MS - 3];
+    AsyncStorage.getItem.mockResolvedValue(JSON.stringify(oldTimestamps));
+
+    const { result } = renderHook(() =>
+      useProductQA(PRODUCT_ID, { getNow: () => now }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('Can I get a fabric swatch?');
+    });
+
+    expect(mockInsertDataItem).toHaveBeenCalled();
+    expect(result.current.submitSuccess).toBe(true);
+  });
+
+  it('persists timestamp to AsyncStorage after successful submit', async () => {
+    const now = 1_700_000_000_000;
+    AsyncStorage.getItem.mockResolvedValue(null);
+
+    const { result } = renderHook(() =>
+      useProductQA(PRODUCT_ID, { getNow: () => now }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('Any warranty?');
+    });
+
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      RATE_LIMIT_KEY,
+      expect.stringContaining(String(now)),
+    );
+  });
+
+  it('rate limit error includes a retry timing hint', async () => {
+    const now = 1_700_000_000_000;
+    // Oldest timestamp is 30 min ago → user must wait ~30 more min
+    const timestamps = [now - ONE_HOUR_MS / 2, now - 200, now - 100];
+    AsyncStorage.getItem.mockResolvedValue(JSON.stringify(timestamps));
+
+    const { result } = renderHook(() =>
+      useProductQA(PRODUCT_ID, { getNow: () => now }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.submitQuestion('What are the dimensions?');
+    });
+
+    expect(result.current.submitError).toMatch(/\d+\s*min/i);
+  });
+});
+
+// ── Section 9: Approved questions filter ────────────────────────────────────
+
+describe('approved questions filter', () => {
+  it('queries with status: approved filter to exclude pending/rejected', async () => {
+    renderHook(() => useProductQA(PRODUCT_ID));
+    await waitFor(() => expect(mockQueryData).toHaveBeenCalled());
+    expect(mockQueryData).toHaveBeenCalledWith(
+      'CF-0b22',
+      expect.objectContaining({
+        filter: expect.objectContaining({ productId: PRODUCT_ID, status: 'approved' }),
+      }),
+    );
+  });
+});
+
+// ── Section 10: clearSubmitStatus ─────────────────────────────────────────────
 
 describe('clearSubmitStatus', () => {
   it('resets submitSuccess and submitError', async () => {
