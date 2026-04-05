@@ -1,11 +1,12 @@
 /**
- * TDD tests for OrderHistoryScreen reorder CTA — cm-7ot
+ * TDD tests for OrderHistoryScreen reorder CTA — cm-7ot / updated cm-bjq.
  *
- * Each order card must have a "Reorder" button that calls cart.addItem
- * for every line item in the order, using the catalog model + fabric.
+ * cm-7ot: Reorder button presence + accessibility.
+ * cm-bjq: Reorder now opens a confirmation sheet; addItem is called only after
+ *         the user presses Confirm. Tests updated to simulate the two-step flow.
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { OrderHistoryScreen } from '../OrderHistoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { MOCK_ORDERS, type Order } from '@/data/orders';
@@ -63,6 +64,12 @@ const BASE_HOOK_STATE = {
   getOrder: jest.fn(),
 };
 
+// Flush pending React state updates between tests to prevent
+// "Cannot log after tests are done" from unresolved async effects.
+afterEach(async () => {
+  await act(async () => {});
+});
+
 describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -91,17 +98,24 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
   });
 
   describe('Reorder action — adds items to cart', () => {
-    it('calls addItem for each line item when reorder is pressed', () => {
+    // cm-bjq: Reorder opens a confirmation sheet. addItem is called only after
+    // the user confirms. Tests simulate the full two-step flow.
+
+    it('calls addItem for each line item when reorder is confirmed', async () => {
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-confirm-btn'));
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
 
       const order = MOCK_ORDERS.find((o) => o.id === 'ord-001')!;
       expect(mockAddItem).toHaveBeenCalledTimes(order.items.length);
     });
 
-    it('passes correct model to addItem', () => {
+    it('passes correct model to addItem', async () => {
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-confirm-btn'));
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
 
       const order = MOCK_ORDERS.find((o) => o.id === 'ord-001')!;
       const expectedModel = FUTON_MODELS.find((m) => m.id === order.items[0].modelId);
@@ -112,9 +126,11 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
       );
     });
 
-    it('passes correct fabric to addItem', () => {
+    it('passes correct fabric to addItem', async () => {
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-confirm-btn'));
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
 
       const order = MOCK_ORDERS.find((o) => o.id === 'ord-001')!;
       const expectedFabric = FABRICS.find((f) => f.id === order.items[0].fabricId);
@@ -125,9 +141,11 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
       );
     });
 
-    it('passes correct quantity to addItem', () => {
+    it('passes correct quantity to addItem', async () => {
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-confirm-btn'));
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
 
       const order = MOCK_ORDERS.find((o) => o.id === 'ord-001')!;
       expect(mockAddItem).toHaveBeenCalledWith(
@@ -137,17 +155,35 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
       );
     });
 
-    it('adds all items for a multi-item order', () => {
+    it('adds all items for a multi-item order', async () => {
       const multiItemOrder = MOCK_ORDERS.find((o) => o.items.length > 1);
-      if (!multiItemOrder) return; // skip if no multi-item mock exists
+      if (!multiItemOrder) return;
 
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId(`order-reorder-${multiItemOrder.id}`));
+      await waitFor(() => getByTestId('reorder-confirm-btn'));
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
 
       expect(mockAddItem).toHaveBeenCalledTimes(multiItemOrder.items.length);
     });
 
-    it('silently skips items whose catalog model is not found', () => {
+    it('does not call addItem when sheet is dismissed without confirming', async () => {
+      const { getByTestId } = renderOrderHistory();
+      fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-sheet-close'));
+      fireEvent.press(getByTestId('reorder-sheet-close'));
+      expect(mockAddItem).not.toHaveBeenCalled();
+    });
+
+    it('does not call addItem when reorder is pressed but not yet confirmed', async () => {
+      const { getByTestId } = renderOrderHistory();
+      fireEvent.press(getByTestId('order-reorder-ord-001'));
+      await waitFor(() => getByTestId('reorder-sheet'));
+      // Sheet is open but Confirm not pressed yet
+      expect(mockAddItem).not.toHaveBeenCalled();
+    });
+
+    it('does not call addItem for items whose catalog model is not found', async () => {
       const orderWithUnknownProduct: Order = {
         ...MOCK_ORDERS[0],
         id: 'ord-unknown',
@@ -159,8 +195,10 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
         ],
       };
       const { getByTestId } = renderOrderHistory({ orders: [orderWithUnknownProduct] });
-      // Should not throw; addItem should NOT be called for the missing item
       fireEvent.press(getByTestId('order-reorder-ord-unknown'));
+      await waitFor(() => getByTestId('reorder-sheet'));
+      // Confirm is disabled (all OOS) — pressing it should be a no-op
+      fireEvent.press(getByTestId('reorder-confirm-btn'));
       expect(mockAddItem).not.toHaveBeenCalled();
     });
   });
