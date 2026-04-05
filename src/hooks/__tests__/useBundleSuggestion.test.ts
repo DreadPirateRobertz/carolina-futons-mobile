@@ -247,7 +247,7 @@ describe('useBundleSuggestion', () => {
     });
 
     it('sets isAddingToCart=true while adding', async () => {
-      let resolveAdd!: () => void;
+      let resolveAdd!: (value?: unknown) => void;
       mockInsertDataItem.mockReturnValue(
         new Promise((res) => {
           resolveAdd = res;
