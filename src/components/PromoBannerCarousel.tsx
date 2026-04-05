@@ -4,6 +4,7 @@
  * Auto-rotating promotional banner carousel with dot indicators.
  * Each banner supports image, title, subtitle, CTA text, and deep link target.
  * Auto-rotates every 5 seconds, pauses on user interaction.
+ * Respects the system Reduce Motion accessibility setting.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -20,6 +21,7 @@ import { Linking } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const BANNER_WIDTH = SCREEN_WIDTH - 48;
@@ -35,7 +37,7 @@ export interface PromoBannerItem {
   accentColor: string;
 }
 
-const LAUNCH_PROMOS: PromoBannerItem[] = [
+export const LAUNCH_PROMOS: PromoBannerItem[] = [
   {
     id: 'promo-free-shipping',
     title: 'Free Shipping',
@@ -67,10 +69,12 @@ const LAUNCH_PROMOS: PromoBannerItem[] = [
 
 interface Props {
   items?: PromoBannerItem[];
+  isLoading?: boolean;
 }
 
-export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
+export function PromoBannerCarousel({ items = LAUNCH_PROMOS, isLoading = false }: Props) {
   const { colors, spacing, typography, borderRadius } = useTheme();
+  const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
   const autoRotateRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -92,12 +96,12 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
   }, [items.length]);
 
   useEffect(() => {
-    if (items.length <= 1) return;
+    if (items.length <= 1 || reduceMotion) return;
     startAutoRotate();
     return () => {
       if (autoRotateRef.current) clearInterval(autoRotateRef.current);
     };
-  }, [items.length, startAutoRotate]);
+  }, [items.length, reduceMotion, startAutoRotate]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems.length > 0 && viewableItems[0].index != null) {
@@ -176,6 +180,17 @@ export function PromoBannerCarousel({ items = LAUNCH_PROMOS }: Props) {
     ),
     [handleBannerPress, borderRadius, typography],
   );
+
+  if (isLoading && items.length === 0) {
+    return (
+      <View
+        style={[styles.container, { marginHorizontal: spacing.lg }]}
+        testID="promo-banner-skeleton"
+      >
+        <View style={[styles.bannerCard, styles.skeletonCard, { width: BANNER_WIDTH }]} />
+      </View>
+    );
+  }
 
   if (items.length === 0) return null;
 
@@ -281,5 +296,11 @@ const styles = StyleSheet.create({
   dot: {
     height: 8,
     opacity: 0.8,
+  },
+  skeletonCard: {
+    height: 76,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 12,
+    opacity: 0.6,
   },
 });
