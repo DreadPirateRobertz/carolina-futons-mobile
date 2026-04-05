@@ -106,6 +106,7 @@ import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PointsToast } from '@/components/PointsToast';
 import { PriceAlertButton } from '@/components/PriceAlertButton';
+import { VideoReviewGallery } from '@/components/VideoReviewGallery';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -1445,6 +1446,9 @@ export function ProductDetailScreen({
             />
           </View>
         ) : null}
+
+        {/* Video Reviews Section — cm-uh3 */}
+        <VideoReviewGallery productId={model.id} />
 
         {/* Q&A Section */}
         <View
