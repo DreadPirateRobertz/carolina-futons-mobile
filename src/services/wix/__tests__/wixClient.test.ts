@@ -1386,8 +1386,7 @@ describe('WixClient constructor — baseUrl cert pinning', () => {
 
   it('constructs successfully with explicit trusted baseUrl', () => {
     expect(
-      () =>
-        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://www.wixapis.com' }),
+      () => new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://www.wixapis.com' }),
     ).not.toThrow();
   });
 
@@ -1399,15 +1398,13 @@ describe('WixClient constructor — baseUrl cert pinning', () => {
 
   it('throws when baseUrl targets an untrusted host', () => {
     expect(
-      () =>
-        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://evil.example.com' }),
+      () => new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://evil.example.com' }),
     ).toThrow(/blocked.*untrusted/i);
   });
 
   it('throws when baseUrl uses http (non-HTTPS)', () => {
     expect(
-      () =>
-        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'http://www.wixapis.com' }),
+      () => new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'http://www.wixapis.com' }),
     ).toThrow(/https required/i);
   });
 
@@ -1424,8 +1421,7 @@ describe('WixClient constructor — baseUrl cert pinning', () => {
 
   it('throws for localhost baseUrl (prevents dev proxy leaks in prod)', () => {
     expect(
-      () =>
-        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://localhost/api' }),
+      () => new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://localhost/api' }),
     ).toThrow(/blocked.*untrusted/i);
   });
 });
