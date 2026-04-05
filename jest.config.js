@@ -10,6 +10,9 @@ module.exports = {
   // Cap workers at 50% of CPUs to reduce resource contention under parallel load.
   // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
   maxWorkers: '50%',
+  // Kill and recycle workers that exceed this memory threshold, preventing OOM
+  // crashes in CI when large test suites (e.g. SearchScreen) accumulate heap.
+  workerIdleMemoryLimit: '512MB',
   setupFiles: ['./jest.setup.js'],
   setupFilesAfterEnv: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
