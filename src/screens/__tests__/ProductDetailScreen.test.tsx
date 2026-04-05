@@ -372,20 +372,35 @@ describe('ProductDetailScreen', () => {
   });
 
   describe('Share Button', () => {
-    let shareSpy: jest.SpyInstance;
+    let sharingAvailableSpy: jest.SpyInstance;
+    let sharingAsyncSpy: jest.SpyInstance;
+    let rnShareSpy: jest.SpyInstance;
     let shareProductSpy: jest.SpyInstance;
+    let downloadSpy: jest.SpyInstance;
 
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const Sharing = require('expo-sharing');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { Share } = require('react-native');
-      shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const FileSystem = require('expo-file-system');
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const analytics = require('@/services/analytics');
+      sharingAvailableSpy = jest.spyOn(Sharing, 'isAvailableAsync').mockResolvedValue(true);
+      sharingAsyncSpy = jest.spyOn(Sharing, 'shareAsync').mockResolvedValue(undefined);
+      rnShareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' });
+      downloadSpy = jest
+        .spyOn(FileSystem, 'downloadAsync')
+        .mockResolvedValue({ uri: '/mock-cache/product.jpg', status: 200 });
       shareProductSpy = jest.spyOn(analytics.events, 'shareProduct').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      shareSpy.mockRestore();
+      sharingAvailableSpy.mockRestore();
+      sharingAsyncSpy.mockRestore();
+      rnShareSpy.mockRestore();
+      downloadSpy.mockRestore();
       shareProductSpy.mockRestore();
     });
 
@@ -406,36 +421,143 @@ describe('ProductDetailScreen', () => {
       expect(shareBtn.props.accessibilityHint).toBeTruthy();
     });
 
-    it('calls Share.share with product slug in deep link on press', async () => {
+    it('uses expo-sharing when product has image and sharing is available', async () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('detail-share-button'));
-      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
-      const call = shareSpy.mock.calls[0][0] as { message: string; url?: string };
-      const payload = call.url ?? call.message;
-      expect(payload).toContain('asheville-full-futon');
+      await waitFor(() => expect(sharingAsyncSpy).toHaveBeenCalled());
+      expect(rnShareSpy).not.toHaveBeenCalled();
     });
 
-    it('fires shareProduct analytics event on successful share', async () => {
+    it('downloads product image before calling shareAsync', async () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(downloadSpy).toHaveBeenCalled());
+      await waitFor(() => expect(sharingAsyncSpy).toHaveBeenCalled());
+    });
+
+    it('uses product slug in cached image filename for traceability', async () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(downloadSpy).toHaveBeenCalled());
+      const [, destUri] = downloadSpy.mock.calls[0] as [string, string];
+      expect(destUri).toContain('asheville-full-futon');
+    });
+
+    it('fires shareProduct analytics after successful expo-sharing', async () => {
       const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       fireEvent.press(getByTestId('detail-share-button'));
       await waitFor(() => expect(shareProductSpy).toHaveBeenCalled());
     });
 
-    it('does not fire analytics when user cancels share', async () => {
-      shareSpy.mockResolvedValueOnce({ action: 'dismissedAction' });
-      const { getByTestId } = renderDetail();
-      fireEvent.press(getByTestId('detail-share-button'));
-      await waitFor(() => expect(shareSpy).toHaveBeenCalled());
-      expect(shareProductSpy).not.toHaveBeenCalled();
-    });
-
-    it('does not throw when Share.share rejects', async () => {
-      shareSpy.mockRejectedValueOnce(new Error('share failed'));
-      const { getByTestId } = renderDetail();
+    it('does not throw when expo-sharing shareAsync rejects (share error)', async () => {
+      sharingAsyncSpy.mockRejectedValueOnce(new Error('share failed'));
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
       await act(async () => {
         fireEvent.press(getByTestId('detail-share-button'));
       });
       // no crash — rejection handled gracefully
+    });
+
+    it('does not fire analytics when expo-sharing shareAsync rejects', async () => {
+      sharingAsyncSpy.mockRejectedValueOnce(new Error('share failed'));
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      await act(async () => {
+        fireEvent.press(getByTestId('detail-share-button'));
+      });
+      expect(shareProductSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when image download fails (share error)', async () => {
+      downloadSpy.mockRejectedValueOnce(new Error('network error'));
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      await act(async () => {
+        fireEvent.press(getByTestId('detail-share-button'));
+      });
+      // no crash — download failure handled gracefully
+    });
+
+    it('handles product name with special characters in share dialog title', async () => {
+      const specialModel = { ...FUTON_MODELS[0], name: "Mike's & Co. <Futon>" };
+      jest.spyOn(require('@/hooks/useFutonModels'), 'useFutonModels').mockReturnValue({
+        models: [specialModel, ...FUTON_MODELS.slice(1)],
+        getModel: (_id: string) => specialModel,
+      });
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      fireEvent.press(getByTestId('detail-share-button'));
+      await waitFor(() => expect(sharingAsyncSpy).toHaveBeenCalled());
+      const [, opts] = sharingAsyncSpy.mock.calls[0] as [string, { dialogTitle: string }];
+      // Special chars must not be HTML-encoded
+      expect(opts.dialogTitle).toContain("Mike's & Co.");
+    });
+
+    describe('fallback — no product image', () => {
+      beforeEach(() => {
+        const realProduct = PRODUCTS.find((p) => p.id === 'prod-asheville-full');
+        jest
+          .spyOn(require('@/hooks/useProduct'), 'useProduct')
+          .mockReturnValue({ product: { ...realProduct, images: [] }, isLoading: false });
+      });
+
+      it('falls back to Share.share when product has no images', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        expect(sharingAsyncSpy).not.toHaveBeenCalled();
+      });
+
+      it('includes carolinafutons deep link in fallback share payload', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        const call = rnShareSpy.mock.calls[0][0] as { message: string; url?: string };
+        const payload = call.url ?? call.message;
+        expect(payload).toContain('carolinafutons://product/asheville-full-futon');
+      });
+
+      it('fires analytics when user completes share (fallback path)', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(shareProductSpy).toHaveBeenCalled());
+      });
+
+      it('does not fire analytics when user cancels share (fallback path)', async () => {
+        rnShareSpy.mockResolvedValueOnce({ action: 'dismissedAction' });
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        expect(shareProductSpy).not.toHaveBeenCalled();
+      });
+
+      it('does not throw when Share.share rejects (fallback path)', async () => {
+        rnShareSpy.mockRejectedValueOnce(new Error('share failed'));
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        await act(async () => {
+          fireEvent.press(getByTestId('detail-share-button'));
+        });
+        // no crash — rejection handled gracefully
+      });
+    });
+
+    describe('fallback — expo-sharing not available', () => {
+      beforeEach(() => {
+        sharingAvailableSpy.mockResolvedValue(false);
+      });
+
+      it('falls back to Share.share when isAvailableAsync returns false', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        expect(sharingAsyncSpy).not.toHaveBeenCalled();
+      });
+
+      it('includes carolinafutons deep link in share payload when sharing unavailable', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        const call = rnShareSpy.mock.calls[0][0] as { message: string; url?: string };
+        const payload = call.url ?? call.message;
+        expect(payload).toContain('carolinafutons://product/asheville-full-futon');
+      });
     });
   });
 

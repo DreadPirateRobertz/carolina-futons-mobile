@@ -31,6 +31,8 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -479,18 +481,31 @@ export function ProductDetailScreen({
     }
     const slug = catalogProduct?.slug ?? String(model.id);
     const deepLink = `carolinafutons://product/${slug}`;
-    const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}`;
+    const message = `Check out the ${model.name} from Carolina Futons — ${formatPrice(totalPrice)}\n${deepLink}`;
+    const imageUri = catalogProduct?.images?.[0]?.uri;
+
     try {
-      const result = await Share.share(
-        Platform.OS === 'ios' ? { message, url: deepLink } : { message: `${message}\n${deepLink}` },
-      );
-      if (result.action === Share.sharedAction) {
+      if (imageUri && Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
+        const safeSlug = slug.replace(/[^a-z0-9-]/gi, '_');
+        const localUri = `${FileSystem.cacheDirectory ?? ''}share-product-${safeSlug}.jpg`;
+        await FileSystem.downloadAsync(imageUri, localUri);
+        await Sharing.shareAsync(localUri, {
+          mimeType: 'image/jpeg',
+          dialogTitle: `Share ${model.name}`,
+        });
         events.shareProduct(String(model.id));
+      } else {
+        const result = await Share.share(
+          Platform.OS === 'ios' ? { message, url: deepLink } : { message },
+        );
+        if (result.action === Share.sharedAction) {
+          events.shareProduct(String(model.id));
+        }
       }
     } catch (err) {
       if (__DEV__) console.warn('[ProductDetail] Share failed:', err);
     }
-  }, [catalogProduct?.slug, model.id, model.name, totalPrice]);
+  }, [catalogProduct?.slug, catalogProduct?.images, model.id, model.name, totalPrice]);
 
   const renderGalleryItem = useCallback(
     ({ item, index }: { item: (typeof galleryData)[number]; index: number }) => {
