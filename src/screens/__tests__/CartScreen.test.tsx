@@ -58,6 +58,8 @@ jest.mock('@/services/wix/wixProvider', () => ({
     addToCart: jest.fn().mockResolvedValue(undefined),
     removeFromCart: jest.fn().mockResolvedValue(undefined),
     updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
+    queryData: jest.fn().mockResolvedValue({ items: [] }),
+    insertDataItem: jest.fn().mockResolvedValue({ id: 'mock-id', data: {} }),
   }),
 }));
 

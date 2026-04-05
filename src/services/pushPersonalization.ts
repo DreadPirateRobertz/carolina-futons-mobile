@@ -29,52 +29,65 @@ export interface PersonalizedPushContent {
   data?: Record<string, string>;
 }
 
-type TierContentMap = Record<LoyaltyTier, { title: string; body: string }>;
+// Keyed by tier.icon (e.g. 'trail-blazer', 'mountain-guide', 'summit-master')
+type TierContentMap = Record<string, { title: string; body: string }>;
 
 // ── Per-type content by tier ──────────────────────────────────────────────────
 
 const PROMOTION_CONTENT: TierContentMap = {
-  bronze: {
+  'trail-blazer': {
     title: 'Something new just dropped',
-    body: "Discover our latest futon styles — find your perfect first piece.",
+    body: 'Discover our latest futon styles — find your perfect first piece.',
   },
-  silver: {
+  'mountain-guide': {
     title: 'Early Access: New Arrivals',
     body: "As a Mountain Guide, you're first to shop the new collection.",
   },
-  gold: {
+  'summit-master': {
     title: 'VIP Preview: New Drops',
-    body: "Summit Master exclusive — shop new arrivals before they go public.",
+    body: 'Summit Master exclusive — shop new arrivals before they go public.',
+  },
+  'blue-ridge-legend': {
+    title: 'VIP Preview: New Drops',
+    body: 'Blue Ridge Legend exclusive — shop new arrivals before anyone else.',
   },
 };
 
 const CART_REMINDER_CONTENT: TierContentMap = {
-  bronze: {
+  'trail-blazer': {
     title: 'Your cart is waiting',
     body: 'Complete your first purchase — use WELCOME10 for 10% off.',
   },
-  silver: {
+  'mountain-guide': {
     title: 'Your cart is waiting',
     body: 'Free shipping is included with your Mountain Guide membership.',
   },
-  gold: {
+  'summit-master': {
     title: 'Your cart is waiting',
     body: 'Free expedited shipping is ready on your Summit Master order.',
+  },
+  'blue-ridge-legend': {
+    title: 'Your cart is waiting',
+    body: 'Free expedited shipping is ready on your Blue Ridge Legend order.',
   },
 };
 
 const BACK_IN_STOCK_CONTENT: TierContentMap = {
-  bronze: {
+  'trail-blazer': {
     title: 'Back in Stock',
     body: 'An item on your wishlist is available again — grab it while it lasts.',
   },
-  silver: {
+  'mountain-guide': {
     title: 'Early Alert: Back in Stock',
     body: "You're first to know — your wishlist item is back and ready to order.",
   },
-  gold: {
+  'summit-master': {
     title: 'VIP Back in Stock Alert',
     body: 'Summit Masters get priority access — your wishlist item returned.',
+  },
+  'blue-ridge-legend': {
+    title: 'VIP Back in Stock Alert',
+    body: 'Blue Ridge Legends get priority access — your wishlist item returned.',
   },
 };
 
@@ -137,11 +150,12 @@ export function personalizeNotification(
   const tierMap = TIER_CONTENT[type];
   const base: { title: string; body: string } =
     tierMap && tier
-      ? tierMap[tier]
-      : FLAT_CONTENT[type] ?? {
+      ? (tierMap[tier.icon] ??
+        FLAT_CONTENT[type] ?? { title: 'Carolina Futons', body: 'You have a new notification.' })
+      : (FLAT_CONTENT[type] ?? {
           title: 'Carolina Futons',
           body: 'You have a new notification.',
-        };
+        });
 
   if (!context || Object.keys(context).length === 0) {
     return { title: base.title, body: base.body };

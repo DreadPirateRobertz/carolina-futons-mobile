@@ -2,26 +2,30 @@
  * TDD tests for pushPersonalization service — cm-ako.
  *
  * Personalize push notification content by loyalty tier:
- *   bronze (Trail Blazer 0–499)   → first-purchase nudges, welcome incentives
- *   silver (Mountain Guide 500+)  → early access notifications, shipping perks
- *   gold   (Summit Master 1500+)  → VIP drops, exclusive pricing messaging
- *   null (guest / no-tier)        → generic content, not personalized
+ *   trail-blazer      (Trail Blazer 0–499)      → first-purchase nudges, welcome incentives
+ *   mountain-guide    (Mountain Guide 500–1499)  → early access notifications, shipping perks
+ *   summit-master     (Summit Master 1500–2999)  → VIP drops, exclusive pricing messaging
+ *   blue-ridge-legend (Blue Ridge Legend 3000+)  → VIP drops, concierge messaging
+ *   null (guest / no-tier)                       → generic content, not personalized
  *
- * NotificationType: order_update | promotion | back_in_stock |
- *                   cart_reminder | cart_recovery | price_drop |
- *                   streak_milestone | quest_complete | daily_spin_reminder
+ * Acceptance criteria (cm-ako):
+ *   1. Each tier gets correct template
+ *   2. No-tier guest (null) gets generic content
+ *   3. Opt-out is respected via getPersonalizedPushIfAllowed
  */
 import {
   personalizeNotification,
   getPersonalizedPushIfAllowed,
   type PersonalizedPushContent,
 } from '../pushPersonalization';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import type { NotificationType, NotificationPreferences } from '@/services/notifications';
 
-const BRONZE: LoyaltyTier = 'bronze';
-const SILVER: LoyaltyTier = 'silver';
-const GOLD: LoyaltyTier = 'gold';
+const BRONZE: LoyaltyTierConfig = LOYALTY_TIERS[0]; // Trail Blazer
+const SILVER: LoyaltyTierConfig = LOYALTY_TIERS[1]; // Mountain Guide
+const GOLD: LoyaltyTierConfig = LOYALTY_TIERS[2]; // Summit Master
+const LEGEND: LoyaltyTierConfig = LOYALTY_TIERS[3]; // Blue Ridge Legend
 
 const ALL_PREFS_ON: NotificationPreferences = {
   orderUpdates: true,
@@ -160,13 +164,13 @@ describe('personalizeNotification — back_in_stock', () => {
 
 describe('personalizeNotification — order_update (not tier-personalized)', () => {
   it('returns valid content for all tiers', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of LOYALTY_TIERS) {
       assertValidContent(personalizeNotification('order_update', tier));
     }
   });
 
   it('all tiers get the same order_update content', () => {
-    const results = ([BRONZE, SILVER, GOLD] as LoyaltyTier[]).map((t) =>
+    const results = ([BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]).map((t) =>
       personalizeNotification('order_update', t),
     );
     const titles = new Set(results.map((r) => r.title));
@@ -176,19 +180,19 @@ describe('personalizeNotification — order_update (not tier-personalized)', () 
 
 describe('personalizeNotification — gamification types', () => {
   it('streak_milestone: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of LOYALTY_TIERS) {
       assertValidContent(personalizeNotification('streak_milestone', tier));
     }
   });
 
   it('quest_complete: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of LOYALTY_TIERS) {
       assertValidContent(personalizeNotification('quest_complete', tier));
     }
   });
 
   it('daily_spin_reminder: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of LOYALTY_TIERS) {
       assertValidContent(personalizeNotification('daily_spin_reminder', tier));
     }
   });
@@ -203,13 +207,11 @@ describe('personalizeNotification — guest (null tier)', () => {
 
   it('null tier returns generic (non-tier-personalized) content for promotion', () => {
     const guest = personalizeNotification('promotion', null);
-    const bronze = personalizeNotification('promotion', BRONZE);
-    const silver = personalizeNotification('promotion', SILVER);
-    const gold = personalizeNotification('promotion', GOLD);
-    // Guest content should differ from all tier-specific content
-    expect(guest.title).not.toBe(bronze.title);
-    expect(guest.title).not.toBe(silver.title);
-    expect(guest.title).not.toBe(gold.title);
+    // Guest content must differ from all tier-specific content
+    for (const tier of LOYALTY_TIERS) {
+      const tiered = personalizeNotification('promotion', tier);
+      expect(guest.title).not.toBe(tiered.title);
+    }
   });
 
   it('null tier for cart_reminder returns generic content', () => {
@@ -225,7 +227,7 @@ describe('personalizeNotification — guest (null tier)', () => {
 
   it('null tier for order_update returns same content as tiered (flat type)', () => {
     const guest = personalizeNotification('order_update', null);
-    const tiered = personalizeNotification('order_update', GOLD);
+    const tiered = personalizeNotification('order_update', GOLD); // order_update is flat — same for all tiers
     expect(guest.title).toBe(tiered.title);
     expect(guest.body).toBe(tiered.body);
   });
@@ -397,8 +399,8 @@ describe('personalizeNotification — shape for all type × tier combos', () => 
   ];
 
   for (const type of types) {
-    for (const tier of [BRONZE, SILVER, GOLD, null] as (LoyaltyTier | null)[]) {
-      it(`${type} × ${tier ?? 'guest'}: returns valid title and body`, () => {
+    for (const tier of [...LOYALTY_TIERS, null] as (LoyaltyTierConfig | null)[]) {
+      it(`${type} × ${tier?.icon ?? 'guest'}: returns valid title and body`, () => {
         assertValidContent(personalizeNotification(type, tier));
       });
     }
