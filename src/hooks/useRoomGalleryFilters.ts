@@ -25,6 +25,7 @@ export type RoomGalleryStyle = 'Modern' | 'Coastal' | 'Rustic' | 'Traditional';
 export interface RoomGalleryFilters {
   style: RoomGalleryStyle | null;
   productId: string | null;
+  featuredOnly: boolean;
 }
 
 export interface UseRoomGalleryFiltersResult {
@@ -32,6 +33,7 @@ export interface UseRoomGalleryFiltersResult {
   filteredRooms: RoomGalleryItem[];
   setStyleFilter: (style: RoomGalleryStyle | null) => void;
   setProductFilter: (productId: string | null) => void;
+  setFeaturedOnly: (featuredOnly: boolean) => void;
   clearFilters: () => void;
   /** True when at least one filter is active. */
   hasActiveFilters: boolean;
@@ -42,7 +44,7 @@ export interface UseRoomGalleryFiltersResult {
   isEmpty: boolean;
 }
 
-const INITIAL_FILTERS: RoomGalleryFilters = { style: null, productId: null };
+const INITIAL_FILTERS: RoomGalleryFilters = { style: null, productId: null, featuredOnly: false };
 
 /**
  * Manages room gallery filter state and derives the filtered room list.
@@ -60,6 +62,10 @@ export function useRoomGalleryFilters(rooms: RoomGalleryItem[]): UseRoomGalleryF
     setFilters((prev) => ({ ...prev, productId }));
   }, []);
 
+  const setFeaturedOnly = useCallback((featuredOnly: boolean) => {
+    setFilters((prev) => ({ ...prev, featuredOnly }));
+  }, []);
+
   const clearFilters = useCallback(() => {
     setFilters(INITIAL_FILTERS);
   }, []);
@@ -75,10 +81,14 @@ export function useRoomGalleryFilters(rooms: RoomGalleryItem[]): UseRoomGalleryF
       result = result.filter((r) => r.productIds.includes(filters.productId!));
     }
 
+    if (filters.featuredOnly) {
+      result = result.filter((r) => r.featured === true);
+    }
+
     return result;
   }, [rooms, filters]);
 
-  const hasActiveFilters = filters.style !== null || filters.productId !== null;
+  const hasActiveFilters = filters.style !== null || filters.productId !== null || filters.featuredOnly;
   const isEmpty = hasActiveFilters && filteredRooms.length === 0;
 
   return {
@@ -86,6 +96,7 @@ export function useRoomGalleryFilters(rooms: RoomGalleryItem[]): UseRoomGalleryF
     filteredRooms,
     setStyleFilter,
     setProductFilter,
+    setFeaturedOnly,
     clearFilters,
     hasActiveFilters,
     isEmpty,

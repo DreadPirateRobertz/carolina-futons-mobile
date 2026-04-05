@@ -90,6 +90,17 @@ function RoomCard({
           {item.productIds.length} {item.productIds.length === 1 ? 'product' : 'products'}
         </Text>
       </View>
+      {item.featured && (
+        <View
+          style={styles.featuredBadge}
+          testID={`featured-badge-${item.roomId}`}
+          accessibilityLabel="Featured room"
+        >
+          <Text style={[styles.featuredBadgeText, { fontFamily: typography.bodyFamilyBold }]}>
+            ★ Featured
+          </Text>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -98,7 +109,7 @@ function RoomCard({
 export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { rooms, isLoading, error, refresh, isPlaceholder } = useRoomGallery();
-  const { filteredRooms, filters, setStyleFilter, setProductFilter, clearFilters, hasActiveFilters, isEmpty: isFilterEmpty } =
+  const { filteredRooms, filters, setStyleFilter, setProductFilter, setFeaturedOnly, clearFilters, hasActiveFilters, isEmpty: isFilterEmpty } =
     useRoomGalleryFilters(rooms);
   const [ugcModalVisible, setUgcModalVisible] = useState(false);
 
@@ -254,6 +265,27 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
         hasActiveFilters={hasActiveFilters}
         productOptions={productOptions}
       />
+      <TouchableOpacity
+        style={[
+          styles.featuredToggle,
+          filters.featuredOnly && { backgroundColor: colors.sunsetCoral },
+        ]}
+        onPress={() => setFeaturedOnly(!filters.featuredOnly)}
+        testID="filter-featured-toggle"
+        accessibilityRole="button"
+        accessibilityState={{ selected: filters.featuredOnly }}
+        accessibilityLabel="Show featured rooms only"
+      >
+        <Text
+          style={[
+            styles.featuredToggleText,
+            { fontFamily: typography.bodyFamilyBold },
+            filters.featuredOnly && { color: '#FFFFFF' },
+          ]}
+        >
+          ★ Featured Only
+        </Text>
+      </TouchableOpacity>
 
       {isFilterEmpty ? (
         <View style={[styles.centered, styles.filterEmptyContainer]} testID="room-gallery-filter-empty">
@@ -400,5 +432,32 @@ const styles = StyleSheet.create({
   filterEmptyContainer: {
     flex: 1,
     paddingTop: 60,
+  },
+  featuredBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#F5A623',
+    borderRadius: 4,
+    paddingVertical: 3,
+    paddingHorizontal: 7,
+  },
+  featuredBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+  },
+  featuredToggle: {
+    alignSelf: 'flex-start',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#F5A623',
+  },
+  featuredToggleText: {
+    color: '#F5A623',
+    fontSize: 13,
   },
 });
