@@ -3,13 +3,17 @@
  *
  * Persistent session token for cross-device cart sync — bead cm-lqw.
  *
- * Generates a UUID v4 on first launch and stores it in AsyncStorage under
- * `cf_session_token`. Guest carts are keyed by this token. On login the
- * guest cart is merged into the member cart and the session token is retained
- * for future guest sessions after logout.
+ * Generates a UUID v4 on first launch and stores it in expo-secure-store
+ * (Keychain on iOS, Keystore-backed on Android) under `cf_session_token`.
+ * Guest carts are keyed by this token. On login the guest cart is merged
+ * into the member cart and the session token is retained for future guest
+ * sessions after logout.
+ *
+ * cm-keo: migrated from AsyncStorage to SecureStore so the session UUID
+ * is protected by hardware-backed encryption on Android (was unencrypted).
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { captureException } from '@/services/crashReporting';
 
 export const SESSION_TOKEN_KEY = 'cf_session_token';
@@ -23,11 +27,11 @@ function uuid4(): string {
 
 /**
  * Returns the persisted session token, creating and storing one if absent.
- * Gracefully handles AsyncStorage errors — always returns a token.
+ * Gracefully handles SecureStore errors — always returns a token.
  */
 export async function getSessionToken(): Promise<string> {
   try {
-    const stored = await AsyncStorage.getItem(SESSION_TOKEN_KEY);
+    const stored = await SecureStore.getItemAsync(SESSION_TOKEN_KEY);
     if (stored) return stored;
   } catch (err) {
     captureException(err instanceof Error ? err : new Error(String(err)));
@@ -36,7 +40,7 @@ export async function getSessionToken(): Promise<string> {
   const token = uuid4();
 
   try {
-    await AsyncStorage.setItem(SESSION_TOKEN_KEY, token);
+    await SecureStore.setItemAsync(SESSION_TOKEN_KEY, token);
   } catch (err) {
     captureException(err instanceof Error ? err : new Error(String(err)));
   }
@@ -50,7 +54,7 @@ export async function getSessionToken(): Promise<string> {
  */
 export async function resetSessionToken(): Promise<void> {
   try {
-    await AsyncStorage.removeItem(SESSION_TOKEN_KEY);
+    await SecureStore.deleteItemAsync(SESSION_TOKEN_KEY);
   } catch (err) {
     captureException(err instanceof Error ? err : new Error(String(err)));
   }
