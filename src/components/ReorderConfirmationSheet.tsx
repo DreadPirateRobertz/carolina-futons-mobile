@@ -9,14 +9,7 @@
  */
 
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 import type { ReorderPreview, ReorderLineItem } from '@/services/reorderService';
 import type { OrderLineItem } from '@/data/orders';
@@ -139,12 +132,13 @@ export function ReorderConfirmationSheet({
                     testID={`reorder-item-${lineItem.id}`}
                     style={styles.itemRow}
                   >
-                    <View
-                      style={[styles.itemDot, { backgroundColor: colors.sunsetCoral }]}
-                    />
+                    <View style={[styles.itemDot, { backgroundColor: colors.sunsetCoral }]} />
                     <View style={styles.itemInfo}>
                       <Text
-                        style={[styles.itemName, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
+                        style={[
+                          styles.itemName,
+                          { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+                        ]}
                         numberOfLines={1}
                       >
                         {model.name}

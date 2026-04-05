@@ -89,12 +89,7 @@ describe('buildReorderPreview', () => {
         makeLineItem('li-1', MODEL_A.id, FABRIC_A.id),
         makeLineItem('li-2', MODEL_B.id, FABRIC_B.id),
       ];
-      const { available, unavailable } = buildReorderPreview(
-        items,
-        getModel,
-        getFabric,
-        alwaysOOS,
-      );
+      const { available, unavailable } = buildReorderPreview(items, getModel, getFabric, alwaysOOS);
       expect(available).toHaveLength(0);
       expect(unavailable).toHaveLength(2);
     });
@@ -168,7 +163,12 @@ describe('buildReorderPreview', () => {
 
   describe('empty order', () => {
     it('returns empty available and unavailable for an empty items array', () => {
-      const { available, unavailable } = buildReorderPreview([], getModel, getFabric, alwaysInStock);
+      const { available, unavailable } = buildReorderPreview(
+        [],
+        getModel,
+        getFabric,
+        alwaysInStock,
+      );
       expect(available).toHaveLength(0);
       expect(unavailable).toHaveLength(0);
     });

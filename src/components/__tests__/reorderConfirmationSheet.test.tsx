@@ -89,9 +89,7 @@ const baseProps = {
   onDismiss: jest.fn(),
 };
 
-function renderSheet(
-  props?: Partial<typeof baseProps>,
-) {
+function renderSheet(props?: Partial<typeof baseProps>) {
   return render(<ReorderConfirmationSheet {...baseProps} {...props} />);
 }
 
