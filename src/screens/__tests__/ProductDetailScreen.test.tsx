@@ -8,6 +8,43 @@ import { CompareProvider } from '@/contexts/CompareContext';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { PRODUCTS } from '@/data/products';
 
+// Mock expo-file-system and its legacy subpath to prevent native bridge access.
+// Required now that ProductDetailScreen imports expo-file-system directly (deacon-t26 share).
+jest.mock('expo-file-system', () => ({
+  cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+  downloadAsync: jest.fn(() =>
+    Promise.resolve({ uri: '/mock-cache/product-img.jpg', status: 200 }),
+  ),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn(() =>
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),
+    ),
+  })),
+}));
+jest.mock('expo-file-system/legacy', () => ({
+  cacheDirectory: '/mock-cache/',
+  EncodingType: { Base64: 'base64', UTF8: 'utf8' },
+  getInfoAsync: jest.fn(() => Promise.resolve({ exists: false })),
+  makeDirectoryAsync: jest.fn(() => Promise.resolve()),
+  readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
+  writeAsStringAsync: jest.fn(() => Promise.resolve()),
+  deleteAsync: jest.fn(() => Promise.resolve()),
+  downloadAsync: jest.fn(() =>
+    Promise.resolve({ uri: '/mock-cache/product-img.jpg', status: 200 }),
+  ),
+  createDownloadResumable: jest.fn(() => ({
+    downloadAsync: jest.fn(() =>
+      Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),
+    ),
+  })),
+}));
+
 // Mock uploadReviewPhoto to prevent expo-file-system → expo-modules-core native bridge access
 jest.mock('@/services/uploadReviewPhoto', () => ({
   uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
