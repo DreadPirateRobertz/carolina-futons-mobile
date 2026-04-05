@@ -32,7 +32,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -487,7 +487,7 @@ export function ProductDetailScreen({
     try {
       if (imageUri && Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
         const safeSlug = slug.replace(/[^a-z0-9-]/gi, '_');
-        const cacheDir = FileSystem.documentDirectory ?? '';
+        const cacheDir = FileSystem.cacheDirectory ?? '';
         const localUri = `${cacheDir}share-product-${safeSlug}.jpg`;
         await FileSystem.downloadAsync(imageUri, localUri);
         await Sharing.shareAsync(localUri, {
