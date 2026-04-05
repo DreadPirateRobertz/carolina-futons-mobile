@@ -13,6 +13,17 @@ jest.mock('@/hooks/useRatingPrompt', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useNotifications', () => ({
+  useNotifications: () => ({
+    preferences: { orderUpdates: true },
+    permissionStatus: 'granted',
+  }),
+}));
+
+jest.mock('@/hooks/usePostPurchaseReviewPush', () => ({
+  usePostPurchaseReviewPush: jest.fn(),
+}));
+
 const mockOrder: OrderConfirmation = {
   orderId: 'ord_123',
   orderNumber: 'CF-20260301-001',

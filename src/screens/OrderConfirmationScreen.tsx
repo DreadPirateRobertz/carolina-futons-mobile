@@ -20,6 +20,8 @@ import { PointsToast } from '@/components/PointsToast';
 import { useTheme } from '@/theme';
 import { formatPrice } from '@/utils';
 import { useRatingPrompt } from '@/hooks/useRatingPrompt';
+import { usePostPurchaseReviewPush } from '@/hooks/usePostPurchaseReviewPush';
+import { useNotifications } from '@/hooks/useNotifications';
 import { events } from '@/services/analytics';
 import type { OrderConfirmation } from '@/services/payment';
 
@@ -42,7 +44,16 @@ export function OrderConfirmationScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows } = useTheme();
   const { recordPurchase } = useRatingPrompt();
+  const { preferences, permissionStatus } = useNotifications();
   const [toastVisible, setToastVisible] = useState(false);
+
+  usePostPurchaseReviewPush({
+    orderId: order.orderId,
+    productId: order.items[0]?.model?.id ?? '',
+    placedAt: order.createdAt,
+    reviewPushEnabled: preferences.orderUpdates,
+    permissionGranted: permissionStatus === 'granted',
+  });
 
   const handleShareOrder = useCallback(async () => {
     const message = `I just ordered from Carolina Futons! Order #${order.orderNumber} is on its way. 🛋️`;
