@@ -24,6 +24,7 @@ import {
 import { useTheme } from '@/theme';
 import { submitNpsSurvey, type WixClientLike } from '@/services/npsSurvey';
 import { captureException } from '@/services/crashReporting';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -130,7 +131,7 @@ export function NPSSurveyModal({
 
     setModalState({ status: 'submitting' });
 
-    const trimmedComment = comment.trim();
+    const trimmedComment = sanitizeText(comment);
     const now = new Date();
     const data = {
       orderId,

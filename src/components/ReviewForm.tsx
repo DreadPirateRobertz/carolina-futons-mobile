@@ -20,6 +20,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@/theme';
 import { uploadReviewPhoto } from '@/services/uploadReviewPhoto';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 interface ReviewFormProps {
   onSubmit: (data: { rating: number; title: string; body: string; photos: string[] }) => void;
@@ -88,7 +89,7 @@ export function ReviewForm({
     if (!title.trim() || !body.trim()) {
       return;
     }
-    onSubmit({ rating, title, body, photos });
+    onSubmit({ rating, title: sanitizeText(title), body: sanitizeText(body), photos });
   }, [rating, title, body, photos, onSubmit]);
 
   const stars = Array.from({ length: STAR_COUNT }, (_, i) => {
