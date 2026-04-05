@@ -106,6 +106,9 @@ import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PointsToast } from '@/components/PointsToast';
 import { PriceAlertButton } from '@/components/PriceAlertButton';
+import { VideoReviewGallery } from '@/components/VideoReviewGallery';
+import { CompleteTheLook } from '@/components/CompleteTheLook';
+import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -189,6 +192,11 @@ export function ProductDetailScreen({
   const { recommendations: alsoBought, isLoading: isAlsoBoughtLoading } =
     useProductRecommendations(catalogProductId);
   const {
+    products: completeTheLookProducts,
+    isLoading: isCompleteTheLookLoading,
+    error: completeTheLookError,
+  } = useCompleteTheLook(catalogProductId ?? model.id);
+  const {
     reviews,
     summary: reviewSummary,
     sort: reviewSort,
@@ -241,7 +249,8 @@ export function ProductDetailScreen({
   const [qaInput, setQaInput] = useState('');
 
   const totalPrice = model.basePrice + selectedFabric.price;
-  const { earnRate: loyaltyEarnRate } = useLoyaltyEarnEstimate(totalPrice);
+  const { tier: loyaltyTier } = useLoyaltyEarnEstimate(totalPrice);
+  const loyaltyEarnRate = loyaltyTier.earnRate;
 
   // cm-xh9: Resolve videoUri from catalog product; parse wix:video:// if needed.
   // PLACEHOLDER: Real Wix Media video URIs will come from Wix Studio Media Manager.
@@ -1081,6 +1090,16 @@ export function ProductDetailScreen({
           </Animated.View>
         </View>
 
+        {/* Complete the Look — cm-3n3: curated complementary products */}
+        <View style={[styles.section, { marginTop: spacing.md }]}>
+          <CompleteTheLook
+            products={completeTheLookProducts}
+            isLoading={isCompleteTheLookLoading}
+            error={completeTheLookError}
+            onProductPress={onRelatedProductPress ?? (() => {})}
+          />
+        </View>
+
         {/* Reviews Section */}
         <View
           style={[styles.section, { paddingHorizontal: spacing.lg }]}
@@ -1445,6 +1464,9 @@ export function ProductDetailScreen({
             />
           </View>
         ) : null}
+
+        {/* Video Reviews Section — cm-uh3 */}
+        <VideoReviewGallery productId={model.id} />
 
         {/* Q&A Section */}
         <View
