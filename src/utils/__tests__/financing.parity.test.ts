@@ -114,7 +114,7 @@ describe('calculateMonthlyPayment — amortization matches web amortize()', () =
     const n = 18;
     const P = 999;
     const factor = Math.pow(1 + r, n);
-    const expected = Math.round((P * (r * factor) / (factor - 1)) * 100) / 100;
+    const expected = Math.round(((P * (r * factor)) / (factor - 1)) * 100) / 100;
     expect(calculateMonthlyPayment(P, n, 4.99)).toBe(expected);
   });
 
@@ -123,7 +123,7 @@ describe('calculateMonthlyPayment — amortization matches web amortize()', () =
     const n = 24;
     const P = 800;
     const factor = Math.pow(1 + r, n);
-    const expected = Math.round((P * (r * factor) / (factor - 1)) * 100) / 100;
+    const expected = Math.round(((P * (r * factor)) / (factor - 1)) * 100) / 100;
     expect(calculateMonthlyPayment(P, n, 9.99)).toBe(expected);
   });
 
@@ -323,7 +323,7 @@ describe('concrete calculation spot-checks vs web amortize()', () => {
   it('$1000 / 18mo / 4.99% APR — same as web amortize(1000, 18, 4.99)', () => {
     const r = 4.99 / 100 / 12;
     const factor = Math.pow(1 + r, 18);
-    const expected = Math.round((1000 * (r * factor) / (factor - 1)) * 100) / 100;
+    const expected = Math.round(((1000 * (r * factor)) / (factor - 1)) * 100) / 100;
     const term = getFinancingTerms(1000).find((t) => t.months === 18)!;
     expect(term.monthlyPayment).toBe(expected);
   });
@@ -331,7 +331,7 @@ describe('concrete calculation spot-checks vs web amortize()', () => {
   it('$1000 / 24mo / 9.99% APR — same as web amortize(1000, 24, 9.99)', () => {
     const r = 9.99 / 100 / 12;
     const factor = Math.pow(1 + r, 24);
-    const expected = Math.round((1000 * (r * factor) / (factor - 1)) * 100) / 100;
+    const expected = Math.round(((1000 * (r * factor)) / (factor - 1)) * 100) / 100;
     const term = getFinancingTerms(1000).find((t) => t.months === 24)!;
     expect(term.monthlyPayment).toBe(expected);
   });
