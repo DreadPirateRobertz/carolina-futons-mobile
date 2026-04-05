@@ -6,12 +6,12 @@
  * Covers:
  *  - No Wix client → returns null bundle, isLoading=false
  *  - Empty productId → returns null bundle, isLoading=false
- *  - getCompatibleItems returns no match → bundle=null
- *  - Happy path: bundle fetched → pricing fetched → products resolved
- *  - getCompatibleItems failure → error set, bundle=null
- *  - calculateBundlePrice failure → error set
+ *  - queryData returns no items → bundle=null
+ *  - queryData returns incomplete record → bundle=null
+ *  - Happy path: bundle fetched → client-side pricing calculated → products resolved
+ *  - queryData failure → error set, bundle=null
  *  - addBundleToCart: isAddingToCart true → success → addSuccess=true
- *  - addBundleToCart: failure → addError set, isAddingToCart=false
+ *  - addBundleToCart: failure → error set, isAddingToCart=false
  *  - addBundleToCart: no-op when bundle or pricing is null
  *  - Cleanup: in-flight fetch cancelled on unmount
  *  - productId change triggers re-fetch
@@ -24,10 +24,12 @@ import { PRODUCTS } from '@/data/products';
 
 // ── Wix client mock ────────────────────────────────────────────────────────────
 
-const mockGetCompatibleItems = jest.fn();
-const mockCalculateBundlePrice = jest.fn();
-const mockAddBundleToCart = jest.fn();
-const mockUseOptionalWixClient = jest.fn(() => null);
+const mockQueryData = jest.fn();
+const mockInsertDataItem = jest.fn();
+const mockUseOptionalWixClient = jest.fn<
+  { queryData: jest.Mock; insertDataItem: jest.Mock } | null,
+  []
+>(() => null);
 
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => mockUseOptionalWixClient(),
@@ -39,26 +41,17 @@ const PRODUCT_A = PRODUCTS[0];
 const PRODUCT_B = PRODUCTS[1];
 const PRODUCT_C = PRODUCTS[2];
 
-const MOCK_BUNDLE = {
+const MOCK_BUNDLE_RAW = {
   bundleId: 'bundle-abc-123',
   name: 'Living Room Set',
   productIds: [PRODUCT_A.id, PRODUCT_B.id],
   discountPercent: 15,
 };
 
-const MOCK_PRICING = {
-  originalTotal: 1200,
-  bundlePrice: 1020,
-  savings: 180,
-  savingsPercent: 15,
-  couponCode: 'CF-BUNDLE-A1B2C3D4',
-};
-
 function makeWixClient() {
   return {
-    getCompatibleItems: mockGetCompatibleItems,
-    calculateBundlePrice: mockCalculateBundlePrice,
-    addBundleToCart: mockAddBundleToCart,
+    queryData: mockQueryData,
+    insertDataItem: mockInsertDataItem,
   };
 }
 
@@ -81,10 +74,10 @@ describe('useBundleSuggestion', () => {
       expect(result.current.error).toBeNull();
     });
 
-    it('does not call getCompatibleItems when no wix client', async () => {
+    it('does not call queryData when no wix client', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockGetCompatibleItems).not.toHaveBeenCalled();
+      expect(mockQueryData).not.toHaveBeenCalled();
     });
   });
 
@@ -97,35 +90,35 @@ describe('useBundleSuggestion', () => {
       const { result } = renderHook(() => useBundleSuggestion(''));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.bundle).toBeNull();
-      expect(mockGetCompatibleItems).not.toHaveBeenCalled();
+      expect(mockQueryData).not.toHaveBeenCalled();
     });
   });
 
   describe('no bundle found', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(null);
+      mockQueryData.mockResolvedValue({ items: [] });
     });
 
-    it('returns null bundle when getCompatibleItems returns null', async () => {
+    it('returns null bundle when queryData returns empty items', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.bundle).toBeNull();
       expect(result.current.pricing).toBeNull();
     });
 
-    it('does not call calculateBundlePrice when no bundle found', async () => {
+    it('returns null bundle when queryData returns incomplete record', async () => {
+      mockQueryData.mockResolvedValue({ items: [{ name: 'Incomplete' }] });
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockCalculateBundlePrice).not.toHaveBeenCalled();
+      expect(result.current.bundle).toBeNull();
     });
   });
 
   describe('happy path', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(MOCK_BUNDLE);
-      mockCalculateBundlePrice.mockResolvedValue(MOCK_PRICING);
+      mockQueryData.mockResolvedValue({ items: [MOCK_BUNDLE_RAW] });
     });
 
     it('starts in isLoading=true state', () => {
@@ -138,16 +131,24 @@ describe('useBundleSuggestion', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
     });
 
-    it('calls getCompatibleItems with the productId', async () => {
+    it('calls queryData with BundleDefinitions collection and productId filter', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockGetCompatibleItems).toHaveBeenCalledWith(PRODUCT_A.id);
+      expect(mockQueryData).toHaveBeenCalledWith('BundleDefinitions', {
+        filter: { productIds: { $hasSome: [PRODUCT_A.id] } },
+        limit: 1,
+      });
     });
 
     it('returns the bundle definition', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.bundle).toEqual(MOCK_BUNDLE);
+      expect(result.current.bundle).toEqual({
+        bundleId: MOCK_BUNDLE_RAW.bundleId,
+        name: MOCK_BUNDLE_RAW.name,
+        productIds: MOCK_BUNDLE_RAW.productIds,
+        discountPercent: MOCK_BUNDLE_RAW.discountPercent,
+      });
     });
 
     it('resolves bundleProducts from PRODUCTS catalog', async () => {
@@ -157,19 +158,20 @@ describe('useBundleSuggestion', () => {
       expect(result.current.bundleProducts.map((p) => p.id)).toEqual([PRODUCT_A.id, PRODUCT_B.id]);
     });
 
-    it('calls calculateBundlePrice with bundleId and productIds', async () => {
+    it('calculates pricing client-side from discountPercent', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockCalculateBundlePrice).toHaveBeenCalledWith(
-        MOCK_BUNDLE.bundleId,
-        MOCK_BUNDLE.productIds,
-      );
-    });
 
-    it('returns pricing from calculateBundlePrice', async () => {
-      const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.pricing).toEqual(MOCK_PRICING);
+      const expectedOriginal = (PRODUCT_A.price ?? 0) + (PRODUCT_B.price ?? 0);
+      const expectedSavings = expectedOriginal * 0.15;
+
+      expect(result.current.pricing).toEqual({
+        originalTotal: expectedOriginal,
+        bundlePrice: expectedOriginal - expectedSavings,
+        savings: expectedSavings,
+        savingsPercent: 15,
+        couponCode: expect.stringMatching(/^CF-BUNDLE-[A-Z0-9]{8}$/),
+      });
     });
 
     it('returns null error on success', async () => {
@@ -194,33 +196,42 @@ describe('useBundleSuggestion', () => {
   describe('coupon code format', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(MOCK_BUNDLE);
+      mockQueryData.mockResolvedValue({ items: [MOCK_BUNDLE_RAW] });
     });
 
     it('coupon code follows CF-BUNDLE-{8chars} format', async () => {
-      mockCalculateBundlePrice.mockResolvedValue({
-        ...MOCK_PRICING,
-        couponCode: 'CF-BUNDLE-A1B2C3D4',
-      });
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.pricing?.couponCode).toMatch(/^CF-BUNDLE-[A-Z0-9]{8}$/);
     });
+
+    it('coupon code is deterministic for the same bundleId', async () => {
+      const { result: r1 } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
+      await waitFor(() => expect(r1.current.isLoading).toBe(false));
+      const code1 = r1.current.pricing?.couponCode;
+
+      const { result: r2 } = renderHook(() => useBundleSuggestion(PRODUCT_B.id));
+      await waitFor(() => expect(r2.current.isLoading).toBe(false));
+      const code2 = r2.current.pricing?.couponCode;
+
+      // Same bundleId produces same coupon code across renders
+      expect(code1).toBe(code2);
+    });
   });
 
-  describe('getCompatibleItems error', () => {
+  describe('queryData error', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockRejectedValue(new Error('API unreachable'));
+      mockQueryData.mockRejectedValue(new Error('API unreachable'));
     });
 
-    it('sets error on getCompatibleItems failure', async () => {
+    it('sets error on queryData failure', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.error).toBe('API unreachable');
     });
 
-    it('returns null bundle on getCompatibleItems failure', async () => {
+    it('returns null bundle and pricing on queryData failure', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.bundle).toBeNull();
@@ -228,37 +239,16 @@ describe('useBundleSuggestion', () => {
     });
   });
 
-  describe('calculateBundlePrice error', () => {
-    beforeEach(() => {
-      mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(MOCK_BUNDLE);
-      mockCalculateBundlePrice.mockRejectedValue(new Error('Pricing unavailable'));
-    });
-
-    it('sets error on calculateBundlePrice failure', async () => {
-      const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.error).toBe('Pricing unavailable');
-    });
-
-    it('returns null pricing on calculateBundlePrice failure', async () => {
-      const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(result.current.pricing).toBeNull();
-    });
-  });
-
   describe('addBundleToCart', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(MOCK_BUNDLE);
-      mockCalculateBundlePrice.mockResolvedValue(MOCK_PRICING);
-      mockAddBundleToCart.mockResolvedValue(undefined);
+      mockQueryData.mockResolvedValue({ items: [MOCK_BUNDLE_RAW] });
+      mockInsertDataItem.mockResolvedValue(undefined);
     });
 
     it('sets isAddingToCart=true while adding', async () => {
       let resolveAdd!: () => void;
-      mockAddBundleToCart.mockReturnValue(
+      mockInsertDataItem.mockReturnValue(
         new Promise((res) => {
           resolveAdd = res;
         }),
@@ -288,22 +278,22 @@ describe('useBundleSuggestion', () => {
       expect(result.current.isAddingToCart).toBe(false);
     });
 
-    it('calls wixClient.addBundleToCart with bundleId, productIds, couponCode', async () => {
+    it('calls insertDataItem with bundleId, couponCode, and addedAt', async () => {
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       await act(async () => {
         await result.current.addBundleToCart();
       });
-      expect(mockAddBundleToCart).toHaveBeenCalledWith(
-        MOCK_BUNDLE.bundleId,
-        MOCK_BUNDLE.productIds,
-        MOCK_PRICING.couponCode,
-      );
+      expect(mockInsertDataItem).toHaveBeenCalledWith('BundleDefinitionsOrders', {
+        bundleId: MOCK_BUNDLE_RAW.bundleId,
+        couponCode: expect.stringMatching(/^CF-BUNDLE-[A-Z0-9]{8}$/),
+        addedAt: expect.any(String),
+      });
     });
 
-    it('sets error and isAddingToCart=false on addBundleToCart failure', async () => {
-      mockAddBundleToCart.mockRejectedValue(new Error('Cart add failed'));
+    it('sets error and isAddingToCart=false on insertDataItem failure', async () => {
+      mockInsertDataItem.mockRejectedValue(new Error('Cart add failed'));
 
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -324,7 +314,7 @@ describe('useBundleSuggestion', () => {
       await act(async () => {
         await result.current.addBundleToCart();
       });
-      expect(mockAddBundleToCart).not.toHaveBeenCalled();
+      expect(mockInsertDataItem).not.toHaveBeenCalled();
       expect(result.current.isAddingToCart).toBe(false);
     });
   });
@@ -332,8 +322,7 @@ describe('useBundleSuggestion', () => {
   describe('productId change', () => {
     beforeEach(() => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue(MOCK_BUNDLE);
-      mockCalculateBundlePrice.mockResolvedValue(MOCK_PRICING);
+      mockQueryData.mockResolvedValue({ items: [MOCK_BUNDLE_RAW] });
     });
 
     it('re-fetches when productId changes', async () => {
@@ -341,15 +330,18 @@ describe('useBundleSuggestion', () => {
         initialProps: { id: PRODUCT_A.id },
       });
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockGetCompatibleItems).toHaveBeenCalledTimes(1);
+      expect(mockQueryData).toHaveBeenCalledTimes(1);
 
       rerender({ id: PRODUCT_C.id });
-      await waitFor(() => expect(mockGetCompatibleItems).toHaveBeenCalledTimes(2));
-      expect(mockGetCompatibleItems).toHaveBeenLastCalledWith(PRODUCT_C.id);
+      await waitFor(() => expect(mockQueryData).toHaveBeenCalledTimes(2));
+      expect(mockQueryData).toHaveBeenLastCalledWith('BundleDefinitions', {
+        filter: { productIds: { $hasSome: [PRODUCT_C.id] } },
+        limit: 1,
+      });
     });
 
     it('resets addSuccess to false when productId changes', async () => {
-      mockAddBundleToCart.mockResolvedValue(undefined);
+      mockInsertDataItem.mockResolvedValue(undefined);
       const { result, rerender } = renderHook(({ id }) => useBundleSuggestion(id), {
         initialProps: { id: PRODUCT_A.id },
       });
@@ -368,11 +360,9 @@ describe('useBundleSuggestion', () => {
   describe('unknown product IDs in bundle', () => {
     it('silently filters out product IDs not in the catalog', async () => {
       mockUseOptionalWixClient.mockReturnValue(makeWixClient());
-      mockGetCompatibleItems.mockResolvedValue({
-        ...MOCK_BUNDLE,
-        productIds: ['not-a-real-id', PRODUCT_B.id],
+      mockQueryData.mockResolvedValue({
+        items: [{ ...MOCK_BUNDLE_RAW, productIds: ['not-a-real-id', PRODUCT_B.id] }],
       });
-      mockCalculateBundlePrice.mockResolvedValue(MOCK_PRICING);
 
       const { result } = renderHook(() => useBundleSuggestion(PRODUCT_A.id));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
