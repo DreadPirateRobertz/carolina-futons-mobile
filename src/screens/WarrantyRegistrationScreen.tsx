@@ -100,7 +100,10 @@ export function WarrantyRegistrationScreen({
       const { mediaUrl } = await uploadReviewPhoto(localUri);
       setReceiptPhotoUrl(mediaUrl);
     } catch (err) {
-      console.error('[WarrantyRegistrationScreen] receipt photo upload failed:', err instanceof Error ? err : new Error(String(err)));
+      console.error(
+        '[WarrantyRegistrationScreen] receipt photo upload failed:',
+        err instanceof Error ? err : new Error(String(err)),
+      );
       captureException(err instanceof Error ? err : new Error(String(err)));
       setPhotoError(true);
     } finally {
@@ -143,7 +146,16 @@ export function WarrantyRegistrationScreen({
     } finally {
       setSubmitting(false);
     }
-  }, [submitting, productName, purchaseDate, receiptPhotoUrl, wixClient, orderId, orderNumber, onSuccess]);
+  }, [
+    submitting,
+    productName,
+    purchaseDate,
+    receiptPhotoUrl,
+    wixClient,
+    orderId,
+    orderNumber,
+    onSuccess,
+  ]);
 
   // ── Success state ─────────────────────────────────────────────────────────────
 
@@ -162,12 +174,17 @@ export function WarrantyRegistrationScreen({
           <Text style={[styles.backText, { color: colors.espresso }]}>‹</Text>
         </TouchableOpacity>
         <View style={styles.successContainer} testID="warranty-success">
-          <Text style={[styles.successTitle, { color: colors.espresso }]}>Warranty Registered!</Text>
+          <Text style={[styles.successTitle, { color: colors.espresso }]}>
+            Warranty Registered!
+          </Text>
           <Text style={[styles.successBody, { color: colors.espressoLight }]}>
             Your warranty for order {orderNumber} has been registered successfully.
           </Text>
           <TouchableOpacity
-            style={[styles.doneButton, { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button }]}
+            style={[
+              styles.doneButton,
+              { backgroundColor: colors.sunsetCoral, borderRadius: borderRadius.button },
+            ]}
             onPress={onBack}
             accessibilityLabel="Done"
           >
@@ -287,7 +304,9 @@ export function WarrantyRegistrationScreen({
 
           {/* Receipt photo */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.espressoLight }]}>Receipt Photo (optional)</Text>
+            <Text style={[styles.label, { color: colors.espressoLight }]}>
+              Receipt Photo (optional)
+            </Text>
 
             {receiptPhotoUrl && (
               <Image
@@ -336,7 +355,7 @@ export function WarrantyRegistrationScreen({
           {submitError && (
             <View
               testID="warranty-submit-error"
-              style={[styles.errorBanner, { backgroundColor: colors.errorSurface }]}
+              style={[styles.errorBanner, { backgroundColor: colors.sandLight }]}
             >
               <Text style={[styles.errorBannerText, { color: colors.error }]}>{submitError}</Text>
             </View>

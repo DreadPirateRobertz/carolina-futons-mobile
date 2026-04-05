@@ -230,7 +230,9 @@ describe('WarrantyRegistrationScreen — receipt photo upload', () => {
   it('shows uploading indicator while photo uploads', async () => {
     let resolveUpload!: (v: { mediaUrl: string }) => void;
     mockUploadReviewPhoto.mockReturnValue(
-      new Promise((res) => { resolveUpload = res; }),
+      new Promise((res) => {
+        resolveUpload = res;
+      }),
     );
 
     const { getByTestId } = renderScreen();
@@ -386,7 +388,9 @@ describe('WarrantyRegistrationScreen — submission', () => {
   it('disables submit button while submitting', async () => {
     let resolveRegister!: (v: any) => void;
     mockRegisterWarranty.mockReturnValue(
-      new Promise((res) => { resolveRegister = res; }),
+      new Promise((res) => {
+        resolveRegister = res;
+      }),
     );
 
     const { getByTestId } = renderScreen();
@@ -406,7 +410,9 @@ describe('WarrantyRegistrationScreen — submission', () => {
   it('shows loading indicator during submission', async () => {
     let resolveRegister!: (v: any) => void;
     mockRegisterWarranty.mockReturnValue(
-      new Promise((res) => { resolveRegister = res; }),
+      new Promise((res) => {
+        resolveRegister = res;
+      }),
     );
 
     const { getByTestId } = renderScreen();

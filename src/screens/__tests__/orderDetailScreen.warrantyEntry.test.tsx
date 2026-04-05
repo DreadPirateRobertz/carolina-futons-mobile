@@ -15,9 +15,9 @@ import { MOCK_ORDERS } from '@/data/orders';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-jest.spyOn(require('react-native').Linking, 'openURL').mockImplementation(() =>
-  Promise.resolve(true),
-);
+jest
+  .spyOn(require('react-native').Linking, 'openURL')
+  .mockImplementation(() => Promise.resolve(true));
 
 jest.mock('@/hooks/useRatingPrompt', () => ({
   useRatingPrompt: () => ({

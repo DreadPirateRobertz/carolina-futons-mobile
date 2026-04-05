@@ -27,10 +27,7 @@ export interface WarrantyRegistrationResult {
 }
 
 interface WixClientLike {
-  insertDataItem: (
-    collectionId: string,
-    data: Record<string, unknown>,
-  ) => Promise<{ id: string }>;
+  insertDataItem: (collectionId: string, data: Record<string, unknown>) => Promise<{ id: string }>;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────

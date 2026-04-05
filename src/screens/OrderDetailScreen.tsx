@@ -192,7 +192,11 @@ interface Props {
   /** Callback fired after all re-order items have been added to the cart. */
   onReorderSuccess?: () => void;
   /** Callback fired when the user taps "Register Warranty" on a delivered order. */
-  onWarrantyRegister?: (params: { orderId: string; orderNumber: string; productName: string }) => void;
+  onWarrantyRegister?: (params: {
+    orderId: string;
+    orderNumber: string;
+    productName: string;
+  }) => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
   /** React Navigation route; used as fallback source for orderId. */

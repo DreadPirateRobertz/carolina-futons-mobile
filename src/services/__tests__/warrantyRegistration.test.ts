@@ -47,10 +47,7 @@ describe('registerWarranty — happy path', () => {
 
     await registerWarranty(mockClient as any, BASE_DATA);
 
-    expect(mockInsertDataItem).toHaveBeenCalledWith(
-      'WarrantyRegistrations',
-      expect.any(Object),
-    );
+    expect(mockInsertDataItem).toHaveBeenCalledWith('WarrantyRegistrations', expect.any(Object));
   });
 
   it('writes all required fields to the collection', async () => {
@@ -77,7 +74,7 @@ describe('registerWarranty — happy path', () => {
 
     const [, data] = mockInsertDataItem.mock.calls[0] as [string, Record<string, unknown>];
     expect(typeof data.registeredAt).toBe('string');
-    expect(data.registeredAt >= before).toBe(true);
+    expect((data.registeredAt as string) >= before).toBe(true);
   });
 });
 
