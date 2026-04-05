@@ -54,7 +54,9 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const insets = useSafeAreaInsets();
   const wixClient = useOptionalWixClient();
-  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useSyncedWishlist({ client: wixClient });
+  const { count, getProducts, getShareText, remove, clear, refresh, isLoading } = useSyncedWishlist(
+    { client: wixClient },
+  );
   const { addItem } = useCart();
   const { getModelForProduct } = useFutonModels();
 
