@@ -15,13 +15,9 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import {
-  useProducts,
-  type Product,
-  type ProductCategory,
-  type SortOption,
-} from '@/hooks/useProducts';
+import { useProducts, type Product, type ProductCategory } from '@/hooks/useProducts';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSearchSuggestions } from '@/hooks/useSearchSuggestions';
 import { SearchBar } from '@/components/SearchBar';
 import { ProductCard } from '@/components/ProductCard';
 import { SearchEmptyState } from '@/components/SearchEmptyState';
@@ -51,7 +47,7 @@ interface Props {
 }
 
 export function SearchScreen({ testID }: Props) {
-  const { colors, spacing, typography, borderRadius } = useTheme();
+  const { colors, spacing, borderRadius } = useTheme();
   const reduceMotion = useReducedMotion();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -62,7 +58,7 @@ export function SearchScreen({ testID }: Props) {
     categories,
     searchQuery,
     sortBy,
-    suggestions,
+    suggestions: localSuggestions,
     isLoading,
     fetchError,
     setSearchQuery,
@@ -70,9 +66,9 @@ export function SearchScreen({ testID }: Props) {
     loadMore,
     refresh,
   } = useProducts();
+  const { suggestions } = useSearchSuggestions(searchQuery, localSuggestions);
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { trendingSearches } = useConfig();
-  const [hasSearched, setHasSearched] = useState(false);
   // cm-c00: local input text for responsive UI; debounced before hitting useProducts
   const [inputText, setInputText] = useState('');
 
@@ -101,7 +97,6 @@ export function SearchScreen({ testID }: Props) {
       setInputText(query);
       setSearchQuery(query);
       addSearch(query);
-      setHasSearched(true);
       events.search(query, products.length);
     },
     [setSearchQuery, addSearch, products.length],
@@ -120,7 +115,6 @@ export function SearchScreen({ testID }: Props) {
       setInputText(term);
       setSearchQuery(term);
       addSearch(term);
-      setHasSearched(true);
       events.search(term, 0);
     },
     [setSearchQuery, addSearch],
@@ -129,9 +123,6 @@ export function SearchScreen({ testID }: Props) {
   const handleChangeText = useCallback((text: string) => {
     // Update local input immediately; debounce effect propagates to useProducts
     setInputText(text);
-    if (text.length === 0) {
-      setHasSearched(false);
-    }
   }, []);
 
   const renderProduct = useCallback(
