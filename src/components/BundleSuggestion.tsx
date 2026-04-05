@@ -12,13 +12,7 @@
  */
 
 import React, { memo } from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useBundleSuggestion } from '@/hooks/useBundleSuggestion';
 import { formatPrice } from '@/utils';
@@ -100,10 +94,7 @@ function BundleSuggestionInner({
 
       <View style={styles.productList}>
         {bundleProducts.map((product) => (
-          <Text
-            key={product.id}
-            style={[styles.productName, { color: colors.espresso }]}
-          >
+          <Text key={product.id} style={[styles.productName, { color: colors.espresso }]}>
             {product.name}
           </Text>
         ))}
@@ -124,7 +115,12 @@ function BundleSuggestionInner({
       </View>
 
       <View style={styles.pricingRow}>
-        <Text style={[styles.bundlePrice, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}>
+        <Text
+          style={[
+            styles.bundlePrice,
+            { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
+          ]}
+        >
           {formatPrice(pricing.bundlePrice)}
         </Text>
         <Text style={[styles.originalPrice, { color: colors.textMuted ?? colors.espresso }]}>
@@ -169,10 +165,7 @@ function BundleSuggestionInner({
           testID={`${rootTestID}-cta`}
         >
           {isAddingToCart ? (
-            <ActivityIndicator
-              color="#FFFFFF"
-              testID={`${rootTestID}-cta-loading`}
-            />
+            <ActivityIndicator color="#FFFFFF" testID={`${rootTestID}-cta-loading`} />
           ) : (
             <Text style={styles.ctaText}>Add Bundle to Cart</Text>
           )}
