@@ -20,6 +20,7 @@ import type {
 } from '@/data/products';
 import { productId } from '@/data/productId';
 import { withRetry } from './retry';
+import { validateWixEndpoint } from './certificatePinning';
 
 // ── Config ─────────────────────────────────────────────────────
 
@@ -344,6 +345,8 @@ export class WixClient {
     this.siteId = config.siteId;
     this.baseUrl = config.baseUrl ?? DEFAULT_BASE_URL;
     this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    // cm-keo: validate baseUrl is a trusted Wix host over HTTPS
+    validateWixEndpoint(this.baseUrl);
   }
 
   // ── Products ───────────────────────────────────────────────

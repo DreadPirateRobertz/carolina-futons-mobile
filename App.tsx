@@ -29,6 +29,7 @@ import { MiniCartDrawerHost } from '@/navigation/MiniCartDrawerHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
+import { runSecurityAudit } from '@/services/securityAudit';
 import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
 import { initializePurchases } from '@/services/purchases';
@@ -91,6 +92,8 @@ function App() {
     });
     startFunnelTracking();
     initializePurchases();
+    // cm-keo: audit AsyncStorage for sensitive keys that should be in SecureStore
+    runSecurityAudit();
   }, []);
   const stripeKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
