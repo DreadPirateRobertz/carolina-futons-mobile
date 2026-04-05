@@ -106,7 +106,7 @@ describe('useSearchSuggestions', () => {
       });
 
       expect(mockQueryProducts).toHaveBeenCalledWith(
-        expect.objectContaining({ search: 'ash', limit: 5 }),
+        expect.objectContaining({ search: 'ash', limit: 6 }),
       );
     });
 
