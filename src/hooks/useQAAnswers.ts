@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 const COLLECTION_ID = 'CF-0b22-answers';
 const UPVOTE_KEY = '@cfutons/qa-upvotes';
@@ -52,15 +53,6 @@ export interface UseQAAnswersResult {
   upvoteAnswer: (answerId: string) => Promise<void>;
   submitReply: (parentAnswerId: string, text: string) => Promise<void>;
   clearReplyStatus: () => void;
-}
-
-/** Strip HTML tags (including script/style content) and trim. */
-function sanitizeText(raw: string): string {
-  return raw
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/<[^>]*>/g, '')
-    .trim();
 }
 
 async function loadUpvotedIds(): Promise<Set<string>> {

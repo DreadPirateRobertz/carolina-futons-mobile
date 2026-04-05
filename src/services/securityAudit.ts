@@ -16,7 +16,11 @@ import { captureException } from '@/services/crashReporting';
 
 // Keys that look sensitive but are explicitly known to be safe:
 // - cf_session_token: a non-secret UUID v4 (no auth value if stolen)
-const ALLOWLISTED_KEYS = new Set(['cf_session_token']);
+// - @back_in_stock_subscriptions: contains only product IDs, no PII
+const ALLOWLISTED_KEYS = new Set([
+  'cf_session_token',
+  '@back_in_stock_subscriptions',
+]);
 
 // Patterns that indicate a key might hold sensitive data
 const SENSITIVE_PATTERNS = [
@@ -29,6 +33,10 @@ const SENSITIVE_PATTERNS = [
   /bearer/i,
   /credential/i,
   /private.*key/i,
+  // cm-sec-hardening: PII patterns — addresses and order data should be
+  // reviewed for SecureStore migration or backend-only storage.
+  /address/i,
+  /order_history/i,
 ];
 
 function isSuspiciousKey(key: string): boolean {

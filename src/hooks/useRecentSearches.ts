@@ -6,6 +6,7 @@
  * and gracefully degrades to in-memory-only when storage is unavailable.
  */
 import { useState, useEffect, useCallback } from 'react';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 const STORAGE_KEY = 'cfutons_recent_searches';
 const MAX_RECENT = 10;
@@ -68,7 +69,7 @@ export function useRecentSearches(storage?: SearchStorage) {
 
   const addSearch = useCallback(
     (query: string) => {
-      const trimmed = query.trim();
+      const trimmed = sanitizeText(query);
       if (!trimmed) return;
 
       setRecentSearches((prev) => {

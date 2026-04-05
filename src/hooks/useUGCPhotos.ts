@@ -18,6 +18,7 @@ import { useState, useEffect, useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 const COLLECTION_ID = 'UGCPhotos';
 const MAX_CAPTION_LENGTH = 80;
@@ -53,15 +54,6 @@ export interface UseUGCPhotosResult {
   submitPhoto: (input: SubmitPhotoInput) => Promise<void>;
   votePhoto: (photoId: string) => Promise<void>;
   clearSubmitStatus: () => void;
-}
-
-/** Strip HTML tags (including script/style block content) and trim. */
-function sanitizeCaption(raw: string): string {
-  return raw
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-    .replace(/<[^>]*>/g, '')
-    .trim();
 }
 
 export function useUGCPhotos(productId: string): UseUGCPhotosResult {
@@ -151,7 +143,7 @@ export function useUGCPhotos(productId: string): UseUGCPhotosResult {
       const photoUri = pickerResult.assets[0].uri;
 
       // Validate caption
-      const sanitized = sanitizeCaption(input.caption ?? '');
+      const sanitized = sanitizeText(input.caption ?? '');
       if (sanitized.length > MAX_CAPTION_LENGTH) {
         setSubmitError(`Caption must be ${MAX_CAPTION_LENGTH} characters or fewer`);
         return;

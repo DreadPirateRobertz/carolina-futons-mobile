@@ -17,6 +17,7 @@ import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOptionalWixClient } from '@/services/wix';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeText } from '@/utils/sanitizeText';
 
 const COLLECTION_ID = 'CF-0b22';
 const MAX_QUESTION_LENGTH = 500;
@@ -49,15 +50,6 @@ export interface UseProductQAResult {
 export interface UseProductQAOptions {
   /** Injectable clock for rate-limit tests. Defaults to Date.now. */
   getNow?: () => number;
-}
-
-/** Strip HTML tags (including script/style block content) and trim. */
-function sanitizeText(raw: string): string {
-  return raw
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // strip script blocks + content
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // strip style blocks + content
-    .replace(/<[^>]*>/g, '') // strip remaining tags
-    .trim();
 }
 
 /**
