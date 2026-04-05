@@ -2,24 +2,15 @@
  * CategoryScreen gap tests — covers:
  *   - handleRefresh (lines 88-92)
  *   - getItemLayout callback (lines 109-114)
- *   - FilterButton onPress → setShowFilters(true) (line 149)
- *   - FilterModal onClose → setShowFilters(false) (line 222)
  */
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
 import { CategoryScreen } from '../CategoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 
-jest.useFakeTimers();
-
-afterEach(() => {
-  jest.clearAllTimers();
-});
-afterAll(() => {
-  jest.useRealTimers();
-});
+// No fake timers — avoid leaking into adjacent workers
 
 async function renderCategory(props: Partial<React.ComponentProps<typeof CategoryScreen>> = {}) {
   const result = render(
@@ -31,11 +22,8 @@ async function renderCategory(props: Partial<React.ComponentProps<typeof Categor
       </WishlistProvider>
     </ThemeProvider>,
   );
-  await act(async () => {
-    jest.advanceTimersByTime(700);
-  });
-  await act(async () => {});
-  await act(async () => {});
+  // Wait for initial data load and async state updates to settle
+  await waitFor(() => result.getByTestId('category-product-list'), { timeout: 3000 });
   return result;
 }
 
@@ -43,15 +31,16 @@ describe('CategoryScreen — pull-to-refresh handler', () => {
   it('calling onRefresh on the refresh control triggers handleRefresh', async () => {
     const { getByTestId } = await renderCategory({ categoryId: 'futons' });
     const list = getByTestId('category-product-list');
-    const refreshControl = list.props.refreshControl;
     await act(async () => {
-      refreshControl.props.onRefresh();
+      list.props.refreshControl.props.onRefresh();
     });
-    await act(async () => {
-      jest.advanceTimersByTime(700);
-    });
-    // After completion refreshing should be false
-    expect(list.props.refreshControl.props.refreshing).toBeFalsy();
+    // Wait for the 600ms setTimeout to fire and refreshing to become false
+    await waitFor(
+      () => {
+        expect(getByTestId('category-product-list').props.refreshControl.props.refreshing).toBeFalsy();
+      },
+      { timeout: 2000 },
+    );
   });
 });
 
