@@ -52,12 +52,12 @@ describe('OrderConfirmationScreen — pointsEarned toast', () => {
   });
 
   it('toast cleanup runs without error on unmount', () => {
-    // Exercises the useEffect branch + clearTimeout cleanup
-    jest.useFakeTimers();
+    // Exercises the useEffect branch + clearTimeout cleanup.
+    // Unmount synchronously before the real toast timer fires — the
+    // clearTimeout in the useEffect cleanup cancels the pending timer.
     const { unmount } = renderConfirmation({ pointsEarned: 150 });
-    // Unmount before timer fires — exercises clearTimeout cleanup function
     unmount();
-    jest.useRealTimers();
+    // No crash = test passes
   });
 
   it('pointsEarned null does not show toast', () => {
