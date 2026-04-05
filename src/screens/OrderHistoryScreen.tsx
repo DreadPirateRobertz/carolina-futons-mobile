@@ -23,6 +23,12 @@ import {
   MountainRefreshIndicator,
 } from '@/components/MountainRefreshControl';
 import { formatPrice } from '@/utils';
+import { ReorderConfirmationSheet } from '@/components/ReorderConfirmationSheet';
+import {
+  buildReorderPreview,
+  type ReorderPreview,
+  type ReorderLineItem,
+} from '@/services/reorderService';
 
 interface Props {
   orders?: Order[];
@@ -40,6 +46,8 @@ export function OrderHistoryScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
+  const [sheetOrder, setSheetOrder] = useState<Order | null>(null);
+  const [reorderPreview, setReorderPreview] = useState<ReorderPreview | null>(null);
   const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
   const { addItem } = useCart();
   const { getModel, getFabric } = useFutonModels();
@@ -68,25 +76,39 @@ export function OrderHistoryScreen({
 
   const handleReorder = useCallback(
     (order: Order) => {
-      for (const lineItem of order.items) {
-        const model = getModel(lineItem.modelId);
-        const fabric = getFabric(lineItem.fabricId);
-        if (model && fabric) {
-          addItem(model, fabric, lineItem.quantity);
-        }
-      }
+      const preview = buildReorderPreview(order.items, getModel, getFabric);
+      setSheetOrder(order);
+      setReorderPreview(preview);
     },
-    [addItem, getModel, getFabric],
+    [getModel, getFabric],
   );
+
+  const handleConfirmReorder = useCallback(
+    (items: ReorderLineItem[]) => {
+      for (const { model, fabric, lineItem } of items) {
+        addItem(model, fabric, lineItem.quantity);
+      }
+      setSheetOrder(null);
+      setReorderPreview(null);
+    },
+    [addItem],
+  );
+
+  const handleDismissSheet = useCallback(() => {
+    setSheetOrder(null);
+    setReorderPreview(null);
+  }, []);
 
   const renderOrder = useCallback(
     ({ item }: { item: Order }) => {
       const statusConfig = ORDER_STATUS_CONFIG[item.status];
       const statusColor = colors[statusConfig.colorToken];
       const itemSummary =
-        item.items.length === 1
-          ? item.items[0].modelName
-          : `${item.items[0].modelName} + ${item.items.length - 1} more`;
+        item.items.length === 0
+          ? 'No items'
+          : item.items.length === 1
+            ? item.items[0].modelName
+            : `${item.items[0].modelName} + ${item.items.length - 1} more`;
 
       return (
         <TouchableOpacity
@@ -276,6 +298,16 @@ export function OrderHistoryScreen({
         removeClippedSubviews
         initialNumToRender={6}
       />
+
+      {sheetOrder && reorderPreview && (
+        <ReorderConfirmationSheet
+          visible
+          orderNumber={sheetOrder.orderNumber}
+          preview={reorderPreview}
+          onConfirm={handleConfirmReorder}
+          onDismiss={handleDismissSheet}
+        />
+      )}
     </View>
   );
 }

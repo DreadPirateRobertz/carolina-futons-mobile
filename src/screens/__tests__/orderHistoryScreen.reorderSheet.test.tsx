@@ -128,20 +128,22 @@ describe('OrderHistoryScreen — reorder sheet (cm-bjq)', () => {
     });
 
     it('sheet displays the order number of the tapped order', async () => {
-      const { getByTestId, getByText } = renderOrderHistory();
+      const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-001'));
       await waitFor(() => {
-        expect(getByText(/CF-2026-0147/)).toBeTruthy();
+        const title = getByTestId('reorder-sheet-title');
+        expect(title.props.children).toContain('CF-2026-0147');
       });
     });
 
     it('pressing Reorder on different orders shows the correct order', async () => {
       const order2 = MOCK_ORDERS.find((o) => o.id === 'ord-002');
       if (!order2) return;
-      const { getByTestId, getByText } = renderOrderHistory();
+      const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId('order-reorder-ord-002'));
       await waitFor(() => {
-        expect(getByText(new RegExp(order2.orderNumber))).toBeTruthy();
+        const title = getByTestId('reorder-sheet-title');
+        expect(title.props.children).toContain(order2.orderNumber);
       });
     });
   });

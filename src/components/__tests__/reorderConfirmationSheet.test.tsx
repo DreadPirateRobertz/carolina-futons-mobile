@@ -111,8 +111,8 @@ describe('ReorderConfirmationSheet — rendering', () => {
   });
 
   it('shows the order number in the title', () => {
-    const { getByText } = renderSheet({ orderNumber: 'CF-2026-0147' });
-    expect(getByText(/CF-2026-0147/)).toBeTruthy();
+    const { getByTestId } = renderSheet({ orderNumber: 'CF-2026-0147' });
+    expect(getByTestId('reorder-sheet-title').props.children).toContain('CF-2026-0147');
   });
 
   it('renders a dismiss/close button', () => {
@@ -136,9 +136,6 @@ describe('ReorderConfirmationSheet — all in stock', () => {
   });
 
   it('confirm button shows correct count', () => {
-    const { getByTestId } = renderSheet({ preview: allAvailablePreview });
-    expect(getByTestId('reorder-confirm-btn').props.children ?? getByTestId('reorder-confirm-btn')).toBeTruthy();
-    // Text should mention "2"
     const { getByText } = renderSheet({ preview: allAvailablePreview });
     expect(getByText(/add 2/i)).toBeTruthy();
   });
