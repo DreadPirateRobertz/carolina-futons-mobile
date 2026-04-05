@@ -142,9 +142,9 @@ describe('WixClient', () => {
       expect(client.baseUrl).toBe('https://www.wixapis.com');
     });
 
-    it('accepts custom base URL', () => {
-      const client = new WixClient({ ...TEST_CONFIG, baseUrl: 'https://custom.api.com' });
-      expect(client.baseUrl).toBe('https://custom.api.com');
+    it('accepts custom base URL when it is a trusted Wix host', () => {
+      const client = new WixClient({ ...TEST_CONFIG, baseUrl: 'https://manage.wix.com' });
+      expect(client.baseUrl).toBe('https://manage.wix.com');
     });
   });
 
@@ -1374,5 +1374,58 @@ describe('WixClient eCommerce Cart', () => {
         WixApiError,
       );
     });
+  });
+});
+
+// ── cm-keo: WixClient constructor cert pinning ────────────────────────────────
+
+describe('WixClient constructor — baseUrl cert pinning', () => {
+  it('constructs successfully with default baseUrl (www.wixapis.com)', () => {
+    expect(() => new WixClient({ apiKey: 'k', siteId: 's' })).not.toThrow();
+  });
+
+  it('constructs successfully with explicit trusted baseUrl', () => {
+    expect(
+      () =>
+        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://www.wixapis.com' }),
+    ).not.toThrow();
+  });
+
+  it('constructs successfully with manage.wix.com', () => {
+    expect(
+      () => new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://manage.wix.com' }),
+    ).not.toThrow();
+  });
+
+  it('throws when baseUrl targets an untrusted host', () => {
+    expect(
+      () =>
+        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://evil.example.com' }),
+    ).toThrow(/blocked.*untrusted/i);
+  });
+
+  it('throws when baseUrl uses http (non-HTTPS)', () => {
+    expect(
+      () =>
+        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'http://www.wixapis.com' }),
+    ).toThrow(/https required/i);
+  });
+
+  it('throws for subdomain spoofing in baseUrl', () => {
+    expect(
+      () =>
+        new WixClient({
+          apiKey: 'k',
+          siteId: 's',
+          baseUrl: 'https://www.wixapis.com.attacker.net',
+        }),
+    ).toThrow(/blocked.*untrusted/i);
+  });
+
+  it('throws for localhost baseUrl (prevents dev proxy leaks in prod)', () => {
+    expect(
+      () =>
+        new WixClient({ apiKey: 'k', siteId: 's', baseUrl: 'https://localhost/api' }),
+    ).toThrow(/blocked.*untrusted/i);
   });
 });

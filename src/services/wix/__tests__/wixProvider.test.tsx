@@ -96,7 +96,7 @@ describe('WixProvider', () => {
     expect(() => render(<BadConsumer />)).toThrow('useWixClient must be used within a WixProvider');
   });
 
-  it('creates client with custom base URL', () => {
+  it('creates client with custom base URL (must be a trusted Wix host)', () => {
     let client: WixClient | null = null;
 
     function Consumer() {
@@ -105,12 +105,12 @@ describe('WixProvider', () => {
     }
 
     render(
-      <WixProvider apiKey="key" siteId="site" baseUrl="https://custom.api.com">
+      <WixProvider apiKey="key" siteId="site" baseUrl="https://manage.wix.com">
         <Consumer />
       </WixProvider>,
     );
 
-    expect(client!.baseUrl).toBe('https://custom.api.com');
+    expect(client!.baseUrl).toBe('https://manage.wix.com');
   });
 
   it('memoizes client when props dont change', () => {
