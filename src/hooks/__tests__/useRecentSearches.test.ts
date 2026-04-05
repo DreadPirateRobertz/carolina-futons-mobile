@@ -41,14 +41,14 @@ describe('useRecentSearches', () => {
     expect(result.current.recentSearches[0]).toBe('Futon');
   });
 
-  it('caps at 8 recent searches', async () => {
+  it('caps at 10 recent searches', async () => {
     const { result } = renderHook(() => useRecentSearches(createMockStorage()));
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 14; i++) {
       await act(async () => result.current.addSearch(`search-${i}`));
     }
-    expect(result.current.recentSearches.length).toBeLessThanOrEqual(8);
+    expect(result.current.recentSearches.length).toBeLessThanOrEqual(10);
     // Most recent should be first
-    expect(result.current.recentSearches[0]).toBe('search-11');
+    expect(result.current.recentSearches[0]).toBe('search-13');
   });
 
   it('ignores empty and whitespace-only queries', async () => {

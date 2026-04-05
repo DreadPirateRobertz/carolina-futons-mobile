@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY = 'cfutons_recent_searches';
-const MAX_RECENT = 8;
+const MAX_RECENT = 10;
 
 export interface SearchStorage {
   getItem: (key: string) => Promise<string | null>;
