@@ -38,6 +38,7 @@ import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline'
 import { WildlifeLayer } from '@/components/WildlifeLayer';
 import { useLivingSky } from '@/hooks/useLivingSky';
 import { PromoBannerCarousel } from '@/components/PromoBannerCarousel';
+import { usePromotion } from '@/hooks/usePromotion';
 import { useCollections } from '@/hooks/useCollections';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useAuth } from '@/hooks/useAuth';
@@ -94,6 +95,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
   const { challenges, refresh: refreshChallenges } = useActiveChallenges();
   const { triggers, dismiss } = useTriggerMoments();
   const skyState = useLivingSky();
+  const { items: promoItems, isLoading: promoLoading } = usePromotion();
 
   const [questRefreshToken, setQuestRefreshToken] = useState(0);
   const handleRefresh = useCallback(() => {
@@ -252,7 +254,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         ) : null}
 
         {/* Promotional Banner Carousel */}
-        <PromoBannerCarousel />
+        <PromoBannerCarousel items={promoItems} isLoading={promoLoading} />
 
         {/* AR (Augmented Reality) Call To Action — Primary, glassmorphism */}
         <GlassCard style={[styles.ctaCard, { marginHorizontal: spacing.lg }]} intensity="medium">
