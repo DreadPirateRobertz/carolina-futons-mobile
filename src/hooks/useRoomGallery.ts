@@ -18,6 +18,7 @@ export interface RoomGalleryItem {
   productIds: string[];
   roomStyle: string;
   createdDate: string;
+  featured?: boolean;
 }
 
 interface RawRoomData {
@@ -26,6 +27,7 @@ interface RawRoomData {
   productIds?: string[];
   roomStyle?: string;
   createdDate?: string;
+  featured?: boolean;
 }
 
 interface UseRoomGalleryReturn {
@@ -99,6 +101,7 @@ function transformRoom(raw: RawRoomData): RoomGalleryItem | null {
     productIds: raw.productIds,
     roomStyle: raw.roomStyle ?? '',
     createdDate: raw.createdDate ?? '',
+    featured: raw.featured ?? false,
   };
 }
 
