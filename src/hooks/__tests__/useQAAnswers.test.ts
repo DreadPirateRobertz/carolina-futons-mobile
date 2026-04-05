@@ -408,17 +408,13 @@ describe('submitReply', () => {
     const { result } = renderHook(() => useQAAnswers(QUESTION_ID));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    const countBefore = result.current.answers.filter(
-      (a) => a.parentAnswerId === 'ans-001',
-    ).length;
+    const countBefore = result.current.answers.filter((a) => a.parentAnswerId === 'ans-001').length;
 
     await act(async () => {
       await result.current.submitReply('ans-001', 'Will this rollback?');
     });
 
-    const countAfter = result.current.answers.filter(
-      (a) => a.parentAnswerId === 'ans-001',
-    ).length;
+    const countAfter = result.current.answers.filter((a) => a.parentAnswerId === 'ans-001').length;
     expect(countAfter).toBe(countBefore);
   });
 

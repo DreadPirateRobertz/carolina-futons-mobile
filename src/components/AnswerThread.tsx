@@ -10,14 +10,7 @@
  * Upvotes are disabled once the user has already upvoted (dedup).
  */
 import React, { memo, useCallback, useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Pressable,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { useTheme } from '@/theme';
 import type { QAAnswer } from '@/hooks/useQAAnswers';
 
@@ -118,7 +111,7 @@ const AnswerCard = memo(function AnswerCard({
         },
       ]}
       testID={isReply ? `answer-reply-${answer.id}` : undefined}
-      accessibilityRole="article"
+      accessibilityRole="none"
     >
       <View testID={`answer-card-${answer.id}`} accessibilityRole="none">
         <Text
@@ -130,7 +123,10 @@ const AnswerCard = memo(function AnswerCard({
 
         <View style={styles.metaRow}>
           <Text
-            style={[styles.author, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.author,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
             testID={`answer-author-${answer.id}`}
           >
             {answer.authorName}
@@ -144,7 +140,7 @@ const AnswerCard = memo(function AnswerCard({
                 {
                   backgroundColor: answer.hasUserUpvoted
                     ? colors.sunsetCoral
-                    : colors.overlay ?? '#E8D5B7',
+                    : (colors.overlay ?? '#E8D5B7'),
                 },
               ]}
               onPress={handleUpvote}
@@ -193,9 +189,7 @@ const AnswerCard = memo(function AnswerCard({
           </Pressable>
         )}
 
-        {showReplyInput && (
-          <ReplyInput answerId={answer.id} onSubmit={handleReplySubmit} />
-        )}
+        {showReplyInput && <ReplyInput answerId={answer.id} onSubmit={handleReplySubmit} />}
       </View>
     </View>
   );
