@@ -8,13 +8,19 @@ import {
   isAfterpayEligible,
   getAfterpayInstallments,
   AFTERPAY_MAX_AMOUNT,
+  AFTERPAY_MIN_AMOUNT,
   AFTERPAY_INSTALLMENT_COUNT,
 } from '../financing';
 
 describe('Afterpay installment calculator', () => {
   describe('isAfterpayEligible', () => {
-    it('returns true for $1 (minimum valid purchase)', () => {
-      expect(isAfterpayEligible(1)).toBe(true);
+    it('returns true at minimum amount $35 (web parity)', () => {
+      expect(isAfterpayEligible(35)).toBe(true);
+    });
+
+    it('returns false below minimum ($34)', () => {
+      expect(isAfterpayEligible(34)).toBe(false);
+      expect(isAfterpayEligible(1)).toBe(false);
     });
 
     it('returns true for typical futon price ($500)', () => {
@@ -37,8 +43,12 @@ describe('Afterpay installment calculator', () => {
       expect(isAfterpayEligible(-50)).toBe(false);
     });
 
-    it('max amount is $2000', () => {
-      expect(AFTERPAY_MAX_AMOUNT).toBe(2000);
+    it('max amount is $1,000 (web parity)', () => {
+      expect(AFTERPAY_MAX_AMOUNT).toBe(1000);
+    });
+
+    it('min amount is $35 (web parity)', () => {
+      expect(AFTERPAY_MIN_AMOUNT).toBe(35);
     });
 
     it('installment count is 4', () => {
@@ -51,8 +61,13 @@ describe('Afterpay installment calculator', () => {
       expect(getAfterpayInstallments(400)).toHaveLength(4);
     });
 
-    it('returns empty array for ineligible price (above max)', () => {
+    it('returns empty array for ineligible price (above $1,000 max)', () => {
+      expect(getAfterpayInstallments(1001)).toEqual([]);
       expect(getAfterpayInstallments(3000)).toEqual([]);
+    });
+
+    it('returns empty array below $35 minimum', () => {
+      expect(getAfterpayInstallments(34)).toEqual([]);
     });
 
     it('returns empty array for zero price', () => {
@@ -112,8 +127,9 @@ describe('Afterpay installment calculator', () => {
       expect(installments[3].label).toBe('In 6 weeks');
     });
 
-    it('installments 2-4 are equal for evenly divisible price', () => {
+    it('all 4 installments equal for evenly divisible price', () => {
       const installments = getAfterpayInstallments(400);
+      expect(installments[0].amount).toBe(installments[1].amount);
       expect(installments[1].amount).toBe(installments[2].amount);
       expect(installments[2].amount).toBe(installments[3].amount);
     });

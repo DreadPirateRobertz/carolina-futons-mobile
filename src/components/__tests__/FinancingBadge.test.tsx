@@ -30,8 +30,8 @@ describe('FinancingBadge', () => {
     expect(toJSON()).toBeNull();
   });
 
-  it('renders nothing for price at threshold', () => {
-    const { toJSON } = render(<FinancingBadge price={299} />);
+  it('renders nothing below $200 (below all plan minimums)', () => {
+    const { toJSON } = render(<FinancingBadge price={199} />);
     expect(toJSON()).toBeNull();
   });
 
@@ -115,11 +115,13 @@ describe('FinancingBadge', () => {
     expect(getByTestId('my-detail-badge')).toBeTruthy();
   });
 
-  it('detail variant renders all three term pills', () => {
+  it('detail variant renders term pills for applicable plans', () => {
+    // $800: qualifies for 6mo ($200+), 12mo ($500+), 18mo ($750+), 24mo ($500+)
     const { getByText } = render(<FinancingBadge price={800} variant="detail" />);
-    expect(getByText(/3mo:/)).toBeTruthy();
     expect(getByText(/6mo:/)).toBeTruthy();
     expect(getByText(/12mo:/)).toBeTruthy();
+    expect(getByText(/18mo:/)).toBeTruthy();
+    expect(getByText(/24mo:/)).toBeTruthy();
   });
 
   it('detail variant disclaimer includes APR percentage', () => {

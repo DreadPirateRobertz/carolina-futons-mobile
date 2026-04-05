@@ -17,7 +17,6 @@ import {
   getFinancingTerms,
   isAfterpayEligible,
   getAfterpayInstallments,
-  FINANCING_APR,
 } from '@/utils/financing';
 import { formatPrice } from '@/utils';
 
@@ -27,8 +26,6 @@ interface Props {
   price: number;
   testID?: string;
 }
-
-const APR_DISPLAY = `${(FINANCING_APR * 100).toFixed(2)}%`;
 
 export function FinancingCalculator({ price, testID = 'financing-calculator' }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
@@ -151,7 +148,7 @@ export function FinancingCalculator({ price, testID = 'financing-calculator' }: 
                 style={[styles.termRow, { borderBottomColor: `${colors.mountainBlue}20` }]}
               >
                 <Text style={[styles.termLabel, { color: colors.espressoLight }]}>
-                  {term.months} months
+                  {term.label}
                 </Text>
                 <Text
                   testID={`fin-affirm-term-${term.months}-amount`}
@@ -162,7 +159,7 @@ export function FinancingCalculator({ price, testID = 'financing-calculator' }: 
               </View>
             ))}
             <Text style={[styles.disclaimer, { color: colors.espressoLight }]}>
-              {APR_DISPLAY} APR. Subject to credit approval.
+              0%–9.99% APR depending on term. Subject to credit approval.
             </Text>
           </View>
         )}
