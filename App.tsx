@@ -23,6 +23,7 @@ import { StreakMilestoneBridge } from '@/components/StreakMilestoneBridge';
 import { PostPurchaseReviewBridge } from '@/components/PostPurchaseReviewBridge';
 import { OnboardingStyleModalBridge } from '@/components/OnboardingStyleModalBridge';
 import { runSecurityAudit } from '@/services/securityAudit';
+import { NPSSurveyBridge } from '@/components/NPSSurveyBridge';
 import { WixProvider } from '@/services/wix/wixProvider';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 
@@ -140,6 +141,7 @@ function App() {
                           <StreakMilestoneBridge />
                           <PostPurchaseReviewBridge />
                           <OnboardingStyleModalBridge />
+                          <NPSSurveyBridge />
                           <PremiumProvider>
                             <RecommendationsProvider>
                               <CompareProvider>
