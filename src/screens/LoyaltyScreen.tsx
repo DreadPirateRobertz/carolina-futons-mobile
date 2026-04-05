@@ -12,6 +12,7 @@ import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { useStreak } from '@/hooks/useStreak';
 import { emitStreakExtended, emitTierChanged } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
@@ -42,17 +43,11 @@ interface Props {
   initialTab?: LoyaltyInitialTab;
 }
 
-const TIER_NEXT: Record<string, { label: string; threshold: number } | null> = {
-  bronze: { label: 'Silver', threshold: 1000 },
-  silver: { label: 'Gold', threshold: 5000 },
-  gold: null,
-};
-
 export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   const { colors, spacing, typography } = useTheme();
-  const { points, tier, loading, error, refreshPoints } = useLoyalty();
+  const { points, tier, nextTier, progress, loading, error, refreshPoints } = useLoyalty();
   const { streak, loading: streakLoading, wasExtendedToday } = useStreak();
-  const prevTierRef = useRef<string | null>(null);
+  const prevTierRef = useRef<LoyaltyTierConfig | null>(null);
 
   useEffect(() => {
     if (streakLoading || !wasExtendedToday || streakEmittedThisSession) return;
@@ -74,8 +69,9 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       tierEmittedThisSession = true;
       try {
         const client = getWixClientSingleton();
-        emitTierChanged(client, { oldTier: prevTier, newTier: tier }).catch((err: unknown) =>
-          captureException(err instanceof Error ? err : new Error(String(err))),
+        emitTierChanged(client, { oldTier: prevTier.name, newTier: tier.name }).catch(
+          (err: unknown) =>
+            captureException(err instanceof Error ? err : new Error(String(err))),
         );
       } catch (err) {
         captureException(err instanceof Error ? err : new Error(String(err)));
@@ -122,11 +118,6 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
     );
   }
 
-  const nextTier = TIER_NEXT[tier];
-  const progressPct = nextTier
-    ? Math.min(100, Math.round((points / nextTier.threshold) * 100))
-    : 100;
-
   return (
     <View
       style={[styles.root, { backgroundColor: colors.sandBase }]}
@@ -156,7 +147,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
                   styles.progressFill,
                   {
                     backgroundColor: colors.mountainBlue,
-                    width: `${progressPct}%` as `${number}%`,
+                    width: `${progress}%` as `${number}%`,
                   },
                 ]}
               />
@@ -167,7 +158,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
                 { color: colors.espressoLight, fontFamily: typography.bodyFamily },
               ]}
             >
-              {points} / {nextTier.threshold} to {nextTier.label}
+              {points} / {nextTier.minPoints} to {nextTier.name}
             </Text>
           </View>
         )}

@@ -10,13 +10,13 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { LoyaltyBadge } from './LoyaltyBadge';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 export interface LeaderboardRowProps {
   rank: number;
   nickname: string;
   points: number;
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   isCurrentUser?: boolean;
   testID?: string;
 }
@@ -31,7 +31,7 @@ export function LeaderboardRow({
 }: LeaderboardRowProps) {
   const { colors, spacing, borderRadius } = useTheme();
   const formattedPoints = points.toLocaleString('en-US');
-  const a11yLabel = `Rank ${rank}, ${nickname}, ${formattedPoints} points, ${tier} tier${isCurrentUser ? ', you' : ''}`;
+  const a11yLabel = `Rank ${rank}, ${nickname}, ${formattedPoints} points, ${tier.name} tier${isCurrentUser ? ', you' : ''}`;
 
   return (
     <View

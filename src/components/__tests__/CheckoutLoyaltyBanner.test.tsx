@@ -1,7 +1,7 @@
 /**
- * CheckoutLoyaltyBanner TDD tests — cm-ds5
+ * CheckoutLoyaltyBanner TDD tests — cm-ds5 / deacon-cjv
  *
- * Covers: all tier states, progress text, no-next-tier (Gold),
+ * Covers: all tier states, progress text, no-next-tier (Blue Ridge Legend),
  * graceful fallback on loading/error/null, no crash on null service response.
  */
 
@@ -9,6 +9,9 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { CheckoutLoyaltyBanner } from '../CheckoutLoyaltyBanner';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE, , BLUE_RIDGE_LEGEND] = LOYALTY_TIERS;
 
 function renderBanner(props: React.ComponentProps<typeof CheckoutLoyaltyBanner>) {
   return render(
@@ -21,72 +24,71 @@ function renderBanner(props: React.ComponentProps<typeof CheckoutLoyaltyBanner>)
 describe('CheckoutLoyaltyBanner', () => {
   // ── Tier rendering ──────────────────────────────────────────────────
 
-  it('renders Bronze tier label for bronze state', () => {
+  it('renders Trail Blazer tier label', () => {
     const { getByTestId } = renderBanner({
-      tier: 'bronze',
+      tier: TRAIL_BLAZER,
       points: 120,
       pointsToNext: 380,
-      nextTierLabel: 'Silver',
+      nextTierLabel: 'Mountain Guide',
     });
     expect(getByTestId('checkout-loyalty-banner')).toBeTruthy();
-    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Bronze/i);
+    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Trail Blazer/i);
   });
 
-  it('renders Silver tier label for silver state', () => {
+  it('renders Mountain Guide tier label', () => {
     const { getByTestId } = renderBanner({
-      tier: 'silver',
+      tier: MOUNTAIN_GUIDE,
       points: 750,
       pointsToNext: 750,
-      nextTierLabel: 'Gold',
+      nextTierLabel: 'Summit Master',
     });
-    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Silver/i);
+    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Mountain Guide/i);
   });
 
-  it('renders Gold tier label for gold state', () => {
+  it('renders Blue Ridge Legend tier label', () => {
     const { getByTestId } = renderBanner({
-      tier: 'gold',
-      points: 2000,
+      tier: BLUE_RIDGE_LEGEND,
+      points: 3000,
       pointsToNext: 0,
       nextTierLabel: null,
     });
-    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Gold/i);
+    expect(getByTestId('checkout-loyalty-tier-label').props.children).toMatch(/Blue Ridge Legend/i);
   });
 
   // ── Progress text ───────────────────────────────────────────────────
 
-  it('shows points-to-next progress text for Bronze → Silver', () => {
+  it('shows points-to-next progress text for Trail Blazer → Mountain Guide', () => {
     const { getByTestId } = renderBanner({
-      tier: 'bronze',
+      tier: TRAIL_BLAZER,
       points: 120,
       pointsToNext: 380,
-      nextTierLabel: 'Silver',
+      nextTierLabel: 'Mountain Guide',
     });
     const progress = getByTestId('checkout-loyalty-progress');
     expect(progress.props.children).toMatch(/380/);
-    expect(progress.props.children).toMatch(/Silver/);
+    expect(progress.props.children).toMatch(/Mountain Guide/);
   });
 
-  it('shows points-to-next progress text for Silver → Gold', () => {
+  it('shows points-to-next progress text for Mountain Guide → Summit Master', () => {
     const { getByTestId } = renderBanner({
-      tier: 'silver',
+      tier: MOUNTAIN_GUIDE,
       points: 800,
       pointsToNext: 700,
-      nextTierLabel: 'Gold',
+      nextTierLabel: 'Summit Master',
     });
     const progress = getByTestId('checkout-loyalty-progress');
     expect(progress.props.children).toMatch(/700/);
-    expect(progress.props.children).toMatch(/Gold/);
+    expect(progress.props.children).toMatch(/Summit Master/);
   });
 
-  it('shows top-tier message when Gold (no next tier)', () => {
+  it('shows top-tier message when Blue Ridge Legend (no next tier)', () => {
     const { getByTestId } = renderBanner({
-      tier: 'gold',
-      points: 1800,
+      tier: BLUE_RIDGE_LEGEND,
+      points: 3000,
       pointsToNext: 0,
       nextTierLabel: null,
     });
     const progress = getByTestId('checkout-loyalty-progress');
-    // Should NOT show "pts to" — should indicate max tier
     expect(progress.props.children).not.toMatch(/pts to/i);
     expect(progress.props.children).toMatch(/top tier|max|highest/i);
   });
@@ -95,10 +97,10 @@ describe('CheckoutLoyaltyBanner', () => {
 
   it('renders nothing when loading=true', () => {
     const { queryByTestId } = renderBanner({
-      tier: 'bronze',
+      tier: TRAIL_BLAZER,
       points: 0,
       pointsToNext: 500,
-      nextTierLabel: 'Silver',
+      nextTierLabel: 'Mountain Guide',
       loading: true,
     });
     expect(queryByTestId('checkout-loyalty-banner')).toBeNull();
@@ -106,10 +108,10 @@ describe('CheckoutLoyaltyBanner', () => {
 
   it('renders nothing when error is set', () => {
     const { queryByTestId } = renderBanner({
-      tier: 'bronze',
+      tier: TRAIL_BLAZER,
       points: 0,
       pointsToNext: 500,
-      nextTierLabel: 'Silver',
+      nextTierLabel: 'Mountain Guide',
       error: 'Network error',
     });
     expect(queryByTestId('checkout-loyalty-banner')).toBeNull();
@@ -117,23 +119,22 @@ describe('CheckoutLoyaltyBanner', () => {
 
   it('renders nothing when hidden=true', () => {
     const { queryByTestId } = renderBanner({
-      tier: 'bronze',
+      tier: TRAIL_BLAZER,
       points: 100,
       pointsToNext: 400,
-      nextTierLabel: 'Silver',
+      nextTierLabel: 'Mountain Guide',
       hidden: true,
     });
     expect(queryByTestId('checkout-loyalty-banner')).toBeNull();
   });
 
   it('does not crash when pointsToNext is 0 with a next tier', () => {
-    // Edge: exactly at threshold
     expect(() =>
       renderBanner({
-        tier: 'silver',
+        tier: MOUNTAIN_GUIDE,
         points: 500,
         pointsToNext: 0,
-        nextTierLabel: 'Gold',
+        nextTierLabel: 'Summit Master',
       }),
     ).not.toThrow();
   });
@@ -141,18 +142,18 @@ describe('CheckoutLoyaltyBanner', () => {
   it('does not crash when points is 0', () => {
     expect(() =>
       renderBanner({
-        tier: 'bronze',
+        tier: TRAIL_BLAZER,
         points: 0,
         pointsToNext: 500,
-        nextTierLabel: 'Silver',
+        nextTierLabel: 'Mountain Guide',
       }),
     ).not.toThrow();
   });
 
   it('has accessible label on banner', () => {
     const { getByTestId } = renderBanner({
-      tier: 'gold',
-      points: 2000,
+      tier: BLUE_RIDGE_LEGEND,
+      points: 3000,
       pointsToNext: 0,
       nextTierLabel: null,
     });

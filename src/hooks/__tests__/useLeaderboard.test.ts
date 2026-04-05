@@ -6,6 +6,7 @@
 
 import { renderHook, act } from '@testing-library/react-native';
 import { useLeaderboard } from '../useLeaderboard';
+import { getTierForPoints } from '@/data/loyaltyTiers';
 
 const mockGetLeaderboard = jest.fn();
 // undefined = "use default client"; null = "simulate unavailable client"
@@ -22,11 +23,11 @@ const SAMPLE_API_ENTRIES = [
   { memberId: 'm2', nickname: 'Bob', points: 800, tier: 'silver', rank: 2 },
   { memberId: 'm3', nickname: 'Carol', points: 200, tier: 'bronze', rank: 3 },
 ];
-// Hook maps nickname → displayName
+// Hook maps nickname → displayName and computes tier from points
 const SAMPLE_ENTRIES = [
-  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
-  { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
-  { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
+  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: getTierForPoints(2500), rank: 1 },
+  { memberId: 'm2', displayName: 'Bob', points: 800, tier: getTierForPoints(800), rank: 2 },
+  { memberId: 'm3', displayName: 'Carol', points: 200, tier: getTierForPoints(200), rank: 3 },
 ];
 
 const SAMPLE_WEEKLY_API = [
@@ -34,8 +35,8 @@ const SAMPLE_WEEKLY_API = [
   { memberId: 'm1', nickname: 'Alice', points: 100, tier: 'gold', rank: 2 },
 ];
 const SAMPLE_WEEKLY = [
-  { memberId: 'm2', displayName: 'Bob', points: 150, tier: 'silver', rank: 1 },
-  { memberId: 'm1', displayName: 'Alice', points: 100, tier: 'gold', rank: 2 },
+  { memberId: 'm2', displayName: 'Bob', points: 150, tier: getTierForPoints(150), rank: 1 },
+  { memberId: 'm1', displayName: 'Alice', points: 100, tier: getTierForPoints(100), rank: 2 },
 ];
 
 beforeEach(() => {

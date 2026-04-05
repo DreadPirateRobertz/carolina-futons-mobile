@@ -1,21 +1,29 @@
 /**
- * useLoyalty — cm-elo / cm-ds5
+ * useLoyalty — cm-elo / cm-ds5 / deacon-cjv
  *
  * Fetches the current member's loyalty account from the Wix backend webMethod
  * (/_functions/getLoyaltyAccount). Uses the member's Wix session access token
  * for SiteMember-permissioned auth — server resolves identity from session
  * context (no IDOR risk; member can only read their own record).
  *
- * Falls back to Bronze defaults when unauthenticated (no error thrown).
+ * Falls back to Trail Blazer defaults when unauthenticated (no error thrown).
  *
- * Tier thresholds: Bronze(0–499) → Silver(500–1499) → Gold(1500+)
+ * Tier thresholds: Trail Blazer (0–499) → Mountain Guide (500–1499) →
+ *                  Summit Master (1500–2999) → Blue Ridge Legend (3000+)
  */
 
 import { useState, useCallback, useEffect } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { getWixSdkClient } from '@/services/wix/wixSdkClient';
+import {
+  LOYALTY_TIERS,
+  getTierForPoints,
+  getNextTier,
+  type LoyaltyTierConfig,
+} from '@/data/loyaltyTiers';
 
-export type LoyaltyTier = 'bronze' | 'silver' | 'gold';
+export type LoyaltyTier = LoyaltyTierConfig; // backward compat alias
+export type { LoyaltyTierConfig };
 
 export interface LoyaltyTransaction {
   _id: string;
@@ -27,8 +35,8 @@ export interface LoyaltyTransaction {
 
 export interface UseLoyaltyResult {
   points: number;
-  tier: LoyaltyTier;
-  nextTier: LoyaltyTier | null;
+  tier: LoyaltyTierConfig;
+  nextTier: LoyaltyTierConfig | null;
   pointsToNext: number;
   progress: number;
   loading: boolean;
@@ -36,27 +44,31 @@ export interface UseLoyaltyResult {
   refreshPoints: () => Promise<void>;
 }
 
-function normalizeTier(raw: string): LoyaltyTier {
-  const lower = raw.toLowerCase();
-  if (lower === 'silver') return 'silver';
-  if (lower === 'gold') return 'gold';
-  return 'bronze';
+function computeDerivedFields(points: number) {
+  const tier = getTierForPoints(points);
+  const nextTier = getNextTier(tier);
+  const pointsToNext = nextTier ? Math.max(0, nextTier.minPoints - points) : 0;
+  const progress = nextTier
+    ? Math.min(
+        100,
+        Math.round(
+          ((points - tier.minPoints) / (nextTier.minPoints - tier.minPoints)) * 100,
+        ),
+      )
+    : 100;
+  return { tier, nextTier, pointsToNext, progress };
 }
 
-const BRONZE_DEFAULTS = {
-  points: 0,
-  tier: 'bronze' as LoyaltyTier,
-  nextTier: 'silver' as LoyaltyTier,
-  pointsToNext: 500,
-  progress: 0,
-};
+const TRAIL_BLAZER_DEFAULTS = computeDerivedFields(0);
 
 export function useLoyalty(): UseLoyaltyResult {
   const [points, setPoints] = useState(0);
-  const [tier, setTier] = useState<LoyaltyTier>('bronze');
-  const [nextTier, setNextTier] = useState<LoyaltyTier | null>('silver');
-  const [pointsToNext, setPointsToNext] = useState(500);
-  const [progress, setProgress] = useState(0);
+  const [tier, setTier] = useState<LoyaltyTierConfig>(TRAIL_BLAZER_DEFAULTS.tier);
+  const [nextTier, setNextTier] = useState<LoyaltyTierConfig | null>(
+    TRAIL_BLAZER_DEFAULTS.nextTier,
+  );
+  const [pointsToNext, setPointsToNext] = useState(TRAIL_BLAZER_DEFAULTS.pointsToNext);
+  const [progress, setProgress] = useState(TRAIL_BLAZER_DEFAULTS.progress);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,15 +81,16 @@ export function useLoyalty(): UseLoyaltyResult {
         const tokens = getWixSdkClient().auth.getTokens();
         memberToken = tokens.accessToken?.value;
       } catch {
-        // SDK not initialized or user not authenticated — use Bronze defaults
+        // SDK not initialized or user not authenticated — use Trail Blazer defaults
       }
 
       if (!memberToken) {
-        setPoints(BRONZE_DEFAULTS.points);
-        setTier(BRONZE_DEFAULTS.tier);
-        setNextTier(BRONZE_DEFAULTS.nextTier);
-        setPointsToNext(BRONZE_DEFAULTS.pointsToNext);
-        setProgress(BRONZE_DEFAULTS.progress);
+        const d = TRAIL_BLAZER_DEFAULTS;
+        setPoints(0);
+        setTier(d.tier);
+        setNextTier(d.nextTier);
+        setPointsToNext(d.pointsToNext);
+        setProgress(d.progress);
         return;
       }
 
@@ -88,11 +101,13 @@ export function useLoyalty(): UseLoyaltyResult {
       }
 
       const data = await wixClient.getLoyaltyAccount(memberToken);
-      setPoints(data.points ?? 0);
-      setTier(normalizeTier(data.tier));
-      setNextTier(data.nextTier ? normalizeTier(data.nextTier) : null);
-      setPointsToNext(data.pointsToNext ?? 0);
-      setProgress(data.progress ?? 0);
+      const pts = data.points ?? 0;
+      const derived = computeDerivedFields(pts);
+      setPoints(pts);
+      setTier(derived.tier);
+      setNextTier(derived.nextTier);
+      setPointsToNext(derived.pointsToNext);
+      setProgress(derived.progress);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

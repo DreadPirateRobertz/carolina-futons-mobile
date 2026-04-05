@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
-import type { LoyaltyTier } from './useLoyalty';
+import { getTierForPoints, type LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 export type LeaderboardPeriod = 'allTime' | 'weekly';
 
@@ -16,7 +16,7 @@ export interface LeaderboardEntry {
   /** Populated from MemberPoints writer — null until first write. Falls back to 'CF Member' in UI. */
   displayName: string | null;
   points: number;
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   rank: number;
 }
 
@@ -54,7 +54,7 @@ export function useLeaderboard(): UseLeaderboardResult {
           memberId: e.memberId,
           displayName: e.nickname ?? null,
           points: e.points,
-          tier: e.tier as LoyaltyTier,
+          tier: getTierForPoints(e.points),
           rank: e.rank,
         })),
       );

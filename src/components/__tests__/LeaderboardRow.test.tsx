@@ -1,18 +1,22 @@
 /**
- * LeaderboardRow tests — cf-op6
+ * LeaderboardRow tests — cf-op6 / deacon-cjv
  */
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { LeaderboardRow } from '../LeaderboardRow';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE, SUMMIT_MASTER] = LOYALTY_TIERS;
 
 function wrap(ui: React.ReactElement) {
   return render(<ThemeProvider>{ui}</ThemeProvider>);
 }
 
 describe('LeaderboardRow', () => {
-  const base = { rank: 1, nickname: 'Alice', points: 2500, tier: 'gold' as const };
+  // Summit Master (2500 pts falls in 1500-2999 range)
+  const base = { rank: 1, nickname: 'Alice', points: 2500, tier: SUMMIT_MASTER };
 
   it('renders rank number', () => {
     const { getByTestId } = wrap(<LeaderboardRow {...base} />);
@@ -29,19 +33,19 @@ describe('LeaderboardRow', () => {
     expect(getByTestId('leaderboard-row-points').props.children).toContain('2,500');
   });
 
-  it('renders tier badge with correct tier', () => {
+  it('renders tier badge for Summit Master', () => {
     const { getByTestId } = wrap(<LeaderboardRow {...base} />);
-    expect(getByTestId('loyalty-badge-gold')).toBeTruthy();
+    expect(getByTestId('loyalty-badge-summit-master')).toBeTruthy();
   });
 
-  it('renders silver badge for silver tier', () => {
-    const { getByTestId } = wrap(<LeaderboardRow {...base} tier="silver" />);
-    expect(getByTestId('loyalty-badge-silver')).toBeTruthy();
+  it('renders badge for Mountain Guide tier', () => {
+    const { getByTestId } = wrap(<LeaderboardRow {...base} tier={MOUNTAIN_GUIDE} />);
+    expect(getByTestId('loyalty-badge-mountain-guide')).toBeTruthy();
   });
 
-  it('renders bronze badge for bronze tier', () => {
-    const { getByTestId } = wrap(<LeaderboardRow {...base} tier="bronze" />);
-    expect(getByTestId('loyalty-badge-bronze')).toBeTruthy();
+  it('renders badge for Trail Blazer tier', () => {
+    const { getByTestId } = wrap(<LeaderboardRow {...base} tier={TRAIL_BLAZER} />);
+    expect(getByTestId('loyalty-badge-trail-blazer')).toBeTruthy();
   });
 
   it('has no highlighted style by default', () => {
@@ -55,7 +59,6 @@ describe('LeaderboardRow', () => {
   it('applies highlighted style when isCurrentUser=true', () => {
     const { getByTestId } = wrap(<LeaderboardRow {...base} isCurrentUser />);
     const row = getByTestId('leaderboard-row-1');
-    // Row container should have a testID and distinct style — we just verify it renders
     expect(row).toBeTruthy();
   });
 
@@ -80,7 +83,7 @@ describe('LeaderboardRow', () => {
     expect(label).toContain('1');
     expect(label).toContain('Alice');
     expect(label).toContain('2,500');
-    expect(label).toContain('gold');
+    expect(label).toContain('Summit Master');
   });
 
   it('accessibilityLabel includes "you" when isCurrentUser', () => {

@@ -1,10 +1,11 @@
 /**
  * @module LoyaltyCard.test
  *
- * Component tests for LoyaltyCard — cm-a31 / CF-yq80.
+ * Component tests for LoyaltyCard — cm-a31 / CF-yq80 / deacon-cjv.
  * Tests tier display, progress bar, next-tier text, hidden state, and accessibility.
  *
- * Tier thresholds: Bronze 0-499, Silver 500-1499, Gold 1500+
+ * Tier thresholds: Trail Blazer 0-499, Mountain Guide 500-1499,
+ *                  Summit Master 1500-2999, Blue Ridge Legend 3000+
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
@@ -14,7 +15,6 @@ import { LoyaltyCard } from '../LoyaltyCard';
 function renderCard(overrides: Partial<React.ComponentProps<typeof LoyaltyCard>> = {}) {
   const props = {
     points: 250,
-    tier: 'bronze' as const,
     nextTierThreshold: 500,
     progressPercent: 50,
     hasActivity: true,
@@ -44,11 +44,10 @@ describe('LoyaltyCard', () => {
       expect(getByTestId('loyalty-card')).toBeTruthy();
     });
 
-    it('renders when points=1500 (Gold)', () => {
+    it('renders when points=3000 (Blue Ridge Legend)', () => {
       const { getByTestId } = renderCard({
-        points: 1500,
-        tier: 'gold',
-        nextTierThreshold: 1500,
+        points: 3000,
+        nextTierThreshold: 3000,
         progressPercent: 100,
       });
       expect(getByTestId('loyalty-card')).toBeTruthy();
@@ -56,34 +55,43 @@ describe('LoyaltyCard', () => {
   });
 
   describe('tier badge', () => {
-    it('shows Bronze tier badge', () => {
-      const { getByTestId } = renderCard({ tier: 'bronze' });
-      expect(getByTestId('loyalty-badge-bronze')).toBeTruthy();
+    it('shows Trail Blazer tier badge for 250 pts', () => {
+      const { getByTestId } = renderCard({ points: 250 });
+      expect(getByTestId('loyalty-badge-trail-blazer')).toBeTruthy();
     });
 
-    it('shows Silver tier badge', () => {
+    it('shows Mountain Guide tier badge for 750 pts', () => {
       const { getByTestId } = renderCard({
-        tier: 'silver',
         points: 750,
         nextTierThreshold: 1500,
         progressPercent: 50,
       });
-      expect(getByTestId('loyalty-badge-silver')).toBeTruthy();
+      expect(getByTestId('loyalty-badge-mountain-guide')).toBeTruthy();
     });
 
-    it('shows Gold tier badge', () => {
+    it('shows Summit Master tier badge for 1500 pts', () => {
       const { getByTestId } = renderCard({
-        tier: 'gold',
         points: 1500,
-        nextTierThreshold: 1500,
+        nextTierThreshold: 3000,
         progressPercent: 100,
       });
-      expect(getByTestId('loyalty-badge-gold')).toBeTruthy();
+      expect(getByTestId('loyalty-badge-summit-master')).toBeTruthy();
     });
 
-    it('Bronze badge has accessible label', () => {
-      const { getByTestId } = renderCard({ tier: 'bronze' });
-      expect(getByTestId('loyalty-badge-bronze').props.accessibilityLabel).toBe('Bronze tier');
+    it('shows Blue Ridge Legend tier badge for 3000 pts', () => {
+      const { getByTestId } = renderCard({
+        points: 3000,
+        nextTierThreshold: 3000,
+        progressPercent: 100,
+      });
+      expect(getByTestId('loyalty-badge-blue-ridge-legend')).toBeTruthy();
+    });
+
+    it('Trail Blazer badge has accessible label', () => {
+      const { getByTestId } = renderCard({ points: 250 });
+      expect(getByTestId('loyalty-badge-trail-blazer').props.accessibilityLabel).toBe(
+        'Trail Blazer tier',
+      );
     });
   });
 
@@ -137,11 +145,10 @@ describe('LoyaltyCard', () => {
       expect(width).toBe('99%');
     });
 
-    it('progress bar width is 100% for Gold', () => {
+    it('progress bar width is 100% for Blue Ridge Legend', () => {
       const { getByTestId } = renderCard({
-        tier: 'gold',
-        points: 1500,
-        nextTierThreshold: 1500,
+        points: 3000,
+        nextTierThreshold: 3000,
         progressPercent: 100,
       });
       const bar = getByTestId('loyalty-progress-bar');
@@ -158,29 +165,36 @@ describe('LoyaltyCard', () => {
       expect(getByTestId('loyalty-next-tier-text')).toBeTruthy();
     });
 
-    it('shows "250 points to Silver" for Bronze at 250 pts', () => {
-      const { getByTestId } = renderCard({ tier: 'bronze', points: 250, nextTierThreshold: 500 });
-      expect(getByTestId('loyalty-next-tier-text').props.children).toBe('250 points to Silver');
+    it('shows "250 points to Mountain Guide" for Trail Blazer at 250 pts', () => {
+      const { getByTestId } = renderCard({ points: 250, nextTierThreshold: 500 });
+      expect(getByTestId('loyalty-next-tier-text').props.children).toBe(
+        '250 points to Mountain Guide',
+      );
     });
 
-    it('shows "750 points to Gold" for Silver at 750 pts', () => {
-      const { getByTestId } = renderCard({ tier: 'silver', points: 750, nextTierThreshold: 1500 });
-      expect(getByTestId('loyalty-next-tier-text').props.children).toBe('750 points to Gold');
+    it('shows "750 points to Summit Master" for Mountain Guide at 750 pts', () => {
+      const { getByTestId } = renderCard({ points: 750, nextTierThreshold: 1500 });
+      expect(getByTestId('loyalty-next-tier-text').props.children).toBe(
+        '750 points to Summit Master',
+      );
     });
 
-    it('shows "You\'ve reached Gold!" for Gold tier', () => {
+    it('shows "You\'ve reached Blue Ridge Legend!" for top tier', () => {
       const { getByTestId } = renderCard({
-        tier: 'gold',
-        points: 1500,
-        nextTierThreshold: 1500,
+        points: 3000,
+        nextTierThreshold: 3000,
         progressPercent: 100,
       });
-      expect(getByTestId('loyalty-next-tier-text').props.children).toBe("You've reached Gold!");
+      expect(getByTestId('loyalty-next-tier-text').props.children).toBe(
+        "You've reached Blue Ridge Legend!",
+      );
     });
 
-    it('shows "0 points to Silver" when at threshold', () => {
-      const { getByTestId } = renderCard({ tier: 'bronze', points: 500, nextTierThreshold: 500 });
-      expect(getByTestId('loyalty-next-tier-text').props.children).toBe('0 points to Silver');
+    it('shows "1000 points to Summit Master" when at Mountain Guide threshold', () => {
+      const { getByTestId } = renderCard({ points: 500, nextTierThreshold: 500 });
+      expect(getByTestId('loyalty-next-tier-text').props.children).toBe(
+        '1000 points to Summit Master',
+      );
     });
   });
 
