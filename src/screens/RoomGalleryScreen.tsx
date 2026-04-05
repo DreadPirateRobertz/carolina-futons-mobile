@@ -8,13 +8,14 @@
  * States handled: loading skeleton, empty gallery, API error with retry,
  * and the populated grid.
  */
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
+import { UGCPhotoSubmitModal } from '@/components/UGCPhotoSubmitModal';
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
@@ -94,6 +95,12 @@ function RoomCard({
 export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { rooms, isLoading, error, refresh, isPlaceholder } = useRoomGallery();
+  const [ugcModalVisible, setUgcModalVisible] = useState(false);
+
+  const handleSharePress = useCallback(() => {
+    setUgcModalVisible(true);
+    onSharePress?.();
+  }, [onSharePress]);
 
   const renderItem = useCallback(
     ({ item }: { item: RoomGalleryItem }) => (
@@ -175,7 +182,7 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
   const shareCTA = (
     <TouchableOpacity
       style={[styles.shareCTA, { backgroundColor: colors.sunsetCoral }]}
-      onPress={onSharePress}
+      onPress={handleSharePress}
       testID="room-gallery-share-cta"
       accessibilityRole="button"
       accessibilityLabel="Share a photo of your Carolina Futons room"
@@ -231,6 +238,11 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
         removeClippedSubviews
         initialNumToRender={6}
         ListFooterComponent={shareCTA}
+      />
+      <UGCPhotoSubmitModal
+        visible={ugcModalVisible}
+        productId=""
+        onClose={() => setUgcModalVisible(false)}
       />
     </View>
   );
