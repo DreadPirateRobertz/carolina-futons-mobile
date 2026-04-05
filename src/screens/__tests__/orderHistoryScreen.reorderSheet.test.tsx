@@ -136,14 +136,15 @@ describe('OrderHistoryScreen — reorder sheet (cm-bjq)', () => {
       });
     });
 
-    it('pressing Reorder on different orders shows the correct order', async () => {
-      const order2 = MOCK_ORDERS.find((o) => o.id === 'ord-002');
-      if (!order2) return;
+    it('pressing Reorder on a delivered order shows that order in the sheet', async () => {
+      // hq-mky: Reorder CTA is delivered-only; use a delivered order
+      const deliveredOrder = MOCK_ORDERS.find((o) => o.status === 'delivered');
+      if (!deliveredOrder) return;
       const { getByTestId } = renderOrderHistory();
-      fireEvent.press(getByTestId('order-reorder-ord-002'));
+      fireEvent.press(getByTestId(`order-reorder-${deliveredOrder.id}`));
       await waitFor(() => {
         const title = getByTestId('reorder-sheet-title');
-        expect(title.props.children).toContain(order2.orderNumber);
+        expect(title.props.children).toContain(deliveredOrder.orderNumber);
       });
     });
   });
