@@ -83,11 +83,12 @@ export function ConsultationBookingScreen() {
   const calendarDays = useMemo(() => buildCalendarDays(today), [today]);
 
   const { availability, fetchRange } = useCalendarAvailability();
-  useMemo(() => {
-    if (calendarDays.length > 0) {
-      fetchRange(calendarDays[0], calendarDays.length);
+  const firstCalendarDay = calendarDays[0];
+  useEffect(() => {
+    if (firstCalendarDay) {
+      fetchRange(firstCalendarDay, calendarDays.length);
     }
-  }, [calendarDays[0]]);
+  }, [firstCalendarDay]);
 
   const canBook =
     !isBooking &&
@@ -155,6 +156,8 @@ export function ConsultationBookingScreen() {
             {calendarDays.map((date) => {
               const isPast = date < today;
               const isSelected = date === selectedDate;
+              const dayAvail = availability[date];
+              const isFull = dayAvail?.status === 'full';
               return (
                 <TouchableOpacity
                   key={date}
@@ -164,10 +167,11 @@ export function ConsultationBookingScreen() {
                     isSelected && styles.dayButtonSelected,
                     isPast && styles.dayButtonDisabled,
                   ]}
-                  onPress={() => !isPast && setSelectedDate(date)}
-                  disabled={isPast}
+                  onPress={() => !isPast && !isFull && setSelectedDate(date)}
+                  disabled={isPast || isFull}
                   accessibilityRole="button"
-                  accessibilityState={{ disabled: isPast, selected: isSelected }}
+                  accessibilityState={{ disabled: isPast || isFull, selected: isSelected }}
+                  accessibilityLabel={`${formatDayLabel(date)}${isFull ? ', fully booked' : dayAvail?.availableCount != null ? `, ${dayAvail.availableCount} slots available` : ''}`}
                 >
                   <Text
                     style={[
@@ -178,6 +182,16 @@ export function ConsultationBookingScreen() {
                   >
                     {formatDayLabel(date)}
                   </Text>
+                  {!isPast && dayAvail && (
+                    <View
+                      testID={`availability-dot-${date}`}
+                      style={[
+                        styles.availabilityDot,
+                        isFull ? styles.availabilityDotFull : styles.availabilityDotOpen,
+                        isSelected && styles.availabilityDotSelected,
+                      ]}
+                    />
+                  )}
                 </TouchableOpacity>
               );
             })}
@@ -389,6 +403,22 @@ const styles = StyleSheet.create({
   },
   dayButtonTextDisabled: {
     color: '#B8AA96',
+  },
+  availabilityDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginTop: 4,
+  },
+  availabilityDotOpen: {
+    backgroundColor: '#5BAD6F',
+  },
+  availabilityDotFull: {
+    backgroundColor: '#C96B44',
+  },
+  availabilityDotSelected: {
+    backgroundColor: '#fff',
   },
   slotGrid: {
     flexDirection: 'row',
