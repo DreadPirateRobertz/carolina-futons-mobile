@@ -120,7 +120,7 @@ const FLAT_CONTENT: Partial<Record<NotificationType, { title: string; body: stri
   },
   daily_spin_reminder: {
     title: 'Daily Spin Ready',
-    body: "Your daily spin is available — claim your reward now.",
+    body: 'Your daily spin is available — claim your reward now.',
   },
 };
 
