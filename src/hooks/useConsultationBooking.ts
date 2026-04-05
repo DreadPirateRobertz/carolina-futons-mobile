@@ -16,6 +16,7 @@
 import { useState, useCallback } from 'react';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { captureException } from '@/services/crashReporting';
+import { sendBookingConfirmationEmail } from '@/services/bookingService';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -61,6 +62,11 @@ export interface ConfirmedBooking {
 export interface UseConsultationBookingOptions {
   getNow?: () => Date;
   pushToken?: string;
+  /** Injectable for testing — defaults to sendBookingConfirmationEmail */
+  sendEmail?: (
+    wixClient: ReturnType<typeof useOptionalWixClient>,
+    params: { bookingId: string; memberEmail: string; memberName: string; date: string; timeSlot: string },
+  ) => Promise<void>;
 }
 
 export interface UseConsultationBookingReturn {
@@ -82,7 +88,7 @@ export interface UseConsultationBookingReturn {
 export function useConsultationBooking(
   options: UseConsultationBookingOptions = {},
 ): UseConsultationBookingReturn {
-  const { getNow = () => new Date(), pushToken } = options;
+  const { getNow = () => new Date(), pushToken, sendEmail = sendBookingConfirmationEmail } = options;
   const wixClient = useOptionalWixClient();
 
   const [selectedDate, setSelectedDateState] = useState<string | null>(null);
@@ -165,12 +171,24 @@ export function useConsultationBooking(
 
         const result = await wixClient.insertDataItem('ConsultationBookings', record);
 
-        setConfirmedBooking({
+        const confirmed: ConfirmedBooking = {
           id: result.id,
           date: input.date,
           timeSlot: input.timeSlot,
           memberName: input.memberName,
           memberEmail: input.memberEmail,
+        };
+        setConfirmedBooking(confirmed);
+
+        // Fire-and-forget confirmation email — never block the booking
+        sendEmail(wixClient, {
+          bookingId: result.id,
+          memberEmail: input.memberEmail,
+          memberName: input.memberName,
+          date: input.date,
+          timeSlot: input.timeSlot,
+        }).catch(() => {
+          // Email failure is non-critical
         });
 
         return true;
@@ -183,7 +201,7 @@ export function useConsultationBooking(
         setIsBooking(false);
       }
     },
-    [wixClient, getNow, slots, pushToken],
+    [wixClient, getNow, slots, pushToken, sendEmail],
   );
 
   return {
