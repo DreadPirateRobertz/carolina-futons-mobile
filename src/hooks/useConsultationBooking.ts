@@ -65,7 +65,13 @@ export interface UseConsultationBookingOptions {
   /** Injectable for testing — defaults to sendBookingConfirmationEmail */
   sendEmail?: (
     wixClient: ReturnType<typeof useOptionalWixClient>,
-    params: { bookingId: string; memberEmail: string; memberName: string; date: string; timeSlot: string },
+    params: {
+      bookingId: string;
+      memberEmail: string;
+      memberName: string;
+      date: string;
+      timeSlot: string;
+    },
   ) => Promise<void>;
 }
 
@@ -88,7 +94,11 @@ export interface UseConsultationBookingReturn {
 export function useConsultationBooking(
   options: UseConsultationBookingOptions = {},
 ): UseConsultationBookingReturn {
-  const { getNow = () => new Date(), pushToken, sendEmail = sendBookingConfirmationEmail } = options;
+  const {
+    getNow = () => new Date(),
+    pushToken,
+    sendEmail = sendBookingConfirmationEmail,
+  } = options;
   const wixClient = useOptionalWixClient();
 
   const [selectedDate, setSelectedDateState] = useState<string | null>(null);

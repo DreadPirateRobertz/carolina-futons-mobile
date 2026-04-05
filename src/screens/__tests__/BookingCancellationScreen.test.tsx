@@ -41,7 +41,12 @@ let mockHookState = {
   loadError: null as string | null,
   isCancelling: false,
   cancelError: null as string | null,
-  cancelledBooking: null as { id: string; date: string; timeSlot: string; memberName: string } | null,
+  cancelledBooking: null as {
+    id: string;
+    date: string;
+    timeSlot: string;
+    memberName: string;
+  } | null,
   loadBookings: mockLoadBookings,
   cancelBooking: mockCancelBooking,
 };

@@ -172,11 +172,7 @@ export function BookingCancellationScreen() {
         )}
 
         {bookings.map((booking) => (
-          <View
-            key={booking.id}
-            testID={`booking-row-${booking.id}`}
-            style={styles.bookingCard}
-          >
+          <View key={booking.id} testID={`booking-row-${booking.id}`} style={styles.bookingCard}>
             <View style={styles.bookingDetails}>
               <Text style={styles.bookingDate}>{formatDayLabel(booking.date)}</Text>
               <Text style={styles.bookingTime}>{booking.timeSlot}</Text>
