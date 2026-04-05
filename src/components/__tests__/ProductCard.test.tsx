@@ -598,27 +598,27 @@ describe('ProductCard', () => {
 
   // ── CF-lalh: Klarna/Affirm badge prominence ─────────────────────────────────
   describe('financing badge prominence (CF-lalh)', () => {
-    it('renders financing badge for eligible price (>$299)', () => {
-      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+    it('renders financing badge for eligible price (>=$200)', () => {
+      const eligibleProduct = PRODUCTS.find((p) => p.price >= 200)!;
       const { getByTestId } = renderCard({ product: eligibleProduct });
       expect(getByTestId('financing-badge-compact')).toBeTruthy();
     });
 
     it('shows Klarna and Affirm branding in compact badge on card', () => {
-      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const eligibleProduct = PRODUCTS.find((p) => p.price >= 200)!;
       const { getByText } = renderCard({ product: eligibleProduct });
       expect(getByText(/Klarna/i)).toBeTruthy();
       expect(getByText(/Affirm/i)).toBeTruthy();
     });
 
-    it('does not render financing badge for ineligible price (<=$299)', () => {
-      const ineligibleProduct = PRODUCTS.find((p) => p.price <= 299)!;
+    it('does not render financing badge for ineligible price (<$200)', () => {
+      const ineligibleProduct = PRODUCTS.find((p) => p.price < 200)!;
       const { queryByTestId } = renderCard({ product: ineligibleProduct });
       expect(queryByTestId('financing-badge-compact')).toBeNull();
     });
 
     it('financing badge shows "As low as" monthly amount', () => {
-      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const eligibleProduct = PRODUCTS.find((p) => p.price >= 200)!;
       const { getByText } = renderCard({ product: eligibleProduct });
       expect(getByText(/As low as/i)).toBeTruthy();
       expect(getByText(/\/mo/)).toBeTruthy();
@@ -628,20 +628,20 @@ describe('ProductCard', () => {
   // ── cm-kag: BNPL modal wiring via financing badge ────────────────────────────
   describe('BNPL modal wiring (cm-kag)', () => {
     it('BNPL modal is not shown by default', () => {
-      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const eligibleProduct = PRODUCTS.find((p) => p.price >= 200)!;
       const { queryByTestId } = renderCard({ product: eligibleProduct });
       expect(queryByTestId('bnpl-modal')).toBeNull();
     });
 
     it('pressing financing badge opens BNPL modal', () => {
-      const eligibleProduct = PRODUCTS.find((p) => p.price > 299)!;
+      const eligibleProduct = PRODUCTS.find((p) => p.price >= 200)!;
       const { getByTestId } = renderCard({ product: eligibleProduct });
       fireEvent.press(getByTestId('financing-badge-compact'));
       expect(getByTestId('bnpl-modal')).toBeTruthy();
     });
 
     it('BNPL modal does not appear for ineligible product', () => {
-      const ineligibleProduct = PRODUCTS.find((p) => p.price <= 299)!;
+      const ineligibleProduct = PRODUCTS.find((p) => p.price < 200)!;
       const { queryByTestId } = renderCard({ product: ineligibleProduct });
       expect(queryByTestId('financing-badge-compact')).toBeNull();
       expect(queryByTestId('bnpl-modal')).toBeNull();

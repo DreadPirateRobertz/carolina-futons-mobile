@@ -20,10 +20,38 @@ export interface TermPlan {
 }
 
 export const TERM_PLANS: readonly TermPlan[] = [
-  { months: 6, apr: 0, label: '6 Months', description: '0% APR for 6 months', minPrice: 200, maxPrice: 10000 },
-  { months: 12, apr: 0, label: '12 Months', description: '0% APR for 12 months', minPrice: 500, maxPrice: 10000 },
-  { months: 18, apr: 4.99, label: '18 Months', description: '4.99% APR for 18 months', minPrice: 750, maxPrice: 10000 },
-  { months: 24, apr: 9.99, label: '24 Months', description: '9.99% APR for 24 months', minPrice: 500, maxPrice: 10000 },
+  {
+    months: 6,
+    apr: 0,
+    label: '6 Months',
+    description: '0% APR for 6 months',
+    minPrice: 200,
+    maxPrice: 10000,
+  },
+  {
+    months: 12,
+    apr: 0,
+    label: '12 Months',
+    description: '0% APR for 12 months',
+    minPrice: 500,
+    maxPrice: 10000,
+  },
+  {
+    months: 18,
+    apr: 4.99,
+    label: '18 Months',
+    description: '4.99% APR for 18 months',
+    minPrice: 750,
+    maxPrice: 10000,
+  },
+  {
+    months: 24,
+    apr: 9.99,
+    label: '24 Months',
+    description: '9.99% APR for 24 months',
+    minPrice: 500,
+    maxPrice: 10000,
+  },
 ] as const;
 
 /** Available financing term lengths in months */
