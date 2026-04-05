@@ -1004,6 +1004,39 @@ export class WixClient {
     return this.post('/_functions/getLeaderboard', params);
   }
 
+  // ── Loyalty Streak Sync (cm-bti) ─────────────────────────────────────────
+
+  /**
+   * Fetch the remote streak record for a member from the LoyaltyStreak collection.
+   * Returns null when the member has no remote record yet (new member or never synced).
+   */
+  async getRemoteStreak(memberId: string): Promise<{
+    lastActivityDate: string;
+    currentStreak: number;
+    longestStreak: number;
+  } | null> {
+    try {
+      return await this.get<{
+        lastActivityDate: string;
+        currentStreak: number;
+        longestStreak: number;
+      } | null>(`/_functions/streakRecord/${encodeURIComponent(memberId)}`);
+    } catch (err) {
+      if (err instanceof WixApiError && err.statusCode === 404) return null;
+      throw err;
+    }
+  }
+
+  /**
+   * Create or update the remote streak record for a member in the LoyaltyStreak collection.
+   */
+  async upsertRemoteStreak(
+    memberId: string,
+    data: { lastActivityDate: string; currentStreak: number; longestStreak: number },
+  ): Promise<void> {
+    await this.post(`/_functions/streakRecord/${encodeURIComponent(memberId)}`, data);
+  }
+
   /**
    * Send a message to the Carolina Futons AI chatbot and return the response.
    *
