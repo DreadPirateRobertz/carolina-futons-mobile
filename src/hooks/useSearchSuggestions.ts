@@ -19,7 +19,7 @@ import { isWixConfigured } from '@/services/wix/config';
 import { captureException } from '@/services/crashReporting';
 
 const MIN_QUERY_LENGTH = 2;
-const SUGGESTION_LIMIT = 5;
+const SUGGESTION_LIMIT = 6;
 
 export interface SearchSuggestionsResult {
   suggestions: string[];
