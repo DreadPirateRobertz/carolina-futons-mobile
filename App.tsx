@@ -20,6 +20,7 @@ import { RecommendationsProvider } from '@/hooks/useRecommendations';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
 import { StreakMilestoneBridge } from '@/components/StreakMilestoneBridge';
+import { PostPurchaseReviewBridge } from '@/components/PostPurchaseReviewBridge';
 import { WixProvider } from '@/services/wix/wixProvider';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 
@@ -132,6 +133,7 @@ function App() {
                         <NotificationProvider>
                           <CartAbandonmentBridge />
                           <StreakMilestoneBridge />
+                          <PostPurchaseReviewBridge />
                           <PremiumProvider>
                             <RecommendationsProvider>
                               <CompareProvider>
