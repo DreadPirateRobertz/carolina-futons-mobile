@@ -8,13 +8,10 @@ import { PRODUCTS } from '@/data/products';
 
 // Mock WishlistProvider so it renders children synchronously with no async
 // AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.
-jest.mock('@/hooks/useWishlist', () => {
-  const React = require('react');
-  const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
-    React.createElement(React.Fragment, null, children);
-  const useWishlist = () => ({ isInWishlist: () => false, toggle: jest.fn(), items: [] });
-  return { WishlistProvider, useWishlist };
-});
+jest.mock('@/hooks/useWishlist', () => ({
+  WishlistProvider: ({ children }: { children: React.ReactNode }) => children,
+  useWishlist: () => ({ isInWishlist: () => false, toggle: jest.fn(), items: [] }),
+}));
 
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
