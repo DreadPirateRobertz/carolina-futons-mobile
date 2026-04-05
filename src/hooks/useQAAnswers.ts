@@ -172,9 +172,7 @@ export function useQAAnswers(questionId: string): UseQAAnswersResult {
       const prevAnswers = answers;
       setAnswers((prev) =>
         prev.map((a) =>
-          a.id === answerId
-            ? { ...a, upvoteCount: a.upvoteCount + 1, hasUserUpvoted: true }
-            : a,
+          a.id === answerId ? { ...a, upvoteCount: a.upvoteCount + 1, hasUserUpvoted: true } : a,
         ),
       );
       setUpvoteError(null);
