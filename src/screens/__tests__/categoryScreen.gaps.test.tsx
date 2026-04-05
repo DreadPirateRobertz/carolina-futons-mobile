@@ -15,9 +15,11 @@ import { CompareProvider } from '@/contexts/CompareContext';
 jest.useFakeTimers();
 
 afterEach(() => {
+  jest.runAllTimers();
   jest.clearAllTimers();
 });
 afterAll(() => {
+  jest.runAllTimers();
   jest.useRealTimers();
 });
 
