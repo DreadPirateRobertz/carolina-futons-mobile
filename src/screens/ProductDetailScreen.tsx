@@ -1546,7 +1546,9 @@ export function ProductDetailScreen({
               accessibilityLabel="Share your room photo"
               accessibilityRole="button"
             >
-              <Text style={[styles.ugcShareLink, { color: colors.sunsetCoral }]}>Share yours →</Text>
+              <Text style={[styles.ugcShareLink, { color: colors.sunsetCoral }]}>
+                Share yours →
+              </Text>
             </TouchableOpacity>
           </View>
           <UGCGalleryStrip productId={catalogProductId ?? model.id} />

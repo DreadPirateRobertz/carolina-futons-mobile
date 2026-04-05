@@ -14,6 +14,13 @@ jest.mock('@/hooks/useRoomGallery', () => ({
   useRoomGallery: () => mockUseRoomGallery(),
 }));
 
+// UGCPhotoSubmitModal is wired into RoomGalleryScreen — mock it out so
+// RoomGalleryScreen tests don't need to set up its full dependency chain
+// (useAuth, wixClient, expo-image-picker, etc.).
+jest.mock('@/components/UGCPhotoSubmitModal', () => ({
+  UGCPhotoSubmitModal: () => null,
+}));
+
 const SAMPLE_ROOMS: RoomGalleryItem[] = [
   {
     roomId: 'room-001',
