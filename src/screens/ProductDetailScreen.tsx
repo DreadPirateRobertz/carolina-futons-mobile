@@ -80,6 +80,7 @@ import { FinancingBadge } from '@/components/FinancingBadge';
 import { BNPLHeroSurface } from '@/components/BNPLHeroSurface';
 import { BNPLModal } from '@/components/BNPLModal';
 import { FinancingCalculator } from '@/components/FinancingCalculator';
+import { useAffirmDeepLink } from '@/hooks/useAffirmDeepLink';
 import { useBackInStockSubscription } from '@/hooks/useBackInStockSubscription';
 import { getStockStatus } from '@/hooks/useProducts';
 import { SkeletonProductDetail } from '@/components/SkeletonProductDetail';
@@ -251,6 +252,7 @@ export function ProductDetailScreen({
   const totalPrice = model.basePrice + selectedFabric.price;
   const { tier: loyaltyTier } = useLoyaltyEarnEstimate(totalPrice);
   const loyaltyEarnRate = loyaltyTier.earnRate;
+  const { openCalculator: openAffirmCalculator } = useAffirmDeepLink(totalPrice);
 
   // cm-xh9: Resolve videoUri from catalog product; parse wix:video:// if needed.
   // PLACEHOLDER: Real Wix Media video URIs will come from Wix Studio Media Manager.
@@ -842,7 +844,7 @@ export function ProductDetailScreen({
             testID="bnpl-hero-pdp"
           />
           {/* cfutons_mobile-lub: Financing calculator — Affirm/Afterpay monthly breakdown, display only */}
-          <FinancingCalculator price={totalPrice} testID="pdp-financing-calculator" />
+          <FinancingCalculator price={totalPrice} onAffirmPress={openAffirmCalculator} testID="pdp-financing-calculator" />
           {showInlineRating && (
             <TouchableOpacity
               onPress={() => {

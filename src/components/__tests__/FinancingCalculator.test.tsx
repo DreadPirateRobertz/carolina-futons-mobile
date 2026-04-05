@@ -193,4 +193,46 @@ describe('FinancingCalculator', () => {
       expect(toJSON()).toBeNull();
     });
   });
+
+  // ── Affirm deep-link tap (hq-8iw) ────────────────────────────────────────
+
+  describe('Affirm deep-link tap', () => {
+    it('calls onAffirmPress when Affirm term row is tapped', () => {
+      const onAffirmPress = jest.fn();
+      const { getByTestId } = render(
+        <FinancingCalculator price={500} onAffirmPress={onAffirmPress} />,
+      );
+      fireEvent.press(getByTestId('fin-affirm-deeplink-cta'));
+      expect(onAffirmPress).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders Affirm deep-link CTA when onAffirmPress is provided', () => {
+      const { getByTestId } = render(
+        <FinancingCalculator price={500} onAffirmPress={jest.fn()} />,
+      );
+      expect(getByTestId('fin-affirm-deeplink-cta')).toBeTruthy();
+    });
+
+    it('does NOT render Affirm deep-link CTA when onAffirmPress is not provided', () => {
+      const { queryByTestId } = render(<FinancingCalculator price={500} />);
+      expect(queryByTestId('fin-affirm-deeplink-cta')).toBeNull();
+    });
+
+    it('Affirm deep-link CTA has accessible label', () => {
+      const { getByTestId } = render(
+        <FinancingCalculator price={500} onAffirmPress={jest.fn()} />,
+      );
+      const cta = getByTestId('fin-affirm-deeplink-cta');
+      expect(cta.props.accessibilityLabel).toMatch(/affirm/i);
+    });
+
+    it('does not render deep-link CTA for Afterpay tab', () => {
+      const { queryByTestId } = render(
+        <FinancingCalculator price={400} onAffirmPress={jest.fn()} />,
+      );
+      // Switch to Afterpay tab
+      fireEvent.press(queryByTestId('fin-tab-afterpay')!);
+      expect(queryByTestId('fin-affirm-deeplink-cta')).toBeNull();
+    });
+  });
 });

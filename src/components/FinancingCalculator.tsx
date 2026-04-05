@@ -7,7 +7,7 @@
  * Display only — no CTA to launch provider apps or initiate checkout.
  * For the checkout-integrated BNPL flow, see BNPLHeroSurface + BNPLModal.
  *
- * Bead: cfutons_mobile-lub
+ * Bead: cfutons_mobile-lub, hq-8iw
  */
 import { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
@@ -24,10 +24,12 @@ type Provider = 'affirm' | 'afterpay';
 
 interface Props {
   price: number;
+  /** Called when the user taps the Affirm deep-link CTA. Wire to useAffirmDeepLink.openCalculator. */
+  onAffirmPress?: () => void;
   testID?: string;
 }
 
-export function FinancingCalculator({ price, testID = 'financing-calculator' }: Props) {
+export function FinancingCalculator({ price, onAffirmPress, testID = 'financing-calculator' }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const [provider, setProvider] = useState<Provider>('affirm');
 
@@ -161,6 +163,19 @@ export function FinancingCalculator({ price, testID = 'financing-calculator' }: 
             <Text style={[styles.disclaimer, { color: colors.espressoLight }]}>
               0%–9.99% APR depending on term. Subject to credit approval.
             </Text>
+            {onAffirmPress && (
+              <TouchableOpacity
+                testID="fin-affirm-deeplink-cta"
+                onPress={onAffirmPress}
+                accessibilityRole="button"
+                accessibilityLabel="Open Affirm calculator for full financing details"
+                style={styles.deepLinkCta}
+              >
+                <Text style={[styles.deepLinkCtaText, { color: colors.mountainBlue }]}>
+                  See full Affirm calculator →
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
 
@@ -268,5 +283,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 15,
     marginTop: 8,
+  },
+  deepLinkCta: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+  },
+  deepLinkCtaText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
