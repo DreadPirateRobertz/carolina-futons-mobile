@@ -209,6 +209,11 @@ const BookingCancellationScreen = lazy(() =>
     default: withScreenErrorBoundary(m.BookingCancellationScreen, 'BookingCancellation'),
   })),
 );
+const SavedAddressesScreen = lazy(() =>
+  import('@/screens/SavedAddressesScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.SavedAddressesScreen, 'SavedAddresses'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -265,6 +270,7 @@ export type RootStackParamList = {
   WarrantyRegistration: { orderId: string; orderNumber: string; productName?: string };
   ConsultationBooking: undefined;
   BookingCancellation: undefined;
+  SavedAddresses: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -578,6 +584,11 @@ export function AppNavigator() {
             name="BookingCancellation"
             component={BookingCancellationScreen}
             options={modalTransition}
+          />
+          <Stack.Screen
+            name="SavedAddresses"
+            component={SavedAddressesScreen}
+            options={{ title: 'Saved Addresses' }}
           />
         </Stack.Navigator>
       </Suspense>

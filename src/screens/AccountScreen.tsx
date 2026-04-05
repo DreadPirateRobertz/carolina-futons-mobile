@@ -61,6 +61,8 @@ interface Props {
   onLeaderboard?: () => void;
   /** Callback to navigate to the challenges screen. */
   onChallenges?: () => void;
+  /** Callback to navigate to the saved addresses screen (cm-5yl). */
+  onSavedAddresses?: () => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
 }
@@ -81,6 +83,7 @@ export function AccountScreen({
   onLoyalty,
   onLeaderboard,
   onChallenges,
+  onSavedAddresses,
   testID,
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
@@ -524,7 +527,7 @@ export function AccountScreen({
           />
           <MenuItem
             label={`Saved Addresses${addressBook.addresses.length > 0 ? ` (${addressBook.addresses.length})` : ''}`}
-            onPress={addressBook.addresses.length < 5 ? handleAddAddress : undefined}
+            onPress={onSavedAddresses ?? (addressBook.addresses.length < 5 ? handleAddAddress : undefined)}
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}
