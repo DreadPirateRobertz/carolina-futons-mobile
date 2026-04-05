@@ -75,7 +75,7 @@ export async function runSecurityAudit(): Promise<void> {
           `[SecurityAudit] Sensitive keys detected in AsyncStorage: ${result.violations.join(', ')}`,
         ),
         'warning',
-        { violations: result.violations },
+        { violations: result.violations.join(', ') },
       );
     }
   } catch {
