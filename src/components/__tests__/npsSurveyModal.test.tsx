@@ -26,7 +26,7 @@ jest.mock('@/theme', () => ({
       white: '#FFFFFF',
       sunsetCoral: '#E8845C',
       success: '#4CAF50',
-      errorRed: '#D32F2F',
+      errorText: '#B85A38',
     },
     spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 },
     borderRadius: { sm: 4, md: 8, lg: 16, pill: 20 },
@@ -205,9 +205,7 @@ describe('NPSSurveyModal — submit', () => {
 
   it('persists submission to storage to guard against resubmit', async () => {
     const { storage, setItem } = makeStorage();
-    const { getByTestId } = render(
-      <NPSSurveyModal {...baseProps} storage={storage} />,
-    );
+    const { getByTestId } = render(<NPSSurveyModal {...baseProps} storage={storage} />);
     fireEvent.press(getByTestId('nps-score-8'));
     fireEvent.press(getByTestId('nps-submit-btn'));
     await waitFor(() => {
@@ -304,7 +302,10 @@ describe('NPSSurveyModal — double-tap guard', () => {
   it('disables submit button while submission is in flight', async () => {
     let resolveSubmit!: (v: { success: boolean; id: string }) => void;
     mockSubmitNpsSurvey.mockImplementation(
-      () => new Promise((res) => { resolveSubmit = res; }),
+      () =>
+        new Promise((res) => {
+          resolveSubmit = res;
+        }),
     );
 
     const { getByTestId } = renderModal();
@@ -321,7 +322,10 @@ describe('NPSSurveyModal — double-tap guard', () => {
   it('does not call submitNpsSurvey twice on rapid double-press', async () => {
     let resolveSubmit!: (v: { success: boolean; id: string }) => void;
     mockSubmitNpsSurvey.mockImplementation(
-      () => new Promise((res) => { resolveSubmit = res; }),
+      () =>
+        new Promise((res) => {
+          resolveSubmit = res;
+        }),
     );
 
     const { getByTestId } = renderModal();
@@ -341,9 +345,7 @@ describe('NPSSurveyModal — double-tap guard', () => {
 describe('NPSSurveyModal — already-submitted guard', () => {
   it('shows already-submitted state when storage has a record for this orderId', async () => {
     const { storage } = makeStorage('1'); // pre-seeded with '1'
-    const { getByTestId } = render(
-      <NPSSurveyModal {...baseProps} storage={storage} />,
-    );
+    const { getByTestId } = render(<NPSSurveyModal {...baseProps} storage={storage} />);
     await waitFor(() => {
       expect(getByTestId('nps-already-submitted')).toBeTruthy();
     });
@@ -351,9 +353,7 @@ describe('NPSSurveyModal — already-submitted guard', () => {
 
   it('does not show already-submitted state when storage has no record', async () => {
     const { storage } = makeStorage(undefined); // no record
-    const { queryByTestId } = render(
-      <NPSSurveyModal {...baseProps} storage={storage} />,
-    );
+    const { queryByTestId } = render(<NPSSurveyModal {...baseProps} storage={storage} />);
     // Give effects time to settle then confirm no already-submitted state
     await waitFor(() => {
       expect(queryByTestId('nps-already-submitted')).toBeNull();

@@ -64,7 +64,10 @@ async function resolveStorage(injected?: StorageAdapter): Promise<StorageAdapter
   try {
     const mod = await import('@react-native-async-storage/async-storage');
     return mod.default ?? null;
-  } catch {
+  } catch (err) {
+    captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+      action: 'resolveStorage/import',
+    });
     return null;
   }
 }
@@ -100,8 +103,11 @@ export function NPSSurveyModal({
         if (stored && !cancelledRef.current) {
           setModalState({ status: 'already_submitted' });
         }
-      } catch {
-        // Storage unavailable — proceed normally
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'NPSSurveyModal/resolveStorage',
+          orderId,
+        });
       }
     })();
 
@@ -146,8 +152,11 @@ export function NPSSurveyModal({
         if (s) {
           await s.setItem(`${STORAGE_KEY_PREFIX}${orderId}`, '1');
         }
-      } catch {
-        // no-op
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+          action: 'NPSSurveyModal/persistGuard',
+          orderId,
+        });
       }
 
       setModalState({ status: 'success' });
@@ -167,12 +176,7 @@ export function NPSSurveyModal({
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onDismiss}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
       {/* Overlay */}
       <TouchableOpacity
         testID="nps-modal-overlay"
@@ -321,7 +325,7 @@ function SurveyForm({
         accessibilityState={{ disabled: submitDisabled }}
       >
         {isSubmitting ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={colors.white} size="small" />
         ) : (
           <Text style={styles.submitButtonText}>Submit</Text>
         )}
@@ -425,7 +429,7 @@ function makeStyles(
       height: 28,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: colors.sand,
+      borderColor: colors.sandBase,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -444,7 +448,7 @@ function makeStyles(
     },
     commentInput: {
       borderWidth: 1,
-      borderColor: colors.sand,
+      borderColor: colors.sandBase,
       borderRadius: borderRadius.md,
       padding: spacing.sm,
       fontSize: 14,
@@ -460,14 +464,14 @@ function makeStyles(
       marginBottom: spacing.sm,
     },
     errorContainer: {
-      backgroundColor: '#FFF3F3',
+      backgroundColor: colors.sandLight,
       borderRadius: borderRadius.sm,
       padding: spacing.sm,
       marginBottom: spacing.sm,
     },
     errorText: {
       fontSize: 13,
-      color: colors.errorRed ?? '#D32F2F',
+      color: colors.errorText,
     },
     submitButton: {
       backgroundColor: colors.sunsetCoral,

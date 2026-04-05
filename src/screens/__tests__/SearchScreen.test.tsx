@@ -3,6 +3,16 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { SearchScreen } from '../SearchScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+
+// Mock WishlistProvider so it renders children synchronously with no async
+// AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.
+jest.mock('@/hooks/useWishlist', () => {
+  const React = require('react');
+  const WishlistProvider = ({ children }: { children: React.ReactNode }) =>
+    React.createElement(React.Fragment, null, children);
+  const useWishlist = () => ({ isInWishlist: () => false, toggle: jest.fn(), items: [] });
+  return { WishlistProvider, useWishlist };
+});
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
