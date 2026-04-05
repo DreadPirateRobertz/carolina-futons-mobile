@@ -41,7 +41,13 @@ function mockQueryWithSession(
         dataItems: [
           {
             id: docId,
-            data: { sessionToken, memberId, items, lastUpdated: new Date(serverTime).getTime(), mergedAt },
+            data: {
+              sessionToken,
+              memberId,
+              items,
+              lastUpdated: new Date(serverTime).getTime(),
+              mergedAt,
+            },
             _updatedDate: serverTime,
           },
         ],
@@ -151,12 +157,24 @@ describe('CartSessionService', () => {
             dataItems: [
               {
                 id: 'doc-old',
-                data: { sessionToken: 'tok-1', memberId: MEMBER_ID, items: [ITEM_A], lastUpdated: OLDER_SERVER_TIME_MS, mergedAt: null },
+                data: {
+                  sessionToken: 'tok-1',
+                  memberId: MEMBER_ID,
+                  items: [ITEM_A],
+                  lastUpdated: OLDER_SERVER_TIME_MS,
+                  mergedAt: null,
+                },
                 _updatedDate: OLDER_SERVER_TIME,
               },
               {
                 id: 'doc-new',
-                data: { sessionToken: 'tok-2', memberId: MEMBER_ID, items: [ITEM_B], lastUpdated: SERVER_TIME_MS, mergedAt: null },
+                data: {
+                  sessionToken: 'tok-2',
+                  memberId: MEMBER_ID,
+                  items: [ITEM_B],
+                  lastUpdated: SERVER_TIME_MS,
+                  mergedAt: null,
+                },
                 _updatedDate: SERVER_TIME,
               },
             ],
@@ -265,7 +283,14 @@ describe('CartSessionService', () => {
       // loadMemberSession: has ITEM_B
       mockQueryWithSession([ITEM_B], 'other-token', MEMBER_ID, OLDER_SERVER_TIME);
       // saveSession (upsert query + update)
-      mockQueryWithSession([ITEM_B], 'other-token', MEMBER_ID, OLDER_SERVER_TIME, null, 'member-doc');
+      mockQueryWithSession(
+        [ITEM_B],
+        'other-token',
+        MEMBER_ID,
+        OLDER_SERVER_TIME,
+        null,
+        'member-doc',
+      );
       mockMutationSuccess('member-doc');
 
       const result = await service.mergeOnLogin(SESSION_TOKEN, MEMBER_ID);
@@ -285,7 +310,14 @@ describe('CartSessionService', () => {
 
       mockQueryWithSession([guestItem], SESSION_TOKEN, null, SERVER_TIME); // guest newer
       mockQueryWithSession([memberItem], 'other-token', MEMBER_ID, OLDER_SERVER_TIME); // member older
-      mockQueryWithSession([memberItem], 'other-token', MEMBER_ID, OLDER_SERVER_TIME, null, 'member-doc');
+      mockQueryWithSession(
+        [memberItem],
+        'other-token',
+        MEMBER_ID,
+        OLDER_SERVER_TIME,
+        null,
+        'member-doc',
+      );
       mockMutationSuccess('member-doc');
 
       const result = await service.mergeOnLogin(SESSION_TOKEN, MEMBER_ID);
@@ -359,14 +391,24 @@ describe('CartSessionService', () => {
     });
 
     it('unions distinct items from both lists', () => {
-      const result = CartSessionService.unionItems([ITEM_A], [ITEM_B], SERVER_TIME_MS, SERVER_TIME_MS);
+      const result = CartSessionService.unionItems(
+        [ITEM_A],
+        [ITEM_B],
+        SERVER_TIME_MS,
+        SERVER_TIME_MS,
+      );
       expect(result).toHaveLength(2);
     });
 
     it('keeps newer quantity on duplicate product+variant (a newer)', () => {
       const aItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 3 };
       const bItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 9 };
-      const result = CartSessionService.unionItems([aItem], [bItem], SERVER_TIME_MS, OLDER_SERVER_TIME_MS);
+      const result = CartSessionService.unionItems(
+        [aItem],
+        [bItem],
+        SERVER_TIME_MS,
+        OLDER_SERVER_TIME_MS,
+      );
       expect(result).toHaveLength(1);
       expect(result[0].quantity).toBe(3); // a is newer
     });
@@ -374,7 +416,12 @@ describe('CartSessionService', () => {
     it('keeps newer quantity on duplicate product+variant (b newer)', () => {
       const aItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 3 };
       const bItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 9 };
-      const result = CartSessionService.unionItems([aItem], [bItem], OLDER_SERVER_TIME_MS, SERVER_TIME_MS);
+      const result = CartSessionService.unionItems(
+        [aItem],
+        [bItem],
+        OLDER_SERVER_TIME_MS,
+        SERVER_TIME_MS,
+      );
       expect(result).toHaveLength(1);
       expect(result[0].quantity).toBe(9); // b is newer
     });
@@ -382,7 +429,12 @@ describe('CartSessionService', () => {
     it('a wins on timestamp tie', () => {
       const aItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 4 };
       const bItem: CartSessionItem = { productId: 'prod-1', variantId: 'var-1', quantity: 6 };
-      const result = CartSessionService.unionItems([aItem], [bItem], SERVER_TIME_MS, SERVER_TIME_MS);
+      const result = CartSessionService.unionItems(
+        [aItem],
+        [bItem],
+        SERVER_TIME_MS,
+        SERVER_TIME_MS,
+      );
       expect(result[0].quantity).toBe(4); // a wins tie
     });
 
