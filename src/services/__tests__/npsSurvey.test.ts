@@ -7,9 +7,7 @@
 import { submitNpsSurvey, type NpsSurveyData, type WixClientLike } from '../npsSurvey';
 
 const makeClient = (overrides?: Partial<WixClientLike>): WixClientLike => ({
-  insertDataItem: jest
-    .fn()
-    .mockResolvedValue({ id: 'survey-abc123', data: {} }),
+  insertDataItem: jest.fn().mockResolvedValue({ id: 'survey-abc123', data: {} }),
   ...overrides,
 });
 
