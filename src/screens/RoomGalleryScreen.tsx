@@ -8,7 +8,7 @@
  * States handled: loading skeleton, empty gallery, API error with retry,
  * and the populated grid.
  */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
@@ -16,6 +16,9 @@ import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonRoomGrid } from '@/components/SkeletonRoomCard';
 import { UGCPhotoSubmitModal } from '@/components/UGCPhotoSubmitModal';
+import { RoomGalleryFilterBar } from '@/components/RoomGalleryFilterBar';
+import { useRoomGalleryFilters } from '@/hooks/useRoomGalleryFilters';
+import { PRODUCTS } from '@/data/products';
 
 interface Props {
   /** Called when a room card is tapped with the first productId of that room. */
@@ -95,7 +98,25 @@ function RoomCard({
 export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { rooms, isLoading, error, refresh, isPlaceholder } = useRoomGallery();
+  const { filteredRooms, filters, setStyleFilter, setProductFilter, clearFilters, hasActiveFilters, isEmpty: isFilterEmpty } =
+    useRoomGalleryFilters(rooms);
   const [ugcModalVisible, setUgcModalVisible] = useState(false);
+
+  // Derive unique product options present in the current room list
+  const productOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: { id: string; name: string }[] = [];
+    for (const room of rooms) {
+      for (const pid of room.productIds) {
+        if (!seen.has(pid)) {
+          seen.add(pid);
+          const product = PRODUCTS.find((p) => p.id === pid || p.slug === pid);
+          options.push({ id: pid, name: product?.name ?? pid });
+        }
+      }
+    }
+    return options;
+  }, [rooms]);
 
   const handleSharePress = useCallback(() => {
     setUgcModalVisible(true);
@@ -225,8 +246,39 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
         </Text>
       )}
 
-      <FlatList
-        data={rooms}
+      <RoomGalleryFilterBar
+        filters={filters}
+        setStyleFilter={setStyleFilter}
+        setProductFilter={setProductFilter}
+        clearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+        productOptions={productOptions}
+      />
+
+      {isFilterEmpty ? (
+        <View style={[styles.centered, styles.filterEmptyContainer]} testID="room-gallery-filter-empty">
+          <Text
+            style={[
+              styles.emptyText,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
+          >
+            No rooms match the selected filters.
+          </Text>
+          <TouchableOpacity
+            style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
+            onPress={clearFilters}
+            testID="filter-empty-clear"
+            accessibilityRole="button"
+          >
+            <Text style={[styles.retryText, { fontFamily: typography.bodyFamilyBold }]}>
+              Clear Filters
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredRooms}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         numColumns={NUM_COLUMNS}
@@ -239,6 +291,7 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
         initialNumToRender={6}
         ListFooterComponent={shareCTA}
       />
+      )}
       <UGCPhotoSubmitModal
         visible={ugcModalVisible}
         productId=""
@@ -343,5 +396,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  filterEmptyContainer: {
+    flex: 1,
+    paddingTop: 60,
   },
 });
