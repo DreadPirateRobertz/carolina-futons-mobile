@@ -49,6 +49,7 @@ function AccountScreenWithNav() {
       onPrivacyPolicy={() => nav.navigate('PrivacyPolicy')}
       onLeaderboard={() => nav.navigate('Leaderboard')}
       onChallenges={() => nav.navigate('Challenges')}
+      onSavedAddresses={() => nav.navigate('SavedAddresses')}
     />
   );
 }
