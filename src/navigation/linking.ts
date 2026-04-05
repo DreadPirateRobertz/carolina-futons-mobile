@@ -80,6 +80,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       Challenges: 'challenges',
       AvatarEquip: 'avatar',
       RoomGallery: 'gallery',
+      ConsultationBooking: 'consultation',
       ReferralLanding: {
         path: 'referral/:code',
         parse: { code: (code: string) => code },
@@ -113,6 +114,7 @@ export const SUPPORTED_PATHS = [
   'challenges',
   'avatar',
   'gallery',
+  'consultation',
   'referral',
   'leaderboard',
   'challenges',
