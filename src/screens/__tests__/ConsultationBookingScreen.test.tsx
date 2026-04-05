@@ -45,14 +45,32 @@ let mockHookState = {
   isBooking: false,
   bookingError: null as string | null,
   confirmedBooking: null as {
-    id: string; date: string; timeSlot: string; memberName: string; memberEmail: string;
+    id: string;
+    date: string;
+    timeSlot: string;
+    memberName: string;
+    memberEmail: string;
   } | null,
 };
 
 jest.mock('@/hooks/useConsultationBooking', () => ({
   useConsultationBooking: () => mockHookState,
-  ALL_SLOTS: ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-              '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'],
+  ALL_SLOTS: [
+    '09:00',
+    '09:30',
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '13:00',
+    '13:30',
+    '14:00',
+    '14:30',
+    '15:00',
+    '15:30',
+    '16:00',
+    '16:30',
+  ],
 }));
 
 // ── Mock expo-notifications for push-denied test ──────────────────────────────

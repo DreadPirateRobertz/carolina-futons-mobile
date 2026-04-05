@@ -104,10 +104,7 @@ export function ConsultationBookingScreen() {
 
   if (confirmedBooking) {
     return (
-      <View
-        testID="booking-confirmation"
-        style={[styles.container, { paddingTop: insets.top }]}
-      >
+      <View testID="booking-confirmation" style={[styles.container, { paddingTop: insets.top }]}>
         <ScrollView contentContainerStyle={styles.confirmationContent}>
           <Text style={styles.confirmationTitle}>Booking Confirmed!</Text>
           <Text style={styles.confirmationDetail}>

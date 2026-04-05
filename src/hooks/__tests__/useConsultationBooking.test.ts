@@ -197,7 +197,9 @@ describe('useConsultationBooking', () => {
   // ── No Wix client ────────────────────────────────────────────────────────────
 
   describe('no Wix client', () => {
-    beforeEach(() => { mockWixClient = null; });
+    beforeEach(() => {
+      mockWixClient = null;
+    });
 
     it('returns all slots available without querying', async () => {
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
@@ -392,8 +394,10 @@ describe('useConsultationBooking', () => {
       let success: boolean | undefined;
       await act(async () => {
         success = await result.current.book({
-          date: TODAY, timeSlot: SLOT_09,
-          memberName: 'X', memberEmail: 'x@x.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'X',
+          memberEmail: 'x@x.com',
         });
       });
       expect(success).toBe(true);
@@ -411,8 +415,10 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
-          date: TODAY, timeSlot: SLOT_09,
-          memberName: 'Bob', memberEmail: 'bob@example.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Bob',
+          memberEmail: 'bob@example.com',
         });
       });
 
@@ -433,8 +439,10 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
-          date: TODAY, timeSlot: SLOT_09,
-          memberName: 'Jane', memberEmail: 'jane@example.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane',
+          memberEmail: 'jane@example.com',
         });
       });
 
@@ -453,8 +461,10 @@ describe('useConsultationBooking', () => {
       let success: boolean | undefined;
       await act(async () => {
         success = await result.current.book({
-          date: TODAY, timeSlot: SLOT_09,
-          memberName: 'Jane', memberEmail: 'jane@example.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane',
+          memberEmail: 'jane@example.com',
         });
       });
       expect(success).toBe(false);
@@ -470,8 +480,10 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
-          date: TODAY, timeSlot: SLOT_09,
-          memberName: 'Jane', memberEmail: 'j@j.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane',
+          memberEmail: 'j@j.com',
         });
       });
       expect(result.current.isBooking).toBe(false);
