@@ -32,7 +32,7 @@ type TierContentMap = Record<string, { title: string; body: string }>;
 const PROMOTION_CONTENT: TierContentMap = {
   'trail-blazer': {
     title: 'Something new just dropped',
-    body: "Discover our latest futon styles — find your perfect first piece.",
+    body: 'Discover our latest futon styles — find your perfect first piece.',
   },
   'mountain-guide': {
     title: 'Early Access: New Arrivals',
@@ -40,11 +40,11 @@ const PROMOTION_CONTENT: TierContentMap = {
   },
   'summit-master': {
     title: 'VIP Preview: New Drops',
-    body: "Summit Master exclusive — shop new arrivals before they go public.",
+    body: 'Summit Master exclusive — shop new arrivals before they go public.',
   },
   'blue-ridge-legend': {
     title: 'VIP Preview: New Drops',
-    body: "Blue Ridge Legend exclusive — shop new arrivals before anyone else.",
+    body: 'Blue Ridge Legend exclusive — shop new arrivals before anyone else.',
   },
 };
 
@@ -103,7 +103,7 @@ const FLAT_CONTENT: Partial<Record<NotificationType, { title: string; body: stri
   },
   daily_spin_reminder: {
     title: 'Daily Spin Ready',
-    body: "Your daily spin is available — claim your reward now.",
+    body: 'Your daily spin is available — claim your reward now.',
   },
 };
 
@@ -132,11 +132,12 @@ export function personalizeNotification(
 ): PersonalizedPushContent {
   const tierMap = TIER_CONTENT[type];
   const base: { title: string; body: string } = tierMap
-    ? (tierMap[tier.icon] ?? FLAT_CONTENT[type] ?? { title: 'Carolina Futons', body: 'You have a new notification.' })
-    : FLAT_CONTENT[type] ?? {
+    ? (tierMap[tier.icon] ??
+      FLAT_CONTENT[type] ?? { title: 'Carolina Futons', body: 'You have a new notification.' })
+    : (FLAT_CONTENT[type] ?? {
         title: 'Carolina Futons',
         body: 'You have a new notification.',
-      };
+      });
 
   if (!context || Object.keys(context).length === 0) {
     return { title: base.title, body: base.body };
