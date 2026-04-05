@@ -36,20 +36,16 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
-const TIER_LABELS: Record<LoyaltyTier, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-};
-
-const TIER_EMOJI: Record<LoyaltyTier, string> = {
-  bronze: '🥉',
-  silver: '🥈',
-  gold: '🥇',
+const TIER_EMOJI: Record<string, string> = {
+  'Trail Blazer': '🥾',
+  'Mountain Guide': '⛰️',
+  'Summit Master': '🏔️',
+  'Blue Ridge Legend': '👑',
 };
 
 const CONFETTI_COLORS = [
@@ -156,7 +152,7 @@ const ConfettiPiece = memo(function ConfettiPiece({ particle, run }: ConfettiPie
 });
 
 interface Props {
-  newTier: LoyaltyTier | null;
+  newTier: LoyaltyTierConfig | null;
   onDismiss: () => void;
 }
 
@@ -202,8 +198,8 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
 
   if (!newTier) return null;
 
-  const tierLabel = TIER_LABELS[newTier];
-  const tierEmoji = TIER_EMOJI[newTier];
+  const tierLabel = newTier.name;
+  const tierEmoji = TIER_EMOJI[newTier.name] ?? '🌟';
 
   return (
     <Modal visible transparent animationType="fade" statusBarTranslucent onRequestClose={onDismiss}>
@@ -251,7 +247,7 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
               You reached {tierLabel}!
             </Text>
             <Text style={[styles.subheading, { color: colors.mountainBlueLight }]}>
-              {newTier === 'gold'
+              {newTier === LOYALTY_TIERS[LOYALTY_TIERS.length - 1]
                 ? "You're at the top. Enjoy the perks. \uD83D\uDE4C"
                 : `Keep earning to unlock even more rewards.`}
             </Text>

@@ -12,23 +12,11 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { useTheme } from '@/theme';
 
-const TIER_COLORS: Record<LoyaltyTier, string> = {
-  bronze: '#CD7F32',
-  silver: '#A8A9AD',
-  gold: '#D4AF37',
-};
-
-const TIER_LABELS: Record<LoyaltyTier, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-};
-
 interface Props {
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   points: number;
   pointsToNext: number;
   nextTierLabel: string | null;
@@ -52,8 +40,8 @@ export function CheckoutLoyaltyBanner({
 
   if (loading || error || hidden) return null;
 
-  const tierColor = TIER_COLORS[tier];
-  const tierLabel = TIER_LABELS[tier];
+  const tierColor = tier.color;
+  const tierLabel = tier.name;
 
   const progressText =
     nextTierLabel && pointsToNext > 0

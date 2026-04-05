@@ -7,14 +7,15 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
 import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { getTierForPoints } from '@/data/loyaltyTiers';
 
 const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();
 
 const ENTRIES: LeaderboardEntry[] = [
-  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
-  { memberId: 'm2', displayName: 'Bob', points: 800, tier: 'silver', rank: 2 },
-  { memberId: 'm3', displayName: 'Carol', points: 200, tier: 'bronze', rank: 3 },
+  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: getTierForPoints(2500), rank: 1 },
+  { memberId: 'm2', displayName: 'Bob', points: 800, tier: getTierForPoints(800), rank: 2 },
+  { memberId: 'm3', displayName: 'Carol', points: 200, tier: getTierForPoints(200), rank: 3 },
 ];
 
 let mockHookState = {
@@ -165,7 +166,9 @@ describe('LeaderboardScreen', () => {
     it('renders CF Member for null displayName', () => {
       mockHookState = {
         ...mockHookState,
-        entries: [{ memberId: 'm1', displayName: null, points: 500, tier: 'bronze', rank: 1 }],
+        entries: [
+          { memberId: 'm1', displayName: null, points: 500, tier: getTierForPoints(500), rank: 1 },
+        ],
       };
       const { getAllByTestId } = wrap(<LeaderboardScreen />);
       const nicknames = getAllByTestId('leaderboard-row-nickname');

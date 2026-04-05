@@ -1,15 +1,14 @@
 /**
- * useLoyalty TDD tests — cm-elo / cm-ds5
+ * useLoyalty TDD tests — cm-elo / cm-ds5 / deacon-cjv
  *
- * Updated to mock the webMethod (/_functions/getLoyaltyAccount) via
- * wixClient.getLoyaltyAccount() instead of direct Wix Data collection queries.
- * Member token comes from getWixSdkClient().auth.getTokens().accessToken.value.
- *
- * Falls back to Bronze defaults (no error) when unauthenticated.
+ * Updated for 4-tier system (Trail Blazer/Mountain Guide/Summit Master/Blue Ridge Legend).
+ * Tier is now LoyaltyTierConfig — computed from points, not from API tier string.
+ * Falls back to Trail Blazer defaults when unauthenticated.
  */
 
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { useLoyalty } from '../useLoyalty';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -29,14 +28,11 @@ jest.mock('@/services/wix/wixSdkClient', () => ({
 
 const MEMBER_TOKEN = 'test-access-token-abc';
 
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE, SUMMIT_MASTER, BLUE_RIDGE_LEGEND] = LOYALTY_TIERS;
+
 function makeApiResponse(overrides = {}) {
   return {
     points: 500,
-    tier: 'Silver',
-    tierDiscount: 5,
-    nextTier: 'Gold',
-    pointsToNext: 1000,
-    progress: 33,
     accountId: 'acct-1',
     ...overrides,
   };
@@ -54,58 +50,45 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('useLoyalty hook', () => {
-  it('returns 0 points and bronze tier for a new member with no account', async () => {
-    mockGetLoyaltyAccount.mockResolvedValue(
-      makeApiResponse({
-        points: 0,
-        tier: 'Bronze',
-        nextTier: 'Silver',
-        pointsToNext: 500,
-        progress: 0,
-      }),
-    );
+  it('returns Trail Blazer tier for a new member with 0 points', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ points: 0 }));
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(0);
-    expect(result.current.tier).toBe('bronze');
-    expect(result.current.nextTier).toBe('silver');
+    expect(result.current.tier).toBe(TRAIL_BLAZER);
+    expect(result.current.nextTier).toBe(MOUNTAIN_GUIDE);
     expect(result.current.pointsToNext).toBe(500);
     expect(result.current.error).toBeNull();
   });
 
-  it('returns correct points, tier, and nextTier for an existing member', async () => {
-    mockGetLoyaltyAccount.mockResolvedValue(
-      makeApiResponse({
-        points: 1500,
-        tier: 'Gold',
-        nextTier: null,
-        pointsToNext: 0,
-        progress: 100,
-      }),
-    );
+  it('returns Mountain Guide tier at 500 points', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ points: 500 }));
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.points).toBe(1500);
-    expect(result.current.tier).toBe('gold');
+    expect(result.current.tier).toBe(MOUNTAIN_GUIDE);
+    expect(result.current.nextTier).toBe(SUMMIT_MASTER);
+    expect(result.current.pointsToNext).toBe(1000); // 1500 - 500
+  });
+
+  it('returns Summit Master tier at 1500 points', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ points: 1500 }));
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.tier).toBe(SUMMIT_MASTER);
+    expect(result.current.nextTier).toBe(BLUE_RIDGE_LEGEND);
+    expect(result.current.pointsToNext).toBe(1500); // 3000 - 1500
+  });
+
+  it('returns Blue Ridge Legend tier at 3000+ points with no nextTier', async () => {
+    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ points: 3000 }));
+    const { result } = renderHook(() => useLoyalty());
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.tier).toBe(BLUE_RIDGE_LEGEND);
     expect(result.current.nextTier).toBeNull();
     expect(result.current.pointsToNext).toBe(0);
   });
 
-  it('normalizes capitalized tier names from API (Bronze/Silver/Gold → lowercase)', async () => {
-    for (const [apiTier, expected] of [
-      ['Bronze', 'bronze'],
-      ['Silver', 'silver'],
-      ['Gold', 'gold'],
-    ] as const) {
-      mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse({ tier: apiTier }));
-      const { result } = renderHook(() => useLoyalty());
-      await waitFor(() => expect(result.current.loading).toBe(false));
-      expect(result.current.tier).toBe(expected);
-    }
-  });
-
   it('passes member access token to getLoyaltyAccount', async () => {
-    mockGetLoyaltyAccount.mockResolvedValue(makeApiResponse());
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(mockGetLoyaltyAccount).toHaveBeenCalledWith(MEMBER_TOKEN);
@@ -122,7 +105,6 @@ describe('useLoyalty hook', () => {
     mockGetLoyaltyAccount.mockRejectedValue(new Error('Wix API error'));
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.error).not.toBeNull();
     expect(result.current.error).toContain('Wix API error');
   });
 
@@ -133,7 +115,7 @@ describe('useLoyalty hook', () => {
     expect(result.current.error).not.toBeNull();
   });
 
-  it('returns Bronze defaults when getTokens() returns no access token (unauthenticated)', async () => {
+  it('returns Trail Blazer defaults when unauthenticated (no access token)', async () => {
     mockGetTokens.mockReturnValue({
       accessToken: null,
       refreshToken: { value: 'r', role: 'visitor' },
@@ -141,20 +123,20 @@ describe('useLoyalty hook', () => {
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(0);
-    expect(result.current.tier).toBe('bronze');
-    expect(result.current.nextTier).toBe('silver');
+    expect(result.current.tier).toBe(TRAIL_BLAZER);
+    expect(result.current.nextTier).toBe(MOUNTAIN_GUIDE);
     expect(result.current.pointsToNext).toBe(500);
     expect(result.current.error).toBeNull();
     expect(mockGetLoyaltyAccount).not.toHaveBeenCalled();
   });
 
-  it('returns Bronze defaults when getTokens() throws (SDK not initialized)', async () => {
+  it('returns Trail Blazer defaults when SDK not initialized', async () => {
     mockGetTokens.mockImplementation(() => {
       throw new Error('SDK not ready');
     });
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.tier).toBe('bronze');
+    expect(result.current.tier).toBe(TRAIL_BLAZER);
     expect(result.current.error).toBeNull();
     expect(mockGetLoyaltyAccount).not.toHaveBeenCalled();
   });
@@ -172,11 +154,9 @@ describe('useLoyalty hook', () => {
       callCount++;
       return Promise.resolve(makeApiResponse({ points: callCount === 1 ? 500 : 600 }));
     });
-
     const { result } = renderHook(() => useLoyalty());
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.points).toBe(500);
-
     await result.current.refreshPoints();
     await waitFor(() => expect(result.current.points).toBe(600));
   });

@@ -2,9 +2,9 @@
  * @module TierProgressBar
  *
  * Animated progress bar showing loyalty tier advancement on AccountScreen.
- * Segments: Bronze (0–499) → Silver (500–1499) → Gold (1500+)
+ * Segments: Trail Blazer (0–499) → Mountain Guide (500–1499) → Summit Master (1500–2999) → Blue Ridge Legend (3000+)
  *
- * Thresholds mirror useLoyalty.ts: bronze 0–499, silver 500–1499, gold 1500+.
+ * Thresholds mirror loyaltyTiers.ts.
  * Animates from 0 → fill percentage on mount.
  * Respects prefers-reduced-motion.
  * cm-ihz
@@ -14,38 +14,17 @@ import React, { useEffect } from 'react';
 import { AccessibilityInfo, StyleSheet, Text, View } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import { getTierForPoints, getNextTier as getNextLoyaltyTier } from '@/data/loyaltyTiers';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
-interface TierSpec {
-  tier: LoyaltyTier;
-  label: string;
-  min: number;
-  max: number;
-  color: string;
-}
-
-const TIERS: TierSpec[] = [
-  { tier: 'bronze', label: 'Bronze', min: 0, max: 500, color: '#CD7F32' },
-  { tier: 'silver', label: 'Silver', min: 500, max: 1500, color: '#A8A9AD' },
-  { tier: 'gold', label: 'Gold', min: 1500, max: Infinity, color: '#D4AF37' },
-];
-
-function getCurrentTier(points: number): TierSpec {
-  for (let i = TIERS.length - 1; i >= 0; i--) {
-    if (points >= TIERS[i].min) return TIERS[i];
-  }
-  return TIERS[0];
-}
-
-function getNextTier(current: TierSpec): TierSpec | null {
-  const idx = TIERS.indexOf(current);
-  return idx < TIERS.length - 1 ? TIERS[idx + 1] : null;
-}
-
-function computeFillRatio(points: number, current: TierSpec, next: TierSpec | null): number {
+function computeFillRatio(
+  points: number,
+  current: LoyaltyTierConfig,
+  next: LoyaltyTierConfig | null,
+): number {
   if (!next) return 1; // max tier — full bar
-  const range = next.min - current.min;
-  return Math.min((points - current.min) / range, 1);
+  const range = next.minPoints - current.minPoints;
+  return Math.min((points - current.minPoints) / range, 1);
 }
 
 interface Props {
@@ -55,8 +34,8 @@ interface Props {
 
 export function TierProgressBar({ points, testID }: Props) {
   const { colors, borderRadius } = useTheme();
-  const currentTier = getCurrentTier(points);
-  const nextTier = getNextTier(currentTier);
+  const currentTier = getTierForPoints(points);
+  const nextTier = getNextLoyaltyTier(currentTier);
   const fillRatio = computeFillRatio(points, currentTier, nextTier);
 
   const fillWidth = useSharedValue(0);
@@ -71,11 +50,11 @@ export function TierProgressBar({ points, testID }: Props) {
     width: `${fillWidth.value}%`,
   }));
 
-  const pointsToNext = nextTier ? nextTier.min - points : 0;
+  const pointsToNext = nextTier ? nextTier.minPoints - points : 0;
 
   const a11yLabel = nextTier
-    ? `${currentTier.label} tier — ${pointsToNext} points to ${nextTier.label}`
-    : `${currentTier.label} tier — maximum tier reached`;
+    ? `${currentTier.name} tier — ${pointsToNext} points to ${nextTier.name}`
+    : `${currentTier.name} tier — maximum tier reached`;
 
   return (
     <View
@@ -86,10 +65,10 @@ export function TierProgressBar({ points, testID }: Props) {
     >
       {/* Labels row */}
       <View style={styles.labelsRow}>
-        <Text style={[styles.tierLabel, { color: currentTier.color }]}>{currentTier.label}</Text>
+        <Text style={[styles.tierLabel, { color: currentTier.color }]}>{currentTier.name}</Text>
         {nextTier ? (
           <Text style={[styles.nextLabel, { color: colors.muted }]}>
-            {pointsToNext} pts to {nextTier.label}
+            {pointsToNext} pts to {nextTier.name}
           </Text>
         ) : (
           <Text style={[styles.nextLabel, { color: currentTier.color }]}>Max tier</Text>

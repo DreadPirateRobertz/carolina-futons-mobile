@@ -254,9 +254,7 @@ export function CheckoutScreen({ onOrderComplete, onBack, testID }: Props) {
     loading: loyaltyLoading,
     error: loyaltyError,
   } = useLoyalty();
-  const loyaltyNextTierLabel = loyaltyNextTier
-    ? loyaltyNextTier.charAt(0).toUpperCase() + loyaltyNextTier.slice(1)
-    : null;
+  const loyaltyNextTierLabel = loyaltyNextTier?.name ?? null;
 
   // Capture checkout-time values in refs so the success useEffect sees fresh
   // state even if the parent re-renders while the app is backgrounded between

@@ -9,6 +9,7 @@ import { render } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { AvatarDisplay } from '../AvatarDisplay';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
@@ -105,8 +106,9 @@ describe('AvatarDisplay', () => {
   });
 
   it('renders without crashing for all tier values', () => {
-    expect(() => renderAvatar({ tier: 'bronze' })).not.toThrow();
-    expect(() => renderAvatar({ tier: 'silver' })).not.toThrow();
-    expect(() => renderAvatar({ tier: 'gold' })).not.toThrow();
+    expect(() => renderAvatar({ tier: LOYALTY_TIERS[0] })).not.toThrow();
+    expect(() => renderAvatar({ tier: LOYALTY_TIERS[1] })).not.toThrow();
+    expect(() => renderAvatar({ tier: LOYALTY_TIERS[2] })).not.toThrow();
+    expect(() => renderAvatar({ tier: LOYALTY_TIERS[3] })).not.toThrow();
   });
 });

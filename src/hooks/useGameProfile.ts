@@ -10,7 +10,7 @@
 import { useStreak } from './useStreak';
 import { useLoyalty } from './useLoyalty';
 import { useLeaderboard } from './useLeaderboard';
-import type { LoyaltyTier } from './useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 const MILESTONES = [7, 14, 30, 60, 100, 365];
 
@@ -34,7 +34,7 @@ export interface UseGameProfileResult {
   nextMilestoneDays: number;
   rank: number | null;
   totalPoints: number;
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   streakLoading: boolean;
   rankLoading: boolean;
   pointsLoading: boolean;

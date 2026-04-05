@@ -7,12 +7,12 @@
  * Tier progression (points required to reach each tier):
  *   Trail Blazer   0–499
  *   Mountain Guide 500–1499
- *   Summit Master  1500–4999
- *   Blue Ridge Legend 5000+
+ *   Summit Master  1500–2999
+ *   Blue Ridge Legend 3000+
  */
 
 /** Points threshold to enter each tier, aligned with TIER_NAMES index. */
-export const TIER_THRESHOLDS = [0, 500, 1500, 5000];
+export const TIER_THRESHOLDS = [0, 500, 1500, 3000];
 
 /** Display names for each tier, in ascending order. */
 export const TIER_NAMES = ['Trail Blazer', 'Mountain Guide', 'Summit Master', 'Blue Ridge Legend'];

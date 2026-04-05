@@ -54,36 +54,36 @@ describe('TierProgressBar', () => {
 
   // ── Tier label ────────────────────────────────────────────────────
 
-  it('shows Bronze label for 0 points', () => {
+  it('shows Trail Blazer label for 0 points', () => {
     const { getByText } = renderBar(0);
-    expect(getByText(/bronze/i)).toBeTruthy();
+    expect(getByText(/Trail Blazer/i)).toBeTruthy();
   });
 
-  it('shows Silver label for 500+ points', () => {
+  it('shows Mountain Guide label for 500+ points', () => {
     const { getByText } = renderBar(500);
-    expect(getByText(/silver/i)).toBeTruthy();
+    expect(getByText(/Mountain Guide/i)).toBeTruthy();
   });
 
-  it('shows Gold label for 1500+ points', () => {
+  it('shows Summit Master label for 1500+ points', () => {
     const { getByText } = renderBar(1500);
-    expect(getByText(/gold/i)).toBeTruthy();
+    expect(getByText(/Summit Master/i)).toBeTruthy();
   });
 
   it('shows next tier label when not at max tier', () => {
-    // At 200 pts (Bronze), next tier is Silver at 500
+    // At 200 pts (Trail Blazer), next tier is Mountain Guide at 500
     const { getByText } = renderBar(200);
-    expect(getByText(/silver/i)).toBeTruthy();
+    expect(getByText(/Mountain Guide/i)).toBeTruthy();
   });
 
   it('shows points remaining to next tier', () => {
-    // At 200 pts (Bronze), 300 more needed for Silver
+    // At 200 pts (Trail Blazer), 300 more needed for Mountain Guide
     const { getByText } = renderBar(200);
     expect(getByText(/300/)).toBeTruthy();
   });
 
-  it('shows max tier label when at Gold (1500+)', () => {
-    const { getByText } = renderBar(2000);
-    expect(getByText(/gold/i)).toBeTruthy();
+  it('shows Blue Ridge Legend label at max tier (3000+)', () => {
+    const { getByText } = renderBar(3000);
+    expect(getByText(/Blue Ridge Legend/i)).toBeTruthy();
   });
 
   // ── Accessibility ─────────────────────────────────────────────────

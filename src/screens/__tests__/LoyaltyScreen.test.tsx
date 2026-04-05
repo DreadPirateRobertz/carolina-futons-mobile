@@ -1,5 +1,5 @@
 /**
- * LoyaltyScreen TDD tests — cm-elo
+ * LoyaltyScreen TDD tests — cm-elo / deacon-cjv
  *
  * 4 tests for LoyaltyScreen UI states.
  * useLoyalty is mocked so screen tests control the data layer.
@@ -12,6 +12,9 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { LoyaltyScreen } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE] = LOYALTY_TIERS;
 
 const mockRefreshPoints = jest.fn();
 const mockUseLoyalty = jest.fn();
@@ -22,7 +25,10 @@ jest.mock('@/hooks/useLoyalty', () => ({
 
 const DEFAULT_LOYALTY = {
   points: 750,
-  tier: 'bronze' as const,
+  tier: TRAIL_BLAZER,
+  nextTier: MOUNTAIN_GUIDE,
+  pointsToNext: 250,
+  progress: 60,
   loading: false,
   error: null,
   refreshPoints: mockRefreshPoints,
@@ -64,8 +70,13 @@ describe('LoyaltyScreen', () => {
   });
 
   it('shows tier badge when loaded', () => {
-    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'silver' });
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
     const { getByTestId } = renderScreen();
     expect(getByTestId('loyalty-tier-badge')).toBeTruthy();
+  });
+
+  it('shows tier perk card with current tier perks', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-tier-perk-card')).toBeTruthy();
   });
 });

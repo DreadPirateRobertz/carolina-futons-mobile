@@ -20,37 +20,27 @@ import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTheme } from '@/theme';
 import { LoyaltyBadge } from './LoyaltyBadge';
+import { getTierForPoints, getNextTier } from '@/data/loyaltyTiers';
 import type { LoyaltyCardData } from '@/hooks/useLoyaltyCard';
 
 interface Props extends LoyaltyCardData {
   testID?: string;
 }
 
-const NEXT_TIER_LABEL: Record<string, string | null> = {
-  bronze: 'Silver',
-  silver: 'Gold',
-  gold: null,
-};
-
 /** Loyalty points card with tier badge, progress bar, and next-tier prompt. */
-export function LoyaltyCard({
-  points,
-  tier,
-  nextTierThreshold,
-  progressPercent,
-  hasActivity,
-  testID,
-}: Props) {
+export function LoyaltyCard({ points, progressPercent, hasActivity, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
 
   // Hide if no points and no prior activity
   if (points === 0 && !hasActivity) return null;
 
-  const nextTierLabel = NEXT_TIER_LABEL[tier] ?? null;
-  const pointsToNext = Math.max(0, nextTierThreshold - points);
-  const nextTierText = nextTierLabel
-    ? `${pointsToNext} points to ${nextTierLabel}`
-    : "You've reached Gold!";
+  const tierConfig = getTierForPoints(points);
+  const nextTierConfig = getNextTier(tierConfig);
+  const pointsToNext = nextTierConfig ? Math.max(0, nextTierConfig.minPoints - points) : 0;
+  const nextTierText = nextTierConfig
+    ? `${pointsToNext} points to ${nextTierConfig.name}`
+    : `You've reached ${tierConfig.name}!`;
+  const tierSlug = tierConfig.name.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <View
@@ -87,7 +77,7 @@ export function LoyaltyCard({
             {points.toLocaleString()}
           </Text>
         </View>
-        <LoyaltyBadge tier={tier} testID={`loyalty-badge-${tier}`} />
+        <LoyaltyBadge tier={tierConfig} testID={`loyalty-badge-${tierSlug}`} />
       </View>
 
       {/* Progress bar */}
@@ -103,8 +93,7 @@ export function LoyaltyCard({
             styles.progressFill,
             {
               width: `${progressPercent}%`,
-              backgroundColor:
-                tier === 'gold' ? '#D4AF37' : tier === 'silver' ? '#A8A9AD' : '#CD7F32',
+              backgroundColor: tierConfig.color,
               borderRadius: borderRadius.pill,
             },
           ]}

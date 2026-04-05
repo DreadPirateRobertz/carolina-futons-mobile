@@ -12,15 +12,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import type { LoyaltyTier } from '../hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '../data/loyaltyTiers';
 
 const SIZE = 24;
-
-// Tier badge colors
-const TIER_COLORS: Record<string, string> = {
-  silver: '#9DAFB5',
-  gold: '#D4A853',
-};
 
 interface BaseIconProps {
   focused: boolean;
@@ -32,7 +26,7 @@ interface HomeIconProps extends BaseIconProps {
 }
 
 interface AccountIconProps extends BaseIconProps {
-  tier?: LoyaltyTier;
+  tier?: LoyaltyTierConfig;
 }
 
 /** Mountain peak with a small house — Home destination. */
@@ -139,8 +133,9 @@ export function CartTabIcon({ focused, color }: BaseIconProps) {
 
 /** Profile silhouette with optional tier crown badge — Account destination. */
 export function AccountTabIcon({ focused, color, tier }: AccountIconProps) {
-  const showTierBadge = tier === 'silver' || tier === 'gold';
-  const tierColor = tier ? TIER_COLORS[tier] : undefined;
+  // Show badge for Mountain Guide and above (minPoints >= 500)
+  const showTierBadge = tier !== undefined && tier.minPoints >= 500;
+  const tierColor = tier?.color;
 
   return (
     <View style={styles.iconWrap}>

@@ -1,36 +1,26 @@
 /**
- * LoyaltyBadge — cm-elo
+ * LoyaltyBadge — cm-elo / deacon-cjv
  *
- * Displays a color-coded tier badge (Bronze / Silver / Gold).
+ * Displays a color-coded tier badge.
+ * Accepts a LoyaltyTierConfig object — reads .name and .color directly.
  * Pure presentational component.
  */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { useTheme } from '@/theme';
 
-const TIER_LABELS: Record<LoyaltyTier, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-};
-
-const TIER_COLORS: Record<LoyaltyTier, string> = {
-  bronze: '#CD7F32',
-  silver: '#A8A9AD',
-  gold: '#D4AF37',
-};
-
 interface Props {
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   testID?: string;
 }
 
 export function LoyaltyBadge({ tier, testID }: Props) {
   const { borderRadius } = useTheme();
-  const color = TIER_COLORS[tier];
-  const label = TIER_LABELS[tier];
+  const color = tier.color;
+  const label = tier.name;
+  const slug = tier.name.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <View
@@ -38,7 +28,7 @@ export function LoyaltyBadge({ tier, testID }: Props) {
         styles.badge,
         { backgroundColor: color + '22', borderColor: color, borderRadius: borderRadius.sm },
       ]}
-      testID={testID ?? `loyalty-badge-${tier}`}
+      testID={testID ?? `loyalty-badge-${slug}`}
       accessibilityLabel={`${label} tier`}
     >
       <Text style={[styles.label, { color }]}>{label}</Text>

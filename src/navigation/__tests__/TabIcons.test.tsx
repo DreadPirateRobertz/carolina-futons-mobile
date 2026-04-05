@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { HomeTabIcon, ShopTabIcon, CartTabIcon, AccountTabIcon } from '../TabIcons';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 describe('TabIcons', () => {
   describe('HomeTabIcon', () => {
@@ -45,19 +46,23 @@ describe('TabIcons', () => {
       expect(toJSON()).not.toBeNull();
     });
 
-    it('renders tier badge for silver tier', () => {
-      const { getByTestId } = render(<AccountTabIcon focused={false} color="#888" tier="silver" />);
+    it('renders tier badge for Mountain Guide tier', () => {
+      const { getByTestId } = render(
+        <AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[1]} />,
+      );
       expect(getByTestId('tier-badge')).toBeTruthy();
     });
 
-    it('renders tier badge for gold tier', () => {
-      const { getByTestId } = render(<AccountTabIcon focused={false} color="#888" tier="gold" />);
+    it('renders tier badge for Summit Master tier', () => {
+      const { getByTestId } = render(
+        <AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[2]} />,
+      );
       expect(getByTestId('tier-badge')).toBeTruthy();
     });
 
-    it('does not render tier badge for bronze tier', () => {
+    it('does not render tier badge for Trail Blazer tier', () => {
       const { queryByTestId } = render(
-        <AccountTabIcon focused={false} color="#888" tier="bronze" />,
+        <AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[0]} />,
       );
       expect(queryByTestId('tier-badge')).toBeNull();
     });

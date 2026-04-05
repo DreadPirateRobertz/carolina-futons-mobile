@@ -6,6 +6,7 @@
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useLoyaltyCard } from '../useLoyaltyCard';
+import { getTierForPoints } from '@/data/loyaltyTiers';
 
 const mockGetLoyaltyData = jest.fn();
 const mockGetCurrentMember = jest.fn();
@@ -47,20 +48,20 @@ describe('useLoyaltyCard', () => {
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.points).toBe(250);
-    expect(result.current.tier).toBe('bronze');
+    expect(result.current.tier).toBe(getTierForPoints(250)); // Trail Blazer
     expect(result.current.progressPercent).toBe(50);
   });
 
-  it('normalizes tier to lowercase', async () => {
+  it('derives tier from points (Trail Blazer at 0–499, Mountain Guide at 500+)', async () => {
     mockGetLoyaltyData.mockResolvedValue({
       points: 750,
-      tier: 'Silver',
+      tier: 'Silver', // raw tier string is ignored — points drive tier derivation
       nextTierThreshold: 1500,
       progressPercent: 50,
     });
     const { result } = renderHook(() => useLoyaltyCard());
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(result.current.tier).toBe('silver');
+    expect(result.current.tier).toBe(getTierForPoints(750)); // Mountain Guide
   });
 
   it('hasActivity=false when points=0 and totalEarned=0', async () => {
@@ -107,7 +108,7 @@ describe('useLoyaltyCard', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).not.toBeNull();
     expect(result.current.points).toBe(0);
-    expect(result.current.tier).toBe('bronze');
+    expect(result.current.tier).toBe(getTierForPoints(0)); // Trail Blazer (safe default)
     expect(result.current.hasActivity).toBe(false);
   });
 

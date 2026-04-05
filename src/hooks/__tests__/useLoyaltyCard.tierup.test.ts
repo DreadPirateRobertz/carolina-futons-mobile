@@ -19,6 +19,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 
 import { useLoyaltyCard } from '../useLoyaltyCard';
+import { getTierForPoints } from '@/data/loyaltyTiers';
 
 const mockGetLoyaltyData = jest.fn();
 const mockGetCurrentMember = jest.fn();
@@ -89,7 +90,10 @@ describe('useLoyaltyCard — tier-up event', () => {
     });
 
     expect(mockOnTierUp).toHaveBeenCalledTimes(1);
-    expect(mockOnTierUp).toHaveBeenCalledWith({ from: 'bronze', to: 'silver' });
+    expect(mockOnTierUp).toHaveBeenCalledWith({
+      from: getTierForPoints(400),
+      to: getTierForPoints(600),
+    });
   });
 
   it('fires onTierUp when tier upgrades silver→gold on refresh', async () => {
@@ -105,7 +109,10 @@ describe('useLoyaltyCard — tier-up event', () => {
     });
 
     expect(mockOnTierUp).toHaveBeenCalledTimes(1);
-    expect(mockOnTierUp).toHaveBeenCalledWith({ from: 'silver', to: 'gold' });
+    expect(mockOnTierUp).toHaveBeenCalledWith({
+      from: getTierForPoints(1200),
+      to: getTierForPoints(1600),
+    });
   });
 
   it('does NOT fire onTierUp when tier stays the same across refreshes', async () => {

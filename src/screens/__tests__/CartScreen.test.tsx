@@ -526,32 +526,27 @@ describe('CartScreen', () => {
       expect(queryByTestId('cart-loyalty-progress')).toBeNull();
     });
 
-    it('passes points from useLoyalty to TierProgressBar (bronze tier a11y)', () => {
-      mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 250, tier: 'bronze' });
+    it('passes points from useLoyalty to TierProgressBar (Trail Blazer tier a11y)', () => {
+      mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 250 });
       const { getByTestId } = renderCartScreen({}, seed);
       const bar = getByTestId('cart-loyalty-progress');
-      expect(bar.props.accessibilityLabel).toMatch(/bronze/i);
+      expect(bar.props.accessibilityLabel).toMatch(/Trail Blazer/i);
     });
 
-    it('shows silver tier a11y label when points >= 500', () => {
+    it('shows Mountain Guide tier a11y label when points >= 500', () => {
       mockUseLoyalty.mockReturnValue({
         ...loyaltyBase,
         points: 750,
-        tier: 'silver',
-        nextTier: 'gold',
-        pointsToNext: 750,
-        progress: 0.25,
       });
       const { getByTestId } = renderCartScreen({}, seed);
       const bar = getByTestId('cart-loyalty-progress');
-      expect(bar.props.accessibilityLabel).toMatch(/silver/i);
+      expect(bar.props.accessibilityLabel).toMatch(/Mountain Guide/i);
     });
 
-    it('shows max-tier label when gold (points >= 1500)', () => {
+    it('shows max-tier label when Blue Ridge Legend (points >= 3000)', () => {
       mockUseLoyalty.mockReturnValue({
         ...loyaltyBase,
-        points: 2000,
-        tier: 'gold',
+        points: 3000,
         nextTier: null,
         pointsToNext: 0,
         progress: 1,

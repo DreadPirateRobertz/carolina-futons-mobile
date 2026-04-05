@@ -10,6 +10,9 @@ import React from 'react';
 import { act, render } from '@testing-library/react-native';
 import { LoyaltyScreen, __resetStreakEmitState, __resetTierEmitState } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE] = LOYALTY_TIERS;
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -47,8 +50,8 @@ jest.mock('@/services/crashReporting', () => ({
 
 const DEFAULT_LOYALTY = {
   points: 750,
-  tier: 'bronze' as const,
-  nextTier: 'silver' as const,
+  tier: TRAIL_BLAZER,
+  nextTier: MOUNTAIN_GUIDE,
   pointsToNext: 250,
   progress: 60,
   loading: false,
@@ -143,13 +146,13 @@ describe('LoyaltyScreen — tier change push wiring', () => {
     mockUseStreak.mockReturnValue(STREAK_SAME_DAY);
   });
 
-  it('emits emitTierChanged when tier upgrades from bronze to silver', async () => {
+  it('emits emitTierChanged when tier upgrades from Trail Blazer to Mountain Guide', async () => {
     const { rerender } = render(
       <ThemeProvider>
         <LoyaltyScreen />
       </ThemeProvider>,
     );
-    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'bronze' });
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
     rerender(
       <ThemeProvider>
         <LoyaltyScreen />
@@ -159,7 +162,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
       await new Promise((r) => setTimeout(r, 10));
     });
 
-    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'silver' });
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
     rerender(
       <ThemeProvider>
         <LoyaltyScreen />
@@ -172,7 +175,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
     expect(mockEmitTierChanged).toHaveBeenCalledTimes(1);
     expect(mockEmitTierChanged).toHaveBeenCalledWith(
       mockWixClient,
-      expect.objectContaining({ oldTier: 'bronze', newTier: 'silver' }),
+      expect.objectContaining({ oldTier: 'Trail Blazer', newTier: 'Mountain Guide' }),
     );
   });
 
@@ -201,7 +204,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
       await new Promise((r) => setTimeout(r, 10));
     });
 
-    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'bronze' });
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
     rerender(
       <ThemeProvider>
         <LoyaltyScreen />
@@ -215,7 +218,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
   });
 
   it('does not re-emit on remount after tier already upgraded (module-level dedup)', async () => {
-    const silver = { ...DEFAULT_LOYALTY, tier: 'silver' as const };
+    const mountainGuide = { ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE };
 
     const { unmount, rerender } = render(
       <ThemeProvider>
@@ -230,7 +233,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
     );
     await act(async () => await new Promise((r) => setTimeout(r, 10)));
 
-    mockUseLoyalty.mockReturnValue(silver);
+    mockUseLoyalty.mockReturnValue(mountainGuide);
     rerender(
       <ThemeProvider>
         <LoyaltyScreen />
@@ -241,7 +244,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
 
     unmount();
     mockEmitTierChanged.mockClear();
-    mockUseLoyalty.mockReturnValue(silver);
+    mockUseLoyalty.mockReturnValue(mountainGuide);
     renderScreen();
     await act(async () => await new Promise((r) => setTimeout(r, 10)));
     expect(mockEmitTierChanged).not.toHaveBeenCalled();
@@ -262,7 +265,7 @@ describe('LoyaltyScreen — tier change push wiring', () => {
     );
     await act(async () => await new Promise((r) => setTimeout(r, 10)));
 
-    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: 'silver' as const });
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
     rerender(
       <ThemeProvider>
         <LoyaltyScreen />
