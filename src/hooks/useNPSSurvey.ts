@@ -11,7 +11,7 @@
  * window on their respective success paths. On Wix submit failure the
  * window is NOT started so the user can retry.
  *
- * Writes to the Wix NPSResponses collection via submitNpsSurvey.
+ * Writes to the Wix SurveyResponses collection via submitNpsSurvey.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -38,7 +38,7 @@ export interface UseNPSSurveyOptions {
   deliveredAt: Date | null;
   /** Optional member ID to record in the Wix response. */
   memberId?: string;
-  /** Wix client for writing to NPSResponses collection. */
+  /** Wix client for writing to SurveyResponses collection. */
   wixClient?: WixClientLike | null;
   /** Injected storage adapter — defaults to AsyncStorage. Pass a mock in tests. */
   storage?: StorageAdapter;
@@ -52,7 +52,7 @@ export interface UseNPSSurveyResult {
   submitError: string | null;
   /** Skip the survey. Records the current time to start the 90-day suppress window. */
   dismiss: () => Promise<void>;
-  /** Submit a score + optional comment to Wix NPSResponses. */
+  /** Submit a score + optional comment to Wix SurveyResponses. */
   submit: (score: number, comment?: string) => Promise<void>;
 }
 

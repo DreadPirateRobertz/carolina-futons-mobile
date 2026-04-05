@@ -3,7 +3,7 @@
  *
  * Submits post-purchase NPS survey responses — cm-5cp.
  *
- * Writes to the Wix `NPSResponses` collection.
+ * Writes to the Wix `SurveyResponses` collection.
  * Schema: memberId, orderId, score (0–10), comment, createdAt, suppressedUntil.
  * Returns a result object and never throws.
  */
@@ -36,12 +36,12 @@ export interface NpsSurveyResult {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COLLECTION = 'NPSResponses';
+const COLLECTION = 'SurveyResponses';
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
 /**
- * Submit an NPS survey response to the Wix NPSResponses collection.
+ * Submit an NPS survey response to the Wix SurveyResponses collection.
  *
  * Returns {success: false, error} on any failure — never throws.
  */
@@ -55,7 +55,7 @@ export async function submitNpsSurvey(
 
   const payload: Record<string, unknown> = {
     orderId: data.orderId,
-    score: data.score,
+    npsScore: data.score,
     createdAt: data.createdAt,
     suppressedUntil: data.suppressedUntil,
   };

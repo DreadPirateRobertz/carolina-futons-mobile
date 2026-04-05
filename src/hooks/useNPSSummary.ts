@@ -3,7 +3,7 @@
  *
  * Staff-only NPS summary dashboard hook (hq-9dq).
  *
- * Queries the Wix `NPSResponses` collection (sorted newest-first) and
+ * Queries the Wix `SurveyResponses` collection (sorted newest-first) and
  * computes aggregate stats for display on NPSSummaryScreen:
  *   - avgScore: mean score across all responses, rounded to 1 decimal (null if empty)
  *   - responseCount: total number of responses
@@ -45,7 +45,7 @@ export interface UseNPSSummaryReturn {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COLLECTION = 'NPSResponses';
+const COLLECTION = 'SurveyResponses';
 const STAFF_DOMAIN = '@carolinafutons.com';
 const FETCH_LIMIT = 100;
 const MAX_COMMENTS = 5;

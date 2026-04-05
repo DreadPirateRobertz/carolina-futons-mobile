@@ -3,7 +3,7 @@
  *
  * Tests: submit success, omit/include comment, network error,
  * null/undefined client, score boundary values (0 and 10),
- * NPSResponses collection, createdAt + suppressedUntil in Wix payload.
+ * SurveyResponses collection, createdAt + suppressedUntil in Wix payload.
  */
 import { submitNpsSurvey, type NpsSurveyData, type WixClientLike } from '../npsSurvey';
 
@@ -33,12 +33,12 @@ describe('submitNpsSurvey', () => {
       expect(result.id).toBe('survey-abc123');
     });
 
-    it('inserts to NPSResponses collection', async () => {
+    it('inserts to SurveyResponses collection', async () => {
       const client = makeClient();
       await submitNpsSurvey(client, baseData);
       expect(client.insertDataItem).toHaveBeenCalledWith(
-        'NPSResponses',
-        expect.objectContaining({ orderId: 'order-001', score: 9 }),
+        'SurveyResponses',
+        expect.objectContaining({ orderId: 'order-001', npsScore: 9 }),
       );
     });
 
@@ -91,7 +91,7 @@ describe('submitNpsSurvey', () => {
       const result = await submitNpsSurvey(client, { ...baseData, score: 0 });
       expect(result.success).toBe(true);
       const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
-      expect(payload.score).toBe(0);
+      expect(payload.npsScore).toBe(0);
     });
 
     it('accepts score 10 (maximum promoter)', async () => {
@@ -99,7 +99,7 @@ describe('submitNpsSurvey', () => {
       const result = await submitNpsSurvey(client, { ...baseData, score: 10 });
       expect(result.success).toBe(true);
       const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
-      expect(payload.score).toBe(10);
+      expect(payload.npsScore).toBe(10);
     });
   });
 

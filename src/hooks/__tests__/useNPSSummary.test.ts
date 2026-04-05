@@ -371,10 +371,10 @@ describe('useNPSSummary — recentComments', () => {
 // ── Query options ──────────────────────────────────────────────────────────────
 
 describe('useNPSSummary — query options', () => {
-  it('queries the NPSResponses collection', async () => {
+  it('queries the SurveyResponses collection', async () => {
     renderHook(() => useNPSSummary());
     await waitFor(() => expect(mockQueryData).toHaveBeenCalled());
-    expect(mockQueryData.mock.calls[0][0]).toBe('NPSResponses');
+    expect(mockQueryData.mock.calls[0][0]).toBe('SurveyResponses');
   });
 
   it('sorts by createdAt DESC', async () => {
