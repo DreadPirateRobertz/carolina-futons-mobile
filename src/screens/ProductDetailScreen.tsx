@@ -487,7 +487,8 @@ export function ProductDetailScreen({
     try {
       if (imageUri && Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
         const safeSlug = slug.replace(/[^a-z0-9-]/gi, '_');
-        const localUri = `${FileSystem.CacheDirectory ?? ''}share-product-${safeSlug}.jpg`;
+        const cacheDir = FileSystem.documentDirectory ?? '';
+        const localUri = `${cacheDir}share-product-${safeSlug}.jpg`;
         await FileSystem.downloadAsync(imageUri, localUri);
         await Sharing.shareAsync(localUri, {
           mimeType: 'image/jpeg',
