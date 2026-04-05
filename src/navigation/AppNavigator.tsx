@@ -194,6 +194,11 @@ const VisualSearchResultsScreen = lazy(() =>
     default: withScreenErrorBoundary(m.VisualSearchResultsScreen, 'VisualSearchResults'),
   })),
 );
+const WarrantyRegistrationScreen = lazy(() =>
+  import('@/screens/WarrantyRegistrationScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.WarrantyRegistrationScreen, 'WarrantyRegistration'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -247,6 +252,7 @@ export type RootStackParamList = {
   ReferralLanding: { code: string };
   VisualSearch: undefined;
   VisualSearchResults: { imageUri: string };
+  WarrantyRegistration: { orderId: string; orderNumber: string; productName?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -429,6 +435,9 @@ export function AppNavigator() {
                     }),
                   );
                 }}
+                onWarrantyRegister={({ orderId, orderNumber, productName }) =>
+                  nav.navigate('WarrantyRegistration', { orderId, orderNumber, productName })
+                }
               />
             )}
           </Stack.Screen>
@@ -537,6 +546,17 @@ export function AppNavigator() {
             component={VisualSearchResultsScreen}
             options={fadeTransition}
           />
+          <Stack.Screen name="WarrantyRegistration" options={modalTransition}>
+            {({ route, navigation: nav }) => (
+              <WarrantyRegistrationScreen
+                orderId={(route.params as { orderId: string }).orderId}
+                orderNumber={(route.params as { orderNumber: string }).orderNumber}
+                productName={(route.params as { productName?: string }).productName}
+                onBack={() => nav.goBack()}
+                onSuccess={() => nav.goBack()}
+              />
+            )}
+          </Stack.Screen>
         </Stack.Navigator>
       </Suspense>
     </BadgeToastProvider>

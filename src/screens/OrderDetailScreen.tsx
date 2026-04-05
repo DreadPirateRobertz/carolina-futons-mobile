@@ -191,6 +191,8 @@ interface Props {
   onBack?: () => void;
   /** Callback fired after all re-order items have been added to the cart. */
   onReorderSuccess?: () => void;
+  /** Callback fired when the user taps "Register Warranty" on a delivered order. */
+  onWarrantyRegister?: (params: { orderId: string; orderNumber: string; productName: string }) => void;
   /** Test identifier for end-to-end tests. */
   testID?: string;
   /** React Navigation route; used as fallback source for orderId. */
@@ -208,6 +210,7 @@ export function OrderDetailScreen({
   orders: ordersProp,
   onBack,
   onReorderSuccess,
+  onWarrantyRegister,
   testID,
   route,
 }: Props) {
@@ -555,6 +558,33 @@ export function OrderDetailScreen({
               accessibilityRole="button"
             >
               <Text style={styles.reorderText}>Re-order</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Register Warranty button — shown only for delivered orders */}
+        {order.status === 'delivered' && (
+          <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg }}>
+            <TouchableOpacity
+              style={[
+                styles.reorderButton,
+                {
+                  backgroundColor: colors.success,
+                  borderRadius: borderRadius.button,
+                },
+              ]}
+              onPress={() =>
+                onWarrantyRegister?.({
+                  orderId: order.id,
+                  orderNumber: order.orderNumber,
+                  productName: order.items[0]?.modelName ?? '',
+                })
+              }
+              testID="register-warranty-button"
+              accessibilityLabel="Register product warranty"
+              accessibilityRole="button"
+            >
+              <Text style={styles.reorderText}>Register Warranty</Text>
             </TouchableOpacity>
           </View>
         )}
