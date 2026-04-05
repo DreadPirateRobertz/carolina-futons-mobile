@@ -131,10 +131,12 @@ export function NPSSurveyModal({
     setModalState({ status: 'submitting' });
 
     const trimmedComment = comment.trim();
+    const now = new Date();
     const data = {
       orderId,
       score: selectedScore,
-      submittedAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
+      suppressedUntil: new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString(),
       ...(trimmedComment.length > 0 ? { comment: trimmedComment } : {}),
     };
 
