@@ -83,3 +83,28 @@ jobs:
 
       - name: Verify 3D catalog sync
         run: npx tsx scripts/sync-3d-catalog.ts --check
+
+  bundle-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Metro bundle (Android, production)
+        run: |
+          npx react-native bundle \
+            --entry-file index.js \
+            --bundle-output /tmp/cf-bundle.js \
+            --platform android \
+            --dev false
+
+      - name: Check bundle size (≤ 500 KB)
+        run: npx tsx scripts/check-bundle-size.ts /tmp/cf-bundle.js
