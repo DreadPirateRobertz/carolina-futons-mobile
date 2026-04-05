@@ -378,3 +378,137 @@ describe('SUPPORTED_PATHS — gamification screens', () => {
     expect(SUPPORTED_PATHS).toContain('gallery');
   });
 });
+
+// ── hq-qw5: deep link coverage audit — missing screen routes ─────────────
+
+describe('linkingConfig — screens added in hq-qw5 audit', () => {
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps Premium screen', () => {
+    expect(screens.Premium).toBe('premium');
+  });
+
+  it('maps Search screen', () => {
+    expect(screens.Search).toBe('search');
+  });
+
+  it('maps Compare screen', () => {
+    expect(screens.Compare).toBe('compare');
+  });
+
+  it('maps PrivacyPolicy screen', () => {
+    expect(screens.PrivacyPolicy).toBe('privacy');
+  });
+
+  it('maps Loyalty screen', () => {
+    expect(screens.Loyalty).toBe('loyalty');
+  });
+
+  it('maps WarrantyRegistration screen', () => {
+    expect(screens.WarrantyRegistration).toBe('warranty');
+  });
+
+  it('maps SavedAddresses screen', () => {
+    expect(screens.SavedAddresses).toBe('account/addresses');
+  });
+
+  it('maps ConsultationBooking screen', () => {
+    expect(screens.ConsultationBooking).toBe('consultation');
+  });
+
+  it('maps BookingCancellation screen', () => {
+    expect(screens.BookingCancellation).toBe('consultation/cancel');
+  });
+});
+
+describe('deep link route resolution — hq-qw5 audit', () => {
+  it('resolves /premium to Premium', () => {
+    expect(getScreen('premium')).toBe('Premium');
+  });
+
+  it('resolves /search to Search', () => {
+    expect(getScreen('search')).toBe('Search');
+  });
+
+  it('resolves /compare to Compare', () => {
+    expect(getScreen('compare')).toBe('Compare');
+  });
+
+  it('resolves /privacy to PrivacyPolicy', () => {
+    expect(getScreen('privacy')).toBe('PrivacyPolicy');
+  });
+
+  it('resolves /loyalty to Loyalty', () => {
+    expect(getScreen('loyalty')).toBe('Loyalty');
+  });
+
+  it('resolves /warranty to WarrantyRegistration', () => {
+    expect(getScreen('warranty')).toBe('WarrantyRegistration');
+  });
+
+  it('resolves /account/addresses to SavedAddresses', () => {
+    expect(getScreen('account/addresses')).toBe('SavedAddresses');
+  });
+
+  it('resolves /consultation to ConsultationBooking', () => {
+    expect(getScreen('consultation')).toBe('ConsultationBooking');
+  });
+
+  it('resolves /consultation/cancel to BookingCancellation', () => {
+    expect(getScreen('consultation/cancel')).toBe('BookingCancellation');
+  });
+
+  it('resolves /referral/:code to ReferralLanding', () => {
+    expect(getScreen('referral/ABC123')).toBe('ReferralLanding');
+  });
+
+  it('passes code param to ReferralLanding', () => {
+    expect(getParams('referral/ABC123')).toEqual({ code: 'ABC123' });
+  });
+});
+
+describe('SUPPORTED_PATHS — hq-qw5 audit', () => {
+  it('includes premium', () => {
+    expect(SUPPORTED_PATHS).toContain('premium');
+  });
+
+  it('includes search', () => {
+    expect(SUPPORTED_PATHS).toContain('search');
+  });
+
+  it('includes compare', () => {
+    expect(SUPPORTED_PATHS).toContain('compare');
+  });
+
+  it('includes privacy', () => {
+    expect(SUPPORTED_PATHS).toContain('privacy');
+  });
+
+  it('includes loyalty', () => {
+    expect(SUPPORTED_PATHS).toContain('loyalty');
+  });
+
+  it('includes warranty', () => {
+    expect(SUPPORTED_PATHS).toContain('warranty');
+  });
+
+  it('includes account/addresses', () => {
+    expect(SUPPORTED_PATHS).toContain('account/addresses');
+  });
+
+  it('includes consultation', () => {
+    expect(SUPPORTED_PATHS).toContain('consultation');
+  });
+
+  it('includes referral', () => {
+    expect(SUPPORTED_PATHS).toContain('referral');
+  });
+
+  it('has no duplicate entries', () => {
+    const seen = new Set<string>();
+    for (const path of SUPPORTED_PATHS) {
+      expect(seen.has(path)).toBe(false);
+      seen.add(path);
+    }
+  });
+});
