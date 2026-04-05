@@ -21,6 +21,8 @@ import { CompareProvider } from '@/contexts/CompareContext';
 import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
 import { StreakMilestoneBridge } from '@/components/StreakMilestoneBridge';
 import { PostPurchaseReviewBridge } from '@/components/PostPurchaseReviewBridge';
+import { OnboardingStyleModalBridge } from '@/components/OnboardingStyleModalBridge';
+import { runSecurityAudit } from '@/services/securityAudit';
 import { WixProvider } from '@/services/wix/wixProvider';
 import { getWixConfig, isWixConfigured } from '@/services/wix/config';
 
@@ -137,6 +139,7 @@ function App() {
                           <CartAbandonmentBridge />
                           <StreakMilestoneBridge />
                           <PostPurchaseReviewBridge />
+                          <OnboardingStyleModalBridge />
                           <PremiumProvider>
                             <RecommendationsProvider>
                               <CompareProvider>
