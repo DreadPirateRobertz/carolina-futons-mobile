@@ -2,21 +2,23 @@
  * TDD tests for pushPersonalization service — cm-ako.
  *
  * Personalize push notification content by loyalty tier:
- *   bronze (Trail Blazer 0–499)   → first-purchase nudges, welcome incentives
- *   silver (Mountain Guide 500+)  → early access notifications, shipping perks
- *   gold   (Summit Master 1500+)  → VIP drops, exclusive pricing messaging
+ *   trail-blazer   (Trail Blazer 0–499)    → first-purchase nudges, welcome incentives
+ *   mountain-guide (Mountain Guide 500+)   → early access notifications, shipping perks
+ *   summit-master  (Summit Master 1500+)   → VIP drops, exclusive pricing messaging
  *
  * NotificationType: order_update | promotion | back_in_stock |
  *                   cart_reminder | streak_milestone | quest_complete |
  *                   daily_spin_reminder
  */
 import { personalizeNotification, type PersonalizedPushContent } from '../pushPersonalization';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import type { NotificationType } from '@/services/notifications';
 
-const BRONZE: LoyaltyTier = 'bronze';
-const SILVER: LoyaltyTier = 'silver';
-const GOLD: LoyaltyTier = 'gold';
+// Trail Blazer, Mountain Guide, Summit Master
+const BRONZE: LoyaltyTierConfig = LOYALTY_TIERS[0];
+const SILVER: LoyaltyTierConfig = LOYALTY_TIERS[1];
+const GOLD: LoyaltyTierConfig = LOYALTY_TIERS[2];
 
 // ── Return-shape guard ────────────────────────────────────────────────────────
 
@@ -131,13 +133,13 @@ describe('personalizeNotification — back_in_stock', () => {
 
 describe('personalizeNotification — order_update (not tier-personalized)', () => {
   it('returns valid content for all tiers', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]) {
       assertValidContent(personalizeNotification('order_update', tier));
     }
   });
 
   it('all tiers get the same order_update content', () => {
-    const results = ([BRONZE, SILVER, GOLD] as LoyaltyTier[]).map((t) =>
+    const results = ([BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]).map((t) =>
       personalizeNotification('order_update', t),
     );
     const titles = new Set(results.map((r) => r.title));
@@ -147,19 +149,19 @@ describe('personalizeNotification — order_update (not tier-personalized)', () 
 
 describe('personalizeNotification — gamification types', () => {
   it('streak_milestone: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]) {
       assertValidContent(personalizeNotification('streak_milestone', tier));
     }
   });
 
   it('quest_complete: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]) {
       assertValidContent(personalizeNotification('quest_complete', tier));
     }
   });
 
   it('daily_spin_reminder: all tiers return valid content', () => {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
+    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]) {
       assertValidContent(personalizeNotification('daily_spin_reminder', tier));
     }
   });
@@ -210,8 +212,8 @@ describe('personalizeNotification — shape for all type × tier combos', () => 
   ];
 
   for (const type of types) {
-    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTier[]) {
-      it(`${type} × ${tier}: returns valid title and body`, () => {
+    for (const tier of [BRONZE, SILVER, GOLD] as LoyaltyTierConfig[]) {
+      it(`${type} × ${tier.icon}: returns valid title and body`, () => {
         assertValidContent(personalizeNotification(type, tier));
       });
     }
