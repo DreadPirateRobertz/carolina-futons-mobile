@@ -8,6 +8,7 @@
  * when there are no orders yet.
  *
  * hq-mky: Filter tabs (All/Pending/Delivered/Cancelled), delivered-only reorder CTA.
+ * hq-xdn: Refactored onto useOrderHistory hook — screen is a pure presentation layer.
  */
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
@@ -17,20 +18,14 @@ import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
-import { useOrders, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/hooks/useOrders';
-import { useCart } from '@/hooks/useCart';
-import { useFutonModels } from '@/hooks/useFutonModels';
+import { ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/hooks/useOrders';
+import { useOrderHistory } from '@/hooks/useOrderHistory';
 import {
   MountainRefreshControl,
   MountainRefreshIndicator,
 } from '@/components/MountainRefreshControl';
 import { formatPrice } from '@/utils';
 import { ReorderConfirmationSheet } from '@/components/ReorderConfirmationSheet';
-import {
-  buildReorderPreview,
-  type ReorderPreview,
-  type ReorderLineItem,
-} from '@/services/reorderService';
 
 /** Filter tab config — Pending maps to processing (shipped is sub-state of pending). */
 const FILTER_TABS: { label: string; testID: string; value: OrderStatus | null }[] = [
@@ -56,8 +51,7 @@ export function OrderHistoryScreen({
 }: Props) {
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
-  const [sheetOrder, setSheetOrder] = useState<Order | null>(null);
-  const [reorderPreview, setReorderPreview] = useState<ReorderPreview | null>(null);
+
   const {
     orders: hookOrders,
     isLoading,
@@ -65,11 +59,14 @@ export function OrderHistoryScreen({
     refresh: hookRefresh,
     statusFilter,
     setStatusFilter,
-  } = useOrders();
-  const { addItem } = useCart();
-  const { getModel, getFabric } = useFutonModels();
+    sheetOrder,
+    reorderPreview,
+    handleReorder,
+    handleConfirmReorder,
+    handleDismissSheet,
+  } = useOrderHistory();
 
-  // Use prop orders or fall back to hook data (already sorted newest-first)
+  // Use prop orders (tests/stories) or fall back to hook data (sorted newest-first)
   const orders = ordersProp
     ? ordersProp
         .slice()
@@ -89,31 +86,6 @@ export function OrderHistoryScreen({
       day: 'numeric',
       year: 'numeric',
     });
-  }, []);
-
-  const handleReorder = useCallback(
-    (order: Order) => {
-      const preview = buildReorderPreview(order.items, getModel, getFabric);
-      setSheetOrder(order);
-      setReorderPreview(preview);
-    },
-    [getModel, getFabric],
-  );
-
-  const handleConfirmReorder = useCallback(
-    (items: ReorderLineItem[]) => {
-      for (const { model, fabric, lineItem } of items) {
-        addItem(model, fabric, lineItem.quantity);
-      }
-      setSheetOrder(null);
-      setReorderPreview(null);
-    },
-    [addItem],
-  );
-
-  const handleDismissSheet = useCallback(() => {
-    setSheetOrder(null);
-    setReorderPreview(null);
   }, []);
 
   const renderOrder = useCallback(
