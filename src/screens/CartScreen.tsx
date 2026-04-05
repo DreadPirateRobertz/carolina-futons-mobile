@@ -49,6 +49,8 @@ import { events } from '@/services/analytics';
 import { CartPointsSummary } from '@/components/CartPointsSummary';
 import { TierProgressBar } from '@/components/TierProgressBar';
 import { useLoyalty } from '@/hooks/useLoyalty';
+import { BundleSuggestion } from '@/components/BundleSuggestion';
+import { modelIdToProductId } from '@/utils';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -259,6 +261,14 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
             shadows={shadows}
           />
         ))}
+
+        {/* Bundle Suggestion — based on first cart item */}
+        {items.length > 0 && (
+          <BundleSuggestion
+            productId={modelIdToProductId(items[0].model.id)}
+            testID="bundle-suggestion-cart"
+          />
+        )}
 
         {/* Promo Code */}
         <View
