@@ -381,3 +381,105 @@ describe('VisualSearchResultsScreen — error state (embedding search fails)', (
     });
   });
 });
+
+// ── Crop handles (hq-ghe) ─────────────────────────────────────────────────────
+
+describe('VisualSearchResultsScreen — crop overlay (hq-ghe)', () => {
+  it('renders the crop handle overlay on the preview', async () => {
+    setupHappyPath();
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('crop-handle-overlay')).toBeTruthy();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+  });
+
+  it('renders all four crop handles', async () => {
+    setupHappyPath();
+    const { getByTestId } = renderScreen();
+    ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'].forEach((h) => {
+      expect(getByTestId(`crop-handle-${h}`)).toBeTruthy();
+    });
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+  });
+
+  it('renders aspect lock toggle button', async () => {
+    setupHappyPath();
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('crop-aspect-lock')).toBeTruthy();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+  });
+
+  it('renders crop reset button', async () => {
+    setupHappyPath();
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('crop-reset')).toBeTruthy();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+  });
+});
+
+// ── Confidence filter (hq-ghe) ────────────────────────────────────────────────
+
+describe('VisualSearchResultsScreen — confidence filter (hq-ghe)', () => {
+  it('does not show filter banner when all results pass threshold', async () => {
+    // All 3 MATCHES have score >= 0.60
+    setupHappyPath();
+    const { queryByTestId } = renderScreen();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+    expect(queryByTestId('confidence-filter-banner')).toBeNull();
+  });
+
+  it('shows filter banner when some results are below threshold', async () => {
+    mockFetchCatalogExport.mockResolvedValue({ success: true, products: CATALOG_PRODUCTS });
+    mockSearchByImage.mockResolvedValue({
+      success: true,
+      matches: [
+        { product: CATALOG_PRODUCTS[0], score: 0.95 },
+        { product: CATALOG_PRODUCTS[1], score: 0.30 }, // below default 0.60
+      ],
+    });
+
+    const { getByTestId } = renderScreen();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+    expect(getByTestId('confidence-filter-banner')).toBeTruthy();
+  });
+
+  it('hides low-confidence results by default (< 60%)', async () => {
+    mockFetchCatalogExport.mockResolvedValue({ success: true, products: CATALOG_PRODUCTS });
+    mockSearchByImage.mockResolvedValue({
+      success: true,
+      matches: [
+        { product: CATALOG_PRODUCTS[0], score: 0.95 },
+        { product: CATALOG_PRODUCTS[1], score: 0.30 }, // filtered
+      ],
+    });
+
+    const { queryByTestId } = renderScreen();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+
+    expect(queryByTestId(`visual-search-result-card-${CATALOG_PRODUCTS[0].id}`)).toBeTruthy();
+    expect(queryByTestId(`visual-search-result-card-${CATALOG_PRODUCTS[1].id}`)).toBeNull();
+  });
+
+  it('"Show all" button reveals hidden results', async () => {
+    mockFetchCatalogExport.mockResolvedValue({ success: true, products: CATALOG_PRODUCTS });
+    mockSearchByImage.mockResolvedValue({
+      success: true,
+      matches: [
+        { product: CATALOG_PRODUCTS[0], score: 0.95 },
+        { product: CATALOG_PRODUCTS[1], score: 0.30 },
+      ],
+    });
+
+    const { getByTestId, queryByTestId } = renderScreen();
+    await waitFor(() => expect(mockSearchByImage).toHaveBeenCalled());
+
+    // Low-confidence card hidden
+    expect(queryByTestId(`visual-search-result-card-${CATALOG_PRODUCTS[1].id}`)).toBeNull();
+
+    // Press "Show all" → threshold drops to 0
+    fireEvent.press(getByTestId('confidence-filter-show-all'));
+
+    await waitFor(() => {
+      expect(queryByTestId(`visual-search-result-card-${CATALOG_PRODUCTS[1].id}`)).toBeTruthy();
+    });
+  });
+});
