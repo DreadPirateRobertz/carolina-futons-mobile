@@ -1,79 +1,115 @@
 /**
- * Tests for QuestionCard component — cm-wf3.
+ * TDD tests for QuestionCard component — deacon-qbl.
+ * Covers: answered vs awaiting rendering, answer body, meta, accessibility.
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { QuestionCard } from '../QuestionCard';
-import { ThemeProvider } from '@/theme/ThemeProvider';
+import type { ProductQuestion } from '@/hooks/useProductQA';
 
-const ANSWERED_Q = {
+jest.mock('@/theme', () => ({
+  useTheme: () => ({
+    colors: {
+      espresso: '#3A2518',
+      espressoLight: '#6B5B50',
+      sunsetCoral: '#E8845C',
+      sandDark: '#D4C4A8',
+      overlay: 'rgba(0,0,0,0.15)',
+    },
+    borderRadius: { md: 8 },
+    typography: { bodyFamilyBold: 'System', bodyFamily: 'System' },
+    spacing: { sm: 8, md: 12 },
+  }),
+}));
+
+const ANSWERED: ProductQuestion = {
   id: 'q-1',
-  productId: 'asheville-full',
-  question: 'What size is best for a small room?',
-  answer: 'We recommend the Twin for rooms under 10 feet.',
+  productId: 'prod-asheville-full',
+  question: 'Does this come in king size?',
+  answer: 'Yes, available in Full, Queen, and King.',
   authorName: 'Jane D.',
   createdDate: '2026-03-01T10:00:00Z',
   answered: true,
 };
 
-const UNANSWERED_Q = {
+const UNANSWERED: ProductQuestion = {
   id: 'q-2',
-  productId: 'asheville-full',
-  question: 'Is delivery free?',
+  productId: 'prod-asheville-full',
+  question: 'Is assembly required?',
   answer: '',
   authorName: 'Bob S.',
   createdDate: '2026-03-10T08:00:00Z',
   answered: false,
 };
 
-function renderCard(q = ANSWERED_Q) {
-  return render(
-    <ThemeProvider>
-      <QuestionCard question={q} testID="qcard" />
-    </ThemeProvider>,
-  );
-}
+// ── Answered question ────────────────────────────────────────────────────────
 
 describe('QuestionCard — answered', () => {
   it('renders the question text', () => {
-    const { getByTestId } = renderCard();
-    expect(getByTestId('qcard-question').props.children).toContain('small room');
+    const { getByText } = render(<QuestionCard question={ANSWERED} />);
+    expect(getByText('Does this come in king size?')).toBeTruthy();
   });
 
-  it('renders the answer body', () => {
-    const { getByTestId } = renderCard();
-    expect(getByTestId('qcard-answer').props.children).toContain('Twin');
+  it('renders the answer text', () => {
+    const { getByText } = render(<QuestionCard question={ANSWERED} />);
+    expect(getByText('Yes, available in Full, Queen, and King.')).toBeTruthy();
   });
 
-  it('renders the author name', () => {
-    const { getByTestId } = renderCard();
-    expect(getByTestId('qcard-author').props.children).toContain('Jane D.');
+  it('shows Answered badge', () => {
+    const { getByTestId } = render(<QuestionCard question={ANSWERED} testID="qc" />);
+    expect(getByTestId('qc-answered-badge')).toBeTruthy();
   });
 
-  it('shows answered badge', () => {
-    const { getByTestId } = renderCard();
-    expect(getByTestId('qcard-answered-badge')).toBeTruthy();
+  it('does not show Awaiting answer badge', () => {
+    const { queryByTestId } = render(<QuestionCard question={ANSWERED} testID="qc" />);
+    expect(queryByTestId('qc-awaiting')).toBeNull();
   });
 
-  it('does not show awaiting-answer label', () => {
-    const { queryByTestId } = renderCard();
-    expect(queryByTestId('qcard-awaiting')).toBeNull();
+  it('renders author name', () => {
+    const { getByText } = render(<QuestionCard question={ANSWERED} />);
+    expect(getByText('Jane D.')).toBeTruthy();
+  });
+
+  it('uses provided testID as root testID', () => {
+    const { getByTestId } = render(<QuestionCard question={ANSWERED} testID="my-card" />);
+    expect(getByTestId('my-card')).toBeTruthy();
   });
 });
 
-describe('QuestionCard — unanswered', () => {
-  it('shows awaiting-answer label', () => {
-    const { getByTestId } = renderCard(UNANSWERED_Q);
-    expect(getByTestId('qcard-awaiting')).toBeTruthy();
+// ── Unanswered question ──────────────────────────────────────────────────────
+
+describe('QuestionCard — awaiting answer', () => {
+  it('renders the question text', () => {
+    const { getByText } = render(<QuestionCard question={UNANSWERED} />);
+    expect(getByText('Is assembly required?')).toBeTruthy();
   });
 
-  it('does not show answered badge', () => {
-    const { queryByTestId } = renderCard(UNANSWERED_Q);
-    expect(queryByTestId('qcard-answered-badge')).toBeNull();
+  it('shows Awaiting answer badge', () => {
+    const { getByTestId } = render(<QuestionCard question={UNANSWERED} testID="qc" />);
+    expect(getByTestId('qc-awaiting')).toBeTruthy();
   });
 
-  it('does not render answer text element', () => {
-    const { queryByTestId } = renderCard(UNANSWERED_Q);
-    expect(queryByTestId('qcard-answer')).toBeNull();
+  it('does not show Answered badge', () => {
+    const { queryByTestId } = render(<QuestionCard question={UNANSWERED} testID="qc" />);
+    expect(queryByTestId('qc-answered-badge')).toBeNull();
+  });
+
+  it('does not render answer text when empty', () => {
+    const { queryByTestId } = render(<QuestionCard question={UNANSWERED} testID="qc" />);
+    expect(queryByTestId('qc-answer')).toBeNull();
+  });
+
+  it('renders author name', () => {
+    const { getByText } = render(<QuestionCard question={UNANSWERED} />);
+    expect(getByText('Bob S.')).toBeTruthy();
+  });
+});
+
+// ── Default testID fallback ──────────────────────────────────────────────────
+
+describe('QuestionCard — testID fallback', () => {
+  it('uses question-card as default testID when none provided', () => {
+    const { getByTestId } = render(<QuestionCard question={ANSWERED} />);
+    expect(getByTestId('question-card')).toBeTruthy();
   });
 });

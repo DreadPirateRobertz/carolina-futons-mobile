@@ -43,9 +43,11 @@ export function useSearchSuggestions(
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  // Keep a ref so the effect always reads the current fallback without re-running
+  // Keep refs so the effect reads current values without re-running on identity changes
   const fallbackRef = useRef(fallbackSuggestions);
   fallbackRef.current = fallbackSuggestions;
+  const wixClientRef = useRef(wixClient);
+  wixClientRef.current = wixClient;
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -56,7 +58,7 @@ export function useSearchSuggestions(
       return;
     }
 
-    if (!useWix || !wixClient) {
+    if (!useWix || !wixClientRef.current) {
       // Local fallback — synchronous, no loading state
       setSuggestions(fallbackRef.current);
       setIsLoading(false);
@@ -70,7 +72,7 @@ export function useSearchSuggestions(
 
     setIsLoading(true);
 
-    wixClient
+    wixClientRef.current
       .queryProducts({ search: trimmed, limit: SUGGESTION_LIMIT })
       .then((result) => {
         if (controller.signal.aborted) return;
@@ -102,7 +104,7 @@ export function useSearchSuggestions(
     return () => {
       controller.abort();
     };
-  }, [query, useWix, wixClient]);
+  }, [query, useWix]);
 
   return { suggestions, isLoading };
 }

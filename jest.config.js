@@ -10,6 +10,9 @@ module.exports = {
   // Cap workers at 50% of CPUs to reduce resource contention under parallel load.
   // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
   maxWorkers: '50%',
+  // Kill and recycle workers that exceed this memory threshold, preventing OOM
+  // crashes in CI when large test suites (e.g. SearchScreen) accumulate heap.
+  workerIdleMemoryLimit: '512MB',
   setupFiles: ['./jest.setup.js'],
   setupFilesAfterEnv: ['./jest.setup.after.js'],
   transformIgnorePatterns: [
@@ -22,7 +25,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
   // TDD tests for unimplemented features — skip until modules exist
   // SearchScreen: skipped in CI — fake-timer accumulation causes SIGTERM OOM on GH Actions
-  //   (7741 other tests pass; tracked in gh issue #434 for SearchScreen test isolation fix)
+  //   (7741 other tests pass; tracked in gh issue for SearchScreen test isolation fix)
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/crew/',
