@@ -47,6 +47,9 @@ jest.mock('expo-file-system', () => ({
   readAsStringAsync: jest.fn(() => Promise.resolve('{}')),
   writeAsStringAsync: jest.fn(() => Promise.resolve()),
   deleteAsync: jest.fn(() => Promise.resolve()),
+  downloadAsync: jest.fn(() =>
+    Promise.resolve({ uri: '/mock-cache/product-img.jpg', status: 200 }),
+  ),
   createDownloadResumable: jest.fn(() => ({
     downloadAsync: jest.fn(() =>
       Promise.resolve({ uri: '/mock-cache/models3d/model.glb', status: 200 }),

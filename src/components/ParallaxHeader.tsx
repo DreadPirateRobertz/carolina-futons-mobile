@@ -16,6 +16,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { Image } from 'expo-image';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -57,10 +58,11 @@ export function ParallaxHeader({
   return (
     <View testID={testID} style={[styles.container, { height }]}>
       <AnimatedImage
-        source={{ uri: imageUri }}
+        source={{ uri: wixImageUrl(imageUri, { width: SCREEN_WIDTH * 2 }) ?? imageUri }}
         style={[styles.image, { height: height * 1.3 }, imageStyle]}
         contentFit="cover"
         cachePolicy="memory-disk"
+        testID="parallax-hero-image"
       />
       <Animated.View style={[styles.darkenOverlay, overlayStyle]} />
       <View style={styles.overlay}>{children}</View>

@@ -28,6 +28,7 @@ import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { formatPrice } from '@/utils';
+import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const SWIPE_DISMISS_TRANSLATION = 100;
 const SWIPE_DISMISS_VELOCITY = 500;
@@ -77,7 +78,7 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
       {item.imageUrl ? (
         <Image
           testID={`cartItemImage-${item.id}`}
-          source={{ uri: item.imageUrl }}
+          source={{ uri: wixImageUrl(item.imageUrl, { width: 112, height: 112 }) ?? item.imageUrl }}
           style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
           contentFit="cover"
         />

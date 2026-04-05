@@ -15,6 +15,7 @@ export type NotificationType =
   | 'order_update'
   | 'promotion'
   | 'back_in_stock'
+  | 'price_drop'
   | 'cart_reminder'
   | 'cart_recovery'
   | 'streak_milestone'
@@ -25,6 +26,7 @@ export interface NotificationPreferences {
   orderUpdates: boolean;
   promotions: boolean;
   backInStock: boolean;
+  priceDropAlerts: boolean;
   cartReminders: boolean;
   cartRecovery: boolean;
   streakMilestone: boolean;
@@ -36,6 +38,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   orderUpdates: true,
   promotions: true,
   backInStock: true,
+  priceDropAlerts: true,
   cartReminders: false,
   cartRecovery: false,
   streakMilestone: true,
@@ -70,6 +73,10 @@ export function getDeepLinkForNotification(
       return data?.productId
         ? `carolinafutons://product/${data.productId}`
         : 'carolinafutons://wishlist';
+    case 'price_drop':
+      return data?.product_slug
+        ? `carolinafutons://product/${data.product_slug}`
+        : 'carolinafutons://shop';
     case 'cart_reminder':
     case 'cart_recovery':
       return 'carolinafutons://cart';
@@ -119,6 +126,11 @@ export const NOTIFICATION_TYPE_CONFIG: Record<
     label: 'Back in Stock',
     description: 'Alerts when wishlisted items are available again',
     prefKey: 'backInStock',
+  },
+  price_drop: {
+    label: 'Price Drop Alerts',
+    description: 'Notify me when items I want drop in price',
+    prefKey: 'priceDropAlerts',
   },
   cart_reminder: {
     label: 'Cart Reminders',
@@ -230,6 +242,12 @@ export const ANDROID_CHANNEL_CONFIG: Record<NotificationType, AndroidChannelConf
     name: 'Back in Stock',
     description: 'Alerts when wishlisted items are available again',
     importance: 3, // DEFAULT — useful but not urgent
+  },
+  price_drop: {
+    id: 'price-drops',
+    name: 'Price Drop Alerts',
+    description: 'Alerts when a subscribed product drops in price',
+    importance: 4, // HIGH — actionable, time-sensitive savings opportunity
   },
   cart_reminder: {
     id: 'cart-reminders',
