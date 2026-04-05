@@ -77,10 +77,14 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
   });
 
   describe('Reorder button presence', () => {
-    it('renders a reorder button on each order card', () => {
-      const { getByTestId } = renderOrderHistory();
+    it('renders a reorder button only on delivered order cards', () => {
+      const { getByTestId, queryByTestId } = renderOrderHistory();
       for (const order of MOCK_ORDERS) {
-        expect(getByTestId(`order-reorder-${order.id}`)).toBeTruthy();
+        if (order.status === 'delivered') {
+          expect(getByTestId(`order-reorder-${order.id}`)).toBeTruthy();
+        } else {
+          expect(queryByTestId(`order-reorder-${order.id}`)).toBeNull();
+        }
       }
     });
 
@@ -155,9 +159,9 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
       );
     });
 
-    it('adds all items for a multi-item order', async () => {
-      const multiItemOrder = MOCK_ORDERS.find((o) => o.items.length > 1);
-      if (!multiItemOrder) return;
+    it('adds all items for a multi-item delivered order', async () => {
+      const multiItemOrder = MOCK_ORDERS.find((o) => o.items.length > 1 && o.status === 'delivered');
+      if (!multiItemOrder) return; // skip if fixture lacks such an order
 
       const { getByTestId } = renderOrderHistory();
       fireEvent.press(getByTestId(`order-reorder-${multiItemOrder.id}`));

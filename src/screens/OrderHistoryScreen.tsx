@@ -6,16 +6,18 @@
  * item summary, and total. Supports pull-to-refresh and navigates
  * to OrderDetailScreen on tap. Shows an empty state with a CTA
  * when there are no orders yet.
+ *
+ * hq-mky: Filter tabs (All/Pending/Delivered/Cancelled), delivered-only reorder CTA.
  */
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
 import { CategoryIllustration } from '@/components/illustrations/CategoryIllustration';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { SkeletonOrderList } from '@/components/SkeletonOrderCard';
-import { useOrders, ORDER_STATUS_CONFIG, type Order } from '@/hooks/useOrders';
+import { useOrders, ORDER_STATUS_CONFIG, type Order, type OrderStatus } from '@/hooks/useOrders';
 import { useCart } from '@/hooks/useCart';
 import { useFutonModels } from '@/hooks/useFutonModels';
 import {
@@ -30,6 +32,14 @@ import {
   type ReorderLineItem,
 } from '@/services/reorderService';
 
+/** Filter tab config — Pending maps to processing (shipped is sub-state of pending). */
+const FILTER_TABS: { label: string; testID: string; value: OrderStatus | null }[] = [
+  { label: 'All', testID: 'filter-tab-all', value: null },
+  { label: 'Pending', testID: 'filter-tab-pending', value: 'processing' },
+  { label: 'Delivered', testID: 'filter-tab-delivered', value: 'delivered' },
+  { label: 'Cancelled', testID: 'filter-tab-cancelled', value: 'cancelled' },
+];
+
 interface Props {
   orders?: Order[];
   onSelectOrder?: (orderId: string) => void;
@@ -37,7 +47,7 @@ interface Props {
   testID?: string;
 }
 
-/** Scrollable list of past orders with status badges and pull-to-refresh. */
+/** Scrollable list of past orders with status badges, filter tabs, and pull-to-refresh. */
 export function OrderHistoryScreen({
   orders: ordersProp,
   onSelectOrder,
@@ -48,7 +58,14 @@ export function OrderHistoryScreen({
   const [refreshing, setRefreshing] = useState(false);
   const [sheetOrder, setSheetOrder] = useState<Order | null>(null);
   const [reorderPreview, setReorderPreview] = useState<ReorderPreview | null>(null);
-  const { orders: hookOrders, isLoading, error: hookError, refresh: hookRefresh } = useOrders();
+  const {
+    orders: hookOrders,
+    isLoading,
+    error: hookError,
+    refresh: hookRefresh,
+    statusFilter,
+    setStatusFilter,
+  } = useOrders();
   const { addItem } = useCart();
   const { getModel, getFabric } = useFutonModels();
 
@@ -180,18 +197,20 @@ export function OrderHistoryScreen({
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.reorderButton,
-              { borderColor: colors.sunsetCoral, borderRadius: borderRadius.sm },
-            ]}
-            onPress={() => handleReorder(item)}
-            testID={`order-reorder-${item.id}`}
-            accessibilityLabel={`Reorder ${item.orderNumber}`}
-            accessibilityRole="button"
-          >
-            <Text style={[styles.reorderText, { color: colors.sunsetCoral }]}>Reorder</Text>
-          </TouchableOpacity>
+          {item.status === 'delivered' && (
+            <TouchableOpacity
+              style={[
+                styles.reorderButton,
+                { borderColor: colors.sunsetCoral, borderRadius: borderRadius.sm },
+              ]}
+              onPress={() => handleReorder(item)}
+              testID={`order-reorder-${item.id}`}
+              accessibilityLabel={`Reorder ${item.orderNumber}`}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.reorderText, { color: colors.sunsetCoral }]}>Reorder</Text>
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
       );
     },
@@ -266,6 +285,50 @@ export function OrderHistoryScreen({
       >
         My Orders
       </Text>
+
+      {/* Filter tab bar */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.filterBar, { paddingHorizontal: spacing.lg }]}
+        testID="filter-tab-bar"
+        accessibilityRole="tablist"
+      >
+        {FILTER_TABS.map((tab) => {
+          const isActive = statusFilter === tab.value;
+          return (
+            <TouchableOpacity
+              key={tab.testID}
+              testID={tab.testID}
+              onPress={() => setStatusFilter(tab.value)}
+              style={[
+                styles.filterTab,
+                {
+                  borderRadius: borderRadius.pill,
+                  backgroundColor: isActive ? colors.mountainBlue : darkPalette.surface,
+                  borderColor: isActive ? colors.mountainBlue : darkPalette.borderSubtle,
+                  marginRight: spacing.sm,
+                },
+              ]}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={`Filter by ${tab.label}`}
+            >
+              <Text
+                style={[
+                  styles.filterTabText,
+                  {
+                    color: isActive ? '#FFFFFF' : darkPalette.textMuted,
+                    fontFamily: typography.bodyFamilyBold,
+                  },
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
       <FlatList
         data={orders}
@@ -408,5 +471,16 @@ const styles = StyleSheet.create({
   reorderText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  filterBar: {
+    paddingVertical: 12,
+  },
+  filterTab: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+  },
+  filterTabText: {
+    fontSize: 13,
   },
 });
