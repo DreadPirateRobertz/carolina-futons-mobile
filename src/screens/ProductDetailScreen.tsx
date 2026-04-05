@@ -97,6 +97,8 @@ import { ProductBadge, normalizeBadgeType } from '@/components/ProductBadge';
 import { FreightNoticeBanner } from '@/components/FreightNoticeBanner';
 import { useRecentlyViewedSlugs } from '@/hooks/useRecentlyViewedSlugs';
 import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
+import { UGCGalleryStrip } from '@/components/UGCGalleryStrip';
+import { UGCPhotoSubmitModal } from '@/components/UGCPhotoSubmitModal';
 import { PointsChip } from '@/components/PointsChip';
 import { useProductResources } from '@/hooks/useProductResources';
 import { ProductResourcesSection } from '@/components/ProductResourcesSection';
@@ -167,6 +169,7 @@ export function ProductDetailScreen({
   const [sizeGuideExpanded, setSizeGuideExpanded] = useState(false);
   const [swatchModalVisible, setSwatchModalVisible] = useState(false);
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
+  const [ugcModalVisible, setUgcModalVisible] = useState(false);
   const [arToastVisible, setArToastVisible] = useState(false);
   const wixClient = useOptionalWixClient();
   const sizeGuideHeight = useSharedValue(0);
@@ -1530,6 +1533,27 @@ export function ProductDetailScreen({
           </TouchableOpacity>
         </View>
 
+        {/* UGC Photo Gallery */}
+        <View
+          style={[styles.section, { paddingHorizontal: spacing.lg }]}
+          testID="ugc-gallery-section"
+        >
+          <View style={styles.ugcSectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.espresso }]}>Customer Photos</Text>
+            <TouchableOpacity
+              onPress={() => setUgcModalVisible(true)}
+              testID="ugc-share-button"
+              accessibilityLabel="Share your room photo"
+              accessibilityRole="button"
+            >
+              <Text style={[styles.ugcShareLink, { color: colors.sunsetCoral }]}>
+                Share yours →
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <UGCGalleryStrip productId={catalogProductId ?? model.id} />
+        </View>
+
         {/* Recently Viewed rail */}
         <RecentlyViewedRail
           slugs={recentSlugs}
@@ -1573,6 +1597,11 @@ export function ProductDetailScreen({
         onClose={() => setBnplModalVisible(false)}
         price={totalPrice}
         testID="bnpl-modal"
+      />
+      <UGCPhotoSubmitModal
+        visible={ugcModalVisible}
+        productId={catalogProductId ?? model.id}
+        onClose={() => setUgcModalVisible(false)}
       />
       <PointsToast points={25} visible={arToastVisible} testID="ar-points-toast" />
       {arToastVisible && (
@@ -1988,6 +2017,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
+  ugcSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  ugcShareLink: { fontSize: 13, fontWeight: '600' },
   fabricName: {
     fontSize: 14,
     marginBottom: 10,
