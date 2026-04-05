@@ -27,6 +27,9 @@ import type { VisualSearchMatch } from '@/services/visualSearchEmbedding';
 import { captureException } from '@/services/crashReporting';
 import { useOptionalWixClient } from '@/services/wix';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
+import { useCropUI } from '@/hooks/useCropUI';
+import { useConfidenceFilter } from '@/hooks/useConfidenceFilter';
+import { CropHandleOverlay } from '@/components/CropHandleOverlay';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type Route = RouteProp<RootStackParamList, 'VisualSearchResults'>;
@@ -50,6 +53,18 @@ export function VisualSearchResultsScreen() {
 
   const [state, setState] = useState<SearchState>({ status: 'loading' });
   const retryRef = useRef(0);
+
+  const {
+    cropRect,
+    aspectRatioLocked,
+    updateHandle,
+    toggleAspectRatioLock,
+    resetCrop,
+  } = useCropUI();
+
+  const allMatches = state.status === 'success' ? state.matches : [];
+  const { filteredMatches, hiddenCount, threshold, setThreshold } =
+    useConfidenceFilter(allMatches);
 
   const runSearch = useCallback(async () => {
     setState({ status: 'loading' });
@@ -118,19 +133,45 @@ export function VisualSearchResultsScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Captured image preview */}
-      <Image
-        testID="visual-search-preview-image"
-        source={{ uri: imageUri }}
-        style={styles.previewImage}
-        resizeMode="cover"
-        accessibilityLabel="Your captured photo"
-      />
+      {/* Captured image preview with crop handles */}
+      <View style={styles.previewContainer} testID="visual-search-preview-container">
+        <Image
+          testID="visual-search-preview-image"
+          source={{ uri: imageUri }}
+          style={styles.previewImage}
+          resizeMode="cover"
+          accessibilityLabel="Your captured photo"
+        />
+        <CropHandleOverlay
+          cropRect={cropRect}
+          aspectRatioLocked={aspectRatioLocked}
+          onHandleMove={updateHandle}
+          onToggleAspectLock={toggleAspectRatioLock}
+          onReset={resetCrop}
+        />
+      </View>
+
+      {/* Confidence filter label */}
+      {state.status === 'success' && hiddenCount > 0 && (
+        <View testID="confidence-filter-banner" style={styles.filterBanner}>
+          <Text style={styles.filterBannerText}>
+            {hiddenCount} low-confidence result{hiddenCount === 1 ? '' : 's'} hidden (≥
+            {Math.round(threshold * 100)}% shown)
+          </Text>
+          <TouchableOpacity
+            testID="confidence-filter-show-all"
+            onPress={() => setThreshold(0)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.filterBannerLink}>Show all</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Content */}
       {state.status === 'loading' && <LoadingState />}
       {state.status === 'success' && (
-        <ResultsList matches={state.matches} onProductPress={handleProductPress} />
+        <ResultsList matches={filteredMatches} onProductPress={handleProductPress} />
       )}
       {state.status === 'empty' && <EmptyState />}
       {state.status === 'error' && <ErrorState message={state.message} onRetry={handleRetry} />}
@@ -264,10 +305,33 @@ const styles = StyleSheet.create({
     color: '#2C1A0E',
     lineHeight: 36,
   },
+  previewContainer: {
+    width: '100%',
+    height: 160,
+  },
   previewImage: {
     width: '100%',
     height: 160,
     backgroundColor: '#D4C4A8',
+  },
+  filterBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    backgroundColor: '#FFF3EA',
+    gap: 8,
+  },
+  filterBannerText: {
+    fontSize: 12,
+    color: '#6B4C30',
+  },
+  filterBannerLink: {
+    fontSize: 12,
+    color: '#E8845C',
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   loadingContainer: {
     flex: 1,
