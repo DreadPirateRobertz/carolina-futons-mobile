@@ -26,10 +26,12 @@ interface Props {
   price: number;
   /** Called when the user taps the Affirm deep-link CTA. Wire to useAffirmDeepLink.openCalculator. */
   onAffirmPress?: () => void;
+  /** Called when the user taps the Afterpay deep-link CTA. Wire to useAfterpayDeepLink.openCalculator. */
+  onAfterpayPress?: () => void;
   testID?: string;
 }
 
-export function FinancingCalculator({ price, onAffirmPress, testID = 'financing-calculator' }: Props) {
+export function FinancingCalculator({ price, onAffirmPress, onAfterpayPress, testID = 'financing-calculator' }: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const [provider, setProvider] = useState<Provider>('affirm');
 
@@ -213,6 +215,19 @@ export function FinancingCalculator({ price, onAffirmPress, testID = 'financing-
             <Text style={[styles.disclaimer, { color: colors.espressoLight }]}>
               Interest-free. No impact on credit score.
             </Text>
+            {onAfterpayPress && (
+              <TouchableOpacity
+                testID="fin-afterpay-deeplink-cta"
+                onPress={onAfterpayPress}
+                accessibilityRole="button"
+                accessibilityLabel="Open Afterpay for full payment details"
+                style={styles.deepLinkCta}
+              >
+                <Text style={[styles.deepLinkCtaText, { color: colors.mountainBlue }]}>
+                  See full Afterpay details →
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
       </View>
