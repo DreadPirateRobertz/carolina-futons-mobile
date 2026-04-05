@@ -63,6 +63,15 @@ jest.mock('@/hooks/useCollections', () => ({
   }),
 }));
 
+// useSyncedWishlist wraps useWishlist + Wix sync. Screen tests cover UI only;
+// sync behaviour is tested in useSyncedWishlist.test.tsx.
+jest.mock('@/hooks/useSyncedWishlist', () => ({
+  useSyncedWishlist: (_opts: unknown) => {
+    const { useWishlist } = require('@/hooks/useWishlist');
+    return { ...useWishlist(), pendingCount: 0, isSyncing: false, syncNow: jest.fn() };
+  },
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),

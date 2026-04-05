@@ -36,6 +36,15 @@ jest.mock('@/components/ProductCard', () => {
   };
 });
 
+// useSyncedWishlist wraps useWishlist + Wix sync. Screen tests cover UI only;
+// sync behaviour is tested in useSyncedWishlist.test.tsx.
+jest.mock('@/hooks/useSyncedWishlist', () => ({
+  useSyncedWishlist: (_opts: unknown) => {
+    const { useWishlist } = require('@/hooks/useWishlist');
+    return { ...useWishlist(), pendingCount: 0, isSyncing: false, syncNow: jest.fn() };
+  },
+}));
+
 const product1 = PRODUCTS[0]; // prod-asheville-full  $349
 const product2 = PRODUCTS[1]; // prod-blue-ridge-queen $449
 const product3 = PRODUCTS[2]; // prod-pisgah-twin      $279
