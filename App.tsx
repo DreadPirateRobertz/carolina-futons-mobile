@@ -138,7 +138,6 @@ function App() {
                         <NotificationProvider>
                           <CartAbandonmentBridge />
                           <StreakMilestoneBridge />
-                          <PostPurchaseReviewBridge />
                           <OnboardingStyleModalBridge />
                           <NPSSurveyBridge />
                           <PremiumProvider>
@@ -163,6 +162,7 @@ function App() {
                                     <DeepLinkProvider>
                                       <OfflineBanner />
                                       <AppNavigator />
+                                      <PostPurchaseReviewBridge />
                                       <MiniCartDrawerHost
                                         navigationRef={navigationRef}
                                         currentRoute={currentRoute}
