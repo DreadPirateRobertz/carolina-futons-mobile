@@ -67,6 +67,7 @@ import { modelIdToProductId, productIdToModelId, productId as toProductId } from
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { BundleRow } from '@/components/BundleRow';
 import { useBundleDeals } from '@/hooks/useBundleDeals';
+import { BundleSuggestion } from '@/components/BundleSuggestion';
 import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
 import { DeliveryEstimateWidget } from '@/components/DeliveryEstimateWidget';
 import { useShippingEstimate } from '@/hooks/useShippingEstimate';
@@ -977,6 +978,9 @@ export function ProductDetailScreen({
           onProductPress={handleBundleProductPress}
           testID="bundle-row"
         />
+
+        {/* Bundle Suggestion — curated bundle with savings + coupon */}
+        <BundleSuggestion productId={catalogProductId} testID="bundle-suggestion-pdp" />
 
         {/* Dimensions */}
         <View style={[styles.section, { paddingHorizontal: spacing.lg }]}>
