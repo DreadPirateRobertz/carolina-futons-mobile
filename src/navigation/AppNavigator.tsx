@@ -199,6 +199,11 @@ const WarrantyRegistrationScreen = lazy(() =>
     default: withScreenErrorBoundary(m.WarrantyRegistrationScreen, 'WarrantyRegistration'),
   })),
 );
+const NPSSummaryScreen = lazy(() =>
+  import('@/screens/NPSSummaryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.NPSSummaryScreen, 'NPSSummary'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -253,6 +258,7 @@ export type RootStackParamList = {
   VisualSearch: undefined;
   VisualSearchResults: { imageUri: string };
   WarrantyRegistration: { orderId: string; orderNumber: string; productName?: string };
+  NPSSummary: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -557,6 +563,11 @@ export function AppNavigator() {
               />
             )}
           </Stack.Screen>
+          <Stack.Screen
+            name="NPSSummary"
+            component={NPSSummaryScreen}
+            options={{ title: 'NPS Summary' }}
+          />
         </Stack.Navigator>
       </Suspense>
     </BadgeToastProvider>
