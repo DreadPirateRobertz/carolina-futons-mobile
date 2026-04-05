@@ -8,10 +8,20 @@
  * this hook returns editorially curated pairings — e.g. sofa + pillows,
  * frame + mattress — stored in the CMS by the merchandising team.
  *
- * Results are capped at 4 products to fit the horizontal strip AC.
+ * Schema (cm-mmy):
+ *   - productId: string         — the source product
+ *   - recommendedProductIds: string  — JSON-encoded string[]
+ *   - pairingType: 'complete_the_look' | 'bundle' | 'style_match'
+ *   - sortOrder: number         — display order (ASC)
+ *   - updatedAt: string         — ISO 8601
+ *
+ * This hook filters pairingType === 'complete_the_look', parses the JSON
+ * array, resolves against the local product catalog, and caps at 4 results.
+ *
  * Falls back to empty array (non-fatal) when Wix is unavailable.
  *
  * cm-3n3: Complete the look — complementary product recommendations on PDP.
+ * cm-mmy: Updated to official ProductRecommendations schema.
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -21,6 +31,7 @@ import { captureException } from '@/services/crashReporting';
 
 const MAX_RESULTS = 4;
 const COLLECTION_ID = 'ProductRecommendations';
+const PAIRING_TYPE = 'complete_the_look';
 
 export interface CompleteTheLookResult {
   products: Product[];
@@ -29,10 +40,32 @@ export interface CompleteTheLookResult {
   error: string | null;
 }
 
+interface RecommendationRow {
+  productId: string;
+  recommendedProductIds: string; // JSON-encoded string[]
+  pairingType: string;
+  sortOrder: number;
+  updatedAt: string;
+}
+
+/**
+ * Parse the recommendedProductIds JSON field safely.
+ * Returns empty array for any malformed or non-array value.
+ */
+function parseRecommendedIds(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === 'string');
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Returns curated complementary products for a given productId.
- * Queries the Wix ProductRecommendations CMS collection.
- * Returns empty array when Wix is unavailable or no recommendations exist.
+ * Queries the Wix ProductRecommendations CMS collection filtered to
+ * pairingType=complete_the_look, sorted by sortOrder ASC.
  */
 export function useCompleteTheLook(productId: string): CompleteTheLookResult {
   const [products, setProducts] = useState<Product[]>([]);
@@ -72,21 +105,30 @@ export function useCompleteTheLook(productId: string): CompleteTheLookResult {
 
     (async () => {
       try {
-        const { items } = await client.queryData<{
-          productId: string;
-          recommendedProductId: string;
-          position?: number;
-        }>(COLLECTION_ID, {
-          filter: { productId: { $eq: productId } },
-          sort: [{ fieldName: 'position', order: 'ASC' }],
-          limit: MAX_RESULTS,
+        const { items } = await client.queryData<RecommendationRow>(COLLECTION_ID, {
+          filter: {
+            productId: { $eq: productId },
+            pairingType: { $eq: PAIRING_TYPE },
+          },
+          sort: [{ fieldName: 'sortOrder', order: 'ASC' }],
         });
 
-        // Resolve each recommendedProductId against the local catalog
+        // Sort rows by sortOrder ASC client-side as a defensive measure
+        // (Wix sort is requested but not guaranteed by the mock in tests).
+        const sorted = [...items].sort(
+          (a, b) => (a.data.sortOrder ?? 0) - (b.data.sortOrder ?? 0),
+        );
+
+        // Flatten all recommendedProductIds across rows, resolve against local
+        // catalog, cap at MAX_RESULTS.
         const resolved: Product[] = [];
-        for (const item of items) {
-          const product = PRODUCTS.find((p) => p.id === item.data.recommendedProductId);
-          if (product) resolved.push(product);
+        for (const item of sorted) {
+          const ids = parseRecommendedIds(item.data.recommendedProductIds);
+          for (const id of ids) {
+            if (resolved.length >= MAX_RESULTS) break;
+            const product = PRODUCTS.find((p) => p.id === id);
+            if (product) resolved.push(product);
+          }
           if (resolved.length >= MAX_RESULTS) break;
         }
 
