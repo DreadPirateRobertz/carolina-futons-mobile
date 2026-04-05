@@ -118,7 +118,7 @@ describe('securityAudit', () => {
       expect(mockCaptureException).toHaveBeenCalledWith(
         expect.any(Error),
         'warning',
-        expect.objectContaining({ violations: expect.arrayContaining(['leaked_token_key']) }),
+        expect.objectContaining({ violations: 'leaked_token_key' }),
       );
     });
 
