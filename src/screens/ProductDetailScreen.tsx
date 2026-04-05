@@ -100,6 +100,7 @@ import { RecentlyViewedRail } from '@/components/RecentlyViewedRail';
 import { UGCGalleryStrip } from '@/components/UGCGalleryStrip';
 import { UGCPhotoSubmitModal } from '@/components/UGCPhotoSubmitModal';
 import { PointsChip } from '@/components/PointsChip';
+import { useLoyaltyEarnEstimate } from '@/hooks/useLoyaltyEarnEstimate';
 import { useProductResources } from '@/hooks/useProductResources';
 import { ProductResourcesSection } from '@/components/ProductResourcesSection';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -240,6 +241,7 @@ export function ProductDetailScreen({
   const [qaInput, setQaInput] = useState('');
 
   const totalPrice = model.basePrice + selectedFabric.price;
+  const { earnRate: loyaltyEarnRate } = useLoyaltyEarnEstimate(totalPrice);
 
   // cm-xh9: Resolve videoUri from catalog product; parse wix:video:// if needed.
   // PLACEHOLDER: Real Wix Media video URIs will come from Wix Studio Media Manager.
@@ -821,6 +823,7 @@ export function ProductDetailScreen({
           <PointsChip
             price={totalPrice}
             isAuthenticated={isAuthenticated}
+            earnRate={loyaltyEarnRate}
             testID="pdp-points-chip"
           />
           <BNPLHeroSurface
