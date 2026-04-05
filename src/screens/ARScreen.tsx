@@ -20,16 +20,14 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
-  Share,
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
-import ViewShot, { captureRef } from 'react-native-view-shot';
-import * as MediaLibrary from 'expo-media-library';
-import * as Sharing from 'expo-sharing';
+import ViewShot from 'react-native-view-shot';
+import { useARCapture } from '@/hooks/useARCapture';
 import {
   useFutonModels,
   useProductByModelId,
@@ -116,7 +114,6 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Product lookup via hook — replaces direct PRODUCTS.find(...)
   const { product: currentProduct } = useProductByModelId(selectedModel?.id);
   const [showDimensions, setShowDimensions] = useState(false);
-  const [isCapturing, setIsCapturing] = useState(false);
   const [wishlistSaved, setWishlistSaved] = useState(false);
   const [showProductPicker, setShowProductPicker] = useState(false);
   const [isPlaced, setIsPlaced] = useState(false);
@@ -128,6 +125,32 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   const [cameraError, setCameraError] = useState(false);
 
   const viewShotRef = useRef<ViewShot>(null);
+
+  // AR capture hook — hq-x7r
+  const arCapture = useARCapture({
+    viewShotRef,
+    modelId: selectedModel?.id,
+    fabricId: selectedFabric?.id,
+  });
+
+  // Translate hook errors → Alert
+  useEffect(() => {
+    if (!arCapture.error) return;
+    if (arCapture.error === 'permission-denied') {
+      Alert.alert('Permission Required', 'Please allow photo library access to save AR screenshots.');
+    } else {
+      Alert.alert('Capture Failed', 'Could not capture the AR scene. Please try again.');
+    }
+    arCapture.clearError();
+  }, [arCapture.error]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Show success Alert after a successful gallery save
+  useEffect(() => {
+    if (arCapture.saveStatus === 'saved') {
+      Alert.alert('Saved', 'AR screenshot saved to your photo library.');
+    }
+  }, [arCapture.saveStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const wishlist = useWishlist();
   const cart = useCart();
 
@@ -289,74 +312,15 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     ],
   );
 
-  const captureScene = useCallback(async (): Promise<string | null> => {
-    if (!viewShotRef.current) return null;
-    try {
-      setIsCapturing(true);
-      const uri = await captureRef(viewShotRef, {
-        format: 'png',
-        quality: 1,
-      });
-      if (selectedModel && selectedFabric) events.arScreenshot(selectedModel.id, selectedFabric.id);
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      return uri;
-    } catch {
-      Alert.alert('Capture Failed', 'Could not capture the AR scene. Please try again.');
-      return null;
-    } finally {
-      setIsCapturing(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModel?.id, selectedFabric?.id]);
-
+  // hq-x7r: delegates to useARCapture hook (capture/share/save-to-gallery)
   const handleShare = useCallback(async () => {
-    const uri = await captureScene();
-    if (!uri) return;
-
     const message = `Check out the ${selectedModel?.name} in ${selectedFabric?.name} — ${formatPrice((selectedModel?.basePrice ?? 0) + (selectedFabric?.price ?? 0))}!\n\nViewed in AR with Carolina Futons\ncarolinafutons.com`;
-
-    try {
-      if (Platform.OS !== 'web' && (await Sharing.isAvailableAsync())) {
-        await Sharing.shareAsync(uri, {
-          mimeType: 'image/png',
-          dialogTitle: 'Share your AR view',
-        });
-      } else {
-        await Share.share({ message, url: uri });
-      }
-      if (selectedModel && selectedFabric) events.arShare(selectedModel.id, selectedFabric.id);
-    } catch {
-      // User cancelled share — not an error
-    }
-  }, [captureScene, selectedModel, selectedFabric]);
+    await arCapture.share(message);
+  }, [arCapture, selectedModel, selectedFabric]);
 
   const handleSaveToGallery = useCallback(async () => {
-    const uri = await captureScene();
-    if (!uri) return;
-
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'Please allow photo library access to save AR screenshots.',
-        );
-        return;
-      }
-      await MediaLibrary.saveToLibraryAsync(uri);
-      if (selectedModel && selectedFabric)
-        events.arSaveToGallery(selectedModel.id, selectedFabric.id);
-      if (Platform.OS !== 'web') {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
-      Alert.alert('Saved', 'AR screenshot saved to your photo library.');
-    } catch {
-      Alert.alert('Save Failed', 'Could not save to your photo library. Please try again.');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [captureScene, selectedModel?.id, selectedFabric?.id]);
+    await arCapture.saveToGallery();
+  }, [arCapture]);
 
   const handleToggleWishlist = useCallback(() => {
     if (!currentProduct) return;
@@ -528,7 +492,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
           onBrowseProducts={handleOpenProductPicker}
           isInWishlist={isInWishlist}
           wishlistSaved={wishlistSaved}
-          isCapturing={isCapturing}
+          isCapturing={arCapture.isCapturing}
           isComparing={false}
           onToggleCompare={handleToggleCompare}
           onToggleMaterialSelector={handleToggleMaterialSelector}
@@ -948,7 +912,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
         onBrowseProducts={handleOpenProductPicker}
         isInWishlist={isInWishlist}
         wishlistSaved={wishlistSaved}
-        isCapturing={isCapturing}
+        isCapturing={arCapture.isCapturing}
         isComparing={compareModel !== null || showComparePicker}
         onToggleCompare={handleToggleCompare}
         onToggleMaterialSelector={handleToggleMaterialSelector}
