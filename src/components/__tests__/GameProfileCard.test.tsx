@@ -11,6 +11,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { GameProfileCard } from '../GameProfileCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 // ── Mock ──────────────────────────────────────────────────────────────────────
 
@@ -27,7 +28,7 @@ const POPULATED = {
   nextMilestoneDays: 30,
   rank: 5,
   totalPoints: 1250,
-  tier: 'silver' as const,
+  tier: LOYALTY_TIERS[1], // Mountain Guide
   streakLoading: false,
   rankLoading: false,
   pointsLoading: false,

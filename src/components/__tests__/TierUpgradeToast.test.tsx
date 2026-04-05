@@ -10,6 +10,7 @@ import { StyleSheet } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { TierUpgradeToast } from '../TierUpgradeToast';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 const mockInsets = { bottom: 0, top: 0, left: 0, right: 0 };
 jest.mock('react-native-safe-area-context', () => ({
@@ -42,34 +43,34 @@ function renderToast(props: React.ComponentProps<typeof TierUpgradeToast>) {
 
 describe('TierUpgradeToast', () => {
   it('renders the tier name in the label', () => {
-    const { getByTestId } = renderToast({ tier: 'silver', visible: true });
-    expect(getByTestId('tier-upgrade-toast-label').props.children).toContain('silver');
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[1], visible: true });
+    expect(getByTestId('tier-upgrade-toast-label').props.children).toContain('Mountain Guide');
   });
 
-  it('renders for gold tier', () => {
-    const { getByTestId } = renderToast({ tier: 'gold', visible: true });
-    expect(getByTestId('tier-upgrade-toast-label').props.children).toContain('gold');
+  it('renders for Summit Master tier', () => {
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[2], visible: true });
+    expect(getByTestId('tier-upgrade-toast-label').props.children).toContain('Summit Master');
   });
 
   it('is accessible when visible', () => {
-    const { getByTestId } = renderToast({ tier: 'silver', visible: true });
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[1], visible: true });
     const toast = getByTestId('tier-upgrade-toast');
-    expect(toast.props.accessibilityLabel).toMatch(/silver/i);
+    expect(toast.props.accessibilityLabel).toMatch(/Mountain Guide/i);
   });
 
   it('hides accessibility when not visible', () => {
-    const { getByTestId } = renderToast({ tier: 'silver', visible: false });
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[1], visible: false });
     const toast = getByTestId('tier-upgrade-toast', { includeHiddenElements: true });
     expect(toast.props.accessibilityElementsHidden).toBe(true);
   });
 
   it('accepts optional testID override', () => {
-    const { getByTestId } = renderToast({ tier: 'gold', visible: true, testID: 'custom-tier' });
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[2], visible: true, testID: 'custom-tier' });
     expect(getByTestId('custom-tier')).toBeTruthy();
   });
 
   it('renders without crashing when not visible', () => {
-    expect(() => renderToast({ tier: 'bronze', visible: false })).not.toThrow();
+    expect(() => renderToast({ tier: LOYALTY_TIERS[0], visible: false })).not.toThrow();
   });
 
   // ── Safe area insets (hq-gbo6f) ───────────────────────────────────
@@ -80,7 +81,7 @@ describe('TierUpgradeToast', () => {
 
   it('adds safe area inset to bottom position (non-zero inset)', () => {
     mockInsets.bottom = 34;
-    const { getByTestId } = renderToast({ tier: 'silver', visible: true });
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[1], visible: true });
     const toast = getByTestId('tier-upgrade-toast');
     const flatStyle = StyleSheet.flatten(toast.props.style);
     expect(flatStyle.bottom).toBe(134);
@@ -88,7 +89,7 @@ describe('TierUpgradeToast', () => {
 
   it('uses base bottom (100) when safe area inset is zero', () => {
     mockInsets.bottom = 0;
-    const { getByTestId } = renderToast({ tier: 'gold', visible: true });
+    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[2], visible: true });
     const toast = getByTestId('tier-upgrade-toast');
     const flatStyle = StyleSheet.flatten(toast.props.style);
     expect(flatStyle.bottom).toBe(100);

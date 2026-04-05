@@ -16,28 +16,22 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { getAccessoryById } from '@/data/accessories';
 
 const SIZE_MAP = { sm: 32, md: 64, lg: 128 } as const;
 
-const TIER_BG: Record<LoyaltyTier, string> = {
-  bronze: '#CD7F32',
-  silver: '#9EA7AD',
-  gold: '#D4AF37',
-};
-
 interface Props {
   size?: keyof typeof SIZE_MAP;
   equippedAccessoryId?: string | null;
-  tier?: LoyaltyTier;
+  tier?: LoyaltyTierConfig;
   testID?: string;
 }
 
 export function AvatarDisplay({ size = 'md', equippedAccessoryId, tier, testID }: Props) {
   const { borderRadius } = useTheme();
   const px = SIZE_MAP[size];
-  const bgColor = tier ? TIER_BG[tier] : '#4878A8';
+  const bgColor = tier ? tier.color : '#4878A8';
 
   const scale = useSharedValue(1);
 
@@ -56,7 +50,7 @@ export function AvatarDisplay({ size = 'md', equippedAccessoryId, tier, testID }
     <Animated.View
       testID={testID ?? 'avatar-display'}
       accessibilityRole="image"
-      accessibilityLabel={`Avatar${tier ? ` — ${tier} tier` : ''}${accessory ? `, wearing ${accessory.name}` : ''}`}
+      accessibilityLabel={`Avatar${tier ? ` — ${tier.name} tier` : ''}${accessory ? `, wearing ${accessory.name}` : ''}`}
       style={[
         styles.container,
         animatedStyle,

@@ -19,8 +19,6 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { useGameProfile } from '@/hooks/useGameProfile';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
-
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 export interface GameProfileCardProps {
@@ -28,20 +26,6 @@ export interface GameProfileCardProps {
   onNavigateToPointsHistory?: () => void;
   testID?: string;
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const TIER_COLORS: Record<LoyaltyTier, string> = {
-  bronze: '#CD7F32',
-  silver: '#A8A9AD',
-  gold: '#FFD700',
-};
-
-const TIER_LABELS: Record<LoyaltyTier, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-};
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -154,20 +138,20 @@ export function GameProfileCard({
           <TouchableOpacity
             testID="points-chip"
             onPress={onNavigateToPointsHistory}
-            accessibilityLabel={`${totalPoints} points, ${TIER_LABELS[tier]} tier, tap to view history`}
+            accessibilityLabel={`${totalPoints} points, ${tier.name} tier, tap to view history`}
             accessibilityRole="button"
             style={[
               styles.chip,
               {
                 backgroundColor: darkPalette.surface,
                 borderRadius: borderRadius.md,
-                borderColor: TIER_COLORS[tier],
+                borderColor: tier.color,
               },
             ]}
             activeOpacity={0.7}
           >
             <Text style={styles.chipIcon}>⭐</Text>
-            <Text testID="points-value" style={[styles.chipValue, { color: TIER_COLORS[tier] }]}>
+            <Text testID="points-value" style={[styles.chipValue, { color: tier.color }]}>
               {totalPoints}
             </Text>
             <Text style={[styles.chipLabel, { color: darkPalette.textMuted }]}>pts</Text>
@@ -177,17 +161,17 @@ export function GameProfileCard({
         {/* Tier badge */}
         <View
           testID="tier-badge"
-          accessibilityLabel={`${TIER_LABELS[tier]} tier`}
+          accessibilityLabel={`${tier.name} tier`}
           style={[
             styles.tierBadge,
             {
               backgroundColor: darkPalette.surface,
               borderRadius: borderRadius.pill,
-              borderColor: TIER_COLORS[tier],
+              borderColor: tier.color,
             },
           ]}
         >
-          <Text style={[styles.tierLabel, { color: TIER_COLORS[tier] }]}>{TIER_LABELS[tier]}</Text>
+          <Text style={[styles.tierLabel, { color: tier.color }]}>{tier.name}</Text>
         </View>
       </View>
 

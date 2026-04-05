@@ -15,11 +15,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { WixAuthService } from '@/services/wix/wixAuth';
 import { captureException } from '@/services/crashReporting';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import { getTierForPoints, LOYALTY_TIERS } from '@/data/loyaltyTiers';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 export interface LoyaltyCardData {
   points: number;
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   nextTierThreshold: number;
   progressPercent: number;
   /** True when the member has had any activity (points earned, even if spent back to 0). */
@@ -33,24 +34,16 @@ export interface UseLoyaltyCardResult extends LoyaltyCardData {
 }
 
 export interface UseLoyaltyCardOptions {
-  onTierUp?: (event: { from: LoyaltyTier; to: LoyaltyTier }) => void;
+  onTierUp?: (event: { from: LoyaltyTierConfig; to: LoyaltyTierConfig }) => void;
 }
-
-const TIER_RANK: Record<LoyaltyTier, number> = { bronze: 0, silver: 1, gold: 2 };
 
 const SAFE_DEFAULTS: LoyaltyCardData = {
   points: 0,
-  tier: 'bronze',
+  tier: getTierForPoints(0),
   nextTierThreshold: 500,
   progressPercent: 0,
   hasActivity: false,
 };
-
-function normalizeTier(raw: string): LoyaltyTier {
-  const lower = raw?.toLowerCase() ?? 'bronze';
-  if (lower === 'silver' || lower === 'gold') return lower;
-  return 'bronze';
-}
 
 export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardResult {
   const [data, setData] = useState<LoyaltyCardData>(SAFE_DEFAULTS);
@@ -59,7 +52,7 @@ export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardR
 
   const onTierUpRef = useRef(options?.onTierUp);
   onTierUpRef.current = options?.onTierUp;
-  const prevTierRef = useRef<LoyaltyTier | null>(null);
+  const prevTierRef = useRef<LoyaltyTierConfig | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -85,11 +78,11 @@ export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardR
       const points = typeof raw.points === 'number' ? raw.points : 0;
       const totalEarned = typeof raw.totalEarned === 'number' ? raw.totalEarned : 0;
       const hasActivity = raw.hasActivity ?? (points > 0 || totalEarned > 0);
-      const newTier = normalizeTier(raw.tier);
+      const newTier = getTierForPoints(points);
 
       const prevTier = prevTierRef.current;
       prevTierRef.current = newTier;
-      if (prevTier !== null && onTierUpRef.current && TIER_RANK[newTier] > TIER_RANK[prevTier]) {
+      if (prevTier !== null && onTierUpRef.current && LOYALTY_TIERS.indexOf(newTier) > LOYALTY_TIERS.indexOf(prevTier)) {
         onTierUpRef.current({ from: prevTier, to: newTier });
       }
 

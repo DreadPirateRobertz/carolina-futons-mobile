@@ -23,19 +23,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useLoyalty, type LoyaltyTier } from '@/hooks/useLoyalty';
+import { useLoyalty } from '@/hooks/useLoyalty';
 import { useStreak } from '@/hooks/useStreak';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import type { ServerTriggers } from '@/services/gamificationApi';
 
 export type { ServerTriggers };
 
 const STORAGE_KEY = '@cf_last_known_tier';
-
-const TIER_RANK: Record<LoyaltyTier, number> = {
-  bronze: 0,
-  silver: 1,
-  gold: 2,
-};
 
 export interface ChallengeCompletedItem {
   challengeId: string;
@@ -44,7 +40,7 @@ export interface ChallengeCompletedItem {
 }
 
 export interface TriggerMoments {
-  tierChanged: LoyaltyTier | null;
+  tierChanged: LoyaltyTierConfig | null;
   /** True when the user has a multi-day streak (≥2) worth protecting. Session-only dismiss. */
   streakDanger: boolean;
   challengeCompleted: ChallengeCompletedItem | null;
@@ -66,7 +62,7 @@ export interface UseTriggerMomentsResult {
 export function useTriggerMoments(): UseTriggerMomentsResult {
   const { tier, loading } = useLoyalty();
   const { streak, loading: streakLoading } = useStreak();
-  const [tierChanged, setTierChanged] = useState<LoyaltyTier | null>(null);
+  const [tierChanged, setTierChanged] = useState<LoyaltyTierConfig | null>(null);
   const [streakDangerDismissed, setStreakDangerDismissed] = useState(false);
   const [challengeQueue, setChallengeQueue] = useState<ChallengeCompletedItem[]>([]);
   const [badgeUnlocked, setBadgeUnlocked] = useState<string | null>(null);
@@ -82,15 +78,15 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
 
         if (!stored) {
           // First-ever session — silently baseline without firing a trigger
-          await AsyncStorage.setItem(STORAGE_KEY, tier);
+          await AsyncStorage.setItem(STORAGE_KEY, tier.name);
           initializedRef.current = true;
           return;
         }
 
-        const storedTier = stored as LoyaltyTier;
+        const storedTier = LOYALTY_TIERS.find((t) => t.name === stored) ?? LOYALTY_TIERS[0];
         initializedRef.current = true;
 
-        if (TIER_RANK[tier] > TIER_RANK[storedTier]) {
+        if (LOYALTY_TIERS.indexOf(tier) > LOYALTY_TIERS.indexOf(storedTier)) {
           setTierChanged(tier);
         }
       } catch {
@@ -110,7 +106,7 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
         const dismissedTier = tierChanged;
         setTierChanged(null);
         if (dismissedTier) {
-          AsyncStorage.setItem(STORAGE_KEY, dismissedTier).catch(() => {
+          AsyncStorage.setItem(STORAGE_KEY, dismissedTier.name).catch(() => {
             // Storage write failure — state already reset, acceptable
           });
         }

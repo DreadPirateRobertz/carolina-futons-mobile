@@ -19,6 +19,7 @@
 
 import { renderHook } from '@testing-library/react-native';
 import { useGameProfile } from '../useGameProfile';
+import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
 // ─── Mock sub-hooks ───────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ jest.mock('../useLeaderboard', () => ({
 // ─── Default happy-path returns ───────────────────────────────────────────────
 
 const DEFAULT_STREAK = { streak: 10, loading: false };
-const DEFAULT_LOYALTY = { points: 1200, tier: 'silver', loading: false, error: null };
+const DEFAULT_LOYALTY = { points: 1200, tier: LOYALTY_TIERS[1], loading: false, error: null };
 const DEFAULT_LEADERBOARD = { currentUserRank: 5, loading: false, error: null };
 
 beforeEach(() => {
@@ -67,7 +68,7 @@ describe('useGameProfile', () => {
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.streakDays).toBe(10);
     expect(result.current.totalPoints).toBe(1200);
-    expect(result.current.tier).toBe('silver');
+    expect(result.current.tier).toBe(LOYALTY_TIERS[1]);
     expect(result.current.rank).toBe(5);
     expect(result.current.streakLoading).toBe(false);
     expect(result.current.rankLoading).toBe(false);
@@ -162,7 +163,7 @@ describe('useGameProfile', () => {
   it('error uses pointsError when both have errors', () => {
     mockUseLoyalty.mockReturnValue({
       points: 0,
-      tier: 'bronze',
+      tier: LOYALTY_TIERS[0],
       loading: false,
       error: 'points failed',
     });
@@ -186,7 +187,7 @@ describe('useGameProfile', () => {
   });
 
   it('error is null when only pointsError is null and rankError is null', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
     mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.error).toBeNull();
@@ -201,7 +202,7 @@ describe('useGameProfile', () => {
   });
 
   it('pointsLoading is true when useLoyalty is loading', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: true, error: null });
+    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: true, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.pointsLoading).toBe(true);
   });
@@ -214,7 +215,7 @@ describe('useGameProfile', () => {
 
   it('all loading flags can be true simultaneously', () => {
     mockUseStreak.mockReturnValue({ streak: 0, loading: true });
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: true, error: null });
+    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: true, error: null });
     mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: true, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.streakLoading).toBe(true);
@@ -224,28 +225,28 @@ describe('useGameProfile', () => {
 
   // tier forwarded
 
-  it('tier is bronze by default', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: false, error: null });
+  it('tier is Trail Blazer by default', () => {
+    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
-    expect(result.current.tier).toBe('bronze');
+    expect(result.current.tier).toBe(LOYALTY_TIERS[0]);
   });
 
-  it('tier is gold when useLoyalty returns gold', () => {
-    mockUseLoyalty.mockReturnValue({ points: 5000, tier: 'gold', loading: false, error: null });
+  it('tier is Blue Ridge Legend when useLoyalty returns max tier', () => {
+    mockUseLoyalty.mockReturnValue({ points: 5000, tier: LOYALTY_TIERS[3], loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
-    expect(result.current.tier).toBe('gold');
+    expect(result.current.tier).toBe(LOYALTY_TIERS[3]);
   });
 
   // totalPoints
 
   it('totalPoints is 0 when useLoyalty returns 0', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: 'bronze', loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.totalPoints).toBe(0);
   });
 
   it('totalPoints forwards large values correctly', () => {
-    mockUseLoyalty.mockReturnValue({ points: 99999, tier: 'gold', loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({ points: 99999, tier: LOYALTY_TIERS[3], loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.totalPoints).toBe(99999);
   });

@@ -22,23 +22,17 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
-import type { LoyaltyTier } from '@/hooks/useLoyalty';
+import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 interface Props {
   /** The new tier the user has reached. */
-  tier: LoyaltyTier;
+  tier: LoyaltyTierConfig;
   /** Whether the toast is currently visible / should animate in. */
   visible: boolean;
   /** Called after the exit animation completes so the caller can dismiss the trigger. */
   onDismiss?: () => void;
   testID?: string;
 }
-
-const TIER_LABEL: Record<LoyaltyTier, string> = {
-  bronze: 'bronze',
-  silver: 'silver',
-  gold: 'gold',
-};
 
 export function TierUpgradeToast({ tier, visible, onDismiss, testID }: Props) {
   const { colors, borderRadius } = useTheme();
@@ -81,7 +75,7 @@ export function TierUpgradeToast({ tier, visible, onDismiss, testID }: Props) {
     transform: [{ translateY: translateY.value }],
   }));
 
-  const label = TIER_LABEL[tier];
+  const label = tier.name;
 
   return (
     <Animated.View
