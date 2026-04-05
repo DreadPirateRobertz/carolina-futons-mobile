@@ -59,13 +59,18 @@ async function renderLoaded() {
 
 // Spy on AppState.addEventListener so we can simulate foreground events
 // without importing native modules directly.
-let appStateCallback: ((state: string) => void) | null = null;
+let appStateCallback: Parameters<typeof AppState.addEventListener>[1] | null = null;
 const appStateSpy = jest
   .spyOn(AppState, 'addEventListener')
-  .mockImplementation((_event: string, handler: (state: string) => void) => {
-    appStateCallback = handler;
-    return { remove: jest.fn() };
-  });
+  .mockImplementation(
+    (
+      _event: Parameters<typeof AppState.addEventListener>[0],
+      handler: Parameters<typeof AppState.addEventListener>[1],
+    ) => {
+      appStateCallback = handler;
+      return { remove: jest.fn() } as ReturnType<typeof AppState.addEventListener>;
+    },
+  );
 
 // --- Tests ---
 
@@ -73,10 +78,15 @@ describe('usePostPurchaseInAppPrompt', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     appStateCallback = null;
-    appStateSpy.mockImplementation((_event: string, handler: (state: string) => void) => {
-      appStateCallback = handler;
-      return { remove: jest.fn() };
-    });
+    appStateSpy.mockImplementation(
+      (
+        _event: Parameters<typeof AppState.addEventListener>[0],
+        handler: Parameters<typeof AppState.addEventListener>[1],
+      ) => {
+        appStateCallback = handler;
+        return { remove: jest.fn() } as ReturnType<typeof AppState.addEventListener>;
+      },
+    );
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
     (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
   });
@@ -154,8 +164,7 @@ describe('usePostPurchaseInAppPrompt', () => {
 
     it('skips reviewed orders and returns next qualifying one', async () => {
       (AsyncStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-        if (key === NUDGES_INDEX_KEY)
-          return Promise.resolve(JSON.stringify([ORDER_A, ORDER_B]));
+        if (key === NUDGES_INDEX_KEY) return Promise.resolve(JSON.stringify([ORDER_A, ORDER_B]));
         if (key === storageKey(ORDER_A))
           return Promise.resolve(
             makeRecord(ORDER_A, PRODUCT_A, PLACED_4_DAYS_AGO, {
@@ -332,10 +341,15 @@ describe('usePostPurchaseInAppPrompt', () => {
 
     it('removes AppState listener on unmount', async () => {
       const removeMock = jest.fn();
-      appStateSpy.mockImplementationOnce((_event: string, handler: (state: string) => void) => {
-        appStateCallback = handler;
-        return { remove: removeMock };
-      });
+      appStateSpy.mockImplementationOnce(
+        (
+          _event: Parameters<typeof AppState.addEventListener>[0],
+          handler: Parameters<typeof AppState.addEventListener>[1],
+        ) => {
+          appStateCallback = handler;
+          return { remove: removeMock } as ReturnType<typeof AppState.addEventListener>;
+        },
+      );
 
       const { unmount } = await renderLoaded();
       unmount();

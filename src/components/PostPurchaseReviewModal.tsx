@@ -5,13 +5,7 @@
  * leave a product review. Rendered by PostPurchaseReviewBridge.
  */
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 
 interface Props {
@@ -44,11 +38,7 @@ export function PostPurchaseReviewModal({ visible, onReview, onLater }: Props) {
           ]}
           testID="post-purchase-review-card"
         >
-          <Text
-            style={[styles.emoji]}
-            accessibilityRole="text"
-            accessibilityLabel="sofa emoji"
-          >
+          <Text style={[styles.emoji]} accessibilityRole="text" accessibilityLabel="sofa emoji">
             🛋️
           </Text>
 
