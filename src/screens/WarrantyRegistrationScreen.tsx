@@ -150,7 +150,7 @@ export function WarrantyRegistrationScreen({
   if (submitted) {
     return (
       <View
-        style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}
+        style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.sandBase }]}
         testID="warranty-registration-screen"
       >
         <TouchableOpacity
@@ -163,7 +163,7 @@ export function WarrantyRegistrationScreen({
         </TouchableOpacity>
         <View style={styles.successContainer} testID="warranty-success">
           <Text style={[styles.successTitle, { color: colors.espresso }]}>Warranty Registered!</Text>
-          <Text style={[styles.successBody, { color: colors.textMuted }]}>
+          <Text style={[styles.successBody, { color: colors.espressoLight }]}>
             Your warranty for order {orderNumber} has been registered successfully.
           </Text>
           <TouchableOpacity
@@ -186,7 +186,7 @@ export function WarrantyRegistrationScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
-        style={[styles.container, { backgroundColor: colors.background }]}
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         testID="warranty-registration-screen"
         keyboardShouldPersistTaps="handled"
@@ -209,7 +209,7 @@ export function WarrantyRegistrationScreen({
         <View style={[styles.form, { paddingHorizontal: spacing.lg }]}>
           {/* Order number — read-only */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>Order Number</Text>
+            <Text style={[styles.label, { color: colors.espressoLight }]}>Order Number</Text>
             <Text
               testID="warranty-order-number"
               style={[styles.readOnlyValue, { color: colors.espresso }]}
@@ -220,15 +220,15 @@ export function WarrantyRegistrationScreen({
 
           {/* Product name */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>Product *</Text>
+            <Text style={[styles.label, { color: colors.espressoLight }]}>Product *</Text>
             <TextInput
               testID="warranty-product-input"
               style={[
                 styles.input,
                 {
                   color: colors.espresso,
-                  borderColor: productError ? colors.error : colors.borderSubtle,
-                  backgroundColor: colors.surface,
+                  borderColor: productError ? colors.error : colors.muted,
+                  backgroundColor: colors.sandLight,
                 },
               ]}
               value={productName}
@@ -237,7 +237,7 @@ export function WarrantyRegistrationScreen({
                 setProductError(null);
               }}
               placeholder="Product name"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={colors.espressoLight}
               returnKeyType="next"
               accessibilityLabel="Product name"
             />
@@ -253,15 +253,15 @@ export function WarrantyRegistrationScreen({
 
           {/* Purchase date */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>Purchase Date *</Text>
+            <Text style={[styles.label, { color: colors.espressoLight }]}>Purchase Date *</Text>
             <TextInput
               testID="warranty-date-input"
               style={[
                 styles.input,
                 {
                   color: colors.espresso,
-                  borderColor: dateError ? colors.error : colors.borderSubtle,
-                  backgroundColor: colors.surface,
+                  borderColor: dateError ? colors.error : colors.muted,
+                  backgroundColor: colors.sandLight,
                 },
               ]}
               value={purchaseDate}
@@ -270,7 +270,7 @@ export function WarrantyRegistrationScreen({
                 setDateError(null);
               }}
               placeholder="YYYY-MM-DD"
-              placeholderTextColor={colors.textMuted}
+              placeholderTextColor={colors.espressoLight}
               keyboardType="numbers-and-punctuation"
               returnKeyType="done"
               accessibilityLabel="Purchase date, format YYYY-MM-DD"
@@ -287,7 +287,7 @@ export function WarrantyRegistrationScreen({
 
           {/* Receipt photo */}
           <View style={styles.fieldGroup}>
-            <Text style={[styles.label, { color: colors.textMuted }]}>Receipt Photo (optional)</Text>
+            <Text style={[styles.label, { color: colors.espressoLight }]}>Receipt Photo (optional)</Text>
 
             {receiptPhotoUrl && (
               <Image
@@ -302,7 +302,7 @@ export function WarrantyRegistrationScreen({
             {photoUploading && (
               <View style={styles.uploadingRow} testID="warranty-photo-uploading">
                 <ActivityIndicator size="small" color={colors.sunsetCoral} />
-                <Text style={[styles.uploadingText, { color: colors.textMuted }]}>
+                <Text style={[styles.uploadingText, { color: colors.espressoLight }]}>
                   Uploading photo…
                 </Text>
               </View>
@@ -320,7 +320,7 @@ export function WarrantyRegistrationScreen({
             {!receiptPhotoUrl && !photoUploading && (
               <TouchableOpacity
                 testID="warranty-add-photo"
-                style={[styles.addPhotoButton, { borderColor: colors.borderSubtle }]}
+                style={[styles.addPhotoButton, { borderColor: colors.muted }]}
                 onPress={handleAddPhoto}
                 accessibilityLabel="Add receipt photo"
                 accessibilityRole="button"
