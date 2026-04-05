@@ -42,6 +42,8 @@ import { SearchEmptyState } from '@/components/SearchEmptyState';
 import { CompareTray } from '@/components/CompareTray';
 import { NetworkErrorState } from '@/components/NetworkErrorState';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { useBundleDeals } from '@/hooks/useBundleDeals';
+import { BundleDealsCard } from '@/components/BundleDealsCard';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 
 /** Estimated height of a product row for getItemLayout optimization */
@@ -92,6 +94,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   } = useProducts();
   const { recentSearches, addSearch, removeSearch, clearAll } = useRecentSearches();
   const { recentProducts } = useRecentlyViewed();
+  const { bundles, isLoading: bundlesLoading } = useBundleDeals();
   const scrollPerf = useScrollPerformance('ShopScreen');
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -212,6 +215,25 @@ export function ShopScreen({ onProductPress, testID }: Props) {
             </ScrollView>
           </View>
         )}
+
+        {/* Bundle deals promotions */}
+        {!bundlesLoading && bundles.length > 0 && (
+          <View testID="shop-bundle-deals" style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}>
+            <Text
+              style={[styles.recentlyViewedTitle, { color: colors.espresso }]}
+              accessibilityRole="header"
+            >
+              Bundle Deals
+            </Text>
+            {bundles.map((bundle, index) => (
+              <BundleDealsCard
+                key={`${bundle.discountCode}-${index}`}
+                bundle={bundle}
+                testID={`shop-bundle-${index}`}
+              />
+            ))}
+          </View>
+        )}
       </View>
     ),
     [
@@ -234,6 +256,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       handleSubmitSearch,
       removeSearch,
       clearAll,
+      bundles,
+      bundlesLoading,
     ],
   );
 
