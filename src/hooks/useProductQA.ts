@@ -55,8 +55,8 @@ export interface UseProductQAOptions {
 function sanitizeText(raw: string): string {
   return raw
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // strip script blocks + content
-    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')   // strip style blocks + content
-    .replace(/<[^>]*>/g, '')  // strip remaining tags
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // strip style blocks + content
+    .replace(/<[^>]*>/g, '') // strip remaining tags
     .trim();
 }
 
@@ -110,10 +110,7 @@ async function recordSubmitTimestamp(getNow: () => number): Promise<void> {
   }
 }
 
-export function useProductQA(
-  productId: string,
-  options?: UseProductQAOptions,
-): UseProductQAResult {
+export function useProductQA(productId: string, options?: UseProductQAOptions): UseProductQAResult {
   const getNow = options?.getNow ?? Date.now;
 
   const wixClient = useOptionalWixClient() as {

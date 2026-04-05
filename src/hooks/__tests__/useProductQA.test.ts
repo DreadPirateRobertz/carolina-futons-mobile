@@ -337,9 +337,7 @@ describe('rate limiting', () => {
     const recentTimestamps = [now - 100, now - 200, now - 300];
     AsyncStorage.getItem.mockResolvedValue(JSON.stringify(recentTimestamps));
 
-    const { result } = renderHook(() =>
-      useProductQA(PRODUCT_ID, { getNow: () => now }),
-    );
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID, { getNow: () => now }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -355,9 +353,7 @@ describe('rate limiting', () => {
     const recentTimestamps = [now - 100, now - 200];
     AsyncStorage.getItem.mockResolvedValue(JSON.stringify(recentTimestamps));
 
-    const { result } = renderHook(() =>
-      useProductQA(PRODUCT_ID, { getNow: () => now }),
-    );
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID, { getNow: () => now }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -374,9 +370,7 @@ describe('rate limiting', () => {
     const oldTimestamps = [now - ONE_HOUR_MS - 1, now - ONE_HOUR_MS - 2, now - ONE_HOUR_MS - 3];
     AsyncStorage.getItem.mockResolvedValue(JSON.stringify(oldTimestamps));
 
-    const { result } = renderHook(() =>
-      useProductQA(PRODUCT_ID, { getNow: () => now }),
-    );
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID, { getNow: () => now }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -391,9 +385,7 @@ describe('rate limiting', () => {
     const now = 1_700_000_000_000;
     AsyncStorage.getItem.mockResolvedValue(null);
 
-    const { result } = renderHook(() =>
-      useProductQA(PRODUCT_ID, { getNow: () => now }),
-    );
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID, { getNow: () => now }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -412,9 +404,7 @@ describe('rate limiting', () => {
     const timestamps = [now - ONE_HOUR_MS / 2, now - 200, now - 100];
     AsyncStorage.getItem.mockResolvedValue(JSON.stringify(timestamps));
 
-    const { result } = renderHook(() =>
-      useProductQA(PRODUCT_ID, { getNow: () => now }),
-    );
+    const { result } = renderHook(() => useProductQA(PRODUCT_ID, { getNow: () => now }));
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
