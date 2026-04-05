@@ -107,6 +107,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PointsToast } from '@/components/PointsToast';
 import { PriceAlertButton } from '@/components/PriceAlertButton';
 import { VideoReviewGallery } from '@/components/VideoReviewGallery';
+import { CompleteTheLook } from '@/components/CompleteTheLook';
+import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -189,6 +191,11 @@ export function ProductDetailScreen({
   const { similarItems, trackView } = useRecommendations();
   const { recommendations: alsoBought, isLoading: isAlsoBoughtLoading } =
     useProductRecommendations(catalogProductId);
+  const {
+    products: completeTheLookProducts,
+    isLoading: isCompleteTheLookLoading,
+    error: completeTheLookError,
+  } = useCompleteTheLook(catalogProductId ?? model.id);
   const {
     reviews,
     summary: reviewSummary,
@@ -1080,6 +1087,16 @@ export function ProductDetailScreen({
           >
             <SizeGuideDiagram dimensions={model.dimensions} colors={colors} />
           </Animated.View>
+        </View>
+
+        {/* Complete the Look — cm-3n3: curated complementary products */}
+        <View style={[styles.section, { marginTop: spacing.md }]}>
+          <CompleteTheLook
+            products={completeTheLookProducts}
+            isLoading={isCompleteTheLookLoading}
+            error={completeTheLookError}
+            onProductPress={onRelatedProductPress}
+          />
         </View>
 
         {/* Reviews Section */}
