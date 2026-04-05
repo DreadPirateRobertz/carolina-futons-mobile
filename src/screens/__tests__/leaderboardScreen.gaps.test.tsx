@@ -5,20 +5,26 @@ import React from 'react';
 import { render, act } from '@testing-library/react-native';
 import { LeaderboardScreen } from '../LeaderboardScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
-import type { LeaderboardEntry } from '@/hooks/useLeaderboard';
 
 const mockRefresh = jest.fn();
 const mockSetPeriod = jest.fn();
 
-const ENTRIES: LeaderboardEntry[] = [
-  { memberId: 'm1', displayName: 'Alice', points: 2500, tier: 'gold', rank: 1 },
-];
+// Summit Master tier config (2500 points falls in 1500-2999 range)
+const mockTierSummitMaster = {
+  name: 'Summit Master',
+  minPoints: 1500,
+  color: '#E8845C',
+  icon: 'summit-master',
+  perks: ['Earn 2x points per $1', 'Free expedited shipping'],
+};
 
 jest.mock('@/hooks/useLeaderboard', () => ({
   useLeaderboard: () => ({
-    entries: ENTRIES,
+    entries: [
+      { memberId: 'm1', displayName: 'Alice', points: 2500, tier: mockTierSummitMaster, rank: 1 },
+    ],
     currentUserRank: 1,
-    period: 'allTime' as const,
+    period: 'allTime',
     loading: false,
     error: null,
     refresh: mockRefresh,
