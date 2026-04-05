@@ -4,7 +4,7 @@
  *   - getItemLayout callback (lines 109-114)
  */
 import React from 'react';
-import { render, fireEvent, act, waitFor } from '@testing-library/react-native';
+import { render, act, waitFor } from '@testing-library/react-native';
 import { CategoryScreen } from '../CategoryScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -37,7 +37,9 @@ describe('CategoryScreen — pull-to-refresh handler', () => {
     // Wait for the 600ms setTimeout to fire and refreshing to become false
     await waitFor(
       () => {
-        expect(getByTestId('category-product-list').props.refreshControl.props.refreshing).toBeFalsy();
+        expect(
+          getByTestId('category-product-list').props.refreshControl.props.refreshing,
+        ).toBeFalsy();
       },
       { timeout: 2000 },
     );
