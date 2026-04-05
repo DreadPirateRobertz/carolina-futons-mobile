@@ -214,6 +214,11 @@ const SavedAddressesScreen = lazy(() =>
     default: withScreenErrorBoundary(m.SavedAddressesScreen, 'SavedAddresses'),
   })),
 );
+const NPSSummaryScreen = lazy(() =>
+  import('@/screens/NPSSummaryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.NPSSummaryScreen, 'NPSSummary'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -271,6 +276,7 @@ export type RootStackParamList = {
   ConsultationBooking: undefined;
   BookingCancellation: undefined;
   SavedAddresses: undefined;
+  NPSSummary: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -589,6 +595,11 @@ export function AppNavigator() {
             name="SavedAddresses"
             component={SavedAddressesScreen}
             options={{ title: 'Saved Addresses' }}
+          />
+          <Stack.Screen
+            name="NPSSummary"
+            component={NPSSummaryScreen}
+            options={{ title: 'NPS Summary' }}
           />
         </Stack.Navigator>
       </Suspense>
