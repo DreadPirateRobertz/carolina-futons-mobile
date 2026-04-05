@@ -37,6 +37,11 @@ jest.mock('@/services/wix/wixProvider', () => ({
 
 jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
 
+const mockSendEmail = jest.fn().mockResolvedValue(undefined);
+jest.mock('@/services/bookingService', () => ({
+  sendBookingConfirmationEmail: (...args: unknown[]) => mockSendEmail(...args),
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const TODAY = '2026-04-10'; // a Friday
@@ -423,6 +428,84 @@ describe('useConsultationBooking', () => {
       });
 
       expect(mockInsertDataItem.mock.calls[0][1].pushToken).toBe('ExponentPushToken[abc]');
+    });
+  });
+
+  // ── Confirmation email ────────────────────────────────────────────────────────
+
+  describe('confirmation email', () => {
+    it('fires sendEmail after successful booking', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'booking-e1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane Doe',
+          memberEmail: 'jane@example.com',
+        });
+      });
+
+      // Allow fire-and-forget to settle
+      await act(async () => {});
+      expect(mockSendEmail).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          bookingId: 'booking-e1',
+          memberEmail: 'jane@example.com',
+          date: TODAY,
+          timeSlot: SLOT_09,
+        }),
+      );
+    });
+
+    it('does NOT fire sendEmail when booking fails', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockRejectedValue(new Error('Insert failed'));
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane',
+          memberEmail: 'jane@example.com',
+        });
+      });
+
+      await act(async () => {});
+      expect(mockSendEmail).not.toHaveBeenCalled();
+    });
+
+    it('email failure does not affect confirmedBooking', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'booking-e2', data: {} });
+      mockSendEmail.mockRejectedValueOnce(new Error('Email service down'));
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          date: TODAY,
+          timeSlot: SLOT_09,
+          memberName: 'Jane',
+          memberEmail: 'jane@example.com',
+        });
+      });
+
+      await act(async () => {});
+      // Booking still confirmed even if email fails
+      expect(result.current.confirmedBooking?.id).toBe('booking-e2');
     });
   });
 
