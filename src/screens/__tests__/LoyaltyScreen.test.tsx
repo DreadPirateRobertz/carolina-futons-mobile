@@ -74,4 +74,9 @@ describe('LoyaltyScreen', () => {
     const { getByTestId } = renderScreen();
     expect(getByTestId('loyalty-tier-badge')).toBeTruthy();
   });
+
+  it('shows tier perk card with current tier perks', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-tier-perk-card')).toBeTruthy();
+  });
 });

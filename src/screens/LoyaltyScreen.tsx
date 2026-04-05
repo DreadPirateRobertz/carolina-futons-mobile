@@ -18,6 +18,7 @@ import { emitStreakExtended, emitTierChanged } from '@/services/crossRigEventBus
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
+import { TierPerkCard } from '@/components/TierPerkCard';
 
 /** Module-level flag to prevent duplicate streak emissions across remounts. */
 let streakEmittedThisSession = false;
@@ -172,6 +173,22 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
             paddingHorizontal: spacing.lg,
           },
         ]}
+        testID="loyalty-perks-heading"
+      >
+        Your Perks
+      </Text>
+      <View style={[styles.perksWrap, { paddingHorizontal: spacing.lg }]}>
+        <TierPerkCard tier={tier} testID="loyalty-tier-perk-card" />
+      </View>
+      <Text
+        style={[
+          styles.sectionTitle,
+          {
+            color: colors.espressoLight,
+            fontFamily: typography.bodyFamilyBold,
+            paddingHorizontal: spacing.lg,
+          },
+        ]}
       >
         Activity
       </Text>
@@ -208,6 +225,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 4,
   },
+  perksWrap: { marginBottom: 16 },
   emptyTx: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
   emptyText: { fontSize: 15, textAlign: 'center' },
   errorText: { fontSize: 15, textAlign: 'center', marginHorizontal: 32, marginBottom: 20 },
