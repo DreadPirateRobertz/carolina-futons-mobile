@@ -44,7 +44,7 @@ crew/
 mayor/
 polecats/
 witness/
-settings/
+# settings/ intentionally tracked (Refinery reads settings/config.json)
 state.json
 report_to_human.md
 AGENTS.md
