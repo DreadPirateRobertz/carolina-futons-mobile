@@ -1,8 +1,9 @@
 /**
- * TDD tests for npsSurvey service — deacon-kon2.
+ * TDD tests for npsSurvey service — cm-5cp.
  *
  * Tests: submit success, omit/include comment, network error,
- * null client, score boundary values (0 and 10).
+ * null/undefined client, score boundary values (0 and 10),
+ * NPSResponses collection, createdAt + suppressedUntil in Wix payload.
  */
 import { submitNpsSurvey, type NpsSurveyData, type WixClientLike } from '../npsSurvey';
 
@@ -11,10 +12,14 @@ const makeClient = (overrides?: Partial<WixClientLike>): WixClientLike => ({
   ...overrides,
 });
 
+const CREATED_AT = '2026-04-04T12:00:00.000Z';
+const SUPPRESSED_UNTIL = '2026-07-03T12:00:00.000Z'; // 90 days later
+
 const baseData: NpsSurveyData = {
   orderId: 'order-001',
   score: 9,
-  submittedAt: '2026-04-04T12:00:00.000Z',
+  createdAt: CREATED_AT,
+  suppressedUntil: SUPPRESSED_UNTIL,
 };
 
 afterEach(() => jest.clearAllMocks());
@@ -28,13 +33,27 @@ describe('submitNpsSurvey', () => {
       expect(result.id).toBe('survey-abc123');
     });
 
-    it('inserts to SurveyResponses collection', async () => {
+    it('inserts to NPSResponses collection', async () => {
       const client = makeClient();
       await submitNpsSurvey(client, baseData);
       expect(client.insertDataItem).toHaveBeenCalledWith(
-        'SurveyResponses',
+        'NPSResponses',
         expect.objectContaining({ orderId: 'order-001', score: 9 }),
       );
+    });
+
+    it('passes createdAt through to the Wix payload', async () => {
+      const client = makeClient();
+      await submitNpsSurvey(client, baseData);
+      const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
+      expect(payload.createdAt).toBe(CREATED_AT);
+    });
+
+    it('passes suppressedUntil through to the Wix payload', async () => {
+      const client = makeClient();
+      await submitNpsSurvey(client, baseData);
+      const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
+      expect(payload.suppressedUntil).toBe(SUPPRESSED_UNTIL);
     });
 
     it('omits comment field when not provided', async () => {
@@ -49,13 +68,6 @@ describe('submitNpsSurvey', () => {
       await submitNpsSurvey(client, { ...baseData, comment: 'Great quality!' });
       const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
       expect(payload.comment).toBe('Great quality!');
-    });
-
-    it('includes submittedAt in the payload', async () => {
-      const client = makeClient();
-      await submitNpsSurvey(client, baseData);
-      const [, payload] = (client.insertDataItem as jest.Mock).mock.calls[0];
-      expect(payload.submittedAt).toBe('2026-04-04T12:00:00.000Z');
     });
 
     it('includes memberId when provided', async () => {
@@ -103,6 +115,12 @@ describe('submitNpsSurvey', () => {
 
     it('returns success=false when client is null', async () => {
       const result = await submitNpsSurvey(null, baseData);
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/unavailable/i);
+    });
+
+    it('returns success=false when client is undefined', async () => {
+      const result = await submitNpsSurvey(undefined, baseData);
       expect(result.success).toBe(false);
       expect(result.error).toMatch(/unavailable/i);
     });
