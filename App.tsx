@@ -32,7 +32,6 @@ import { MiniCartDrawerHost } from '@/navigation/MiniCartDrawerHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { initCrashReporting, getSentryNavigationIntegration } from '@/services/crashReportingInit';
-import { runSecurityAudit } from '@/services/securityAudit';
 import { wrapWithSentry } from '@/services/providers/sentryCrashReporting';
 import { initAnalytics } from '@/services/analyticsInit';
 import { initializePurchases } from '@/services/purchases';
