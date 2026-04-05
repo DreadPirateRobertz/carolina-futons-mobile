@@ -9,7 +9,7 @@
  * Deep link: carolinafutons://consultation
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useConsultationBooking, ALL_SLOTS } from '@/hooks/useConsultationBooking';
+import { useCalendarAvailability } from '@/hooks/useCalendarAvailability';
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -80,6 +81,13 @@ export function ConsultationBookingScreen() {
 
   const today = getTodayString();
   const calendarDays = useMemo(() => buildCalendarDays(today), [today]);
+
+  const { availability, fetchRange } = useCalendarAvailability();
+  useMemo(() => {
+    if (calendarDays.length > 0) {
+      fetchRange(calendarDays[0], calendarDays.length);
+    }
+  }, [calendarDays[0]]);
 
   const canBook =
     !isBooking &&

@@ -81,6 +81,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       AvatarEquip: 'avatar',
       RoomGallery: 'gallery',
       ConsultationBooking: 'consultation',
+      BookingCancellation: 'consultation/cancel',
       ReferralLanding: {
         path: 'referral/:code',
         parse: { code: (code: string) => code },

@@ -204,6 +204,11 @@ const ConsultationBookingScreen = lazy(() =>
     default: withScreenErrorBoundary(m.ConsultationBookingScreen, 'ConsultationBooking'),
   })),
 );
+const BookingCancellationScreen = lazy(() =>
+  import('@/screens/BookingCancellationScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.BookingCancellationScreen, 'BookingCancellation'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -259,6 +264,7 @@ export type RootStackParamList = {
   VisualSearchResults: { imageUri: string };
   WarrantyRegistration: { orderId: string; orderNumber: string; productName?: string };
   ConsultationBooking: undefined;
+  BookingCancellation: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -566,6 +572,11 @@ export function AppNavigator() {
           <Stack.Screen
             name="ConsultationBooking"
             component={ConsultationBookingScreen}
+            options={modalTransition}
+          />
+          <Stack.Screen
+            name="BookingCancellation"
+            component={BookingCancellationScreen}
             options={modalTransition}
           />
         </Stack.Navigator>
