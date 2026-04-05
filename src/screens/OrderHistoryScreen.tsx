@@ -26,6 +26,8 @@ import {
 } from '@/components/MountainRefreshControl';
 import { formatPrice } from '@/utils';
 import { ReorderConfirmationSheet } from '@/components/ReorderConfirmationSheet';
+import { usePurchaseExport } from '@/hooks/usePurchaseExport';
+import { ActivityIndicator } from 'react-native';
 
 /** Filter tab config — Pending maps to processing (shipped is sub-state of pending). */
 const FILTER_TABS: { label: string; testID: string; value: OrderStatus | null }[] = [
@@ -65,6 +67,8 @@ export function OrderHistoryScreen({
     handleConfirmReorder,
     handleDismissSheet,
   } = useOrderHistory();
+
+  const { status: exportStatus, error: exportError, sendExport } = usePurchaseExport();
 
   // Use prop orders (tests/stories) or fall back to hook data (sorted newest-first)
   const orders = ordersProp
@@ -257,6 +261,57 @@ export function OrderHistoryScreen({
       >
         My Orders
       </Text>
+
+      {/* Export purchase history */}
+      <View style={[styles.exportRow, { paddingHorizontal: spacing.lg }]}>
+        <TouchableOpacity
+          testID="export-history-button"
+          onPress={sendExport}
+          disabled={exportStatus === 'sending'}
+          accessibilityLabel="Email my order history"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: exportStatus === 'sending' }}
+          style={[
+            styles.exportButton,
+            {
+              borderColor: colors.mountainBlue,
+              borderRadius: borderRadius.sm,
+              opacity: exportStatus === 'sending' ? 0.5 : 1,
+            },
+          ]}
+        >
+          <Text style={[styles.exportButtonText, { color: colors.mountainBlue }]}>
+            Email History
+          </Text>
+        </TouchableOpacity>
+        {exportStatus === 'sending' && (
+          <ActivityIndicator
+            testID="export-sending-indicator"
+            size="small"
+            color={colors.mountainBlue}
+            style={styles.exportIndicator}
+          />
+        )}
+      </View>
+      {exportStatus === 'sent' && (
+        <Text
+          testID="export-success-message"
+          style={[styles.exportFeedback, { color: colors.success, paddingHorizontal: spacing.lg }]}
+        >
+          Order history sent to your email.
+        </Text>
+      )}
+      {exportStatus === 'error' && exportError && (
+        <Text
+          testID="export-error-message"
+          style={[
+            styles.exportFeedback,
+            { color: colors.sunsetCoral, paddingHorizontal: spacing.lg },
+          ]}
+        >
+          {exportError}
+        </Text>
+      )}
 
       {/* Filter tab bar */}
       <ScrollView
@@ -454,5 +509,26 @@ const styles = StyleSheet.create({
   },
   filterTabText: {
     fontSize: 13,
+  },
+  exportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  exportButton: {
+    borderWidth: 1,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+  },
+  exportButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  exportIndicator: {
+    marginLeft: 8,
+  },
+  exportFeedback: {
+    fontSize: 13,
+    marginBottom: 4,
   },
 });
