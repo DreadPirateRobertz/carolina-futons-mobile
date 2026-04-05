@@ -45,9 +45,7 @@ describe('LoyaltyBadge', () => {
     const { getByTestId } = renderBadge(TRAIL_BLAZER);
     const badge = getByTestId('loyalty-badge-trail-blazer');
     expect(badge.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ borderColor: TRAIL_BLAZER.color }),
-      ]),
+      expect.arrayContaining([expect.objectContaining({ borderColor: TRAIL_BLAZER.color })]),
     );
   });
 

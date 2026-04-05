@@ -187,7 +187,12 @@ describe('useGameProfile', () => {
   });
 
   it('error is null when only pointsError is null and rankError is null', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: LOYALTY_TIERS[0],
+      loading: false,
+      error: null,
+    });
     mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: false, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.error).toBeNull();
@@ -202,7 +207,12 @@ describe('useGameProfile', () => {
   });
 
   it('pointsLoading is true when useLoyalty is loading', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: true, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: LOYALTY_TIERS[0],
+      loading: true,
+      error: null,
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.pointsLoading).toBe(true);
   });
@@ -215,7 +225,12 @@ describe('useGameProfile', () => {
 
   it('all loading flags can be true simultaneously', () => {
     mockUseStreak.mockReturnValue({ streak: 0, loading: true });
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: true, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: LOYALTY_TIERS[0],
+      loading: true,
+      error: null,
+    });
     mockUseLeaderboard.mockReturnValue({ currentUserRank: null, loading: true, error: null });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.streakLoading).toBe(true);
@@ -226,13 +241,23 @@ describe('useGameProfile', () => {
   // tier forwarded
 
   it('tier is Trail Blazer by default', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: LOYALTY_TIERS[0],
+      loading: false,
+      error: null,
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.tier).toBe(LOYALTY_TIERS[0]);
   });
 
   it('tier is Blue Ridge Legend when useLoyalty returns max tier', () => {
-    mockUseLoyalty.mockReturnValue({ points: 5000, tier: LOYALTY_TIERS[3], loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 5000,
+      tier: LOYALTY_TIERS[3],
+      loading: false,
+      error: null,
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.tier).toBe(LOYALTY_TIERS[3]);
   });
@@ -240,13 +265,23 @@ describe('useGameProfile', () => {
   // totalPoints
 
   it('totalPoints is 0 when useLoyalty returns 0', () => {
-    mockUseLoyalty.mockReturnValue({ points: 0, tier: LOYALTY_TIERS[0], loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 0,
+      tier: LOYALTY_TIERS[0],
+      loading: false,
+      error: null,
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.totalPoints).toBe(0);
   });
 
   it('totalPoints forwards large values correctly', () => {
-    mockUseLoyalty.mockReturnValue({ points: 99999, tier: LOYALTY_TIERS[3], loading: false, error: null });
+    mockUseLoyalty.mockReturnValue({
+      points: 99999,
+      tier: LOYALTY_TIERS[3],
+      loading: false,
+      error: null,
+    });
     const { result } = renderHook(() => useGameProfile());
     expect(result.current.totalPoints).toBe(99999);
   });

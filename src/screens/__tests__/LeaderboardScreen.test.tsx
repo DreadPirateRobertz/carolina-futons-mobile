@@ -166,7 +166,9 @@ describe('LeaderboardScreen', () => {
     it('renders CF Member for null displayName', () => {
       mockHookState = {
         ...mockHookState,
-        entries: [{ memberId: 'm1', displayName: null, points: 500, tier: getTierForPoints(500), rank: 1 }],
+        entries: [
+          { memberId: 'm1', displayName: null, points: 500, tier: getTierForPoints(500), rank: 1 },
+        ],
       };
       const { getAllByTestId } = wrap(<LeaderboardScreen />);
       const nicknames = getAllByTestId('leaderboard-row-nickname');

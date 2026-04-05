@@ -71,8 +71,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       try {
         const client = getWixClientSingleton();
         emitTierChanged(client, { oldTier: prevTier.name, newTier: tier.name }).catch(
-          (err: unknown) =>
-            captureException(err instanceof Error ? err : new Error(String(err))),
+          (err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))),
         );
       } catch (err) {
         captureException(err instanceof Error ? err : new Error(String(err)));

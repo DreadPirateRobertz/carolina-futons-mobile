@@ -47,12 +47,16 @@ describe('TabIcons', () => {
     });
 
     it('renders tier badge for Mountain Guide tier', () => {
-      const { getByTestId } = render(<AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[1]} />);
+      const { getByTestId } = render(
+        <AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[1]} />,
+      );
       expect(getByTestId('tier-badge')).toBeTruthy();
     });
 
     it('renders tier badge for Summit Master tier', () => {
-      const { getByTestId } = render(<AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[2]} />);
+      const { getByTestId } = render(
+        <AccountTabIcon focused={false} color="#888" tier={LOYALTY_TIERS[2]} />,
+      );
       expect(getByTestId('tier-badge')).toBeTruthy();
     });
 

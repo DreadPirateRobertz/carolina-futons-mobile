@@ -65,7 +65,11 @@ describe('TierUpgradeToast', () => {
   });
 
   it('accepts optional testID override', () => {
-    const { getByTestId } = renderToast({ tier: LOYALTY_TIERS[2], visible: true, testID: 'custom-tier' });
+    const { getByTestId } = renderToast({
+      tier: LOYALTY_TIERS[2],
+      visible: true,
+      testID: 'custom-tier',
+    });
     expect(getByTestId('custom-tier')).toBeTruthy();
   });
 

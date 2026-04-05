@@ -51,9 +51,7 @@ function computeDerivedFields(points: number) {
   const progress = nextTier
     ? Math.min(
         100,
-        Math.round(
-          ((points - tier.minPoints) / (nextTier.minPoints - tier.minPoints)) * 100,
-        ),
+        Math.round(((points - tier.minPoints) / (nextTier.minPoints - tier.minPoints)) * 100),
       )
     : 100;
   return { tier, nextTier, pointsToNext, progress };

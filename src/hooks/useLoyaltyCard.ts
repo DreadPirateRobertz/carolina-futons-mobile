@@ -82,7 +82,11 @@ export function useLoyaltyCard(options?: UseLoyaltyCardOptions): UseLoyaltyCardR
 
       const prevTier = prevTierRef.current;
       prevTierRef.current = newTier;
-      if (prevTier !== null && onTierUpRef.current && LOYALTY_TIERS.indexOf(newTier) > LOYALTY_TIERS.indexOf(prevTier)) {
+      if (
+        prevTier !== null &&
+        onTierUpRef.current &&
+        LOYALTY_TIERS.indexOf(newTier) > LOYALTY_TIERS.indexOf(prevTier)
+      ) {
         onTierUpRef.current({ from: prevTier, to: newTier });
       }
 
