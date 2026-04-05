@@ -69,7 +69,7 @@ describe('BNPLHeroSurface', () => {
   });
 
   describe('Rendering — ineligible price', () => {
-    it('returns null when price is below financing threshold ($299)', () => {
+    it('returns null when price is below financing threshold ($200)', () => {
       const { queryByTestId } = renderHero({ price: 199 });
       expect(queryByTestId('bnpl-hero')).toBeNull();
     });
@@ -125,20 +125,19 @@ describe('BNPLHeroSurface', () => {
   });
 
   describe('Edge cases', () => {
-    it('handles price at exact threshold ($299) — not eligible', () => {
-      // Threshold is $299, must be OVER $299 to qualify
-      const { queryByTestId } = renderHero({ price: 299 });
+    it('handles price below $200 — not eligible', () => {
+      const { queryByTestId } = renderHero({ price: 199 });
       expect(queryByTestId('bnpl-hero')).toBeNull();
     });
 
-    it('handles price just above threshold ($300)', () => {
-      const { getByTestId } = renderHero({ price: 300 });
+    it('handles price at $200 — eligible (6-month plan min)', () => {
+      const { getByTestId } = renderHero({ price: 200 });
       expect(getByTestId('bnpl-hero')).toBeTruthy();
     });
 
-    it('handles very large price ($99999)', () => {
-      const { getByTestId } = renderHero({ price: 99999 });
-      expect(getByTestId('bnpl-hero')).toBeTruthy();
+    it('handles price above $10,000 — not eligible (over all plan max)', () => {
+      const { queryByTestId } = renderHero({ price: 10001 });
+      expect(queryByTestId('bnpl-hero')).toBeNull();
     });
 
     it('accepts custom testID', () => {

@@ -26,7 +26,7 @@ jest.mock('@/theme', () => ({
 
 describe('FinancingCalculator', () => {
   describe('eligibility gating', () => {
-    it('renders for $40 (Afterpay eligible, Affirm not shown)', () => {
+    it('renders for $40 (Afterpay eligible ≥$35, Affirm not shown)', () => {
       const { getByTestId } = render(<FinancingCalculator price={40} testID="fin-calc" />);
       expect(getByTestId('fin-calc')).toBeTruthy();
     });
@@ -36,8 +36,13 @@ describe('FinancingCalculator', () => {
       expect(toJSON()).toBeNull();
     });
 
-    it('renders for eligible price ($300)', () => {
-      const { getByTestId } = render(<FinancingCalculator price={300} testID="fin-calc" />);
+    it('renders nothing for $34 — below both Afterpay min ($35) and Affirm min ($200)', () => {
+      const { toJSON } = render(<FinancingCalculator price={34} />);
+      expect(toJSON()).toBeNull();
+    });
+
+    it('renders for Affirm eligible price ($200, 6-month plan min)', () => {
+      const { getByTestId } = render(<FinancingCalculator price={200} testID="fin-calc" />);
       expect(getByTestId('fin-calc')).toBeTruthy();
     });
 
@@ -80,11 +85,20 @@ describe('FinancingCalculator', () => {
   });
 
   describe('Affirm panel', () => {
-    it('shows 3-month, 6-month, 12-month term rows', () => {
+    it('shows 6-month, 12-month, 24-month term rows for $600', () => {
+      // $600: qualifies for 6mo (min $200) + 12mo (min $500) + 24mo (min $500); not 18mo (min $750)
       const { getByTestId } = render(<FinancingCalculator price={600} />);
-      expect(getByTestId('fin-affirm-term-3')).toBeTruthy();
       expect(getByTestId('fin-affirm-term-6')).toBeTruthy();
       expect(getByTestId('fin-affirm-term-12')).toBeTruthy();
+      expect(getByTestId('fin-affirm-term-24')).toBeTruthy();
+    });
+
+    it('shows all 4 term rows for $750+', () => {
+      const { getByTestId } = render(<FinancingCalculator price={800} />);
+      expect(getByTestId('fin-affirm-term-6')).toBeTruthy();
+      expect(getByTestId('fin-affirm-term-12')).toBeTruthy();
+      expect(getByTestId('fin-affirm-term-18')).toBeTruthy();
+      expect(getByTestId('fin-affirm-term-24')).toBeTruthy();
     });
 
     it('each term row shows monthly amount text', () => {
@@ -93,9 +107,9 @@ describe('FinancingCalculator', () => {
       expect(String(term12.props.children)).toMatch(/\$/);
     });
 
-    it('shows APR disclaimer', () => {
+    it('shows APR range disclaimer mentioning 0% and 9.99%', () => {
       const { getByText } = render(<FinancingCalculator price={600} />);
-      expect(getByText(/9\.99%/)).toBeTruthy();
+      expect(getByText(/0%.*9\.99%/)).toBeTruthy();
     });
 
     it('shows "Subject to credit approval"', () => {
@@ -167,13 +181,16 @@ describe('FinancingCalculator', () => {
       expect(toJSON()).toBeNull();
     });
 
-    it('Afterpay panel hidden above $2000 but Affirm still shows', () => {
-      // $2500 is above Afterpay max — only Affirm tab should be active and Afterpay hidden
-      const { queryByTestId } = render(<FinancingCalculator price={2500} />);
-      // Affirm tab present
+    it('Afterpay panel hidden above $1,000 but Affirm still shows', () => {
+      // $1,500 is above Afterpay max ($1,000) — only Affirm tab should be shown
+      const { queryByTestId } = render(<FinancingCalculator price={1500} />);
       expect(queryByTestId('fin-tab-affirm')).toBeTruthy();
-      // Afterpay tab not shown for out-of-range prices
       expect(queryByTestId('fin-tab-afterpay')).toBeNull();
+    });
+
+    it('renders nothing above $10,000 (no plans eligible)', () => {
+      const { toJSON } = render(<FinancingCalculator price={10001} />);
+      expect(toJSON()).toBeNull();
     });
   });
 });
