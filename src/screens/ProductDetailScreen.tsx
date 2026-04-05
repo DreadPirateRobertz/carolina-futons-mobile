@@ -249,7 +249,8 @@ export function ProductDetailScreen({
   const [qaInput, setQaInput] = useState('');
 
   const totalPrice = model.basePrice + selectedFabric.price;
-  const { earnRate: loyaltyEarnRate } = useLoyaltyEarnEstimate(totalPrice);
+  const { tier: loyaltyTier } = useLoyaltyEarnEstimate(totalPrice);
+  const loyaltyEarnRate = loyaltyTier.earnRate;
 
   // cm-xh9: Resolve videoUri from catalog product; parse wix:video:// if needed.
   // PLACEHOLDER: Real Wix Media video URIs will come from Wix Studio Media Manager.
@@ -1095,7 +1096,7 @@ export function ProductDetailScreen({
             products={completeTheLookProducts}
             isLoading={isCompleteTheLookLoading}
             error={completeTheLookError}
-            onProductPress={onRelatedProductPress}
+            onProductPress={onRelatedProductPress ?? (() => {})}
           />
         </View>
 
