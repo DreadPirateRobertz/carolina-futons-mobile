@@ -3,6 +3,25 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { SearchScreen } from '../SearchScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+
+// Mock WishlistProvider so it renders children synchronously with no async
+// AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.
+jest.mock('@/hooks/useWishlist', () => ({
+  WishlistProvider: ({ children }: { children: React.ReactNode }) => children,
+  useWishlist: () => ({ isInWishlist: () => false, toggle: jest.fn(), items: [] }),
+}));
+
+// Mock useRecentSearches to avoid a dynamic import('@react-native-async-storage/async-storage')
+// inside a useEffect IIFE. That dynamic import creates an open async handle that keeps the Jest
+// worker alive after all tests complete — GitHub Actions then kills it with SIGTERM.
+jest.mock('@/hooks/useRecentSearches', () => ({
+  useRecentSearches: () => ({
+    recentSearches: [],
+    addSearch: jest.fn(),
+    removeSearch: jest.fn(),
+    clearAll: jest.fn(),
+  }),
+}));
 import { CompareProvider } from '@/contexts/CompareContext';
 import { PRODUCTS } from '@/data/products';
 
