@@ -62,7 +62,11 @@ export interface OnboardingStyleModalProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function OnboardingStyleModal({ visible, onDismiss, onComplete }: OnboardingStyleModalProps) {
+export function OnboardingStyleModal({
+  visible,
+  onDismiss,
+  onComplete,
+}: OnboardingStyleModalProps) {
   const { colors, spacing, borderRadius, typography } = useTheme();
   const wixClient = useOptionalWixClient();
   const { user } = useAuth();
@@ -113,7 +117,10 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
           ]}
         />
       </View>
-      <Text style={[styles.progressLabel, { color: colors.sunsetCoral }]} testID="quiz-progress-label">
+      <Text
+        style={[styles.progressLabel, { color: colors.sunsetCoral }]}
+        testID="quiz-progress-label"
+      >
         {progressStep} / {TOTAL_STEPS}
       </Text>
     </View>
@@ -139,7 +146,10 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
               style={[
                 styles.optionButton,
                 { borderRadius: borderRadius.card },
-                isSelected && { borderColor: colors.sunsetCoral, backgroundColor: colors.sunsetCoral + '18' },
+                isSelected && {
+                  borderColor: colors.sunsetCoral,
+                  backgroundColor: colors.sunsetCoral + '18',
+                },
               ]}
               onPress={() => setFurnitureStyle(option.value)}
               accessibilityRole="button"
@@ -150,7 +160,9 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
               <Text
                 style={[
                   styles.optionLabel,
-                  { fontFamily: isSelected ? typography.bodyFamilySemiBold : typography.bodyFamily },
+                  {
+                    fontFamily: isSelected ? typography.bodyFamilySemiBold : typography.bodyFamily,
+                  },
                   isSelected && { color: colors.sunsetCoral },
                 ]}
               >
@@ -183,7 +195,10 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
               style={[
                 styles.optionButton,
                 { borderRadius: borderRadius.card },
-                isSelected && { borderColor: colors.sunsetCoral, backgroundColor: colors.sunsetCoral + '18' },
+                isSelected && {
+                  borderColor: colors.sunsetCoral,
+                  backgroundColor: colors.sunsetCoral + '18',
+                },
               ]}
               onPress={() => setRoomType(option.value)}
               accessibilityRole="button"
@@ -194,7 +209,9 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
               <Text
                 style={[
                   styles.optionLabel,
-                  { fontFamily: isSelected ? typography.bodyFamilySemiBold : typography.bodyFamily },
+                  {
+                    fontFamily: isSelected ? typography.bodyFamilySemiBold : typography.bodyFamily,
+                  },
                   isSelected && { color: colors.sunsetCoral },
                 ]}
               >
@@ -215,7 +232,12 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
 
     return (
       <View testID="style-step-completion" style={styles.completionContainer}>
-        <Text style={[styles.completionAccent, { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold }]}>
+        <Text
+          style={[
+            styles.completionAccent,
+            { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+          ]}
+        >
           Almost done
         </Text>
         <Text style={[styles.completionTitle, { fontFamily: typography.headingFamily }]}>
@@ -247,7 +269,10 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
           testID="style-quiz-save-button"
           style={[
             styles.saveButton,
-            { backgroundColor: isSaving ? '#D4C4A8' : colors.sunsetCoral, borderRadius: borderRadius.button },
+            {
+              backgroundColor: isSaving ? '#D4C4A8' : colors.sunsetCoral,
+              borderRadius: borderRadius.button,
+            },
           ]}
           onPress={handleSave}
           disabled={isSaving}
@@ -266,14 +291,12 @@ export function OnboardingStyleModal({ visible, onDismiss, onComplete }: Onboard
   // ── Layout ────────────────────────────────────────────────────────────────
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent
-      onRequestClose={handleBack}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleBack}>
       <View style={styles.overlay}>
-        <View testID="onboarding-style-modal" style={[styles.sheet, { borderRadius: borderRadius.card }]}>
+        <View
+          testID="onboarding-style-modal"
+          style={[styles.sheet, { borderRadius: borderRadius.card }]}
+        >
           {/* Back button */}
           <TouchableOpacity
             testID="style-quiz-back-button"

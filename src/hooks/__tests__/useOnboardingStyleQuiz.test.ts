@@ -172,9 +172,7 @@ describe('useOnboardingStyleQuiz', () => {
 
   describe('save() — AsyncStorage', () => {
     it('writes furnitureStyle and roomType to AsyncStorage', async () => {
-      const { result } = renderHook(() =>
-        useOnboardingStyleQuiz({ getNow }),
-      );
+      const { result } = renderHook(() => useOnboardingStyleQuiz({ getNow }));
       act(() => result.current.setFurnitureStyle('coastal'));
       act(() => result.current.setRoomType('living-room'));
 
@@ -226,11 +224,15 @@ describe('useOnboardingStyleQuiz', () => {
       const { result } = renderHook(() => useOnboardingStyleQuiz({ getNow }));
       act(() => result.current.setFurnitureStyle('rustic'));
       act(() => result.current.setRoomType('office'));
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
       expect(result.current.saveError).toBe('disk full');
 
       (AsyncStorage.setItem as jest.Mock).mockResolvedValueOnce(undefined);
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
       expect(result.current.saveError).toBeNull();
     });
   });
@@ -241,7 +243,10 @@ describe('useOnboardingStyleQuiz', () => {
     it('sets isSaving to true during save and false after', async () => {
       let resolveStorage!: () => void;
       (AsyncStorage.setItem as jest.Mock).mockImplementationOnce(
-        () => new Promise<void>((res) => { resolveStorage = res; }),
+        () =>
+          new Promise<void>((res) => {
+            resolveStorage = res;
+          }),
       );
 
       const { result } = renderHook(() => useOnboardingStyleQuiz({ getNow }));
@@ -249,10 +254,15 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setRoomType('bedroom'));
 
       let savePromise: Promise<boolean>;
-      act(() => { savePromise = result.current.save(); });
+      act(() => {
+        savePromise = result.current.save();
+      });
       expect(result.current.isSaving).toBe(true);
 
-      await act(async () => { resolveStorage(); await savePromise; });
+      await act(async () => {
+        resolveStorage();
+        await savePromise;
+      });
       expect(result.current.isSaving).toBe(false);
     });
   });
@@ -267,7 +277,9 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setFurnitureStyle('traditional'));
       act(() => result.current.setRoomType('guest-room'));
 
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
 
       expect(mockUpsertDataItem).toHaveBeenCalledWith(
         'MemberStylePreferences',
@@ -288,7 +300,9 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setFurnitureStyle('coastal'));
       act(() => result.current.setRoomType('bedroom'));
 
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
 
       expect(mockUpsertDataItem).not.toHaveBeenCalled();
       expect(AsyncStorage.setItem).toHaveBeenCalled();
@@ -301,7 +315,9 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setFurnitureStyle('modern'));
       act(() => result.current.setRoomType('living-room'));
 
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
 
       expect(mockUpsertDataItem).not.toHaveBeenCalled();
       expect(AsyncStorage.setItem).toHaveBeenCalled();
@@ -334,7 +350,9 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setFurnitureStyle('coastal'));
       act(() => result.current.setRoomType('office'));
 
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
 
       expect(result.current.saveError).toBe('CMS down');
     });
@@ -346,7 +364,9 @@ describe('useOnboardingStyleQuiz', () => {
       act(() => result.current.setFurnitureStyle('traditional'));
       act(() => result.current.setRoomType('living-room'));
 
-      await act(async () => { await result.current.save(); });
+      await act(async () => {
+        await result.current.save();
+      });
 
       expect(result.current.saveError).toBeNull();
     });

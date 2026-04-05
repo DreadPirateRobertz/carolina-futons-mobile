@@ -71,7 +71,9 @@ jest.mock('@/hooks/useOnboardingStyleQuiz', () => ({
 
 // --- Helpers ---
 
-function renderModal(props: { visible?: boolean; onDismiss?: () => void; onComplete?: () => void } = {}) {
+function renderModal(
+  props: { visible?: boolean; onDismiss?: () => void; onComplete?: () => void } = {},
+) {
   const onDismiss = props.onDismiss ?? jest.fn();
   const onComplete = props.onComplete ?? jest.fn();
   return render(
@@ -225,7 +227,9 @@ describe('OnboardingStyleModal', () => {
 
     it('pressing save calls hook save()', async () => {
       const { getByTestId } = renderModal();
-      await act(async () => { fireEvent.press(getByTestId('style-quiz-save-button')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('style-quiz-save-button'));
+      });
       expect(mockSave).toHaveBeenCalled();
     });
 
@@ -233,7 +237,9 @@ describe('OnboardingStyleModal', () => {
       const onComplete = jest.fn();
       mockSave.mockResolvedValueOnce(true);
       const { getByTestId } = renderModal({ onComplete });
-      await act(async () => { fireEvent.press(getByTestId('style-quiz-save-button')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('style-quiz-save-button'));
+      });
       expect(onComplete).toHaveBeenCalled();
     });
 
@@ -241,7 +247,9 @@ describe('OnboardingStyleModal', () => {
       const onComplete = jest.fn();
       mockSave.mockResolvedValueOnce(false);
       const { getByTestId } = renderModal({ onComplete });
-      await act(async () => { fireEvent.press(getByTestId('style-quiz-save-button')); });
+      await act(async () => {
+        fireEvent.press(getByTestId('style-quiz-save-button'));
+      });
       expect(onComplete).not.toHaveBeenCalled();
     });
   });
@@ -250,7 +258,13 @@ describe('OnboardingStyleModal', () => {
 
   describe('isSaving', () => {
     beforeEach(() => {
-      mockHookState = { ...mockHookState, step: 2, furnitureStyle: 'modern', roomType: 'dorm', isSaving: true };
+      mockHookState = {
+        ...mockHookState,
+        step: 2,
+        furnitureStyle: 'modern',
+        roomType: 'dorm',
+        isSaving: true,
+      };
     });
 
     it('shows loading indicator when isSaving is true', () => {

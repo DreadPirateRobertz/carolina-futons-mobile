@@ -35,7 +35,11 @@ jest.mock('@/hooks/useOnboarding', () => ({
 // Track what modal renders with
 const mockOnboardingStyleModal = jest.fn();
 jest.mock('../OnboardingStyleModal', () => ({
-  OnboardingStyleModal: (props: { visible: boolean; onDismiss: () => void; onComplete: () => void }) => {
+  OnboardingStyleModal: (props: {
+    visible: boolean;
+    onDismiss: () => void;
+    onComplete: () => void;
+  }) => {
     mockOnboardingStyleModal(props);
     return null;
   },
@@ -62,7 +66,11 @@ describe('OnboardingStyleModalBridge', () => {
 
   it('does not show modal when style prefs already exist in AsyncStorage', async () => {
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue(
-      JSON.stringify({ furnitureStyle: 'coastal', roomType: 'bedroom', savedAt: '2026-04-05T00:00:00Z' }),
+      JSON.stringify({
+        furnitureStyle: 'coastal',
+        roomType: 'bedroom',
+        savedAt: '2026-04-05T00:00:00Z',
+      }),
     );
     render(<OnboardingStyleModalBridge />);
     await waitFor(() => {
