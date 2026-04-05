@@ -67,6 +67,7 @@ import { modelIdToProductId, productIdToModelId, productId as toProductId } from
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { BundleRow } from '@/components/BundleRow';
 import { useBundleDeals } from '@/hooks/useBundleDeals';
+import { BundleDealsCard } from '@/components/BundleDealsCard';
 import { BundleSuggestion } from '@/components/BundleSuggestion';
 import { ShippingEstimateBadge } from '@/components/ShippingEstimateBadge';
 import { DeliveryEstimateWidget } from '@/components/DeliveryEstimateWidget';
@@ -282,7 +283,10 @@ export function ProductDetailScreen({
     ? ([...GALLERY_VIEWS, 'Video'] as const)
     : [...GALLERY_VIEWS];
 
-  const { bundleProducts } = useBundleDeals(catalogProductId);
+  // Bundle deals: fetch bundles that include this product's SKU (new CMS schema — cm-6i5)
+  const { bundles: bundleDeals } = useBundleDeals(catalogProduct?.sku);
+  // BundleRow (legacy "Pairs Well With") — products now sourced from bundle deals
+  const bundleProducts = bundleDeals.flatMap((b) => b.products);
   const shippingEstimate = useShippingEstimate(catalogProductId);
 
   const { addViewed } = useRecentlyViewed();
@@ -997,6 +1001,19 @@ export function ProductDetailScreen({
           onProductPress={handleBundleProductPress}
           testID="bundle-row"
         />
+
+        {/* Bundle Deals — CMS promotions containing this product (cm-6i5) */}
+        {bundleDeals.length > 0 && (
+          <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="pdp-bundle-deals">
+            {bundleDeals.map((bundle, index) => (
+              <BundleDealsCard
+                key={`${bundle.discountCode}-${index}`}
+                bundle={bundle}
+                testID={`pdp-bundle-${index}`}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Bundle Suggestion — curated bundle with savings + coupon */}
         <BundleSuggestion productId={catalogProductId} testID="bundle-suggestion-pdp" />

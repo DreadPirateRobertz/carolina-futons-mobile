@@ -1,13 +1,20 @@
 /**
  * @module useBundleDeals
  *
- * Fetches "Pairs Well With" bundle deal products from the Wix Data
- * `BundleDeals` collection for a given product ID. Returns the matched
- * Product catalog entries so they can be rendered as a horizontal
- * scroll row on the Product Detail Screen.
+ * Fetches bundle promotions from the shared Wix `BundleDeals` CMS collection.
+ * Schema (confirmed with melania, shared with cfutons web — cm-6i5):
+ *   name:         string  — bundle display name
+ *   products:     string[] (or JSON-encoded string) — array of product SKUs
+ *   discountCode: string  — pre-configured promo/coupon code
+ *   price:        number  — fixed bundle price in dollars
  *
- * Returns an empty array when no Wix client is available (unauthenticated)
- * or when the product has no configured bundle deals.
+ * Usage:
+ *   useBundleDeals()         — fetches all bundles (ShopScreen promotions rail)
+ *   useBundleDeals(sku)      — fetches bundles containing that SKU (PDP)
+ *
+ * Returns an empty array (no error) when no wixClient is available.
+ * SKUs are resolved against the local product catalog; unknown SKUs are silently
+ * skipped and don't count against a bundle's validity.
  */
 
 import { useState, useEffect } from 'react';
@@ -16,75 +23,113 @@ import { PRODUCTS, type Product } from '@/data/products';
 
 const COLLECTION_ID = 'BundleDeals';
 
-interface RawBundleData {
-  productId?: string;
-  relatedProductIds?: string[];
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface RawBundleDeal {
+  name?: string;
+  products?: string[] | string;
+  discountCode?: string;
+  price?: number;
+}
+
+export interface BundleDeal {
+  /** Wix CMS item id (may be undefined for items without an explicit id field) */
+  id?: string;
+  name: string;
+  /** Raw SKUs as stored in CMS */
+  skus: string[];
+  discountCode: string;
+  price: number;
+  /** Catalog Product objects resolved by SKU; unknown SKUs are omitted */
+  products: Product[];
 }
 
 export interface UseBundleDealsReturn {
-  bundleProducts: Product[];
+  bundles: BundleDeal[];
   isLoading: boolean;
-  error: Error | null;
+  error: string | null;
 }
 
-export function useBundleDeals(productId: string): UseBundleDealsReturn {
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function parseSkus(raw: string[] | string | undefined): string[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  // Wix may serialise arrays as JSON strings
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function resolveProducts(skus: string[]): Product[] {
+  return skus
+    .map((sku) => PRODUCTS.find((p) => p.sku === sku))
+    .filter((p): p is Product => p !== undefined);
+}
+
+function parseBundle(raw: RawBundleDeal): BundleDeal | null {
+  if (!raw.name || !raw.discountCode || raw.price === undefined) return null;
+  const skus = parseSkus(raw.products);
+  return {
+    name: raw.name,
+    skus,
+    discountCode: raw.discountCode,
+    price: raw.price,
+    products: resolveProducts(skus),
+  };
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
+
+export function useBundleDeals(sku?: string): UseBundleDealsReturn {
   const wixClient = useOptionalWixClient();
-  const [bundleProducts, setBundleProducts] = useState<Product[]>([]);
+
+  const [bundles, setBundles] = useState<BundleDeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchBundles() {
-      setIsLoading(true);
+    if (!wixClient) {
+      setBundles([]);
+      setIsLoading(false);
       setError(null);
-
-      if (!productId) {
-        if (!cancelled) {
-          setBundleProducts([]);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      if (!wixClient) {
-        if (!cancelled) {
-          setBundleProducts([]);
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const { items } = await wixClient.queryData<RawBundleData>(COLLECTION_ID, {
-          filter: { productId: { $eq: productId } },
-          limit: 1,
-        });
-
-        if (!cancelled) {
-          const relatedIds = items[0]?.relatedProductIds ?? [];
-          const products = relatedIds
-            .map((id) => PRODUCTS.find((p) => p.id === id))
-            .filter((p): p is Product => p !== undefined);
-          setBundleProducts(products);
-          setIsLoading(false);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Failed to load bundle deals'));
-          setBundleProducts([]);
-          setIsLoading(false);
-        }
-      }
+      return;
     }
 
-    fetchBundles();
+    setIsLoading(true);
+    setError(null);
+
+    const queryOptions: Parameters<typeof wixClient.queryData>[1] = {};
+    if (sku) {
+      queryOptions.filter = { products: { $hasSome: [sku] } };
+    }
+
+    wixClient
+      .queryData<RawBundleDeal>(COLLECTION_ID, queryOptions)
+      .then(({ items }) => {
+        if (cancelled) return;
+        const parsed = items
+          .map(parseBundle)
+          .filter((b): b is BundleDeal => b !== null);
+        setBundles(parsed);
+        setIsLoading(false);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : String(err));
+        setBundles([]);
+        setIsLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [wixClient, productId]);
+  }, [wixClient, sku]);
 
-  return { bundleProducts, isLoading, error };
+  return { bundles, isLoading, error };
 }
