@@ -1,9 +1,10 @@
 /**
  * @module npsSurvey
  *
- * Submits post-purchase NPS survey responses — deacon-kon2.
+ * Submits post-purchase NPS survey responses — cm-5cp.
  *
- * Writes to the Wix `SurveyResponses` collection.
+ * Writes to the Wix `NPSResponses` collection.
+ * Schema: memberId, orderId, score (0–10), comment, createdAt, suppressedUntil.
  * Returns a result object and never throws.
  */
 
@@ -22,7 +23,8 @@ export interface NpsSurveyData {
   orderId: string;
   score: number; // 0–10
   comment?: string;
-  submittedAt: string; // ISO 8601
+  createdAt: string; // ISO 8601 — when the user submitted the survey
+  suppressedUntil: string; // ISO 8601 — end of 90-day suppress window
   memberId?: string;
 }
 
@@ -34,17 +36,17 @@ export interface NpsSurveyResult {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const COLLECTION = 'SurveyResponses';
+const COLLECTION = 'NPSResponses';
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
 /**
- * Submit an NPS survey response to the Wix SurveyResponses collection.
+ * Submit an NPS survey response to the Wix NPSResponses collection.
  *
  * Returns {success: false, error} on any failure — never throws.
  */
 export async function submitNpsSurvey(
-  client: WixClientLike | null,
+  client: WixClientLike | null | undefined,
   data: NpsSurveyData,
 ): Promise<NpsSurveyResult> {
   if (!client) {
@@ -54,7 +56,8 @@ export async function submitNpsSurvey(
   const payload: Record<string, unknown> = {
     orderId: data.orderId,
     score: data.score,
-    submittedAt: data.submittedAt,
+    createdAt: data.createdAt,
+    suppressedUntil: data.suppressedUntil,
   };
 
   if (data.comment !== undefined) {
