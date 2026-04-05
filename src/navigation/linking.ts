@@ -25,6 +25,13 @@
  *   carolinafutons://challenges        → ChallengesScreen
  *   carolinafutons://avatar            → AvatarEquipScreen
  *   carolinafutons://gallery           → RoomGalleryScreen
+ *   carolinafutons://premium            → PremiumScreen
+ *   carolinafutons://search             → SearchScreen
+ *   carolinafutons://compare            → CompareScreen
+ *   carolinafutons://privacy            → PrivacyPolicyScreen
+ *   carolinafutons://loyalty            → LoyaltyScreen
+ *   carolinafutons://warranty           → WarrantyRegistrationScreen
+ *   carolinafutons://account/addresses  → SavedAddressesScreen (hq-qw5)
  */
 
 import type { LinkingOptions } from '@react-navigation/native';
@@ -82,6 +89,13 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       RoomGallery: 'gallery',
       ConsultationBooking: 'consultation',
       BookingCancellation: 'consultation/cancel',
+      Premium: 'premium',
+      Search: 'search',
+      Compare: 'compare',
+      PrivacyPolicy: 'privacy',
+      Loyalty: 'loyalty',
+      WarrantyRegistration: 'warranty',
+      SavedAddresses: 'account/addresses',
       ReferralLanding: {
         path: 'referral/:code',
         parse: { code: (code: string) => code },
@@ -117,8 +131,11 @@ export const SUPPORTED_PATHS = [
   'gallery',
   'consultation',
   'referral',
-  'leaderboard',
-  'challenges',
-  'avatar',
-  'gallery',
+  'premium',
+  'search',
+  'compare',
+  'privacy',
+  'loyalty',
+  'warranty',
+  'account/addresses',
 ] as const;
