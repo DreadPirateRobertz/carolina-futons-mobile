@@ -28,12 +28,7 @@ interface Props extends LoyaltyCardData {
 }
 
 /** Loyalty points card with tier badge, progress bar, and next-tier prompt. */
-export function LoyaltyCard({
-  points,
-  progressPercent,
-  hasActivity,
-  testID,
-}: Props) {
+export function LoyaltyCard({ points, progressPercent, hasActivity, testID }: Props) {
   const { colors, spacing, borderRadius, typography } = useTheme();
 
   // Hide if no points and no prior activity

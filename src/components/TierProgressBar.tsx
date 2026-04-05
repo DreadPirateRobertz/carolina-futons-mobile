@@ -17,7 +17,11 @@ import { useTheme } from '@/theme';
 import { getTierForPoints, getNextTier as getNextLoyaltyTier } from '@/data/loyaltyTiers';
 import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
-function computeFillRatio(points: number, current: LoyaltyTierConfig, next: LoyaltyTierConfig | null): number {
+function computeFillRatio(
+  points: number,
+  current: LoyaltyTierConfig,
+  next: LoyaltyTierConfig | null,
+): number {
   if (!next) return 1; // max tier — full bar
   const range = next.minPoints - current.minPoints;
   return Math.min((points - current.minPoints) / range, 1);

@@ -43,9 +43,9 @@ function loyaltyOf(tier: LoyaltyTierConfig, loading = false) {
 }
 
 // Shorthand aliases
-const TRAIL_BLAZER = LOYALTY_TIERS[0];     // 0 pts
-const MOUNTAIN_GUIDE = LOYALTY_TIERS[1];   // 500 pts
-const SUMMIT_MASTER = LOYALTY_TIERS[2];    // 1500 pts
+const TRAIL_BLAZER = LOYALTY_TIERS[0]; // 0 pts
+const MOUNTAIN_GUIDE = LOYALTY_TIERS[1]; // 500 pts
+const SUMMIT_MASTER = LOYALTY_TIERS[2]; // 1500 pts
 
 const getItem = AsyncStorage.getItem as jest.Mock;
 const setItem = AsyncStorage.setItem as jest.Mock;
@@ -61,7 +61,7 @@ beforeEach(() => {
 describe('useTriggerMoments', () => {
   describe('initial state', () => {
     it('returns null tierChanged while loyalty is loading', () => {
-      mockUseLoyalty.mockReturnValue(loyaltyOf('bronze', true));
+      mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER, true));
       const { result } = renderHook(() => useTriggerMoments());
       expect(result.current.triggers.tierChanged).toBeNull();
     });
@@ -110,7 +110,9 @@ describe('useTriggerMoments', () => {
       getItem.mockResolvedValue(null);
       mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
       const { result } = renderHook(() => useTriggerMoments());
-      await waitFor(() => expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'Trail Blazer'));
+      await waitFor(() =>
+        expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'Trail Blazer'),
+      );
       expect(result.current.triggers.tierChanged).toBeNull();
     });
   });
@@ -138,7 +140,9 @@ describe('useTriggerMoments', () => {
         result.current.dismiss('tierChanged');
       });
       // setItem should be called with the new tier name
-      await waitFor(() => expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'Mountain Guide'));
+      await waitFor(() =>
+        expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'Mountain Guide'),
+      );
     });
 
     it('dismissing a null trigger is a no-op', async () => {

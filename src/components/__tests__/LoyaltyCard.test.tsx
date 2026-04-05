@@ -11,10 +11,12 @@ import React from 'react';
 import { render } from '@testing-library/react-native';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { LoyaltyCard } from '../LoyaltyCard';
+import { getTierForPoints } from '@/data/loyaltyTiers';
 
 function renderCard(overrides: Partial<React.ComponentProps<typeof LoyaltyCard>> = {}) {
   const props = {
     points: 250,
+    tier: getTierForPoints(250),
     nextTierThreshold: 500,
     progressPercent: 50,
     hasActivity: true,

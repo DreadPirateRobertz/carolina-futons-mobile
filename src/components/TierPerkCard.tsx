@@ -31,7 +31,10 @@ export function TierPerkCard({ tier, testID }: Props) {
       accessibilityRole="none"
     >
       <View
-        style={[styles.header, { backgroundColor: tier.color + '22', borderRadius: borderRadius.sm }]}
+        style={[
+          styles.header,
+          { backgroundColor: tier.color + '22', borderRadius: borderRadius.sm },
+        ]}
       >
         <Text
           style={[styles.title, { color: tier.color, fontFamily: typography.headingFamily }]}
@@ -44,11 +47,7 @@ export function TierPerkCard({ tier, testID }: Props) {
         {tier.perks.map((perk) => (
           <View key={perk} style={styles.perkRow} testID="tier-perk-item">
             <View style={[styles.dot, { backgroundColor: tier.color }]} />
-            <Text
-              style={[styles.perkText, { fontFamily: typography.bodyFamily }]}
-            >
-              {perk}
-            </Text>
+            <Text style={[styles.perkText, { fontFamily: typography.bodyFamily }]}>{perk}</Text>
           </View>
         ))}
       </View>
