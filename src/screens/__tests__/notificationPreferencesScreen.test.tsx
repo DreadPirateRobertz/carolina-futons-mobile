@@ -310,6 +310,132 @@ describe('NotificationPreferencesScreen', () => {
     });
   });
 
+  describe('Permission denied state', () => {
+    it('shows denied note when permission status is denied', () => {
+      mockUseNotifications.mockReturnValue({
+        ...defaultNotifContext,
+        permissionStatus: 'denied',
+      });
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('permission-denied-note')).toBeTruthy();
+    });
+
+    it('still shows permission prompt when denied (user can tap to try again)', () => {
+      mockUseNotifications.mockReturnValue({
+        ...defaultNotifContext,
+        permissionStatus: 'denied',
+      });
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('permission-prompt')).toBeTruthy();
+    });
+
+    it('does not show denied note when granted', () => {
+      mockUseNotifications.mockReturnValue({
+        ...defaultNotifContext,
+        permissionStatus: 'granted',
+      });
+      const { queryByTestId } = renderNotifPrefs();
+      expect(queryByTestId('permission-denied-note')).toBeNull();
+    });
+  });
+
+  describe('Additional notification type rows', () => {
+    it('renders price_drop preference row', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-row-price_drop')).toBeTruthy();
+    });
+
+    it('renders cart_recovery preference row', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-row-cart_recovery')).toBeTruthy();
+    });
+
+    it('renders price_drop toggle switch', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-price_drop')).toBeTruthy();
+    });
+
+    it('renders cart_recovery toggle switch', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-cart_recovery')).toBeTruthy();
+    });
+  });
+
+  describe('All-preferences-off state', () => {
+    it('renders all core toggles as false when all prefs off', () => {
+      mockUseNotifications.mockReturnValue({
+        ...defaultNotifContext,
+        preferences: {
+          orderUpdates: false,
+          promotions: false,
+          backInStock: false,
+          cartReminders: false,
+          streakMilestone: false,
+          questComplete: false,
+          dailySpinReminder: false,
+        },
+      });
+      mockUseNotificationPreferences.mockReturnValue({
+        ...defaultGamifPrefs,
+        preferences: {
+          orderUpdates: false,
+          promotions: false,
+          backInStock: false,
+          cartReminders: false,
+          streakMilestone: false,
+          questComplete: false,
+          dailySpinReminder: false,
+        },
+      });
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-order_update').props.value).toBe(false);
+      expect(getByTestId('pref-toggle-promotion').props.value).toBe(false);
+      expect(getByTestId('pref-toggle-back_in_stock').props.value).toBe(false);
+      expect(getByTestId('pref-toggle-streak_milestone').props.value).toBe(false);
+      expect(getByTestId('pref-toggle-quest_complete').props.value).toBe(false);
+      expect(getByTestId('pref-toggle-daily_spin_reminder').props.value).toBe(false);
+    });
+  });
+
+  describe('Gamification toggle accessibility', () => {
+    it('streak milestone toggle has accessibilityRole switch', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-streak_milestone').props.accessibilityRole).toBe('switch');
+    });
+
+    it('quest complete toggle has accessibilityRole switch', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-quest_complete').props.accessibilityRole).toBe('switch');
+    });
+
+    it('daily spin reminder toggle has accessibilityRole switch', () => {
+      const { getByTestId } = renderNotifPrefs();
+      expect(getByTestId('pref-toggle-daily_spin_reminder').props.accessibilityRole).toBe('switch');
+    });
+  });
+
+  describe('Toggle-off: calling gamifToggle with correct key', () => {
+    it('toggling streak milestone from on to off calls toggle with streakMilestone', () => {
+      mockUseNotificationPreferences.mockReturnValue({
+        ...defaultGamifPrefs,
+        preferences: { ...defaultGamifPrefs.preferences, streakMilestone: true },
+      });
+      const { getByTestId } = renderNotifPrefs();
+      fireEvent(getByTestId('pref-toggle-streak_milestone'), 'valueChange', false);
+      expect(mockToggle).toHaveBeenCalledWith('streakMilestone');
+    });
+
+    it('toggling quest complete from on to off calls toggle with questComplete', () => {
+      mockUseNotificationPreferences.mockReturnValue({
+        ...defaultGamifPrefs,
+        preferences: { ...defaultGamifPrefs.preferences, questComplete: true },
+      });
+      const { getByTestId } = renderNotifPrefs();
+      fireEvent(getByTestId('pref-toggle-quest_complete'), 'valueChange', false);
+      expect(mockToggle).toHaveBeenCalledWith('questComplete');
+    });
+  });
+
   describe('Gamification notifications', () => {
     describe('rendering', () => {
       it('renders gamification section header', () => {
@@ -386,6 +512,17 @@ describe('NotificationPreferencesScreen', () => {
         const { getByTestId } = renderNotifPrefs();
         expect(getByTestId('gamification-prefs-error')).toBeTruthy();
       });
+
+      it('shows correct error text content', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          error: new Error('any error'),
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('gamification-prefs-error').props.children).toBe(
+          'Failed to save — please try again',
+        );
+      });
     });
 
     describe('graceful handling when push not supported', () => {
@@ -399,25 +536,38 @@ describe('NotificationPreferencesScreen', () => {
         expect(getByTestId('pref-toggle-quest_complete').props.disabled).toBe(true);
         expect(getByTestId('pref-toggle-daily_spin_reminder').props.disabled).toBe(true);
       });
+
+      it('disables gamification toggles when isSaving is true', () => {
+        mockUseNotificationPreferences.mockReturnValueOnce({
+          ...defaultGamifPrefs,
+          isSaving: true,
+        });
+        const { getByTestId } = renderNotifPrefs();
+        expect(getByTestId('pref-toggle-streak_milestone').props.disabled).toBe(true);
+        expect(getByTestId('pref-toggle-quest_complete').props.disabled).toBe(true);
+        expect(getByTestId('pref-toggle-daily_spin_reminder').props.disabled).toBe(true);
+      });
     });
 
     describe('skeleton loading state', () => {
-      it('shows gamification skeleton when isLoading is true', () => {
+      it('shows full-screen skeleton (notif-prefs-skeleton) when isLoading is true', () => {
+        // Implementation early-returns a full-screen skeleton when gamifLoading=true;
+        // the inline gamification-skeleton is never reached.
         mockUseNotificationPreferences.mockReturnValueOnce({
           ...defaultGamifPrefs,
           isLoading: true,
         });
         const { getByTestId } = renderNotifPrefs();
-        expect(getByTestId('gamification-skeleton')).toBeTruthy();
+        expect(getByTestId('notif-prefs-skeleton')).toBeTruthy();
       });
 
-      it('hides gamification skeleton when isLoading is false', () => {
+      it('hides full-screen skeleton when isLoading is false', () => {
         mockUseNotificationPreferences.mockReturnValueOnce({
           ...defaultGamifPrefs,
           isLoading: false,
         });
         const { queryByTestId } = renderNotifPrefs();
-        expect(queryByTestId('gamification-skeleton')).toBeNull();
+        expect(queryByTestId('notif-prefs-skeleton')).toBeNull();
       });
 
       it('does not render gamification toggles while loading', () => {

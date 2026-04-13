@@ -50,7 +50,6 @@ export function NotificationPreferencesScreen({ onBack, testID }: Props) {
     isPushSupported,
     isLoading: gamifLoading,
     isSaving: gamifSaving,
-    isLoading: gamifLoading,
     error: gamifError,
   } = useNotificationPreferences();
 

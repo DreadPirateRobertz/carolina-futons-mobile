@@ -437,3 +437,101 @@ describe('Switching between badges', () => {
     expect(getByTestId('badge-sheet-title').props.children).toBe('Monthly Master');
   });
 });
+
+// ── Deep edge cases (cm-zos) ──────────────────────────────────────────────────
+
+describe('Badge label text visible on cards', () => {
+  it('shows "Week Warrior" text on milestone 7 card', () => {
+    const { getByText } = wrap(<AchievementBadgesScreen />);
+    expect(getByText('Week Warrior')).toBeTruthy();
+  });
+
+  it('shows "Fortnight Fighter" text on milestone 14 card', () => {
+    const { getByText } = wrap(<AchievementBadgesScreen />);
+    expect(getByText('Fortnight Fighter')).toBeTruthy();
+  });
+
+  it('shows all six badge labels on the grid', () => {
+    const { getByText } = wrap(<AchievementBadgesScreen />);
+    expect(getByText('Week Warrior')).toBeTruthy();
+    expect(getByText('Fortnight Fighter')).toBeTruthy();
+    expect(getByText('Monthly Master')).toBeTruthy();
+    expect(getByText('Two Month Titan')).toBeTruthy();
+    expect(getByText('Century Club')).toBeTruthy();
+    expect(getByText('Year-Round Legend')).toBeTruthy();
+  });
+});
+
+describe('Sheet for high milestone badges', () => {
+  it('opens sheet with Century Club title for milestone 100', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-100'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Century Club');
+  });
+
+  it('opens sheet with Year-Round Legend title for milestone 365', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-365'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Year-Round Legend');
+  });
+
+  it('locked 100-day sheet shows CTA', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-100'));
+    expect(getByTestId('badge-sheet-cta').props.children).toBe('Keep your streak going!');
+  });
+
+  it('locked 365-day sheet description matches catalog', () => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-365'));
+    expect(getByTestId('badge-sheet-description').props.children).toBe('Reach a 365-day streak');
+  });
+});
+
+describe('All-locked state: tapping any badge shows locked sheet', () => {
+  beforeEach(() => {
+    mockUseAchievements.mockReturnValue(LOADED_NONE_EARNED);
+  });
+
+  it('tapping badge 7 when none earned shows CTA', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-cta')).toBeTruthy();
+  });
+
+  it('tapping badge 7 when none earned shows no date', () => {
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(queryByTestId('badge-sheet-date')).toBeNull();
+  });
+});
+
+describe('Close button label', () => {
+  it('close button shows "Close" text', () => {
+    const { getByTestId, getByText } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByText('Close')).toBeTruthy();
+  });
+});
+
+describe('Sheet for all-earned state', () => {
+  it('earned 100-day badge shows correct personalised description', () => {
+    mockUseAchievements.mockReturnValue(LOADED_ALL_EARNED);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-100'));
+    expect(getByTestId('badge-sheet-description').props.children).toBe(
+      'You reached a 100-day streak!',
+    );
+  });
+
+  it('earned 365-day badge shows no CTA', () => {
+    mockUseAchievements.mockReturnValue(LOADED_ALL_EARNED);
+    const { getByTestId, queryByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-365'));
+    expect(queryByTestId('badge-sheet-cta')).toBeNull();
+  });
+});
