@@ -1,8 +1,9 @@
 /**
- * RewardsScreen cross-rig event bus tests — cf-87tn
+ * RewardsScreen cross-rig event bus tests — cf-87tn / cm-0t5
  *
  * Verifies that emitRedemptionInitiated fires when the user presses
- * the Redeem button on the RewardsScreen.
+ * the Redeem button on the RewardsScreen. Additional edge cases added
+ * in cm-0t5: error states, loading skeleton, API failure paths.
  */
 
 import React from 'react';
@@ -157,6 +158,118 @@ describe('RewardsScreen', () => {
       const { getByTestId } = renderScreen();
       const btn = getByTestId('rewards-redeem-button');
       expect(btn.props.accessibilityLabel).toMatch(/500/);
+    });
+  });
+
+  // ── cm-0t5: additional edge cases ──────────────────────────────────────────
+
+  describe('points display edge cases', () => {
+    it('shows "points available" label text', () => {
+      const { getByText } = renderScreen();
+      expect(getByText(/points available/i)).toBeTruthy();
+    });
+
+    it('displays zero points correctly in the points testID', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 0 });
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('rewards-points').props.children).toBe(0);
+    });
+
+    it('displays large points value correctly', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 99999 });
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('rewards-points').props.children).toBe(99999);
+    });
+
+    it('enables redeem button at exactly 1 point (boundary)', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 1 });
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('rewards-redeem-button');
+      expect(btn.props.accessibilityState?.disabled).toBeFalsy();
+    });
+
+    it('testID prop is forwarded to the container', () => {
+      const { getByTestId } = renderScreen({ testID: 'custom-rewards-root' });
+      expect(getByTestId('custom-rewards-root')).toBeTruthy();
+    });
+  });
+
+  describe('loading state edge cases', () => {
+    it('loading state hides the redeem button', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: true });
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('rewards-redeem-button')).toBeNull();
+    });
+
+    it('loading state hides points display', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: true });
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('rewards-points')).toBeNull();
+    });
+
+    it('non-loading state hides the activity indicator', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: false });
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('rewards-loading')).toBeNull();
+    });
+  });
+
+  describe('error state edge cases', () => {
+    it('error state hides the redeem button', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: 'Something went wrong' });
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('rewards-redeem-button')).toBeNull();
+    });
+
+    it('error state hides the loading indicator', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: 'Something went wrong' });
+      const { queryByTestId } = renderScreen();
+      expect(queryByTestId('rewards-loading')).toBeNull();
+    });
+
+    it('displays the verbatim error message text', () => {
+      const errorMsg = 'Failed to load your loyalty data';
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: errorMsg });
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('rewards-error').props.children).toBe(errorMsg);
+    });
+  });
+
+  describe('API failure paths', () => {
+    it('captureException receives an Error instance when emit rejects', async () => {
+      mockEmitRedemptionInitiated.mockRejectedValueOnce(new Error('bus failure'));
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('rewards-redeem-button'));
+      await new Promise((r) => setTimeout(r, 10));
+      const captured = mockCaptureException.mock.calls[0]?.[0];
+      expect(captured).toBeInstanceOf(Error);
+    });
+
+    it('captureException receives an Error even when a non-Error is thrown', async () => {
+      mockEmitRedemptionInitiated.mockRejectedValueOnce('string error');
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('rewards-redeem-button'));
+      await new Promise((r) => setTimeout(r, 10));
+      const captured = mockCaptureException.mock.calls[0]?.[0];
+      expect(captured).toBeInstanceOf(Error);
+    });
+
+    it('emitRedemptionInitiated called exactly once per button press', async () => {
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('rewards-redeem-button'));
+      await Promise.resolve();
+      expect(mockEmitRedemptionInitiated).toHaveBeenCalledTimes(1);
+    });
+
+    it('newTotal passed to emitRedemptionInitiated is always 0', async () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 750 });
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('rewards-redeem-button'));
+      await Promise.resolve();
+      expect(mockEmitRedemptionInitiated).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ newTotal: 0 }),
+      );
     });
   });
 });
