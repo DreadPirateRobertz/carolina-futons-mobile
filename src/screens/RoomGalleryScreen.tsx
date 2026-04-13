@@ -1,9 +1,10 @@
 /**
  * @module RoomGalleryScreen
  *
- * Shoppable customer room gallery. Displays a grid of room photos sourced
- * from the Wix Data `roomGallery` collection. Tapping a room card navigates
- * to the ProductDetailScreen for the first associated product.
+ * Shoppable customer room gallery. Displays a grid of approved UGC room photos
+ * sourced from the Wix Data `RealRoomPhotos` collection. Each room card shows
+ * member attribution, and hotspot buttons that link to specific products
+ * ('shop this room').
  *
  * States handled: loading skeleton, empty gallery, API error with retry,
  * and the populated grid.
@@ -21,7 +22,7 @@ import { useRoomGalleryFilters } from '@/hooks/useRoomGalleryFilters';
 import { PRODUCTS } from '@/data/products';
 
 interface Props {
-  /** Called when a room card is tapped with the first productId of that room. */
+  /** Called when a room card or hotspot is tapped with the targeted productId. */
   onProductPress?: (productId: string) => void;
   /** Called when the "Share Your Room!" upload CTA is pressed. */
   onSharePress?: () => void;
@@ -53,7 +54,7 @@ function RoomCard({
       style={[styles.card, { borderRadius: borderRadius.card, margin: spacing.xs }]}
       onPress={handlePress}
       testID={`room-card-${item.roomId}`}
-      accessibilityLabel={`${item.roomStyle} room, ${item.productIds.length} ${item.productIds.length === 1 ? 'product' : 'products'}`}
+      accessibilityLabel={`${item.memberName || item.roomStyle} from ${item.city}, ${item.state}`}
       accessibilityRole="button"
     >
       <Image
@@ -63,7 +64,31 @@ function RoomCard({
         cachePolicy="memory-disk"
         placeholder={{ blurhash: DEFAULT_ROOM_BLURHASH }}
         testID={`room-image-${item.roomId}`}
+        accessibilityLabel={item.altText || undefined}
       />
+
+      {/* Product hotspot overlay buttons */}
+      {item.tags.map((tag) => (
+        <TouchableOpacity
+          key={tag.productId}
+          style={[
+            styles.hotspot,
+            {
+              left: `${tag.x * 100}%` as any,
+              top: `${tag.y * 100}%` as any,
+            },
+          ]}
+          onPress={() => {
+            onProductPress?.(tag.productId);
+          }}
+          testID={`hotspot-${item.roomId}-${tag.productId}`}
+          accessibilityRole="button"
+          accessibilityLabel={`Shop ${tag.productName}`}
+        >
+          <Text style={styles.hotspotIcon}>+</Text>
+        </TouchableOpacity>
+      ))}
+
       <View
         style={[
           styles.overlay,
@@ -79,6 +104,20 @@ function RoomCard({
           numberOfLines={1}
         >
           {item.roomStyle}
+        </Text>
+        <Text
+          style={[styles.memberName, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          testID={`room-member-${item.roomId}`}
+          numberOfLines={1}
+        >
+          {item.memberName}
+        </Text>
+        <Text
+          style={[styles.location, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          testID={`room-location-${item.roomId}`}
+          numberOfLines={1}
+        >
+          {item.city}, {item.state}
         </Text>
         <Text
           style={[
@@ -113,16 +152,15 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
     useRoomGalleryFilters(rooms);
   const [ugcModalVisible, setUgcModalVisible] = useState(false);
 
-  // Derive unique product options present in the current room list
   const productOptions = useMemo(() => {
     const seen = new Set<string>();
     const options: { id: string; name: string }[] = [];
     for (const room of rooms) {
-      for (const pid of room.productIds) {
-        if (!seen.has(pid)) {
-          seen.add(pid);
-          const product = PRODUCTS.find((p) => p.id === pid || p.slug === pid);
-          options.push({ id: pid, name: product?.name ?? pid });
+      for (const tag of room.tags) {
+        if (!seen.has(tag.productId)) {
+          seen.add(tag.productId);
+          const product = PRODUCTS.find((p) => p.id === tag.productId || p.slug === tag.productId);
+          options.push({ id: tag.productId, name: product?.name ?? tag.productName });
         }
       }
     }
@@ -311,18 +349,18 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
       ) : (
         <FlatList
           data={filteredRooms}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        numColumns={NUM_COLUMNS}
-        contentContainerStyle={styles.gridContent}
-        testID="room-gallery-grid"
-        showsVerticalScrollIndicator={false}
-        windowSize={5}
-        maxToRenderPerBatch={8}
-        removeClippedSubviews
-        initialNumToRender={6}
-        ListFooterComponent={shareCTA}
-      />
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          numColumns={NUM_COLUMNS}
+          contentContainerStyle={styles.gridContent}
+          testID="room-gallery-grid"
+          showsVerticalScrollIndicator={false}
+          windowSize={5}
+          maxToRenderPerBatch={8}
+          removeClippedSubviews
+          initialNumToRender={6}
+          ListFooterComponent={shareCTA}
+        />
       )}
       <UGCPhotoSubmitModal
         visible={ugcModalVisible}
@@ -333,7 +371,7 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
   );
 }
 
-const CARD_HEIGHT = 180;
+const CARD_HEIGHT = 200;
 
 const styles = StyleSheet.create({
   root: {
@@ -362,19 +400,47 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  hotspot: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderWidth: 1.5,
+    borderColor: '#8B6F47',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: -12,
+    marginTop: -12,
+  },
+  hotspotIcon: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#8B6F47',
+    lineHeight: 16,
+  },
   overlay: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 10,
+    padding: 8,
   },
   styleLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
-  productCount: {
+  memberName: {
     fontSize: 11,
+    marginTop: 1,
+  },
+  location: {
+    fontSize: 10,
+    marginTop: 1,
+    opacity: 0.85,
+  },
+  productCount: {
+    fontSize: 10,
     marginTop: 2,
   },
   illustrationContainer: {

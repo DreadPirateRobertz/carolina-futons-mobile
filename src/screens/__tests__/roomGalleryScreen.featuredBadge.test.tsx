@@ -42,31 +42,52 @@ jest.mock('@/hooks/useRoomGalleryFilters', () =>
   jest.requireActual('@/hooks/useRoomGalleryFilters'),
 );
 
+function makeRoom(overrides: Partial<RoomGalleryItem>): RoomGalleryItem {
+  return {
+    roomId: 'r0',
+    imageUrl: 'https://cdn.example.com/room0.jpg',
+    productIds: [],
+    roomStyle: '',
+    createdDate: '2026-01-01T00:00:00Z',
+    memberName: 'Test User',
+    city: 'Charlotte',
+    state: 'NC',
+    caption: '',
+    slug: 'r0',
+    altText: '',
+    tags: [],
+    ...overrides,
+  };
+}
+
 const MOCK_ROOMS: RoomGalleryItem[] = [
-  {
+  makeRoom({
     roomId: 'room-001',
     imageUrl: 'https://cdn.example.com/room1.jpg',
     productIds: ['asheville-full'],
     roomStyle: 'Modern',
     createdDate: '2026-03-01T00:00:00Z',
     featured: true,
-  },
-  {
+    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
+  makeRoom({
     roomId: 'room-002',
     imageUrl: 'https://cdn.example.com/room2.jpg',
     productIds: ['biltmore-queen'],
     roomStyle: 'Coastal',
     createdDate: '2026-03-02T00:00:00Z',
     featured: false,
-  },
-  {
+    tags: [{ productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
+  makeRoom({
     roomId: 'room-003',
     imageUrl: 'https://cdn.example.com/room3.jpg',
     productIds: ['blue-ridge-full'],
     roomStyle: 'Rustic',
     createdDate: '2026-03-03T00:00:00Z',
     featured: true,
-  },
+    tags: [{ productId: 'blue-ridge-full', productName: 'Blue Ridge Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
 ];
 
 function renderGallery(props: Partial<React.ComponentProps<typeof RoomGalleryScreen>> = {}) {
