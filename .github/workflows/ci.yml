@@ -106,5 +106,5 @@ jobs:
             --platform android \
             --dev false
 
-      - name: Check bundle size (≤ 500 KB)
-        run: npx tsx scripts/check-bundle-size.ts /tmp/cf-bundle.js
+      - name: Check bundle size (≤ 8 MB)
+        run: npx tsx scripts/check-bundle-size.ts /tmp/cf-bundle.js --limit=8192

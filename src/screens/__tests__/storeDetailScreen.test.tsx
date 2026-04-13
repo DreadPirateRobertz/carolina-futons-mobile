@@ -9,11 +9,13 @@ jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
 
 // Mock useStoreById so loading/error state tests can control hook output.
 // Default: look up by id from real STORES data (preserves existing storeId tests).
-const mockUseStoreById = jest.fn((id?: string): { store: Store | null; isLoading: boolean; error: Error | null } => {
-  const storeData = jest.requireActual<{ STORES: Store[] }>('@/data/stores').STORES;
-  const found = id ? (storeData.find((s) => s.id === id) ?? null) : null;
-  return { store: found, isLoading: false, error: null };
-});
+const mockUseStoreById = jest.fn(
+  (id?: string): { store: Store | null; isLoading: boolean; error: Error | null } => {
+    const storeData = jest.requireActual<{ STORES: Store[] }>('@/data/stores').STORES;
+    const found = id ? (storeData.find((s) => s.id === id) ?? null) : null;
+    return { store: found, isLoading: false, error: null };
+  },
+);
 jest.mock('@/hooks/useStores', () => ({
   ...jest.requireActual('@/hooks/useStores'),
   useStoreById: (...args: unknown[]) => mockUseStoreById(...(args as [string?])),

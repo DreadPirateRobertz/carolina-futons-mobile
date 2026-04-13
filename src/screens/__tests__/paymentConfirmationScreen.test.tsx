@@ -260,7 +260,10 @@ describe('PaymentConfirmationScreen — extended edge cases (cm-eg1)', () => {
 
   it('shows raw payment method string for unknown method', () => {
     const { getByText } = renderScreen({
-      order: { ...mockOrder, paymentMethod: 'bank-transfer' as unknown as OrderConfirmation['paymentMethod'] },
+      order: {
+        ...mockOrder,
+        paymentMethod: 'bank-transfer' as unknown as OrderConfirmation['paymentMethod'],
+      },
     });
     expect(getByText('bank-transfer')).toBeTruthy();
   });
