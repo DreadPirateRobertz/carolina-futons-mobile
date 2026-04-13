@@ -519,7 +519,9 @@ export function AccountScreen({
           />
           <MenuItem
             label={`Saved Addresses${addressBook.addresses.length > 0 ? ` (${addressBook.addresses.length})` : ''}`}
-            onPress={onSavedAddresses ?? (addressBook.addresses.length < 5 ? handleAddAddress : undefined)}
+            onPress={
+              onSavedAddresses ?? (addressBook.addresses.length < 5 ? handleAddAddress : undefined)
+            }
             colors={colors}
             borderRadius={borderRadius}
             shadows={shadows}

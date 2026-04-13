@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+import { NotificationPermissionPromptScreen } from '../NotificationPermissionPromptScreen';
+
 const mockRequest = jest.fn().mockResolvedValue('granted');
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
@@ -32,8 +34,6 @@ jest.mock('@/theme', () => ({
     borderRadius: { md: 8 },
   }),
 }));
-
-import { NotificationPermissionPromptScreen } from '../NotificationPermissionPromptScreen';
 
 beforeEach(() => {
   jest.clearAllMocks();

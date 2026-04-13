@@ -2,6 +2,9 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { useFitScore } from '@/hooks/useFitScore';
+import { FitScoreBadge } from '../FitScoreBadge';
+
 jest.mock('@/hooks/useFitScore', () => ({
   useFitScore: jest.fn(),
 }));
@@ -13,9 +16,6 @@ jest.mock('@/theme', () => ({
     borderRadius: { sm: 4 },
   }),
 }));
-
-import { useFitScore } from '@/hooks/useFitScore';
-import { FitScoreBadge } from '../FitScoreBadge';
 
 beforeEach(() => jest.clearAllMocks());
 

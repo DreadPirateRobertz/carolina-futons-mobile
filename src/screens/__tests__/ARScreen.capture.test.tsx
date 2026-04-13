@@ -57,7 +57,13 @@ jest.mock('react-native-reanimated', () => {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
-    useAnimatedStyle: (fn: any) => { try { return fn(); } catch { return {}; } },
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     withSpring: (val: any) => val,
     withRepeat: (val: any) => val,
     withSequence: (...vals: any[]) => vals[0],
@@ -72,14 +78,31 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('@/hooks/useSurfaceDetection', () => ({
   useSurfaceDetection: () => ({
     detectionState: 'tracking',
-    planes: [{ id: 'p1', type: 'floor', alignment: 'horizontal', center: {x:0,y:0,z:0}, extent: {width:2,height:2}, rotation: 0, confidence: 0.9, lastUpdated: 0 }],
+    planes: [
+      {
+        id: 'p1',
+        type: 'floor',
+        alignment: 'horizontal',
+        center: { x: 0, y: 0, z: 0 },
+        extent: { width: 2, height: 2 },
+        rotation: 0,
+        confidence: 0.9,
+        lastUpdated: 0,
+      },
+    ],
     hasFloor: true,
     hasWall: false,
     lightEstimate: null,
     shadowParams: { opacity: 0.25, blur: 8, offsetX: 0, offsetY: 0, color: 'rgba(0,0,0,0.25)' },
     lightingCondition: 'normal',
     lightingWarning: null,
-    performHitTest: jest.fn(() => ({ planeId: 'p1', position: {x:0,y:0}, worldPosition: {x:0,y:0,z:0}, isValid: true, distance: 1.5 })),
+    performHitTest: jest.fn(() => ({
+      planeId: 'p1',
+      position: { x: 0, y: 0 },
+      worldPosition: { x: 0, y: 0, z: 0 },
+      isValid: true,
+      distance: 1.5,
+    })),
     isActive: true,
     error: null,
   }),
@@ -121,15 +144,34 @@ jest.mock('@/hooks/useCameraPermission', () => ({
 }));
 
 jest.mock('@/hooks/useGalleryFallback', () => ({
-  useGalleryFallback: () => ({ imageUri: null, isGalleryMode: false, cameraUnavailable: false, pickImage: jest.fn(), clearImage: jest.fn() }),
+  useGalleryFallback: () => ({
+    imageUri: null,
+    isGalleryMode: false,
+    cameraUnavailable: false,
+    pickImage: jest.fn(),
+    clearImage: jest.fn(),
+  }),
 }));
 
 jest.mock('@/hooks/useModelLoader', () => ({
-  useModelLoader: () => ({ status: { state: 'idle' }, load: jest.fn(), reset: jest.fn(), prefetch: jest.fn() }),
+  useModelLoader: () => ({
+    status: { state: 'idle' },
+    load: jest.fn(),
+    reset: jest.fn(),
+    prefetch: jest.fn(),
+  }),
 }));
 
 jest.mock('@/hooks/useAROnboarding', () => ({
-  useAROnboarding: () => ({ isLoading: false, hasSeenAROnboarding: true, completeAROnboarding: jest.fn(), currentStep: 0, totalSteps: 3, nextStep: jest.fn(), prevStep: jest.fn() }),
+  useAROnboarding: () => ({
+    isLoading: false,
+    hasSeenAROnboarding: true,
+    completeAROnboarding: jest.fn(),
+    currentStep: 0,
+    totalSteps: 3,
+    nextStep: jest.fn(),
+    prevStep: jest.fn(),
+  }),
 }));
 
 jest.mock('@/hooks/useARMeasurement', () => ({
@@ -147,10 +189,17 @@ jest.mock('@/hooks/useARMeasurement', () => ({
 
 jest.mock('@/services/analytics', () => ({
   events: {
-    arScreenshot: jest.fn(), arShare: jest.fn(), arSaveToGallery: jest.fn(),
-    arSurfaceDetected: jest.fn(), arSurfaceTracking: jest.fn(), arLightingWarning: jest.fn(),
-    arModelSelected: jest.fn(), arFurniturePlaced: jest.fn(), arAddToCart: jest.fn(),
-    arMaterialSwap: jest.fn(), selectFabric: jest.fn(),
+    arScreenshot: jest.fn(),
+    arShare: jest.fn(),
+    arSaveToGallery: jest.fn(),
+    arSurfaceDetected: jest.fn(),
+    arSurfaceTracking: jest.fn(),
+    arLightingWarning: jest.fn(),
+    arModelSelected: jest.fn(),
+    arFurniturePlaced: jest.fn(),
+    arAddToCart: jest.fn(),
+    arMaterialSwap: jest.fn(),
+    selectFabric: jest.fn(),
   },
 }));
 

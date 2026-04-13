@@ -2,6 +2,8 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Share, Clipboard } from 'react-native';
 
+import { ShareSheet } from '../ShareSheet';
+
 jest.mock('@/theme', () => ({
   useTheme: () => ({
     colors: {
@@ -29,8 +31,6 @@ jest.mock('@/services/wix/wixProvider', () => ({
 jest.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: { id: 'member-1' } }),
 }));
-
-import { ShareSheet } from '../ShareSheet';
 
 beforeEach(() => jest.clearAllMocks());
 

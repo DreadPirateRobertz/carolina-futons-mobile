@@ -41,10 +41,7 @@ export function BundleDealsCard({ bundle, testID }: Props) {
     >
       {/* Bundle name */}
       <Text
-        style={[
-          styles.name,
-          { color: colors.espresso, fontFamily: typography.bodyFamilyBold },
-        ]}
+        style={[styles.name, { color: colors.espresso, fontFamily: typography.bodyFamilyBold }]}
         accessibilityRole="header"
       >
         {bundle.name}
@@ -70,10 +67,7 @@ export function BundleDealsCard({ bundle, testID }: Props) {
       {/* Price */}
       <Text
         testID={`${rootTestID === 'bundle-deals-card' ? 'bundle-deals-price' : `${rootTestID}-price`}`}
-        style={[
-          styles.price,
-          { color: colors.espresso, fontFamily: typography.headingFamily },
-        ]}
+        style={[styles.price, { color: colors.espresso, fontFamily: typography.headingFamily }]}
       >
         {formatPrice(bundle.price)}
       </Text>

@@ -31,7 +31,12 @@ interface Props {
   testID?: string;
 }
 
-export function FinancingCalculator({ price, onAffirmPress, onAfterpayPress, testID = 'financing-calculator' }: Props) {
+export function FinancingCalculator({
+  price,
+  onAffirmPress,
+  onAfterpayPress,
+  testID = 'financing-calculator',
+}: Props) {
   const { colors, spacing, borderRadius } = useTheme();
   const [provider, setProvider] = useState<Provider>('affirm');
 

@@ -51,9 +51,9 @@ function makeMatch(score: number, id = `product-${score}`): VisualSearchMatch {
 
 const MATCH_HIGH = makeMatch(0.95, 'high');
 const MATCH_MID = makeMatch(0.75, 'mid');
-const MATCH_AT_THRESHOLD = makeMatch(0.60, 'at-threshold');
+const MATCH_AT_THRESHOLD = makeMatch(0.6, 'at-threshold');
 const MATCH_JUST_BELOW = makeMatch(0.599, 'just-below');
-const MATCH_LOW = makeMatch(0.30, 'low');
+const MATCH_LOW = makeMatch(0.3, 'low');
 const MATCH_ZERO = makeMatch(0.0, 'zero');
 const MATCH_PERFECT = makeMatch(1.0, 'perfect');
 
@@ -65,7 +65,7 @@ describe('useConfidenceFilter', () => {
   describe('initial state', () => {
     it('defaults threshold to 0.60', () => {
       const { result } = renderHook(() => useConfidenceFilter([]));
-      expect(result.current.threshold).toBe(0.60);
+      expect(result.current.threshold).toBe(0.6);
     });
 
     it('returns empty filteredMatches for empty input', () => {
@@ -145,8 +145,8 @@ describe('useConfidenceFilter', () => {
   describe('setThreshold', () => {
     it('updates the threshold value', () => {
       const { result } = renderHook(() => useConfidenceFilter([]));
-      act(() => result.current.setThreshold(0.80));
-      expect(result.current.threshold).toBe(0.80);
+      act(() => result.current.setThreshold(0.8));
+      expect(result.current.threshold).toBe(0.8);
     });
 
     it('re-filters matches against new threshold', () => {
@@ -156,7 +156,7 @@ describe('useConfidenceFilter', () => {
       expect(result.current.filteredMatches).toHaveLength(3);
 
       // Raise threshold — only MATCH_HIGH (0.95) should pass
-      act(() => result.current.setThreshold(0.90));
+      act(() => result.current.setThreshold(0.9));
       expect(result.current.filteredMatches).toHaveLength(1);
       expect(result.current.filteredMatches[0].product.id).toBe('high');
     });
@@ -166,7 +166,7 @@ describe('useConfidenceFilter', () => {
       const { result } = renderHook(() => useConfidenceFilter(matches));
       expect(result.current.hiddenCount).toBe(1); // MATCH_LOW filtered
 
-      act(() => result.current.setThreshold(0.80));
+      act(() => result.current.setThreshold(0.8));
       // Now MATCH_MID (0.75), MATCH_AT_THRESHOLD (0.60), and MATCH_LOW (0.30) filtered
       expect(result.current.hiddenCount).toBe(3);
     });

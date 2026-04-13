@@ -33,6 +33,8 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 import { useCompleteTheLook } from '../useCompleteTheLook';
 import { PRODUCTS } from '@/data/products';
 
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
+
 // ── Mock Wix provider ─────────────────────────────────────────────────────────
 
 const mockQueryData = jest.fn();
@@ -41,8 +43,6 @@ const mockWixClient = { queryData: mockQueryData };
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: jest.fn(),
 }));
-
-import { useOptionalWixClient } from '@/services/wix/wixProvider';
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 
 // ── Mock crashReporting ───────────────────────────────────────────────────────

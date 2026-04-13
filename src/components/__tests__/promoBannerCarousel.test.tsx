@@ -128,9 +128,7 @@ describe('PromoBannerCarousel', () => {
 
 describe('PromoBannerCarousel — skeleton & loading', () => {
   it('shows skeleton when isLoading=true and items is empty', () => {
-    const { getByTestId, queryByTestId } = render(
-      <PromoBannerCarousel items={[]} isLoading />,
-    );
+    const { getByTestId, queryByTestId } = render(<PromoBannerCarousel items={[]} isLoading />);
     expect(getByTestId('promo-banner-skeleton')).toBeTruthy();
     expect(queryByTestId('promo-banner-carousel')).toBeNull();
   });
@@ -148,17 +146,19 @@ describe('PromoBannerCarousel — reduced motion', () => {
   it('does not crash and renders carousel when reduceMotion is true', () => {
     mockReducedMotion = true;
     const { getByTestId } = render(<PromoBannerCarousel items={TEST_ITEMS} />);
-    act(() => { jest.advanceTimersByTime(15000); });
+    act(() => {
+      jest.advanceTimersByTime(15000);
+    });
     expect(getByTestId('promo-banner-carousel')).toBeTruthy();
   });
 });
 
 describe('PromoBannerCarousel — auto-rotate', () => {
   it('does not start auto-rotate for single item', () => {
-    const { getByTestId } = render(
-      <PromoBannerCarousel items={[TEST_ITEMS[0]]} />,
-    );
-    act(() => { jest.advanceTimersByTime(15000); });
+    const { getByTestId } = render(<PromoBannerCarousel items={[TEST_ITEMS[0]]} />);
+    act(() => {
+      jest.advanceTimersByTime(15000);
+    });
     expect(getByTestId('promo-banner-carousel')).toBeTruthy();
   });
 
@@ -166,7 +166,9 @@ describe('PromoBannerCarousel — auto-rotate', () => {
     const { getByTestId } = render(<PromoBannerCarousel items={TEST_ITEMS} />);
     const flatList = getByTestId('promo-banner-carousel').children[0];
     fireEvent(flatList, 'scrollBeginDrag');
-    act(() => { jest.advanceTimersByTime(5000); });
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
     expect(getByTestId('promo-banner-carousel')).toBeTruthy();
   });
 

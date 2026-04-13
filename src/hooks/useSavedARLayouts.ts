@@ -133,9 +133,7 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
   const renameLayout = useCallback(
     async (id: string, newName: string): Promise<void> => {
       const now = new Date().toISOString();
-      const next = layouts.map((l) =>
-        l.id === id ? { ...l, name: newName, updatedAt: now } : l,
-      );
+      const next = layouts.map((l) => (l.id === id ? { ...l, name: newName, updatedAt: now } : l));
       try {
         await persist(next);
       } catch {

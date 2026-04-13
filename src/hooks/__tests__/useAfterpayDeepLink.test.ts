@@ -49,9 +49,7 @@ describe('useAfterpayDeepLink — URL construction', () => {
       await result.current.openCalculator();
     });
 
-    expect(mockOpenURL).toHaveBeenCalledWith(
-      expect.stringContaining('afterpay://'),
-    );
+    expect(mockOpenURL).toHaveBeenCalledWith(expect.stringContaining('afterpay://'));
   });
 
   it('opens web fallback URL when Afterpay app is NOT installed', async () => {
@@ -151,10 +149,14 @@ describe('useAfterpayDeepLink — error handling', () => {
     const { result } = renderHook(() => useAfterpayDeepLink(299));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
     expect(result.current.error).toBeTruthy();
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
     expect(result.current.error).toBeNull();
   });
 
@@ -164,7 +166,9 @@ describe('useAfterpayDeepLink — error handling', () => {
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
     await expect(
-      act(async () => { await result.current.openCalculator(); }),
+      act(async () => {
+        await result.current.openCalculator();
+      }),
     ).resolves.not.toThrow();
   });
 
@@ -173,7 +177,9 @@ describe('useAfterpayDeepLink — error handling', () => {
     const { result } = renderHook(() => useAfterpayDeepLink(-50));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     const calledUrl = (mockOpenURL.mock.calls[0] as string[])[0];
     expect(calledUrl).toContain('0');
@@ -185,7 +191,9 @@ describe('useAfterpayDeepLink — error handling', () => {
     const { result } = renderHook(() => useAfterpayDeepLink(299));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     await waitFor(() => expect(result.current.error).toBeTruthy());
   });
@@ -205,7 +213,9 @@ describe('useAfterpayDeepLink — reactivity', () => {
 
     rerender({ price: 500 });
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     const calledUrl = (mockOpenURL.mock.calls[0] as string[])[0];
     expect(calledUrl).toContain('50000');

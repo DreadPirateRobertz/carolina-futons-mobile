@@ -57,7 +57,9 @@ function makeStorage(existingKey?: string): StorageAdapter {
   const store: Record<string, string> = existingKey ? { [existingKey]: '1' } : {};
   return {
     getItem: jest.fn(async (key) => store[key] ?? null),
-    setItem: jest.fn(async (key, value) => { store[key] = value; }),
+    setItem: jest.fn(async (key, value) => {
+      store[key] = value;
+    }),
   };
 }
 
@@ -148,7 +150,9 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-8'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     expect(mockSubmitNpsSurvey).toHaveBeenCalledWith(
       fakeClient,
@@ -161,7 +165,9 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-5'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     const [, data] = mockSubmitNpsSurvey.mock.calls[0];
     expect(data.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
@@ -173,7 +179,9 @@ describe('NPSSurveyModal — submit', () => {
 
     fireEvent.press(getByTestId('nps-score-9'));
     fireEvent.changeText(getByTestId('nps-comment-input'), 'Great quality!');
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     const [, data] = mockSubmitNpsSurvey.mock.calls[0];
     expect(data.comment).toBe('Great quality!');
@@ -184,7 +192,9 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-6'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     const [, data] = mockSubmitNpsSurvey.mock.calls[0];
     expect('comment' in data).toBe(false);
@@ -196,7 +206,9 @@ describe('NPSSurveyModal — submit', () => {
 
     fireEvent.press(getByTestId('nps-score-4'));
     fireEvent.changeText(getByTestId('nps-comment-input'), '   ');
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     const [, data] = mockSubmitNpsSurvey.mock.calls[0];
     expect('comment' in data).toBe(false);
@@ -207,7 +219,9 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-10'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     await waitFor(() => expect(getByTestId('nps-success-state')).toBeTruthy());
   });
@@ -217,7 +231,9 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId, onSubmitted } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-7'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     await waitFor(() => expect(onSubmitted).toHaveBeenCalledTimes(1));
   });
@@ -227,10 +243,12 @@ describe('NPSSurveyModal — submit', () => {
     const { getByTestId, storage } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-8'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     await waitFor(() => {
-      expect((storage.setItem as jest.Mock)).toHaveBeenCalledWith(
+      expect(storage.setItem as jest.Mock).toHaveBeenCalledWith(
         expect.stringContaining(BASE_ORDER),
         expect.any(String),
       );
@@ -247,7 +265,9 @@ describe('NPSSurveyModal — error state', () => {
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-2'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     await waitFor(() => expect(getByTestId('nps-error-state')).toBeTruthy());
   });
@@ -258,7 +278,9 @@ describe('NPSSurveyModal — error state', () => {
     const { getByTestId } = renderModal({ wixClient: null });
 
     fireEvent.press(getByTestId('nps-score-5'));
-    await act(async () => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     await waitFor(() => expect(getByTestId('nps-error-state')).toBeTruthy());
   });
@@ -286,12 +308,7 @@ describe('NPSSurveyModal — already submitted guard', () => {
   it('shows already-submitted state when storage has the orderId key', async () => {
     const storage = makeStorage(`nps_submitted_${BASE_ORDER}`);
     const { getByTestId } = render(
-      <NPSSurveyModal
-        visible
-        orderId={BASE_ORDER}
-        onDismiss={jest.fn()}
-        storage={storage}
-      />,
+      <NPSSurveyModal visible orderId={BASE_ORDER} onDismiss={jest.fn()} storage={storage} />,
     );
 
     await waitFor(() => expect(getByTestId('nps-already-submitted')).toBeTruthy());
@@ -324,13 +341,18 @@ describe('NPSSurveyModal — submitting state', () => {
   it('disables submit button while submission is in flight', async () => {
     let resolve!: (v: { success: boolean; id: string }) => void;
     mockSubmitNpsSurvey.mockImplementation(
-      () => new Promise((res) => { resolve = res; }),
+      () =>
+        new Promise((res) => {
+          resolve = res;
+        }),
     );
     const fakeClient = { insertDataItem: jest.fn() };
     const { getByTestId } = renderModal({ wixClient: fakeClient });
 
     fireEvent.press(getByTestId('nps-score-7'));
-    act(() => { fireEvent.press(getByTestId('nps-submit-btn')); });
+    act(() => {
+      fireEvent.press(getByTestId('nps-submit-btn'));
+    });
 
     // While in-flight, button should be disabled
     await waitFor(() =>
@@ -338,6 +360,8 @@ describe('NPSSurveyModal — submitting state', () => {
     );
 
     // Resolve and clean up
-    await act(async () => { resolve({ success: true, id: 'x' }); });
+    await act(async () => {
+      resolve({ success: true, id: 'x' });
+    });
   });
 });

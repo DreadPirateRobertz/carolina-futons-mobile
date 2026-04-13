@@ -148,10 +148,14 @@ describe('useAffirmDeepLink — error handling', () => {
     const { result } = renderHook(() => useAffirmDeepLink(799));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
     expect(result.current.error).toBeTruthy();
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
     expect(result.current.error).toBeNull();
   });
 
@@ -161,7 +165,9 @@ describe('useAffirmDeepLink — error handling', () => {
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
     await expect(
-      act(async () => { await result.current.openCalculator(); }),
+      act(async () => {
+        await result.current.openCalculator();
+      }),
     ).resolves.not.toThrow();
 
     expect(mockOpenURL).toHaveBeenCalledWith('affirm://calculator?amount=0');
@@ -172,7 +178,9 @@ describe('useAffirmDeepLink — error handling', () => {
     const { result } = renderHook(() => useAffirmDeepLink(-100));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     expect(mockOpenURL).toHaveBeenCalledWith('affirm://calculator?amount=0');
   });
@@ -183,7 +191,9 @@ describe('useAffirmDeepLink — error handling', () => {
     const { result } = renderHook(() => useAffirmDeepLink(799));
     await waitFor(() => expect(result.current.canOpen).toBe(true));
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     await waitFor(() => expect(result.current.error).toBeTruthy());
   });
@@ -203,7 +213,9 @@ describe('useAffirmDeepLink — reactivity', () => {
 
     rerender({ price: 1500 });
 
-    await act(async () => { await result.current.openCalculator(); });
+    await act(async () => {
+      await result.current.openCalculator();
+    });
 
     expect(mockOpenURL).toHaveBeenCalledWith('affirm://calculator?amount=150000');
   });

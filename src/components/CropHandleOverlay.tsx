@@ -80,10 +80,8 @@ export function CropHandleOverlay({
 
       {/* Corner handles */}
       {(['topLeft', 'topRight', 'bottomLeft', 'bottomRight'] as CropHandle[]).map((handle) => {
-        const hx =
-          handle === 'topLeft' || handle === 'bottomLeft' ? left : right;
-        const hy =
-          handle === 'topLeft' || handle === 'topRight' ? top : bottom;
+        const hx = handle === 'topLeft' || handle === 'bottomLeft' ? left : right;
+        const hy = handle === 'topLeft' || handle === 'topRight' ? top : bottom;
 
         return (
           <DragHandle

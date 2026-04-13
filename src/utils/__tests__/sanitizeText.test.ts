@@ -33,9 +33,7 @@ describe('sanitizeText', () => {
   });
 
   it('strips multiple script blocks', () => {
-    expect(
-      sanitizeText('<script>a()</script>safe<script>b()</script>'),
-    ).toBe('safe');
+    expect(sanitizeText('<script>a()</script>safe<script>b()</script>')).toBe('safe');
   });
 
   // ── HTML tag stripping ────────────────────────────────────────────────────

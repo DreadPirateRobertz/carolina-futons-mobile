@@ -1,6 +1,8 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 
+import { PromoCodeInput } from '../PromoCodeInput';
+
 jest.mock('@/theme', () => ({
   useTheme: () => ({
     colors: {
@@ -22,8 +24,6 @@ let mockClientOverride: { callFunction: jest.Mock } | null = { callFunction: moc
 jest.mock('@/services/wix', () => ({
   useOptionalWixClient: () => mockClientOverride,
 }));
-
-import { PromoCodeInput } from '../PromoCodeInput';
 
 beforeEach(() => {
   jest.clearAllMocks();

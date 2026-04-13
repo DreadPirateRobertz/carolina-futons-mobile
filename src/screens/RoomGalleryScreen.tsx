@@ -106,7 +106,10 @@ function RoomCard({
           {item.roomStyle}
         </Text>
         <Text
-          style={[styles.memberName, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.memberName,
+            { color: colors.sandLight, fontFamily: typography.bodyFamily },
+          ]}
           testID={`room-member-${item.roomId}`}
           numberOfLines={1}
         >
@@ -148,8 +151,16 @@ function RoomCard({
 export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { rooms, isLoading, error, refresh, isPlaceholder } = useRoomGallery();
-  const { filteredRooms, filters, setStyleFilter, setProductFilter, setFeaturedOnly, clearFilters, hasActiveFilters, isEmpty: isFilterEmpty } =
-    useRoomGalleryFilters(rooms);
+  const {
+    filteredRooms,
+    filters,
+    setStyleFilter,
+    setProductFilter,
+    setFeaturedOnly,
+    clearFilters,
+    hasActiveFilters,
+    isEmpty: isFilterEmpty,
+  } = useRoomGalleryFilters(rooms);
   const [ugcModalVisible, setUgcModalVisible] = useState(false);
 
   const productOptions = useMemo(() => {
@@ -326,7 +337,10 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
       </TouchableOpacity>
 
       {isFilterEmpty ? (
-        <View style={[styles.centered, styles.filterEmptyContainer]} testID="room-gallery-filter-empty">
+        <View
+          style={[styles.centered, styles.filterEmptyContainer]}
+          testID="room-gallery-filter-empty"
+        >
           <Text
             style={[
               styles.emptyText,

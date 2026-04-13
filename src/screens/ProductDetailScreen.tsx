@@ -850,7 +850,12 @@ export function ProductDetailScreen({
             testID="bnpl-hero-pdp"
           />
           {/* cfutons_mobile-lub: Financing calculator — Affirm/Afterpay monthly breakdown, display only */}
-          <FinancingCalculator price={totalPrice} onAffirmPress={openAffirmCalculator} onAfterpayPress={openAfterpayCalculator} testID="pdp-financing-calculator" />
+          <FinancingCalculator
+            price={totalPrice}
+            onAffirmPress={openAffirmCalculator}
+            onAfterpayPress={openAfterpayCalculator}
+            testID="pdp-financing-calculator"
+          />
           {showInlineRating && (
             <TouchableOpacity
               onPress={() => {
@@ -1004,7 +1009,10 @@ export function ProductDetailScreen({
 
         {/* Bundle Deals — CMS promotions containing this product (cm-6i5) */}
         {bundleDeals.length > 0 && (
-          <View style={[styles.section, { paddingHorizontal: spacing.lg }]} testID="pdp-bundle-deals">
+          <View
+            style={[styles.section, { paddingHorizontal: spacing.lg }]}
+            testID="pdp-bundle-deals"
+          >
             {bundleDeals.map((bundle, index) => (
               <BundleDealsCard
                 key={`${bundle.discountCode}-${index}`}

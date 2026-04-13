@@ -1,6 +1,6 @@
-jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
-
 import { generateReferralLink, recordReferralConversion } from '../referralService';
+
+jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
 
 const mockCallFunction = jest.fn();
 

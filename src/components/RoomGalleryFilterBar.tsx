@@ -30,7 +30,7 @@ export interface RoomGalleryFilterBarProps {
   productOptions: ProductOption[];
 }
 
-const STYLE_OPTIONS: Array<{ label: string; value: RoomGalleryStyle | null }> = [
+const STYLE_OPTIONS: { label: string; value: RoomGalleryStyle | null }[] = [
   { label: 'All', value: null },
   { label: 'Modern', value: 'Modern' },
   { label: 'Coastal', value: 'Coastal' },

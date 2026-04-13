@@ -3,6 +3,8 @@ import { render, fireEvent, act } from '@testing-library/react-native';
 import { SearchScreen } from '../SearchScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
+import { CompareProvider } from '@/contexts/CompareContext';
+import { PRODUCTS } from '@/data/products';
 
 // Mock WishlistProvider so it renders children synchronously with no async
 // AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.
@@ -22,8 +24,6 @@ jest.mock('@/hooks/useRecentSearches', () => ({
     clearAll: jest.fn(),
   }),
 }));
-import { CompareProvider } from '@/contexts/CompareContext';
-import { PRODUCTS } from '@/data/products';
 
 // Mock WishlistProvider so it renders children synchronously with no async
 // AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.

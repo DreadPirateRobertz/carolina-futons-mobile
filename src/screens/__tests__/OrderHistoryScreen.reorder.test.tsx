@@ -160,7 +160,9 @@ describe('OrderHistoryScreen — reorder CTA (cm-7ot)', () => {
     });
 
     it('adds all items for a multi-item delivered order', async () => {
-      const multiItemOrder = MOCK_ORDERS.find((o) => o.items.length > 1 && o.status === 'delivered');
+      const multiItemOrder = MOCK_ORDERS.find(
+        (o) => o.items.length > 1 && o.status === 'delivered',
+      );
       if (!multiItemOrder) return; // skip if fixture lacks such an order
 
       const { getByTestId } = renderOrderHistory();

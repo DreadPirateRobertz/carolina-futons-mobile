@@ -104,16 +104,11 @@ export function CompleteTheLook({ products, isLoading, onProductPress }: Complet
   const { colors, spacing, typography } = useTheme();
 
   const renderItem = useCallback(
-    ({ item }: { item: Product }) => (
-      <MemoProductCard product={item} onPress={onProductPress} />
-    ),
+    ({ item }: { item: Product }) => <MemoProductCard product={item} onPress={onProductPress} />,
     [onProductPress],
   );
 
-  const renderSeparator = useCallback(
-    () => <View style={{ width: spacing.sm }} />,
-    [spacing.sm],
-  );
+  const renderSeparator = useCallback(() => <View style={{ width: spacing.sm }} />, [spacing.sm]);
 
   if (isLoading) {
     return (
@@ -132,7 +127,11 @@ export function CompleteTheLook({ products, isLoading, onProductPress }: Complet
       <Text
         style={[
           styles.title,
-          { color: colors.espresso, fontFamily: typography.bodyFamilyBold, marginBottom: spacing.sm },
+          {
+            color: colors.espresso,
+            fontFamily: typography.bodyFamilyBold,
+            marginBottom: spacing.sm,
+          },
         ]}
         accessibilityRole="header"
       >

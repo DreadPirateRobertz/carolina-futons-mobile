@@ -443,7 +443,7 @@ describe('useOrderHistory — filter and reorder coexistence', () => {
 // ── All statuses filter round-trip ────────────────────────────────────────────
 
 describe('useOrderHistory — all status filter values', () => {
-  const statuses: Array<OrderStatus | null> = [
+  const statuses: (OrderStatus | null)[] = [
     null,
     'processing',
     'shipped',

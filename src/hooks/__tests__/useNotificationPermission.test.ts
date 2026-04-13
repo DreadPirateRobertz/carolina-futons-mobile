@@ -3,13 +3,13 @@ import { renderHook, act } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Linking } from 'react-native';
 
+import * as Notifications from 'expo-notifications';
+import { useNotificationPermission } from '../useNotificationPermission';
+
 jest.mock('expo-notifications', () => ({
   getPermissionsAsync: jest.fn(),
   requestPermissionsAsync: jest.fn(),
 }));
-
-import * as Notifications from 'expo-notifications';
-import { useNotificationPermission } from '../useNotificationPermission';
 
 const ASKED_KEY = '@cf_notif_asked';
 

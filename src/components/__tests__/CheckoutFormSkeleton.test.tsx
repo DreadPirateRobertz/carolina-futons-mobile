@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { CheckoutFormSkeleton } from '../CheckoutFormSkeleton';
+
 jest.mock('@/theme', () => ({
   useTheme: () => ({
     colors: { sandDark: '#D4BC96' },
@@ -8,8 +10,6 @@ jest.mock('@/theme', () => ({
     borderRadius: { sm: 4 },
   }),
 }));
-
-import { CheckoutFormSkeleton } from '../CheckoutFormSkeleton';
 
 it('renders checkout-form-skeleton testID', () => {
   const { getByTestId } = render(<CheckoutFormSkeleton />);

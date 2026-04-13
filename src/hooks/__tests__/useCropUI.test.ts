@@ -97,7 +97,9 @@ describe('useCropUI', () => {
     describe('topRight handle', () => {
       it('moving right increases width', () => {
         // Start with a partial rect
-        const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 1 } }));
+        const { result } = renderHook(() =>
+          useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 1 } }),
+        );
         act(() => result.current.updateHandle('topRight', 0.2, 0));
         expect(approx(result.current.cropRect.width)).toBeCloseTo(0.7, 5);
         expect(result.current.cropRect.x).toBe(0); // x unchanged
@@ -120,7 +122,9 @@ describe('useCropUI', () => {
 
     describe('bottomLeft handle', () => {
       it('moving down increases height', () => {
-        const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 1, height: 0.5 } }));
+        const { result } = renderHook(() =>
+          useCropUI({ initialRect: { x: 0, y: 0, width: 1, height: 0.5 } }),
+        );
         act(() => result.current.updateHandle('bottomLeft', 0, 0.2));
         expect(approx(result.current.cropRect.height)).toBeCloseTo(0.7, 5);
       });
@@ -135,13 +139,17 @@ describe('useCropUI', () => {
 
     describe('bottomRight handle', () => {
       it('moving right increases width', () => {
-        const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 0.5 } }));
+        const { result } = renderHook(() =>
+          useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 0.5 } }),
+        );
         act(() => result.current.updateHandle('bottomRight', 0.2, 0));
         expect(approx(result.current.cropRect.width)).toBeCloseTo(0.7, 5);
       });
 
       it('moving down increases height', () => {
-        const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 0.5 } }));
+        const { result } = renderHook(() =>
+          useCropUI({ initialRect: { x: 0, y: 0, width: 0.5, height: 0.5 } }),
+        );
         act(() => result.current.updateHandle('bottomRight', 0, 0.2));
         expect(approx(result.current.cropRect.height)).toBeCloseTo(0.7, 5);
       });
@@ -174,7 +182,9 @@ describe('useCropUI', () => {
       });
 
       it('width cannot go below minimum size from bottomRight', () => {
-        const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 0.1, height: 1 } }));
+        const { result } = renderHook(() =>
+          useCropUI({ initialRect: { x: 0, y: 0, width: 0.1, height: 1 } }),
+        );
         act(() => result.current.updateHandle('bottomRight', -0.1, 0));
         expect(result.current.cropRect.width).toBeGreaterThanOrEqual(MIN_SIZE);
       });
@@ -185,7 +195,9 @@ describe('useCropUI', () => {
 
   describe('updateHandle — aspect ratio locked', () => {
     it('locking preserves width/height ratio', () => {
-      const { result } = renderHook(() => useCropUI({ initialRect: { x: 0, y: 0, width: 0.8, height: 0.4 } }));
+      const { result } = renderHook(() =>
+        useCropUI({ initialRect: { x: 0, y: 0, width: 0.8, height: 0.4 } }),
+      );
       act(() => result.current.toggleAspectRatioLock()); // lock ratio = 2:1
       const ratio = 0.8 / 0.4; // 2.0
 
@@ -246,7 +258,10 @@ describe('useCropUI', () => {
       // When locked from initialization, updateHandle must enforce the ratio without
       // requiring an explicit toggleAspectRatioLock() call first.
       const { result } = renderHook(() =>
-        useCropUI({ initialRect: { x: 0, y: 0, width: 0.8, height: 0.4 }, initialAspectLocked: true }),
+        useCropUI({
+          initialRect: { x: 0, y: 0, width: 0.8, height: 0.4 },
+          initialAspectLocked: true,
+        }),
       );
       const expectedRatio = 0.8 / 0.4; // 2.0
       act(() => result.current.updateHandle('bottomRight', 0.05, 0));
@@ -317,13 +332,17 @@ describe('useCropUI', () => {
     it.each(handles)('%s: x + width never exceeds 1', (handle) => {
       const { result } = renderHook(() => useCropUI());
       act(() => result.current.updateHandle(handle, 1, 0));
-      expect(result.current.cropRect.x + result.current.cropRect.width).toBeLessThanOrEqual(1 + 1e-9);
+      expect(result.current.cropRect.x + result.current.cropRect.width).toBeLessThanOrEqual(
+        1 + 1e-9,
+      );
     });
 
     it.each(handles)('%s: y + height never exceeds 1', (handle) => {
       const { result } = renderHook(() => useCropUI());
       act(() => result.current.updateHandle(handle, 0, 1));
-      expect(result.current.cropRect.y + result.current.cropRect.height).toBeLessThanOrEqual(1 + 1e-9);
+      expect(result.current.cropRect.y + result.current.cropRect.height).toBeLessThanOrEqual(
+        1 + 1e-9,
+      );
     });
 
     it.each(handles)('%s: x is never negative', (handle) => {

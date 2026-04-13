@@ -371,9 +371,7 @@ describe('useARCapture', () => {
       });
 
       expect(mockShareAsync).not.toHaveBeenCalled();
-      expect(mockRNShare).toHaveBeenCalledWith(
-        expect.objectContaining({ url: CAPTURED_URI }),
-      );
+      expect(mockRNShare).toHaveBeenCalledWith(expect.objectContaining({ url: CAPTURED_URI }));
     });
 
     it('includes message in Share.share fallback', async () => {
@@ -386,9 +384,7 @@ describe('useARCapture', () => {
         await result.current.share(message);
       });
 
-      expect(mockRNShare).toHaveBeenCalledWith(
-        expect.objectContaining({ message }),
-      );
+      expect(mockRNShare).toHaveBeenCalledWith(expect.objectContaining({ message }));
     });
 
     it('auto-captures when lastCapturedUri is null', async () => {

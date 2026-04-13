@@ -5,6 +5,9 @@
  */
 import { renderHook, act } from '@testing-library/react-native';
 
+import { usePersonalization } from '../usePersonalization';
+import { captureException } from '@/services/crashReporting';
+
 const mockCallFunction = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => ({ callFunction: mockCallFunction }),
@@ -14,9 +17,6 @@ jest.mock('@/services/personalizationCache', () => ({
   setCachedSommelierResult: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
-
-import { usePersonalization } from '../usePersonalization';
-import { captureException } from '@/services/crashReporting';
 
 beforeEach(() => jest.clearAllMocks());
 

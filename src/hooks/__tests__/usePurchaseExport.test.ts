@@ -51,7 +51,13 @@ const MEMBER = {
   provider: 'wix' as const,
 };
 
-const ADDR = { name: 'Alice Smith', street: '1 Main St', city: 'Asheville', state: 'NC', zip: '28801' };
+const ADDR = {
+  name: 'Alice Smith',
+  street: '1 Main St',
+  city: 'Asheville',
+  state: 'NC',
+  zip: '28801',
+};
 
 const ORDER_1: Order = {
   id: 'ord-1',
@@ -437,13 +443,18 @@ describe('usePurchaseExport — in-flight guard', () => {
   it('does not fire a second request while already sending', async () => {
     let resolve!: () => void;
     mockCallFunction.mockImplementation(
-      () => new Promise<{ success: boolean }>((res) => { resolve = () => res({ success: true }); }),
+      () =>
+        new Promise<{ success: boolean }>((res) => {
+          resolve = () => res({ success: true });
+        }),
     );
 
     const { result } = renderHook(() => usePurchaseExport());
 
     // Fire first call without awaiting
-    act(() => { result.current.sendExport(); });
+    act(() => {
+      result.current.sendExport();
+    });
 
     // Fire second call while first is in-flight
     await act(async () => {

@@ -3,11 +3,11 @@ import { render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { ZoomableImage } from '../ZoomableImage';
 
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+
 jest.mock('@/hooks/useReducedMotion', () => ({
   useReducedMotion: jest.fn(() => false),
 }));
-
-import { useReducedMotion } from '@/hooks/useReducedMotion';
 const mockUseReducedMotion = useReducedMotion as jest.Mock;
 
 jest.mock('react-native-gesture-handler', () => {

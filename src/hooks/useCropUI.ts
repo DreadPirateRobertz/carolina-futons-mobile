@@ -77,18 +77,34 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
             let newHeight = height - dy;
 
             // Clamp x: cannot go below 0 or past (x+width - MIN_SIZE)
-            if (newX < 0) { newWidth += newX; newX = 0; }
+            if (newX < 0) {
+              newWidth += newX;
+              newX = 0;
+            }
             const maxX = x + width - MIN_SIZE;
-            if (newX > maxX) { newWidth = MIN_SIZE; newX = maxX; }
+            if (newX > maxX) {
+              newWidth = MIN_SIZE;
+              newX = maxX;
+            }
 
             // Clamp y: cannot go below 0 or past (y+height - MIN_SIZE)
-            if (newY < 0) { newHeight += newY; newY = 0; }
+            if (newY < 0) {
+              newHeight += newY;
+              newY = 0;
+            }
             const maxY = y + height - MIN_SIZE;
-            if (newY > maxY) { newHeight = MIN_SIZE; newY = maxY; }
+            if (newY > maxY) {
+              newHeight = MIN_SIZE;
+              newY = maxY;
+            }
 
             // Enforce min size
-            if (newWidth < MIN_SIZE) { newWidth = MIN_SIZE; }
-            if (newHeight < MIN_SIZE) { newHeight = MIN_SIZE; }
+            if (newWidth < MIN_SIZE) {
+              newWidth = MIN_SIZE;
+            }
+            if (newHeight < MIN_SIZE) {
+              newHeight = MIN_SIZE;
+            }
 
             if (lockedRatio !== null) {
               // Use dx to drive — adjust height to maintain ratio
@@ -100,7 +116,11 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
               // Recompute y from bottom edge (bottomRight corner stays fixed)
               const bottomEdge = y + height;
               newY = bottomEdge - newHeight;
-              if (newY < 0) { newY = 0; newHeight = bottomEdge; newWidth = newHeight * lockedRatio; }
+              if (newY < 0) {
+                newY = 0;
+                newHeight = bottomEdge;
+                newWidth = newHeight * lockedRatio;
+              }
               newX = x + (width - newWidth);
             }
 
@@ -118,9 +138,15 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
             if (x + newWidth > 1) newWidth = 1 - x;
 
             // Clamp y
-            if (newY < 0) { newHeight += newY; newY = 0; }
+            if (newY < 0) {
+              newHeight += newY;
+              newY = 0;
+            }
             const maxY = y + height - MIN_SIZE;
-            if (newY > maxY) { newHeight = MIN_SIZE; newY = maxY; }
+            if (newY > maxY) {
+              newHeight = MIN_SIZE;
+              newY = maxY;
+            }
             if (newHeight < MIN_SIZE) newHeight = MIN_SIZE;
 
             if (lockedRatio !== null) {
@@ -132,7 +158,11 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
               }
               const bottomEdge = y + height;
               newY = bottomEdge - newHeight;
-              if (newY < 0) { newY = 0; newHeight = bottomEdge; newWidth = newHeight * lockedRatio; }
+              if (newY < 0) {
+                newY = 0;
+                newHeight = bottomEdge;
+                newWidth = newHeight * lockedRatio;
+              }
             }
 
             return { x, y: newY, width: newWidth, height: newHeight };
@@ -145,9 +175,15 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
             let newHeight = height + dy;
 
             // Clamp x
-            if (newX < 0) { newWidth += newX; newX = 0; }
+            if (newX < 0) {
+              newWidth += newX;
+              newX = 0;
+            }
             const maxX = x + width - MIN_SIZE;
-            if (newX > maxX) { newWidth = MIN_SIZE; newX = maxX; }
+            if (newX > maxX) {
+              newWidth = MIN_SIZE;
+              newX = maxX;
+            }
             if (newWidth < MIN_SIZE) newWidth = MIN_SIZE;
 
             // Clamp height
@@ -165,7 +201,10 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
                 newWidth = newHeight * lockedRatio;
               }
               newX = x + (width - newWidth);
-              if (newX < 0) { newX = 0; newWidth = x + width; }
+              if (newX < 0) {
+                newX = 0;
+                newWidth = x + width;
+              }
             }
 
             return { x: newX, y, width: newWidth, height: newHeight };

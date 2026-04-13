@@ -32,7 +32,11 @@ export interface UseAfterpayScheduleResult {
 
 const FORTNIGHT_DAYS = 14;
 
-const SAFE_EMPTY: UseAfterpayScheduleResult = { installments: [], isEligible: false, totalAmount: 0 };
+const SAFE_EMPTY: UseAfterpayScheduleResult = {
+  installments: [],
+  isEligible: false,
+  totalAmount: 0,
+};
 
 export function useAfterpaySchedule(price: number): UseAfterpayScheduleResult {
   return useMemo(() => {

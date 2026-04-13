@@ -12,6 +12,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { DeliveryTierBadge } from '../DeliveryTierBadge';
+
 jest.mock('@/theme', () => ({
   useTheme: () => ({
     colors: {
@@ -26,8 +28,6 @@ jest.mock('@/theme', () => ({
     borderRadius: { sm: 4 },
   }),
 }));
-
-import { DeliveryTierBadge } from '../DeliveryTierBadge';
 
 const PARCEL_DIMS = { width: 39, depth: 32, height: 31 };
 const FREIGHT_DIMS = { width: 54, depth: 34, height: 33 };

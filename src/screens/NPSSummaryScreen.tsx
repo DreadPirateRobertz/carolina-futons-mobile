@@ -56,11 +56,7 @@ export function NPSSummaryScreen({ testID }: Props) {
         style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'nps-summary-screen'}
       >
-        <ActivityIndicator
-          testID="nps-loading"
-          size="large"
-          color={colors.mountainBlue}
-        />
+        <ActivityIndicator testID="nps-loading" size="large" color={colors.mountainBlue} />
       </View>
     );
   }
@@ -106,10 +102,7 @@ export function NPSSummaryScreen({ testID }: Props) {
       testID={testID ?? 'nps-summary-screen'}
     >
       <Text
-        style={[
-          styles.heading,
-          { color: colors.espresso, fontFamily: typography.headingFamily },
-        ]}
+        style={[styles.heading, { color: colors.espresso, fontFamily: typography.headingFamily }]}
         accessibilityRole="header"
       >
         NPS Summary
@@ -128,7 +121,10 @@ export function NPSSummaryScreen({ testID }: Props) {
           ]}
         >
           <Text
-            style={[styles.statLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.statLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
           >
             Avg Score
           </Text>
@@ -150,7 +146,10 @@ export function NPSSummaryScreen({ testID }: Props) {
           ]}
         >
           <Text
-            style={[styles.statLabel, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.statLabel,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
           >
             Responses
           </Text>

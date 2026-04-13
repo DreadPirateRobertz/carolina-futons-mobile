@@ -8,6 +8,10 @@
 
 // NOTE: jest.mock factories are hoisted. Variables referenced inside factories
 // must be named with a `mock` prefix (Jest's guard against uninitialized vars).
+import { renderHook, act } from '@testing-library/react-native';
+import { useProducts } from '../useProducts';
+import { PRODUCTS } from '@/data/products';
+
 const mockQueryProducts = jest.fn();
 
 jest.mock('@/services/wix/config', () => ({
@@ -28,10 +32,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),
 }));
-
-import { renderHook, act } from '@testing-library/react-native';
-import { useProducts } from '../useProducts';
-import { PRODUCTS } from '@/data/products';
 
 const MOCK_PRODUCTS = PRODUCTS.slice(0, 5);
 

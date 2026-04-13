@@ -1,5 +1,7 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useRewardsSectionData } from '../useRewardsSectionData';
+
 const mockLoyalty = {
   points: 0,
   tier: 'bronze' as const,
@@ -30,8 +32,6 @@ const mockChallenges = {
 jest.mock('@/hooks/useLoyalty', () => ({ useLoyalty: () => mockLoyalty }));
 jest.mock('@/hooks/useMemberBadges', () => ({ useMemberBadges: () => mockBadges }));
 jest.mock('@/hooks/useChallengeProgress', () => ({ useChallengeProgress: () => mockChallenges }));
-
-import { useRewardsSectionData } from '../useRewardsSectionData';
 
 beforeEach(() => jest.clearAllMocks());
 

@@ -143,13 +143,18 @@ describe('useNPSSummary — loading state', () => {
   it('starts loading=true for staff users before fetch completes', async () => {
     let resolve!: (v: { items: unknown[]; totalResults: number }) => void;
     mockQueryData.mockImplementation(
-      () => new Promise((res) => { resolve = res; }),
+      () =>
+        new Promise((res) => {
+          resolve = res;
+        }),
     );
 
     const { result } = renderHook(() => useNPSSummary());
     expect(result.current.loading).toBe(true);
 
-    await act(async () => { resolve({ items: [], totalResults: 0 }); });
+    await act(async () => {
+      resolve({ items: [], totalResults: 0 });
+    });
   });
 
   it('sets loading=false after fetch completes', async () => {
@@ -216,10 +221,7 @@ describe('useNPSSummary — avgScore', () => {
 
   it('handles non-integer average correctly', async () => {
     mockQueryData.mockResolvedValue({
-      items: [
-        makeResponse({ id: 'r1', score: 10 }),
-        makeResponse({ id: 'r2', score: 7 }),
-      ],
+      items: [makeResponse({ id: 'r1', score: 10 }), makeResponse({ id: 'r2', score: 7 })],
       totalResults: 2,
     });
     const { result } = renderHook(() => useNPSSummary());
@@ -241,11 +243,7 @@ describe('useNPSSummary — responseCount', () => {
 
   it('returns count matching number of items', async () => {
     mockQueryData.mockResolvedValue({
-      items: [
-        makeResponse({ id: 'r1' }),
-        makeResponse({ id: 'r2' }),
-        makeResponse({ id: 'r3' }),
-      ],
+      items: [makeResponse({ id: 'r1' }), makeResponse({ id: 'r2' }), makeResponse({ id: 'r3' })],
       totalResults: 3,
     });
     const { result } = renderHook(() => useNPSSummary());
@@ -339,7 +337,12 @@ describe('useNPSSummary — recentComments', () => {
   it('includes score, comment, createdAt, and id on each recentComment', async () => {
     mockQueryData.mockResolvedValue({
       items: [
-        makeResponse({ id: 'r1', score: 9, comment: 'Wonderful', createdAt: '2026-02-01T00:00:00Z' }),
+        makeResponse({
+          id: 'r1',
+          score: 9,
+          comment: 'Wonderful',
+          createdAt: '2026-02-01T00:00:00Z',
+        }),
       ],
       totalResults: 1,
     });

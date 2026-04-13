@@ -13,7 +13,7 @@
 import { useState, useMemo } from 'react';
 import type { VisualSearchMatch } from '@/services/visualSearchEmbedding';
 
-const DEFAULT_THRESHOLD = 0.60;
+const DEFAULT_THRESHOLD = 0.6;
 
 export interface UseConfidenceFilterResult {
   /** Matches with score >= threshold, in original order. */
@@ -30,9 +30,7 @@ export function useConfidenceFilter(
   matches: VisualSearchMatch[],
   initialThreshold = DEFAULT_THRESHOLD,
 ): UseConfidenceFilterResult {
-  const [threshold, setThresholdRaw] = useState(
-    Math.max(0, Math.min(1, initialThreshold)),
-  );
+  const [threshold, setThresholdRaw] = useState(Math.max(0, Math.min(1, initialThreshold)));
 
   const setThreshold = (value: number) => {
     setThresholdRaw(Math.max(0, Math.min(1, value)));

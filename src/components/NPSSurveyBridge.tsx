@@ -24,10 +24,7 @@ import { AppState } from 'react-native';
 import { useNPSSurvey } from '@/hooks/useNPSSurvey';
 import { NPSSurveyModal } from '@/components/NPSSurveyModal';
 import { useOptionalWixClient } from '@/services/wix';
-import {
-  PUSH_STORAGE_PREFIX,
-  NUDGES_INDEX_KEY,
-} from '@/hooks/usePostPurchaseReviewPush';
+import { PUSH_STORAGE_PREFIX, NUDGES_INDEX_KEY } from '@/hooks/usePostPurchaseReviewPush';
 
 // ── Order resolution ──────────────────────────────────────────────────────────
 

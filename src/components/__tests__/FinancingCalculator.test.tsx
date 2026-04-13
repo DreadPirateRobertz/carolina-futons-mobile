@@ -207,9 +207,7 @@ describe('FinancingCalculator', () => {
     });
 
     it('renders Affirm deep-link CTA when onAffirmPress is provided', () => {
-      const { getByTestId } = render(
-        <FinancingCalculator price={500} onAffirmPress={jest.fn()} />,
-      );
+      const { getByTestId } = render(<FinancingCalculator price={500} onAffirmPress={jest.fn()} />);
       expect(getByTestId('fin-affirm-deeplink-cta')).toBeTruthy();
     });
 
@@ -219,9 +217,7 @@ describe('FinancingCalculator', () => {
     });
 
     it('Affirm deep-link CTA has accessible label', () => {
-      const { getByTestId } = render(
-        <FinancingCalculator price={500} onAffirmPress={jest.fn()} />,
-      );
+      const { getByTestId } = render(<FinancingCalculator price={500} onAffirmPress={jest.fn()} />);
       const cta = getByTestId('fin-affirm-deeplink-cta');
       expect(cta.props.accessibilityLabel).toMatch(/affirm/i);
     });

@@ -88,7 +88,8 @@ export function useRoomGalleryFilters(rooms: RoomGalleryItem[]): UseRoomGalleryF
     return result;
   }, [rooms, filters]);
 
-  const hasActiveFilters = filters.style !== null || filters.productId !== null || filters.featuredOnly;
+  const hasActiveFilters =
+    filters.style !== null || filters.productId !== null || filters.featuredOnly;
   const isEmpty = hasActiveFilters && filteredRooms.length === 0;
 
   return {

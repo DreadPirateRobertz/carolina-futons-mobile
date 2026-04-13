@@ -113,9 +113,7 @@ export function useBundleDeals(sku?: string): UseBundleDealsReturn {
       .queryData<RawBundleDeal>(COLLECTION_ID, queryOptions)
       .then(({ items }) => {
         if (cancelled) return;
-        const parsed = items
-          .map(parseBundle)
-          .filter((b): b is BundleDeal => b !== null);
+        const parsed = items.map(parseBundle).filter((b): b is BundleDeal => b !== null);
         setBundles(parsed);
         setIsLoading(false);
       })

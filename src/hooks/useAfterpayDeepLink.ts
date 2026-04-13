@@ -53,9 +53,7 @@ export function useAfterpayDeepLink(price: number): UseAfterpayDeepLinkResult {
   const openCalculator = useCallback(async () => {
     setError(null);
     const cents = Math.round(Math.max(0, price) * 100);
-    const url = afterpayAppAvailable
-      ? `${AFTERPAY_APP_BASE}/${cents}`
-      : AFTERPAY_WEB_URL;
+    const url = afterpayAppAvailable ? `${AFTERPAY_APP_BASE}/${cents}` : AFTERPAY_WEB_URL;
     try {
       await Linking.openURL(url);
     } catch (err: unknown) {

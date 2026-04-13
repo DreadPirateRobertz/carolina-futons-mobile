@@ -119,7 +119,6 @@ function simulateDrag(
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('CropHandleOverlay', () => {
-
   // ── Basic structure ────────────────────────────────────────────────────────
 
   it('renders the overlay container', () => {
@@ -238,9 +237,7 @@ describe('CropHandleOverlay', () => {
       const { getByTestId } = renderOverlay({ cropRect: CENTER_CROP });
       const border = getByTestId('crop-border');
       expect(border.props.style).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ left: 0, top: 0, width: 0, height: 0 }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ left: 0, top: 0, width: 0, height: 0 })]),
       );
     });
 
@@ -293,7 +290,6 @@ describe('CropHandleOverlay', () => {
   // ── DragHandle PanResponder ────────────────────────────────────────────────
 
   describe('DragHandle PanResponder', () => {
-
     describe('shouldSet handlers', () => {
       it('onStartShouldSetResponder returns true', () => {
         const { getByTestId } = renderOverlay();
@@ -396,8 +392,8 @@ describe('CropHandleOverlay', () => {
 
         expect(onHandleMove).toHaveBeenCalled();
         const [, dx, dy] = onHandleMove.mock.calls[0];
-        expect(dx).toBeCloseTo(100 / 200);  // 0.5
-        expect(dy).toBeCloseTo(250 / 500);  // 0.5
+        expect(dx).toBeCloseTo(100 / 200); // 0.5
+        expect(dy).toBeCloseTo(250 / 500); // 0.5
       });
     });
   });

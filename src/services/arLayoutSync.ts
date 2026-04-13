@@ -12,7 +12,7 @@
 export interface SyncableARLayout {
   id: string;
   name: string;
-  items: Array<{ modelId: string; fabricId: string }>;
+  items: { modelId: string; fabricId: string }[];
   thumbnailUri?: string;
   createdAt: string;
   updatedAt: string;

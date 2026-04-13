@@ -25,8 +25,15 @@ type FormMode = 'none' | 'add' | 'edit';
 /** Standalone screen for add/edit/delete/default address management. */
 export function SavedAddressesScreen() {
   const { colors, spacing, borderRadius } = useTheme();
-  const { addresses, defaultAddress, loading, addAddress, updateAddress, deleteAddress, setDefault } =
-    useSavedAddresses();
+  const {
+    addresses,
+    defaultAddress,
+    loading,
+    addAddress,
+    updateAddress,
+    deleteAddress,
+    setDefault,
+  } = useSavedAddresses();
 
   const [formMode, setFormMode] = useState<FormMode>('none');
   const [editingAddress, setEditingAddress] = useState<SavedAddress | null>(null);
@@ -128,7 +135,10 @@ export function SavedAddressesScreen() {
       {/* Inline form (add or edit) */}
       {formMode !== 'none' && (
         <View
-          style={[styles.formCard, { backgroundColor: colors.sandDark, borderRadius: borderRadius.lg }]}
+          style={[
+            styles.formCard,
+            { backgroundColor: colors.sandDark, borderRadius: borderRadius.lg },
+          ]}
         >
           <Text style={[styles.formTitle, { color: colors.espresso }]}>
             {formMode === 'add' ? 'New Address' : 'Edit Address'}
@@ -170,14 +180,19 @@ export function SavedAddressesScreen() {
                   {addr.isDefault && (
                     <View
                       testID={`address-default-badge-${addr.id}`}
-                      style={[styles.defaultBadge, { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.sm }]}
+                      style={[
+                        styles.defaultBadge,
+                        { backgroundColor: colors.mountainBlue, borderRadius: borderRadius.sm },
+                      ]}
                     >
                       <Text style={styles.defaultBadgeText}>Default</Text>
                     </View>
                   )}
 
                   {/* Address details */}
-                  <Text style={[styles.addressName, { color: colors.espresso }]}>{addr.fullName}</Text>
+                  <Text style={[styles.addressName, { color: colors.espresso }]}>
+                    {addr.fullName}
+                  </Text>
                   <Text style={[styles.addressLine, { color: colors.espressoLight }]}>
                     {addr.line2 ? `${addr.line1}, ${addr.line2}` : addr.line1}
                   </Text>

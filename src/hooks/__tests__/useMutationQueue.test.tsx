@@ -32,10 +32,7 @@ function makeWrapper(initialOnline = false) {
 }
 
 /** Render useMutationQueue in a controlled connectivity wrapper. */
-function renderQueue(
-  opts: Parameters<typeof useMutationQueue>[0],
-  initialOnline = false,
-) {
+function renderQueue(opts: Parameters<typeof useMutationQueue>[0], initialOnline = false) {
   const wrapper = makeWrapper(initialOnline);
   return renderHook(() => useMutationQueue(opts), { wrapper });
 }
@@ -173,7 +170,9 @@ describe('useMutationQueue — replay on reconnect', () => {
     });
 
     // Give a tick for any unintended effects
-    await act(async () => { await Promise.resolve(); });
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     // No reconnect happened — executor should NOT have been called
     expect(executor).not.toHaveBeenCalled();
@@ -182,7 +181,10 @@ describe('useMutationQueue — replay on reconnect', () => {
   it('sets isSyncing true during replay and false after', async () => {
     let resolveMutation: () => void = () => {};
     const slowExecutor = jest.fn(
-      () => new Promise<void>((resolve) => { resolveMutation = resolve; }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolveMutation = resolve;
+        }),
     );
 
     const { result } = renderQueue({
@@ -379,9 +381,7 @@ describe('useMutationQueue — onSyncComplete', () => {
     });
 
     await waitFor(() => expect(onSyncComplete).toHaveBeenCalledTimes(1));
-    expect(onSyncComplete).toHaveBeenCalledWith(
-      expect.objectContaining({ failed: 1 }),
-    );
+    expect(onSyncComplete).toHaveBeenCalledWith(expect.objectContaining({ failed: 1 }));
   });
 
   it('does not call onSyncComplete when queue is empty at reconnect', async () => {
@@ -398,7 +398,9 @@ describe('useMutationQueue — onSyncComplete', () => {
       result.current.setOnline(true);
     });
 
-    await act(async () => { await Promise.resolve(); });
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(onSyncComplete).not.toHaveBeenCalled();
   });
@@ -428,7 +430,9 @@ describe('useMutationQueue — onSyncComplete', () => {
       result.current.setOnline(true);
     });
 
-    await act(async () => { await Promise.resolve(); });
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(onSyncComplete).toHaveBeenCalledTimes(1);
   });
@@ -460,10 +464,7 @@ describe('useMutationQueue — syncNow', () => {
   it('syncNow returns a ReplayResult', async () => {
     const executor = jest.fn().mockResolvedValue(undefined);
 
-    const { result } = renderQueue(
-      { domain: 'cart', executors: { CART_ADD: executor } },
-      true,
-    );
+    const { result } = renderQueue({ domain: 'cart', executors: { CART_ADD: executor } }, true);
 
     await act(async () => {
       result.current.queueMutation('CART_ADD', { productId: 'p1' });
@@ -478,10 +479,7 @@ describe('useMutationQueue — syncNow', () => {
   });
 
   it('syncNow is a no-op and returns undefined when queue is empty', async () => {
-    const { result } = renderQueue(
-      { domain: 'cart', executors: {} },
-      true,
-    );
+    const { result } = renderQueue({ domain: 'cart', executors: {} }, true);
 
     let syncResult: ReplayResult | void;
     await act(async () => {
@@ -538,9 +536,7 @@ describe('useMutationQueue — profile domain', () => {
     await waitFor(() => expect(result.current.isSyncing).toBe(false));
 
     expect(executor).toHaveBeenCalledTimes(1);
-    expect(executor).toHaveBeenCalledWith(
-      expect.objectContaining({ displayName: 'Alice B.' }),
-    );
+    expect(executor).toHaveBeenCalledWith(expect.objectContaining({ displayName: 'Alice B.' }));
   });
 });
 

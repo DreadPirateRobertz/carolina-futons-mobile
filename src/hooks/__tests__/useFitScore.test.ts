@@ -1,5 +1,8 @@
 import { renderHook, act } from '@testing-library/react-native';
 
+import { useFitScore } from '../useFitScore';
+import { getCachedFitScore, setCachedFitScore } from '@/services/personalizationCache';
+
 const mockCallFunction = jest.fn();
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => ({ callFunction: mockCallFunction }),
@@ -9,9 +12,6 @@ jest.mock('@/services/personalizationCache', () => ({
   setCachedFitScore: jest.fn().mockResolvedValue(undefined),
 }));
 jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
-
-import { useFitScore } from '../useFitScore';
-import { getCachedFitScore, setCachedFitScore } from '@/services/personalizationCache';
 
 beforeEach(() => {
   jest.clearAllMocks();

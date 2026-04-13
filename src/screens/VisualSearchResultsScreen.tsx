@@ -54,17 +54,11 @@ export function VisualSearchResultsScreen() {
   const [state, setState] = useState<SearchState>({ status: 'loading' });
   const retryRef = useRef(0);
 
-  const {
-    cropRect,
-    aspectRatioLocked,
-    updateHandle,
-    toggleAspectRatioLock,
-    resetCrop,
-  } = useCropUI();
+  const { cropRect, aspectRatioLocked, updateHandle, toggleAspectRatioLock, resetCrop } =
+    useCropUI();
 
   const allMatches = state.status === 'success' ? state.matches : [];
-  const { filteredMatches, hiddenCount, threshold, setThreshold } =
-    useConfidenceFilter(allMatches);
+  const { filteredMatches, hiddenCount, threshold, setThreshold } = useConfidenceFilter(allMatches);
 
   const runSearch = useCallback(async () => {
     setState({ status: 'loading' });

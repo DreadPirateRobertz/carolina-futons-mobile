@@ -105,10 +105,7 @@ const CANCELLED_ORDER: Order = {
   status: 'cancelled',
 };
 
-function makeHookReturn(
-  orders: Order[],
-  statusFilter: string | null = null,
-) {
+function makeHookReturn(orders: Order[], statusFilter: string | null = null) {
   return {
     orders,
     isLoading: false,
@@ -164,9 +161,7 @@ describe('OrderHistoryScreen — filter tabs (hq-mky)', () => {
     });
 
     it('Delivered tab is active when statusFilter is delivered', () => {
-      mockUseOrders.mockReturnValue(
-        makeHookReturn([DELIVERED_ORDER], 'delivered'),
-      );
+      mockUseOrders.mockReturnValue(makeHookReturn([DELIVERED_ORDER], 'delivered'));
       const { getByTestId } = renderScreen();
       expect(getByTestId('filter-tab-delivered').props.accessibilityState?.selected).toBe(true);
       expect(getByTestId('filter-tab-all').props.accessibilityState?.selected).toBe(false);

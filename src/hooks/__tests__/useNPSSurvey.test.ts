@@ -52,9 +52,7 @@ const BASE_ORDER_ID = 'order-abc123';
 const DELIVERED_4_DAYS_AGO = daysAgo(4);
 
 /** Render hook and flush mount effects. */
-async function renderLoaded(
-  opts: Parameters<typeof useNPSSurvey>[0],
-) {
+async function renderLoaded(opts: Parameters<typeof useNPSSurvey>[0]) {
   const hook = renderHook(() => useNPSSurvey(opts));
   await act(async () => {});
   return hook;
@@ -460,7 +458,10 @@ describe('useNPSSurvey — submit', () => {
   it('sets isSubmitting true during flight, false after', async () => {
     let resolve!: (v: { success: boolean; id: string }) => void;
     mockSubmitNpsSurvey.mockImplementation(
-      () => new Promise((res) => { resolve = res; }),
+      () =>
+        new Promise((res) => {
+          resolve = res;
+        }),
     );
     const { storage } = makeStorage();
     const { result } = await renderLoaded({

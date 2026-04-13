@@ -144,9 +144,7 @@ describe('NPSSummaryScreen — stats', () => {
   });
 
   it('displays the correct avg score value', () => {
-    mockUseNPSSummary.mockReturnValue(
-      makeHookResult({ summary: makeSummary({ avgScore: 8.5 }) }),
-    );
+    mockUseNPSSummary.mockReturnValue(makeHookResult({ summary: makeSummary({ avgScore: 8.5 }) }));
     const { getByText } = render(<NPSSummaryScreen />);
     expect(getByText('8.5')).toBeTruthy();
   });
@@ -260,33 +258,25 @@ describe('NPSSummaryScreen — recent comments', () => {
 
 describe('NPSSummaryScreen — error state', () => {
   it('shows error state when error is set', () => {
-    mockUseNPSSummary.mockReturnValue(
-      makeHookResult({ error: 'Network error', summary: null }),
-    );
+    mockUseNPSSummary.mockReturnValue(makeHookResult({ error: 'Network error', summary: null }));
     const { getByTestId } = render(<NPSSummaryScreen />);
     expect(getByTestId('nps-error')).toBeTruthy();
   });
 
   it('displays the error message', () => {
-    mockUseNPSSummary.mockReturnValue(
-      makeHookResult({ error: 'Network error', summary: null }),
-    );
+    mockUseNPSSummary.mockReturnValue(makeHookResult({ error: 'Network error', summary: null }));
     const { getByText } = render(<NPSSummaryScreen />);
     expect(getByText('Network error')).toBeTruthy();
   });
 
   it('shows retry button on error', () => {
-    mockUseNPSSummary.mockReturnValue(
-      makeHookResult({ error: 'fail', summary: null }),
-    );
+    mockUseNPSSummary.mockReturnValue(makeHookResult({ error: 'fail', summary: null }));
     const { getByTestId } = render(<NPSSummaryScreen />);
     expect(getByTestId('nps-retry-button')).toBeTruthy();
   });
 
   it('calls refresh when retry is tapped', () => {
-    mockUseNPSSummary.mockReturnValue(
-      makeHookResult({ error: 'fail', summary: null }),
-    );
+    mockUseNPSSummary.mockReturnValue(makeHookResult({ error: 'fail', summary: null }));
     const { getByTestId } = render(<NPSSummaryScreen />);
     fireEvent.press(getByTestId('nps-retry-button'));
     expect(mockRefresh).toHaveBeenCalledTimes(1);

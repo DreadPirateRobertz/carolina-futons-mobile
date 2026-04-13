@@ -433,7 +433,7 @@ describe('VisualSearchResultsScreen — confidence filter (hq-ghe)', () => {
       success: true,
       matches: [
         { product: CATALOG_PRODUCTS[0], score: 0.95 },
-        { product: CATALOG_PRODUCTS[1], score: 0.30 }, // below default 0.60
+        { product: CATALOG_PRODUCTS[1], score: 0.3 }, // below default 0.60
       ],
     });
 
@@ -448,7 +448,7 @@ describe('VisualSearchResultsScreen — confidence filter (hq-ghe)', () => {
       success: true,
       matches: [
         { product: CATALOG_PRODUCTS[0], score: 0.95 },
-        { product: CATALOG_PRODUCTS[1], score: 0.30 }, // filtered
+        { product: CATALOG_PRODUCTS[1], score: 0.3 }, // filtered
       ],
     });
 
@@ -465,7 +465,7 @@ describe('VisualSearchResultsScreen — confidence filter (hq-ghe)', () => {
       success: true,
       matches: [
         { product: CATALOG_PRODUCTS[0], score: 0.95 },
-        { product: CATALOG_PRODUCTS[1], score: 0.30 },
+        { product: CATALOG_PRODUCTS[1], score: 0.3 },
       ],
     });
 

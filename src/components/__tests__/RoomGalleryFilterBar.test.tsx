@@ -180,9 +180,7 @@ describe('RoomGalleryFilterBar', () => {
 
     it('active product pill has accessibilityState selected=true', () => {
       const { getByTestId } = render(
-        <RoomGalleryFilterBar
-          {...defaultProps({ filters: { style: null, productId: 'p2' } })}
-        />,
+        <RoomGalleryFilterBar {...defaultProps({ filters: { style: null, productId: 'p2' } })} />,
       );
       expect(getByTestId('product-pill-p2').props.accessibilityState?.selected).toBe(true);
     });
@@ -213,9 +211,7 @@ describe('RoomGalleryFilterBar', () => {
     it('calls clearFilters when tapped', () => {
       const clearFilters = jest.fn();
       const { getByTestId } = render(
-        <RoomGalleryFilterBar
-          {...defaultProps({ hasActiveFilters: true, clearFilters })}
-        />,
+        <RoomGalleryFilterBar {...defaultProps({ hasActiveFilters: true, clearFilters })} />,
       );
       fireEvent.press(getByTestId('filter-bar-clear'));
       expect(clearFilters).toHaveBeenCalledTimes(1);

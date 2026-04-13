@@ -25,6 +25,18 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { type Product } from '@/data/products';
 
+// ── ReviewForm deps ───────────────────────────────────────────────────────────
+
+import { ReviewForm } from '@/components/ReviewForm';
+
+// ── useReviews deps ───────────────────────────────────────────────────────────
+
+import { useReviews } from '@/hooks/useReviews';
+
+// ── useProductReviews deps ────────────────────────────────────────────────────
+
+import { useProductReviews } from '@/hooks/useProductReviews';
+
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
@@ -51,10 +63,6 @@ jest.mock('@/hooks/useInventoryBadge', () => ({
   useInventoryBadge: () => ({ badge: 'none', quantity: 0, isLoading: false, error: null }),
 }));
 
-// ── ReviewForm deps ───────────────────────────────────────────────────────────
-
-import { ReviewForm } from '@/components/ReviewForm';
-
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn().mockResolvedValue({ canceled: true }),
   MediaTypeOptions: { Images: 'Images' },
@@ -63,10 +71,6 @@ jest.mock('expo-image-picker', () => ({
 jest.mock('@/services/uploadReviewPhoto', () => ({
   uploadReviewPhoto: jest.fn().mockResolvedValue({ mediaUrl: 'https://cdn.wix.com/photo.jpg' }),
 }));
-
-// ── useReviews deps ───────────────────────────────────────────────────────────
-
-import { useReviews } from '@/hooks/useReviews';
 
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
@@ -84,10 +88,6 @@ let mockWixClient: { createReview: jest.Mock } | null = null;
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => mockWixClient,
 }));
-
-// ── useProductReviews deps ────────────────────────────────────────────────────
-
-import { useProductReviews } from '@/hooks/useProductReviews';
 
 const mockQueryData = jest.fn();
 let mockProductReviewsWixClient: { queryData: jest.Mock } | null = null;

@@ -17,10 +17,7 @@ import { captureException } from '@/services/crashReporting';
 // Keys that look sensitive but are explicitly known to be safe:
 // - cf_session_token: a non-secret UUID v4 (no auth value if stolen)
 // - @back_in_stock_subscriptions: contains only product IDs, no PII
-const ALLOWLISTED_KEYS = new Set([
-  'cf_session_token',
-  '@back_in_stock_subscriptions',
-]);
+const ALLOWLISTED_KEYS = new Set(['cf_session_token', '@back_in_stock_subscriptions']);
 
 // Patterns that indicate a key might hold sensitive data
 const SENSITIVE_PATTERNS = [

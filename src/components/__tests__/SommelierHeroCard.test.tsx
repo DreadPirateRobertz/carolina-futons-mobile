@@ -3,6 +3,8 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { SommelierHeroCard } from '../SommelierHeroCard';
+
 jest.mock('@/theme', () => ({
   useTheme: () => ({
     colors: {
@@ -31,8 +33,6 @@ beforeEach(() => {
   (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
   (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 });
-
-import { SommelierHeroCard } from '../SommelierHeroCard';
 
 it('renders null while checking dismissed state', () => {
   (AsyncStorage.getItem as jest.Mock).mockReturnValue(new Promise(() => {})); // never resolves

@@ -13,15 +13,7 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Platform,
-  Alert,
-  Image,
-} from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Platform, Alert, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView } from 'expo-camera';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -137,7 +129,10 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   useEffect(() => {
     if (!arCapture.error) return;
     if (arCapture.error === 'permission-denied') {
-      Alert.alert('Permission Required', 'Please allow photo library access to save AR screenshots.');
+      Alert.alert(
+        'Permission Required',
+        'Please allow photo library access to save AR screenshots.',
+      );
     } else {
       Alert.alert('Capture Failed', 'Could not capture the AR scene. Please try again.');
     }

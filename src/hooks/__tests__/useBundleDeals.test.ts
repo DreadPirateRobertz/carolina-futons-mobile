@@ -288,7 +288,9 @@ describe('useBundleDeals — error state', () => {
 describe('useBundleDeals — SKU filter (PDP)', () => {
   it('returns bundles that include the given SKU', async () => {
     mockQueryData.mockResolvedValue({
-      items: [makeRawBundle({ name: 'Matching Bundle', products: [PRODUCT_A.sku!, PRODUCT_B.sku!] })],
+      items: [
+        makeRawBundle({ name: 'Matching Bundle', products: [PRODUCT_A.sku!, PRODUCT_B.sku!] }),
+      ],
       totalResults: 1,
     });
     const { result } = renderHook(() => useBundleDeals(PRODUCT_A.sku));

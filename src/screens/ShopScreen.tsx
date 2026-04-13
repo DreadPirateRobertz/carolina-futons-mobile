@@ -218,7 +218,10 @@ export function ShopScreen({ onProductPress, testID }: Props) {
 
         {/* Bundle deals promotions */}
         {!bundlesLoading && bundles.length > 0 && (
-          <View testID="shop-bundle-deals" style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}>
+          <View
+            testID="shop-bundle-deals"
+            style={{ paddingHorizontal: spacing.md, paddingTop: spacing.md }}
+          >
             <Text
               style={[styles.recentlyViewedTitle, { color: colors.espresso }]}
               accessibilityRole="header"
