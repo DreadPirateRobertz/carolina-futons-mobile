@@ -23,11 +23,11 @@ jest.mock('expo-camera', () => {
 
 // Mock expo-haptics — use jest.fn() inline to avoid hoisting issues
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: 'light' },
-  NotificationFeedbackType: { Success: 'success' },
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
+  NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
 
 // Mock gesture handler
@@ -679,6 +679,19 @@ describe('ARScreen', () => {
       const { getByTestId } = renderARScreen();
       fireEvent.press(getByTestId('ar-dimension-toggle'));
       expect(Haptics.impactAsync).toHaveBeenCalled();
+    });
+
+    it('fires Impact.Heavy (not Light or Medium) when furniture is placed', () => {
+      // renderARScreen defaults: detectionState='tracking', hasFloor=true,
+      // performHitTest returns { isValid: true, worldPosition: [...], planeId: '...' }
+      const { getByTestId } = renderARScreen();
+      jest.clearAllMocks();
+      fireEvent.press(getByTestId('ar-touch-area'), {
+        nativeEvent: { locationX: 195, locationY: 422 },
+      });
+      expect(Haptics.impactAsync).toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Heavy);
+      expect(Haptics.impactAsync).not.toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Light);
+      expect(Haptics.impactAsync).not.toHaveBeenCalledWith(Haptics.ImpactFeedbackStyle.Medium);
     });
   });
 

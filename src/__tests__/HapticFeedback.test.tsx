@@ -25,9 +25,9 @@ import { PRODUCTS } from '@/data/products';
 
 // ── expo-haptics mock ──────────────────────────────────────────────────────────
 jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
-  selectionAsync: jest.fn(),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium', Heavy: 'heavy' },
   NotificationFeedbackType: { Success: 'success', Warning: 'warning', Error: 'error' },
 }));
@@ -235,37 +235,62 @@ describe('OrderSuccessScreen — haptic on mount', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('fires Notification.Success on mount', () => {
-    render(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
+    render(
+      <OrderSuccessScreen
+        orderId="ord-001"
+        orderNumber="CF-12345"
+        onContinueShopping={jest.fn()}
+      />,
+    );
     expect(mockNotification).toHaveBeenCalledWith(Haptics.NotificationFeedbackType.Success);
   });
 
   it('fires Notification.Success exactly once (not on every render)', () => {
     const { rerender } = render(
-      <OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />,
+      <OrderSuccessScreen
+        orderId="ord-001"
+        orderNumber="CF-12345"
+        onContinueShopping={jest.fn()}
+      />,
     );
-    rerender(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
+    rerender(
+      <OrderSuccessScreen
+        orderId="ord-001"
+        orderNumber="CF-12345"
+        onContinueShopping={jest.fn()}
+      />,
+    );
     expect(mockNotification).toHaveBeenCalledTimes(1);
   });
 
   it('does NOT fire Impact on mount', () => {
-    render(<OrderSuccessScreen orderNumber="CF-12345" onContinueShopping={jest.fn()} />);
+    render(
+      <OrderSuccessScreen
+        orderId="ord-001"
+        orderNumber="CF-12345"
+        onContinueShopping={jest.fn()}
+      />,
+    );
     expect(mockImpact).not.toHaveBeenCalled();
   });
 });
 
 // ── 7. AR Furniture Placement ─────────────────────────────────────────────────
-// ARScreen has deep native dependencies (ViroReact, gesture handler, camera).
-// The full placement call is tested in ARScreen.test.tsx (handleAnchorUpdate path).
-// Here we document the requirement and verify the constant changed from Medium → Heavy.
+// Full behavioral test: ARScreen.test.tsx › Haptic Feedback ›
+//   "fires Impact.Heavy (not Light or Medium) when furniture is placed"
+//   Renders ARScreen, presses ar-touch-area with a valid hit-test anchor,
+//   and asserts impactAsync was called with Heavy — not Light or Medium.
+// ARScreen has deep native dependencies (ViroReact, gesture handler) so the
+// behavioral assertion lives in ARScreen.test.tsx where those mocks exist.
 describe('AR furniture placement — haptic style requirement', () => {
-  it('Heavy is a distinct style from Medium (placement must use Heavy)', () => {
-    expect(Haptics.ImpactFeedbackStyle.Heavy).not.toBe(Haptics.ImpactFeedbackStyle.Medium);
-  });
+  beforeEach(() => jest.clearAllMocks());
 
-  it('Heavy is a distinct style from Light', () => {
+  it('Heavy enum is defined and distinct from other feedback styles', () => {
+    // Guards against mock drift: if ImpactFeedbackStyle.Heavy were accidentally
+    // reassigned to 'medium' or 'light', the behavioral test in ARScreen.test.tsx
+    // would produce a false positive.
+    expect(Haptics.ImpactFeedbackStyle.Heavy).toBeDefined();
+    expect(Haptics.ImpactFeedbackStyle.Heavy).not.toBe(Haptics.ImpactFeedbackStyle.Medium);
     expect(Haptics.ImpactFeedbackStyle.Heavy).not.toBe(Haptics.ImpactFeedbackStyle.Light);
   });
-
-  // The ARScreen.test.tsx "handleAnchorUpdate" test group verifies the actual call.
-  // If that test passes with Heavy, the requirement is met end-to-end.
 });
