@@ -270,4 +270,40 @@ describe('OrderConfirmationScreen', () => {
       // no crash
     });
   });
+
+  describe('Edge cases — minimal order data (cm-ol2)', () => {
+    it('renders without crash when items array is empty', () => {
+      const emptyOrder = { ...mockOrder, items: [] };
+      expect(() => renderConfirmation({ order: emptyOrder })).not.toThrow();
+    });
+
+    it('shows screen root when items array is empty', () => {
+      const emptyOrder = { ...mockOrder, items: [] };
+      const { getByTestId } = renderConfirmation({ order: emptyOrder });
+      expect(getByTestId('order-confirmation-screen')).toBeTruthy();
+    });
+
+    it('shows order details card when items array is empty', () => {
+      const emptyOrder = { ...mockOrder, items: [] };
+      const { getByTestId } = renderConfirmation({ order: emptyOrder });
+      expect(getByTestId('order-details-card')).toBeTruthy();
+    });
+
+    it('renders without crash when estimatedDelivery is empty string', () => {
+      const order = { ...mockOrder, estimatedDelivery: '' };
+      expect(() => renderConfirmation({ order })).not.toThrow();
+    });
+
+    it('still shows confirmation title when estimatedDelivery is empty string', () => {
+      const order = { ...mockOrder, estimatedDelivery: '' };
+      const { getByTestId } = renderConfirmation({ order });
+      expect(getByTestId('confirmation-title')).toBeTruthy();
+    });
+
+    it('estimated-delivery section is present even when value is empty', () => {
+      const order = { ...mockOrder, estimatedDelivery: '' };
+      const { getByTestId } = renderConfirmation({ order });
+      expect(getByTestId('estimated-delivery')).toBeTruthy();
+    });
+  });
 });

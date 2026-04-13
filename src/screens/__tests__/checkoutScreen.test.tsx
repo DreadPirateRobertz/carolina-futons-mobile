@@ -24,11 +24,11 @@ jest.mock('@/hooks/usePremium', () => ({
   usePremium: () => mockPremiumValue,
 }));
 
-// Mock expo-haptics
+// Mock expo-haptics — all async methods must return Promises so callers can safely chain .catch()
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Medium: 'Medium' },
   NotificationFeedbackType: { Success: 'Success' },
 }));
@@ -96,6 +96,7 @@ jest.mock('@stripe/stripe-react-native', () => ({
     testID?: string;
     style?: object;
   }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { TouchableOpacity, Text } = require('react-native');
     return (
       <TouchableOpacity onPress={onPress} disabled={disabled} testID={testID} style={style}>
@@ -112,6 +113,7 @@ jest.mock('@stripe/stripe-react-native', () => ({
     testID?: string;
     style?: object;
   }) => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { View, TouchableOpacity, Text } = require('react-native');
     return (
       <View testID={testID} style={style}>
@@ -1548,6 +1550,7 @@ describe('CheckoutScreen', () => {
 
     it('does NOT override saved address ZIP with persisted ZIP', async () => {
       // Mock address book with a saved address
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const useAddressBookModule = require('@/hooks/useAddressBook');
       const original = useAddressBookModule.useAddressBook;
       useAddressBookModule.useAddressBook = () => ({
@@ -1671,6 +1674,7 @@ describe('CheckoutScreen', () => {
 
   describe('PromoCode discount', () => {
     it('applies fixed discount to displayed grand total', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const wixService = require('@/services/wix');
       const mockCallFunction = jest.fn().mockResolvedValue({
         valid: true,
@@ -1700,6 +1704,7 @@ describe('CheckoutScreen', () => {
     it('passes adjustedTotal (not full total) to createPaymentIntent after promo applied', async () => {
       // seed: Asheville ($349) + $49 shipping + $24.43 tax = $422.43
       // After $20 fixed discount: adjustedTotal = $402.43
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const wixService = require('@/services/wix');
       const mockCallFunction = jest.fn().mockResolvedValue({
         valid: true,
@@ -1784,6 +1789,238 @@ describe('CheckoutScreen', () => {
 
       // Despite two presses, payment was initiated only once
       expect(mockCreatePaymentIntent).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ── cm-ol2: Payment sheet failure paths ──────────────────────────────────
+
+  describe('Payment sheet failure paths (cm-ol2)', () => {
+    async function renderAndFillCard() {
+      const utils = renderCheckout({}, seed);
+      await act(async () => {});
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+      return utils;
+    }
+
+    it('shows payment-error when initPaymentSheet returns an error', async () => {
+      mockInitPaymentSheet.mockResolvedValueOnce({
+        error: { message: 'Payment setup failed', code: 'Failed' },
+      });
+
+      const utils = await renderAndFillCard();
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await waitFor(() => {
+        expect(utils.getByTestId('payment-error')).toBeTruthy();
+      });
+    });
+
+    it('shows payment-error when presentPaymentSheet returns a non-cancel error', async () => {
+      mockPresentPaymentSheet.mockResolvedValueOnce({
+        error: { message: 'Your card was declined', code: 'Failed' },
+      });
+
+      const utils = await renderAndFillCard();
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await waitFor(() => {
+        expect(utils.getByTestId('payment-error')).toBeTruthy();
+      });
+    });
+
+    it('does not show payment-error when user cancels presentPaymentSheet', async () => {
+      mockPresentPaymentSheet.mockResolvedValueOnce({
+        error: { message: 'User cancelled', code: 'Canceled' },
+      });
+
+      const utils = await renderAndFillCard();
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await act(async () => {});
+      expect(utils.queryByTestId('payment-error')).toBeNull();
+    });
+  });
+
+  // ── cm-ol2: Out-of-stock mid-checkout ────────────────────────────────────
+
+  describe('Out-of-stock mid-checkout (cm-ol2)', () => {
+    it('shows payment-error when confirmOrder rejects', async () => {
+      mockConfirmOrder.mockRejectedValueOnce(new Error('ITEM_OUT_OF_STOCK: asheville-full'));
+
+      const utils = renderCheckout({}, seed);
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await waitFor(() => {
+        expect(utils.getByTestId('payment-error')).toBeTruthy();
+      });
+    });
+
+    it('does not call onOrderComplete when confirmOrder rejects', async () => {
+      mockConfirmOrder.mockRejectedValueOnce(new Error('OUT_OF_STOCK'));
+      const onOrderComplete = jest.fn();
+
+      const utils = renderCheckout({ onOrderComplete }, seed);
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await act(async () => {});
+      expect(onOrderComplete).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── cm-ol2: Session timeout ───────────────────────────────────────────────
+
+  describe('Session timeout (cm-ol2)', () => {
+    it('shows payment-error with timeout message when poll times out', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const paymentPoller = require('@/services/paymentPoller');
+      const pollSpy = jest
+        .spyOn(paymentPoller, 'pollPaymentConfirmation')
+        .mockResolvedValueOnce('timeout');
+
+      const utils = renderCheckout({}, seed);
+      fillShippingAddress(utils);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+
+      await act(async () => {
+        fireEvent.press(utils.getByTestId('place-order-button'));
+      });
+
+      await waitFor(() => {
+        expect(utils.getByTestId('payment-error')).toBeTruthy();
+      });
+
+      pollSpy.mockRestore();
+    });
+  });
+
+  // ── cm-ol2: Promo code invalid and error paths ────────────────────────────
+
+  describe('Promo code — invalid and error paths (cm-ol2)', () => {
+    it('shows server error message when callFunction returns valid:false with error', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wixService = require('@/services/wix');
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: jest.fn().mockResolvedValue({ valid: false, error: 'Code not found' }),
+      });
+
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'BADCODE');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+
+      await waitFor(() => expect(getByText('Code not found')).toBeTruthy());
+
+      jest.restoreAllMocks();
+    });
+
+    it('falls back to default error message when valid:false has no error field', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wixService = require('@/services/wix');
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: jest.fn().mockResolvedValue({ valid: false }),
+      });
+
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'NOERROR');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+
+      await waitFor(() => expect(getByText('Invalid promo code')).toBeTruthy());
+
+      jest.restoreAllMocks();
+    });
+
+    it('shows generic error when promo code API call rejects', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const wixService = require('@/services/wix');
+      jest.spyOn(wixService, 'useOptionalWixClient').mockReturnValue({
+        createPaymentIntent: jest.fn(),
+        confirmOrder: jest.fn(),
+        callFunction: jest.fn().mockRejectedValue(new Error('Network error')),
+      });
+
+      const { getByTestId, getByText } = renderCheckout({}, seed);
+
+      await waitFor(() => expect(getByText(/add promo code/i)).toBeTruthy());
+      fireEvent.press(getByText(/add promo code/i));
+      fireEvent.changeText(getByTestId('promo-input'), 'MYCODE');
+      fireEvent.press(getByTestId('promo-apply-btn'));
+
+      await waitFor(() => expect(getByText('Unable to verify code — try again')).toBeTruthy());
+
+      jest.restoreAllMocks();
+    });
+  });
+
+  // ── cm-ol2: Address validation blocks payment ─────────────────────────────
+
+  describe('Address validation blocks payment (cm-ol2)', () => {
+    it('does not call createPaymentIntent when shipping address is empty', () => {
+      const utils = renderCheckout({}, seed);
+      fireEvent.press(utils.getByTestId('payment-card'));
+      fireEvent.press(utils.getByTestId('card-field-complete-trigger'));
+      fireEvent.press(utils.getByTestId('place-order-button'));
+
+      expect(mockCreatePaymentIntent).not.toHaveBeenCalled();
+    });
+
+    it('shows specific ZIP format error message for invalid ZIP', () => {
+      const utils = renderCheckout({}, seed);
+      fireEvent.changeText(utils.getByTestId('shipping-fullName'), 'Jane Doe');
+      fireEvent.changeText(utils.getByTestId('shipping-line1'), '456 Oak St');
+      fireEvent.changeText(utils.getByTestId('shipping-city'), 'Asheville');
+      fireEvent.changeText(utils.getByTestId('shipping-state'), 'NC');
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), 'ABCDE');
+
+      fireEvent.press(utils.getByTestId('payment-affirm'));
+      fireEvent.press(utils.getByTestId('place-order-button'));
+
+      const zipError = utils.getByTestId('shipping-zip-error');
+      expect(zipError.props.children).toBe('Enter a valid ZIP code');
+    });
+
+    it('shows specific state error message for invalid state code', () => {
+      const utils = renderCheckout({}, seed);
+      fireEvent.changeText(utils.getByTestId('shipping-fullName'), 'Jane Doe');
+      fireEvent.changeText(utils.getByTestId('shipping-line1'), '456 Oak St');
+      fireEvent.changeText(utils.getByTestId('shipping-city'), 'Asheville');
+      fireEvent.changeText(utils.getByTestId('shipping-state'), 'ZZ');
+      fireEvent.changeText(utils.getByTestId('shipping-zip'), '28801');
+
+      fireEvent.press(utils.getByTestId('payment-affirm'));
+      fireEvent.press(utils.getByTestId('place-order-button'));
+
+      const stateError = utils.getByTestId('shipping-state-error');
+      expect(stateError.props.children).toBe('Enter a valid 2-letter state code');
     });
   });
 });
