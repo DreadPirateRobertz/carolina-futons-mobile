@@ -10,7 +10,15 @@
  * and the populated grid.
  */
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
@@ -162,7 +170,11 @@ function RealRoomPhotosSection({
       <Text
         style={[
           styles.sectionHeader,
-          { color: colors.espresso, fontFamily: typography.headingFamily, paddingHorizontal: spacing.lg },
+          {
+            color: colors.espresso,
+            fontFamily: typography.headingFamily,
+            paddingHorizontal: spacing.lg,
+          },
         ]}
         testID="real-room-photos-header"
       >
@@ -173,14 +185,20 @@ function RealRoomPhotosSection({
       ) : error ? (
         <Text
           testID="real-room-photos-error"
-          style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.emptyText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
         >
           Couldn't load real room photos.
         </Text>
       ) : photos.length === 0 ? (
         <Text
           testID="real-room-photos-empty"
-          style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.emptyText,
+            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+          ]}
         >
           No real room photos yet.
         </Text>
@@ -190,7 +208,14 @@ function RealRoomPhotosSection({
             key={photo.id}
             testID={`real-room-photo-card-${photo.id}`}
             onPress={() => onProductPress?.(photo.id)}
-            style={[styles.realRoomCard, { borderRadius: borderRadius.card, marginHorizontal: spacing.sm, marginBottom: spacing.sm }]}
+            style={[
+              styles.realRoomCard,
+              {
+                borderRadius: borderRadius.card,
+                marginHorizontal: spacing.sm,
+                marginBottom: spacing.sm,
+              },
+            ]}
             accessibilityRole="button"
           >
             <Image

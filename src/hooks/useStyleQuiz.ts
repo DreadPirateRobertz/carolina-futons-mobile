@@ -16,7 +16,14 @@ const STORAGE_KEY = '@carolina_futons_style_preferences';
 // Enum values match the Wix getQuizRecommendations() API contract exactly.
 export type RoomType = 'living-room' | 'guest-room' | 'dorm' | 'studio' | 'office' | 'bedroom';
 export type StylePreference = 'modern' | 'rustic' | 'classic' | 'minimalist';
-export type PrimaryUse = 'sitting' | 'sleeping' | 'both' | 'seating' | 'guest-bed' | 'dual-purpose' | 'kid-friendly';
+export type PrimaryUse =
+  | 'sitting'
+  | 'sleeping'
+  | 'both'
+  | 'seating'
+  | 'guest-bed'
+  | 'dual-purpose'
+  | 'kid-friendly';
 export type SizeNeeds = 'twin' | 'full' | 'queen';
 export type BudgetRange = 'under-500' | '500-1000' | '1000-2000' | 'over-2000';
 
@@ -69,6 +76,12 @@ const RECOMMENDATION_MAP: Record<RecommendationKey, QuizRecommendation> = {
     productSlugs: ['biltmore-loveseat', 'blue-ridge-queen-futon'],
   },
   'classic:queen': { label: 'Classic Grand', productSlugs: ['biltmore-loveseat'] },
+  'minimalist:twin': { label: 'Clean Lines', productSlugs: ['asheville-full-futon'] },
+  'minimalist:full': {
+    label: 'Minimal Comfort',
+    productSlugs: ['asheville-full-futon', 'blue-ridge-queen-futon'],
+  },
+  'minimalist:queen': { label: 'Minimal Suite', productSlugs: ['biltmore-loveseat'] },
 };
 
 const FALLBACK_RECOMMENDATION: QuizRecommendation = {
