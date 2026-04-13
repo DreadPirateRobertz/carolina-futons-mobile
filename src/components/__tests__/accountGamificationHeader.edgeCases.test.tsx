@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * AccountGamificationHeader edge-case tests — cm-ajd
  *
