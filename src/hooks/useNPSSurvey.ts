@@ -194,7 +194,10 @@ export function useNPSSurvey({
         setSubmitSuccess(true);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        captureException(error, 'error', { action: 'useNPSSurvey/submit', orderId });
+        captureException(error, 'error', {
+          action: 'useNPSSurvey/submit',
+          orderId: orderId ?? undefined,
+        });
         setSubmitError(error.message);
       } finally {
         setIsSubmitting(false);

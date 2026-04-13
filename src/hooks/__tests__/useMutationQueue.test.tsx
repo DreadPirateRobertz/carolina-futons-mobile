@@ -470,7 +470,7 @@ describe('useMutationQueue — syncNow', () => {
       result.current.queueMutation('CART_ADD', { productId: 'p1' });
     });
 
-    let syncResult: ReplayResult | void;
+    let syncResult: ReplayResult | void = undefined;
     await act(async () => {
       syncResult = await result.current.syncNow();
     });
@@ -481,7 +481,7 @@ describe('useMutationQueue — syncNow', () => {
   it('syncNow is a no-op and returns undefined when queue is empty', async () => {
     const { result } = renderQueue({ domain: 'cart', executors: {} }, true);
 
-    let syncResult: ReplayResult | void;
+    let syncResult: ReplayResult | void = undefined;
     await act(async () => {
       syncResult = await result.current.syncNow();
     });

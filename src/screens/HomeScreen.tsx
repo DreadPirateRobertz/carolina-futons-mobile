@@ -137,7 +137,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     if (onOpenShop) return onOpenShop();
-    navigation.navigate('Tabs', { screen: 'Shop' });
+    navigation.navigate('Tabs');
   }, [onOpenShop, navigation]);
 
   const handleCollectionPress = useCallback(

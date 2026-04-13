@@ -135,9 +135,8 @@ export function useBookingCancellation(
         sendCancellationEmail(wixClient, {
           bookingId,
           memberEmail: booking.memberEmail,
-          memberName: booking.memberName,
-          date: booking.date,
-          timeSlot: booking.timeSlot,
+          memberId: '',
+          consultationDate: booking.date,
         }).catch(() => {
           // Email failure is non-critical — swallow silently
         });

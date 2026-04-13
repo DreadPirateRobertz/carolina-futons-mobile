@@ -261,6 +261,8 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       clearAll,
       bundles,
       bundlesLoading,
+      onProductPress,
+      typography.headingFamily,
     ],
   );
 
@@ -329,10 +331,11 @@ export function ShopScreen({ onProductPress, testID }: Props) {
       fetchError,
       refresh,
       searchQuery,
-      colors,
       categories,
       handleEmptyCategoryPress,
       handleTrendingPress,
+      typography.bodyFamily,
+      typography.headingFamily,
     ],
   );
 
@@ -347,7 +350,7 @@ export function ShopScreen({ onProductPress, testID }: Props) {
   );
 
   const handleNavigateToCompare = useCallback(() => {
-    navigation.navigate('Compare', { productSlugs: [] });
+    navigation.navigate('Compare');
   }, [navigation]);
 
   return (

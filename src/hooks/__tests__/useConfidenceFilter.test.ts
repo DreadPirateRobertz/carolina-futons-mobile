@@ -42,8 +42,10 @@ function makeMatch(score: number, id = `product-${score}`): VisualSearchMatch {
     product: {
       id,
       name: `Product ${id}`,
+      slug: id,
+      sku: id,
       price: 100,
-      imageUrl: `https://example.com/${id}.jpg`,
+      images: [`https://example.com/${id}.jpg`],
       category: 'Sofas',
     },
   };

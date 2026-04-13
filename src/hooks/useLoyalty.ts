@@ -15,12 +15,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { getWixSdkClient } from '@/services/wix/wixSdkClient';
-import {
-  LOYALTY_TIERS,
-  getTierForPoints,
-  getNextTier,
-  type LoyaltyTierConfig,
-} from '@/data/loyaltyTiers';
+import { getTierForPoints, getNextTier, type LoyaltyTierConfig } from '@/data/loyaltyTiers';
 
 export type LoyaltyTier = LoyaltyTierConfig; // backward compat alias
 export type { LoyaltyTierConfig };
@@ -33,6 +28,13 @@ export interface LoyaltyTransaction {
   createdDate: string;
 }
 
+export interface AwardPointsParams {
+  action: string;
+  points: number;
+  productId?: string;
+  photoId?: string;
+}
+
 export interface UseLoyaltyResult {
   points: number;
   tier: LoyaltyTierConfig;
@@ -42,6 +44,7 @@ export interface UseLoyaltyResult {
   loading: boolean;
   error: string | null;
   refreshPoints: () => Promise<void>;
+  awardPoints: (params: AwardPointsParams) => Promise<void>;
 }
 
 function computeDerivedFields(points: number) {
@@ -121,5 +124,25 @@ export function useLoyalty(): UseLoyaltyResult {
     await fetchData();
   }, [fetchData]);
 
-  return { points, tier, nextTier, pointsToNext, progress, loading, error, refreshPoints };
+  const awardPoints = useCallback(async (params: AwardPointsParams): Promise<void> => {
+    try {
+      const wixClient = getWixClientSingleton();
+      if (!wixClient) return;
+      await wixClient.callFunction('/_functions/awardLoyaltyPoints', 'POST', params);
+    } catch {
+      // Best-effort — failures are non-fatal
+    }
+  }, []);
+
+  return {
+    points,
+    tier,
+    nextTier,
+    pointsToNext,
+    progress,
+    loading,
+    error,
+    refreshPoints,
+    awardPoints,
+  };
 }

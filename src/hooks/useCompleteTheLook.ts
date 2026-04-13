@@ -115,13 +115,13 @@ export function useCompleteTheLook(productId: string): CompleteTheLookResult {
 
         // Sort rows by sortOrder ASC client-side as a defensive measure
         // (Wix sort is requested but not guaranteed by the mock in tests).
-        const sorted = [...items].sort((a, b) => (a.data.sortOrder ?? 0) - (b.data.sortOrder ?? 0));
+        const sorted = [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
         // Flatten all recommendedProductIds across rows, resolve against local
         // catalog, cap at MAX_RESULTS.
         const resolved: Product[] = [];
         for (const item of sorted) {
-          const ids = parseRecommendedIds(item.data.recommendedProductIds);
+          const ids = parseRecommendedIds(item.recommendedProductIds);
           for (const id of ids) {
             if (resolved.length >= MAX_RESULTS) break;
             const product = PRODUCTS.find((p) => p.id === id);

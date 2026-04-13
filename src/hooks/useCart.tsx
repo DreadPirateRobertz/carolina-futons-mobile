@@ -42,6 +42,12 @@ export interface CartItem {
   fabric: Fabric;
   quantity: number;
   unitPrice: number; // basePrice + fabric.price
+  /** Optional image URL populated from Wix server cart line item media. */
+  imageUrl?: string;
+  /** Optional SKU from Wix product catalog. */
+  sku?: string;
+  /** Optional variant ID corresponding to the selected fabric. */
+  variantId?: string;
 }
 
 /** Internal state managed by the cart reducer. */
@@ -128,6 +134,10 @@ interface CartContextValue {
   isSyncing: boolean;
   /** Replace all cart items atomically (used by sync to load server state). */
   loadItems: (items: CartItem[]) => void;
+  /** Last sync error message, if any. */
+  syncError: string | null;
+  /** Clear the current sync error. */
+  clearSyncError: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -138,7 +148,7 @@ const CART_STORAGE_KEY = 'cfutons_cart';
  * Convert a Wix server cart line item to a local CartItem, if the
  * referenced product and variant exist in the local catalog.
  */
-function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
+export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
   const modelId = lineItem.catalogReference.catalogItemId;
   const fabricId = lineItem.catalogReference.options?.variantId;
 
@@ -148,12 +158,15 @@ function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | null {
   const fabric = fabricId ? FABRICS.find((f) => f.id === fabricId) : FABRICS[0];
   if (!fabric) return null;
 
+  const imageUrl = lineItem.media?.mediaItem?.url || undefined;
+
   return {
     id: `${model.id}:${fabric.id}`,
     model,
     fabric,
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
+    ...(imageUrl ? { imageUrl } : {}),
   };
 }
 
@@ -170,6 +183,8 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
       merged[existingIdx] = {
         ...merged[existingIdx],
         quantity: Math.min(10, Math.max(merged[existingIdx].quantity, serverItem.quantity)),
+        // Propagate imageUrl from server if local doesn't have one
+        imageUrl: merged[existingIdx].imageUrl ?? serverItem.imageUrl,
       };
     } else {
       merged.push(serverItem);
@@ -194,6 +209,7 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const authCtx = useContext(AuthContext);
   const user = authCtx?.user ?? null;
   const prevUserRef = useRef<typeof user>(null);
@@ -407,6 +423,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'LOAD', items });
   }, []);
 
+  const clearSyncError = useCallback(() => {
+    setSyncError(null);
+  }, []);
+
   const itemCount = useMemo(
     () => state.items.reduce((sum, i) => sum + i.quantity, 0),
     [state.items],
@@ -430,6 +450,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingSync: pendingCount,
       isSyncing,
       loadItems,
+      syncError,
+      clearSyncError,
     }),
     [
       state.items,
@@ -443,6 +465,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       pendingCount,
       isSyncing,
       loadItems,
+      syncError,
+      clearSyncError,
     ],
   );
 

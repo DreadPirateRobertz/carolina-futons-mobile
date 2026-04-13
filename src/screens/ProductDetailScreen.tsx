@@ -77,7 +77,6 @@ import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePremium } from '@/hooks/usePremium';
-import { FinancingBadge } from '@/components/FinancingBadge';
 import { BNPLHeroSurface } from '@/components/BNPLHeroSurface';
 import { BNPLModal } from '@/components/BNPLModal';
 import { FinancingCalculator } from '@/components/FinancingCalculator';
@@ -401,7 +400,7 @@ export function ProductDetailScreen({
         `${bundleModel.name} in ${bundleModel.fabrics[0].name} added to your cart.`,
         [
           { text: 'Continue Shopping', style: 'cancel' },
-          { text: 'View Cart', onPress: () => navigation.navigate('Tabs', { screen: 'Cart' }) },
+          { text: 'View Cart', onPress: () => navigation.navigate('Tabs') },
         ],
       );
     },
@@ -418,7 +417,7 @@ export function ProductDetailScreen({
       `${quantity}× ${model.name} in ${selectedFabric.name} added to your cart.`,
       [
         { text: 'Continue Shopping', style: 'cancel' },
-        { text: 'View Cart', onPress: () => navigation.navigate('Tabs', { screen: 'Cart' }) },
+        { text: 'View Cart', onPress: () => navigation.navigate('Tabs') },
       ],
     );
   }, [model, selectedFabric, quantity, totalPrice, onAddToCart, cart, navigation]);
@@ -1661,7 +1660,7 @@ export function ProductDetailScreen({
       {arToastVisible && (
         <TouchableOpacity
           style={[styles.arAccountLink, { bottom: 49 + insets.bottom + 60 }]}
-          onPress={() => navigation.navigate('Tabs', { screen: 'Account' })}
+          onPress={() => navigation.navigate('Tabs')}
           testID="ar-account-link"
           accessibilityLabel="View your points in Account"
           accessibilityRole="button"
