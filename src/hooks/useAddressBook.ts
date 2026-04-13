@@ -158,8 +158,11 @@ export function useAddressBook(options?: AddressBookOptions): AddressBookState {
       addressesRef.current = updated;
       setAddresses(updated);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      if (wixSync) {
+        wixSync(updated).catch(() => {});
+      }
     },
-    [],
+    [wixSync],
   );
 
   const defaultAddress = addresses.find((a) => a.isDefault) ?? null;
