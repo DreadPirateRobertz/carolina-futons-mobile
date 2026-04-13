@@ -65,8 +65,7 @@ function mockQueryWithDoc(layouts: SyncableARLayout[]) {
 function mockInsertSuccess() {
   mockFetch.mockResolvedValueOnce({
     ok: true,
-    json: () =>
-      Promise.resolve({ dataItem: { id: 'doc-1', data: {}, _updatedDate: SERVER_TIME } }),
+    json: () => Promise.resolve({ dataItem: { id: 'doc-1', data: {}, _updatedDate: SERVER_TIME } }),
   });
 }
 
