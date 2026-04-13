@@ -521,3 +521,191 @@ describe('WarrantyRegistrationScreen — wix client unavailable', () => {
     });
   });
 });
+
+// ── API error (thrown exception) (cm-eg1) ─────────────────────────────────────
+
+describe('WarrantyRegistrationScreen — API thrown exception (cm-eg1)', () => {
+  it('shows error banner when registerWarranty throws', async () => {
+    mockRegisterWarranty.mockRejectedValue(new Error('Network request failed'));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { getByTestId } = renderScreen();
+    fillValidForm(getByTestId);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId('warranty-submit-error')).toBeTruthy();
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('shows thrown error message in the banner', async () => {
+    mockRegisterWarranty.mockRejectedValue(new Error('Connection timed out'));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { getByTestId, getByText } = renderScreen();
+    fillValidForm(getByTestId);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+
+    await waitFor(() => {
+      expect(getByText(/Connection timed out/i)).toBeTruthy();
+    });
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('does not call onSuccess when registerWarranty throws', async () => {
+    mockRegisterWarranty.mockRejectedValue(new Error('Server error'));
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const onSuccess = jest.fn();
+
+    const { getByTestId } = renderScreen({ onSuccess });
+    fillValidForm(getByTestId);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+
+    await waitFor(() => expect(getByTestId('warranty-submit-error')).toBeTruthy());
+    expect(onSuccess).not.toHaveBeenCalled();
+    consoleErrorSpy.mockRestore();
+  });
+});
+
+// ── Duplicate registration (cm-eg1) ──────────────────────────────────────────
+
+describe('WarrantyRegistrationScreen — duplicate registration (cm-eg1)', () => {
+  it('shows duplicate error message from API', async () => {
+    mockRegisterWarranty.mockResolvedValue({
+      success: false,
+      error: 'Warranty already registered for this order',
+    });
+
+    const { getByTestId, getByText } = renderScreen();
+    fillValidForm(getByTestId);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+
+    await waitFor(() => {
+      expect(getByText(/already registered/i)).toBeTruthy();
+    });
+  });
+
+  it('does not call onSuccess on duplicate registration', async () => {
+    mockRegisterWarranty.mockResolvedValue({
+      success: false,
+      error: 'Warranty already registered for this order',
+    });
+    const onSuccess = jest.fn();
+
+    const { getByTestId } = renderScreen({ onSuccess });
+    fillValidForm(getByTestId);
+
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+
+    await waitFor(() => expect(getByTestId('warranty-submit-error')).toBeTruthy());
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+});
+
+// ── Validation edge cases (cm-eg1) ───────────────────────────────────────────
+
+describe('WarrantyRegistrationScreen — validation edge cases (cm-eg1)', () => {
+  it('shows error for whitespace-only product name', () => {
+    const { getByTestId } = renderScreen({ productName: undefined });
+    fireEvent.changeText(getByTestId('warranty-product-input'), '   ');
+    fireEvent.changeText(getByTestId('warranty-date-input'), '2026-02-10');
+    fireEvent.press(getByTestId('warranty-submit'));
+    expect(getByTestId('warranty-product-error')).toBeTruthy();
+  });
+
+  it('does not call registerWarranty for whitespace-only product', () => {
+    const { getByTestId } = renderScreen({ productName: undefined });
+    fireEvent.changeText(getByTestId('warranty-product-input'), '   ');
+    fireEvent.changeText(getByTestId('warranty-date-input'), '2026-02-10');
+    fireEvent.press(getByTestId('warranty-submit'));
+    expect(mockRegisterWarranty).not.toHaveBeenCalled();
+  });
+
+  it('accepts purchase date that is today (boundary: current date is valid)', async () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    const { getByTestId, queryByTestId } = renderScreen();
+    fireEvent.changeText(getByTestId('warranty-product-input'), 'My Futon');
+    fireEvent.changeText(getByTestId('warranty-date-input'), todayStr);
+    fireEvent.press(getByTestId('warranty-submit'));
+    // No date error — today is a valid date
+    expect(queryByTestId('warranty-date-error')).toBeNull();
+  });
+});
+
+// ── Success state behavior (cm-eg1) ──────────────────────────────────────────
+
+describe('WarrantyRegistrationScreen — success state behavior (cm-eg1)', () => {
+  async function submitSuccessfully(getByTestId: ReturnType<typeof render>['getByTestId']) {
+    fillValidForm(getByTestId);
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-submit'));
+    });
+    await waitFor(() => expect(getByTestId('warranty-success')).toBeTruthy());
+  }
+
+  it('shows success title text', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    await submitSuccessfully(getByTestId);
+    expect(getByText('Warranty Registered!')).toBeTruthy();
+  });
+
+  it('shows order number in success body', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    await submitSuccessfully(getByTestId);
+    expect(getByText(/CF-2026-0147/)).toBeTruthy();
+  });
+
+  it('Done button in success state calls onBack', async () => {
+    const onBack = jest.fn();
+    const { getByTestId, getByText } = renderScreen({ onBack });
+    await submitSuccessfully(getByTestId);
+    fireEvent.press(getByText('Done'));
+    expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── Photo upload UX (cm-eg1) ──────────────────────────────────────────────────
+
+describe('WarrantyRegistrationScreen — photo upload UX (cm-eg1)', () => {
+  it('hides add-photo button after successful upload', async () => {
+    const { getByTestId, queryByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-add-photo'));
+    });
+    await waitFor(() => expect(queryByTestId('warranty-add-photo')).toBeNull());
+  });
+
+  it('shows add-photo button again after upload failure', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockUploadReviewPhoto.mockRejectedValue(new Error('upload failed'));
+
+    const { getByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('warranty-add-photo'));
+    });
+    await waitFor(() => expect(mockUploadReviewPhoto).toHaveBeenCalled());
+    // After failure: receiptPhotoUrl is null, photoUploading is false → button visible
+    expect(getByTestId('warranty-add-photo')).toBeTruthy();
+    consoleErrorSpy.mockRestore();
+  });
+});

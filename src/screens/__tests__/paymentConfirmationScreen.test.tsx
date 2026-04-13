@@ -200,3 +200,122 @@ describe('PaymentConfirmationScreen', () => {
     });
   });
 });
+
+// ── Edge cases (cm-eg1) ───────────────────────────────────────────────────────
+
+describe('PaymentConfirmationScreen — extended edge cases (cm-eg1)', () => {
+  // ── testID forwarding ────────────────────────────────────────────────────────
+
+  it('renders with custom testID', () => {
+    const { getByTestId } = renderScreen({ testID: 'my-payment-screen' });
+    expect(getByTestId('my-payment-screen')).toBeTruthy();
+  });
+
+  it('renders default testID payment-confirmation-screen when no testID prop', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('payment-confirmation-screen')).toBeTruthy();
+  });
+
+  // ── Loading + error coexistence ───────────────────────────────────────────────
+
+  it('shows loading indicator and hides error when both isLoading and error are set', () => {
+    const { getByTestId, queryByTestId } = renderScreen({
+      isLoading: true,
+      error: 'stale error from previous attempt',
+    });
+    expect(getByTestId('payment-loading-indicator')).toBeTruthy();
+    expect(queryByTestId('payment-error-view')).toBeNull();
+  });
+
+  it('hides continue button when both isLoading and error are set', () => {
+    const { queryByTestId } = renderScreen({
+      isLoading: true,
+      error: 'stale error',
+    });
+    expect(queryByTestId('continue-btn')).toBeNull();
+  });
+
+  // ── Payment method labels ─────────────────────────────────────────────────────
+
+  it('shows "Google Pay" for google-pay payment method', () => {
+    const { getByText } = renderScreen({
+      order: { ...mockOrder, paymentMethod: 'google-pay' },
+    });
+    expect(getByText('Google Pay')).toBeTruthy();
+  });
+
+  it('shows "Klarna" for klarna payment method', () => {
+    const { getByText } = renderScreen({
+      order: { ...mockOrder, paymentMethod: 'klarna' },
+    });
+    expect(getByText('Klarna')).toBeTruthy();
+  });
+
+  it('shows "Affirm" for affirm payment method', () => {
+    const { getByText } = renderScreen({
+      order: { ...mockOrder, paymentMethod: 'affirm' },
+    });
+    expect(getByText('Affirm')).toBeTruthy();
+  });
+
+  it('shows raw payment method string for unknown method', () => {
+    const { getByText } = renderScreen({
+      order: { ...mockOrder, paymentMethod: 'bank-transfer' },
+    });
+    expect(getByText('bank-transfer')).toBeTruthy();
+  });
+
+  // ── Item display ──────────────────────────────────────────────────────────────
+
+  it('shows ×N suffix for item quantity > 1', () => {
+    const multiQtyOrder: OrderConfirmation = {
+      ...mockOrder,
+      items: [{ ...mockOrder.items[0], quantity: 3, unitPrice: 200 }],
+    };
+    const { getByText } = renderScreen({ order: multiQtyOrder });
+    expect(getByText(/×3/)).toBeTruthy();
+  });
+
+  it('does not show fabric separator when item has no fabric', () => {
+    const noFabricOrder: OrderConfirmation = {
+      ...mockOrder,
+      items: [{ ...mockOrder.items[0], fabric: null as any }],
+    };
+    const { queryByText } = renderScreen({ order: noFabricOrder });
+    expect(queryByText(/—/)).toBeNull();
+  });
+
+  // ── Totals display ────────────────────────────────────────────────────────────
+
+  it('shows $0.00 when tax is zero', () => {
+    const noTaxOrder: OrderConfirmation = {
+      ...mockOrder,
+      totals: { ...mockOrder.totals, tax: 0, total: 398 },
+    };
+    const { getAllByText } = renderScreen({ order: noTaxOrder });
+    // $0.00 appears as the tax value
+    expect(getAllByText('$0.00').length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── Timeout / error state details ─────────────────────────────────────────────
+
+  it('shows "Payment Failed" title in error view', () => {
+    const { getByText } = renderScreen({ error: 'Payment timed out. Please try again.' });
+    expect(getByText('Payment Failed')).toBeTruthy();
+  });
+
+  it('shows timeout error message text', () => {
+    const { getByText } = renderScreen({ error: 'Payment timed out. Please try again.' });
+    expect(getByText('Payment timed out. Please try again.')).toBeTruthy();
+  });
+
+  it('retry button has correct accessibilityLabel', () => {
+    const { getByTestId } = renderScreen({ error: 'Timeout.' });
+    expect(getByTestId('retry-btn').props.accessibilityLabel).toBe('Retry payment');
+  });
+
+  it('retry button has accessibilityRole button', () => {
+    const { getByTestId } = renderScreen({ error: 'Timeout.' });
+    expect(getByTestId('retry-btn').props.accessibilityRole).toBe('button');
+  });
+});
