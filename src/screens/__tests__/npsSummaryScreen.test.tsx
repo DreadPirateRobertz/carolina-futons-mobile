@@ -287,3 +287,108 @@ describe('NPSSummaryScreen — error state', () => {
     expect(queryByTestId('nps-error')).toBeNull();
   });
 });
+
+// ── Edge cases (cm-s0r) ────────────────────────────────────────────────────────
+
+describe('NPSSummaryScreen — score boundaries', () => {
+  it('displays score 0/10 correctly (minimum NPS boundary)', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({
+        summary: makeSummary({
+          recentComments: [makeComment({ id: 'r-zero', score: 0, comment: 'Very bad' })],
+        }),
+      }),
+    );
+    const { getByText } = render(<NPSSummaryScreen />);
+    expect(getByText('0/10')).toBeTruthy();
+  });
+
+  it('displays avg score of 0 (not "—") when explicitly 0', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ summary: makeSummary({ avgScore: 0, responseCount: 1 }) }),
+    );
+    const { getByTestId } = render(<NPSSummaryScreen />);
+    expect(getByTestId('nps-avg-score').props.children).toBe('0');
+  });
+
+  it('displays perfect avg score 10', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ summary: makeSummary({ avgScore: 10, responseCount: 5 }) }),
+    );
+    const { getByText } = render(<NPSSummaryScreen />);
+    expect(getByText('10')).toBeTruthy();
+  });
+});
+
+describe('NPSSummaryScreen — optional comment field', () => {
+  it('renders a comment row even when comment text is empty string', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({
+        summary: makeSummary({
+          recentComments: [makeComment({ id: 'r-empty', comment: '' })],
+        }),
+      }),
+    );
+    const { getByTestId } = render(<NPSSummaryScreen />);
+    expect(getByTestId('nps-comment-r-empty')).toBeTruthy();
+  });
+
+  it('renders comment with long text without crashing', () => {
+    const longText = 'A'.repeat(500);
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({
+        summary: makeSummary({
+          recentComments: [makeComment({ id: 'r-long', comment: longText })],
+        }),
+      }),
+    );
+    expect(() => render(<NPSSummaryScreen />)).not.toThrow();
+  });
+});
+
+describe('NPSSummaryScreen — large dataset boundary', () => {
+  it('renders a large response count (10 000) correctly', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ summary: makeSummary({ responseCount: 10_000 }) }),
+    );
+    const { getByText } = render(<NPSSummaryScreen />);
+    expect(getByText('10000')).toBeTruthy();
+  });
+});
+
+describe('NPSSummaryScreen — non-staff overrides all other states', () => {
+  it('shows access-denied (not loading spinner) when isStaff=false and loading=true', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ isStaff: false, loading: true, summary: null }),
+    );
+    const { getByTestId, queryByTestId } = render(<NPSSummaryScreen />);
+    expect(getByTestId('nps-access-denied')).toBeTruthy();
+    expect(queryByTestId('nps-loading')).toBeNull();
+  });
+
+  it('shows access-denied (not error) when isStaff=false and error is set', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ isStaff: false, error: 'Network error', summary: null }),
+    );
+    const { getByTestId, queryByTestId } = render(<NPSSummaryScreen />);
+    expect(getByTestId('nps-access-denied')).toBeTruthy();
+    expect(queryByTestId('nps-error')).toBeNull();
+  });
+});
+
+describe('NPSSummaryScreen — null avgScore with responses present', () => {
+  it('shows "—" for avg score when avgScore is null but responses exist', () => {
+    mockUseNPSSummary.mockReturnValue(
+      makeHookResult({ summary: makeSummary({ avgScore: null, responseCount: 5 }) }),
+    );
+    const { getByTestId } = render(<NPSSummaryScreen />);
+    expect(getByTestId('nps-avg-score').props.children).toBe('—');
+  });
+});
+
+describe('NPSSummaryScreen — custom testID', () => {
+  it('renders root with custom testID', () => {
+    const { getByTestId } = render(<NPSSummaryScreen testID="my-nps" />);
+    expect(getByTestId('my-nps')).toBeTruthy();
+  });
+});

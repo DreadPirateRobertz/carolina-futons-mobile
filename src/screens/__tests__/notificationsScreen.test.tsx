@@ -260,4 +260,94 @@ describe('NotificationsScreen', () => {
     const { getByTestId } = renderScreen();
     expect(getByTestId('notifications-error')).toBeTruthy();
   });
+
+  // ── Edge cases (cm-s0r) ───────────────────────────────────────────────────
+
+  describe('loading with existing data (stale refresh)', () => {
+    it('shows list (not full-screen spinner) when loading with non-empty notifications', () => {
+      mockFetchNotifications.mockReturnValue(
+        makeResult({ notifications: notificationFixtures, loading: true }),
+      );
+      const { getByTestId, queryByTestId } = renderScreen();
+      expect(getByTestId('notifications-list')).toBeTruthy();
+      expect(queryByTestId('notifications-loading')).toBeNull();
+    });
+  });
+
+  describe('unknown notification type fallback', () => {
+    it('renders fallback 🔔 icon for unrecognised notification type', () => {
+      const unknownNotif = {
+        id: 'n-unknown',
+        type: 'tier_upgrade' as any,
+        message: 'You reached a new tier!',
+        createdAt: NOW - 1000,
+        read: false,
+      };
+      mockFetchNotifications.mockReturnValue(makeResult({ notifications: [unknownNotif] }));
+      const { getByTestId } = renderScreen();
+      const icon = getByTestId('notification-icon-n-unknown');
+      expect(icon.props.children).toBe('🔔');
+    });
+  });
+
+  describe('relativeTime formatting', () => {
+    it('shows "just now" for events less than 1 minute ago', () => {
+      const fresh = { ...notificationFixtures[0], id: 'n-fresh', createdAt: Date.now() - 30_000 };
+      mockFetchNotifications.mockReturnValue(makeResult({ notifications: [fresh] }));
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('notification-time-n-fresh').props.children).toBe('just now');
+    });
+
+    it('shows "Xm ago" for events 1-59 minutes ago', () => {
+      const mins = { ...notificationFixtures[0], id: 'n-mins', createdAt: Date.now() - 15 * 60_000 };
+      mockFetchNotifications.mockReturnValue(makeResult({ notifications: [mins] }));
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('notification-time-n-mins').props.children).toBe('15m ago');
+    });
+
+    it('shows "Xh ago" for events 1-23 hours ago', () => {
+      const hours = { ...notificationFixtures[0], id: 'n-hours', createdAt: Date.now() - 3 * 3_600_000 };
+      mockFetchNotifications.mockReturnValue(makeResult({ notifications: [hours] }));
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('notification-time-n-hours').props.children).toBe('3h ago');
+    });
+
+    it('shows "Xd ago" for events 1+ days ago', () => {
+      const days = { ...notificationFixtures[0], id: 'n-days', createdAt: Date.now() - 2 * 86_400_000 };
+      mockFetchNotifications.mockReturnValue(makeResult({ notifications: [days] }));
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('notification-time-n-days').props.children).toBe('2d ago');
+    });
+  });
+
+  describe('error banner message', () => {
+    it('shows static error message text in banner', () => {
+      mockFetchNotifications.mockReturnValue(
+        makeResult({ error: new Error('any error'), notifications: [] }),
+      );
+      const { getByText } = renderScreen();
+      expect(getByText("Couldn't load notifications.")).toBeTruthy();
+    });
+  });
+
+  describe('stale data + error: both banner and list visible', () => {
+    it('shows error banner AND stale list simultaneously', () => {
+      mockFetchNotifications.mockReturnValue(
+        makeResult({ error: new Error('Refresh failed'), notifications: notificationFixtures }),
+      );
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('notifications-error')).toBeTruthy();
+      expect(getByTestId('notifications-list')).toBeTruthy();
+    });
+  });
+
+  describe('mark-all-read with async handler', () => {
+    it('does not crash when markAllRead is async and resolves', async () => {
+      const asyncMarkAllRead = jest.fn().mockResolvedValue(undefined);
+      mockFetchNotifications.mockReturnValue(makeResult({ markAllRead: asyncMarkAllRead }));
+      const { getByTestId } = renderScreen();
+      expect(() => fireEvent.press(getByTestId('mark-all-read-btn'))).not.toThrow();
+      expect(asyncMarkAllRead).toHaveBeenCalledTimes(1);
+    });
+  });
 });
