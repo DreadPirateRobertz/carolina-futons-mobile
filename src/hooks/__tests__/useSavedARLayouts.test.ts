@@ -1,13 +1,13 @@
 /**
- * TDD tests for useSavedARLayouts — cm-h6t
+ * TDD tests for useSavedARLayouts — cm-h6t / cm-b3b
  *
  * Covers: load on mount, save, delete, rename, thumbnails,
  * max-cap enforcement, corrupt storage, error paths, share text,
- * and cloud sync stub.
+ * cloud sync stub, and wired Wix cloud sync (cm-b3b).
  */
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useSavedARLayouts, MAX_SAVED_LAYOUTS } from '../useSavedARLayouts';
-import { pushLayouts } from '@/services/arLayoutSync';
+import { pushLayouts, pullLayouts } from '@/services/arLayoutSync';
 
 // ── AsyncStorage mock ─────────────────────────────────────────────────────────
 const mockSetItem: jest.Mock = jest.fn(() => Promise.resolve());
@@ -25,6 +25,18 @@ jest.mock('@/services/arLayoutSync', () => ({
   pushLayouts: jest.fn(() => Promise.resolve()),
   pullLayouts: jest.fn(() => Promise.resolve([])),
 }));
+
+// ── Wix provider mock (for cm-b3b cloud sync wiring) ─────────────────────────
+const mockWixClient = {
+  queryData: jest.fn(() => Promise.resolve({ items: [], totalResults: 0 })),
+  upsertDataItem: jest.fn(() => Promise.resolve({ id: 'doc-1', data: {} })),
+};
+
+jest.mock('@/services/wix/wixProvider', () => ({
+  useOptionalWixClient: jest.fn(() => null),
+}));
+
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ITEM_A = { modelId: 'asheville-full', fabricId: 'natural-linen' };
@@ -365,9 +377,16 @@ describe('useSavedARLayouts — getShareText', () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+const MEMBER_ID = 'member-wired-123';
+
 describe('useSavedARLayouts — cloud sync', () => {
+  beforeEach(() => {
+    // Cloud sync requires auth — provide wixClient for all tests in this suite
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+  });
+
   it('starts with syncStatus idle', async () => {
-    const { result } = renderHook(() => useSavedARLayouts());
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.syncStatus).toBe('idle');
     expect(result.current.lastSyncedAt).toBeNull();
@@ -382,7 +401,7 @@ describe('useSavedARLayouts — cloud sync', () => {
         }),
     );
 
-    const { result } = renderHook(() => useSavedARLayouts());
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     act(() => {
@@ -399,7 +418,7 @@ describe('useSavedARLayouts — cloud sync', () => {
   it('sets syncStatus to error when sync fails', async () => {
     (pushLayouts as jest.Mock).mockRejectedValueOnce(new Error('network'));
 
-    const { result } = renderHook(() => useSavedARLayouts());
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -410,7 +429,7 @@ describe('useSavedARLayouts — cloud sync', () => {
   });
 
   it('updates lastSyncedAt on successful sync', async () => {
-    const { result } = renderHook(() => useSavedARLayouts());
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     await act(async () => {
@@ -418,5 +437,205 @@ describe('useSavedARLayouts — cloud sync', () => {
     });
 
     expect(result.current.lastSyncedAt).not.toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// cm-b3b: Wired Wix cloud sync tests
+// ─────────────────────────────────────────────────────────────────────────────
+
+const CLOUD_LAYOUT = {
+  id: 'cloud-layout-1',
+  name: 'Cloud Room',
+  items: [{ modelId: 'asheville-full', fabricId: 'natural-linen' }],
+  createdAt: '2026-01-01T00:00:00Z',
+  updatedAt: '2026-01-01T00:00:00Z',
+};
+
+describe('useSavedARLayouts — wired cloud sync (cm-b3b)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetItem.mockResolvedValue(null);
+    (useOptionalWixClient as jest.Mock).mockReturnValue(null);
+    // Use mockReset to fully clear any persisted mockRejectedValue from prior tests
+    (pushLayouts as jest.Mock).mockReset();
+    (pushLayouts as jest.Mock).mockResolvedValue(undefined);
+    (pullLayouts as jest.Mock).mockReset();
+    (pullLayouts as jest.Mock).mockResolvedValue([]);
+  });
+
+  // ── Pull on load ────────────────────────────────────────────────────────────
+
+  it('does NOT call pullLayouts on mount when no wixClient', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(null);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(pullLayouts).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call pullLayouts on mount when no memberId', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: null }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(pullLayouts).not.toHaveBeenCalled();
+  });
+
+  it('calls pullLayouts on mount when wixClient + memberId present', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+    (pullLayouts as jest.Mock).mockResolvedValue([CLOUD_LAYOUT]);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(pullLayouts).toHaveBeenCalledWith(mockWixClient, MEMBER_ID);
+  });
+
+  it('populates layouts from cloud on mount', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+    (pullLayouts as jest.Mock).mockResolvedValue([CLOUD_LAYOUT]);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.layouts).toHaveLength(1);
+    expect(result.current.layouts[0].id).toBe(CLOUD_LAYOUT.id);
+  });
+
+  it('merges local + cloud layouts on mount (union by id, cloud preferred)', async () => {
+    const localLayout = {
+      id: 'local-only-1',
+      name: 'Local Room',
+      items: [{ modelId: 'blue-ridge-queen', fabricId: 'slate-gray' }],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    mockGetItem.mockResolvedValueOnce(JSON.stringify([localLayout]));
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+    (pullLayouts as jest.Mock).mockResolvedValue([CLOUD_LAYOUT]);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Both local-only and cloud layouts are present
+    const ids = result.current.layouts.map((l) => l.id);
+    expect(ids).toContain(localLayout.id);
+    expect(ids).toContain(CLOUD_LAYOUT.id);
+  });
+
+  it('handles pullLayouts error gracefully on mount (falls back to local)', async () => {
+    const localLayout = {
+      id: 'local-1',
+      name: 'Local Only',
+      items: [],
+      createdAt: '2026-01-01T00:00:00Z',
+      updatedAt: '2026-01-01T00:00:00Z',
+    };
+    mockGetItem.mockResolvedValueOnce(JSON.stringify([localLayout]));
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+    // Use Once to prevent rejection from bleeding into subsequent tests
+    (pullLayouts as jest.Mock).mockRejectedValueOnce(new Error('network'));
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Falls back to local data, no crash
+    expect(result.current.layouts).toHaveLength(1);
+    expect(result.current.layouts[0].id).toBe(localLayout.id);
+  });
+
+  // ── Auto-sync on save ───────────────────────────────────────────────────────
+
+  it('calls pushLayouts after saveLayout when wixClient + memberId present', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.saveLayout('New Room', [{ modelId: 'm1', fabricId: 'f1' }]);
+    });
+
+    expect(pushLayouts).toHaveBeenCalledWith(
+      mockWixClient,
+      MEMBER_ID,
+      expect.arrayContaining([expect.objectContaining({ name: 'New Room' })]),
+    );
+  });
+
+  it('does NOT call pushLayouts on save when no wixClient', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(null);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.saveLayout('Room', []);
+    });
+
+    expect(pushLayouts).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call pushLayouts on save when no memberId', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: null }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.saveLayout('Room', []);
+    });
+
+    expect(pushLayouts).not.toHaveBeenCalled();
+  });
+
+  // ── syncToCloud with real wixClient ─────────────────────────────────────────
+
+  it('calls pushLayouts with wixClient + memberId in syncToCloud', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: MEMBER_ID }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.syncToCloud();
+    });
+
+    expect(pushLayouts).toHaveBeenCalledWith(mockWixClient, MEMBER_ID, expect.any(Array));
+  });
+
+  it('syncToCloud is a no-op when no wixClient or no memberId (sets idle, no error)', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(null);
+
+    const { result } = renderHook(() => useSavedARLayouts({ memberId: null }));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.syncToCloud();
+    });
+
+    expect(pushLayouts).not.toHaveBeenCalled();
+    expect(result.current.syncStatus).toBe('idle');
+  });
+
+  // ── Backward compatibility ──────────────────────────────────────────────────
+
+  it('works without options argument (backward compat — no cloud sync)', async () => {
+    (useOptionalWixClient as jest.Mock).mockReturnValue(mockWixClient);
+
+    const { result } = renderHook(() => useSavedARLayouts());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // No cloud calls since memberId not provided
+    expect(pullLayouts).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await result.current.saveLayout('Room', []);
+    });
+
+    expect(pushLayouts).not.toHaveBeenCalled();
   });
 });

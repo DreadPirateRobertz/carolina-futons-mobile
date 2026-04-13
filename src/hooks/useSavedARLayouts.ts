@@ -4,15 +4,17 @@
  * Saves and restores multi-product AR room arrangements.
  * Each layout stores the model+fabric selections that were staged in the AR
  * scene, with an optional screenshot thumbnail. Persists locally via
- * AsyncStorage and supports optional cloud sync via arLayoutSync.
+ * AsyncStorage and syncs to the Wix ARLayouts collection when a memberId is
+ * provided (cm-b3b).
  *
  * Usage:
  *   const { layouts, saveLayout, deleteLayout, renameLayout, syncToCloud } =
- *     useSavedARLayouts();
+ *     useSavedARLayouts({ memberId });
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { pushLayouts } from '@/services/arLayoutSync';
+import { pushLayouts, pullLayouts } from '@/services/arLayoutSync';
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 export const MAX_SAVED_LAYOUTS = 10;
 
@@ -33,6 +35,10 @@ export interface SavedARLayout {
 }
 
 type SyncStatus = 'idle' | 'syncing' | 'error';
+
+export interface UseSavedARLayoutsOptions {
+  memberId?: string | null;
+}
 
 export interface UseSavedARLayoutsReturn {
   layouts: SavedARLayout[];
@@ -58,34 +64,66 @@ async function persist(layouts: SavedARLayout[]): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(layouts));
 }
 
-export function useSavedARLayouts(): UseSavedARLayoutsReturn {
+/** Merge local + cloud layout arrays. Union by id — cloud item wins on conflict. */
+function mergeLayouts(local: SavedARLayout[], cloud: SavedARLayout[]): SavedARLayout[] {
+  const byId = new Map<string, SavedARLayout>();
+  for (const l of local) byId.set(l.id, l);
+  // Cloud items override local items with the same id
+  for (const l of cloud) byId.set(l.id, l);
+  return Array.from(byId.values());
+}
+
+export function useSavedARLayouts(options: UseSavedARLayoutsOptions = {}): UseSavedARLayoutsReturn {
+  const { memberId = null } = options;
+  const wixClient = useOptionalWixClient();
+
   const [layouts, setLayouts] = useState<SavedARLayout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
 
-  // Load from AsyncStorage on mount
+  // Load from AsyncStorage on mount; then pull from cloud if authenticated
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((raw) => {
+    let cancelled = false;
+
+    async function load() {
+      // 1. Load local data
+      let local: SavedARLayout[] = [];
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
-          try {
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              setLayouts(parsed as SavedARLayout[]);
-            }
-          } catch {
-            // corrupt data — start fresh
-          }
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) local = parsed as SavedARLayout[];
         }
-      })
-      .catch(() => {
-        // read failure — start fresh
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+      } catch {
+        // corrupt data — start fresh
+      }
+
+      if (cancelled) return;
+
+      // 2. Pull cloud data if authenticated
+      if (wixClient && memberId) {
+        try {
+          const cloud = await pullLayouts(wixClient, memberId);
+          if (!cancelled) {
+            setLayouts(mergeLayouts(local, cloud));
+          }
+        } catch {
+          // [useSavedARLayouts] cloud pull failed — fall back to local
+          if (!cancelled) setLayouts(local);
+        }
+      } else {
+        if (!cancelled) setLayouts(local);
+      }
+
+      if (!cancelled) setIsLoading(false);
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [wixClient, memberId]);
 
   const saveLayout = useCallback(
     async (
@@ -109,12 +147,23 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
       try {
         await persist(next);
         setLayouts(next);
-        return layout;
       } catch {
         return null;
       }
+
+      // Auto-sync to cloud after successful local save
+      if (wixClient && memberId) {
+        try {
+          await pushLayouts(wixClient, memberId, next);
+          setLastSyncedAt(new Date().toISOString());
+        } catch {
+          // [useSavedARLayouts] background sync failed — local save succeeded
+        }
+      }
+
+      return layout;
     },
-    [layouts],
+    [layouts, wixClient, memberId],
   );
 
   const deleteLayout = useCallback(
@@ -155,15 +204,17 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
   }, []);
 
   const syncToCloud = useCallback(async (): Promise<void> => {
+    if (!wixClient || !memberId) return;
+
     setSyncStatus('syncing');
     try {
-      await pushLayouts(layouts);
+      await pushLayouts(wixClient, memberId, layouts);
       setLastSyncedAt(new Date().toISOString());
       setSyncStatus('idle');
     } catch {
       setSyncStatus('error');
     }
-  }, [layouts]);
+  }, [layouts, wixClient, memberId]);
 
   return {
     layouts,
