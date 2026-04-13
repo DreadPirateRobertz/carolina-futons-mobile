@@ -1,27 +1,47 @@
 /**
  * @module crossRigSync
  *
- * CFM → CF-0CX cross-rig sync contract — typed no-op stubs (cm-24e).
+ * CFM → CF-0CX cross-rig sync contract — real typed wrappers (cm-24e / cm-1at).
  *
- * Establishes the wiring path that the real cf-0cx implementation will fulfil.
- * On the web side, `crossRigEventReceiver.web.js` receives calls shaped as:
- *   { memberId, event, payload, sourceRig: 'cfutons_mobile' }
+ * After cf-ndr+cf-0cx merge, all functions make real calls to Wix backend
+ * functions via the provided WixClient.  Input guards are enforced at the
+ * boundary so callers get clear errors instead of silent no-ops.
  *
- * Events:
- *   - quiz_completed           → points award
- *   - ar_discovery_completed   → points award
- *   - social_share_completed   → points award
- *   - badge_earned             → push dispatch (payload: { badgeId })
- *   - tier_changed             → push dispatch (payload: { tier })
+ * Wix backend functions called:
+ *   - crossRigEventReceiver   (sendCrossRigEvent, syncMobilePoints)
+ *   - completeMobileChallenge (completeMobileChallenge)
+ *   - getMobileChallengeProgress (getMobileChallengeProgress)
+ *   - sendPushToMember        (sendPushToMember)
  *
- * All functions are no-ops that resolve immediately.  Input guards are enforced
- * now so the real implementation inherits correct validation when cf-0cx lands.
- *
- * @see cf-0cx — web-side receiver that will consume these calls
+ * @see cf-0cx — web-side receiver
+ * @see cf-ndr — mobile challenge schema (PR#1028)
+ * @see cf-axn — push stub (PR#1025)
  */
+
+// ── Wix client interface ──────────────────────────────────────────────────────
+
+export interface WixClientLike {
+  callFunction: (
+    name: string,
+    method: 'GET' | 'POST',
+    body: Record<string, unknown>,
+  ) => Promise<unknown>;
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 /** The CFM source rig identifier — must always be 'cfutons_mobile'. */
 export const CROSS_RIG_SOURCE = 'cfutons_mobile' as const;
+
+/** Push event keys for sendPushToMember (cf-axn PR#1025). */
+export const PUSH_EVENTS = {
+  BADGE_EARNED: 'badge_earned',
+  TIER_CHANGED: 'tier_changed',
+} as const;
+
+export type PushEventKey = keyof typeof PUSH_EVENTS;
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 /** All event types CFM may emit across the rig boundary. */
 export type CrossRigEventType =
@@ -31,66 +51,209 @@ export type CrossRigEventType =
   | 'badge_earned'
   | 'tier_changed';
 
+/** Mobile challenge types supported by completeMobileChallenge (cf-ndr). */
+export type MobileChallengeType = 'ar_discovery' | 'quiz_completion' | 'social_share';
+
+/** Optional params for completeMobileChallenge. */
+export interface MobileChallengeParams {
+  productId?: string;
+  score?: number;
+  platform?: string;
+}
+
+/** Result shape returned by completeMobileChallenge (cf-ndr schema). */
+export interface CompleteMobileChallengeResult {
+  success: boolean;
+  alreadyAwarded: boolean;
+  pointsAwarded: number;
+}
+
+/** Result shape returned by getMobileChallengeProgress (cf-ndr schema). */
+export interface MobileChallengeProgress {
+  success: boolean;
+  counts: {
+    ar_discovery: number;
+    quiz_completion: number;
+    social_share: number;
+  };
+}
+
+// ── MOBILE_CHALLENGE_TYPES ────────────────────────────────────────────────────
+
 /**
- * Send a cross-rig event to the web layer (cf-0cx receiver).
+ * Points awarded and cross-rig event name for each mobile challenge type.
  *
- * No-op stub — resolves immediately.  When cf-0cx activates, replace this
- * body with a real `crossRigEventReceiver.web.js` call.
+ * Points defined by cf-ndr PR#1028:
+ *   ar_discovery = 75 pts, quiz_completion = 50 pts, social_share = 100 pts
+ */
+export const MOBILE_CHALLENGE_TYPES: Record<
+  MobileChallengeType,
+  { points: number; eventName: CrossRigEventType }
+> = {
+  ar_discovery: { points: 75, eventName: 'ar_discovery_completed' },
+  quiz_completion: { points: 50, eventName: 'quiz_completed' },
+  social_share: { points: 100, eventName: 'social_share_completed' },
+};
+
+// ── Guards ────────────────────────────────────────────────────────────────────
+
+function assertMemberId(memberId: string): void {
+  if (!memberId || !memberId.trim()) {
+    throw new Error('[crossRigSync] memberId is required');
+  }
+}
+
+// ── sendCrossRigEvent ─────────────────────────────────────────────────────────
+
+/**
+ * Send a cross-rig event to the web layer (cf-0cx crossRigEventReceiver).
  *
+ * @param wixClient - Authenticated Wix client with callFunction capability
  * @param memberId  - The authenticated member's ID (must be non-empty)
  * @param event     - One of the five recognised {@link CrossRigEventType} values
  * @param payload   - Event-specific data (e.g. `{ badgeId }`, `{ tier }`)
  *
  * @throws {Error} if `memberId` is empty or whitespace
+ * @throws {Error} if the wixClient call fails
  */
 export async function sendCrossRigEvent(
+  wixClient: WixClientLike,
   memberId: string,
   event: CrossRigEventType,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  if (!memberId || !memberId.trim()) {
-    throw new Error('[crossRigSync] memberId is required');
-  }
+  assertMemberId(memberId);
 
-  // No-op stub — real call shape for cf-0cx:
-  // await wixClient.callFunction('crossRigEventReceiver', 'POST', {
-  //   memberId,
-  //   event,
-  //   payload,
-  //   sourceRig: CROSS_RIG_SOURCE,
-  // });
-  void event;
-  void payload;
+  await wixClient.callFunction('crossRigEventReceiver', 'POST', {
+    memberId,
+    event,
+    payload,
+    sourceRig: CROSS_RIG_SOURCE,
+  });
 }
+
+// ── syncMobilePoints ──────────────────────────────────────────────────────────
 
 /**
  * Sync earned points from a mobile event to the web-side loyalty ledger.
  *
- * No-op stub — resolves immediately.  When cf-0cx activates, replace this
- * body with a call to the points sync endpoint.
- *
+ * @param wixClient - Authenticated Wix client
  * @param memberId  - The authenticated member's ID (must be non-empty)
  * @param points    - Points earned — must be >= 0
  * @param eventType - The event that triggered this award
  *
  * @throws {Error} if `memberId` is empty or `points` is negative
+ * @throws {Error} if the wixClient call fails
  */
 export async function syncMobilePoints(
+  wixClient: WixClientLike,
   memberId: string,
   points: number,
   eventType: CrossRigEventType,
 ): Promise<void> {
-  if (!memberId || !memberId.trim()) {
-    throw new Error('[crossRigSync] memberId is required');
-  }
+  assertMemberId(memberId);
   if (points < 0) {
     throw new Error(`[crossRigSync] points must be >= 0, got ${points}`);
   }
 
-  // No-op stub — real call shape for cf-0cx:
-  // await sendCrossRigEvent(memberId, eventType, {
-  //   points,
-  //   sourceRig: CROSS_RIG_SOURCE,
-  // });
-  void eventType;
+  await wixClient.callFunction('crossRigEventReceiver', 'POST', {
+    memberId,
+    event: eventType,
+    payload: { points },
+    sourceRig: CROSS_RIG_SOURCE,
+  });
+}
+
+// ── completeMobileChallenge ───────────────────────────────────────────────────
+
+/**
+ * Complete a mobile challenge and award loyalty points (cf-ndr schema).
+ *
+ * Idempotent: same challengeType+productId same day → alreadyAwarded:true, pointsAwarded:0.
+ * Idempotency is enforced server-side; params are forwarded so the backend
+ * can apply productId+day keyed deduplication.
+ *
+ * @param wixClient     - Authenticated Wix client
+ * @param memberId      - The member completing the challenge
+ * @param challengeType - One of the three {@link MobileChallengeType} values
+ * @param params        - Optional challenge params (productId, score, platform)
+ *
+ * @throws {Error} if memberId is empty
+ * @throws {Error} if the wixClient call fails
+ */
+export async function completeMobileChallenge(
+  wixClient: WixClientLike,
+  memberId: string,
+  challengeType: MobileChallengeType,
+  params: MobileChallengeParams = {},
+): Promise<CompleteMobileChallengeResult> {
+  assertMemberId(memberId);
+
+  const { eventName } = MOBILE_CHALLENGE_TYPES[challengeType];
+  const result = await wixClient.callFunction('completeMobileChallenge', 'POST', {
+    memberId,
+    event: eventName,
+    challengeType,
+    params,
+    sourceRig: CROSS_RIG_SOURCE,
+  });
+
+  return result as CompleteMobileChallengeResult;
+}
+
+// ── getMobileChallengeProgress ────────────────────────────────────────────────
+
+/**
+ * Fetch the member's mobile challenge completion counts from the web layer.
+ *
+ * @param wixClient - Authenticated Wix client
+ * @param memberId  - The member whose progress to fetch
+ *
+ * @throws {Error} if memberId is empty
+ * @throws {Error} if the wixClient call fails
+ */
+export async function getMobileChallengeProgress(
+  wixClient: WixClientLike,
+  memberId: string,
+): Promise<MobileChallengeProgress> {
+  assertMemberId(memberId);
+
+  const result = await wixClient.callFunction('getMobileChallengeProgress', 'GET', {
+    memberId,
+    sourceRig: CROSS_RIG_SOURCE,
+  });
+
+  return result as MobileChallengeProgress;
+}
+
+// ── sendPushToMember ──────────────────────────────────────────────────────────
+
+/**
+ * Send a push notification to a member via the cf-axn push stub (PR#1025).
+ *
+ * Supported events: {@link PUSH_EVENTS.BADGE_EARNED}, {@link PUSH_EVENTS.TIER_CHANGED}.
+ *
+ * @param wixClient - Authenticated Wix client
+ * @param memberId  - The member to notify
+ * @param eventKey  - Key from {@link PUSH_EVENTS} (e.g. 'BADGE_EARNED')
+ * @param payload   - Event-specific payload forwarded to the push service
+ *
+ * @throws {Error} if memberId is empty
+ * @throws {Error} if the wixClient call fails
+ */
+export async function sendPushToMember(
+  wixClient: WixClientLike,
+  memberId: string,
+  eventKey: PushEventKey,
+  payload: Record<string, unknown>,
+): Promise<{ sent: number; failed: number }> {
+  assertMemberId(memberId);
+
+  const result = await wixClient.callFunction('sendPushToMember', 'POST', {
+    memberId,
+    event: PUSH_EVENTS[eventKey],
+    payload,
+  });
+
+  return result as { sent: number; failed: number };
 }
