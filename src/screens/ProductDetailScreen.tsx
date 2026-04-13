@@ -192,7 +192,7 @@ export function ProductDetailScreen({
   const { isAuthenticated } = useAuth();
   const cart = useCart();
   const { similarItems, trackView } = useRecommendations();
-  const { recommendations: alsoBought, isLoading: isAlsoBoughtLoading } =
+  const { recommendations: recommendedForYou, isLoading: isRecommendedForYouLoading } =
     useProductRecommendations(catalogProductId);
   const {
     products: completeTheLookProducts,
@@ -1470,16 +1470,16 @@ export function ProductDetailScreen({
           </View>
         )}
 
-        {/* Customers also bought */}
-        {isAlsoBoughtLoading ? (
+        {/* Recommended for You */}
+        {isRecommendedForYouLoading ? (
           <View style={[styles.section, { marginTop: spacing.md }]} testID="skeleton-also-bought">
             <SkeletonCarouselRow />
           </View>
-        ) : alsoBought.length > 0 ? (
+        ) : recommendedForYou.length > 0 ? (
           <View style={[styles.section, { marginTop: spacing.md }]}>
             <RecommendationCarousel
-              title="Customers also bought"
-              products={alsoBought}
+              title="Recommended for You"
+              products={recommendedForYou}
               onProductPress={onRelatedProductPress}
               testID="also-bought-carousel"
             />

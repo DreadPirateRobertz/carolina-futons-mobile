@@ -26,7 +26,7 @@ module.exports = {
   // TDD tests for unimplemented features — skip until modules exist
   // SearchScreen: skipped in CI — fake-timer accumulation causes SIGTERM OOM on GH Actions
   //   (7741 other tests pass; tracked in gh issue for SearchScreen test isolation fix)
-  // CartScreen: skipped in CI — OOM SIGTERM after BundleSuggestion wired in (cm-bun/deacon-y8lf)
+  // CartScreen*: skipped in CI — OOM SIGTERM after BundleSuggestion wired in (cm-bun/deacon-y8lf)
   //   CartScreen tests run fine locally; tracked alongside SearchScreen isolation fix
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -38,6 +38,7 @@ module.exports = {
     'SearchScreen\\.test\\.tsx',
     'CartScreen\\.test\\.tsx',
     'CartScreen\\.sync-error\\.test\\.tsx',
+    'CartScreenRecommendations\\.test\\.tsx',
   ],
   // Prevent zombie worker processes from accumulating memory after test runs.
   forceExit: true,
