@@ -8,11 +8,11 @@ import { getQueue, _resetForTesting } from '@/services/offlineQueue';
 
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
-    addToCart: jest.fn(),
-    submitReview: jest.fn(),
-    referralShared: jest.fn(),
-    arUsed: jest.fn(),
-    wishlistAdd: jest.fn(),
+    addToCart: jest.fn(() => Promise.resolve({ success: false })),
+    submitReview: jest.fn(() => Promise.resolve({ success: false })),
+    referralShared: jest.fn(() => Promise.resolve({ success: false })),
+    arUsed: jest.fn(() => Promise.resolve({ success: false })),
+    wishlistAdd: jest.fn(() => Promise.resolve({ success: false })),
   }),
 }));
 
