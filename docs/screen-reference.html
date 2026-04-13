@@ -64,8 +64,8 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <p class="meta">
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
-Tests: 7400+ passing | Session 31 · 2026-04-04 (62 screenshots captured, 6 Epic placeholders remaining)<br>
-PRs merged: #357–#420 | PRs open: #399 (Epic B AI), #376 (Epic C funnel), #407–#408 (error recovery, image opt)
+Tests: 10,053 passing (550 suites) | Session 34 · 2026-04-13 (62 S31 screenshots + 8 S34 placeholders — APK build in progress)<br>
+PRs merged: #357–#508 | Convoy S34: #504 (cm-74i AR edge), #505 (cm-pkp a11y), #506 (cm-ajd coverage), #508 (cm-ox9 perf)
 </p>
 
 <!-- ══════════════════════════════════════════════════
@@ -1123,6 +1123,128 @@ npx jest --passWithNoTests</pre>
     </div>
   </div>
 </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SESSION 34 NEW SCREENS (S34 · 2026-04-13)
+══════════════════════════════════════════════════ -->
+<div class="section" id="s34-features">
+<h2>Session 34 Features <span class="session-tag">2026-04-13</span></h2>
+<p class="meta">Screenshots pending APK rebuild with bundled JS. All screens verified via Jest + code review. Build running on pop-os.</p>
+<table>
+<tr><th>Bead</th><th>Feature</th><th>Status</th><th>Notes</th></tr>
+<tr><td>cm-ay9</td><td>TrailsScreen</td><td class="status-ok">Shipped</td><td>3 trails (spring/summer/fall) × 5 challenges each. Deep link: /trails/:id. Badge unlocks on completion.</td></tr>
+<tr><td>cm-049</td><td>OfflineBanner queue count</td><td class="status-ok">Shipped</td><td>"N changes queued" banner when offline. useQueueStatus hook. useOfflineSync integration.</td></tr>
+<tr><td>cm-5aw</td><td>RoomGallery real room photos</td><td class="status-ok">Shipped</td><td>RealRoomPhotos Wix CMS collection. Hotspot (+) overlays link to products. Member attribution (city/state).</td></tr>
+<tr><td>cm-cgo</td><td>PDP Resources accordion</td><td class="status-ok">Shipped</td><td>Collapsible Resources section below BundleRow: spec sheets, care guide, policy links, video.</td></tr>
+<tr><td>hq-bzb</td><td>Cart recommendations row</td><td class="status-ok">Shipped</td><td>"Recommended for you" ProductRecommendationRow at bottom of CartScreen + PDP.</td></tr>
+<tr><td>cm-jyw</td><td>HomeScreen challenges rail</td><td class="status-ok">Shipped</td><td>ChallengeCard horizontal rail on HomeScreen. ChallengeDetailSheet on tap. Coral active border.</td></tr>
+<tr><td>cm-9yn</td><td>PDP shipping estimate</td><td class="status-ok">Shipped</td><td>Live ZIP entry → getShippingEstimate → carrier + days estimate below fabric selector.</td></tr>
+<tr><td>cm-5x7</td><td>ConsultationBookingScreen</td><td class="status-ok">Shipped</td><td>Wix CMS ConsultationBookings schema. dateSlot (YYYY-MM-DD) + timeSlot (HH:MM) + notes fields.</td></tr>
+<tr><td>cm-b3b</td><td>AR layout cloud sync</td><td class="status-ok">Shipped</td><td>ARLayouts Wix collection. Save/load room layouts per memberId. useSavedARLayouts hook.</td></tr>
+<tr><td>cm-48e</td><td>AppImage wrapper</td><td class="status-ok">Shipped</td><td>Unified expo-image wrapper: blurhash placeholder, 3× retry backoff, WebP encoding for Wix CDN.</td></tr>
+<tr><td>cm-28i</td><td>Haptic feedback</td><td class="status-ok">Shipped</td><td>expo-haptics on cart add, wishlist, compare, order success, AR placement. iOS/Android guard.</td></tr>
+<tr><td>cm-3fd</td><td>Security hardening</td><td class="status-ok">Shipped</td><td>sanitizeInput() XSS/injection guard. expo-secure-store for tokens/memberId. 43 tests.</td></tr>
+<tr><td>cm-g0z</td><td>A11y audit</td><td class="status-ok">Shipped</td><td>Screen reader labels + reduced motion support. accessibilityRole/Label/Hint on 12 components.</td></tr>
+<tr><td>cm-ox9</td><td>Perf telemetry</td><td class="status-warn">PR #508</td><td>perfMark service (dev-only). TTI markers on Home/PDP. React.memo on Cart/OrderHistory rows.</td></tr>
+</table>
+
+<h3>S34 Screen Captures (Pending — APK Build In Progress)</h3>
+<div class="grid">
+
+<div class="card">
+  <div class="placeholder">📱 TrailsScreen<div class="build-hint">Screenshot pending S34 APK build · cm-ay9</div></div>
+  <div class="card-info">
+    <h3>TrailsScreen <span class="session-tag">S34</span></h3>
+    <p>3 curated style trails (Spring Refresh, Summer Bold, Fall Classic) × 5 challenges each. Progress rings per trail. Tap challenge → ChallengeDetailSheet. Badge awarded on trail completion.</p>
+    <div class="features">
+      <span class="badge badge-gamification">Gamification</span>
+      <span class="badge badge-new">New Screen</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">📶 OfflineBanner<div class="build-hint">Screenshot pending S34 APK build · cm-049</div></div>
+  <div class="card-info">
+    <h3>OfflineBanner — Queue Count <span class="session-tag">S34</span></h3>
+    <p>Red banner at top of app when offline. Shows "N changes queued — will sync when reconnected". useQueueStatus reports pending write count. Dismisses automatically on reconnect.</p>
+    <div class="features">
+      <span class="badge badge-feature">Offline</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">🏠 RoomGallery Real Photos<div class="build-hint">Screenshot pending S34 APK build · cm-5aw</div></div>
+  <div class="card-info">
+    <h3>RoomGallery — Real Room Photos <span class="session-tag">S34</span></h3>
+    <p>Member-submitted room photos from Wix RealRoomPhotos collection. Hotspot (+) overlays link directly to featured products. Attribution shows member city/state. Masonry grid layout.</p>
+    <div class="features">
+      <span class="badge badge-social">Community</span>
+      <span class="badge badge-feature">CMS</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">📋 PDP Resources Accordion<div class="build-hint">Screenshot pending S34 APK build · cm-cgo</div></div>
+  <div class="card-info">
+    <h3>ProductDetail — Resources Accordion <span class="session-tag">S34</span></h3>
+    <p>Collapsible Resources section below BundleRow on PDP. Links to spec sheet PDF, care guide, warranty policy, and product video. Chevron toggle. Deep-links open in-app browser.</p>
+    <div class="features">
+      <span class="badge badge-commerce">PDP</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">🛒 Cart Recommendations<div class="build-hint">Screenshot pending S34 APK build · hq-bzb</div></div>
+  <div class="card-info">
+    <h3>CartScreen — Recommendations Row <span class="session-tag">S34</span></h3>
+    <p>"Recommended for you" horizontal ProductRecommendationRow at bottom of CartScreen. Powered by useProductRecommendations → Wix CMS. Also appears on PDP below fabric selector.</p>
+    <div class="features">
+      <span class="badge badge-commerce">Cart</span>
+      <span class="badge badge-feature">Recommendations</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">🎯 HomeScreen Challenges Rail<div class="build-hint">Screenshot pending S34 APK build · cm-jyw</div></div>
+  <div class="card-info">
+    <h3>HomeScreen — Challenges Rail <span class="session-tag">S34</span></h3>
+    <p>Horizontal ChallengeCard rail above featured products. Active challenges get coral (#E8845C) border. Tap → ChallengeDetailSheet bottom sheet with instructions + claim button. Auto-refreshes on gamification events.</p>
+    <div class="features">
+      <span class="badge badge-gamification">Challenges</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">🚚 PDP Shipping Estimate<div class="build-hint">Screenshot pending S34 APK build · cm-9yn</div></div>
+  <div class="card-info">
+    <h3>ProductDetail — Shipping Estimate <span class="session-tag">S34</span></h3>
+    <p>ZIP code entry below fabric selector. On submit: calls getShippingEstimate → returns carrier name + estimated days. Displays "Ships via UPS Ground · 5–7 business days". Cached per ZIP × productId.</p>
+    <div class="features">
+      <span class="badge badge-commerce">Shipping</span>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="placeholder">📅 Consultation Booking<div class="build-hint">Screenshot pending S34 APK build · cm-5x7</div></div>
+  <div class="card-info">
+    <h3>ConsultationBookingScreen <span class="session-tag">S34</span></h3>
+    <p>Book in-store consultation via Wix ConsultationBookings CMS. Date picker (YYYY-MM-DD), time slot selector (HH:MM), optional notes field. Conflict detection (409). Confirmation + calendar add prompt.</p>
+    <div class="features">
+      <span class="badge badge-auth">Auth Required</span>
+      <span class="badge badge-new">New Screen</span>
+    </div>
+  </div>
+</div>
+
 </div>
 </div>
 
