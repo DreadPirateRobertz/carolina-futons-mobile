@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { Alert, Platform, Dimensions, StyleSheet } from 'react-native';
+import type { ShippingEstimateResult } from '@/hooks/useShippingEstimate';
 import { ProductDetailScreen } from '../ProductDetailScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { WishlistProvider } from '@/hooks/useWishlist';
@@ -48,6 +49,27 @@ jest.mock('expo-file-system/legacy', () => ({
 // Mock uploadReviewPhoto to prevent expo-file-system → expo-modules-core native bridge access
 jest.mock('@/services/uploadReviewPhoto', () => ({
   uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
+}));
+
+// cm-9yn: useShippingEstimate mock — zip input, rate results, isEstimate flag
+const mockShippingEstimateBase: ShippingEstimateResult = {
+  icon: '🚚',
+  label: '5–7 business days',
+  badge: null,
+  badgeStyle: null,
+  options: [],
+  isEstimate: true,
+  isLoading: false,
+  error: null,
+};
+const mockUseShippingEstimate = jest.fn(
+  (_productId: string, _zip?: string): ShippingEstimateResult => ({
+    ...mockShippingEstimateBase,
+  }),
+);
+jest.mock('@/hooks/useShippingEstimate', () => ({
+  useShippingEstimate: (productId: string, zip?: string) => mockUseShippingEstimate(productId, zip),
+  SHIPPING_ZIP_STORAGE_KEY: '@shipping_estimate_zip',
 }));
 
 // CF-wah8: useProductReviews mock — inline star ratings near price
@@ -210,6 +232,7 @@ function renderDetail(props: Partial<React.ComponentProps<typeof ProductDetailSc
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseProductReviews.mockReturnValue(mockProductReviewsResult);
+  mockUseShippingEstimate.mockReturnValue({ ...mockShippingEstimateBase });
 });
 
 afterEach(() => {
