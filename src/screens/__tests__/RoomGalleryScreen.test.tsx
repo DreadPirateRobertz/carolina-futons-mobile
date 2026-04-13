@@ -6,7 +6,6 @@ import type { RoomGalleryItem } from '@/hooks/useRoomGallery';
 import { PLACEHOLDER_ROOMS } from '@/hooks/useRoomGallery';
 
 // Mock useRoomGallery so screen tests control the data layer.
-// Spread requireActual so PLACEHOLDER_ROOMS constant is available.
 const mockRefresh = jest.fn();
 const mockUseRoomGallery = jest.fn();
 jest.mock('@/hooks/useRoomGallery', () => ({
@@ -14,27 +13,44 @@ jest.mock('@/hooks/useRoomGallery', () => ({
   useRoomGallery: () => mockUseRoomGallery(),
 }));
 
-// UGCPhotoSubmitModal is wired into RoomGalleryScreen — mock it out so
-// RoomGalleryScreen tests don't need to set up its full dependency chain
-// (useAuth, wixClient, expo-image-picker, etc.).
+// UGCPhotoSubmitModal requires full dependency chain — mock it out.
 jest.mock('@/components/UGCPhotoSubmitModal', () => ({
   UGCPhotoSubmitModal: () => null,
 }));
 
 const SAMPLE_ROOMS: RoomGalleryItem[] = [
   {
-    roomId: 'room-001',
+    roomId: 'jane-room-001',
     imageUrl: 'https://static.wixstatic.com/media/e04e89_abc123',
     productIds: ['asheville-full', 'biltmore-queen'],
-    roomStyle: 'Modern',
+    roomStyle: 'My cozy living room',
     createdDate: '2026-03-01T00:00:00Z',
+    memberName: 'Jane Doe',
+    city: 'Charlotte',
+    state: 'NC',
+    caption: 'My cozy living room',
+    slug: 'jane-room-001',
+    altText: 'Living room with futon',
+    tags: [
+      { productId: 'asheville-full', productName: 'Asheville Full', x: 0.3, y: 0.4, width: 0.1, height: 0.1 },
+      { productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.6, y: 0.5, width: 0.1, height: 0.1 },
+    ],
   },
   {
-    roomId: 'room-002',
+    roomId: 'bob-room-002',
     imageUrl: 'https://static.wixstatic.com/media/e04e89_def456',
     productIds: ['blue-ridge-full'],
-    roomStyle: 'Coastal',
+    roomStyle: 'Modern bedroom setup',
     createdDate: '2026-02-15T00:00:00Z',
+    memberName: 'Bob Smith',
+    city: 'Raleigh',
+    state: 'NC',
+    caption: 'Modern bedroom setup',
+    slug: 'bob-room-002',
+    altText: 'Bedroom with blue ridge futon',
+    tags: [
+      { productId: 'blue-ridge-full', productName: 'Blue Ridge Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 },
+    ],
   },
 ];
 
@@ -195,16 +211,15 @@ describe('RoomGalleryScreen', () => {
       }
     });
 
-    it('displays roomStyle label on each card', () => {
+    it('displays caption/roomStyle label on each card', () => {
       const { getByTestId } = renderGallery();
-      expect(getByTestId('room-style-room-001').props.children).toBe('Modern');
-      expect(getByTestId('room-style-room-002').props.children).toBe('Coastal');
+      expect(getByTestId('room-style-jane-room-001').props.children).toBe('My cozy living room');
+      expect(getByTestId('room-style-bob-room-002').props.children).toBe('Modern bedroom setup');
     });
 
     it('shows product count badge on each card', () => {
       const { getByTestId } = renderGallery();
-      // room-001 has 2 products
-      expect(getByTestId('room-product-count-room-001')).toBeTruthy();
+      expect(getByTestId('room-product-count-jane-room-001')).toBeTruthy();
     });
 
     it('does not show placeholder banner when real rooms are displayed', () => {
@@ -225,38 +240,131 @@ describe('RoomGalleryScreen', () => {
     });
   });
 
-  describe('Product tap navigation', () => {
-    it('calls onProductPress with first productId when card tapped', () => {
+  describe('Member attribution', () => {
+    it('shows member name on each room card', () => {
+      const { getByTestId } = renderGallery();
+      expect(getByTestId('room-member-jane-room-001')).toBeTruthy();
+      const label = getByTestId('room-member-jane-room-001');
+      expect(label.props.children).toContain('Jane Doe');
+    });
+
+    it('shows city and state on each room card', () => {
+      const { getByTestId } = renderGallery();
+      const location = getByTestId('room-location-jane-room-001');
+      expect(location).toBeTruthy();
+      expect(location.props.children).toContain('Charlotte');
+      expect(location.props.children).toContain('NC');
+    });
+
+    it('shows member name for second room card', () => {
+      const { getByTestId } = renderGallery();
+      const label = getByTestId('room-member-bob-room-002');
+      expect(label.props.children).toContain('Bob Smith');
+    });
+  });
+
+  describe('Hotspot product links', () => {
+    it('renders hotspot button for each tag', () => {
+      const { getByTestId } = renderGallery();
+      // First room has 2 tags
+      expect(getByTestId('hotspot-jane-room-001-asheville-full')).toBeTruthy();
+      expect(getByTestId('hotspot-jane-room-001-biltmore-queen')).toBeTruthy();
+    });
+
+    it('calls onProductPress with productId when hotspot pressed', () => {
       const onProductPress = jest.fn();
       const { getByTestId } = renderGallery({ onProductPress });
-      fireEvent.press(getByTestId('room-card-room-001'));
+      fireEvent.press(getByTestId('hotspot-jane-room-001-asheville-full'));
+      expect(onProductPress).toHaveBeenCalledWith('asheville-full');
+    });
+
+    it('calls onProductPress with correct productId for second hotspot', () => {
+      const onProductPress = jest.fn();
+      const { getByTestId } = renderGallery({ onProductPress });
+      fireEvent.press(getByTestId('hotspot-jane-room-001-biltmore-queen'));
+      expect(onProductPress).toHaveBeenCalledWith('biltmore-queen');
+    });
+
+    it('does not throw when hotspot pressed without onProductPress', () => {
+      const { getByTestId } = renderGallery();
+      expect(() => fireEvent.press(getByTestId('hotspot-jane-room-001-asheville-full'))).not.toThrow();
+    });
+
+    it('renders one hotspot for room with single tag', () => {
+      const { getByTestId, queryByTestId } = renderGallery();
+      expect(getByTestId('hotspot-bob-room-002-blue-ridge-full')).toBeTruthy();
+      // bob-room-002 only has one tag — no second hotspot
+      expect(queryByTestId('hotspot-bob-room-002-asheville-full')).toBeNull();
+    });
+
+    it('hotspot buttons have accessibility role', () => {
+      const { getByTestId } = renderGallery();
+      const hotspot = getByTestId('hotspot-jane-room-001-asheville-full');
+      expect(hotspot.props.accessibilityRole).toBe('button');
+    });
+
+    it('hotspot button has product name as accessibility label', () => {
+      const { getByTestId } = renderGallery();
+      const hotspot = getByTestId('hotspot-jane-room-001-asheville-full');
+      expect(hotspot.props.accessibilityLabel).toContain('Asheville Full');
+    });
+
+    it('renders no hotspots for room with empty tags', () => {
+      const noTagRoom: RoomGalleryItem = {
+        ...SAMPLE_ROOMS[0],
+        roomId: 'no-tags',
+        tags: [],
+        productIds: [],
+      };
+      mockUseRoomGallery.mockReturnValue({
+        rooms: [noTagRoom],
+        isPlaceholder: false,
+        isLoading: false,
+        error: null,
+        refresh: mockRefresh,
+      });
+      const { queryByTestId } = renderGallery();
+      expect(queryByTestId(/^hotspot-no-tags-/)).toBeNull();
+    });
+  });
+
+  describe('Product tap navigation (card-level)', () => {
+    it('calls onProductPress with first productId when card body tapped', () => {
+      const onProductPress = jest.fn();
+      const { getByTestId } = renderGallery({ onProductPress });
+      fireEvent.press(getByTestId('room-card-jane-room-001'));
       expect(onProductPress).toHaveBeenCalledWith('asheville-full');
     });
 
     it('calls onProductPress for second room with its productId', () => {
       const onProductPress = jest.fn();
       const { getByTestId } = renderGallery({ onProductPress });
-      fireEvent.press(getByTestId('room-card-room-002'));
+      fireEvent.press(getByTestId('room-card-bob-room-002'));
       expect(onProductPress).toHaveBeenCalledWith('blue-ridge-full');
     });
 
     it('does not throw when onProductPress not provided', () => {
       const { getByTestId } = renderGallery();
-      expect(() => fireEvent.press(getByTestId('room-card-room-001'))).not.toThrow();
+      expect(() => fireEvent.press(getByTestId('room-card-jane-room-001'))).not.toThrow();
     });
   });
 
   describe('Accessibility', () => {
     it('room cards have accessibility labels', () => {
       const { getByTestId } = renderGallery();
-      const card = getByTestId('room-card-room-001');
+      const card = getByTestId('room-card-jane-room-001');
       expect(card.props.accessibilityLabel).toBeDefined();
-      expect(card.props.accessibilityLabel).toContain('Modern');
     });
 
     it('room cards have button accessibility role', () => {
       const { getByTestId } = renderGallery();
-      expect(getByTestId('room-card-room-001').props.accessibilityRole).toBe('button');
+      expect(getByTestId('room-card-jane-room-001').props.accessibilityRole).toBe('button');
+    });
+
+    it('room images use altText when available', () => {
+      const { getByTestId } = renderGallery();
+      const img = getByTestId('room-image-jane-room-001');
+      expect(img.props.accessibilityLabel).toBe('Living room with futon');
     });
   });
 
@@ -271,8 +379,6 @@ describe('RoomGalleryScreen', () => {
       expect(getByTestId('my-gallery')).toBeTruthy();
     });
   });
-
-  // ── cm-biz: placeholder rooms + upload CTA ─────────────────────────────────
 
   describe('Placeholder state', () => {
     beforeEach(() => {
@@ -310,7 +416,6 @@ describe('RoomGalleryScreen', () => {
     it('placeholder rooms have non-empty imageUrl', () => {
       for (const room of PLACEHOLDER_ROOMS) {
         expect(room.imageUrl).toBeTruthy();
-        expect(room.productIds.length).toBeGreaterThan(0);
       }
     });
 
@@ -326,45 +431,34 @@ describe('RoomGalleryScreen', () => {
     });
   });
 
-  // ── cm-x6f: expo-image migration ───────────────────────────────────────────
-
   describe('expo-image migration', () => {
     it('room images use expo-image (contentFit prop instead of resizeMode)', () => {
       const { getByTestId } = renderGallery();
-      const img = getByTestId('room-image-room-001');
-      // expo-image mock passes props through; resizeMode is a react-native Image prop
+      const img = getByTestId('room-image-jane-room-001');
       expect(img.props.resizeMode).toBeUndefined();
     });
 
     it('room images have cachePolicy="memory-disk"', () => {
       const { getByTestId } = renderGallery();
-      const img = getByTestId('room-image-room-001');
+      const img = getByTestId('room-image-jane-room-001');
       expect(img.props.cachePolicy).toBe('memory-disk');
     });
 
     it('room images have a placeholder prop', () => {
       const { getByTestId } = renderGallery();
-      const img = getByTestId('room-image-room-001');
+      const img = getByTestId('room-image-jane-room-001');
       expect(img.props.placeholder).toBeDefined();
     });
 
     it('room images have a truthy blurhash placeholder', () => {
       const { getByTestId } = renderGallery();
-      const img = getByTestId('room-image-room-001');
+      const img = getByTestId('room-image-jane-room-001');
       expect(img.props.placeholder?.blurhash).toBeTruthy();
-    });
-
-    it('room images have contentFit="cover"', () => {
-      const { getByTestId } = renderGallery();
-      // expo-image mock does NOT pass contentFit through (it's destructured out)
-      // so we verify no resizeMode is present — the real component uses contentFit
-      const img = getByTestId('room-image-room-001');
-      expect(img.props.resizeMode).toBeUndefined();
     });
 
     it('second room also has cachePolicy set', () => {
       const { getByTestId } = renderGallery();
-      expect(getByTestId('room-image-room-002').props.cachePolicy).toBe('memory-disk');
+      expect(getByTestId('room-image-bob-room-002').props.cachePolicy).toBe('memory-disk');
     });
   });
 

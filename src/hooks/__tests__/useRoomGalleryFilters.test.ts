@@ -33,6 +33,13 @@ function makeRoom(
     productIds,
     roomStyle,
     createdDate: '2026-01-01T00:00:00Z',
+    memberName: 'Test User',
+    city: 'Charlotte',
+    state: 'NC',
+    caption: roomStyle,
+    slug: roomId,
+    altText: '',
+    tags: productIds.map((pid) => ({ productId: pid, productName: pid, x: 0.5, y: 0.5, width: 0.1, height: 0.1 })),
   };
 }
 
