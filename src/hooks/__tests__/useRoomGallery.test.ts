@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
-import { useRoomGallery, PLACEHOLDER_ROOMS, type RoomGalleryItem } from '../useRoomGallery';
+import { useRoomGallery, PLACEHOLDER_ROOMS, type RoomGalleryItem, type RoomPhotoTag } from '../useRoomGallery';
 
 // Mock wixProvider
 const mockQueryData = jest.fn();
@@ -8,15 +8,24 @@ jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: () => mockUseOptionalWixClient(),
 }));
 
-/** Minimal Wix Data item for room gallery */
-function makeRawRoom(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+/** Minimal Wix Data item for RealRoomPhotos */
+function makeRawPhoto(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    roomId: 'room-001',
-    imageUrl:
-      'wix:image://v1/e04e89_abc123def456/living-room.jpg#originWidth=1200&originHeight=800',
-    productIds: ['asheville-full', 'biltmore-queen'],
-    roomStyle: 'Modern',
-    createdDate: '2026-03-01T00:00:00Z',
+    memberId: 'member-001',
+    memberName: 'Jane Doe',
+    imageUrl: 'wix:image://v1/e04e89_abc123def456/living-room.jpg#originWidth=1200&originHeight=800',
+    city: 'Charlotte',
+    state: 'NC',
+    tags: JSON.stringify([
+      { productId: 'asheville-full', productName: 'Asheville Full', x: 0.3, y: 0.4, width: 0.1, height: 0.1 },
+      { productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.6, y: 0.5, width: 0.1, height: 0.1 },
+    ]),
+    caption: 'My cozy living room',
+    slug: 'jane-room-001',
+    status: 'approved',
+    pointsAwarded: 50,
+    createdAt: '2026-03-01T00:00:00Z',
+    altText: 'Living room with futon',
     ...overrides,
   };
 }
@@ -42,33 +51,75 @@ describe('useRoomGallery', () => {
       mockUseOptionalWixClient.mockReturnValue({ queryData: mockQueryData } as any);
     });
 
-    it('fetches from roomGallery collection', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+    it('fetches from RealRoomPhotos collection', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(mockQueryData).toHaveBeenCalledWith(
-        'roomGallery',
+        'RealRoomPhotos',
         expect.objectContaining({ limit: expect.any(Number) }),
       );
     });
 
+    it('filters by status=approved', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(mockQueryData).toHaveBeenCalledWith(
+        'RealRoomPhotos',
+        expect.objectContaining({
+          filter: expect.objectContaining({ status: expect.objectContaining({ $eq: 'approved' }) }),
+        }),
+      );
+    });
+
     it('returns transformed room items', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(result.current.rooms).toHaveLength(1);
       const room = result.current.rooms[0];
-      expect(room.roomId).toBe('room-001');
-      expect(room.productIds).toEqual(['asheville-full', 'biltmore-queen']);
-      expect(room.roomStyle).toBe('Modern');
+      expect(room.roomId).toBe('jane-room-001');
+      expect(room.memberName).toBe('Jane Doe');
+      expect(room.city).toBe('Charlotte');
+      expect(room.state).toBe('NC');
+      expect(room.caption).toBe('My cozy living room');
+      expect(room.slug).toBe('jane-room-001');
+      expect(room.altText).toBe('Living room with futon');
+    });
+
+    it('maps slug to roomId', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ slug: 'unique-slug-xyz' })], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.rooms[0].roomId).toBe('unique-slug-xyz');
+    });
+
+    it('maps caption to roomStyle', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ caption: 'Rustic charm' })], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.rooms[0].roomStyle).toBe('Rustic charm');
+    });
+
+    it('maps createdAt to createdDate', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ createdAt: '2026-01-15T12:00:00Z' })], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.rooms[0].createdDate).toBe('2026-01-15T12:00:00Z');
     });
 
     it('resolves wix:image:// URL to wixstatic CDN URL', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -79,10 +130,8 @@ describe('useRoomGallery', () => {
     });
 
     it('passes through https:// image URLs unchanged', async () => {
-      const room = makeRawRoom({
-        imageUrl: 'https://static.wixstatic.com/media/e04e89_direct',
-      });
-      mockQueryData.mockResolvedValue({ items: [room], totalResults: 1 });
+      const photo = makeRawPhoto({ imageUrl: 'https://static.wixstatic.com/media/e04e89_direct' });
+      mockQueryData.mockResolvedValue({ items: [photo], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -92,8 +141,82 @@ describe('useRoomGallery', () => {
       );
     });
 
+    it('parses tags JSON string into RoomPhotoTag array', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      const tags = result.current.rooms[0].tags;
+      expect(Array.isArray(tags)).toBe(true);
+      expect(tags).toHaveLength(2);
+      expect(tags[0]).toMatchObject({
+        productId: 'asheville-full',
+        productName: 'Asheville Full',
+        x: 0.3,
+        y: 0.4,
+        width: 0.1,
+        height: 0.1,
+      });
+    });
+
+    it('handles tags already as array (not JSON string)', async () => {
+      const tagsArray = [
+        { productId: 'p1', productName: 'Product 1', x: 0.1, y: 0.2, width: 0.05, height: 0.05 },
+      ];
+      const photo = makeRawPhoto({ tags: tagsArray });
+      mockQueryData.mockResolvedValue({ items: [photo], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.rooms[0].tags).toHaveLength(1);
+      expect(result.current.rooms[0].tags[0].productId).toBe('p1');
+    });
+
+    it('derives productIds from tags', async () => {
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.rooms[0].productIds).toEqual(['asheville-full', 'biltmore-queen']);
+    });
+
+    it('allows rooms with empty tags (no product hotspots)', async () => {
+      const photo = makeRawPhoto({ tags: '[]' });
+      mockQueryData.mockResolvedValue({ items: [photo], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.rooms).toHaveLength(1);
+      expect(result.current.rooms[0].tags).toEqual([]);
+      expect(result.current.rooms[0].productIds).toEqual([]);
+    });
+
+    it('handles missing tags field gracefully', async () => {
+      const photo = makeRawPhoto({ tags: undefined });
+      mockQueryData.mockResolvedValue({ items: [photo], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.rooms[0].tags).toEqual([]);
+    });
+
+    it('handles malformed tags JSON gracefully (falls back to empty array)', async () => {
+      const photo = makeRawPhoto({ tags: 'not-valid-json' });
+      mockQueryData.mockResolvedValue({ items: [photo], totalResults: 1 });
+
+      const { result } = renderHook(() => useRoomGallery());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.rooms[0].tags).toEqual([]);
+    });
+
     it('returns error=null on success', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -131,32 +254,20 @@ describe('useRoomGallery', () => {
     });
 
     it('filters out rooms with null/unparseable image URLs', async () => {
-      const badRoom = makeRawRoom({ imageUrl: '' });
-      const goodRoom = makeRawRoom({ roomId: 'room-002' });
-      mockQueryData.mockResolvedValue({ items: [badRoom, goodRoom], totalResults: 2 });
+      const badPhoto = makeRawPhoto({ imageUrl: '', slug: 'bad-photo' });
+      const goodPhoto = makeRawPhoto({ slug: 'good-photo' });
+      mockQueryData.mockResolvedValue({ items: [badPhoto, goodPhoto], totalResults: 2 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       expect(result.current.rooms).toHaveLength(1);
-      expect(result.current.rooms[0].roomId).toBe('room-002');
+      expect(result.current.rooms[0].roomId).toBe('good-photo');
     });
 
-    it('filters out rooms with missing productIds', async () => {
-      const noProducts = makeRawRoom({ productIds: [] });
-      const withProducts = makeRawRoom({ roomId: 'room-002' });
-      mockQueryData.mockResolvedValue({ items: [noProducts, withProducts], totalResults: 2 });
-
-      const { result } = renderHook(() => useRoomGallery());
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-      expect(result.current.rooms).toHaveLength(1);
-      expect(result.current.rooms[0].roomId).toBe('room-002');
-    });
-
-    it('sorts rooms by createdDate descending (newest first)', async () => {
-      const older = makeRawRoom({ roomId: 'old', createdDate: '2026-01-01T00:00:00Z' });
-      const newer = makeRawRoom({ roomId: 'new', createdDate: '2026-03-01T00:00:00Z' });
+    it('sorts rooms by createdAt descending (newest first)', async () => {
+      const older = makeRawPhoto({ slug: 'old', createdAt: '2026-01-01T00:00:00Z' });
+      const newer = makeRawPhoto({ slug: 'new', createdAt: '2026-03-01T00:00:00Z' });
       mockQueryData.mockResolvedValue({ items: [older, newer], totalResults: 2 });
 
       const { result } = renderHook(() => useRoomGallery());
@@ -193,29 +304,26 @@ describe('useRoomGallery', () => {
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.error).not.toBeNull();
 
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
       result.current.refresh();
 
       await waitFor(() => expect(result.current.error).toBeNull());
       expect(result.current.rooms).toHaveLength(1);
     });
 
-    it('handles malformed room item (missing roomId) without crashing', async () => {
-      const malformed = { imageUrl: 'https://example.com/img.jpg', productIds: ['p1'] };
-      const good = makeRawRoom({ roomId: 'room-good' });
+    it('handles malformed item (missing slug) without crashing', async () => {
+      const malformed = { imageUrl: 'https://example.com/img.jpg' };
+      const good = makeRawPhoto({ slug: 'room-good' });
       mockQueryData.mockResolvedValue({ items: [malformed, good], totalResults: 2 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      // Should not crash; good room should still appear
       expect(result.current.rooms.some((r) => r.roomId === 'room-good')).toBe(true);
     });
 
-    // ── cm-biz: isPlaceholder flag correctness ─────────────────────────────
-
     it('sets isPlaceholder=false when real rooms are fetched', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -228,7 +336,7 @@ describe('useRoomGallery', () => {
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isPlaceholder).toBe(true));
 
-      mockQueryData.mockResolvedValue({ items: [makeRawRoom()], totalResults: 1 });
+      mockQueryData.mockResolvedValue({ items: [makeRawPhoto()], totalResults: 1 });
       result.current.refresh();
 
       await waitFor(() => expect(result.current.isPlaceholder).toBe(false));
@@ -236,14 +344,25 @@ describe('useRoomGallery', () => {
     });
 
     it('falls back to PLACEHOLDER_ROOMS when all items fail transform', async () => {
-      // Every item has an empty imageUrl, so transformRoom returns null for all
-      const allBad = [makeRawRoom({ imageUrl: '' }), makeRawRoom({ imageUrl: '' })];
+      const allBad = [makeRawPhoto({ imageUrl: '' }), makeRawPhoto({ imageUrl: '' })];
       mockQueryData.mockResolvedValue({ items: allBad, totalResults: 2 });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.rooms).toEqual(PLACEHOLDER_ROOMS);
       expect(result.current.isPlaceholder).toBe(true);
+    });
+
+    it('PLACEHOLDER_ROOMS items have tags array', () => {
+      for (const room of PLACEHOLDER_ROOMS) {
+        expect(Array.isArray(room.tags)).toBe(true);
+      }
+    });
+
+    it('PLACEHOLDER_ROOMS items have memberName', () => {
+      for (const room of PLACEHOLDER_ROOMS) {
+        expect(room.memberName).toBeTruthy();
+      }
     });
   });
 });

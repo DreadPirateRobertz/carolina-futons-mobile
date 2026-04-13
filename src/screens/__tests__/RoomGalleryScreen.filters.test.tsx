@@ -30,28 +30,49 @@ jest.mock('@/components/UGCPhotoSubmitModal', () => ({
   UGCPhotoSubmitModal: () => null,
 }));
 
+function makeRoom(overrides: Partial<RoomGalleryItem>): RoomGalleryItem {
+  return {
+    roomId: 'r0',
+    imageUrl: 'https://example.com/r0.jpg',
+    productIds: [],
+    roomStyle: '',
+    createdDate: '2026-01-01T00:00:00Z',
+    memberName: 'Test User',
+    city: 'Charlotte',
+    state: 'NC',
+    caption: '',
+    slug: 'r0',
+    altText: '',
+    tags: [],
+    ...overrides,
+  };
+}
+
 const ROOMS: RoomGalleryItem[] = [
-  {
+  makeRoom({
     roomId: 'r1',
     imageUrl: 'https://example.com/r1.jpg',
     productIds: ['asheville-full'],
     roomStyle: 'Modern',
     createdDate: '2026-03-01T00:00:00Z',
-  },
-  {
+    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
+  makeRoom({
     roomId: 'r2',
     imageUrl: 'https://example.com/r2.jpg',
     productIds: ['biltmore-queen'],
     roomStyle: 'Coastal',
     createdDate: '2026-02-15T00:00:00Z',
-  },
-  {
+    tags: [{ productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
+  makeRoom({
     roomId: 'r3',
     imageUrl: 'https://example.com/r3.jpg',
     productIds: ['asheville-full'],
     roomStyle: 'Rustic',
     createdDate: '2026-01-10T00:00:00Z',
-  },
+    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+  }),
 ];
 
 function renderGallery() {
