@@ -57,8 +57,11 @@ export function useCropUI(options: UseCropUIOptions = {}): UseCropUIResult {
 
   const [cropRect, setCropRect] = useState<CropRect>(initialRect);
   const [aspectRatioLocked, setAspectRatioLocked] = useState(initialAspectLocked);
-  // Ratio locked at the moment the lock was engaged (width / height)
-  const [lockedRatio, setLockedRatio] = useState<number | null>(null);
+  // Ratio locked at the moment the lock was engaged (width / height).
+  // Initialized from initialRect when initialAspectLocked is true.
+  const [lockedRatio, setLockedRatio] = useState<number | null>(
+    initialAspectLocked ? initialRect.width / initialRect.height : null,
+  );
 
   const updateHandle = useCallback(
     (handle: CropHandle, dx: number, dy: number) => {

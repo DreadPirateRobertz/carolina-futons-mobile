@@ -217,6 +217,43 @@ describe('useCropUI', () => {
       const { width, height } = result.current.cropRect;
       expect(approx(width)).toBeCloseTo(height, 3);
     });
+
+    it('topRight drag maintains ratio', () => {
+      // y:0.1 gives the top edge room to shift upward when ratio is maintained
+      const { result } = renderHook(() =>
+        useCropUI({ initialRect: { x: 0, y: 0.1, width: 0.6, height: 0.6 } }),
+      );
+      act(() => result.current.toggleAspectRatioLock()); // ratio 1:1
+      act(() => result.current.updateHandle('topRight', 0.1, 0));
+
+      const { width, height } = result.current.cropRect;
+      expect(approx(width)).toBeCloseTo(height, 3);
+    });
+
+    it('bottomLeft drag maintains ratio', () => {
+      // x:0.1 gives the left edge room to shift rightward when ratio is maintained
+      const { result } = renderHook(() =>
+        useCropUI({ initialRect: { x: 0.1, y: 0, width: 0.6, height: 0.6 } }),
+      );
+      act(() => result.current.toggleAspectRatioLock()); // ratio 1:1
+      act(() => result.current.updateHandle('bottomLeft', 0.05, 0));
+
+      const { width, height } = result.current.cropRect;
+      expect(approx(width)).toBeCloseTo(height, 3);
+    });
+
+    it('initialAspectLocked:true — drag immediately maintains initial aspect ratio', () => {
+      // When locked from initialization, updateHandle must enforce the ratio without
+      // requiring an explicit toggleAspectRatioLock() call first.
+      const { result } = renderHook(() =>
+        useCropUI({ initialRect: { x: 0, y: 0, width: 0.8, height: 0.4 }, initialAspectLocked: true }),
+      );
+      const expectedRatio = 0.8 / 0.4; // 2.0
+      act(() => result.current.updateHandle('bottomRight', 0.05, 0));
+
+      const { width, height } = result.current.cropRect;
+      expect(approx(width / height)).toBeCloseTo(expectedRatio, 3);
+    });
   });
 
   // ── toggleAspectRatioLock ─────────────────────────────────────────────────
