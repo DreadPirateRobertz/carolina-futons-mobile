@@ -120,6 +120,7 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
           returnKeyType="done"
           onSubmitEditing={handleApply}
           accessibilityLabel="Promo code input"
+          accessibilityHint="Enter a promotional code, then tap apply"
         />
         <TouchableOpacity
           testID="promo-apply-btn"
