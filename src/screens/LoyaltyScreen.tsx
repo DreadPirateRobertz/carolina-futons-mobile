@@ -118,6 +118,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
           onPress={refreshPoints}
           testID="loyalty-retry"
           accessibilityRole="button"
+          accessibilityLabel="Retry loading loyalty points"
         >
           <Text style={[styles.retryText, { fontFamily: typography.bodyFamilyBold }]}>Retry</Text>
         </TouchableOpacity>

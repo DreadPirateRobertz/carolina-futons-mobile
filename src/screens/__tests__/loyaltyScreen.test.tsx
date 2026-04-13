@@ -147,4 +147,21 @@ describe('LoyaltyScreen', () => {
     const { queryByTestId } = renderScreen();
     expect(queryByTestId('loyalty-points')).toBeNull();
   });
+
+  describe('Accessibility — retry button (cm-b6v)', () => {
+    it('retry button has accessibilityLabel and role', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: 'API error', loading: false });
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('loyalty-retry');
+      expect(btn.props.accessibilityLabel).toBe('Retry loading loyalty points');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('retry button calls refreshPoints when pressed', () => {
+      mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, error: 'API error', loading: false });
+      const { getByTestId } = renderScreen();
+      fireEvent.press(getByTestId('loyalty-retry'));
+      expect(mockRefreshPoints).toHaveBeenCalledTimes(1);
+    });
+  });
 });

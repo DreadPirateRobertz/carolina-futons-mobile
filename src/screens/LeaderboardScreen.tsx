@@ -56,6 +56,9 @@ export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
             key={p}
             testID={`toggle-${p}`}
             onPress={() => setPeriod(p)}
+            accessibilityRole="button"
+            accessibilityLabel={p === 'allTime' ? 'All time leaderboard' : 'Weekly leaderboard'}
+            accessibilityState={{ selected: period === p }}
             style={[
               styles.toggleBtn,
               {
@@ -99,6 +102,8 @@ export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
           <TouchableOpacity
             testID="leaderboard-retry"
             onPress={refresh}
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading leaderboard"
             style={[
               styles.retryBtn,
               {

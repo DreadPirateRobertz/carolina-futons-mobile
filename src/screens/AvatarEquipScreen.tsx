@@ -188,6 +188,7 @@ export function AvatarEquipScreen() {
           return (
             <TouchableOpacity
               testID={`accessory-item-${item.id}`}
+              accessibilityRole="button"
               accessibilityLabel={`${item.name}${isUnlocked ? '' : ', locked'}${isEquipped ? ', equipped' : ''}`}
               accessibilityState={{ disabled: !isUnlocked }}
               disabled={!isUnlocked}

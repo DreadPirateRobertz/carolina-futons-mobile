@@ -270,4 +270,50 @@ describe('LeaderboardScreen', () => {
       expect(hasBlue).toBe(true);
     });
   });
+
+  describe('Accessibility — period toggle + retry button (cm-b6v)', () => {
+    it('all-time toggle has accessibilityLabel and role', () => {
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      const btn = getByTestId('toggle-allTime');
+      expect(btn.props.accessibilityLabel).toBe('All time leaderboard');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('weekly toggle has accessibilityLabel and role', () => {
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      const btn = getByTestId('toggle-weekly');
+      expect(btn.props.accessibilityLabel).toBe('Weekly leaderboard');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('all-time toggle is marked selected when period=allTime', () => {
+      mockHookState = { ...mockHookState, period: 'allTime' };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('toggle-allTime').props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: true }),
+      );
+      expect(getByTestId('toggle-weekly').props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: false }),
+      );
+    });
+
+    it('weekly toggle is marked selected when period=weekly', () => {
+      mockHookState = { ...mockHookState, period: 'weekly' };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('toggle-weekly').props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: true }),
+      );
+      expect(getByTestId('toggle-allTime').props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: false }),
+      );
+    });
+
+    it('retry button has accessibilityLabel and role', () => {
+      mockHookState = { ...mockHookState, entries: [], error: 'Network error', loading: false };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      const btn = getByTestId('leaderboard-retry');
+      expect(btn.props.accessibilityLabel).toBe('Retry loading leaderboard');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+  });
 });

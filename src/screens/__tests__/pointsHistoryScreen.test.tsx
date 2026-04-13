@@ -306,4 +306,22 @@ describe('PointsHistoryScreen', () => {
       expect(getByTestId('points-history-error').props.children).toBe('Connection timed out');
     });
   });
+
+  describe('Accessibility — event icons + retry button (cm-b6v)', () => {
+    it('event type icons are marked decorative (accessibilityRole=image, empty label)', () => {
+      mockUsePointsHistory.mockReturnValue({ ...defaultHookState, events: MOCK_EVENTS });
+      const { getByTestId } = renderScreen();
+      const icon = getByTestId(`points-event-icon-${MOCK_EVENTS[0].id}`);
+      expect(icon.props.accessibilityRole).toBe('image');
+      expect(icon.props.accessibilityLabel).toBe('');
+    });
+
+    it('retry button has accessibilityLabel and role', () => {
+      mockUsePointsHistory.mockReturnValue({ ...defaultHookState, error: 'Failed to load' });
+      const { getByTestId } = renderScreen();
+      const btn = getByTestId('points-history-retry');
+      expect(btn.props.accessibilityLabel).toBe('Retry loading points history');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+  });
 });

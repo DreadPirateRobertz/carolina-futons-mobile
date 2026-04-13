@@ -10,6 +10,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AvatarEquipScreen } from '../AvatarEquipScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { ConnectivityProvider, useConnectivity } from '@/hooks/useConnectivity';
+import { ACCESSORIES } from '@/data/accessories';
 
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
@@ -452,6 +453,61 @@ describe('AvatarEquipScreen', () => {
       fireEvent.press(getByTestId('accessory-item-hat-crown'));
       const errorEl = await findByTestId('avatar-equip-equip-error');
       expect(errorEl.props.children).toMatch(/not authorized|403/i);
+    });
+  });
+
+  describe('Accessibility — accessory items (cm-b6v)', () => {
+    it('unlocked accessory has accessibilityRole=button', () => {
+      const { getByTestId } = renderScreen();
+      const item = getByTestId('accessory-item-hat-crown');
+      expect(item.props.accessibilityRole).toBe('button');
+    });
+
+    it('unlocked accessory accessibilityLabel contains the item name', () => {
+      const crown = ACCESSORIES.find((a) => a.id === 'hat-crown')!;
+      const { getByTestId } = renderScreen();
+      const item = getByTestId('accessory-item-hat-crown');
+      expect(item.props.accessibilityLabel).toContain(crown.name);
+    });
+
+    it('locked accessory label includes ", locked"', () => {
+      mockUseAvatarState.mockReturnValue({
+        equippedAccessoryId: null,
+        unlockedAccessoryIds: [], // nothing unlocked
+        loading: false,
+        error: null,
+        refreshAvatarState: jest.fn(),
+      });
+      const { getByTestId } = renderScreen();
+      const item = getByTestId('accessory-item-hat-crown');
+      expect(item.props.accessibilityLabel).toContain(', locked');
+    });
+
+    it('locked accessory has accessibilityState.disabled=true', () => {
+      mockUseAvatarState.mockReturnValue({
+        equippedAccessoryId: null,
+        unlockedAccessoryIds: [],
+        loading: false,
+        error: null,
+        refreshAvatarState: jest.fn(),
+      });
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('accessory-item-hat-crown').props.accessibilityState).toEqual(
+        expect.objectContaining({ disabled: true }),
+      );
+    });
+
+    it('equipped accessory label includes ", equipped"', () => {
+      mockUseAvatarState.mockReturnValue({
+        equippedAccessoryId: 'hat-crown',
+        unlockedAccessoryIds: ['hat-crown', 'badge-star'],
+        loading: false,
+        error: null,
+        refreshAvatarState: jest.fn(),
+      });
+      const { getByTestId } = renderScreen();
+      const item = getByTestId('accessory-item-hat-crown');
+      expect(item.props.accessibilityLabel).toContain(', equipped');
     });
   });
 });
