@@ -223,4 +223,30 @@ describe('LoyaltyScreen — tier-emit edge cases', () => {
     expect(mockCaptureException).toHaveBeenCalledWith(expect.any(Error));
     expect(mockEmitTierChanged).not.toHaveBeenCalled();
   });
+
+  it('captures exception when getWixClientSingleton throws synchronously during streak emit', async () => {
+    mockUseStreak.mockReturnValue({ streak: 5, loading: false, wasExtendedToday: true });
+    mockGetWixClient.mockImplementationOnce(() => {
+      throw new Error('wix client unavailable');
+    });
+    renderScreen();
+    await act(async () => await new Promise((r) => setTimeout(r, 5)));
+
+    expect(mockCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    const err = mockCaptureException.mock.calls[0][0] as Error;
+    expect(err.message).toMatch(/wix client unavailable/);
+  });
+
+  it('wraps non-Error throws from getWixClientSingleton into Error (streak path)', async () => {
+    mockUseStreak.mockReturnValue({ streak: 5, loading: false, wasExtendedToday: true });
+    mockGetWixClient.mockImplementationOnce(() => {
+      throw 'plain string panic';
+    });
+    renderScreen();
+    await act(async () => await new Promise((r) => setTimeout(r, 5)));
+
+    const err = mockCaptureException.mock.calls[0][0];
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).message).toBe('plain string panic');
+  });
 });
