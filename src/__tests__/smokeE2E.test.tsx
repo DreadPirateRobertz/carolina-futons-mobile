@@ -59,9 +59,9 @@ jest.mock('react-native-reanimated', () => {
 
 // Haptics
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
   ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
   NotificationFeedbackType: { Success: 'Success', Error: 'Error' },
 }));

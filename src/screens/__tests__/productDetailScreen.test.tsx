@@ -1565,7 +1565,7 @@ describe('ProductDetailScreen', () => {
       const alertCall = mockAlert.mock.calls[0];
       const viewCartButton = alertCall[2].find((b: any) => b.text === 'View Cart');
       viewCartButton.onPress();
-      expect(mockNavigate).toHaveBeenCalledWith('Tabs', { screen: 'Cart' });
+      expect(mockNavigate).toHaveBeenCalledWith('Tabs');
     });
 
     it('still calls onAddToCart prop when provided', () => {

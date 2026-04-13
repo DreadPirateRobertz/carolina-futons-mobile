@@ -9,7 +9,7 @@ import { productId } from '@/data/productId';
 import * as Haptics from 'expo-haptics';
 
 jest.mock('expo-haptics', () => ({
-  impactAsync: jest.fn(),
+  impactAsync: jest.fn(() => Promise.resolve()),
   ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
 }));
 

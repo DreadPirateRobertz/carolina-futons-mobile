@@ -32,6 +32,7 @@ import { useConnectivity } from './useConnectivity';
 import { useOfflineSync } from './useOfflineSync';
 import { compactByLWW } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
+import { useGamificationEvents } from './useGamificationEvents';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -167,6 +168,8 @@ export function serverLineItemToCartItem(lineItem: WixCartLineItem): CartItem | 
     quantity: Math.min(10, Math.max(1, lineItem.quantity)),
     unitPrice: model.basePrice + fabric.price,
     ...(imageUrl ? { imageUrl } : {}),
+    ...(fabricId ? { variantId: fabricId } : {}),
+    ...(lineItem.physicalProperties?.sku ? { sku: lineItem.physicalProperties.sku } : {}),
   };
 }
 
@@ -224,6 +227,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const wixClientRef = useRef(wixClient);
   wixClientRef.current = wixClient;
+
+  const gamification = useGamificationEvents();
 
   const cartExecutors = useMemo(
     () => ({
@@ -360,6 +365,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback(
     (model: FutonModel, fabric: Fabric, quantity: number) => {
       dispatch({ type: 'ADD_ITEM', model, fabric, quantity });
+      gamification.addToCart(model.id, model.basePrice + fabric.price).catch(() => {});
       if (Platform.OS !== 'web') {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       }
@@ -379,7 +385,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         });
       }
     },
-    [queueAction],
+    [queueAction, gamification],
   );
 
   const removeItem = useCallback(

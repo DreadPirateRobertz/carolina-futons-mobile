@@ -1257,15 +1257,17 @@ describe('ARScreen', () => {
     it('fires gamification_ar_used only once per session, not on re-render', () => {
       const { rerender } = renderARScreen();
       rerender(
-        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
-          <NavigationContainer>
-            <CartProvider>
-              <WishlistProvider>
-                <ARScreen />
-              </WishlistProvider>
-            </CartProvider>
-          </NavigationContainer>
-        </ConnectivityProvider>,
+        <ThemeProvider>
+          <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+            <NavigationContainer>
+              <CartProvider>
+                <WishlistProvider>
+                  <ARScreen />
+                </WishlistProvider>
+              </CartProvider>
+            </NavigationContainer>
+          </ConnectivityProvider>
+        </ThemeProvider>,
       );
       const evts = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
       expect(evts).toHaveLength(1);
