@@ -557,8 +557,9 @@ function DeleteAction({ drag, borderRadius }: { drag: SharedValue<number>; borde
  * Individual cart line item row showing fabric color swatch, product name,
  * fabric name, quantity stepper (capped at 10), and line total.
  * Wrapped in Swipeable for swipe-to-delete, with spring bounce on qty buttons.
+ * Memoized to prevent re-renders when unrelated cart state changes.
  */
-function CartItemRow({
+const CartItemRow = React.memo(function CartItemRow({
   item,
   onIncrement,
   onDecrement,
@@ -730,7 +731,7 @@ function CartItemRow({
       </View>
     </ReanimatedSwipeable>
   );
-}
+});
 
 const styles = StyleSheet.create({
   root: {

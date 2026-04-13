@@ -44,6 +44,133 @@ interface Props {
   testID?: string;
 }
 
+interface OrderRowProps {
+  item: Order;
+  // Theme tokens passed down from the screen; typed as any to avoid coupling to internal theme shape
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  colors: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spacing: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  borderRadius: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  typography: any;
+  onSelectOrder?: (orderId: string) => void;
+  formatDate: (iso: string) => string;
+  handleReorder: (order: Order) => void;
+}
+
+/**
+ * Single order card row. Extracted as a memoized component to prevent
+ * FlatList re-renders when unrelated screen state changes.
+ */
+const OrderRow = React.memo(function OrderRow({
+  item,
+  colors,
+  spacing,
+  borderRadius,
+  typography,
+  onSelectOrder,
+  formatDate,
+  handleReorder,
+}: OrderRowProps) {
+  const statusConfig = ORDER_STATUS_CONFIG[item.status];
+  const statusColor = colors[statusConfig.colorToken];
+  const itemSummary =
+    item.items.length === 0
+      ? 'No items'
+      : item.items.length === 1
+        ? item.items[0].modelName
+        : `${item.items[0].modelName} + ${item.items.length - 1} more`;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.orderCard,
+        {
+          backgroundColor: darkPalette.surface,
+          borderRadius: borderRadius.card,
+          marginHorizontal: spacing.lg,
+          borderWidth: 1,
+          borderColor: darkPalette.borderSubtle,
+        },
+      ]}
+      onPress={() => onSelectOrder?.(item.id)}
+      testID={`order-card-${item.id}`}
+      accessibilityLabel={`Order ${item.orderNumber}, ${statusConfig.label}, ${formatPrice(item.total)}`}
+      accessibilityRole="button"
+    >
+      <View style={styles.orderHeader}>
+        <Text
+          style={[
+            styles.orderNumber,
+            { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold },
+          ]}
+          testID={`order-number-${item.id}`}
+        >
+          {item.orderNumber}
+        </Text>
+        <View
+          style={[
+            styles.statusBadge,
+            { backgroundColor: statusColor + '20', borderRadius: borderRadius.sm },
+          ]}
+          testID={`order-status-${item.id}`}
+        >
+          <Text style={[styles.statusText, { color: statusColor }]}>{statusConfig.label}</Text>
+        </View>
+      </View>
+
+      <Text
+        style={[
+          styles.orderDate,
+          { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+        ]}
+        testID={`order-date-${item.id}`}
+      >
+        {formatDate(item.createdAt)}
+      </Text>
+
+      <View style={styles.orderFooter}>
+        <Text
+          style={[
+            styles.orderItems,
+            { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
+          ]}
+          testID={`order-items-${item.id}`}
+          numberOfLines={1}
+        >
+          {itemSummary}
+        </Text>
+        <Text
+          style={[
+            styles.orderTotal,
+            { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
+          ]}
+          testID={`order-total-${item.id}`}
+        >
+          {formatPrice(item.total)}
+        </Text>
+      </View>
+
+      {item.status === 'delivered' && (
+        <TouchableOpacity
+          style={[
+            styles.reorderButton,
+            { borderColor: colors.sunsetCoral, borderRadius: borderRadius.sm },
+          ]}
+          onPress={() => handleReorder(item)}
+          testID={`order-reorder-${item.id}`}
+          accessibilityLabel={`Reorder ${item.orderNumber}`}
+          accessibilityRole="button"
+        >
+          <Text style={[styles.reorderText, { color: colors.sunsetCoral }]}>Reorder</Text>
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
+});
+
 /** Scrollable list of past orders with status badges, filter tabs, and pull-to-refresh. */
 export function OrderHistoryScreen({
   orders: ordersProp,
@@ -93,104 +220,19 @@ export function OrderHistoryScreen({
   }, []);
 
   const renderOrder = useCallback(
-    ({ item }: { item: Order }) => {
-      const statusConfig = ORDER_STATUS_CONFIG[item.status];
-      const statusColor = colors[statusConfig.colorToken];
-      const itemSummary =
-        item.items.length === 0
-          ? 'No items'
-          : item.items.length === 1
-            ? item.items[0].modelName
-            : `${item.items[0].modelName} + ${item.items.length - 1} more`;
-
-      return (
-        <TouchableOpacity
-          style={[
-            styles.orderCard,
-            {
-              backgroundColor: darkPalette.surface,
-              borderRadius: borderRadius.card,
-              marginHorizontal: spacing.lg,
-              borderWidth: 1,
-              borderColor: darkPalette.borderSubtle,
-            },
-          ]}
-          onPress={() => onSelectOrder?.(item.id)}
-          testID={`order-card-${item.id}`}
-          accessibilityLabel={`Order ${item.orderNumber}, ${statusConfig.label}, ${formatPrice(item.total)}`}
-          accessibilityRole="button"
-        >
-          <View style={styles.orderHeader}>
-            <Text
-              style={[
-                styles.orderNumber,
-                { color: darkPalette.textPrimary, fontFamily: typography.bodyFamilyBold },
-              ]}
-              testID={`order-number-${item.id}`}
-            >
-              {item.orderNumber}
-            </Text>
-            <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: statusColor + '20', borderRadius: borderRadius.sm },
-              ]}
-              testID={`order-status-${item.id}`}
-            >
-              <Text style={[styles.statusText, { color: statusColor }]}>{statusConfig.label}</Text>
-            </View>
-          </View>
-
-          <Text
-            style={[
-              styles.orderDate,
-              { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-            ]}
-            testID={`order-date-${item.id}`}
-          >
-            {formatDate(item.createdAt)}
-          </Text>
-
-          <View style={styles.orderFooter}>
-            <Text
-              style={[
-                styles.orderItems,
-                { color: darkPalette.textMuted, fontFamily: typography.bodyFamily },
-              ]}
-              testID={`order-items-${item.id}`}
-              numberOfLines={1}
-            >
-              {itemSummary}
-            </Text>
-            <Text
-              style={[
-                styles.orderTotal,
-                { color: darkPalette.textPrimary, fontFamily: typography.headingFamily },
-              ]}
-              testID={`order-total-${item.id}`}
-            >
-              {formatPrice(item.total)}
-            </Text>
-          </View>
-
-          {item.status === 'delivered' && (
-            <TouchableOpacity
-              style={[
-                styles.reorderButton,
-                { borderColor: colors.sunsetCoral, borderRadius: borderRadius.sm },
-              ]}
-              onPress={() => handleReorder(item)}
-              testID={`order-reorder-${item.id}`}
-              accessibilityLabel={`Reorder ${item.orderNumber}`}
-              accessibilityRole="button"
-            >
-              <Text style={[styles.reorderText, { color: colors.sunsetCoral }]}>Reorder</Text>
-            </TouchableOpacity>
-          )}
-        </TouchableOpacity>
-      );
-    },
-    [colors, spacing, borderRadius, shadows, onSelectOrder, formatDate, handleReorder],
+    ({ item }: { item: Order }) => (
+      <OrderRow
+        item={item}
+        colors={colors}
+        spacing={spacing}
+        borderRadius={borderRadius}
+        typography={typography}
+        onSelectOrder={onSelectOrder}
+        formatDate={formatDate}
+        handleReorder={handleReorder}
+      />
+    ),
+    [colors, spacing, borderRadius, typography, onSelectOrder, formatDate, handleReorder],
   );
 
   if (isLoading && !ordersProp) {

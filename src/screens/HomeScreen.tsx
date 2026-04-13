@@ -10,7 +10,7 @@
  * users into the two main engagement paths.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -21,6 +21,7 @@ import {
   Platform,
   RefreshControl,
 } from 'react-native';
+import { markStart, markEnd } from '@/services/perfMark';
 import { StreakBadge } from '@/components/StreakBadge';
 import { useStreak } from '@/hooks/useStreak';
 import * as Haptics from 'expo-haptics';
@@ -78,6 +79,13 @@ interface Props {
  * @returns The home screen view.
  */
 export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
+  // TTI telemetry — mark mount start; markEnd fires once data is ready (see effect below)
+  const ttiMarked = useRef(false);
+  if (!ttiMarked.current) {
+    ttiMarked.current = true;
+    markStart('HomeScreen.mount');
+  }
+
   const { colors, spacing, typography, borderRadius } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
@@ -112,6 +120,15 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       headerTintColor: skyState.navText,
     });
   }, [skyState.navBg, skyState.navText, navigation]);
+
+  // TTI telemetry — fire markEnd once primary data (collections) has settled
+  const ttiEndFired = useRef(false);
+  useEffect(() => {
+    if (!collectionsLoading && !ttiEndFired.current) {
+      ttiEndFired.current = true;
+      markEnd('HomeScreen.mount');
+    }
+  }, [collectionsLoading]);
 
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId) ?? null;
