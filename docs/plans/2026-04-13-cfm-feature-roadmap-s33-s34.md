@@ -8,7 +8,25 @@
 
 **Tech Stack:** React Native (Expo 55), TypeScript, Wix Data SDK (`wixClient.queryData` / `upsertDataItem`), AsyncStorage, expo-secure-store, Jest + `@testing-library/react-native`, expo-haptics, expo-image-picker, Stripe (payments, mobile-only).
 
-**Living document:** Crew and PM input solicited 2026-04-13 — this document will be updated as responses arrive from bishop, ripley, hicks, and melania.
+**Living document:** Updated 2026-04-13 with crew input from bishop, ripley, hicks. Melania response pending (ConsultationBookings schema blocker).
+
+---
+
+## Crew Input Summary (2026-04-13 21:15 MDT)
+
+**bishop:** cm-xw4 price alerts already shipped under cm-pda (PR #424) — drop from roadmap. Bead hygiene broken (duplicates accumulating). Worktree pre-commit hook gap causing repeated prettier-only commits. Starting cm-3fd security now.
+
+**hicks:** AR skeleton/loading feedback missing on 6 screens. cm-b3b cloud sync top pick. No perf telemetry — flying blind on real-device TTI/jank. Offline AR retry queue not wired.
+
+**ripley:** P0 gap: no unified Image wrapper (caching/placeholder/retry). P1: no shared EmptyState or Skeleton primitives — every screen rolls its own. P2: no OfflineBanner — offline feature has no visible proof. These unblock multiple downstream features.
+
+**New beads filed from crew input:**
+- `cm-48e` P1 — Image wrapper (ripley, after hq-bzb) ← **P0 unblocked by ripley**
+- `cm-2ts` P1 — EmptyState component (ripley queue)
+- `cm-sxj` P1 — Skeleton primitives (hicks, after cm-b3b)
+- `cm-049` P2 — OfflineBanner + queue status hook
+- `cm-ox9` P2 — Perf telemetry + FlatList memo audit (hicks queue)
+- `cm-2s8` P2 — Bead hygiene audit + worktree pre-commit fix (bishop)
 
 ---
 
@@ -966,8 +984,15 @@ git commit -m "feat(cm-3fd): sanitizeInput + secureStorage — CFM leg of securi
 
 Priority order based on conversion impact and crew availability:
 
-### Task 2.1: Price Drop Push Notifications
-**Bead:** `cm-xw4` | **Owner:** bishop
+### ~~Task 2.1: Price Drop Push Notifications~~ ✓ ALREADY SHIPPED
+**Bead:** `cm-xw4` CLOSED | **Shipped as:** `cm-pda` PR #424 (PriceAlertButton, usePriceAlertSubscription, 51 tests)
+
+> **bishop confirmed 2026-04-13:** Feature complete. Track 2.1 dropped from roadmap. Bishop capacity reallocated to cm-3fd + cm-48e Image wrapper.
+
+---
+
+### Task 2.1b: Unified Image Wrapper *(new — from ripley P0)*
+**Bead:** `cm-48e` | **Owner:** ripley (after hq-bzb)
 
 **Files:**
 - Create: `src/components/PriceAlertButton.tsx`
@@ -1302,10 +1327,18 @@ Per Stilgar mandate — every PR must demonstrate:
 
 ---
 
-## Open Questions (Pending Input)
+## Open Questions
 
-- **melania:** ConsultationBookings schema for cm-4yk — blocking
+- **melania:** ConsultationBookings schema for cm-4yk — still blocking (requested 2026-04-13)
 - **melania:** Priority ranking on Phase 2 ports — which converts best on web?
-- **bishop:** Technical debt assessment — what is blocking new work most?
-- **ripley:** UI gaps — what components are missing that multiple features need?
-- **hicks:** Performance gaps — any loading state or AR issues to address?
+- **melania:** Is cm-to0 NPS a duplicate of cm-5cp/hq-9dq already shipped? (bishop flag — bead hygiene audit cm-2s8)
+
+## Crew Assignments — Updated
+
+| Crew | Now (S33) | Next | Queue |
+|------|-----------|------|-------|
+| bishop | cm-3fd security | cm-2s8 bead hygiene | cm-4yk (blocked on melania) |
+| ripley | hq-bzb ProductRec | cm-48e Image wrapper | cm-2ts EmptyState, cm-nw8 UGC |
+| nux | cm-0q4 CompleteTheLook | cm-qa Product Q&A | — |
+| burke | cm-to0 NPS survey | cm-vid Video Reviews | cm-049 OfflineBanner |
+| hicks | cm-b3b AR sync | cm-sxj Skeleton primitives | cm-ox9 Perf telemetry |
