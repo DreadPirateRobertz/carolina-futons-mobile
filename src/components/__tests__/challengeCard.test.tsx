@@ -213,4 +213,26 @@ describe('ChallengeCard', () => {
       expect(track.props.accessibilityValue).toEqual({ min: 0, max: 100, now: 75 });
     });
   });
+
+  describe('multiplier variant (Flash Weekend)', () => {
+    it('renders coral accent border for multiplier type', () => {
+      const { getByTestId } = renderCard({ type: 'multiplier', id: 'flash-weekend' });
+      const card = getByTestId('challenge-card-flash-weekend');
+      // borderColor should be sunsetCoral (#E8845C)
+      const flatStyle = Array.isArray(card.props.style)
+        ? Object.assign({}, ...card.props.style)
+        : card.props.style;
+      expect(flatStyle.borderColor).toBe('#E8845C');
+      expect(flatStyle.borderWidth).toBeGreaterThan(0);
+    });
+
+    it('does not apply accent border for points type', () => {
+      const { getByTestId } = renderCard({ type: 'points' });
+      const card = getByTestId('challenge-card-spring-refresh');
+      const flatStyle = Array.isArray(card.props.style)
+        ? Object.assign({}, ...card.props.style)
+        : card.props.style;
+      expect(flatStyle.borderWidth ?? 0).toBe(0);
+    });
+  });
 });

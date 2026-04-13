@@ -45,6 +45,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePersonalization } from '@/hooks/usePersonalization';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { ChallengesRail } from '@/components/ChallengesRail';
+import { ChallengeDetailSheet } from '@/components/ChallengeDetailSheet';
 import { DailyQuestsCard } from '@/components/DailyQuestsCard';
 import { useActiveChallenges } from '@/hooks/useActiveChallenges';
 import { StreakDangerBanner } from '@/components/StreakDangerBanner';
@@ -111,6 +112,17 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       headerTintColor: skyState.navText,
     });
   }, [skyState.navBg, skyState.navText, navigation]);
+
+  const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
+  const selectedChallenge = challenges.find((c) => c.id === selectedChallengeId) ?? null;
+
+  const handleChallengePress = useCallback((id: string) => {
+    setSelectedChallengeId(id);
+  }, []);
+
+  const handleChallengeDetailClose = useCallback(() => {
+    setSelectedChallengeId(null);
+  }, []);
 
   const handleOpenAR = useCallback(() => {
     if (Platform.OS !== 'web') {
@@ -363,7 +375,7 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
         </GlassCard>
 
         {/* Gamification Challenges Rail */}
-        <ChallengesRail challenges={challenges} />
+        <ChallengesRail challenges={challenges} onChallengePress={handleChallengePress} />
 
         {/* Daily Quests — cf-mz3 */}
         <View style={[styles.dailyQuestsWrap, { marginHorizontal: spacing.lg }]}>
@@ -541,6 +553,13 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
       >
         <Text style={styles.searchIcon}>🔍</Text>
       </Pressable>
+
+      {/* Challenge detail sheet */}
+      <ChallengeDetailSheet
+        visible={selectedChallengeId !== null}
+        challenge={selectedChallenge}
+        onClose={handleChallengeDetailClose}
+      />
     </View>
   );
 }
