@@ -343,3 +343,97 @@ describe('SVG badge icons (animal silhouettes)', () => {
     }
   });
 });
+
+// ── Edge cases (cm-6d7) ───────────────────────────────────────────────────────
+
+describe('Locked vs earned badge visual state', () => {
+  it('earned badge has opacity 1', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    const card = getByTestId('badge-card-7'); // milestone 7 is earned
+    const flat = Array.isArray(card.props.style) ? card.props.style.flat(Infinity) : [card.props.style];
+    const opacity = flat.reduce((acc: number | undefined, s: any) => s?.opacity ?? acc, undefined);
+    expect(opacity).toBe(1);
+  });
+
+  it('locked badge has opacity 0.5', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    const card = getByTestId('badge-card-14'); // milestone 14 is locked in LOADED_SOME_EARNED
+    const flat = Array.isArray(card.props.style) ? card.props.style.flat(Infinity) : [card.props.style];
+    const opacity = flat.reduce((acc: number | undefined, s: any) => s?.opacity ?? acc, undefined);
+    expect(opacity).toBe(0.5);
+  });
+});
+
+describe('Error message content', () => {
+  it('shows the exact error string in achievements-error', () => {
+    mockUseAchievements.mockReturnValue(ERROR_STATE);
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(getByTestId('achievements-error').props.children).toBe('Failed to load');
+  });
+});
+
+describe('Sheet description text', () => {
+  it('earned sheet shows personalised description', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-description').props.children).toBe(
+      'You reached a 7-day streak!',
+    );
+  });
+
+  it('locked sheet shows catalog description', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-14'));
+    expect(getByTestId('badge-sheet-description').props.children).toBe('Reach a 14-day streak');
+  });
+});
+
+describe('Sheet date formatting', () => {
+  it('badge-sheet-date contains "Earned:" prefix', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    const dateText: string = getByTestId('badge-sheet-date').props.children.join('');
+    expect(dateText).toMatch(/^Earned:/);
+  });
+});
+
+describe('Sheet SVG icon', () => {
+  it('badge-sheet-icon is rendered in the sheet', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-icon')).toBeTruthy();
+  });
+});
+
+describe('Achievement with earnedAt=null treated as locked', () => {
+  it('badge with earnedAt=null shows no date (locked state)', () => {
+    // earnedAt=null means the milestone is not fully earned
+    const nullEarned: Achievement = {
+      milestone: 7,
+      streakDays: 7,
+      earnedAt: null,
+      badgeLabel: 'Week Warrior',
+      iconUrl: null,
+    };
+    mockUseAchievements.mockReturnValue({
+      achievements: [nullEarned],
+      loading: false,
+      error: null,
+    });
+    const { queryByTestId, getByTestId } = wrap(<AchievementBadgesScreen />);
+    expect(queryByTestId('badge-date-7')).toBeNull();
+    // Sheet should show CTA (locked)
+    fireEvent.press(getByTestId('badge-card-7'));
+    expect(getByTestId('badge-sheet-cta')).toBeTruthy();
+  });
+});
+
+describe('Switching between badges', () => {
+  it('opening sheet for badge A then badge B shows B content', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    fireEvent.press(getByTestId('badge-sheet-close'));
+    fireEvent.press(getByTestId('badge-card-30'));
+    expect(getByTestId('badge-sheet-title').props.children).toBe('Monthly Master');
+  });
+});

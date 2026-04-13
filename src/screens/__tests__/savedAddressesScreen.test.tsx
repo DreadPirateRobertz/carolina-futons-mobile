@@ -618,3 +618,94 @@ describe('SavedAddressesScreen — single non-default address', () => {
     expect(queryByTestId('address-max-notice')).toBeNull();
   });
 });
+
+// ── Gap coverage (cm-6d7) ──────────────────────────────────────────────────────
+
+describe('SavedAddressesScreen — root testID', () => {
+  it('renders with saved-addresses-screen testID', () => {
+    mockUseSavedAddresses.mockReturnValue(defaultHookState());
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('saved-addresses-screen')).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — address line2 rendering', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('shows "line1, line2" when line2 is non-empty', () => {
+    // ADDR_1 has line2: 'Apt 1'
+    const { getByText } = renderScreen();
+    expect(getByText('123 Main St, Apt 1')).toBeTruthy();
+  });
+
+  it('shows only line1 when line2 is empty string', () => {
+    // ADDR_2 has line2: ''
+    const { getByText, queryByText } = renderScreen();
+    expect(getByText('456 Oak Ave')).toBeTruthy();
+    expect(queryByText('456 Oak Ave,')).toBeNull();
+  });
+});
+
+describe('SavedAddressesScreen — address item testID', () => {
+  it('renders address-item testID for each address', () => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('address-item-addr-1')).toBeTruthy();
+    expect(getByTestId('address-item-addr-2')).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — form title labels', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('shows "New Address" title when adding', () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+    expect(getByText('New Address')).toBeTruthy();
+  });
+
+  it('shows "Edit Address" title when editing', () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('edit-button-addr-1'));
+    expect(getByText('Edit Address')).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — button text at max', () => {
+  it('shows "Max reached" button text when at address limit', () => {
+    const fiveAddresses = Array.from({ length: 5 }, (_, i) => ({
+      ...ADDR_1,
+      id: `addr-${i + 1}`,
+      isDefault: i === 0,
+    }));
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: fiveAddresses, defaultAddress: fiveAddresses[0] }),
+    );
+    const { getByText } = renderScreen();
+    expect(getByText('Max reached')).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — edit cancel restores list', () => {
+  it('pressing cancel on edit form shows list again without calling updateAddress', () => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+    const { getByTestId, queryByTestId } = renderScreen();
+    fireEvent.press(getByTestId('edit-button-addr-2'));
+    expect(getByTestId('address-form')).toBeTruthy();
+    fireEvent.press(getByTestId('address-cancel-button'));
+    expect(queryByTestId('address-form')).toBeNull();
+    expect(mockUpdateAddress).not.toHaveBeenCalled();
+  });
+});
