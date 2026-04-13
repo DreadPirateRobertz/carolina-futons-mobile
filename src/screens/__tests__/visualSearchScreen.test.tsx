@@ -57,6 +57,11 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Medium: 'medium' },
 }));
 
+const mockCaptureException = jest.fn();
+jest.mock('@/services/crashReporting', () => ({
+  captureException: (...args: unknown[]) => mockCaptureException(...args),
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function mockPermission(
@@ -352,5 +357,95 @@ describe('VisualSearchScreen — photo capture', () => {
     });
 
     expect(mockTakePicture).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── cm-ga6: capture error handling ───────────────────────────────────────────
+
+describe('VisualSearchScreen — capture error handling', () => {
+  it('calls captureException when takePictureAsync throws', async () => {
+    mockPermission(true, 'granted');
+    mockTakePicture.mockRejectedValue(new Error('Hardware failure'));
+    const { getByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    expect(mockCaptureException).toHaveBeenCalledTimes(1);
+  });
+
+  it('captureException receives an Error instance when a real Error is thrown', async () => {
+    mockPermission(true, 'granted');
+    mockTakePicture.mockRejectedValue(new Error('Camera hardware error'));
+    const { getByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    expect(mockCaptureException.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+  });
+
+  it('captureException receives an Error even when a non-Error string is thrown', async () => {
+    mockPermission(true, 'granted');
+    mockTakePicture.mockRejectedValue('string error message');
+    const { getByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    expect(mockCaptureException.mock.calls[0]?.[0]).toBeInstanceOf(Error);
+  });
+
+  it('hides capturing indicator after an error (capturing state reset)', async () => {
+    mockPermission(true, 'granted');
+    mockTakePicture.mockRejectedValue(new Error('Capture failed'));
+    const { getByTestId, queryByTestId } = renderScreen();
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    await waitFor(() => {
+      expect(queryByTestId('visual-search-capturing')).toBeNull();
+    });
+  });
+
+  it('shutter is re-enabled after a capture error (second press works)', async () => {
+    mockPermission(true, 'granted');
+    mockTakePicture.mockRejectedValueOnce(new Error('First attempt failed'));
+    mockTakePicture.mockResolvedValue({ uri: 'file:///photos/retry.jpg' });
+    const { getByTestId } = renderScreen();
+    // First press fails
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    // Second press succeeds (capturing was reset to false)
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    expect(mockTakePicture).toHaveBeenCalledTimes(2);
+  });
+});
+
+// ── cm-ga6: accessibility ─────────────────────────────────────────────────────
+
+describe('VisualSearchScreen — accessibility', () => {
+  it('back button has accessibilityLabel', () => {
+    mockPermission(true, 'granted');
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('visual-search-back').props.accessibilityLabel).toBeTruthy();
+  });
+
+  it('Allow Camera button has accessibilityLabel', () => {
+    mockPermission(false, 'undetermined');
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('visual-search-allow-camera').props.accessibilityLabel).toBeTruthy();
+  });
+
+  it('shutter button has accessibilityRole button', () => {
+    mockPermission(true, 'granted');
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('visual-search-shutter').props.accessibilityRole).toBe('button');
+  });
+
+  it('denied permanently view does not render the retry button', () => {
+    mockPermission(false, 'denied', false);
+    const { queryByTestId } = renderScreen();
+    expect(queryByTestId('visual-search-permission-retry')).toBeNull();
   });
 });

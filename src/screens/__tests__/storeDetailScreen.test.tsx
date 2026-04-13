@@ -1,11 +1,30 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, within } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 import { ThemeProvider } from '@/theme';
 import { StoreDetailScreen } from '../StoreDetailScreen';
 import { STORES, type Store } from '@/data/stores';
 
 jest.spyOn(Linking, 'openURL').mockImplementation(() => Promise.resolve(true));
+
+// Mock useStoreById so loading/error state tests can control hook output.
+// Default: look up by id from real STORES data (preserves existing storeId tests).
+const mockUseStoreById = jest.fn((id?: string) => {
+  const storeData = jest.requireActual<{ STORES: Store[] }>('@/data/stores').STORES;
+  const found = id ? (storeData.find((s) => s.id === id) ?? null) : null;
+  return { store: found, isLoading: false, error: null };
+});
+jest.mock('@/hooks/useStores', () => ({
+  ...jest.requireActual('@/hooks/useStores'),
+  useStoreById: (...args: unknown[]) => mockUseStoreById(...(args as [string?])),
+}));
+
+// Mock isStoreOpen for deterministic status-badge tests (default: open).
+const mockIsStoreOpen = jest.fn(() => true);
+jest.mock('@/utils', () => ({
+  ...jest.requireActual('@/utils'),
+  isStoreOpen: (...args: unknown[]) => mockIsStoreOpen(...args),
+}));
 
 const testStore: Store = STORES[0]; // Asheville
 
@@ -161,6 +180,119 @@ describe('StoreDetailScreen', () => {
     it('appointment options use radio role', () => {
       const { getByTestId } = renderDetail();
       expect(getByTestId('appointment-consultation').props.accessibilityRole).toBe('radio');
+    });
+  });
+
+  // --- cm-ga6: edge cases ---
+
+  describe('edge cases — store data', () => {
+    it('does not render hero photo when photos array is empty', () => {
+      const storeNoPhotos: Store = { ...testStore, photos: [] };
+      const { queryByTestId } = renderDetail({ store: storeNoPhotos });
+      expect(queryByTestId('store-detail-photo')).toBeNull();
+    });
+
+    it('does not render features section when features array is empty', () => {
+      const storeNoFeatures: Store = { ...testStore, features: [] };
+      const { queryByText } = renderDetail({ store: storeNoFeatures });
+      expect(queryByText('Features')).toBeNull();
+    });
+
+    it('shows "Closed" label for a day with closed: true in hours', () => {
+      const storeWithClosedDay: Store = {
+        ...testStore,
+        hours: testStore.hours.map((h) =>
+          h.day === 'Sunday'
+            ? { ...h, open: '', close: '', closed: true }
+            : { ...h, closed: false },
+        ),
+      };
+      const { getByTestId } = renderDetail({ store: storeWithClosedDay });
+      const sundayRow = getByTestId('store-hours-sunday');
+      expect(within(sundayRow).getByText('Closed')).toBeTruthy();
+    });
+
+    it('status badge shows "Closed" when isStoreOpen returns false', () => {
+      mockIsStoreOpen.mockReturnValueOnce(false);
+      const { getByText } = renderDetail();
+      expect(getByText('Closed')).toBeTruthy();
+    });
+
+    it('status badge shows "Open" when isStoreOpen returns true', () => {
+      mockIsStoreOpen.mockReturnValueOnce(true);
+      const { getByText } = renderDetail();
+      expect(getByText('Open')).toBeTruthy();
+    });
+  });
+
+  describe('edge cases — contact action failures', () => {
+    it('directions failure is handled silently (no crash)', async () => {
+      (Linking.openURL as jest.Mock).mockRejectedValueOnce(new Error('Cannot open maps'));
+      const { getByTestId } = renderDetail();
+      expect(() => fireEvent.press(getByTestId('store-detail-directions'))).not.toThrow();
+      // Allow promise rejection to settle
+      await waitFor(() => expect(Linking.openURL).toHaveBeenCalled());
+    });
+
+    it('phone call failure is handled silently (no crash)', async () => {
+      (Linking.openURL as jest.Mock).mockRejectedValueOnce(new Error('No dialer available'));
+      const { getByTestId } = renderDetail();
+      expect(() => fireEvent.press(getByTestId('store-detail-call'))).not.toThrow();
+      await waitFor(() => expect(Linking.openURL).toHaveBeenCalled());
+    });
+
+    it('email failure is handled silently (no crash)', async () => {
+      (Linking.openURL as jest.Mock).mockRejectedValueOnce(new Error('No mail app'));
+      const { getByTestId } = renderDetail();
+      expect(() => fireEvent.press(getByTestId('store-detail-email'))).not.toThrow();
+      await waitFor(() => expect(Linking.openURL).toHaveBeenCalled());
+    });
+  });
+
+  describe('edge cases — hook loading and error states', () => {
+    it('renders store-loading testID when useStoreById returns isLoading: true', () => {
+      mockUseStoreById.mockReturnValueOnce({ store: null, isLoading: true, error: null });
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <StoreDetailScreen storeId="store-asheville" />
+        </ThemeProvider>,
+      );
+      expect(getByTestId('store-loading')).toBeTruthy();
+    });
+
+    it('renders store-error testID when useStoreById returns an error', () => {
+      mockUseStoreById.mockReturnValueOnce({
+        store: null,
+        isLoading: false,
+        error: new Error('Network timeout'),
+      });
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <StoreDetailScreen storeId="store-asheville" />
+        </ThemeProvider>,
+      );
+      expect(getByTestId('store-error')).toBeTruthy();
+    });
+
+    it('store-error renders the error message text', () => {
+      mockUseStoreById.mockReturnValueOnce({
+        store: null,
+        isLoading: false,
+        error: new Error('Service unavailable'),
+      });
+      const { getByText } = render(
+        <ThemeProvider>
+          <StoreDetailScreen storeId="store-asheville" />
+        </ThemeProvider>,
+      );
+      expect(getByText('Service unavailable')).toBeTruthy();
+    });
+  });
+
+  describe('edge cases — testID forwarding', () => {
+    it('accepts a custom testID on the root container', () => {
+      const { getByTestId } = renderDetail({ testID: 'custom-store-screen' });
+      expect(getByTestId('custom-store-screen')).toBeTruthy();
     });
   });
 });
