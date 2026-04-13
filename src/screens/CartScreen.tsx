@@ -10,7 +10,7 @@
  * a flat 7% rate.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -42,8 +42,10 @@ import { CartItemDeliveryEstimate } from '@/components/CartItemDeliveryEstimate'
 import { EmptyState } from '@/components/EmptyState';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { useCart, type CartItem } from '@/hooks/useCart';
+import { useCartSessions } from '@/hooks/useCartSessions';
 import { usePromoCode } from '@/hooks/usePromoCode';
 import { useAuth } from '@/hooks/useAuth';
+import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { formatPrice } from '@/utils';
 import { events } from '@/services/analytics';
 import { CartPointsSummary } from '@/components/CartPointsSummary';
@@ -85,10 +87,50 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
     removeItem,
     updateQuantity,
     clearCart,
+    loadItems,
     syncError,
     clearSyncError,
   } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const cartSessions = useCartSessions({ memberId: user?.id ?? null });
+
+  // Persist cart to Wix CartSessions on every change
+  useEffect(() => {
+    if (items.length === 0) return;
+    const sessionItems = items.map((item) => ({
+      productId: item.model.id,
+      variantId: item.fabric.id,
+      quantity: item.quantity,
+    }));
+    cartSessions.saveCart(sessionItems);
+  }, [items]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Merge guest cart into member cart on login
+  const prevAuthRef = useRef(isAuthenticated);
+  useEffect(() => {
+    const wasGuest = !prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+    if (!wasGuest || !isAuthenticated || !user?.id) return;
+
+    cartSessions.mergeOnLogin(user.id).then((merged) => {
+      if (merged.length === 0) return;
+      const cartItems: CartItem[] = merged
+        .map((si) => {
+          const model = FUTON_MODELS.find((m) => m.id === si.productId);
+          const fabric = FABRICS.find((f) => f.id === si.variantId);
+          if (!model || !fabric) return null;
+          return {
+            id: `${model.id}:${fabric.id}`,
+            model,
+            fabric,
+            quantity: si.quantity,
+            unitPrice: model.basePrice + fabric.price,
+          } satisfies CartItem;
+        })
+        .filter((item): item is CartItem => item !== null);
+      if (cartItems.length > 0) loadItems(cartItems);
+    });
+  }, [isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
   const promo = usePromoCode();
   const { points } = useLoyalty();
   const [promoInput, setPromoInput] = useState('');
