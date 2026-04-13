@@ -55,16 +55,7 @@ const ROOMS: RoomGalleryItem[] = [
     productIds: ['asheville-full'],
     roomStyle: 'Modern',
     createdDate: '2026-03-01T00:00:00Z',
-    tags: [
-      {
-        productId: 'asheville-full',
-        productName: 'Asheville Full',
-        x: 0.5,
-        y: 0.5,
-        width: 0.1,
-        height: 0.1,
-      },
-    ],
+    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
   }),
   makeRoom({
     roomId: 'r2',
@@ -72,16 +63,7 @@ const ROOMS: RoomGalleryItem[] = [
     productIds: ['biltmore-queen'],
     roomStyle: 'Coastal',
     createdDate: '2026-02-15T00:00:00Z',
-    tags: [
-      {
-        productId: 'biltmore-queen',
-        productName: 'Biltmore Queen',
-        x: 0.5,
-        y: 0.5,
-        width: 0.1,
-        height: 0.1,
-      },
-    ],
+    tags: [{ productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
   }),
   makeRoom({
     roomId: 'r3',
@@ -89,16 +71,7 @@ const ROOMS: RoomGalleryItem[] = [
     productIds: ['asheville-full'],
     roomStyle: 'Rustic',
     createdDate: '2026-01-10T00:00:00Z',
-    tags: [
-      {
-        productId: 'asheville-full',
-        productName: 'Asheville Full',
-        x: 0.5,
-        y: 0.5,
-        width: 0.1,
-        height: 0.1,
-      },
-    ],
+    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
   }),
 ];
 

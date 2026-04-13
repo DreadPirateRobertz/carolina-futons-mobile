@@ -32,22 +32,8 @@ const SAMPLE_ROOMS: RoomGalleryItem[] = [
     slug: 'jane-room-001',
     altText: 'Living room with futon',
     tags: [
-      {
-        productId: 'asheville-full',
-        productName: 'Asheville Full',
-        x: 0.3,
-        y: 0.4,
-        width: 0.1,
-        height: 0.1,
-      },
-      {
-        productId: 'biltmore-queen',
-        productName: 'Biltmore Queen',
-        x: 0.6,
-        y: 0.5,
-        width: 0.1,
-        height: 0.1,
-      },
+      { productId: 'asheville-full', productName: 'Asheville Full', x: 0.3, y: 0.4, width: 0.1, height: 0.1 },
+      { productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.6, y: 0.5, width: 0.1, height: 0.1 },
     ],
   },
   {
@@ -63,14 +49,7 @@ const SAMPLE_ROOMS: RoomGalleryItem[] = [
     slug: 'bob-room-002',
     altText: 'Bedroom with blue ridge futon',
     tags: [
-      {
-        productId: 'blue-ridge-full',
-        productName: 'Blue Ridge Full',
-        x: 0.5,
-        y: 0.5,
-        width: 0.1,
-        height: 0.1,
-      },
+      { productId: 'blue-ridge-full', productName: 'Blue Ridge Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 },
     ],
   },
 ];
@@ -308,9 +287,7 @@ describe('RoomGalleryScreen', () => {
 
     it('does not throw when hotspot pressed without onProductPress', () => {
       const { getByTestId } = renderGallery();
-      expect(() =>
-        fireEvent.press(getByTestId('hotspot-jane-room-001-asheville-full')),
-      ).not.toThrow();
+      expect(() => fireEvent.press(getByTestId('hotspot-jane-room-001-asheville-full'))).not.toThrow();
     });
 
     it('renders one hotspot for room with single tag', () => {

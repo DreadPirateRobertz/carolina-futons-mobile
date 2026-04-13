@@ -106,6 +106,20 @@ function RoomCard({
           {item.roomStyle}
         </Text>
         <Text
+          style={[styles.memberName, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          testID={`room-member-${item.roomId}`}
+          numberOfLines={1}
+        >
+          {item.memberName}
+        </Text>
+        <Text
+          style={[styles.location, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          testID={`room-location-${item.roomId}`}
+          numberOfLines={1}
+        >
+          {item.city}, {item.state}
+        </Text>
+        <Text
           style={[
             styles.memberName,
             { color: colors.sandLight, fontFamily: typography.bodyFamily },
