@@ -20,6 +20,29 @@ const QUEUE_KEY = 'cfutons_offline_queue';
 let queue: QueuedAction[] = [];
 let nextId = 1;
 
+// ── Queue length subscribers ─────────────────────────────────
+
+const queueListeners: Set<(count: number) => void> = new Set();
+
+function notifyQueueListeners(): void {
+  const count = queue.length;
+  queueListeners.forEach((fn) => fn(count));
+}
+
+/**
+ * Subscribe to queue length changes.
+ *
+ * The callback is called with the new queue length whenever the queue
+ * is modified (enqueue, dequeue, drain, clear, load). Returns an
+ * unsubscribe function.
+ */
+export function subscribeToQueueLength(fn: (count: number) => void): () => void {
+  queueListeners.add(fn);
+  return () => {
+    queueListeners.delete(fn);
+  };
+}
+
 /** Generate a unique action id */
 function generateId(): string {
   return `oq-${Date.now()}-${nextId++}`;
@@ -40,6 +63,7 @@ export function enqueue(
   };
   queue.push(entry);
   persistQueue();
+  notifyQueueListeners();
   return entry;
 }
 
@@ -60,6 +84,7 @@ export function dequeue(id: string): boolean {
   queue = queue.filter((a) => a.id !== id);
   if (queue.length !== before) {
     persistQueue();
+    notifyQueueListeners();
     return true;
   }
   return false;
@@ -76,6 +101,7 @@ export function drain(domain?: QueuedAction['domain']): QueuedAction[] {
     queue = [];
   }
   persistQueue();
+  notifyQueueListeners();
   return drained;
 }
 
@@ -83,12 +109,14 @@ export function drain(domain?: QueuedAction['domain']): QueuedAction[] {
 export function reEnqueue(actions: QueuedAction[]): void {
   queue = [...actions, ...queue];
   persistQueue();
+  notifyQueueListeners();
 }
 
 /** Clear the entire queue */
 export function clearQueue(): void {
   queue = [];
   persistQueue();
+  notifyQueueListeners();
 }
 
 /** Load queue from AsyncStorage (call on app start) */
@@ -119,6 +147,7 @@ export async function loadQueue(): Promise<QueuedAction[]> {
       { action: 'offlineQueue.loadQueue' },
     );
   }
+  notifyQueueListeners();
   return [...queue];
 }
 
@@ -269,4 +298,5 @@ export function _resetForTesting(): void {
   queue = [];
   nextId = 1;
   executors.clear();
+  queueListeners.clear();
 }
