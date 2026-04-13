@@ -56,6 +56,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
   prefixes: ['carolinafutons://', 'https://carolinafutons.com', 'https://www.carolinafutons.com'],
   config: {
     screens: {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Tabs: {
         screens: {
           Home: 'home',
@@ -63,7 +64,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
           Cart: 'cart',
           Account: 'account',
         },
-      },
+      } as any,
       AR: 'ar',
       Category: 'category/:slug',
       ProductDetail: {

@@ -78,7 +78,7 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
       {item.imageUrl ? (
         <Image
           testID={`cartItemImage-${item.id}`}
-          source={{ uri: wixImageUrl(item.imageUrl, { width: 56, height: 56 }) }}
+          source={{ uri: wixImageUrl(item.imageUrl, { width: 56, height: 56 }) ?? undefined }}
           style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
           contentFit="cover"
           cachePolicy="memory-disk"
