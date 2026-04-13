@@ -10,6 +10,7 @@ import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -208,15 +209,17 @@ jest.mock('@/hooks/useFutonModels', () => {
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
-      <NavigationContainer>
-        <CartProvider>
-          <WishlistProvider>
-            <ARScreen {...props} />
-          </WishlistProvider>
-        </CartProvider>
-      </NavigationContainer>
-    </ConnectivityProvider>,
+    <ThemeProvider>
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <NavigationContainer>
+          <CartProvider>
+            <WishlistProvider>
+              <ARScreen {...props} />
+            </WishlistProvider>
+          </CartProvider>
+        </NavigationContainer>
+      </ConnectivityProvider>
+    </ThemeProvider>,
   );
 }
 
