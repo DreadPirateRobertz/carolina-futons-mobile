@@ -111,6 +111,7 @@ import { PriceAlertButton } from '@/components/PriceAlertButton';
 import { VideoReviewGallery } from '@/components/VideoReviewGallery';
 import { CompleteTheLook } from '@/components/CompleteTheLook';
 import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
+import { markStart, markEnd } from '@/services/perfMark';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -142,6 +143,13 @@ export function ProductDetailScreen({
   onRelatedProductPress,
   testID,
 }: Props) {
+  // TTI telemetry — mark mount start; markEnd fires once product data is ready (see effect below)
+  const ttiMarked = useRef(false);
+  if (!ttiMarked.current) {
+    ttiMarked.current = true;
+    markStart('ProductDetailScreen.mount');
+  }
+
   const { colors, spacing, borderRadius, shadows, typography } = useTheme();
   const insets = useSafeAreaInsets();
   const { isPremium } = usePremium();
@@ -306,6 +314,15 @@ export function ProductDetailScreen({
     const slug = catalogProduct?.slug ?? String(model.id);
     addSlug(slug);
   }, [model.id, catalogProduct?.id, catalogProduct?.slug, addViewed, trackView, addSlug]);
+
+  // TTI telemetry — fire markEnd once product data (catalog or local model) has settled
+  const ttiEndFired = useRef(false);
+  useEffect(() => {
+    if (!isProductLoading && !ttiEndFired.current) {
+      ttiEndFired.current = true;
+      markEnd('ProductDetailScreen.mount');
+    }
+  }, [isProductLoading]);
 
   // --- Parallax scroll tracking ---
   const scrollY = useSharedValue(0);
