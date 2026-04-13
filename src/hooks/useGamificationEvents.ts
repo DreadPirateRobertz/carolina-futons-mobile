@@ -19,8 +19,8 @@
  * hq-825vi / Phase 5+
  */
 
-import { useCallback, useContext } from 'react';
-import { AuthContext } from '@/hooks/useAuth';
+import { useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useOptionalWixClient } from '@/services/wix';
 import { sendGamificationEvent, type GamificationEventResult } from '@/services/gamificationApi';
 import { emitQuestRefresh } from '@/services/questRefreshBus';
@@ -61,8 +61,8 @@ function withQuestRefresh(result: GamificationEventResult): GamificationEventRes
 
 export function useGamificationEvents(): GamificationEvents {
   const wixClient = useOptionalWixClient();
-  const authCtx = useContext(AuthContext);
-  const memberId = authCtx?.user?.id ?? '';
+  const { user } = useAuth();
+  const memberId = user?.id ?? '';
 
   const addToCart = useCallback(
     async (productId: string, price: number): Promise<GamificationEventResult> => {
