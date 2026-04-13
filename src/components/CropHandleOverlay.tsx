@@ -147,6 +147,16 @@ function DragHandle({
 }: DragHandleProps) {
   const lastPos = useRef({ x: 0, y: 0 });
 
+  // Use refs so the PanResponder closure always reads the latest prop values.
+  // The PanResponder is created once (useRef), so props captured at creation
+  // time would be stale after the first onLayout update.
+  const containerWidthRef = useRef(containerWidth);
+  const containerHeightRef = useRef(containerHeight);
+  const onMoveRef = useRef(onMove);
+  containerWidthRef.current = containerWidth;
+  containerHeightRef.current = containerHeight;
+  onMoveRef.current = onMove;
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -161,8 +171,10 @@ function DragHandle({
         const rawDy = py - lastPos.current.y;
         lastPos.current = { x: px, y: py };
 
-        if (containerWidth > 0 && containerHeight > 0) {
-          onMove(handle, rawDx / containerWidth, rawDy / containerHeight);
+        const cw = containerWidthRef.current;
+        const ch = containerHeightRef.current;
+        if (cw > 0 && ch > 0) {
+          onMoveRef.current(handle, rawDx / cw, rawDy / ch);
         }
       },
     }),
