@@ -19,6 +19,7 @@ import {
   emitTierChanged,
   emitCartAbandoned,
   replayCrossRigQueue,
+  emitBatch,
 } from '../crossRigEventBus';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
@@ -659,5 +660,169 @@ describe('emitCartAbandoned', () => {
     await emitCartAbandoned(mockWixClient, { cartTotal: 299, itemCount: 2 });
     const body = mockCallFunction.mock.calls[0][2] as Record<string, unknown>;
     expect(body).not.toHaveProperty('userId');
+  });
+});
+
+// ── Idempotency guard — cm-030 ────────────────────────────────────────────
+//
+// Pattern from melania: check before emit, keyed by memberId+eventType+date.
+// Duplicate emission on same day is a no-op. Only successful server-confirmed
+// emissions are marked idempotent — queued/failed emissions are NOT marked,
+// so the retry path is never blocked.
+
+describe('idempotency guard', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('second emission with same memberId+eventType on same day is a no-op', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    expect(client.callFunction).toHaveBeenCalledTimes(1);
+  });
+
+  it('duplicate emission returns { success: true, idempotent: true }', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    const result = await emitStreakExtended(
+      client,
+      { streak: 5, delta: 50, newTotal: 550 },
+      { memberId: USER },
+    );
+    expect(result.success).toBe(true);
+    expect(result.idempotent).toBe(true);
+  });
+
+  it('different event type same member same day is NOT idempotent', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    const result = await emitChallengeStarted(
+      client,
+      { challengeId: 'ch-1', currentPoints: 400 },
+      { memberId: USER },
+    );
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+    expect(result.idempotent).toBeUndefined();
+  });
+
+  it('different memberId same event type same day is NOT idempotent', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    const result = await emitStreakExtended(
+      client,
+      { streak: 5, delta: 50, newTotal: 550 },
+      { memberId: 'member-other-999' },
+    );
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+    expect(result.idempotent).toBeUndefined();
+  });
+
+  it('omitting memberId disables idempotency — all calls proceed', async () => {
+    const client = mockClient();
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 });
+    await emitStreakExtended(client, { streak: 5, delta: 50, newTotal: 550 });
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+  });
+
+  it('queued emission (null client) does not mark idempotent — retry path is unblocked', async () => {
+    // First call: no client → queued, not delivered to server
+    await emitStreakExtended(null, { streak: 5, delta: 50, newTotal: 550 }, { memberId: USER });
+    // Second call with a real client must proceed (not treated as duplicate)
+    const client = mockClient();
+    const result = await emitStreakExtended(
+      client,
+      { streak: 5, delta: 50, newTotal: 550 },
+      { memberId: USER },
+    );
+    expect(result.success).toBe(true);
+    expect(result.idempotent).toBeUndefined();
+    expect(client.callFunction).toHaveBeenCalledTimes(1);
+  });
+
+  it('network-error queued emission does not mark idempotent', async () => {
+    const failClient = mockClient({}, new Error('Network error'));
+    await emitStreakExtended(
+      failClient,
+      { streak: 5, delta: 50, newTotal: 550 },
+      { memberId: USER },
+    );
+    const goodClient = mockClient();
+    const result = await emitStreakExtended(
+      goodClient,
+      { streak: 5, delta: 50, newTotal: 550 },
+      { memberId: USER },
+    );
+    expect(result.success).toBe(true);
+    expect(result.idempotent).toBeUndefined();
+  });
+});
+
+// ── emitBatch — Promise.allSettled (cm-030) ───────────────────────────────
+//
+// Batch emitter: never lets one event failure kill the whole batch.
+// Uses Promise.allSettled so every event is attempted independently.
+
+describe('emitBatch', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('emits all events and returns succeeded count', async () => {
+    const client = mockClient();
+    const result = await emitBatch(client, [
+      { event: 'streak_extended', payload: { streak: 3, delta: 30, newTotal: 330 } },
+      { event: 'challenge_started', payload: { challengeId: 'ch-1', currentPoints: 400 } },
+    ]);
+    expect(result.succeeded).toBe(2);
+    expect(result.failed).toBe(0);
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+  });
+
+  it('one failure does not block remaining batch events', async () => {
+    let callCount = 0;
+    const client = {
+      callFunction: jest.fn(async () => {
+        callCount++;
+        if (callCount === 1) throw new Error('Network error');
+        return { success: true };
+      }),
+      refreshTokens: jest.fn(async () => {}),
+    };
+    const result = await emitBatch(client, [
+      { event: 'streak_extended', payload: { streak: 3, delta: 30, newTotal: 330 } },
+      { event: 'challenge_started', payload: { challengeId: 'ch-1', currentPoints: 400 } },
+    ]);
+    expect(client.callFunction).toHaveBeenCalledTimes(2);
+    expect(result.failed).toBe(1);
+    expect(result.succeeded).toBe(1);
+  });
+
+  it('all-failure batch resolves without throwing', async () => {
+    const client = mockClient({}, new Error('Server down'));
+    await expect(
+      emitBatch(client, [
+        { event: 'streak_extended', payload: { streak: 3, delta: 30, newTotal: 330 } },
+        { event: 'badge_earned', payload: { badgeId: 'b-1', badgeName: 'Test' } },
+      ]),
+    ).resolves.not.toThrow();
+  });
+
+  it('empty batch returns zero counts and empty results', async () => {
+    const client = mockClient();
+    const result = await emitBatch(client, []);
+    expect(result.succeeded).toBe(0);
+    expect(result.failed).toBe(0);
+    expect(result.results).toHaveLength(0);
+  });
+
+  it('results array mirrors event order', async () => {
+    const client = mockClient();
+    const result = await emitBatch(client, [
+      { event: 'streak_extended', payload: { streak: 3, delta: 30, newTotal: 330 } },
+      { event: 'badge_earned', payload: { badgeId: 'b-2', badgeName: 'Gold' } },
+    ]);
+    expect(result.results[0].event).toBe('streak_extended');
+    expect(result.results[1].event).toBe('badge_earned');
   });
 });
