@@ -83,10 +83,7 @@ describe('useGamificationActions — awardForARTryOn', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('[useGamificationActions]'),
-      boom,
-    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('[useGamificationActions]'), boom);
     spy.mockRestore();
   });
 });
@@ -135,10 +132,7 @@ describe('useGamificationActions — awardForRoomPhoto', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('[useGamificationActions]'),
-      boom,
-    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('[useGamificationActions]'), boom);
     spy.mockRestore();
   });
 });
@@ -187,10 +181,7 @@ describe('useGamificationActions — awardForProductReview', () => {
       }),
     ).resolves.toBeUndefined();
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('[useGamificationActions]'),
-      boom,
-    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('[useGamificationActions]'), boom);
     spy.mockRestore();
   });
 });
