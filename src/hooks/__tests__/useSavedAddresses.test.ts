@@ -224,6 +224,39 @@ describe('useSavedAddresses — Wix sync (authenticated)', () => {
     expect(result.current.addresses).toHaveLength(1);
     expect(result.current.addresses[0].fullName).toBe(TEST_ADDRESS.fullName);
   });
+
+  // cm-i3w: saveFromCheckout must also trigger Wix sync via useSavedAddresses
+  it('calls syncMemberAddresses after saveFromCheckout', async () => {
+    mockSyncMemberAddresses.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useSavedAddresses());
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+
+    expect(mockSyncMemberAddresses).toHaveBeenCalledWith(
+      AUTHENTICATED_USER.id,
+      expect.arrayContaining([expect.objectContaining({ fullName: TEST_ADDRESS.fullName })]),
+    );
+  });
+
+  it('does not call syncMemberAddresses from saveFromCheckout when address is duplicate', async () => {
+    mockSyncMemberAddresses.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useSavedAddresses());
+    await act(async () => {});
+
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+    mockSyncMemberAddresses.mockClear();
+
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+
+    expect(mockSyncMemberAddresses).not.toHaveBeenCalled();
+  });
 });
 
 // ── Wix sync — unauthenticated ─────────────────────────────────────────────────

@@ -122,6 +122,12 @@ jest.mock('@/hooks/useAddressBook', () => ({
   useAddressBook: () => mockAddressBook,
 }));
 
+// cm-i3w: AccountScreen should delegate to useSavedAddresses
+const mockUseSavedAddresses = jest.fn();
+jest.mock('@/hooks/useSavedAddresses', () => ({
+  useSavedAddresses: () => mockUseSavedAddresses(),
+}));
+
 jest.mock('@/hooks/useLoyalty', () => ({
   useLoyalty: () => ({
     points: 0,
@@ -214,6 +220,7 @@ describe('AccountScreen', () => {
     mockBiometricAuth.isEnabled = false;
     mockBiometricAuth.loading = false;
     mockUseStreak.mockReturnValue({ streak: 0, loading: false });
+    mockUseSavedAddresses.mockReturnValue(mockAddressBook);
   });
 
   describe('Guest state', () => {
@@ -1260,6 +1267,19 @@ describe('AccountScreen', () => {
       await waitFor(() => expect(getByTestId('account-challenges')).toBeTruthy());
       fireEvent.press(getByTestId('account-challenges'));
       expect(onChallenges).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // cm-i3w: AccountScreen must use useSavedAddresses (not raw useAddressBook)
+  describe('address hook delegation (cm-i3w)', () => {
+    beforeEach(() => {
+      mockUseSavedAddresses.mockReturnValue(mockAddressBook);
+    });
+
+    it('uses useSavedAddresses for address management', async () => {
+      mockUseSavedAddresses.mockClear();
+      renderAccount({}, true);
+      await waitFor(() => expect(mockUseSavedAddresses).toHaveBeenCalled());
     });
   });
 });

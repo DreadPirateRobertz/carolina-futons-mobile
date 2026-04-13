@@ -35,12 +35,12 @@ import { usePremium } from '@/hooks/usePremium';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 import { useDataExport } from '@/hooks/useDataExport';
 import { useReferral } from '@/hooks/useReferral';
-import { useAddressBook, type SavedAddress } from '@/hooks/useAddressBook';
+import { useSavedAddresses } from '@/hooks/useSavedAddresses';
+import { type SavedAddress } from '@/hooks/useAddressBook';
 import { AddressForm, type AddressFormValues } from '@/components/AddressForm';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { AccountGamificationHeader } from '@/components/AccountGamificationHeader';
 import { ShareSheet } from '@/components/ShareSheet';
-import { WixAuthService } from '@/services/wix/wixAuth';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 
 /** Props for the AccountScreen component. */
@@ -91,15 +91,7 @@ export function AccountScreen({
   const { isPremium, restore } = usePremium();
   const deletion = useAccountDeletion();
   const dataExport = useDataExport();
-  const wixAuthService = React.useMemo(() => new WixAuthService(), []);
-  const wixSync = React.useCallback(
-    async (addresses: SavedAddress[]) => {
-      if (!user?.id) return;
-      await wixAuthService.syncMemberAddresses(user.id, addresses);
-    },
-    [user?.id, wixAuthService],
-  );
-  const addressBook = useAddressBook({ wixSync });
+  const addressBook = useSavedAddresses();
   const [restoring, setRestoring] = useState(false);
   const {
     status: bioStatus,
