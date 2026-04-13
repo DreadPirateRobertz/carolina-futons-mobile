@@ -10,6 +10,7 @@
 import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
+import { sanitizeInput } from '@/utils/sanitizeInput';
 
 interface Props {
   value: string;
@@ -52,16 +53,19 @@ export function SearchBar({
 
   const handleSelectSuggestion = useCallback(
     (suggestion: string) => {
-      onChangeText(suggestion);
-      onSubmitSearch?.(suggestion);
+      const clean = sanitizeInput(suggestion);
+      if (!clean) return;
+      onChangeText(clean);
+      onSubmitSearch?.(clean);
       setIsFocused(false);
     },
     [onChangeText, onSubmitSearch],
   );
 
   const handleSubmit = useCallback(() => {
-    if (value.trim()) {
-      onSubmitSearch?.(value.trim());
+    const clean = sanitizeInput(value);
+    if (clean) {
+      onSubmitSearch?.(clean);
       setIsFocused(false);
     }
   }, [value, onSubmitSearch]);
