@@ -1,42 +1,50 @@
+import { Platform } from 'react-native';
 import { registerPushToken } from '../notifications';
 
-const mockFetch = jest.fn();
-(global as any).fetch = mockFetch;
+const mockCallFn = jest.fn();
 
 beforeEach(() => {
-  mockFetch.mockClear();
+  mockCallFn.mockClear();
 });
 
 describe('registerPushToken', () => {
-  it('sends token to backend via POST', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true });
-    await registerPushToken('ExponentPushToken[abc123]');
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining('/push-tokens'),
+  it('sends memberId, token, and platform to Wix function endpoint', async () => {
+    mockCallFn.mockResolvedValueOnce({ success: true });
+
+    await registerPushToken('ExponentPushToken[abc123]', 'member-001', mockCallFn);
+
+    expect(mockCallFn).toHaveBeenCalledWith(
+      '/_functions/registerPushToken',
+      'POST',
       expect.objectContaining({
-        method: 'POST',
-        body: expect.stringContaining('ExponentPushToken[abc123]'),
+        memberId: 'member-001',
+        token: 'ExponentPushToken[abc123]',
+        platform: Platform.OS,
       }),
     );
   });
 
-  it('retries on network failure', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network error')).mockResolvedValueOnce({ ok: true });
-    await registerPushToken('ExponentPushToken[abc123]');
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+  it('resolves on success', async () => {
+    mockCallFn.mockResolvedValueOnce({ success: true });
+
+    await expect(
+      registerPushToken('ExponentPushToken[abc123]', 'member-001', mockCallFn),
+    ).resolves.toBeUndefined();
   });
 
-  it('throws after max retries exhausted', async () => {
-    mockFetch
-      .mockRejectedValueOnce(new Error('Network'))
-      .mockRejectedValueOnce(new Error('Network'))
-      .mockRejectedValueOnce(new Error('Network'));
-    await expect(registerPushToken('ExponentPushToken[abc123]')).rejects.toThrow();
+  it('propagates errors from the Wix function call', async () => {
+    mockCallFn.mockRejectedValueOnce(new Error('Network error'));
+
+    await expect(
+      registerPushToken('ExponentPushToken[abc123]', 'member-001', mockCallFn),
+    ).rejects.toThrow('Network error');
   });
 
-  it('does not retry on 4xx client errors', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 400 });
-    await expect(registerPushToken('ExponentPushToken[abc123]')).rejects.toThrow();
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+  it('calls the function endpoint exactly once', async () => {
+    mockCallFn.mockResolvedValueOnce({ success: true });
+
+    await registerPushToken('ExponentPushToken[abc123]', 'member-001', mockCallFn);
+
+    expect(mockCallFn).toHaveBeenCalledTimes(1);
   });
 });

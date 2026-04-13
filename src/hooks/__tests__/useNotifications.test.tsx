@@ -69,6 +69,20 @@ jest.mock('@/services/crashReporting', () => ({
   captureException: (...args: any[]) => mockCaptureException(...args),
 }));
 
+// --- Mock useAuth ---
+const mockUseAuth = jest.fn();
+jest.mock('@/hooks/useAuth', () => ({
+  useAuth: (...args: any[]) => mockUseAuth(...args),
+}));
+
+// --- Mock useOptionalWixClient ---
+const mockCallFunction = jest.fn().mockResolvedValue(undefined);
+const mockWixClient = { callFunction: mockCallFunction };
+const mockUseOptionalWixClient = jest.fn().mockReturnValue(mockWixClient);
+jest.mock('@/services/wix', () => ({
+  useOptionalWixClient: (...args: any[]) => mockUseOptionalWixClient(...args),
+}));
+
 jest.spyOn(Linking, 'openURL').mockResolvedValue(true as any);
 
 function NotifHarness() {
@@ -125,6 +139,14 @@ describe('useNotifications', () => {
     mockSetNotificationChannelAsync.mockResolvedValue(undefined);
     mockSetBadgeCountAsync.mockResolvedValue(undefined);
     mockRegisterPushToken.mockResolvedValue(undefined);
+    mockCallFunction.mockResolvedValue(undefined);
+    // Default: authenticated user with a known member ID
+    mockUseAuth.mockReturnValue({
+      user: { id: 'member-test-001', email: 'test@example.com', displayName: 'Test', phone: '', provider: 'email' },
+      loading: false,
+      error: null,
+    });
+    mockUseOptionalWixClient.mockReturnValue(mockWixClient);
   });
 
   describe('Initial state', () => {
@@ -529,7 +551,11 @@ describe('useNotifications', () => {
       await waitFor(() => {
         expect(getByTestId('token').props.children).toBe('ExponentPushToken[new-refreshed-token]');
       });
-      expect(mockRegisterPushToken).toHaveBeenCalledWith('ExponentPushToken[new-refreshed-token]');
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'ExponentPushToken[new-refreshed-token]',
+        'member-test-001',
+        expect.any(Function),
+      );
     });
 
     it('does not re-register when token is unchanged', async () => {
@@ -677,6 +703,112 @@ describe('useNotifications', () => {
           action: 'registerPushToken',
         });
       });
+    });
+  });
+
+  describe('IDOR guard and member registration', () => {
+    it('registers token with memberId from authenticated session', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+
+      await waitFor(() => {
+        expect(mockRegisterPushToken).toHaveBeenCalledWith(
+          'ExponentPushToken[test-token-abc]',
+          'member-test-001',
+          expect.any(Function),
+        );
+      });
+    });
+
+    it('does not register token when user is unauthenticated (IDOR guard)', async () => {
+      mockUseAuth.mockReturnValue({ user: null, loading: false, error: null });
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+      await act(async () => {});
+
+      expect(mockRegisterPushToken).not.toHaveBeenCalled();
+    });
+
+    it('does not register token when wixClient is unavailable', async () => {
+      mockUseOptionalWixClient.mockReturnValue(null);
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+      await act(async () => {});
+
+      expect(mockRegisterPushToken).not.toHaveBeenCalled();
+    });
+
+    it('re-registers token with memberId on token refresh', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+      await waitFor(() => expect(mockRegisterPushToken).toHaveBeenCalledTimes(1));
+      mockRegisterPushToken.mockClear();
+
+      const tokenCallback = mockAddPushTokenListener.mock.calls[0][0];
+      await act(async () => {
+        tokenCallback({ data: 'ExponentPushToken[rotated-token]' });
+      });
+
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'ExponentPushToken[rotated-token]',
+        'member-test-001',
+        expect.any(Function),
+      );
+    });
+
+    it('re-registers existing token when user logs in', async () => {
+      // Start unauthenticated with permission granted — token obtained but not registered
+      mockUseAuth.mockReturnValue({ user: null, loading: false, error: null });
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      const { rerender } = renderNotif();
+      await act(async () => {});
+      expect(mockRegisterPushToken).not.toHaveBeenCalled();
+
+      // User logs in — re-render with authenticated user
+      mockUseAuth.mockReturnValue({
+        user: { id: 'member-test-001', email: 'test@example.com', displayName: 'Test', phone: '', provider: 'email' },
+        loading: false,
+        error: null,
+      });
+      rerender(
+        <NotificationProvider>
+          <NotifHarness />
+        </NotificationProvider>,
+      );
+
+      await waitFor(() => {
+        expect(mockRegisterPushToken).toHaveBeenCalledWith(
+          'ExponentPushToken[test-token-abc]',
+          'member-test-001',
+          expect.any(Function),
+        );
+      });
+    });
+
+    it('re-registers token on app resume when user is authenticated', async () => {
+      mockGetPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+      renderNotif();
+      await waitFor(() => expect(mockRegisterPushToken).toHaveBeenCalledTimes(1));
+      mockRegisterPushToken.mockClear();
+
+      const appStateHandler = (AppState.addEventListener as jest.Mock).mock.calls.find(
+        ([event]: [string]) => event === 'change',
+      )?.[1];
+      await act(async () => {
+        appStateHandler?.('active');
+      });
+
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'ExponentPushToken[test-token-abc]',
+        'member-test-001',
+        expect.any(Function),
+      );
     });
   });
 });

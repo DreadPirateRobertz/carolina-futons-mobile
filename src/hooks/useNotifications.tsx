@@ -32,6 +32,8 @@ import {
   registerPushToken,
 } from '@/services/notifications';
 import { captureException } from '@/services/crashReporting';
+import { useAuth } from '@/hooks/useAuth';
+import { useOptionalWixClient } from '@/services/wix';
 
 const PREFS_STORAGE_KEY = '@notification_preferences';
 const BADGE_STORAGE_KEY = '@notification_badge_count';
@@ -182,6 +184,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     badgeCount: 0,
   });
 
+  const { user } = useAuth();
+  const wixClient = useOptionalWixClient();
+
+  // IDOR guard: only register when authenticated via session. memberId MUST come
+  // from useAuth — never from external params. Errors are reported to crash reporting.
+  const tryRegisterToken = useCallback(
+    (token: string) => {
+      if (!user || !wixClient) return;
+      registerPushToken(token, user.id, (path, method, body) =>
+        wixClient.callFunction(path, method, body),
+      ).catch((e) => {
+        captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
+          action: 'registerPushToken',
+        });
+      });
+    },
+    [user, wixClient],
+  );
+
   // Check existing permission status and restore preferences on mount
   const mounted = useRef(false);
   useEffect(() => {
@@ -224,11 +245,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           const token = await registerForPushToken();
           if (token) {
             dispatch({ type: 'SET_TOKEN', token });
-            registerPushToken(token).catch((e) => {
-              captureException(e instanceof Error ? e : new Error(String(e)), 'warning', {
-                action: 'registerPushToken',
-              });
-            });
+            tryRegisterToken(token);
           }
         } else if (status === 'denied') {
           dispatch({ type: 'SET_PERMISSION', status: 'denied' });
@@ -239,7 +256,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         });
       }
     })();
-  }, []);
+  }, [tryRegisterToken]);
 
   const requestPermission = useCallback(async () => {
     // Check existing permission first
@@ -250,11 +267,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
-            action: 'registerPushToken',
-          });
-        });
+        tryRegisterToken(token);
       }
       return;
     }
@@ -268,14 +281,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const token = await registerForPushToken();
       if (token) {
         dispatch({ type: 'SET_TOKEN', token });
-        registerPushToken(token).catch((err) => {
-          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
-            action: 'registerPushToken',
-          });
-        });
+        tryRegisterToken(token);
       }
     }
-  }, []);
+  }, [tryRegisterToken]);
 
   // Set up notification listeners
   useEffect(() => {
@@ -317,14 +326,24 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (newToken && newToken !== lastTokenRef.current) {
         lastTokenRef.current = newToken;
         dispatch({ type: 'SET_TOKEN', token: newToken });
-        registerPushToken(newToken).catch(captureException);
+        tryRegisterToken(newToken);
       }
     });
 
     return () => {
       tokenSub.remove();
     };
-  }, [state.pushToken]);
+  }, [state.pushToken, tryRegisterToken]);
+
+  // Re-register existing token when user logs in (token obtained before auth completes)
+  const prevMemberIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const memberId = user?.id ?? null;
+    if (memberId && memberId !== prevMemberIdRef.current && state.pushToken) {
+      tryRegisterToken(state.pushToken);
+    }
+    prevMemberIdRef.current = memberId;
+  }, [user, state.pushToken, tryRegisterToken]);
 
   // Persist badge count and sync with OS whenever it changes
   const badgeRef = useRef(state.badgeCount);
@@ -335,17 +354,26 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     Notifications.setBadgeCountAsync(state.badgeCount).catch(() => {});
   }, [state.badgeCount]);
 
-  // Clear badge when app returns to foreground
+  // Keep a ref so the AppState handler always reads the latest token without re-subscribing.
+  const pushTokenRef = useRef(state.pushToken);
+  useEffect(() => {
+    pushTokenRef.current = state.pushToken;
+  }, [state.pushToken]);
+
+  // Clear badge and re-register token when app returns to foreground
   useEffect(() => {
     const sub = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'active') {
         dispatch({ type: 'CLEAR_BADGE' });
         AsyncStorage.setItem(BADGE_STORAGE_KEY, '0').catch(() => {});
         Notifications.setBadgeCountAsync(0).catch(() => {});
+        if (pushTokenRef.current) {
+          tryRegisterToken(pushTokenRef.current);
+        }
       }
     });
     return () => sub.remove();
-  }, []);
+  }, [tryRegisterToken]);
 
   const togglePreference = useCallback((key: keyof NotificationPreferences) => {
     dispatch({ type: 'TOGGLE_PREF', key });

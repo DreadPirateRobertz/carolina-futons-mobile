@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import {
   getDeepLinkForNotification,
   getDeepLinkFromPayload,
@@ -337,115 +338,44 @@ describe('Notification service', () => {
   // ── registerPushToken ───────────────────────────────────────────────────
 
   describe('registerPushToken', () => {
-    const originalFetch = global.fetch;
+    it('calls callFn with memberId, token, and platform', async () => {
+      const callFn = jest.fn().mockResolvedValue(undefined);
 
-    beforeEach(() => {
-      jest.useFakeTimers();
-    });
+      await registerPushToken('ExponentPushToken[abc123]', 'member-001', callFn);
 
-    afterEach(() => {
-      global.fetch = originalFetch;
-      jest.useRealTimers();
-    });
-
-    it('sends token and platform to push token endpoint', async () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: true });
-
-      await registerPushToken('ExponentPushToken[abc123]');
-
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://www.wixapis.com/v1/push-tokens',
+      expect(callFn).toHaveBeenCalledWith(
+        '/_functions/registerPushToken',
+        'POST',
         expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: expect.stringContaining('ExponentPushToken[abc123]'),
+          memberId: 'member-001',
+          token: 'ExponentPushToken[abc123]',
+          platform: Platform.OS,
         }),
       );
     });
 
-    it('returns successfully on 200 OK', async () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: true });
+    it('resolves when callFn succeeds', async () => {
+      const callFn = jest.fn().mockResolvedValue({ success: true });
 
-      await expect(registerPushToken('token')).resolves.toBeUndefined();
+      await expect(
+        registerPushToken('ExponentPushToken[abc123]', 'member-001', callFn),
+      ).resolves.toBeUndefined();
     });
 
-    it('throws immediately on 4xx client error (no retry)', async () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 400 });
+    it('propagates errors from callFn', async () => {
+      const callFn = jest.fn().mockRejectedValue(new Error('network error'));
 
-      await expect(registerPushToken('token')).rejects.toThrow(
-        'Push token registration failed: 400',
-      );
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      await expect(
+        registerPushToken('token', 'member-001', callFn),
+      ).rejects.toThrow('network error');
     });
 
-    it('throws immediately on 403 forbidden', async () => {
-      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 403 });
+    it('calls callFn exactly once (retry is caller responsibility)', async () => {
+      const callFn = jest.fn().mockResolvedValue(undefined);
 
-      await expect(registerPushToken('token')).rejects.toThrow(
-        'Push token registration failed: 403',
-      );
-      expect(global.fetch).toHaveBeenCalledTimes(1);
+      await registerPushToken('token', 'member-001', callFn);
+
+      expect(callFn).toHaveBeenCalledTimes(1);
     });
-
-    it('retries on 5xx server error and succeeds', async () => {
-      global.fetch = jest
-        .fn()
-        .mockResolvedValueOnce({ ok: false, status: 500 })
-        .mockResolvedValueOnce({ ok: true });
-
-      const promise = registerPushToken('token');
-
-      // Advance past first backoff (2^0 * 1000 = 1s)
-      await jest.advanceTimersByTimeAsync(1000);
-
-      await expect(promise).resolves.toBeUndefined();
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-    });
-
-    it('throws after max retries exhausted on server errors', async () => {
-      jest.useRealTimers();
-      global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 503 });
-
-      // With real timers, the backoff delays are real but the function
-      // retries quickly since we use short delays in test. Override the delay.
-      // Instead: just verify the error after all attempts.
-      await expect(registerPushToken('token')).rejects.toThrow(
-        'Push token registration failed: 503',
-      );
-      expect(global.fetch).toHaveBeenCalledTimes(3);
-    }, 15000);
-
-    it('retries on network errors (fetch throws)', async () => {
-      jest.useRealTimers();
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('Network request failed'))
-        .mockResolvedValueOnce({ ok: true });
-
-      await expect(registerPushToken('token')).resolves.toBeUndefined();
-      expect(global.fetch).toHaveBeenCalledTimes(2);
-    }, 10000);
-
-    it('wraps non-Error fetch throws', async () => {
-      jest.useRealTimers();
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce('string error')
-        .mockResolvedValueOnce({ ok: true });
-
-      await expect(registerPushToken('token')).resolves.toBeUndefined();
-    }, 10000);
-
-    it('throws last error after all retries fail on network errors', async () => {
-      jest.useRealTimers();
-      global.fetch = jest
-        .fn()
-        .mockRejectedValueOnce(new Error('offline'))
-        .mockRejectedValueOnce(new Error('offline'))
-        .mockRejectedValueOnce(new Error('offline'));
-
-      await expect(registerPushToken('token')).rejects.toThrow('offline');
-      expect(global.fetch).toHaveBeenCalledTimes(3);
-    }, 15000);
   });
 });
