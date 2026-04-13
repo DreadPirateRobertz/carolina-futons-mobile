@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * ARScreen edge-case tests (cm-74i) — deeper coverage of permission flows and
  * error states not exercised by arScreen.test.tsx / arScreen.gaps.test.tsx /
