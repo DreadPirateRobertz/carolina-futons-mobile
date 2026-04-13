@@ -9,6 +9,7 @@ import { FUTON_MODELS, FABRICS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
+import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -1202,6 +1203,53 @@ describe('ARScreen', () => {
       const { queryByTestId } = renderARScreen();
       // In gallery mode, measure is stubbed as inactive
       expect(queryByTestId('ar-measurement-overlay')).toBeNull();
+    });
+  });
+
+  // =========================================================================
+  // Gamification Events
+  // =========================================================================
+  describe('gamification events', () => {
+    beforeEach(() => {
+      clearEventBuffer();
+    });
+
+    it('fires gamification_ar_used on mount when a product is loaded', () => {
+      renderARScreen();
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_ar_used');
+      expect(ev).toBeTruthy();
+    });
+
+    it('includes product_id in the gamification_ar_used event', () => {
+      renderARScreen();
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_ar_used');
+      // Default model is asheville-full → product id is prod-asheville-full
+      expect(ev?.properties?.product_id).toBe('prod-asheville-full');
+    });
+
+    it('fires gamification_ar_used only once per session, not on re-render', () => {
+      const { rerender } = renderARScreen();
+      rerender(
+        <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+          <NavigationContainer>
+            <CartProvider>
+              <WishlistProvider>
+                <ARScreen />
+              </WishlistProvider>
+            </CartProvider>
+          </NavigationContainer>
+        </ConnectivityProvider>,
+      );
+      const evts = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
+      expect(evts).toHaveLength(1);
+    });
+
+    it('does not fire gamification_ar_used when camera permission is not granted', () => {
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
+      renderARScreen();
+      const evts = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
+      expect(evts).toHaveLength(0);
     });
   });
 });

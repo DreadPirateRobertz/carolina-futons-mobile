@@ -3,6 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { WishlistProvider, useWishlist } from '../useWishlist';
 import { PRODUCTS } from '@/data/products';
+import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
@@ -198,6 +199,52 @@ describe('useWishlist', () => {
         'useWishlist must be used within a WishlistProvider',
       );
       consoleError.mockRestore();
+    });
+  });
+
+  describe('gamification events', () => {
+    beforeEach(() => {
+      clearEventBuffer();
+    });
+
+    it('fires gamification_wishlist_add when a new product is added', () => {
+      const { getByTestId } = renderHarness();
+      fireEvent.press(getByTestId('add-1'));
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_wishlist_add');
+      expect(ev).toBeTruthy();
+    });
+
+    it('includes product_id in the gamification_wishlist_add event', () => {
+      const { getByTestId } = renderHarness();
+      fireEvent.press(getByTestId('add-1'));
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_wishlist_add');
+      expect(ev?.properties?.product_id).toBe(product1.id);
+    });
+
+    it('does not fire gamification_wishlist_add when adding a duplicate', () => {
+      const { getByTestId } = renderHarness();
+      fireEvent.press(getByTestId('add-1'));
+      clearEventBuffer();
+      fireEvent.press(getByTestId('add-1'));
+      const evts = getEventBuffer().filter((e) => e.name === 'gamification_wishlist_add');
+      expect(evts).toHaveLength(0);
+    });
+
+    it('fires gamification_wishlist_add via toggle when adding to wishlist', () => {
+      const { getByTestId } = renderHarness();
+      fireEvent.press(getByTestId('toggle-1'));
+      const ev = getEventBuffer().find((e) => e.name === 'gamification_wishlist_add');
+      expect(ev).toBeTruthy();
+    });
+
+    it('does not fire gamification_wishlist_add via toggle when removing from wishlist', () => {
+      const { getByTestId } = renderHarness([
+        { productId: product1.id, addedAt: Date.now(), savedPrice: product1.price },
+      ]);
+      clearEventBuffer();
+      fireEvent.press(getByTestId('toggle-1'));
+      const evts = getEventBuffer().filter((e) => e.name === 'gamification_wishlist_add');
+      expect(evts).toHaveLength(0);
     });
   });
 });
