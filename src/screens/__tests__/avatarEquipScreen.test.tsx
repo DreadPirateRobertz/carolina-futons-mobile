@@ -84,6 +84,37 @@ describe('AvatarEquipScreen', () => {
     mockGetWixClient.mockReturnValue({ callFunction: mockEquipAccessory });
   });
 
+  // ── Skeleton loading — cm-1be ──────────────────────────────────────
+
+  it('renders skeleton when loading=true', () => {
+    mockUseAvatarState.mockReturnValue({
+      equippedAccessoryId: null,
+      unlockedAccessoryIds: [],
+      loading: true,
+      error: null,
+      refreshAvatarState: jest.fn(),
+    });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('avatar-equip-loading')).toBeTruthy();
+  });
+
+  it('does not show accessory grid while loading', () => {
+    mockUseAvatarState.mockReturnValue({
+      equippedAccessoryId: null,
+      unlockedAccessoryIds: [],
+      loading: true,
+      error: null,
+      refreshAvatarState: jest.fn(),
+    });
+    const { queryByTestId } = renderScreen();
+    expect(queryByTestId('accessory-grid')).toBeNull();
+  });
+
+  it('renders accessory grid (content) when loading=false', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('accessory-grid')).toBeTruthy();
+  });
+
   // ── Rendering ──────────────────────────────────────────────────────
 
   it('has screen testID', () => {
@@ -178,6 +209,23 @@ describe('AvatarEquipScreen', () => {
   });
 
   // ── Loading state ──────────────────────────────────────────────────
+
+  it('renders skeleton when loading=true', () => {
+    mockUseAvatarState.mockReturnValue({
+      equippedAccessoryId: null,
+      unlockedAccessoryIds: [],
+      loading: true,
+      error: null,
+      refreshAvatarState: jest.fn(),
+    });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('avatar-equip-loading')).toBeTruthy();
+  });
+
+  it('renders content (accessory grid) when loading=false', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('accessory-grid')).toBeTruthy();
+  });
 
   it('shows loading indicator when avatar state is loading', () => {
     mockUseAvatarState.mockReturnValue({

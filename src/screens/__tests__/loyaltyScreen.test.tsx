@@ -48,6 +48,18 @@ describe('LoyaltyScreen', () => {
     mockUseLoyalty.mockReturnValue(DEFAULT_LOYALTY);
   });
 
+  it('renders skeleton when loading=true', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: true });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-loading')).toBeTruthy();
+  });
+
+  it('renders content when loading=false', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: false });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-points')).toBeTruthy();
+  });
+
   it('shows loading indicator while fetching', () => {
     mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: true });
     const { getByTestId } = renderScreen();

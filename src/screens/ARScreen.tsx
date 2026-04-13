@@ -49,6 +49,7 @@ import { useModelLoader } from '@/hooks/useModelLoader';
 import { ModelLoadingOverlay } from '@/components/ModelLoadingOverlay';
 import { useStagedItems } from '@/hooks/useStagedItems';
 import { useGalleryFallback } from '@/hooks/useGalleryFallback';
+import { SkeletonCard } from '@/components/Skeleton';
 
 /** Props for the ARScreen component. */
 interface Props {
@@ -680,8 +681,8 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Models loading
   if (modelsLoading) {
     return (
-      <View style={styles.permissionContainer} testID="ar-loading">
-        <Text style={styles.permissionText}>Loading futon models...</Text>
+      <View style={styles.permissionContainer} testID="ar-models-loading">
+        <SkeletonCard testID="ar-models-skeleton" header lines={3} style={{ width: '80%' }} />
       </View>
     );
   }

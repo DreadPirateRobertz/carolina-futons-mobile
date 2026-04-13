@@ -10,16 +10,10 @@
  */
 
 import React, { useCallback } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { usePointsHistory, type PointsEvent } from '@/hooks/usePointsHistory';
+import { SkeletonRow } from '@/components/Skeleton';
 
 // ── Icon map ──────────────────────────────────────────────────────────────────
 
@@ -106,14 +100,17 @@ export function PointsHistoryScreen({ testID }: Props) {
   if (loading) {
     return (
       <View
-        style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'points-history-screen'}
       >
-        <ActivityIndicator
-          size="large"
-          color={colors.sunsetCoral}
-          testID="points-history-loading"
-        />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonRow
+            key={i}
+            testID={i === 0 ? 'points-history-loading' : undefined}
+            height={16}
+            style={{ marginHorizontal: spacing.lg, marginVertical: spacing.xs }}
+          />
+        ))}
       </View>
     );
   }

@@ -52,6 +52,18 @@ beforeEach(() => {
 
 describe('LeaderboardScreen', () => {
   describe('loading state', () => {
+    it('renders skeleton when loading=true', () => {
+      mockHookState = { ...mockHookState, entries: [], loading: true };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-loading')).toBeTruthy();
+    });
+
+    it('renders content (list) when loading=false', () => {
+      mockHookState = { ...mockHookState, loading: false };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-list')).toBeTruthy();
+    });
+
     it('shows activity indicator while loading', () => {
       mockHookState = { ...mockHookState, entries: [], loading: true };
       const { getByTestId } = wrap(<LeaderboardScreen />);

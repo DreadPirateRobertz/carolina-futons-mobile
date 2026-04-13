@@ -6,20 +6,13 @@
  */
 
 import React from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  RefreshControl,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { useLeaderboard } from '@/hooks/useLeaderboard';
 import type { LeaderboardEntry, LeaderboardPeriod } from '@/hooks/useLeaderboard';
 import { LeaderboardRow } from '@/components/LeaderboardRow';
+import { SkeletonGrid } from '@/components/Skeleton';
 
 export interface LeaderboardScreenProps {
   testID?: string;
@@ -89,11 +82,13 @@ export function LeaderboardScreen({ testID }: LeaderboardScreenProps) {
 
       {/* Loading */}
       {loading && (
-        <ActivityIndicator
+        <SkeletonGrid
           testID="leaderboard-loading"
-          size="large"
-          color={colors.mountainBlue}
-          style={styles.centered}
+          rows={5}
+          columns={1}
+          cardHeader
+          cardLines={1}
+          style={{ paddingHorizontal: spacing.md }}
         />
       )}
 

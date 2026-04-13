@@ -10,19 +10,12 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useConsultationBooking, ALL_SLOTS } from '@/hooks/useConsultationBooking';
 import { useCalendarAvailability } from '@/hooks/useCalendarAvailability';
+import { SkeletonGrid, SkeletonRow } from '@/components/Skeleton';
 
 // ── Calendar helpers ──────────────────────────────────────────────────────────
 
@@ -208,10 +201,11 @@ export function ConsultationBookingScreen() {
             <Text style={styles.sectionLabel}>Select a Time</Text>
 
             {slotsLoading && (
-              <ActivityIndicator
+              <SkeletonGrid
                 testID="slots-loading"
-                size="small"
-                color="#E8845C"
+                rows={2}
+                columns={4}
+                cardLines={1}
                 style={styles.slotsLoading}
               />
             )}
@@ -289,12 +283,7 @@ export function ConsultationBookingScreen() {
 
         {/* ── Book button / loading ──────────────────────────────────────────── */}
         {isBooking && (
-          <ActivityIndicator
-            testID="booking-loading"
-            size="large"
-            color="#E8845C"
-            style={styles.bookingLoading}
-          />
+          <SkeletonRow testID="booking-loading" height={20} style={styles.bookingLoading} />
         )}
 
         <TouchableOpacity

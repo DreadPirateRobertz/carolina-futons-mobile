@@ -103,6 +103,18 @@ describe('PointsHistoryScreen', () => {
 
   // ── Loading ───────────────────────────────────────────────────────────────
 
+  it('renders skeleton when loading=true', () => {
+    mockUsePointsHistory.mockReturnValue({ ...defaultHookState, loading: true });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('points-history-loading')).toBeTruthy();
+  });
+
+  it('renders content (list) when loading=false', () => {
+    mockUsePointsHistory.mockReturnValue({ ...defaultHookState, events: MOCK_EVENTS, loading: false });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('points-history-list')).toBeTruthy();
+  });
+
   it('shows loading spinner when loading=true', () => {
     mockUsePointsHistory.mockReturnValue({ ...defaultHookState, loading: true });
     const { getByTestId } = renderScreen();

@@ -256,6 +256,18 @@ describe('ConsultationBookingScreen', () => {
       expect(getByTestId('no-slots-message')).toBeTruthy();
     });
 
+    it('renders skeleton when slotsLoading=true', () => {
+      mockHookState = { ...mockHookState, selectedDate: TODAY, slotsLoading: true };
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('slots-loading')).toBeTruthy();
+    });
+
+    it('renders slot grid (content) when slotsLoading=false', () => {
+      mockHookState = { ...mockHookState, selectedDate: TODAY, slots: availableSlots, slotsLoading: false };
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('slot-grid')).toBeTruthy();
+    });
+
     it('shows loading indicator while slotsLoading=true', () => {
       mockHookState = { ...mockHookState, selectedDate: TODAY, slotsLoading: true };
       const { getByTestId } = renderScreen();
@@ -310,6 +322,12 @@ describe('ConsultationBookingScreen', () => {
           memberEmail: 'jane@example.com',
         }),
       );
+    });
+
+    it('renders booking skeleton when isBooking=true', () => {
+      mockHookState = { ...mockHookState, isBooking: true };
+      const { getByTestId } = renderScreen();
+      expect(getByTestId('booking-loading')).toBeTruthy();
     });
 
     it('shows loading spinner while isBooking=true', () => {

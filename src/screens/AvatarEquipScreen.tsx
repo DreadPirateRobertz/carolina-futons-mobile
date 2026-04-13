@@ -27,6 +27,7 @@ import { useOptionalConnectivity } from '@/hooks/useConnectivity';
 import { AvatarDisplay } from '@/components/AvatarDisplay';
 import { ACCESSORIES, type Accessory } from '@/data/accessories';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
+import { SkeletonGrid } from '@/components/Skeleton';
 
 function is403Error(err: unknown): boolean {
   if (err instanceof Error) {
@@ -131,7 +132,14 @@ export function AvatarEquipScreen() {
   if (loading) {
     return (
       <View testID="avatar-equip-screen" style={[styles.root, styles.centered]}>
-        <ActivityIndicator testID="avatar-equip-loading" size="large" color={colors.mountainBlue} />
+        <SkeletonGrid
+          testID="avatar-equip-loading"
+          rows={3}
+          columns={3}
+          cardHeader
+          cardLines={1}
+          style={{ width: '100%', padding: 8 }}
+        />
       </View>
     );
   }

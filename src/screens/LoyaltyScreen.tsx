@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
@@ -19,6 +19,7 @@ import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
 import { TierPerkCard } from '@/components/TierPerkCard';
+import { SkeletonCard } from '@/components/Skeleton';
 
 /** Module-level flag to prevent duplicate streak emissions across remounts. */
 let streakEmittedThisSession = false;
@@ -83,10 +84,16 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   if (loading) {
     return (
       <View
-        style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
+        style={[styles.root, { backgroundColor: colors.sandBase, padding: spacing.lg }]}
         testID={testID ?? 'loyalty-screen'}
       >
-        <ActivityIndicator size="large" color={colors.sunsetCoral} testID="loyalty-loading" />
+        <SkeletonCard
+          testID="loyalty-loading"
+          header
+          lines={3}
+          style={{ marginBottom: spacing.md }}
+        />
+        <SkeletonCard lines={2} />
       </View>
     );
   }

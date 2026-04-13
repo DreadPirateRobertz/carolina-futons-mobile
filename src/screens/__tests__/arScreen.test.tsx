@@ -195,6 +195,16 @@ jest.mock('@/hooks/useAROnboarding', () => ({
   useAROnboarding: () => mockAROnboarding,
 }));
 
+// Mock useFutonModels for controlling isLoading
+const mockUseFutonModels = jest.fn();
+jest.mock('@/hooks/useFutonModels', () => {
+  const actual = jest.requireActual('@/hooks/useFutonModels');
+  return {
+    ...actual,
+    useFutonModels: () => mockUseFutonModels(),
+  };
+});
+
 /** Helper to render ARScreen with required providers */
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
@@ -223,6 +233,18 @@ describe('ARScreen', () => {
     mockGalleryFallback.isGalleryMode = false;
     mockGalleryFallback.cameraUnavailable = false;
     mockModelLoader.status = { state: 'idle' };
+    // Default: models loaded, not loading
+    mockUseFutonModels.mockReturnValue({
+      models: FUTON_MODELS,
+      fabrics: [],
+      isLoading: false,
+      error: null,
+      getModel: (id: string) => FUTON_MODELS.find((m) => m.id === id),
+      getModelById: (id: string) => FUTON_MODELS.find((m) => m.id === id),
+      getFabric: () => undefined,
+      getModelForProduct: () => undefined,
+      refresh: jest.fn(),
+    });
   });
 
   // =========================================================================
@@ -1250,6 +1272,34 @@ describe('ARScreen', () => {
       renderARScreen();
       const evts = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
       expect(evts).toHaveLength(0);
+    });
+  });
+
+  // =========================================================================
+  // Skeleton loading — cm-1be
+  // =========================================================================
+  describe('Skeleton loading', () => {
+    it('renders skeleton when models are loading', () => {
+      mockUseFutonModels.mockReturnValue({
+        models: [],
+        fabrics: [],
+        isLoading: true,
+        error: null,
+        getModel: () => undefined,
+        getModelById: () => undefined,
+        getFabric: () => undefined,
+        getModelForProduct: () => undefined,
+        refresh: jest.fn(),
+      });
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-models-loading')).toBeTruthy();
+      expect(getByTestId('ar-models-skeleton')).toBeTruthy();
+    });
+
+    it('renders content (camera view) when models are loaded', () => {
+      const { getByTestId } = renderARScreen();
+      expect(getByTestId('ar-screen')).toBeTruthy();
+      expect(getByTestId('ar-camera')).toBeTruthy();
     });
   });
 });
