@@ -34,6 +34,9 @@ import {
 } from '@/hooks/useStyleQuiz';
 import { useGamificationReveal, WELCOME_POINTS } from '@/hooks/useGamificationReveal';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
+import { useNotificationPermission } from '@/hooks/useNotificationPermission';
+
+const ONBOARDING_COMPLETE_KEY = 'onboarding_complete';
 
 // ── Brand Story Slides ──────────────────────────────────────────────
 
@@ -114,6 +117,16 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
     markRevealShown,
   } = useGamificationReveal();
   const { styleQuizComplete } = useGamificationEvents();
+  const { requestPermission } = useNotificationPermission();
+
+  // Re-entry guard: skip onboarding if already completed
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY)
+      .then((val) => { if (val === 'true') onComplete(); })
+      .catch(() => {
+        // Storage read failure is non-fatal — show onboarding normally
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isBrandPhase = step < BRAND_SLIDES.length;
   const quizStep = step - BRAND_SLIDES.length; // 0, 1, 2 for quiz; 3 for completion
@@ -163,6 +176,10 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   const handleFinish = useCallback(async () => {
     try {
       await savePreferences();
+      // Persist completion for re-entry guard (fire-and-forget)
+      AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true').catch(() => {});
+      // Request push notification permission (non-blocking — denied is fine)
+      requestPermission().catch(() => {});
       // cm-0l2: fire style quiz gamification event + invalidate quest cache
       // Onboarding doesn't collect sizeNeeds — pass '' so backend gets correct field
       styleQuizComplete(preferences.stylePreference ?? '', '')
@@ -178,7 +195,7 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference]);
+  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference, requestPermission]);
 
   // ── Progress Bar ────────────────────────────────────────────────
 

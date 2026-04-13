@@ -28,6 +28,10 @@ import {
 
 interface Props {
   testID?: string;
+  /** Called when a notification row is tapped. Used for deep-linking to related content. */
+  onNotificationPress?: (notification: GamificationNotification) => void;
+  /** Called when the delete button on a row is pressed. */
+  onDeleteNotification?: (id: string) => void;
 }
 
 // ─── Icon map ────────────────────────────────────────────────────────────────
@@ -56,13 +60,18 @@ function relativeTime(createdAt: number): string {
 
 interface RowProps {
   item: GamificationNotification;
+  onPress?: () => void;
+  onDelete?: () => void;
 }
 
-function NotificationRow({ item }: RowProps) {
+function NotificationRow({ item, onPress, onDelete }: RowProps) {
   const { colors, spacing, typography } = useTheme();
   return (
-    <View
+    <TouchableOpacity
       testID={`notification-row-${item.id}`}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+      accessibilityRole={onPress ? 'button' : undefined}
       style={[
         styles.row,
         {
@@ -104,20 +113,42 @@ function NotificationRow({ item }: RowProps) {
           style={[styles.unreadDot, { backgroundColor: colors.sunsetCoral }]}
         />
       )}
-    </View>
+
+      {/* Delete button */}
+      {onDelete && (
+        <TouchableOpacity
+          testID={`notification-delete-btn-${item.id}`}
+          onPress={onDelete}
+          accessibilityLabel="Delete notification"
+          accessibilityRole="button"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={styles.deleteBtn}
+        >
+          <Text style={[styles.deleteBtnText, { color: colors.muted }]}>×</Text>
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
   );
 }
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
-export function NotificationsScreen({ testID }: Props) {
+export function NotificationsScreen({ testID, onNotificationPress, onDeleteNotification }: Props) {
   const { colors, spacing, typography } = useTheme();
   const insets = useSafeAreaInsets();
   const { notifications, loading, error, markAllRead, refresh } = useGamificationFeed();
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
   const renderItem = useCallback(
-    ({ item }: { item: GamificationNotification }) => <NotificationRow item={item} />,
-    [],
+    ({ item }: { item: GamificationNotification }) => (
+      <NotificationRow
+        item={item}
+        onPress={onNotificationPress ? () => onNotificationPress(item) : undefined}
+        onDelete={onDeleteNotification ? () => onDeleteNotification(item.id) : undefined}
+      />
+    ),
+    [onNotificationPress, onDeleteNotification],
   );
 
   const keyExtractor = useCallback((item: GamificationNotification) => item.id, []);
@@ -140,14 +171,25 @@ export function NotificationsScreen({ testID }: Props) {
     >
       {/* Header */}
       <View style={[styles.header, { paddingHorizontal: spacing.md, paddingBottom: spacing.sm }]}>
-        <Text
-          style={[
-            styles.headerTitle,
-            { color: colors.espresso, fontFamily: typography.headingFamily },
-          ]}
-        >
-          Notifications
-        </Text>
+        <View style={styles.headerTitleRow}>
+          <Text
+            style={[
+              styles.headerTitle,
+              { color: colors.espresso, fontFamily: typography.headingFamily },
+            ]}
+          >
+            Notifications
+          </Text>
+          {unreadCount > 0 && (
+            <View
+              testID="notification-badge-count"
+              style={[styles.badge, { backgroundColor: colors.sunsetCoral }]}
+              accessibilityLabel={`${unreadCount} unread`}
+            >
+              <Text style={styles.badgeText}>{unreadCount}</Text>
+            </View>
+          )}
+        </View>
         <TouchableOpacity
           testID="mark-all-read-btn"
           onPress={markAllRead}
@@ -233,9 +275,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 12,
   },
+  headerTitleRow: { flexDirection: 'row', alignItems: 'center' },
   headerTitle: { fontSize: 20, fontWeight: '700' },
+  badge: { marginLeft: 8, borderRadius: 10, minWidth: 20, height: 20, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
+  badgeText: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
   markAllText: { fontSize: 14 },
   row: { flexDirection: 'row', alignItems: 'center', minHeight: 56 },
+  deleteBtn: { marginLeft: 8, padding: 4 },
+  deleteBtnText: { fontSize: 18, fontWeight: '700' },
   icon: { fontSize: 22, width: 36, textAlign: 'center' },
   content: { flex: 1, marginLeft: 8 },
   message: { fontSize: 14, lineHeight: 20 },
