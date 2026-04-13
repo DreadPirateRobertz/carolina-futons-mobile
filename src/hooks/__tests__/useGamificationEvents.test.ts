@@ -1,9 +1,11 @@
 /**
- * Tests for useGamificationEvents hook — hq-825vi
+ * Tests for useGamificationEvents hook — hq-825vi / cm-lwg
  * TDD: tests written before implementation.
  *
  * Hook provides typed event functions that POST to the Wix gamification
  * endpoint via sendGamificationEvent. Unauthenticated calls are queued.
+ *
+ * cm-lwg: arDiscoveryCompleted + socialShareCompleted wire to completeMobileChallenge.
  */
 
 import { renderHook } from '@testing-library/react-native';
@@ -43,9 +45,21 @@ jest.mock('@/services/questRefreshBus', () => ({
   emitQuestRefresh: () => mockEmitQuestRefresh(),
 }));
 
+// cm-lwg: mock completeMobileChallenge for AR discovery + social share dispatch
+const mockCompleteMobileChallenge = jest.fn();
+jest.mock('@/services/crossRigSync', () => ({
+  completeMobileChallenge: (...args: unknown[]) => mockCompleteMobileChallenge(...args),
+  MOBILE_CHALLENGE_TYPES: {
+    ar_discovery: { points: 75, eventName: 'ar_discovery_completed' },
+    quiz_completion: { points: 50, eventName: 'quiz_completed' },
+    social_share: { points: 100, eventName: 'social_share_completed' },
+  },
+}));
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockSendGamificationEvent.mockResolvedValue({ success: true, newTotal: 100 });
+  mockCompleteMobileChallenge.mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 });
   mockUseOptionalWixClient.mockReturnValue(mockWixClient);
   mockUseAuth.mockReturnValue({ user: { id: 'member-abc', email: 'test@test.com' } });
 });
@@ -358,6 +372,196 @@ describe('useGamificationEvents', () => {
       mockSendGamificationEvent.mockRejectedValue(new Error('network'));
       const { result } = renderHook(() => useGamificationEvents());
       await result.current.addToCart('prod-1', 49.99);
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── cm-lwg: arDiscoveryCompleted ────────────────────────────────────────────
+
+  describe('arDiscoveryCompleted', () => {
+    it('calls completeMobileChallenge with ar_discovery challenge type', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arDiscoveryCompleted('prod-ar-1');
+
+      expect(mockCompleteMobileChallenge).toHaveBeenCalledWith(
+        mockWixClient,
+        'member-abc',
+        'ar_discovery',
+        expect.objectContaining({ productId: 'prod-ar-1' }),
+      );
+    });
+
+    it('calls completeMobileChallenge without productId when omitted', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arDiscoveryCompleted();
+
+      expect(mockCompleteMobileChallenge).toHaveBeenCalledWith(
+        mockWixClient,
+        'member-abc',
+        'ar_discovery',
+        {},
+      );
+    });
+
+    it('returns result from completeMobileChallenge', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: false,
+        pointsAwarded: 75,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.arDiscoveryCompleted('prod-ar-1');
+
+      expect(res).toEqual({ success: true, alreadyAwarded: false, pointsAwarded: 75 });
+    });
+
+    it('emits quest refresh on fresh completion (alreadyAwarded: false)', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arDiscoveryCompleted('prod-ar-1');
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does NOT emit quest refresh when alreadyAwarded (idempotency)', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: true,
+        pointsAwarded: 0,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arDiscoveryCompleted('prod-ar-1');
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
+    });
+
+    it('returns fallback when completeMobileChallenge throws', async () => {
+      mockCompleteMobileChallenge.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.arDiscoveryCompleted('prod-ar-1');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+    });
+
+    it('returns fallback when no wixClient (unauthenticated/offline)', async () => {
+      mockUseOptionalWixClient.mockReturnValue(null);
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.arDiscoveryCompleted('prod-ar-1');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+      expect(mockCompleteMobileChallenge).not.toHaveBeenCalled();
+    });
+
+    it('returns fallback when memberId is empty (not logged in)', async () => {
+      mockUseAuth.mockReturnValue({ user: null });
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.arDiscoveryCompleted('prod-ar-1');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+      expect(mockCompleteMobileChallenge).not.toHaveBeenCalled();
+    });
+
+    it('does NOT emit quest refresh on error', async () => {
+      mockCompleteMobileChallenge.mockRejectedValue(new Error('server error'));
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.arDiscoveryCompleted('prod-ar-1');
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── cm-lwg: socialShareCompleted ────────────────────────────────────────────
+
+  describe('socialShareCompleted', () => {
+    it('calls completeMobileChallenge with social_share challenge type', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: false,
+        pointsAwarded: 100,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.socialShareCompleted('instagram');
+
+      expect(mockCompleteMobileChallenge).toHaveBeenCalledWith(
+        mockWixClient,
+        'member-abc',
+        'social_share',
+        expect.objectContaining({ platform: 'instagram' }),
+      );
+    });
+
+    it('calls completeMobileChallenge without platform when omitted', async () => {
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.socialShareCompleted();
+
+      expect(mockCompleteMobileChallenge).toHaveBeenCalledWith(
+        mockWixClient,
+        'member-abc',
+        'social_share',
+        {},
+      );
+    });
+
+    it('returns result from completeMobileChallenge', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: false,
+        pointsAwarded: 100,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.socialShareCompleted('twitter');
+
+      expect(res).toEqual({ success: true, alreadyAwarded: false, pointsAwarded: 100 });
+    });
+
+    it('emits quest refresh on fresh share completion (alreadyAwarded: false)', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: false,
+        pointsAwarded: 100,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.socialShareCompleted('facebook');
+      expect(mockEmitQuestRefresh).toHaveBeenCalledTimes(1);
+    });
+
+    it('does NOT emit quest refresh when alreadyAwarded (idempotency)', async () => {
+      mockCompleteMobileChallenge.mockResolvedValue({
+        success: true,
+        alreadyAwarded: true,
+        pointsAwarded: 0,
+      });
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.socialShareCompleted('instagram');
+      expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
+    });
+
+    it('returns fallback when completeMobileChallenge throws', async () => {
+      mockCompleteMobileChallenge.mockRejectedValue(new Error('network'));
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.socialShareCompleted('instagram');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+    });
+
+    it('returns fallback when no wixClient', async () => {
+      mockUseOptionalWixClient.mockReturnValue(null);
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.socialShareCompleted('instagram');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+      expect(mockCompleteMobileChallenge).not.toHaveBeenCalled();
+    });
+
+    it('returns fallback when memberId is empty', async () => {
+      mockUseAuth.mockReturnValue({ user: null });
+      const { result } = renderHook(() => useGamificationEvents());
+      const res = await result.current.socialShareCompleted('instagram');
+
+      expect(res).toEqual({ success: false, alreadyAwarded: false, pointsAwarded: 0 });
+      expect(mockCompleteMobileChallenge).not.toHaveBeenCalled();
+    });
+
+    it('does NOT emit quest refresh on error', async () => {
+      mockCompleteMobileChallenge.mockRejectedValue(new Error('server error'));
+      const { result } = renderHook(() => useGamificationEvents());
+      await result.current.socialShareCompleted('instagram');
       expect(mockEmitQuestRefresh).not.toHaveBeenCalled();
     });
   });

@@ -24,6 +24,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useOptionalWixClient } from '@/services/wix';
 import { sendGamificationEvent, type GamificationEventResult } from '@/services/gamificationApi';
 import { emitQuestRefresh } from '@/services/questRefreshBus';
+import {
+  completeMobileChallenge,
+  type CompleteMobileChallengeResult,
+} from '@/services/crossRigSync';
 
 export interface GamificationEvents {
   addToCart: (productId: string, price: number) => Promise<GamificationEventResult>;
@@ -41,6 +45,10 @@ export interface GamificationEvents {
     stylePreference: string,
     sizeNeeds: string,
   ) => Promise<GamificationEventResult>;
+  /** cm-lwg: AR discovery → completeMobileChallenge(ar_discovery, 75pts). Idempotent same-day. */
+  arDiscoveryCompleted: (productId?: string) => Promise<CompleteMobileChallengeResult>;
+  /** cm-lwg: Social share → completeMobileChallenge(social_share, 100pts). Idempotent same-day. */
+  socialShareCompleted: (platform?: string) => Promise<CompleteMobileChallengeResult>;
 }
 
 const FALLBACK: GamificationEventResult = { success: false };
@@ -180,6 +188,51 @@ export function useGamificationEvents(): GamificationEvents {
     [wixClient, memberId],
   );
 
+  // cm-lwg: cross-rig challenge completion fallback
+  const challengeFallback: CompleteMobileChallengeResult = {
+    success: false,
+    alreadyAwarded: false,
+    pointsAwarded: 0,
+  };
+
+  const arDiscoveryCompleted = useCallback(
+    async (productId?: string): Promise<CompleteMobileChallengeResult> => {
+      if (!wixClient || !memberId) return challengeFallback;
+      try {
+        const result = await completeMobileChallenge(
+          wixClient,
+          memberId,
+          'ar_discovery',
+          productId ? { productId } : {},
+        );
+        if (result.success && !result.alreadyAwarded) emitQuestRefresh();
+        return result;
+      } catch {
+        return challengeFallback;
+      }
+    },
+    [wixClient, memberId], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
+  const socialShareCompleted = useCallback(
+    async (platform?: string): Promise<CompleteMobileChallengeResult> => {
+      if (!wixClient || !memberId) return challengeFallback;
+      try {
+        const result = await completeMobileChallenge(
+          wixClient,
+          memberId,
+          'social_share',
+          platform ? { platform } : {},
+        );
+        if (result.success && !result.alreadyAwarded) emitQuestRefresh();
+        return result;
+      } catch {
+        return challengeFallback;
+      }
+    },
+    [wixClient, memberId], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   return {
     addToCart,
     submitReview,
@@ -188,5 +241,7 @@ export function useGamificationEvents(): GamificationEvents {
     wishlistAdd,
     orderPlaced,
     styleQuizComplete,
+    arDiscoveryCompleted,
+    socialShareCompleted,
   };
 }
