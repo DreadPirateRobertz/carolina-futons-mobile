@@ -24,9 +24,8 @@ jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
 const BOOKING_PARAMS = {
   bookingId: 'booking-abc',
   memberEmail: 'jane@example.com',
-  memberName: 'Jane Doe',
-  date: '2026-04-15',
-  timeSlot: '10:00',
+  memberId: 'member-jane-123',
+  consultationDate: '2026-04-15T10:00:00',
 };
 
 // --- Tests ---
@@ -63,13 +62,12 @@ describe('bookingService', () => {
       expect(body.memberEmail).toBe(BOOKING_PARAMS.memberEmail);
     });
 
-    it('passes memberName, date, and timeSlot to the function body', async () => {
+    it('passes memberId and consultationDate to the function body', async () => {
       await sendBookingConfirmationEmail(mockWixClient as any, BOOKING_PARAMS);
 
       const body = mockCallFunction.mock.calls[0][2];
-      expect(body.memberName).toBe(BOOKING_PARAMS.memberName);
-      expect(body.date).toBe(BOOKING_PARAMS.date);
-      expect(body.timeSlot).toBe(BOOKING_PARAMS.timeSlot);
+      expect(body.memberId).toBe(BOOKING_PARAMS.memberId);
+      expect(body.consultationDate).toBe(BOOKING_PARAMS.consultationDate);
     });
 
     it('does not throw when callFunction fails', async () => {
@@ -108,9 +106,8 @@ describe('bookingService', () => {
       const body = mockCallFunction.mock.calls[0][2];
       expect(body.bookingId).toBe(BOOKING_PARAMS.bookingId);
       expect(body.memberEmail).toBe(BOOKING_PARAMS.memberEmail);
-      expect(body.memberName).toBe(BOOKING_PARAMS.memberName);
-      expect(body.date).toBe(BOOKING_PARAMS.date);
-      expect(body.timeSlot).toBe(BOOKING_PARAMS.timeSlot);
+      expect(body.memberId).toBe(BOOKING_PARAMS.memberId);
+      expect(body.consultationDate).toBe(BOOKING_PARAMS.consultationDate);
     });
 
     it('does not throw when callFunction fails', async () => {

@@ -76,7 +76,7 @@ export function ConsultationBookingScreen() {
     confirmedBooking,
   } = useConsultationBooking();
 
-  const [memberName, setMemberName] = useState('');
+  const [memberId, setMemberId] = useState('');
   const [memberEmail, setMemberEmail] = useState('');
 
   const today = getTodayString();
@@ -94,7 +94,7 @@ export function ConsultationBookingScreen() {
     !isBooking &&
     !!selectedDate &&
     !!selectedSlot &&
-    memberName.trim().length > 0 &&
+    memberId.trim().length > 0 &&
     memberEmail.trim().length > 0;
 
   const hasAvailableSlots = slots.some((s) => s.available);
@@ -104,22 +104,26 @@ export function ConsultationBookingScreen() {
     book({
       date: selectedDate,
       timeSlot: selectedSlot,
-      memberName: memberName.trim(),
+      memberId: memberId.trim(),
       memberEmail: memberEmail.trim(),
+      consultationType: 'in-store',
+      durationMinutes: 30,
     });
   };
 
   // ── Confirmation view ───────────────────────────────────────────────────────
 
   if (confirmedBooking) {
+    const [confirmedDate, confirmedTimePart] = confirmedBooking.consultationDate.split('T');
+    const confirmedTime = confirmedTimePart ? confirmedTimePart.slice(0, 5) : '';
     return (
       <View testID="booking-confirmation" style={[styles.container, { paddingTop: insets.top }]}>
         <ScrollView contentContainerStyle={styles.confirmationContent}>
           <Text style={styles.confirmationTitle}>Booking Confirmed!</Text>
           <Text style={styles.confirmationDetail}>
-            {formatDayLabel(confirmedBooking.date)} at {confirmedBooking.timeSlot}
+            {formatDayLabel(confirmedDate)} at {confirmedTime}
           </Text>
-          <Text style={styles.confirmationDetail}>{confirmedBooking.memberName}</Text>
+          <Text style={styles.confirmationDetail}>{confirmedBooking.memberId}</Text>
           <Text style={styles.confirmationSubtext}>
             A confirmation will be sent to {confirmedBooking.memberEmail}
           </Text>
@@ -254,13 +258,13 @@ export function ConsultationBookingScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Your Details</Text>
           <TextInput
-            testID="member-name-input"
+            testID="member-id-input"
             style={styles.input}
-            placeholder="Full name"
+            placeholder="Member ID"
             placeholderTextColor="#9E8F7A"
-            value={memberName}
-            onChangeText={setMemberName}
-            autoCapitalize="words"
+            value={memberId}
+            onChangeText={setMemberId}
+            autoCapitalize="none"
             returnKeyType="next"
           />
           <TextInput

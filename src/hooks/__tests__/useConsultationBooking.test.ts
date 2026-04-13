@@ -4,6 +4,7 @@
  * Behaviour:
  *  - ALL_SLOTS: 30-min slots 09:00–16:30, Mon–Fri, excluding 12:00–12:30 lunch
  *  - setSelectedDate triggers a query of ConsultationBookings for taken slots
+ *    using consultationDate date-range filter ($gte/$lt)
  *  - slots returns ALL_SLOTS with available=false for taken ones
  *  - No taken slots → all slots available
  *  - Past date → book() rejects with past-date error, does not call wixClient
@@ -11,15 +12,17 @@
  *  - Network error on slot fetch → slotsError set, slotsLoading=false
  *  - Network error on book → bookingError set, isBooking=false
  *  - Successful booking → confirmedBooking set, insertDataItem called with
- *    correct CollectionId + fields (date, timeSlot, memberName, memberEmail,
- *    status=pending, bookedAt ISO timestamp)
+ *    correct CollectionId + fields (memberId, memberEmail, consultationDate,
+ *    consultationType, durationMinutes, status=pending, bookedAt ISO timestamp)
  *  - No Wix client → slots all available, book() no-ops (graceful)
- *  - push token passed through to the inserted record when available
+ *  - pushToken passed through to the inserted record when available
+ *  - Optional memberNotes and productInterest included when provided
+ *  - Optional memberNotes and productInterest omitted when not provided
  *
  * Clock injection: getNow parameter (defaults to () => new Date()) used for
  * past-date guard — injected in tests to control "today".
  *
- * @bead deacon-o1xq
+ * @bead cm-5x7
  */
 
 import { renderHook, waitFor, act } from '@testing-library/react-native';
@@ -47,14 +50,28 @@ jest.mock('@/services/bookingService', () => ({
 const TODAY = '2026-04-10'; // a Friday
 const TOMORROW = '2026-04-11'; // Saturday — weekend, but valid future date for test purposes
 const YESTERDAY = '2026-04-09';
+const TODAY_NEXT = '2026-04-11'; // next day used in date-range filter upper bound
+const TOMORROW_NEXT = '2026-04-12';
 const getNowToday = () => new Date('2026-04-10T09:00:00Z');
 
 const SLOT_09 = '09:00';
 const SLOT_09_30 = '09:30';
+const MEMBER_ID = 'member-jane-123';
 
+/** Returns a CMS record item with consultationDate (new schema). */
 function makeTakenItem(timeSlot: string) {
-  return { timeSlot, date: TODAY, status: 'pending' };
+  return { consultationDate: `${TODAY}T${timeSlot}:00` };
 }
+
+/** Minimal valid BookingInput for the new Wix CMS schema. */
+const BASE_BOOK_INPUT = {
+  date: TODAY,
+  timeSlot: SLOT_09,
+  memberId: MEMBER_ID,
+  memberEmail: 'jane@example.com',
+  consultationType: 'in-store' as const,
+  durationMinutes: 30 as const,
+};
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -131,13 +148,33 @@ describe('useConsultationBooking', () => {
   // ── Slot fetching ─────────────────────────────────────────────────────────────
 
   describe('setSelectedDate → slot fetch', () => {
-    it('queries ConsultationBookings collection with date filter', async () => {
+    it('queries ConsultationBookings with consultationDate date-range filter', async () => {
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
       await act(async () => result.current.setSelectedDate(TODAY));
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       expect(mockQueryData).toHaveBeenCalledWith('ConsultationBookings', {
-        filter: { date: { $eq: TODAY } },
+        filter: {
+          consultationDate: {
+            $gte: `${TODAY}T00:00:00`,
+            $lt: `${TODAY_NEXT}T00:00:00`,
+          },
+        },
+      });
+    });
+
+    it('uses correct next-day boundary for TOMORROW', async () => {
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TOMORROW));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      expect(mockQueryData).toHaveBeenCalledWith('ConsultationBookings', {
+        filter: {
+          consultationDate: {
+            $gte: `${TOMORROW}T00:00:00`,
+            $lt: `${TOMORROW_NEXT}T00:00:00`,
+          },
+        },
       });
     });
 
@@ -151,7 +188,7 @@ describe('useConsultationBooking', () => {
       expect(result.current.slots.every((s) => s.available)).toBe(true);
     });
 
-    it('marks taken slots as available=false', async () => {
+    it('marks taken slots as available=false (extracts time from consultationDate)', async () => {
       mockQueryData.mockResolvedValue({
         items: [makeTakenItem(SLOT_09), makeTakenItem(SLOT_09_30)],
         totalResults: 2,
@@ -221,12 +258,7 @@ describe('useConsultationBooking', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane Doe',
-          memberEmail: 'jane@example.com',
-        });
+        success = await result.current.book(BASE_BOOK_INPUT);
       });
       expect(success).toBe(false);
       expect(mockInsertDataItem).not.toHaveBeenCalled();
@@ -242,10 +274,8 @@ describe('useConsultationBooking', () => {
       let success: boolean | undefined;
       await act(async () => {
         success = await result.current.book({
+          ...BASE_BOOK_INPUT,
           date: YESTERDAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane Doe',
-          memberEmail: 'jane@example.com',
         });
       });
 
@@ -257,7 +287,7 @@ describe('useConsultationBooking', () => {
     it('book() for today (same day) is allowed', async () => {
       mockInsertDataItem.mockResolvedValue({
         id: 'booking-001',
-        data: { date: TODAY, timeSlot: SLOT_09, status: 'pending' },
+        data: { consultationDate: `${TODAY}T${SLOT_09}:00`, status: 'pending' },
       });
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
       await act(async () => result.current.setSelectedDate(TODAY));
@@ -265,12 +295,7 @@ describe('useConsultationBooking', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        success = await result.current.book(BASE_BOOK_INPUT);
       });
       expect(success).toBe(true);
     });
@@ -287,12 +312,7 @@ describe('useConsultationBooking', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        success = await result.current.book(BASE_BOOK_INPUT);
       });
 
       expect(success).toBe(false);
@@ -304,11 +324,11 @@ describe('useConsultationBooking', () => {
   // ── Successful booking ────────────────────────────────────────────────────────
 
   describe('successful booking', () => {
-    it('calls insertDataItem on ConsultationBookings with correct fields', async () => {
+    it('calls insertDataItem on ConsultationBookings with correct CMS schema fields', async () => {
       mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
       mockInsertDataItem.mockResolvedValue({
         id: 'booking-abc',
-        data: { date: TODAY, timeSlot: SLOT_09_30, status: 'pending' },
+        data: { consultationDate: `${TODAY}T${SLOT_09_30}:00`, status: 'pending' },
       });
 
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
@@ -319,29 +339,29 @@ describe('useConsultationBooking', () => {
         await result.current.book({
           date: TODAY,
           timeSlot: SLOT_09_30,
-          memberName: 'Jane Doe',
+          memberId: MEMBER_ID,
           memberEmail: 'jane@example.com',
+          consultationType: 'in-store',
+          durationMinutes: 30,
         });
       });
 
       expect(mockInsertDataItem).toHaveBeenCalledWith(
         'ConsultationBookings',
         expect.objectContaining({
-          date: TODAY,
-          timeSlot: SLOT_09_30,
-          memberName: 'Jane Doe',
+          memberId: MEMBER_ID,
           memberEmail: 'jane@example.com',
+          consultationDate: `${TODAY}T${SLOT_09_30}:00`,
+          consultationType: 'in-store',
+          durationMinutes: 30,
           status: 'pending',
         }),
       );
     });
 
-    it('bookedAt is a recent ISO timestamp', async () => {
+    it('stores consultationDate as YYYY-MM-DDTHH:MM:00 combining date and timeSlot', async () => {
       mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
-      mockInsertDataItem.mockResolvedValue({
-        id: 'booking-abc',
-        data: { date: TODAY, timeSlot: SLOT_09, status: 'pending' },
-      });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
 
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
       await act(async () => result.current.setSelectedDate(TODAY));
@@ -349,11 +369,149 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
+          ...BASE_BOOK_INPUT,
           date: TODAY,
           timeSlot: SLOT_09,
-          memberName: 'Alice',
-          memberEmail: 'alice@example.com',
         });
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted.consultationDate).toBe(`${TODAY}T${SLOT_09}:00`);
+    });
+
+    it('does NOT store date or timeSlot as separate fields (new schema)', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book(BASE_BOOK_INPUT);
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted).not.toHaveProperty('date');
+      expect(inserted).not.toHaveProperty('timeSlot');
+      expect(inserted).not.toHaveProperty('memberName');
+    });
+
+    it('stores video consultationType when provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({ ...BASE_BOOK_INPUT, consultationType: 'video' });
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted.consultationType).toBe('video');
+    });
+
+    it('stores 60-minute duration when provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({ ...BASE_BOOK_INPUT, durationMinutes: 60 });
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted.durationMinutes).toBe(60);
+    });
+
+    it('includes memberNotes in inserted record when provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          ...BASE_BOOK_INPUT,
+          memberNotes: 'Interested in sectional sofas',
+        });
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted.memberNotes).toBe('Interested in sectional sofas');
+    });
+
+    it('omits memberNotes from inserted record when not provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book(BASE_BOOK_INPUT);
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted).not.toHaveProperty('memberNotes');
+    });
+
+    it('includes productInterest in inserted record when provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          ...BASE_BOOK_INPUT,
+          productInterest: 'product-abc-123',
+        });
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted.productInterest).toBe('product-abc-123');
+    });
+
+    it('omits productInterest from inserted record when not provided', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book(BASE_BOOK_INPUT);
+      });
+
+      const inserted = mockInsertDataItem.mock.calls[0][1];
+      expect(inserted).not.toHaveProperty('productInterest');
+    });
+
+    it('bookedAt is a recent ISO timestamp', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({
+        id: 'booking-abc',
+        data: { consultationDate: `${TODAY}T${SLOT_09}:00`, status: 'pending' },
+      });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book(BASE_BOOK_INPUT);
       });
 
       const inserted = mockInsertDataItem.mock.calls[0][1];
@@ -361,11 +519,11 @@ describe('useConsultationBooking', () => {
       expect(new Date(inserted.bookedAt).getTime()).toBeGreaterThan(0);
     });
 
-    it('sets confirmedBooking with id, date, timeSlot, memberName on success', async () => {
+    it('sets confirmedBooking with id, memberId, memberEmail, consultationDate on success', async () => {
       mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
       mockInsertDataItem.mockResolvedValue({
         id: 'booking-xyz',
-        data: { date: TODAY, timeSlot: SLOT_09, status: 'pending' },
+        data: { consultationDate: `${TODAY}T${SLOT_09}:00`, status: 'pending' },
       });
 
       const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
@@ -374,18 +532,39 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane Doe',
+          ...BASE_BOOK_INPUT,
+          memberId: MEMBER_ID,
           memberEmail: 'jane@example.com',
         });
       });
 
       expect(result.current.confirmedBooking).not.toBeNull();
       expect(result.current.confirmedBooking?.id).toBe('booking-xyz');
-      expect(result.current.confirmedBooking?.date).toBe(TODAY);
-      expect(result.current.confirmedBooking?.timeSlot).toBe(SLOT_09);
-      expect(result.current.confirmedBooking?.memberName).toBe('Jane Doe');
+      expect(result.current.confirmedBooking?.memberId).toBe(MEMBER_ID);
+      expect(result.current.confirmedBooking?.memberEmail).toBe('jane@example.com');
+      expect(result.current.confirmedBooking?.consultationDate).toBe(
+        `${TODAY}T${SLOT_09}:00`,
+      );
+    });
+
+    it('confirmedBooking reflects consultationType and durationMinutes', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+      mockInsertDataItem.mockResolvedValue({ id: 'b1', data: {} });
+
+      const { result } = renderHook(() => useConsultationBooking({ getNow: getNowToday }));
+      await act(async () => result.current.setSelectedDate(TODAY));
+      await waitFor(() => expect(result.current.slotsLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.book({
+          ...BASE_BOOK_INPUT,
+          consultationType: 'phone',
+          durationMinutes: 60,
+        });
+      });
+
+      expect(result.current.confirmedBooking?.consultationType).toBe('phone');
+      expect(result.current.confirmedBooking?.durationMinutes).toBe(60);
     });
 
     it('returns true on success', async () => {
@@ -398,12 +577,7 @@ describe('useConsultationBooking', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'X',
-          memberEmail: 'x@x.com',
-        });
+        success = await result.current.book(BASE_BOOK_INPUT);
       });
       expect(success).toBe(true);
     });
@@ -419,12 +593,7 @@ describe('useConsultationBooking', () => {
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       await act(async () => {
-        await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Bob',
-          memberEmail: 'bob@example.com',
-        });
+        await result.current.book(BASE_BOOK_INPUT);
       });
 
       expect(mockInsertDataItem.mock.calls[0][1].pushToken).toBe('ExponentPushToken[abc]');
@@ -444,9 +613,8 @@ describe('useConsultationBooking', () => {
 
       await act(async () => {
         await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane Doe',
+          ...BASE_BOOK_INPUT,
+          memberId: MEMBER_ID,
           memberEmail: 'jane@example.com',
         });
       });
@@ -458,8 +626,8 @@ describe('useConsultationBooking', () => {
         expect.objectContaining({
           bookingId: 'booking-e1',
           memberEmail: 'jane@example.com',
-          date: TODAY,
-          timeSlot: SLOT_09,
+          memberId: MEMBER_ID,
+          consultationDate: `${TODAY}T${SLOT_09}:00`,
         }),
       );
     });
@@ -473,12 +641,7 @@ describe('useConsultationBooking', () => {
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       await act(async () => {
-        await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        await result.current.book(BASE_BOOK_INPUT);
       });
 
       await act(async () => {});
@@ -495,12 +658,7 @@ describe('useConsultationBooking', () => {
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       await act(async () => {
-        await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        await result.current.book(BASE_BOOK_INPUT);
       });
 
       await act(async () => {});
@@ -521,12 +679,7 @@ describe('useConsultationBooking', () => {
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       await act(async () => {
-        await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        await result.current.book(BASE_BOOK_INPUT);
       });
 
       expect(result.current.bookingError).not.toBeNull();
@@ -543,12 +696,7 @@ describe('useConsultationBooking', () => {
 
       let success: boolean | undefined;
       await act(async () => {
-        success = await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'jane@example.com',
-        });
+        success = await result.current.book(BASE_BOOK_INPUT);
       });
       expect(success).toBe(false);
     });
@@ -562,12 +710,7 @@ describe('useConsultationBooking', () => {
       await waitFor(() => expect(result.current.slotsLoading).toBe(false));
 
       await act(async () => {
-        await result.current.book({
-          date: TODAY,
-          timeSlot: SLOT_09,
-          memberName: 'Jane',
-          memberEmail: 'j@j.com',
-        });
+        await result.current.book(BASE_BOOK_INPUT);
       });
       expect(result.current.isBooking).toBe(false);
     });

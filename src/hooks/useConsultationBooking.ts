@@ -6,10 +6,11 @@
  * Responsibilities:
  *  - Expose ALL_SLOTS constant (30-min slots 09:00–16:30, no lunch)
  *  - Fetch taken slots for a selected date from the ConsultationBookings Wix collection
+ *    (queries consultationDate field with $gte/$lt date-range filter)
  *  - Map taken slots onto ALL_SLOTS to produce availability list
  *  - Guard against past-date bookings (via injected getNow for testability)
  *  - Guard against booking conflicts
- *  - Insert a new booking record via wixClient
+ *  - Insert a new booking record via wixClient (aligned to Wix CMS schema — cm-5x7)
  *  - Return confirmedBooking on success
  */
 
@@ -39,24 +40,41 @@ export const ALL_SLOTS: string[] = [
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+export type ConsultationType = 'in-store' | 'video' | 'phone';
+
+export type DurationMinutes = 30 | 60;
+
+export type ConsultationStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
+
 export interface SlotInfo {
   time: string;
   available: boolean;
 }
 
 export interface BookingInput {
+  /** UI-layer date string (YYYY-MM-DD) combined with timeSlot to form consultationDate. */
   date: string;
+  /** UI-layer time string (HH:MM) combined with date to form consultationDate. */
   timeSlot: string;
-  memberName: string;
+  /** Wix member ID (not display name). */
+  memberId: string;
   memberEmail: string;
+  consultationType: ConsultationType;
+  durationMinutes: DurationMinutes;
+  /** Optional free-text notes from the member. */
+  memberNotes?: string;
+  /** Optional product ID the member is interested in. */
+  productInterest?: string;
 }
 
 export interface ConfirmedBooking {
   id: string;
-  date: string;
-  timeSlot: string;
-  memberName: string;
+  memberId: string;
   memberEmail: string;
+  /** ISO datetime string (YYYY-MM-DDTHH:MM:SS) stored in the Wix CMS. */
+  consultationDate: string;
+  consultationType: ConsultationType;
+  durationMinutes: DurationMinutes;
 }
 
 export interface UseConsultationBookingOptions {
@@ -68,9 +86,8 @@ export interface UseConsultationBookingOptions {
     params: {
       bookingId: string;
       memberEmail: string;
-      memberName: string;
-      date: string;
-      timeSlot: string;
+      memberId: string;
+      consultationDate: string;
     },
   ) => Promise<void>;
 }
@@ -87,6 +104,18 @@ export interface UseConsultationBookingReturn {
   isBooking: boolean;
   bookingError: string | null;
   confirmedBooking: ConfirmedBooking | null;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Returns the next calendar day as a YYYY-MM-DD string.
+ * Used to compute the $lt upper bound for date-range queries on consultationDate.
+ */
+function nextDayStr(date: string): string {
+  const [y, m, d] = date.split('-').map(Number);
+  const next = new Date(Date.UTC(y, m - 1, d + 1));
+  return next.toISOString().slice(0, 10);
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -125,10 +154,22 @@ export function useConsultationBooking(
       }
 
       try {
-        const result = await wixClient.queryData<{ timeSlot: string }>('ConsultationBookings', {
-          filter: { date: { $eq: date } },
-        });
-        const takenSet = new Set(result.items.map((item) => item.timeSlot));
+        const nextDay = nextDayStr(date);
+        const result = await wixClient.queryData<{ consultationDate: string }>(
+          'ConsultationBookings',
+          {
+            filter: {
+              consultationDate: {
+                $gte: `${date}T00:00:00`,
+                $lt: `${nextDay}T00:00:00`,
+              },
+            },
+          },
+        );
+        // Extract HH:MM from "YYYY-MM-DDTHH:MM:SS"
+        const takenSet = new Set(
+          result.items.map((item) => item.consultationDate.slice(11, 16)),
+        );
         setSlots(ALL_SLOTS.map((time) => ({ time, available: !takenSet.has(time) })));
         setSlotsError(null);
       } catch (err) {
@@ -167,14 +208,24 @@ export function useConsultationBooking(
       setBookingError(null);
 
       try {
+        const consultationDate = `${input.date}T${input.timeSlot}:00`;
+
         const record: Record<string, unknown> = {
-          date: input.date,
-          timeSlot: input.timeSlot,
-          memberName: input.memberName,
+          memberId: input.memberId,
           memberEmail: input.memberEmail,
-          status: 'pending',
+          consultationDate,
+          consultationType: input.consultationType,
+          durationMinutes: input.durationMinutes,
+          status: 'pending' as ConsultationStatus,
           bookedAt: new Date().toISOString(),
         };
+
+        if (input.memberNotes !== undefined) {
+          record.memberNotes = input.memberNotes;
+        }
+        if (input.productInterest !== undefined) {
+          record.productInterest = input.productInterest;
+        }
         if (pushToken) {
           record.pushToken = pushToken;
         }
@@ -183,10 +234,11 @@ export function useConsultationBooking(
 
         const confirmed: ConfirmedBooking = {
           id: result.id,
-          date: input.date,
-          timeSlot: input.timeSlot,
-          memberName: input.memberName,
+          memberId: input.memberId,
           memberEmail: input.memberEmail,
+          consultationDate,
+          consultationType: input.consultationType,
+          durationMinutes: input.durationMinutes,
         };
         setConfirmedBooking(confirmed);
 
@@ -194,9 +246,8 @@ export function useConsultationBooking(
         sendEmail(wixClient, {
           bookingId: result.id,
           memberEmail: input.memberEmail,
-          memberName: input.memberName,
-          date: input.date,
-          timeSlot: input.timeSlot,
+          memberId: input.memberId,
+          consultationDate,
         }).catch(() => {
           // Email failure is non-critical
         });

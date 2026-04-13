@@ -17,9 +17,8 @@ interface WixClientLike {
 export interface BookingEmailParams {
   bookingId: string;
   memberEmail: string;
-  memberName: string;
-  date: string;
-  timeSlot: string;
+  memberId: string;
+  consultationDate: string;
 }
 
 // --- Functions ---
