@@ -253,6 +253,8 @@ export type RootStackParamList = {
   ReferralLanding: { code: string };
   // Trails (cm-ay9)
   Trails: { trailId: string } | undefined;
+  // Visual search (deacon-905)
+  VisualSearchResults: { imageUri: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

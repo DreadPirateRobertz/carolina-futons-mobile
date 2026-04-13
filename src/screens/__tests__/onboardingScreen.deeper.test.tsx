@@ -49,7 +49,9 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn(() => Promise.resolve()),
 }));
 
-const mockStyleQuizComplete = jest.fn(() => Promise.resolve({ success: true, newTotal: 100 }));
+const mockStyleQuizComplete = jest.fn((..._args: unknown[]) =>
+  Promise.resolve({ success: true, newTotal: 100 }),
+);
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
     styleQuizComplete: (...args: [string, string]) => mockStyleQuizComplete(...args),

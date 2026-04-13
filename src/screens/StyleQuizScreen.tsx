@@ -31,7 +31,7 @@ interface QuizOption<T extends string> {
 const ROOM_OPTIONS: QuizOption<RoomType>[] = [
   { value: 'living-room', label: 'Living Room', icon: '\u{1F6CB}' },
   { value: 'bedroom', label: 'Bedroom', icon: '\u{1F6CF}' },
-  { value: 'studio', label: 'Studio', icon: '\u{1F3E0}' },
+  { value: 'dorm', label: 'Studio / Dorm', icon: '\u{1F3E0}' },
   { value: 'guest-room', label: 'Guest Room', icon: '\u{1F6AA}' },
 ];
 
@@ -39,14 +39,12 @@ const STYLE_OPTIONS: QuizOption<StylePreference>[] = [
   { value: 'modern', label: 'Modern & Clean', icon: '\u2728' },
   { value: 'rustic', label: 'Rustic & Warm', icon: '\u{1FAB5}' },
   { value: 'classic', label: 'Classic & Cozy', icon: '\u{1F4D6}' },
-  { value: 'minimalist', label: 'Minimalist', icon: '\u25FB' },
 ];
 
 const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
-  { value: 'seating', label: 'Everyday Seating', icon: '\u{1F9D8}' },
-  { value: 'guest-bed', label: 'Guest Bed', icon: '\u{1F634}' },
-  { value: 'dual-purpose', label: 'Dual-Purpose', icon: '\u{1F504}' },
-  { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
+  { value: 'sitting', label: 'Everyday Seating', icon: '\u{1F9D8}' },
+  { value: 'sleeping', label: 'Guest Bed', icon: '\u{1F634}' },
+  { value: 'both', label: 'Dual-Purpose', icon: '\u{1F504}' },
 ];
 
 const TOTAL_STEPS = 4; // 3 quiz steps + 1 completion
@@ -63,9 +61,11 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
   const { colors, spacing, borderRadius, typography, shadows } = useTheme();
   const [step, setStep] = useState(0);
   const [preferences, setPreferences] = useState<StylePreferences>({
-    room: null,
-    style: null,
+    roomType: null,
+    stylePreference: null,
     primaryUse: null,
+    sizeNeeds: null,
+    budgetRange: null,
   });
 
   // Load existing preferences on mount
@@ -89,8 +89,9 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
 
   const handleQuizSelect = useCallback(
     (value: string) => {
-      if (step === 0) setPreferences((prev) => ({ ...prev, room: value as RoomType }));
-      else if (step === 1) setPreferences((prev) => ({ ...prev, style: value as StylePreference }));
+      if (step === 0) setPreferences((prev) => ({ ...prev, roomType: value as RoomType }));
+      else if (step === 1)
+        setPreferences((prev) => ({ ...prev, stylePreference: value as StylePreference }));
       else if (step === 2) setPreferences((prev) => ({ ...prev, primaryUse: value as PrimaryUse }));
       setStep((s) => s + 1);
     },
@@ -167,13 +168,13 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
         title: 'What room is\nthis for?',
         subtitle: 'Help us find your perfect match',
         options: ROOM_OPTIONS,
-        selected: preferences.room,
+        selected: preferences.roomType,
       },
       {
         title: "What's your\nstyle?",
         subtitle: 'We\u2019ll curate picks that fit',
         options: STYLE_OPTIONS,
-        selected: preferences.style,
+        selected: preferences.stylePreference,
       },
       {
         title: 'What do you\nneed most?',
@@ -253,8 +254,10 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
   // ── Completion ────────────────────────────────────────────────
 
   const renderCompletion = () => {
-    const styleName = STYLE_OPTIONS.find((o) => o.value === preferences.style)?.label ?? 'your';
-    const roomName = ROOM_OPTIONS.find((o) => o.value === preferences.room)?.label ?? 'your room';
+    const styleName =
+      STYLE_OPTIONS.find((o) => o.value === preferences.stylePreference)?.label ?? 'your';
+    const roomName =
+      ROOM_OPTIONS.find((o) => o.value === preferences.roomType)?.label ?? 'your room';
     const useName = USE_OPTIONS.find((o) => o.value === preferences.primaryUse)?.label ?? '';
     return (
       <View style={styles.completionContainer} testID="style-quiz-completion">

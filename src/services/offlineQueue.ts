@@ -119,6 +119,30 @@ export function clearQueue(): void {
   notifyQueueListeners();
 }
 
+/** Returns true if item is a well-formed QueuedAction. */
+export function isValidQueueEntry(item: unknown): item is QueuedAction {
+  return (
+    item != null &&
+    typeof item === 'object' &&
+    typeof (item as QueuedAction).id === 'string' &&
+    typeof (item as QueuedAction).timestamp === 'number' &&
+    typeof (item as QueuedAction).domain === 'string' &&
+    typeof (item as QueuedAction).action === 'string'
+  );
+}
+
+/**
+ * Parse a raw AsyncStorage value into a validated array of QueuedActions.
+ * Returns [] for null/empty input or non-array JSON.
+ * Throws SyntaxError for malformed JSON.
+ */
+export function parseStoredQueue(stored: string | null): QueuedAction[] {
+  if (!stored) return [];
+  const parsed: unknown = JSON.parse(stored);
+  if (!Array.isArray(parsed)) return [];
+  return parsed.filter(isValidQueueEntry);
+}
+
 /** Load queue from AsyncStorage (call on app start) */
 export async function loadQueue(): Promise<QueuedAction[]> {
   try {
