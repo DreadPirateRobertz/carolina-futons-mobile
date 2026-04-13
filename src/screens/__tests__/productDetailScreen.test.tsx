@@ -51,6 +51,12 @@ jest.mock('@/services/uploadReviewPhoto', () => ({
   uploadReviewPhoto: jest.fn().mockResolvedValue('https://example.com/photo.jpg'),
 }));
 
+// Mock crossRigPushDispatch (cm-3hg)
+jest.mock('@/services/crossRigPushDispatch', () => ({
+  dispatchCrossRigPush: jest.fn(() => Promise.resolve({ sent: 1, failed: 0 })),
+  PUSH_EVENTS: { BADGE_EARNED: 'badge_earned', TIER_CHANGED: 'tier_changed' },
+}));
+
 // cm-9yn: useShippingEstimate mock — zip input, rate results, isEstimate flag
 const mockShippingEstimateBase: ShippingEstimateResult = {
   icon: '🚚',
@@ -617,6 +623,61 @@ describe('ProductDetailScreen', () => {
         const call = rnShareSpy.mock.calls[0][0] as { message: string; url?: string };
         const payload = call.url ?? call.message;
         expect(payload).toContain('carolinafutons://product/asheville-full-futon');
+      });
+    });
+
+    // ── crossRig push dispatch — badge_earned on social share (cm-3hg) ────────
+
+    describe('crossRig push dispatch', () => {
+      const mockDispatch = jest.requireMock('@/services/crossRigPushDispatch')
+        .dispatchCrossRigPush as jest.Mock;
+
+      beforeEach(() => {
+        mockDispatch.mockClear();
+        mockDispatch.mockResolvedValue({ sent: 1, failed: 0 });
+      });
+
+      it('calls dispatchCrossRigPush with badge_earned after successful expo-sharing', async () => {
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(mockDispatch).toHaveBeenCalled());
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.any(String),
+          'badge_earned',
+          expect.objectContaining({ badgeId: expect.any(String) }),
+        );
+      });
+
+      it('calls dispatchCrossRigPush with badge_earned after RN Share (fallback path)', async () => {
+        sharingAvailableSpy.mockResolvedValue(false);
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        await waitFor(() => expect(mockDispatch).toHaveBeenCalled());
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.any(String),
+          'badge_earned',
+          expect.objectContaining({ badgeId: expect.any(String) }),
+        );
+      });
+
+      it('does NOT call dispatchCrossRigPush when user cancels share', async () => {
+        rnShareSpy.mockResolvedValueOnce({ action: 'dismissedAction' });
+        sharingAvailableSpy.mockResolvedValue(false);
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        fireEvent.press(getByTestId('detail-share-button'));
+        await waitFor(() => expect(rnShareSpy).toHaveBeenCalled());
+        expect(mockDispatch).not.toHaveBeenCalled();
+      });
+
+      it('does not throw when dispatchCrossRigPush rejects after share', async () => {
+        mockDispatch.mockRejectedValueOnce(new Error('push failed'));
+        const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+        await act(async () => {
+          fireEvent.press(getByTestId('detail-share-button'));
+          await new Promise((r) => setTimeout(r, 50));
+        });
+        // no crash — rejection handled gracefully
       });
     });
   });

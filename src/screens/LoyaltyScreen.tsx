@@ -15,6 +15,7 @@ import { useLoyalty } from '@/hooks/useLoyalty';
 import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { useStreak } from '@/hooks/useStreak';
 import { emitStreakExtended, emitTierChanged } from '@/services/crossRigEventBus';
+import { dispatchCrossRigPush, PUSH_EVENTS } from '@/services/crossRigPushDispatch';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
@@ -73,6 +74,12 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
         const client = getWixClientSingleton();
         emitTierChanged(client, { oldTier: prevTier.name, newTier: tier.name }).catch(
           (err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))),
+        );
+        dispatchCrossRigPush('', PUSH_EVENTS.TIER_CHANGED, {
+          oldTier: prevTier.name,
+          newTier: tier.name,
+        }).catch((err: unknown) =>
+          captureException(err instanceof Error ? err : new Error(String(err))),
         );
       } catch (err) {
         captureException(err instanceof Error ? err : new Error(String(err)));

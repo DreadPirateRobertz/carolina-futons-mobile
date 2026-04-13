@@ -34,6 +34,7 @@ import { ARProductPicker } from '@/components/ARProductPicker';
 import { PlaneIndicator } from '@/components/PlaneIndicator';
 import { events } from '@/services/analytics';
 import { arUsed } from '@/services/gamification';
+import { dispatchCrossRigPush, PUSH_EVENTS } from '@/services/crossRigPushDispatch';
 import { formatPrice } from '@/utils';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useCart } from '@/hooks/useCart';
@@ -217,6 +218,7 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
     if (!cameraPermission.granted || !currentProduct?.id || arEventFired.current) return;
     arUsed(currentProduct.id);
     arEventFired.current = true;
+    dispatchCrossRigPush('', PUSH_EVENTS.BADGE_EARNED, { badgeId: 'ar-discovery' }).catch(() => {});
   }, [cameraPermission.granted, currentProduct?.id]);
 
   const handleSelectModel = useCallback(

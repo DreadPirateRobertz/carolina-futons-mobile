@@ -4,6 +4,7 @@
  * Verifies that emitStreakExtended fires when the screen mounts
  * and wasExtendedToday is true.
  * Also verifies emitTierChanged fires when tier upgrades (Task 6, epicD).
+ * Also verifies dispatchCrossRigPush fires for tier_changed (cm-3hg).
  */
 
 import React from 'react';
@@ -24,6 +25,13 @@ const mockEmitStreakExtended = jest.requireMock('@/services/crossRigEventBus')
   .emitStreakExtended as jest.Mock;
 const mockEmitTierChanged = jest.requireMock('@/services/crossRigEventBus')
   .emitTierChanged as jest.Mock;
+
+jest.mock('@/services/crossRigPushDispatch', () => ({
+  dispatchCrossRigPush: jest.fn(() => Promise.resolve({ sent: 1, failed: 0 })),
+  PUSH_EVENTS: { BADGE_EARNED: 'badge_earned', TIER_CHANGED: 'tier_changed' },
+}));
+const mockDispatchCrossRigPush = jest.requireMock('@/services/crossRigPushDispatch')
+  .dispatchCrossRigPush as jest.Mock;
 
 const mockWixClient = { callFunction: jest.fn(() => Promise.resolve({ success: true })) };
 const mockGetWixClient = jest.fn(() => mockWixClient);
@@ -273,5 +281,153 @@ describe('LoyaltyScreen — tier change push wiring', () => {
     );
     await act(async () => await new Promise((r) => setTimeout(r, 10)));
     expect(mockCaptureException).toHaveBeenCalled();
+  });
+});
+
+// ── dispatchCrossRigPush wiring — tier_changed (cm-3hg) ───────────────────────
+
+describe('LoyaltyScreen — crossRig push dispatch (tier_changed)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    __resetStreakEmitState();
+    __resetTierEmitState();
+    mockUseStreak.mockReturnValue(STREAK_SAME_DAY);
+    // Ensure a known starting tier so tests are independent of execution order.
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+  });
+
+  it('calls dispatchCrossRigPush with tier_changed when tier upgrades', async () => {
+    const { rerender } = render(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(mockDispatchCrossRigPush).toHaveBeenCalledTimes(1);
+    expect(mockDispatchCrossRigPush).toHaveBeenCalledWith(
+      expect.any(String),
+      'tier_changed',
+      expect.objectContaining({ newTier: 'Mountain Guide' }),
+    );
+  });
+
+  it('includes oldTier in dispatchCrossRigPush payload', async () => {
+    const { rerender } = render(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(mockDispatchCrossRigPush).toHaveBeenCalledWith(
+      expect.any(String),
+      'tier_changed',
+      expect.objectContaining({ oldTier: 'Trail Blazer', newTier: 'Mountain Guide' }),
+    );
+  });
+
+  it('does NOT call dispatchCrossRigPush on initial load (no prev tier)', async () => {
+    mockUseLoyalty.mockReturnValue(DEFAULT_LOYALTY);
+    renderScreen();
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+    expect(mockDispatchCrossRigPush).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call dispatchCrossRigPush when tier stays the same', async () => {
+    const { rerender } = render(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    expect(mockDispatchCrossRigPush).not.toHaveBeenCalled();
+  });
+
+  it('does not throw when dispatchCrossRigPush rejects (captured exception)', async () => {
+    mockDispatchCrossRigPush.mockRejectedValueOnce(new Error('push error'));
+    const { rerender } = render(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: TRAIL_BLAZER });
+    rerender(
+      <ThemeProvider>
+        <LoyaltyScreen />
+      </ThemeProvider>,
+    );
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+    });
+
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, tier: MOUNTAIN_GUIDE });
+    await expect(
+      act(async () => {
+        rerender(
+          <ThemeProvider>
+            <LoyaltyScreen />
+          </ThemeProvider>,
+        );
+        await new Promise((r) => setTimeout(r, 10));
+      }),
+    ).resolves.not.toThrow();
   });
 });

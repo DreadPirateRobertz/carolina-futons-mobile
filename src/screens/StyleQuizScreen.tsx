@@ -16,6 +16,7 @@ import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { captureException } from '@/services/crashReporting';
+import { dispatchCrossRigPush, PUSH_EVENTS } from '@/services/crossRigPushDispatch';
 import type { RoomType, StylePreference, PrimaryUse, StylePreferences } from '@/hooks/useStyleQuiz';
 
 const STORAGE_KEY = '@carolina_futons_style_preferences';
@@ -116,6 +117,9 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
         [{ text: 'OK' }],
       );
     }
+    dispatchCrossRigPush('', PUSH_EVENTS.BADGE_EARNED, { badgeId: 'quiz-completion' }).catch(
+      (err: unknown) => captureException(err instanceof Error ? err : new Error(String(err))),
+    );
     onComplete();
   }, [preferences, onComplete]);
 

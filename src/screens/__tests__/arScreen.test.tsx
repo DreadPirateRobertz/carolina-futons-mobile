@@ -13,6 +13,14 @@ import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 
+// Mock crossRigPushDispatch (cm-3hg)
+jest.mock('@/services/crossRigPushDispatch', () => ({
+  dispatchCrossRigPush: jest.fn(() => Promise.resolve({ sent: 1, failed: 0 })),
+  PUSH_EVENTS: { BADGE_EARNED: 'badge_earned', TIER_CHANGED: 'tier_changed' },
+}));
+const mockDispatchCrossRigPush = jest.requireMock('@/services/crossRigPushDispatch')
+  .dispatchCrossRigPush as jest.Mock;
+
 // Mock expo-camera
 jest.mock('expo-camera', () => {
   const { createElement } = require('react');
@@ -1277,6 +1285,43 @@ describe('ARScreen', () => {
       renderARScreen();
       const evts = getEventBuffer().filter((e) => e.name === 'gamification_ar_used');
       expect(evts).toHaveLength(0);
+    });
+
+    // ── crossRig push dispatch — badge_earned (cm-3hg) ──────────────────────
+
+    it('calls dispatchCrossRigPush with badge_earned when AR opens with a product', async () => {
+      renderARScreen();
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+      expect(mockDispatchCrossRigPush).toHaveBeenCalledTimes(1);
+      expect(mockDispatchCrossRigPush).toHaveBeenCalledWith(
+        expect.any(String),
+        'badge_earned',
+        expect.objectContaining({ badgeId: expect.any(String) }),
+      );
+    });
+
+    it('does NOT call dispatchCrossRigPush when camera permission is not granted', async () => {
+      mockCameraPermission.state = 'undetermined';
+      mockCameraPermission.granted = false;
+      renderARScreen();
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+      expect(mockDispatchCrossRigPush).not.toHaveBeenCalled();
+    });
+
+    it('dispatchCrossRigPush is called with ar-discovery badgeId', async () => {
+      renderARScreen();
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10));
+      });
+      expect(mockDispatchCrossRigPush).toHaveBeenCalledWith(
+        expect.any(String),
+        'badge_earned',
+        expect.objectContaining({ badgeId: 'ar-discovery' }),
+      );
     });
   });
 

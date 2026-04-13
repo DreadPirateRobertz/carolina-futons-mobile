@@ -112,6 +112,7 @@ import { PriceAlertButton } from '@/components/PriceAlertButton';
 import { VideoReviewGallery } from '@/components/VideoReviewGallery';
 import { CompleteTheLook } from '@/components/CompleteTheLook';
 import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
+import { dispatchCrossRigPush, PUSH_EVENTS } from '@/services/crossRigPushDispatch';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const GALLERY_HEIGHT = 400;
@@ -520,12 +521,18 @@ export function ProductDetailScreen({
           dialogTitle: `Share ${model.name}`,
         });
         events.shareProduct(String(model.id));
+        dispatchCrossRigPush('', PUSH_EVENTS.BADGE_EARNED, { badgeId: 'social-share' }).catch(
+          () => {},
+        );
       } else {
         const result = await Share.share(
           Platform.OS === 'ios' ? { message, url: deepLink } : { message },
         );
         if (result.action === Share.sharedAction) {
           events.shareProduct(String(model.id));
+          dispatchCrossRigPush('', PUSH_EVENTS.BADGE_EARNED, { badgeId: 'social-share' }).catch(
+            () => {},
+          );
         }
       }
     } catch (err) {
