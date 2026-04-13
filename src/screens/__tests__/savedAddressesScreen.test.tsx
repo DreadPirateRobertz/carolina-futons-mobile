@@ -455,3 +455,166 @@ describe('SavedAddressesScreen — checkout default address contract', () => {
     expect(() => getByTestId('address-default-badge-addr-2')).toThrow();
   });
 });
+
+// ── Delete failure (cm-aem) ────────────────────────────────────────────────────
+
+describe('SavedAddressesScreen — delete failure', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('does not crash when deleteAddress rejects', async () => {
+    mockDeleteAddress.mockRejectedValueOnce(new Error('Server error'));
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const deleteBtn = buttons?.find((b) => /delete/i.test(b.text ?? ''));
+      deleteBtn?.onPress?.();
+    });
+    const { getByTestId } = renderScreen();
+    expect(() => fireEvent.press(getByTestId('delete-button-addr-2'))).not.toThrow();
+    await waitFor(() => expect(mockDeleteAddress).toHaveBeenCalledWith('addr-2'));
+  });
+
+  it('still shows address list after delete failure (optimistic-free UI)', async () => {
+    mockDeleteAddress.mockRejectedValueOnce(new Error('Server error'));
+    jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+      const deleteBtn = buttons?.find((b) => /delete/i.test(b.text ?? ''));
+      deleteBtn?.onPress?.();
+    });
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('delete-button-addr-2'));
+    await waitFor(() => expect(mockDeleteAddress).toHaveBeenCalled());
+    // Address row still visible (hook controls list; screen re-renders from hook state)
+    expect(getByTestId('address-item-addr-2')).toBeTruthy();
+  });
+});
+
+// ── Set-default failure (cm-aem) ──────────────────────────────────────────────
+
+describe('SavedAddressesScreen — set-default error', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('does not crash when setDefault rejects', async () => {
+    mockSetDefault.mockRejectedValueOnce(new Error('Network error'));
+    const { getByTestId } = renderScreen();
+    expect(() => fireEvent.press(getByTestId('set-default-button-addr-2'))).not.toThrow();
+    await waitFor(() => expect(mockSetDefault).toHaveBeenCalledWith('addr-2'));
+  });
+
+  it('address list remains visible after setDefault failure', async () => {
+    mockSetDefault.mockRejectedValueOnce(new Error('Network error'));
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('set-default-button-addr-2'));
+    await waitFor(() => expect(mockSetDefault).toHaveBeenCalled());
+    expect(getByTestId('address-item-addr-2')).toBeTruthy();
+  });
+});
+
+// ── Address validation edge cases (cm-aem) ────────────────────────────────────
+
+describe('SavedAddressesScreen — validation edge cases', () => {
+  it('shows validation error when line1 is empty', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Test User');
+    // leave line1 empty
+    fireEvent.changeText(getByTestId('address-city-input'), 'Raleigh');
+    fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+    fireEvent.changeText(getByTestId('address-zip-input'), '27601');
+    fireEvent.press(getByTestId('address-save-button'));
+
+    await waitFor(() => {
+      expect(getByText('Street address is required')).toBeTruthy();
+    });
+    expect(mockAddAddress).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when city is empty', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Test User');
+    fireEvent.changeText(getByTestId('address-line1-input'), '1 Elm St');
+    // leave city empty
+    fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+    fireEvent.changeText(getByTestId('address-zip-input'), '27601');
+    fireEvent.press(getByTestId('address-save-button'));
+
+    await waitFor(() => {
+      expect(getByText('City is required')).toBeTruthy();
+    });
+    expect(mockAddAddress).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error when state is empty', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Test User');
+    fireEvent.changeText(getByTestId('address-line1-input'), '1 Elm St');
+    fireEvent.changeText(getByTestId('address-city-input'), 'Raleigh');
+    // leave state empty
+    fireEvent.changeText(getByTestId('address-zip-input'), '27601');
+    fireEvent.press(getByTestId('address-save-button'));
+
+    await waitFor(() => {
+      expect(getByText('State is required')).toBeTruthy();
+    });
+    expect(mockAddAddress).not.toHaveBeenCalled();
+  });
+
+  it('shows validation error for ZIP with more than 5 digits', async () => {
+    const { getByTestId, getByText } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Test User');
+    fireEvent.changeText(getByTestId('address-line1-input'), '1 Elm St');
+    fireEvent.changeText(getByTestId('address-city-input'), 'Raleigh');
+    fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+    fireEvent.changeText(getByTestId('address-zip-input'), '123456'); // 6 digits
+    fireEvent.press(getByTestId('address-save-button'));
+
+    await waitFor(() => {
+      expect(getByText('ZIP code must be 5 digits')).toBeTruthy();
+    });
+    expect(mockAddAddress).not.toHaveBeenCalled();
+  });
+
+  it('address with no line2 shows only street line1', () => {
+    const addrNoLine2 = { ...ADDR_2, line2: '' };
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [addrNoLine2], defaultAddress: null }),
+    );
+    const { getByText, queryByText } = renderScreen();
+    expect(getByText('456 Oak Ave')).toBeTruthy();
+    // Should not show trailing comma or extra line for empty line2
+    expect(queryByText('456 Oak Ave, ')).toBeNull();
+  });
+});
+
+// ── Single non-default address (cm-aem) ───────────────────────────────────────
+
+describe('SavedAddressesScreen — single non-default address', () => {
+  it('shows Set Default button when there is one non-default address', () => {
+    const noDefaultAddr = { ...ADDR_1, isDefault: false };
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [noDefaultAddr], defaultAddress: null }),
+    );
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('set-default-button-addr-1')).toBeTruthy();
+  });
+
+  it('does not show max-reached notice with fewer than 5 addresses', () => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+    const { queryByTestId } = renderScreen();
+    expect(queryByTestId('address-max-notice')).toBeNull();
+  });
+});

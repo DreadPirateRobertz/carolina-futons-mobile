@@ -82,7 +82,11 @@ export function SavedAddressesScreen() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => deleteAddress(addr.id),
+          onPress: () => {
+            deleteAddress(addr.id).catch(() => {
+              // hook owns error state; screen stays visible
+            });
+          },
         },
       ]);
     },
@@ -91,7 +95,11 @@ export function SavedAddressesScreen() {
 
   const handleSetDefault = useCallback(
     async (id: string) => {
-      await setDefault(id);
+      try {
+        await setDefault(id);
+      } catch {
+        // hook owns error state; screen stays visible
+      }
     },
     [setDefault],
   );
