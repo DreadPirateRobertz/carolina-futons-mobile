@@ -88,6 +88,7 @@ export function SearchBar({
           placeholderTextColor={colors.muted}
           testID="search-input"
           accessibilityLabel="Search products"
+          accessibilityHint="Enter a search term and press search"
           returnKeyType="search"
           autoCapitalize="none"
           autoCorrect={false}
@@ -102,6 +103,7 @@ export function SearchBar({
           <TouchableOpacity
             onPress={() => onChangeText('')}
             testID="search-clear"
+            accessibilityRole="button"
             accessibilityLabel="Clear search"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
@@ -146,6 +148,7 @@ export function SearchBar({
                   style={styles.dropdownItem}
                   onPress={() => handleSelectSuggestion(suggestion)}
                   testID={`suggestion-${suggestion}`}
+                  accessibilityRole="button"
                   accessibilityLabel={`Search for ${suggestion}`}
                 >
                   <Text style={[styles.dropdownIcon, { color: colors.muted }]}>🔍</Text>
@@ -169,6 +172,7 @@ export function SearchBar({
                   <TouchableOpacity
                     onPress={onClearRecent}
                     testID="clear-recent"
+                    accessibilityRole="button"
                     accessibilityLabel="Clear all recent searches"
                   >
                     <Text style={[styles.recentClear, { color: colors.mountainBlueDark }]}>
@@ -183,6 +187,7 @@ export function SearchBar({
                     style={styles.recentTap}
                     onPress={() => handleSelectSuggestion(query)}
                     testID={`recent-${query}`}
+                    accessibilityRole="button"
                     accessibilityLabel={`Search for ${query}`}
                   >
                     <Text style={[styles.dropdownIcon, { color: colors.muted }]}>🕐</Text>
@@ -198,6 +203,7 @@ export function SearchBar({
                       onPress={() => onRemoveRecent(query)}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                       testID={`remove-recent-${query}`}
+                      accessibilityRole="button"
                       accessibilityLabel={`Remove ${query} from recent searches`}
                     >
                       <Text style={[styles.clear, { color: colors.muted }]}>✕</Text>

@@ -229,6 +229,8 @@ export function LoginScreen({ onSignUp, onForgotPassword, onBiometricSuccess, te
             onPress={onForgotPassword}
             testID="forgot-password-link"
             accessibilityRole="link"
+            accessibilityLabel="Forgot password?"
+            accessibilityHint="Tap to reset your password"
           >
             <Text style={[styles.forgotText, { color: colors.mountainBlueLight }]}>
               Forgot password?
