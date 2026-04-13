@@ -46,9 +46,8 @@ let mockHookState = {
   bookingError: null as string | null,
   confirmedBooking: null as {
     id: string;
-    date: string;
-    timeSlot: string;
-    memberName: string;
+    consultationDate: string;
+    memberId: string;
     memberEmail: string;
   } | null,
 };
@@ -151,7 +150,7 @@ describe('ConsultationBookingScreen', () => {
 
     it('renders name and email inputs', () => {
       const { getByTestId } = renderScreen();
-      expect(getByTestId('member-name-input')).toBeTruthy();
+      expect(getByTestId('member-id-input')).toBeTruthy();
       expect(getByTestId('member-email-input')).toBeTruthy();
     });
 
@@ -302,7 +301,7 @@ describe('ConsultationBookingScreen', () => {
     it('is enabled when date, slot, name, email all filled', () => {
       mockHookState = { ...mockHookState, selectedDate: TODAY, selectedSlot: '09:00' };
       const { getByTestId } = renderScreen();
-      fireEvent.changeText(getByTestId('member-name-input'), 'Jane Doe');
+      fireEvent.changeText(getByTestId('member-id-input'), 'Jane Doe');
       fireEvent.changeText(getByTestId('member-email-input'), 'jane@example.com');
       expect(getByTestId('book-button').props.accessibilityState?.disabled).toBeFalsy();
     });
@@ -311,14 +310,14 @@ describe('ConsultationBookingScreen', () => {
       mockBook.mockResolvedValue(true);
       mockHookState = { ...mockHookState, selectedDate: TODAY, selectedSlot: '09:00' };
       const { getByTestId } = renderScreen();
-      fireEvent.changeText(getByTestId('member-name-input'), 'Jane Doe');
+      fireEvent.changeText(getByTestId('member-id-input'), 'Jane Doe');
       fireEvent.changeText(getByTestId('member-email-input'), 'jane@example.com');
       fireEvent.press(getByTestId('book-button'));
       expect(mockBook).toHaveBeenCalledWith(
         expect.objectContaining({
           date: TODAY,
           timeSlot: '09:00',
-          memberName: 'Jane Doe',
+          memberId: 'Jane Doe',
           memberEmail: 'jane@example.com',
         }),
       );
@@ -353,9 +352,8 @@ describe('ConsultationBookingScreen', () => {
   describe('confirmation state', () => {
     const confirmed = {
       id: 'booking-001',
-      date: TODAY,
-      timeSlot: '09:30',
-      memberName: 'Jane Doe',
+      consultationDate: `${TODAY}T09:30:00`,
+      memberId: 'member-jane-001',
       memberEmail: 'jane@example.com',
     };
 
@@ -368,7 +366,7 @@ describe('ConsultationBookingScreen', () => {
     it('confirmation displays the member name', () => {
       mockHookState = { ...mockHookState, confirmedBooking: confirmed };
       const { getByText } = renderScreen();
-      expect(getByText(/Jane Doe/)).toBeTruthy();
+      expect(getByText(/member-jane-001/)).toBeTruthy();
     });
 
     it('confirmation displays the booked time slot', () => {
@@ -404,7 +402,7 @@ describe('ConsultationBookingScreen', () => {
       mockBook.mockResolvedValue(true);
       mockHookState = { ...mockHookState, selectedDate: TODAY, selectedSlot: '09:00' };
       const { getByTestId } = renderScreen();
-      fireEvent.changeText(getByTestId('member-name-input'), 'Alice');
+      fireEvent.changeText(getByTestId('member-id-input'), 'Alice');
       fireEvent.changeText(getByTestId('member-email-input'), 'alice@example.com');
       fireEvent.press(getByTestId('book-button'));
       // book() is called regardless of push permission

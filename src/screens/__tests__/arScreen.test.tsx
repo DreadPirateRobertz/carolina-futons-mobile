@@ -11,6 +11,7 @@ import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { getEventBuffer, clearEventBuffer } from '@/services/analytics';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { gamificationRateLimiter } from '@/utils/gamificationRateLimit';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -1237,6 +1238,7 @@ describe('ARScreen', () => {
   describe('gamification events', () => {
     beforeEach(() => {
       clearEventBuffer();
+      gamificationRateLimiter.reset();
     });
 
     it('fires gamification_ar_used on mount when a product is loaded', () => {
