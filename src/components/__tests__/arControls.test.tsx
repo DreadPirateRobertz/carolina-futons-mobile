@@ -201,4 +201,128 @@ describe('ARControls', () => {
       expect(get2('custom-controls')).toBeTruthy();
     });
   });
+
+  describe('Accessibility — icon-only buttons have descriptive labels (hq-xxwb)', () => {
+    it('dimension toggle has accessibilityLabel', () => {
+      const { getByTestId } = renderControls();
+      const btn = getByTestId('ar-dimension-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Toggle dimensions');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('close button has accessibilityLabel', () => {
+      const { getByTestId } = renderControls();
+      const btn = getByTestId('ar-close');
+      expect(btn.props.accessibilityLabel).toBe('Close AR view');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('measure toggle has accessibilityLabel when not measuring', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleMeasure={jest.fn()} isMeasuring={false} />,
+      );
+      const btn = getByTestId('ar-measure-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Measure room');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('measure toggle has accessibilityLabel when actively measuring', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleMeasure={jest.fn()} isMeasuring={true} />,
+      );
+      const btn = getByTestId('ar-measure-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Exit measurement mode');
+    });
+
+    it('reset measurement button has accessibilityLabel', () => {
+      const { getByTestId } = render(
+        <ARControls
+          {...defaultProps}
+          onToggleMeasure={jest.fn()}
+          isMeasuring={true}
+          onResetMeasure={jest.fn()}
+        />,
+      );
+      const btn = getByTestId('ar-measure-reset');
+      expect(btn.props.accessibilityLabel).toBe('Reset measurement');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('compare toggle has accessibilityLabel when not comparing', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleCompare={jest.fn()} isComparing={false} />,
+      );
+      const btn = getByTestId('ar-compare-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Compare models');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('compare toggle has accessibilityLabel when actively comparing', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleCompare={jest.fn()} isComparing={true} />,
+      );
+      const btn = getByTestId('ar-compare-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Exit comparison mode');
+    });
+
+    it('browse products button has accessibilityLabel', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onBrowseProducts={jest.fn()} />,
+      );
+      const btn = getByTestId('ar-browse-products');
+      expect(btn.props.accessibilityLabel).toBe('Browse all products');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('open fabric selector button has accessibilityLabel', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleMaterialSelector={jest.fn()} />,
+      );
+      const btn = getByTestId('ar-material-selector-toggle');
+      expect(btn.props.accessibilityLabel).toBe('Open fabric selector');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('share button has accessibilityLabel', () => {
+      const { getByTestId } = render(<ARControls {...defaultProps} onShare={jest.fn()} />);
+      const btn = getByTestId('ar-share');
+      expect(btn.props.accessibilityLabel).toBe('Share AR screenshot');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('save to gallery button has accessibilityLabel', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onSaveToGallery={jest.fn()} />,
+      );
+      const btn = getByTestId('ar-save-gallery');
+      expect(btn.props.accessibilityLabel).toBe('Save to photo library');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('wishlist button has accessibilityLabel when not in wishlist', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleWishlist={jest.fn()} isInWishlist={false} />,
+      );
+      const btn = getByTestId('ar-wishlist');
+      expect(btn.props.accessibilityLabel).toBe('Add to wishlist');
+      expect(btn.props.accessibilityRole).toBe('button');
+    });
+
+    it('wishlist button has accessibilityLabel when in wishlist', () => {
+      const { getByTestId } = render(
+        <ARControls {...defaultProps} onToggleWishlist={jest.fn()} isInWishlist={true} />,
+      );
+      const btn = getByTestId('ar-wishlist');
+      expect(btn.props.accessibilityLabel).toBe('Remove from wishlist');
+    });
+
+    it('model chips have accessibilityLabel matching model name', () => {
+      const { getByTestId } = renderControls();
+      for (const model of FUTON_MODELS) {
+        const chip = getByTestId(`ar-model-${model.id}`);
+        expect(chip.props.accessibilityLabel).toBe(model.name);
+        expect(chip.props.accessibilityRole).toBe('button');
+      }
+    });
+  });
 });
