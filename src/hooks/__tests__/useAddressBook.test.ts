@@ -234,4 +234,40 @@ describe('useAddressBook — Wix sync', () => {
     expect(result.current.addresses).toHaveLength(1);
     expect(result.current.addresses[0].fullName).toBe(TEST_ADDRESS.fullName);
   });
+
+  // cm-i3w: saveFromCheckout was missing wixSync call
+  it('calls wixSync after saveFromCheckout when syncFn provided', async () => {
+    mockWixSync.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+    expect(mockWixSync).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ fullName: TEST_ADDRESS.fullName })]),
+    );
+  });
+
+  it('skips wixSync from saveFromCheckout when address already exists', async () => {
+    const saved: SavedAddress[] = [{ ...TEST_ADDRESS, id: 'addr-1', isDefault: true }];
+    mockGetItem.mockResolvedValue(JSON.stringify(saved));
+    mockWixSync.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+    expect(mockWixSync).not.toHaveBeenCalled();
+  });
+
+  it('proceeds with local saveFromCheckout even if wixSync throws', async () => {
+    mockWixSync.mockRejectedValue(new Error('Network error'));
+    const { result } = renderHook(() => useAddressBook({ wixSync: mockWixSync }));
+    await act(async () => {});
+    await act(async () => {
+      await result.current.saveFromCheckout(TEST_ADDRESS);
+    });
+    expect(result.current.addresses).toHaveLength(1);
+    expect(result.current.addresses[0].fullName).toBe(TEST_ADDRESS.fullName);
+  });
 });
