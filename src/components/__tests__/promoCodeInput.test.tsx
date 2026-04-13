@@ -122,3 +122,62 @@ it('shows unavailable message when no wix client', async () => {
   fireEvent.press(getByTestId('promo-apply-btn'));
   await waitFor(() => expect(queryByText(/unavailable/i)).toBeTruthy());
 });
+
+describe('sanitization (cm-fvx)', () => {
+  it('strips html tags from submitted code', async () => {
+    mockValidate.mockResolvedValue({ valid: true, discount: 5, type: 'fixed' });
+    const { getByText, getByTestId } = render(
+      <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
+    );
+    fireEvent.press(getByText(/add promo code/i));
+    fireEvent.changeText(getByTestId('promo-input'), '<b>SAVE5</b>');
+    fireEvent.press(getByTestId('promo-apply-btn'));
+    await waitFor(() =>
+      expect(mockValidate).toHaveBeenCalledWith(
+        '/_functions/validatePromoCode',
+        'POST',
+        expect.objectContaining({ code: 'SAVE5' }),
+      ),
+    );
+  });
+
+  it('defangs SQL injection attempt in code', async () => {
+    mockValidate.mockResolvedValue({ valid: true, discount: 5, type: 'fixed' });
+    const { getByText, getByTestId } = render(
+      <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
+    );
+    fireEvent.press(getByText(/add promo code/i));
+    fireEvent.changeText(getByTestId('promo-input'), "SAVE5'; DROP TABLE promos; --");
+    fireEvent.press(getByTestId('promo-apply-btn'));
+    await waitFor(() => {
+      const callArg = mockValidate.mock.calls[0][2] as { code: string };
+      expect(callArg.code).not.toContain('DROP TABLE');
+      expect(callArg.code).not.toContain('--');
+    });
+  });
+
+  it('truncates overlong code to maxLength (30 chars, uppercased)', async () => {
+    mockValidate.mockResolvedValue({ valid: true, discount: 5, type: 'fixed' });
+    const { getByText, getByTestId } = render(
+      <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
+    );
+    fireEvent.press(getByText(/add promo code/i));
+    fireEvent.changeText(getByTestId('promo-input'), 'a'.repeat(100));
+    fireEvent.press(getByTestId('promo-apply-btn'));
+    await waitFor(() => {
+      const callArg = mockValidate.mock.calls[0][2] as { code: string };
+      expect(callArg.code.length).toBeLessThanOrEqual(30);
+      expect(callArg.code).toBe('A'.repeat(30));
+    });
+  });
+
+  it('does not submit when sanitizer reduces code to empty', () => {
+    const { getByText, getByTestId } = render(
+      <PromoCodeInput cartTotal={199} onDiscount={jest.fn()} />,
+    );
+    fireEvent.press(getByText(/add promo code/i));
+    fireEvent.changeText(getByTestId('promo-input'), '<script>evil()</script>');
+    fireEvent.press(getByTestId('promo-apply-btn'));
+    expect(mockValidate).not.toHaveBeenCalled();
+  });
+});
