@@ -3,6 +3,7 @@
  * Dimensions in inches (real-world), used for dimension overlay labels.
  */
 import { type FutonModelId, futonModelId } from './productId';
+import type { ProductResources } from './products';
 
 export interface Fabric {
   id: string;
@@ -24,6 +25,11 @@ export interface FutonModel {
   };
   basePrice: number;
   fabrics: Fabric[];
+  /**
+   * Downloadable / viewable resources (spec sheets, care guides, policy links, video).
+   * Sourced from Wix product custom fields. Use mock data until field names confirmed.
+   */
+  resources?: ProductResources;
 }
 
 export const FABRICS: Fabric[] = [
@@ -69,6 +75,23 @@ export const FUTON_MODELS: FutonModel[] = [
     dimensions: { width: 48, depth: 33, height: 32, seatHeight: 18 },
     basePrice: 319,
     fabrics: FABRICS,
+  },
+  {
+    id: futonModelId('bali-frame'),
+    name: 'The Bali Frame',
+    tagline: 'Natural bamboo-inspired hardwood frame',
+    dimensions: { width: 56, depth: 35, height: 34, seatHeight: 18 },
+    basePrice: 399,
+    fabrics: FABRICS,
+    // cm-cgo: Mock resources for Bali Futon Frame to unblock PDP Resources section.
+    // TODO(stilgar): Replace with real Wix product custom field values once confirmed.
+    resources: {
+      specSheetUrl: 'https://www.carolinafutons.com/docs/bali-frame-spec.pdf',
+      careGuideUrl: 'https://www.carolinafutons.com/docs/bali-frame-care.pdf',
+      returnPolicyUrl: 'https://www.carolinafutons.com/policies/returns',
+      warrantyPolicyUrl: 'https://www.carolinafutons.com/policies/warranty',
+      videoUrl: 'https://www.youtube.com/watch?v=bali-frame-product-tour',
+    },
   },
 ];
 

@@ -60,6 +60,29 @@ export interface Product {
   requiresFreight?: boolean;
   /** When true, liftgate service is required at delivery (only relevant when requiresFreight is true). */
   requiresLiftgate?: boolean;
+  /**
+   * Downloadable / viewable resources for this product (spec sheets, care guides, policy links,
+   * product video). Populated from Wix product custom fields; use mock data until Stilgar
+   * confirms field names.
+   */
+  resources?: ProductResources;
+}
+
+/**
+ * Downloadable and viewable resources surfaced in the PDP Resources accordion.
+ * All fields are optional — the section hides itself when none are present.
+ */
+export interface ProductResources {
+  /** URL to the product spec sheet PDF (spec dimensions, materials, weight capacity). */
+  specSheetUrl?: string;
+  /** URL to the care and maintenance guide PDF. */
+  careGuideUrl?: string;
+  /** URL to the return policy page (opens in-app browser). */
+  returnPolicyUrl?: string;
+  /** URL to the warranty policy page (opens in-app browser). */
+  warrantyPolicyUrl?: string;
+  /** Product video URL (YouTube or direct MP4) — rendered with expo-av, lazy-loaded. */
+  videoUrl?: string;
 }
 
 export type ProductCategory =
@@ -255,6 +278,40 @@ export const PRODUCTS: Product[] = [
     dimensions: { width: 48, depth: 33, height: 32 },
     tags: ['traditional', 'elegant', 'loveseat'],
     colorFamily: 'warm',
+  },
+  // cm-cgo: Mock catalog entry for Bali Frame — required by ResourcesSection PDP demo.
+  // TODO(stilgar): Replace with real Wix CMS product once Bali Frame is added to catalog.
+  {
+    id: productId('prod-bali-frame'),
+    name: 'The Bali Frame',
+    slug: 'bali-futon-frame',
+    category: 'frames',
+    size: 'full',
+    price: 399,
+    description:
+      'Bamboo-inspired solid hardwood futon frame with a natural finish. Pairs with any futon mattress.',
+    shortDescription: 'Natural bamboo-inspired hardwood futon frame',
+    images: [
+      {
+        uri: 'https://static.wixstatic.com/media/cc389e_e891ed8b280d4d9f8c7562a5455744a6~mv2.jpg/v1/fit/w_640,h_426,q_90/file.jpg',
+        alt: 'The Bali Frame product shot',
+        blurhash: DEFAULT_PRODUCT_BLURHASH,
+      },
+    ],
+    rating: 4.8,
+    reviewCount: 42,
+    inStock: true,
+    fabricOptions: ['Natural Linen', 'Slate Gray', 'Espresso Brown'],
+    dimensions: { width: 56, depth: 35, height: 34 },
+    tags: ['natural', 'bamboo', 'frame'],
+    colorFamily: 'warm',
+    resources: {
+      specSheetUrl: 'https://www.carolinafutons.com/docs/bali-frame-spec.pdf',
+      careGuideUrl: 'https://www.carolinafutons.com/docs/bali-frame-care.pdf',
+      returnPolicyUrl: 'https://www.carolinafutons.com/policies/returns',
+      warrantyPolicyUrl: 'https://www.carolinafutons.com/policies/warranty',
+      videoUrl: 'https://www.youtube.com/watch?v=bali-frame-product-tour',
+    },
   },
   // --- Murphy Cabinet Beds ---
   {
