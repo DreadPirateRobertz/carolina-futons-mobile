@@ -12,7 +12,8 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { pushLayouts } from '@/services/arLayoutSync';
+import { pushLayouts, pullLayouts } from '@/services/arLayoutSync';
+import type { SyncableARLayout } from '@/services/arLayoutSync';
 
 export const MAX_SAVED_LAYOUTS = 10;
 
@@ -58,7 +59,20 @@ async function persist(layouts: SavedARLayout[]): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(layouts));
 }
 
-export function useSavedARLayouts(): UseSavedARLayoutsReturn {
+/** Merge remote layouts into local: union by id, newer updatedAt wins. */
+function mergeLayouts(local: SavedARLayout[], remote: SyncableARLayout[]): SavedARLayout[] {
+  const byId = new Map<string, SavedARLayout>();
+  for (const l of local) byId.set(l.id, l);
+  for (const r of remote) {
+    const existing = byId.get(r.id);
+    if (!existing || r.updatedAt > existing.updatedAt) {
+      byId.set(r.id, r as SavedARLayout);
+    }
+  }
+  return Array.from(byId.values()).slice(0, MAX_SAVED_LAYOUTS);
+}
+
+export function useSavedARLayouts(memberId?: string): UseSavedARLayoutsReturn {
   const [layouts, setLayouts] = useState<SavedARLayout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
@@ -87,6 +101,24 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
       });
   }, []);
 
+  // Pull from cloud and merge when memberId becomes available
+  useEffect(() => {
+    if (!memberId) return;
+    pullLayouts(memberId)
+      .then((remote) => {
+        if (remote.length === 0) return;
+        setLayouts((current) => {
+          const merged = mergeLayouts(current, remote);
+          // Persist merged result best-effort (no await needed here)
+          persist(merged).catch(() => {});
+          return merged;
+        });
+      })
+      .catch(() => {
+        // best-effort — local data remains
+      });
+  }, [memberId]);
+
   const saveLayout = useCallback(
     async (
       name: string,
@@ -109,6 +141,9 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
       try {
         await persist(next);
         setLayouts(next);
+        if (memberId) {
+          pushLayouts(memberId, next).catch(() => {});
+        }
         return layout;
       } catch {
         return null;
@@ -157,13 +192,13 @@ export function useSavedARLayouts(): UseSavedARLayoutsReturn {
   const syncToCloud = useCallback(async (): Promise<void> => {
     setSyncStatus('syncing');
     try {
-      await pushLayouts(layouts);
+      await pushLayouts(memberId ?? '', layouts);
       setLastSyncedAt(new Date().toISOString());
       setSyncStatus('idle');
     } catch {
       setSyncStatus('error');
     }
-  }, [layouts]);
+  }, [layouts, memberId]);
 
   return {
     layouts,
