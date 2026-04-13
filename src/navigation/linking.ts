@@ -32,6 +32,9 @@
  *   carolinafutons://loyalty            → LoyaltyScreen
  *   carolinafutons://warranty           → WarrantyRegistrationScreen
  *   carolinafutons://account/addresses  → SavedAddressesScreen (hq-qw5)
+ *   carolinafutons://badges             → AchievementBadgesScreen (alias for achievements)
+ *   carolinafutons://trails             → TrailsScreen (seasonal trail list)
+ *   carolinafutons://trails/{trailId}   → TrailsScreen (specific trail)
  */
 
 import type { LinkingOptions } from '@react-navigation/native';
@@ -44,6 +47,8 @@ const normalizePathForLinking: NonNullable<
 > = (path, options) => {
   let normalized = path.replace(/^\/products\//, '/product/');
   normalized = normalized.replace(/^\/?store-locator(\/|$)/, '/stores$1');
+  // carolinafutons://badges → achievements (alias)
+  normalized = normalized.replace(/^\/?badges(\/|$)/, '/achievements$1');
   return getStateFromPath(normalized, options);
 };
 
@@ -100,6 +105,10 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
         path: 'referral/:code',
         parse: { code: (code: string) => code },
       },
+      Trails: {
+        path: 'trails/:trailId?',
+        parse: { trailId: (id: string) => id },
+      },
     },
   },
   getStateFromPath: normalizePathForLinking,
@@ -138,4 +147,6 @@ export const SUPPORTED_PATHS = [
   'loyalty',
   'warranty',
   'account/addresses',
+  'badges',
+  'trails',
 ] as const;

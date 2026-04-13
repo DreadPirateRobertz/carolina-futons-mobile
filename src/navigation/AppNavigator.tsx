@@ -116,6 +116,86 @@ const OrderConfirmationScreen = lazy(() =>
     default: m.OrderConfirmationScreen,
   })),
 );
+const AchievementBadgesScreen = lazy(() =>
+  import('@/screens/AchievementBadgesScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.AchievementBadgesScreen, 'AchievementBadges'),
+  })),
+);
+const NotificationsScreen = lazy(() =>
+  import('@/screens/NotificationsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.NotificationsScreen, 'Notifications'),
+  })),
+);
+const LeaderboardScreen = lazy(() =>
+  import('@/screens/LeaderboardScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LeaderboardScreen, 'Leaderboard'),
+  })),
+);
+const ChallengesScreen = lazy(() =>
+  import('@/screens/ChallengesScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ChallengesScreen, 'Challenges'),
+  })),
+);
+const AvatarEquipScreen = lazy(() =>
+  import('@/screens/AvatarEquipScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.AvatarEquipScreen, 'AvatarEquip'),
+  })),
+);
+const RoomGalleryScreen = lazy(() =>
+  import('@/screens/RoomGalleryScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.RoomGalleryScreen, 'RoomGallery'),
+  })),
+);
+const SavedAddressesScreen = lazy(() =>
+  import('@/screens/SavedAddressesScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.SavedAddressesScreen, 'SavedAddresses'),
+  })),
+);
+const SearchScreen = lazy(() =>
+  import('@/screens/SearchScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.SearchScreen, 'Search'),
+  })),
+);
+const CompareScreen = lazy(() =>
+  import('@/screens/CompareScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.CompareScreen, 'Compare'),
+  })),
+);
+const PrivacyPolicyScreen = lazy(() =>
+  import('@/screens/PrivacyPolicyScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.PrivacyPolicyScreen, 'PrivacyPolicy'),
+  })),
+);
+const LoyaltyScreen = lazy(() =>
+  import('@/screens/LoyaltyScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.LoyaltyScreen, 'Loyalty'),
+  })),
+);
+const WarrantyRegistrationScreen = lazy(() =>
+  import('@/screens/WarrantyRegistrationScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.WarrantyRegistrationScreen, 'WarrantyRegistration'),
+  })),
+);
+const ConsultationBookingScreen = lazy(() =>
+  import('@/screens/ConsultationBookingScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ConsultationBookingScreen, 'ConsultationBooking'),
+  })),
+);
+const BookingCancellationScreen = lazy(() =>
+  import('@/screens/BookingCancellationScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.BookingCancellationScreen, 'BookingCancellation'),
+  })),
+);
+const ReferralLandingScreen = lazy(() =>
+  import('@/screens/ReferralLandingScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.ReferralLandingScreen, 'ReferralLanding'),
+  })),
+);
+const TrailsScreen = lazy(() =>
+  import('@/screens/TrailsScreen').then((m) => ({
+    default: withScreenErrorBoundary(m.TrailsScreen, 'Trails'),
+  })),
+);
 
 function LazyFallback() {
   return (
@@ -154,6 +234,25 @@ export type RootStackParamList = {
   CollectionDetail: { slug: string };
   Premium: undefined;
   StyleQuiz: undefined;
+  // Gamification screens
+  AchievementBadges: undefined;
+  Notifications: undefined;
+  Leaderboard: undefined;
+  Challenges: undefined;
+  AvatarEquip: undefined;
+  RoomGallery: undefined;
+  // User account screens
+  SavedAddresses: undefined;
+  Search: undefined;
+  Compare: undefined;
+  PrivacyPolicy: undefined;
+  Loyalty: undefined;
+  WarrantyRegistration: undefined;
+  ConsultationBooking: undefined;
+  BookingCancellation: undefined;
+  ReferralLanding: { code: string };
+  // Trails (cm-ay9)
+  Trails: { trailId: string } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -304,6 +403,37 @@ export function AppNavigator() {
         <Stack.Screen name="StyleQuiz">
           {({ navigation: nav }) => (
             <StyleQuizScreen onComplete={() => nav.goBack()} onBack={() => nav.goBack()} />
+          )}
+        </Stack.Screen>
+        {/* Gamification screens */}
+        <Stack.Screen name="AchievementBadges" component={AchievementBadgesScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+        <Stack.Screen name="Challenges" component={ChallengesScreen} />
+        <Stack.Screen name="AvatarEquip" component={AvatarEquipScreen} />
+        <Stack.Screen name="RoomGallery" component={RoomGalleryScreen} />
+        {/* User account screens */}
+        <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Compare">
+          {({ navigation: nav }) => <CompareScreen products={[]} onBack={() => nav.goBack()} />}
+        </Stack.Screen>
+        <Stack.Screen name="PrivacyPolicy">
+          {({ navigation: nav }) => <PrivacyPolicyScreen onBack={() => nav.goBack()} />}
+        </Stack.Screen>
+        <Stack.Screen name="Loyalty" component={LoyaltyScreen} />
+        <Stack.Screen name="WarrantyRegistration">
+          {({ navigation: nav }) => (
+            <WarrantyRegistrationScreen orderId="" orderNumber="" onBack={() => nav.goBack()} />
+          )}
+        </Stack.Screen>
+        <Stack.Screen name="ConsultationBooking" component={ConsultationBookingScreen} />
+        <Stack.Screen name="BookingCancellation" component={BookingCancellationScreen} />
+        <Stack.Screen name="ReferralLanding" component={ReferralLandingScreen} />
+        {/* Trails (cm-ay9) */}
+        <Stack.Screen name="Trails">
+          {({ route }) => (
+            <TrailsScreen trailId={(route.params as { trailId?: string } | undefined)?.trailId} />
           )}
         </Stack.Screen>
       </Stack.Navigator>

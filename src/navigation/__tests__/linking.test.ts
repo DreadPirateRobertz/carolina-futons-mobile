@@ -512,3 +512,59 @@ describe('SUPPORTED_PATHS — hq-qw5 audit', () => {
     }
   });
 });
+
+// ── cm-ay9: Trails deep links + badges alias ──────────────────────────────────
+
+describe('linkingConfig — Trails routes (cm-ay9)', () => {
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps Trails screen with optional trailId param', () => {
+    const trails = screens.Trails;
+    expect(typeof trails).toBe('object');
+    expect(trails.path).toBe('trails/:trailId?');
+  });
+});
+
+describe('deep link route resolution — Trails (cm-ay9)', () => {
+  it('resolves /trails to Trails screen (list view)', () => {
+    expect(getScreen('trails')).toBe('Trails');
+  });
+
+  it('resolves /trails/spring to Trails screen', () => {
+    expect(getScreen('trails/spring')).toBe('Trails');
+  });
+
+  it('resolves /trails/summer to Trails screen', () => {
+    expect(getScreen('trails/summer')).toBe('Trails');
+  });
+
+  it('resolves /trails/fall to Trails screen', () => {
+    expect(getScreen('trails/fall')).toBe('Trails');
+  });
+
+  it('passes trailId param to Trails screen', () => {
+    expect(getParams('trails/spring')).toEqual({ trailId: 'spring' });
+  });
+
+  it('passes trailId param for summer trail', () => {
+    expect(getParams('trails/summer')).toEqual({ trailId: 'summer' });
+  });
+
+  it('resolves /badges to AchievementBadges (alias)', () => {
+    expect(getScreen('badges')).toBe('AchievementBadges');
+  });
+
+  it('resolves /badges with leading slash', () => {
+    expect(getScreen('/badges')).toBe('AchievementBadges');
+  });
+});
+
+describe('SUPPORTED_PATHS — Trails and badges (cm-ay9)', () => {
+  it('includes badges', () => {
+    expect(SUPPORTED_PATHS).toContain('badges');
+  });
+
+  it('includes trails', () => {
+    expect(SUPPORTED_PATHS).toContain('trails');
+  });
+});

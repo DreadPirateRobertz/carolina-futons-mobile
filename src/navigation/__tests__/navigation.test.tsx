@@ -622,3 +622,104 @@ describe('PaymentConfirmation navigator wiring', () => {
     await waitFor(() => expect(getByTestId('order-success-screen')).toBeTruthy());
   });
 });
+
+// ── cm-ay9: Trails screen navigation wiring ───────────────────────────────────
+
+jest.mock('@/screens/TrailsScreen', () => ({
+  TrailsScreen: ({ trailId }: { trailId?: string }) => (
+    <MockScreen
+      testID={trailId ? `trails-screen-${trailId}` : 'trails-screen-list'}
+      label={trailId ? `Trails-${trailId}` : 'TrailsList'}
+    />
+  ),
+}));
+
+function TestNavWithTrails() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Tabs">
+      <Stack.Screen name="Tabs" component={TabNavigator} />
+      <Stack.Screen name="Trails">
+        {({ route }: any) => {
+          const trailId = route.params?.trailId;
+          return (
+            <MockScreen
+              testID={trailId ? `trails-screen-${trailId}` : 'trails-screen-list'}
+              label={trailId ? `Trails-${trailId}` : 'TrailsList'}
+            />
+          );
+        }}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
+describe('Trails screen navigation wiring (cm-ay9)', () => {
+  it('navigates to Trails list (no trailId)', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithTrails />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('Trails');
+    });
+    await waitFor(() => {
+      expect(getByTestId('trails-screen-list')).toBeTruthy();
+    });
+  });
+
+  it('navigates to Trails with spring trailId', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithTrails />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('Trails', { trailId: 'spring' });
+    });
+    await waitFor(() => {
+      expect(getByTestId('trails-screen-spring')).toBeTruthy();
+    });
+  });
+
+  it('navigates back from Trails to tabs', async () => {
+    const ref = React.createRef<any>();
+    const { getByTestId, queryByTestId } = render(
+      <NavigationContainer ref={ref}>
+        <TestNavWithTrails />
+      </NavigationContainer>,
+    );
+    await waitFor(() => expect(getByTestId('home-screen')).toBeTruthy());
+    act(() => {
+      ref.current?.navigate('Trails');
+    });
+    await waitFor(() => expect(getByTestId('trails-screen-list')).toBeTruthy());
+    act(() => {
+      ref.current?.goBack();
+    });
+    await waitFor(() => {
+      expect(queryByTestId('trails-screen-list')).toBeFalsy();
+      expect(getByTestId('home-screen')).toBeTruthy();
+    });
+  });
+
+  it('opens Trails from deep link initial state', async () => {
+    const { getByTestId } = render(
+      <NavigationContainer
+        initialState={{
+          routes: [{ name: 'Tabs' }, { name: 'Trails', params: { trailId: 'fall' } }],
+          index: 1,
+        }}
+      >
+        <TestNavWithTrails />
+      </NavigationContainer>,
+    );
+    await waitFor(() => {
+      expect(getByTestId('trails-screen-fall')).toBeTruthy();
+    });
+  });
+});
