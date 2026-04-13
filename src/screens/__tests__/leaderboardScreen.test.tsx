@@ -1,5 +1,5 @@
 /**
- * LeaderboardScreen tests — cf-op6
+ * LeaderboardScreen tests — cf-op6 / cm-abu
  */
 
 import React from 'react';
@@ -197,6 +197,77 @@ describe('LeaderboardScreen', () => {
     it('accepts custom testID', () => {
       const { getByTestId } = wrap(<LeaderboardScreen testID="custom-lb" />);
       expect(getByTestId('custom-lb')).toBeTruthy();
+    });
+  });
+
+  // ── Edge cases (cm-abu) ───────────────────────────────────────────────────
+
+  describe('boundary: single entry', () => {
+    it('renders list with exactly one entry', () => {
+      mockHookState = {
+        ...mockHookState,
+        entries: [{ memberId: 'm1', displayName: 'Solo', points: 500, tier: getTierForPoints(500), rank: 1 }],
+        currentUserRank: 1,
+      };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-list')).toBeTruthy();
+      expect(getByTestId('leaderboard-row-1')).toBeTruthy();
+    });
+  });
+
+  describe('boundary: 0-point entry', () => {
+    it('renders entry with 0 points (Trail Blazer tier)', () => {
+      mockHookState = {
+        ...mockHookState,
+        entries: [
+          { memberId: 'm1', displayName: 'Newbie', points: 0, tier: getTierForPoints(0), rank: 1 },
+        ],
+        currentUserRank: 1,
+      };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-row-1')).toBeTruthy();
+    });
+  });
+
+  describe('error message content', () => {
+    it('renders the exact error string from the hook', () => {
+      mockHookState = { ...mockHookState, entries: [], error: 'Server unavailable' };
+      const { getByText } = wrap(<LeaderboardScreen />);
+      expect(getByText('Server unavailable')).toBeTruthy();
+    });
+  });
+
+  describe('large rank in footer', () => {
+    it('shows large rank number (e.g. 50) in your-rank footer', () => {
+      mockHookState = { ...mockHookState, currentUserRank: 50 };
+      const { getByTestId, getByText } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-your-rank')).toBeTruthy();
+      expect(getByText('Your rank: #50')).toBeTruthy();
+    });
+  });
+
+  describe('loading + error coexistence', () => {
+    it('shows skeleton (not error) when both loading and error are set', () => {
+      mockHookState = { ...mockHookState, entries: [], loading: true, error: 'stale error' };
+      const { getByTestId, queryByTestId } = wrap(<LeaderboardScreen />);
+      expect(getByTestId('leaderboard-loading')).toBeTruthy();
+      expect(queryByTestId('leaderboard-error')).toBeNull();
+    });
+  });
+
+  describe('period toggle active state', () => {
+    it('weekly toggle is active when period=weekly', () => {
+      mockHookState = { ...mockHookState, period: 'weekly' };
+      const { getByTestId } = wrap(<LeaderboardScreen />);
+      // Active button receives mountainBlue background — accessible via style prop
+      const weeklyBtn = getByTestId('toggle-weekly');
+      const flatStyles = Array.isArray(weeklyBtn.props.style)
+        ? weeklyBtn.props.style.flat(Infinity)
+        : [weeklyBtn.props.style];
+      const hasBlue = flatStyles.some(
+        (s: unknown) => s && typeof s === 'object' && 'backgroundColor' in (s as object),
+      );
+      expect(hasBlue).toBe(true);
     });
   });
 });

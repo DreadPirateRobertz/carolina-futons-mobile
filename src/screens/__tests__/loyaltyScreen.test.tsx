@@ -1,7 +1,7 @@
 /**
- * LoyaltyScreen TDD tests — cm-elo / deacon-cjv
+ * LoyaltyScreen TDD tests — cm-elo / deacon-cjv / cm-abu
  *
- * 4 tests for LoyaltyScreen UI states.
+ * UI state tests for LoyaltyScreen.
  * useLoyalty is mocked so screen tests control the data layer.
  *
  * Note: transaction history was removed in cm-a11y-shipping — the Wix
@@ -14,7 +14,7 @@ import { LoyaltyScreen } from '../LoyaltyScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { LOYALTY_TIERS } from '@/data/loyaltyTiers';
 
-const [TRAIL_BLAZER, MOUNTAIN_GUIDE] = LOYALTY_TIERS;
+const [TRAIL_BLAZER, MOUNTAIN_GUIDE, , BLUE_RIDGE_LEGEND] = LOYALTY_TIERS;
 
 const mockRefreshPoints = jest.fn();
 const mockUseLoyalty = jest.fn();
@@ -90,5 +90,61 @@ describe('LoyaltyScreen', () => {
   it('shows tier perk card with current tier perks', () => {
     const { getByTestId } = renderScreen();
     expect(getByTestId('loyalty-tier-perk-card')).toBeTruthy();
+  });
+
+  // ── Edge cases ───────────────────────────────────────────────────────────────
+
+  it('renders 0 points correctly (boundary: lowest possible balance)', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, points: 0 });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-points').props.children).toBe(0);
+  });
+
+  it('shows progress bar when nextTier is set', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, nextTier: MOUNTAIN_GUIDE });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-progress')).toBeTruthy();
+  });
+
+  it('hides progress bar at max tier (Blue Ridge Legend — no nextTier)', () => {
+    mockUseLoyalty.mockReturnValue({
+      ...DEFAULT_LOYALTY,
+      tier: BLUE_RIDGE_LEGEND,
+      nextTier: null,
+      progress: 100,
+    });
+    const { queryByTestId } = renderScreen();
+    expect(queryByTestId('loyalty-progress')).toBeNull();
+  });
+
+  it('shows no-transactions notice in loaded state', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-no-transactions')).toBeTruthy();
+  });
+
+  it('shows perks section heading in loaded state', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-perks-heading')).toBeTruthy();
+  });
+
+  it('renders with custom testID on root element', () => {
+    const { getByTestId } = renderScreen({ testID: 'my-loyalty' });
+    expect(getByTestId('my-loyalty')).toBeTruthy();
+  });
+
+  it('displays the error message text from the hook', () => {
+    mockUseLoyalty.mockReturnValue({
+      ...DEFAULT_LOYALTY,
+      error: 'Service temporarily unavailable',
+      loading: false,
+    });
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('loyalty-error').props.children).toBe('Service temporarily unavailable');
+  });
+
+  it('hides content and shows skeleton while loading (no points visible)', () => {
+    mockUseLoyalty.mockReturnValue({ ...DEFAULT_LOYALTY, loading: true });
+    const { queryByTestId } = renderScreen();
+    expect(queryByTestId('loyalty-points')).toBeNull();
   });
 });
