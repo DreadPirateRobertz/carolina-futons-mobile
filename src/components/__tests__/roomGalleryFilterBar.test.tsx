@@ -45,7 +45,11 @@ const PRODUCT_OPTIONS = [
 
 function defaultProps(overrides = {}) {
   return {
-    filters: { style: null as RoomGalleryStyle | null, productId: null as string | null },
+    filters: {
+      style: null as RoomGalleryStyle | null,
+      productId: null as string | null,
+      featuredOnly: false,
+    },
     setStyleFilter: jest.fn(),
     setProductFilter: jest.fn(),
     clearFilters: jest.fn(),

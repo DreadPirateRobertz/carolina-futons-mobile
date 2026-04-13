@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { View, StyleSheet, ViewStyle, StyleProp, DimensionValue } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -50,7 +50,7 @@ export function SkeletonRow({
       testID={testID}
       accessibilityLabel="Loading"
       style={[
-        { width, height, borderRadius, backgroundColor: colors.sandBase },
+        { width: width as DimensionValue, height, borderRadius, backgroundColor: colors.sandBase },
         animatedStyle,
         style,
       ]}

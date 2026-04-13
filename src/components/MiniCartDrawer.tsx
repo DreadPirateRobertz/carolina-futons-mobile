@@ -15,7 +15,6 @@
 
 import React, { useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Pressable, ScrollView } from 'react-native';
-import { Image } from 'expo-image';
 import Animated, {
   SlideInDown,
   SlideOutDown,
@@ -28,7 +27,6 @@ import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { formatPrice } from '@/utils';
-import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const SWIPE_DISMISS_TRANSLATION = 100;
 const SWIPE_DISMISS_VELOCITY = 500;
@@ -69,28 +67,19 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
     onRemove(item.id);
   }, [item.id, onRemove]);
 
-  const fabricLabel = item.fabricName ?? item.fabric.name;
+  const fabricLabel = item.fabric.name;
   const a11yLabel = `${item.model.name}, ${fabricLabel}, ${formatPrice(item.unitPrice)}, quantity ${item.quantity}`;
 
   return (
     <View style={itemStyles.row} testID={`cartItemRow-${item.id}`} accessibilityLabel={a11yLabel}>
-      {/* Image / color swatch */}
-      {item.imageUrl ? (
-        <Image
-          testID={`cartItemImage-${item.id}`}
-          source={{ uri: wixImageUrl(item.imageUrl, { width: 112, height: 112 }) ?? item.imageUrl }}
-          style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
-          contentFit="cover"
-        />
-      ) : (
-        <View
-          testID={`cartItemImage-${item.id}`}
-          style={[
-            itemStyles.thumb,
-            { backgroundColor: item.fabric.color, borderRadius: borderRadius.sm },
-          ]}
-        />
-      )}
+      {/* Color swatch — CartItem has no standalone imageUrl; model images not cached locally */}
+      <View
+        testID={`cartItemImage-${item.id}`}
+        style={[
+          itemStyles.thumb,
+          { backgroundColor: item.fabric.color, borderRadius: borderRadius.sm },
+        ]}
+      />
 
       {/* Name + price */}
       <View style={itemStyles.info}>

@@ -42,7 +42,7 @@ function navigateForAction(
   switch (action) {
     case 'purchase':
     case 'browse':
-      navigate('Tabs', { screen: 'Shop' });
+      navigate('Tabs');
       break;
     case 'review':
       navigate('OrderHistory');

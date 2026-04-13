@@ -16,7 +16,6 @@ import React, { memo, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import * as WebBrowser from 'expo-web-browser';
-import { Video, ResizeMode } from 'expo-av';
 import { useTheme } from '@/theme';
 import type { ProductResources } from '@/data/products';
 
@@ -74,10 +73,22 @@ function ResourcesSectionInner({
 
   const toggle = useCallback(() => setExpanded((v) => !v), []);
 
-  const handleSpec = useCallback(() => void openPdf(resources.specSheetUrl!), [resources.specSheetUrl]);
-  const handleCare = useCallback(() => void openPdf(resources.careGuideUrl!), [resources.careGuideUrl]);
-  const handleReturn = useCallback(() => void openLink(resources.returnPolicyUrl!), [resources.returnPolicyUrl]);
-  const handleWarranty = useCallback(() => void openLink(resources.warrantyPolicyUrl!), [resources.warrantyPolicyUrl]);
+  const handleSpec = useCallback(
+    () => void openPdf(resources.specSheetUrl!),
+    [resources.specSheetUrl],
+  );
+  const handleCare = useCallback(
+    () => void openPdf(resources.careGuideUrl!),
+    [resources.careGuideUrl],
+  );
+  const handleReturn = useCallback(
+    () => void openLink(resources.returnPolicyUrl!),
+    [resources.returnPolicyUrl],
+  );
+  const handleWarranty = useCallback(
+    () => void openLink(resources.warrantyPolicyUrl!),
+    [resources.warrantyPolicyUrl],
+  );
 
   return (
     <View testID={testID} style={[styles.container, { paddingHorizontal: spacing.lg }]}>
@@ -121,7 +132,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Spec sheet, PDF"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>📄</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Spec Sheet
               </Text>
               <Text style={[styles.itemBadge, { color: colors.espressoLight }]}>PDF</Text>
@@ -137,7 +153,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Care guide, PDF"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>📋</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Care Guide
               </Text>
               <Text style={[styles.itemBadge, { color: colors.espressoLight }]}>PDF</Text>
@@ -153,7 +174,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Return policy"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>↩️</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Return Policy
               </Text>
               <Text style={[styles.itemChevron, { color: colors.espressoLight }]}>›</Text>
@@ -169,7 +195,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Warranty policy"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>🛡</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Warranty Policy
               </Text>
               <Text style={[styles.itemChevron, { color: colors.espressoLight }]}>›</Text>
@@ -177,15 +208,16 @@ function ResourcesSectionInner({
           ) : null}
 
           {resources.videoUrl ? (
-            <View style={styles.videoContainer} testID="resources-video-player">
-              <Video
-                source={{ uri: resources.videoUrl }}
-                style={styles.video}
-                resizeMode={ResizeMode.CONTAIN}
-                useNativeControls
-                accessibilityLabel="Product video"
-              />
-            </View>
+            <TouchableOpacity
+              testID="resources-video-player"
+              onPress={() => WebBrowser.openBrowserAsync(resources.videoUrl!)}
+              style={styles.videoLink}
+              accessibilityRole="button"
+              accessibilityLabel="Watch product video"
+            >
+              <Text style={[styles.itemLabel, { color: colors.espresso }]}>Watch Video</Text>
+              <Text style={[styles.itemChevron, { color: colors.espressoLight }]}>›</Text>
+            </TouchableOpacity>
           ) : null}
         </View>
       ) : null}
@@ -240,13 +272,10 @@ const styles = StyleSheet.create({
   itemChevron: {
     fontSize: 18,
   },
-  videoContainer: {
-    marginTop: 12,
-    borderRadius: 8,
-    overflow: 'hidden',
-    aspectRatio: 16 / 9,
-  },
-  video: {
-    flex: 1,
+  videoLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
   },
 });
