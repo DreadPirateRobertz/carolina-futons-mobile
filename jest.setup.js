@@ -293,3 +293,26 @@ jest.mock('@/hooks/useGamificationEvents', () => ({
     orderPlaced: jest.fn().mockResolvedValue({ success: true }),
   }),
 }));
+
+// Mock NativePlatformConstantsIOS to prevent Invariant Violation when
+// tests use jest.requireActual('@react-navigation/native'). The real module
+// calls TurboModuleRegistry.getEnforcing('PlatformConstants') which requires
+// __fbBatchedBridgeConfig — unavailable in the test environment.
+const PLATFORM_CONSTANTS_MOCK = {
+  getConstants: () => ({
+    isTesting: true,
+    reactNativeVersion: { major: 0, minor: 76, patch: 0, prerelease: null },
+    forceTouchAvailable: false,
+    osVersion: '17.0',
+    systemName: 'iOS',
+    interfaceIdiom: 'phone',
+  }),
+};
+jest.mock(
+  'react-native/src/private/specs_DEPRECATED/modules/NativePlatformConstantsIOS',
+  () => PLATFORM_CONSTANTS_MOCK,
+);
+jest.mock(
+  'react-native/Libraries/Utilities/NativePlatformConstantsIOS',
+  () => PLATFORM_CONSTANTS_MOCK,
+);

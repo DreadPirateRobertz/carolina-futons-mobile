@@ -22,6 +22,14 @@ jest.mock('@/hooks/useOrders', () => ({
   useOrders: () => mockUseOrders(),
 }));
 
+jest.mock('@/hooks/usePurchaseExport', () => ({
+  usePurchaseExport: () => ({
+    status: 'idle',
+    error: null,
+    sendExport: jest.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 const mockAddItem = jest.fn();
 jest.mock('@/hooks/useCart', () => ({
   ...jest.requireActual('@/hooks/useCart'),

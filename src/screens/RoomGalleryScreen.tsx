@@ -10,7 +10,7 @@
  * and the populated grid.
  */
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useTheme } from '@/theme';
 import { useRoomGallery, type RoomGalleryItem } from '@/hooks/useRoomGallery';
@@ -20,6 +20,7 @@ import { UGCPhotoSubmitModal } from '@/components/UGCPhotoSubmitModal';
 import { RoomGalleryFilterBar } from '@/components/RoomGalleryFilterBar';
 import { useRoomGalleryFilters } from '@/hooks/useRoomGalleryFilters';
 import { PRODUCTS } from '@/data/products';
+import { useRealRoomPhotos, type RealRoomPhoto } from '@/hooks/useRealRoomPhotos';
 
 interface Props {
   /** Called when a room card or hotspot is tapped with the targeted productId. */
@@ -124,23 +125,6 @@ function RoomCard({
         </Text>
         <Text
           style={[
-            styles.memberName,
-            { color: colors.sandLight, fontFamily: typography.bodyFamily },
-          ]}
-          testID={`room-member-${item.roomId}`}
-          numberOfLines={1}
-        >
-          {item.memberName}
-        </Text>
-        <Text
-          style={[styles.location, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
-          testID={`room-location-${item.roomId}`}
-          numberOfLines={1}
-        >
-          {item.city}, {item.state}
-        </Text>
-        <Text
-          style={[
             styles.productCount,
             { color: colors.sandLight, fontFamily: typography.bodyFamily },
           ]}
@@ -161,6 +145,76 @@ function RoomCard({
         </View>
       )}
     </TouchableOpacity>
+  );
+}
+
+/** Section displaying real customer room photos from the Wix RealRoomPhotos collection. */
+function RealRoomPhotosSection({
+  onProductPress,
+}: {
+  onProductPress?: (productId: string) => void;
+}) {
+  const { colors, spacing, borderRadius, typography } = useTheme();
+  const { photos, isLoading, error } = useRealRoomPhotos();
+
+  return (
+    <View testID="real-room-photos-section">
+      <Text
+        style={[
+          styles.sectionHeader,
+          { color: colors.espresso, fontFamily: typography.headingFamily, paddingHorizontal: spacing.lg },
+        ]}
+        testID="real-room-photos-header"
+      >
+        Real Rooms
+      </Text>
+      {isLoading ? (
+        <ActivityIndicator testID="real-room-photos-loading" />
+      ) : error ? (
+        <Text
+          testID="real-room-photos-error"
+          style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+        >
+          Couldn't load real room photos.
+        </Text>
+      ) : photos.length === 0 ? (
+        <Text
+          testID="real-room-photos-empty"
+          style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+        >
+          No real room photos yet.
+        </Text>
+      ) : (
+        photos.map((photo) => (
+          <TouchableOpacity
+            key={photo.id}
+            testID={`real-room-photo-card-${photo.id}`}
+            onPress={() => onProductPress?.(photo.id)}
+            style={[styles.realRoomCard, { borderRadius: borderRadius.card, marginHorizontal: spacing.sm, marginBottom: spacing.sm }]}
+            accessibilityRole="button"
+          >
+            <Image
+              source={{ uri: photo.imageUrl }}
+              style={styles.realRoomImage}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+            />
+            {photo.tags.map((tag) => (
+              <TouchableOpacity
+                key={tag.productId}
+                testID={`hotspot-${tag.productId}`}
+                onPress={() => onProductPress?.(tag.productId)}
+                style={styles.hotspot}
+                accessibilityRole="button"
+                accessibilityLabel={`Shop ${tag.productName}`}
+              >
+                <Text style={styles.hotspotIcon}>+</Text>
+              </TouchableOpacity>
+            ))}
+          </TouchableOpacity>
+        ))
+      )}
+    </View>
   );
 }
 
@@ -260,8 +314,8 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
 
   if (rooms.length === 0) {
     return (
-      <View
-        style={[styles.root, styles.centered, { backgroundColor: colors.sandBase }]}
+      <ScrollView
+        style={[styles.root, { backgroundColor: colors.sandBase }]}
         testID={testID ?? 'room-gallery-screen'}
       >
         <Text
@@ -273,7 +327,8 @@ export function RoomGalleryScreen({ onProductPress, onSharePress, testID }: Prop
         >
           No room photos yet. Check back soon!
         </Text>
-      </View>
+        <RealRoomPhotosSection onProductPress={onProductPress} />
+      </ScrollView>
     );
   }
 
@@ -556,5 +611,19 @@ const styles = StyleSheet.create({
   featuredToggleText: {
     color: '#F5A623',
     fontSize: 13,
+  },
+  sectionHeader: {
+    fontSize: 22,
+    fontWeight: '700',
+    paddingTop: 24,
+    paddingBottom: 12,
+  },
+  realRoomCard: {
+    height: 180,
+    overflow: 'hidden',
+  },
+  realRoomImage: {
+    width: '100%',
+    height: '100%',
   },
 });

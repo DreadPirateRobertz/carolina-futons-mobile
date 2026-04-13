@@ -24,6 +24,7 @@ import React, {
 } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
+import { trackEvent } from '@/services/analytics';
 import { useOptionalConnectivity } from './useConnectivity';
 import {
   enqueue,
@@ -312,12 +313,17 @@ export function WishlistProvider({
 
   const add = useCallback(
     (product: Product) => {
+      const alreadyInWishlist = state.items.some((i) => i.productId === product.id);
       dispatch({ type: 'ADD', productId: product.id, price: product.price });
       syncAdd(product.id, product.price);
       // Phase 4 gamification event — cm-e2c3k
       gamificationEvents.wishlistAdd(product.id);
+      // Fire analytics event only for truly new additions (not duplicates)
+      if (!alreadyInWishlist) {
+        trackEvent('gamification_wishlist_add', { product_id: product.id });
+      }
     },
-    [syncAdd, gamificationEvents],
+    [syncAdd, gamificationEvents, state.items],
   );
 
   const remove = useCallback(

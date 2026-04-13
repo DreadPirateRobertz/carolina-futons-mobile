@@ -12,11 +12,13 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/theme';
 import { useCart } from '@/hooks/useCart';
+import { useLivingSky } from '@/hooks/useLivingSky';
 import { HomeScreen } from '@/screens/HomeScreen';
 import { ShopScreen } from '@/screens/ShopScreen';
 import { CartScreen } from '@/screens/CartScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
 import { AnimatedTabBar } from './AnimatedTabBar';
+import { withScreenErrorBoundary } from './withScreenErrorBoundary';
 import type { RootStackParamList } from './AppNavigator';
 
 export type TabParamList = {
@@ -50,23 +52,30 @@ function AccountScreenWithNav() {
   );
 }
 
+const HomeScreenWithBoundary = withScreenErrorBoundary(HomeScreen, 'Home');
+const ShopScreenWithBoundary = withScreenErrorBoundary(ShopScreen, 'Shop');
+const CartScreenWithBoundary = withScreenErrorBoundary(CartScreen, 'Cart');
+const AccountScreenWithBoundary = withScreenErrorBoundary(AccountScreenWithNav, 'Account');
+
 /** Bottom tab shell with cart badge count and the custom AnimatedTabBar. */
 export function TabNavigator() {
   const { colors } = useTheme();
   const { itemCount } = useCart();
+  const skyState = useLivingSky();
 
   return (
     <Tab.Navigator
       tabBar={(props) => <AnimatedTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.sunsetCoral,
-        tabBarInactiveTintColor: colors.espressoLight,
+        tabBarActiveTintColor: skyState.navText ?? colors.sunsetCoral,
+        tabBarInactiveTintColor: skyState.navText ?? colors.espressoLight,
+        tabBarStyle: { backgroundColor: skyState.navBg },
       }}
     >
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={HomeScreenWithBoundary}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon label="Home" focused={focused} color={color} />
@@ -75,7 +84,7 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Shop"
-        component={ShopScreen}
+        component={ShopScreenWithBoundary}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon label="Shop" focused={focused} color={color} />
@@ -84,7 +93,7 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Cart"
-        component={CartScreen}
+        component={CartScreenWithBoundary}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon label="Cart" focused={focused} color={color} />
@@ -95,14 +104,13 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Account"
+        component={AccountScreenWithBoundary}
         options={{
           tabBarIcon: ({ focused, color }) => (
             <TabIcon label="Account" focused={focused} color={color} />
           ),
         }}
-      >
-        {() => <AccountScreenWithNav />}
-      </Tab.Screen>
+      />
     </Tab.Navigator>
   );
 }

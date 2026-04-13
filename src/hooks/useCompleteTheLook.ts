@@ -46,6 +46,28 @@ interface RecommendationRow {
   pairingType: string;
   sortOrder: number;
   updatedAt: string;
+  // Wix raw API response shape (data items before flattening)
+  data?: {
+    productId: string;
+    recommendedProductIds: string;
+    pairingType: string;
+    sortOrder: number;
+    updatedAt: string;
+  };
+}
+
+/** Normalize a row that may come in flat or wrapped in { data } format. */
+function normalizeRow(raw: RecommendationRow): Omit<RecommendationRow, 'data'> {
+  if (raw.data) {
+    return {
+      productId: raw.data.productId,
+      recommendedProductIds: raw.data.recommendedProductIds,
+      pairingType: raw.data.pairingType,
+      sortOrder: raw.data.sortOrder,
+      updatedAt: raw.data.updatedAt,
+    };
+  }
+  return raw;
 }
 
 /**
@@ -115,7 +137,8 @@ export function useCompleteTheLook(productId: string): CompleteTheLookResult {
 
         // Sort rows by sortOrder ASC client-side as a defensive measure
         // (Wix sort is requested but not guaranteed by the mock in tests).
-        const sorted = [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        const normalized = items.map(normalizeRow);
+        const sorted = [...normalized].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
         // Flatten all recommendedProductIds across rows, resolve against local
         // catalog, cap at MAX_RESULTS.

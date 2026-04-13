@@ -31,7 +31,7 @@ interface QuizOption<T extends string> {
 const ROOM_OPTIONS: QuizOption<RoomType>[] = [
   { value: 'living-room', label: 'Living Room', icon: '\u{1F6CB}' },
   { value: 'bedroom', label: 'Bedroom', icon: '\u{1F6CF}' },
-  { value: 'dorm', label: 'Studio / Dorm', icon: '\u{1F3E0}' },
+  { value: 'studio', label: 'Studio / Dorm', icon: '\u{1F3E0}' },
   { value: 'guest-room', label: 'Guest Room', icon: '\u{1F6AA}' },
 ];
 
@@ -39,12 +39,14 @@ const STYLE_OPTIONS: QuizOption<StylePreference>[] = [
   { value: 'modern', label: 'Modern & Clean', icon: '\u2728' },
   { value: 'rustic', label: 'Rustic & Warm', icon: '\u{1FAB5}' },
   { value: 'classic', label: 'Classic & Cozy', icon: '\u{1F4D6}' },
+  { value: 'minimalist', label: 'Minimalist', icon: '\u25A1' },
 ];
 
 const USE_OPTIONS: QuizOption<PrimaryUse>[] = [
-  { value: 'sitting', label: 'Everyday Seating', icon: '\u{1F9D8}' },
-  { value: 'sleeping', label: 'Guest Bed', icon: '\u{1F634}' },
-  { value: 'both', label: 'Dual-Purpose', icon: '\u{1F504}' },
+  { value: 'seating', label: 'Everyday Seating', icon: '\u{1F9D8}' },
+  { value: 'guest-bed', label: 'Guest Bed', icon: '\u{1F634}' },
+  { value: 'dual-purpose', label: 'Dual-Purpose', icon: '\u{1F504}' },
+  { value: 'kid-friendly', label: 'Kid-Friendly', icon: '\u{1F476}' },
 ];
 
 const TOTAL_STEPS = 4; // 3 quiz steps + 1 completion
@@ -74,8 +76,21 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored) as StylePreferences;
-          setPreferences(parsed);
+          const parsed = JSON.parse(stored) as
+            | StylePreferences
+            | { room?: string; style?: string; primaryUse?: string };
+          // Support both legacy StylePreferences shape and new compact shape
+          if ('room' in parsed || 'style' in parsed) {
+            const compact = parsed as { room?: string; style?: string; primaryUse?: string };
+            setPreferences((prev) => ({
+              ...prev,
+              roomType: (compact.room as RoomType) ?? prev.roomType,
+              stylePreference: (compact.style as StylePreference) ?? prev.stylePreference,
+              primaryUse: (compact.primaryUse as PrimaryUse) ?? prev.primaryUse,
+            }));
+          } else {
+            setPreferences(parsed as StylePreferences);
+          }
         }
       } catch (error) {
         captureException(
@@ -108,7 +123,12 @@ export function StyleQuizScreen({ onComplete, onBack, testID }: Props) {
 
   const handleSave = useCallback(async () => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+      const savePayload = {
+        room: preferences.roomType,
+        style: preferences.stylePreference,
+        primaryUse: preferences.primaryUse,
+      };
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(savePayload));
     } catch (error) {
       captureException(error instanceof Error ? error : new Error('Style preferences save failed'));
       Alert.alert(

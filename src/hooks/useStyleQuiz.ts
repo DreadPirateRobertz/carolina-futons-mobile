@@ -14,9 +14,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const STORAGE_KEY = '@carolina_futons_style_preferences';
 
 // Enum values match the Wix getQuizRecommendations() API contract exactly.
-export type RoomType = 'living-room' | 'guest-room' | 'dorm' | 'office' | 'bedroom';
-export type StylePreference = 'modern' | 'rustic' | 'classic';
-export type PrimaryUse = 'sitting' | 'sleeping' | 'both';
+export type RoomType = 'living-room' | 'guest-room' | 'dorm' | 'studio' | 'office' | 'bedroom';
+export type StylePreference = 'modern' | 'rustic' | 'classic' | 'minimalist';
+export type PrimaryUse = 'sitting' | 'sleeping' | 'both' | 'seating' | 'guest-bed' | 'dual-purpose' | 'kid-friendly';
 export type SizeNeeds = 'twin' | 'full' | 'queen';
 export type BudgetRange = 'under-500' | '500-1000' | '1000-2000' | 'over-2000';
 

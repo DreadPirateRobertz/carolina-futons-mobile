@@ -67,9 +67,9 @@ jest.mock('@/services/analytics', () => ({
 
 // Haptics
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Medium: 'Medium', Light: 'Light' },
   NotificationFeedbackType: { Success: 'Success', Error: 'Error' },
 }));

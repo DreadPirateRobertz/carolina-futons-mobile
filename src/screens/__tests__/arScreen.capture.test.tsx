@@ -188,6 +188,10 @@ jest.mock('@/hooks/useARMeasurement', () => ({
 }));
 
 jest.mock('@/services/analytics', () => ({
+  trackEvent: jest.fn(),
+  trackScreenView: jest.fn(),
+  identify: jest.fn(),
+  reset: jest.fn(),
   events: {
     arScreenshot: jest.fn(),
     arShare: jest.fn(),

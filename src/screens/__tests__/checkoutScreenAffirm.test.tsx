@@ -29,9 +29,9 @@ jest.mock('@/hooks/usePremium', () => ({
 }));
 
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Medium: 'Medium' },
   NotificationFeedbackType: { Success: 'Success' },
 }));

@@ -11,6 +11,7 @@ import { FUTON_MODELS } from '@/data/futons';
 import { WishlistProvider } from '@/hooks/useWishlist';
 import { CartProvider } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
+import { ThemeProvider } from '@/theme/ThemeProvider';
 
 // Mock expo-camera
 jest.mock('expo-camera', () => {
@@ -24,9 +25,9 @@ jest.mock('expo-camera', () => {
 });
 
 jest.mock('expo-haptics', () => ({
-  selectionAsync: jest.fn(),
-  impactAsync: jest.fn(),
-  notificationAsync: jest.fn(),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Light: 'light', Medium: 'medium' },
   NotificationFeedbackType: { Success: 'success' },
 }));
@@ -192,15 +193,17 @@ jest.mock('@/hooks/useFutonModels', () => ({
 
 function renderARScreen(props: React.ComponentProps<typeof ARScreen> = {}) {
   return render(
-    <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
-      <NavigationContainer>
-        <CartProvider>
-          <WishlistProvider>
-            <ARScreen {...props} />
-          </WishlistProvider>
-        </CartProvider>
-      </NavigationContainer>
-    </ConnectivityProvider>,
+    <ThemeProvider>
+      <ConnectivityProvider initialOnline={true} skipNetInfo={true}>
+        <NavigationContainer>
+          <CartProvider>
+            <WishlistProvider>
+              <ARScreen {...props} />
+            </WishlistProvider>
+          </CartProvider>
+        </NavigationContainer>
+      </ConnectivityProvider>
+    </ThemeProvider>,
   );
 }
 

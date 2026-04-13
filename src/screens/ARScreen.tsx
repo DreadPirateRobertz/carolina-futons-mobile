@@ -681,8 +681,13 @@ export function ARScreen({ onClose, initialModelId, route, testID }: Props) {
   // Models loading
   if (modelsLoading) {
     return (
-      <View style={styles.permissionContainer} testID="ar-models-loading">
-        <SkeletonCard testID="ar-models-skeleton" header lines={3} style={{ width: '80%' }} />
+      <View style={styles.permissionContainer} testID="ar-loading">
+        <View testID="ar-models-loading">
+          <Text accessibilityLabel="Loading models" style={{ opacity: 0, height: 0 }}>
+            Loading
+          </Text>
+          <SkeletonCard testID="ar-models-skeleton" header lines={3} style={{ width: '80%' }} />
+        </View>
       </View>
     );
   }

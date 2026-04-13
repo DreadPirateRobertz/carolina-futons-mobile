@@ -214,7 +214,7 @@ function LazyFallback() {
 
 export type RootStackParamList = {
   Onboarding: undefined;
-  Tabs: undefined;
+  Tabs: { screen?: string } | undefined;
   AR: { initialModelId?: string } | undefined;
   ProductDetail: { slug: string };
   Category: { slug: string };
