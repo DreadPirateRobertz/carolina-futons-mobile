@@ -13,6 +13,7 @@
 ## Task 1: Install Dependencies + Create WixClient Singleton
 
 **Files:**
+
 - Modify: `package.json` (add dependencies)
 - Create: `src/services/wixClient.ts`
 - Test: `src/services/__tests__/wixClient.test.ts`
@@ -20,6 +21,7 @@
 **Step 1: Install packages**
 
 Run:
+
 ```bash
 npx expo install expo-secure-store expo-web-browser expo-linking react-native-webview
 npm install @wix/sdk @wix/members
@@ -56,7 +58,7 @@ jest.mock('@wix/sdk', () => ({
       renewToken: jest.fn(),
     },
   })),
-  OAuthStrategy: jest.fn((opts: unknown) => ({ strategy: 'oauth', ...opts as object })),
+  OAuthStrategy: jest.fn((opts: unknown) => ({ strategy: 'oauth', ...(opts as object) })),
 }));
 
 jest.mock('@wix/members', () => ({
@@ -144,6 +146,7 @@ with OAuthStrategy. TDD: 3 tests (create, singleton, reset)."
 ## Task 2: Token Storage Service
 
 **Files:**
+
 - Create: `src/services/tokenStorage.ts`
 - Test: `src/services/__tests__/tokenStorage.test.ts`
 
@@ -264,6 +267,7 @@ Handles corrupted data gracefully. TDD: 4 tests."
 ## Task 3: WixAuthService — Core Auth Methods
 
 **Files:**
+
 - Create: `src/services/wixAuth.ts`
 - Test: `src/services/__tests__/wixAuth.test.ts`
 
@@ -474,7 +478,7 @@ describe('WixAuthService', () => {
 
       expect(mockAuth.sendPasswordResetEmail).toHaveBeenCalledWith(
         'user@test.com',
-        'carolinafutons://reset-password'
+        'carolinafutons://reset-password',
       );
       expect(result).toEqual({ success: true });
     });
@@ -519,7 +523,9 @@ describe('WixAuthService', () => {
 
     it('returns false and clears tokens when restore fails', async () => {
       tokenStore['tokens'] = JSON.stringify(mockTokens);
-      mockAuth.setTokens.mockImplementation(() => { throw new Error('invalid'); });
+      mockAuth.setTokens.mockImplementation(() => {
+        throw new Error('invalid');
+      });
       const { clearTokens } = require('@/services/tokenStorage');
 
       const result = await service.restoreSession();
@@ -579,9 +585,7 @@ export class WixAuthService {
       const response = await this.auth.login({ email, password });
 
       if (response.loginState === 'SUCCESS') {
-        const tokens = await this.auth.getMemberTokensForDirectLogin(
-          response.data.sessionToken,
-        );
+        const tokens = await this.auth.getMemberTokensForDirectLogin(response.data.sessionToken);
         this.auth.setTokens(tokens);
         await saveTokens(tokens);
         return { success: true };
@@ -616,9 +620,7 @@ export class WixAuthService {
       });
 
       if (response.loginState === 'SUCCESS') {
-        const tokens = await this.auth.getMemberTokensForDirectLogin(
-          response.data.sessionToken,
-        );
+        const tokens = await this.auth.getMemberTokensForDirectLogin(response.data.sessionToken);
         this.auth.setTokens(tokens);
         await saveTokens(tokens);
         return { success: true };
@@ -697,6 +699,7 @@ TDD: 13 tests covering happy paths and edge cases."
 ## Task 4: WixAuthService — Social Login (OAuth Redirect)
 
 **Files:**
+
 - Modify: `src/services/wixAuth.ts` (add `loginWithOAuth` method)
 - Modify: `src/services/__tests__/wixAuth.test.ts` (add OAuth tests)
 
@@ -737,16 +740,12 @@ describe('loginWithOAuth', () => {
 
     const result = await service.loginWithOAuth();
 
-    expect(mockAuth.generateOAuthData).toHaveBeenCalledWith(
-      'carolinafutons://oauth/wix/callback'
-    );
+    expect(mockAuth.generateOAuthData).toHaveBeenCalledWith('carolinafutons://oauth/wix/callback');
     expect(openAuthSessionAsync).toHaveBeenCalledWith(
       'https://wix.com/auth?code=...',
-      'carolinafutons://oauth/wix/callback'
+      'carolinafutons://oauth/wix/callback',
     );
-    expect(mockAuth.getMemberTokens).toHaveBeenCalledWith(
-      'auth-code-123', 'state-123', oauthData
-    );
+    expect(mockAuth.getMemberTokens).toHaveBeenCalledWith('auth-code-123', 'state-123', oauthData);
     expect(result).toEqual({ success: true });
   });
 
@@ -857,6 +856,7 @@ TDD: 4 new tests (success, cancel, error, network failure)."
 ## Task 5: WixAuthService — getCurrentMember
 
 **Files:**
+
 - Modify: `src/services/wixAuth.ts`
 - Modify: `src/services/__tests__/wixAuth.test.ts`
 
@@ -978,6 +978,7 @@ TDD: 3 new tests (happy path, auth failure, missing fields)."
 ## Task 6: Rewire useAuth Hook to Use WixAuthService
 
 **Files:**
+
 - Modify: `src/hooks/useAuth.tsx`
 - Modify: `src/hooks/__tests__/useAuth.test.tsx`
 
@@ -1487,10 +1488,13 @@ Expected: Screen tests (LoginScreen, AccountScreen) should still pass since they
 If screen tests fail because they relied on the old mock behavior (sentinel emails like `bad@test.com`), update the screen test files to mock WixAuthService at the service level:
 
 Add to top of each failing screen test:
+
 ```typescript
 jest.mock('@/services/wixAuth', () => ({
   WixAuthService: jest.fn(() => ({
-    loginWithEmail: jest.fn().mockResolvedValue({ success: false, error: 'Invalid email or password' }),
+    loginWithEmail: jest
+      .fn()
+      .mockResolvedValue({ success: false, error: 'Invalid email or password' }),
     register: jest.fn().mockResolvedValue({ success: true }),
     loginWithOAuth: jest.fn().mockResolvedValue({ success: true }),
     sendPasswordReset: jest.fn().mockResolvedValue({ success: true }),
@@ -1520,6 +1524,7 @@ TDD: 12 tests covering all auth flows + validators."
 ## Task 7: Fix Screen Tests for New Auth Backend
 
 **Files:**
+
 - Modify: `src/screens/__tests__/LoginScreen.test.tsx`
 - Modify: `src/screens/__tests__/AccountScreen.test.tsx`
 
@@ -1571,6 +1576,7 @@ All existing test assertions still pass with new auth backend."
 ## Task 8: Add jest.setup.js mocks for new Expo modules
 
 **Files:**
+
 - Modify: `jest.setup.js`
 
 The new Expo packages need global mocks so every test file doesn't need to declare them.
@@ -1623,6 +1629,7 @@ Tests can override with jest.mock() at file level when needed."
 ## Task 9: Add .env.example with WIX_CLIENT_ID
 
 **Files:**
+
 - Create: `.env.example`
 
 **Step 1: Create the file**
@@ -1635,6 +1642,7 @@ EXPO_PUBLIC_WIX_CLIENT_ID=your-client-id-here
 **Step 2: Verify .gitignore excludes .env but not .env.example**
 
 Check `.gitignore` — if it doesn't have `.env`, add it:
+
 ```
 .env
 .env.local
@@ -1654,16 +1662,16 @@ Actual .env is gitignored."
 
 ## Summary of Deliverables
 
-| Task | Files | Tests | What |
-|------|-------|-------|------|
-| 1 | wixClient.ts | 3 | Singleton SDK client |
-| 2 | tokenStorage.ts | 4 | Secure token persistence |
-| 3 | wixAuth.ts | 13 | Email login/register/reset/restore |
-| 4 | wixAuth.ts (extend) | 4 | OAuth social login flow |
-| 5 | wixAuth.ts (extend) | 3 | getCurrentMember mapping |
-| 6 | useAuth.tsx (rewrite) | 12 | Hook rewired to WixAuthService |
-| 7 | screen tests | — | Fix existing screen tests |
-| 8 | jest.setup.js | — | Global mocks for new deps |
-| 9 | .env.example | — | Config documentation |
+| Task | Files                 | Tests | What                               |
+| ---- | --------------------- | ----- | ---------------------------------- |
+| 1    | wixClient.ts          | 3     | Singleton SDK client               |
+| 2    | tokenStorage.ts       | 4     | Secure token persistence           |
+| 3    | wixAuth.ts            | 13    | Email login/register/reset/restore |
+| 4    | wixAuth.ts (extend)   | 4     | OAuth social login flow            |
+| 5    | wixAuth.ts (extend)   | 3     | getCurrentMember mapping           |
+| 6    | useAuth.tsx (rewrite) | 12    | Hook rewired to WixAuthService     |
+| 7    | screen tests          | —     | Fix existing screen tests          |
+| 8    | jest.setup.js         | —     | Global mocks for new deps          |
+| 9    | .env.example          | —     | Config documentation               |
 
 **Total: ~39 new tests, 9 commits, 4 new files, 4 modified files.**

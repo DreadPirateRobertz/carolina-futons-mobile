@@ -1,4 +1,5 @@
 # Visual Search — Design Spec
+
 **Bead:** cm-21k
 **Date:** 2026-03-21
 **Status:** Draft — pending dutch security review
@@ -33,6 +34,7 @@ The Wix backend function is the only egress point to external AI services. The A
 ## AI Matching
 
 **OpenAI prompt:** structured JSON extraction asking for:
+
 ```json
 {
   "category": "futons | murphy-beds | covers | mattresses | accessories | unknown",
@@ -43,11 +45,13 @@ The Wix backend function is the only egress point to external AI services. The A
 ```
 
 **Product schema additions required** (modify `src/data/products.ts` and `Product` interface):
+
 ```typescript
 // Add to Product interface:
 tags?: string[];           // style keywords: "modern", "rustic", "mid-century", etc.
 colorFamily?: string;      // "neutral" | "warm" | "cool" | "dark" | "light"
 ```
+
 Populate `tags` and `colorFamily` on all existing PRODUCTS mock entries before implementing scoring.
 
 **Local scoring** (applied to `PRODUCTS` array, computed client-side after backend returns attributes):
@@ -68,6 +72,7 @@ Populate `tags` and `colorFamily` on all existing PRODUCTS mock entries before i
 ## UI Entry Points
 
 ### A. SearchScreen — camera icon in SearchBar
+
 - Camera icon button added to right side of `SearchBar` component
 - Tap → `expo-image-picker` launches (photo library or camera)
 - On selection → `SearchScreen` replaces the `useProducts()` grid with visual search results. The `SearchScreen` holds a `visualSearchResults: Product[] | null` state variable; when non-null it renders that array instead of the text-search results from `useProducts()`. A "Visual Search" badge appears above the grid.
@@ -75,13 +80,16 @@ Populate `tags` and `colorFamily` on all existing PRODUCTS mock entries before i
 - Reuses existing `ProductCard` grid — no new screen required
 
 ### B. ProductDetailScreen — "Find Similar" button
+
 - Secondary CTA below the primary "Add to Cart" button
 - Tap → picker → on results navigate to `VisualSearchResultsScreen`
 - Route params: `{ query: VisualSearchQuery; results: Product[] }`
 - Results shown with match-reason chip under each card (e.g. "Similar style · Neutral tones")
 
 ### Fallback / empty state
+
 Both paths: if 0 results returned (after fallback scoring), show a `VisualSearchEmptyState` component (new, not the existing `SearchEmptyState` — that component requires `query: string` and category chips which don't apply here) with copy:
+
 > "No similar products found — try a clearer photo showing the furniture."
 
 Single CTA: "Browse All" → `navigation.navigate('Shop')`. No category chips, no trending searches.
@@ -92,30 +100,30 @@ Single CTA: "Browse All" → `navigation.navigate('Shop')`. No category chips, n
 
 ### Mobile (`cfutons_mobile`)
 
-| File | Purpose |
-|------|---------|
-| `src/hooks/useVisualSearch.ts` | State machine: `idle → loading → success \| error`. Handles image picker, Wix backend call, local scoring. Returns `{ results, query, status, error, trigger }` |
-| `src/screens/VisualSearchResultsScreen.tsx` | "Find Similar" result display with match-reason labels |
-| `src/components/VisualSearchEmptyState.tsx` | Empty state for 0-result visual searches (not the text SearchEmptyState — different props) |
-| `src/hooks/__tests__/useVisualSearch.test.ts` | Unit tests (see Testing section) |
-| `src/screens/__tests__/VisualSearchResultsScreen.test.tsx` | Screen tests (see Testing section) |
-| `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Empty state renders, "Browse All" navigates to Shop |
+| File                                                       | Purpose                                                                                                                                                         |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/hooks/useVisualSearch.ts`                             | State machine: `idle → loading → success \| error`. Handles image picker, Wix backend call, local scoring. Returns `{ results, query, status, error, trigger }` |
+| `src/screens/VisualSearchResultsScreen.tsx`                | "Find Similar" result display with match-reason labels                                                                                                          |
+| `src/components/VisualSearchEmptyState.tsx`                | Empty state for 0-result visual searches (not the text SearchEmptyState — different props)                                                                      |
+| `src/hooks/__tests__/useVisualSearch.test.ts`              | Unit tests (see Testing section)                                                                                                                                |
+| `src/screens/__tests__/VisualSearchResultsScreen.test.tsx` | Screen tests (see Testing section)                                                                                                                              |
+| `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Empty state renders, "Browse All" navigates to Shop                                                                                                             |
 
 ### Modified existing files
 
-| File | Change |
-|------|--------|
-| `src/components/SearchBar.tsx` | Add camera icon button, `onCameraPress` prop |
-| `src/screens/SearchScreen.tsx` | Wire `useVisualSearch`, inject results into grid, show visual search badge when active |
-| `src/screens/ProductDetailScreen.tsx` | Add "Find Similar" CTA button |
-| `src/navigation/AppNavigator.tsx` | Add `VisualSearchResults` route to `RootStackParamList` |
+| File                                  | Change                                                                                 |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `src/components/SearchBar.tsx`        | Add camera icon button, `onCameraPress` prop                                           |
+| `src/screens/SearchScreen.tsx`        | Wire `useVisualSearch`, inject results into grid, show visual search badge when active |
+| `src/screens/ProductDetailScreen.tsx` | Add "Find Similar" CTA button                                                          |
+| `src/navigation/AppNavigator.tsx`     | Add `VisualSearchResults` route to `RootStackParamList`                                |
 
 ### Wix backend (`cfutons` repo)
 
-| File | Purpose |
-|------|---------|
+| File                         | Purpose                                                               |
+| ---------------------------- | --------------------------------------------------------------------- |
 | `src/public/visualSearch.js` | `POST /_functions/visualSearch` handler with SSRF guard + OpenAI call |
-| `tests/visualSearch.test.js` | SSRF unit tests + API error handling |
+| `tests/visualSearch.test.js` | SSRF unit tests + API error handling                                  |
 
 ---
 
@@ -167,7 +175,7 @@ export interface UseVisualSearchReturn {
   results: Product[];
   query: VisualSearchQuery | null;
   error: string | null;
-  trigger: () => Promise<void>;   // launches image picker
+  trigger: () => Promise<void>; // launches image picker
   reset: () => void;
 }
 ```
@@ -178,50 +186,50 @@ export interface UseVisualSearchReturn {
 
 ### `useVisualSearch.test.ts`
 
-| Test | Assertion |
-|------|-----------|
-| idle state on mount | `status === 'idle'`, `results === []` |
-| picker cancelled → stays idle | `status === 'idle'` after picker cancellation |
-| loading state while awaiting backend | `status === 'loading'` during in-flight request |
-| success: results returned | `status === 'success'`, `results.length >= 1` |
-| success: fallback when no scored match | `query.matchType === 'fallback'` |
-| error: backend 500 | `status === 'error'`, `error` contains message |
-| error: network timeout | `status === 'error'` |
-| error: wixClient null | `status === 'error'` with guard message |
-| reset() clears results | `status === 'idle'`, `results === []` |
+| Test                                             | Assertion                                                       |
+| ------------------------------------------------ | --------------------------------------------------------------- |
+| idle state on mount                              | `status === 'idle'`, `results === []`                           |
+| picker cancelled → stays idle                    | `status === 'idle'` after picker cancellation                   |
+| loading state while awaiting backend             | `status === 'loading'` during in-flight request                 |
+| success: results returned                        | `status === 'success'`, `results.length >= 1`                   |
+| success: fallback when no scored match           | `query.matchType === 'fallback'`                                |
+| error: backend 500                               | `status === 'error'`, `error` contains message                  |
+| error: network timeout                           | `status === 'error'`                                            |
+| error: wixClient null                            | `status === 'error'` with guard message                         |
+| reset() clears results                           | `status === 'idle'`, `results === []`                           |
 | EXIF flag: library picker called with exif:false | `ImagePicker.launchImageLibraryAsync` called with `exif: false` |
-| EXIF flag: camera picker called with exif:false | `ImagePicker.launchCameraAsync` called with `exif: false` |
-| SearchBar receives onCameraPress prop | prop wired and called when camera icon tapped |
+| EXIF flag: camera picker called with exif:false  | `ImagePicker.launchCameraAsync` called with `exif: false`       |
+| SearchBar receives onCameraPress prop            | prop wired and called when camera icon tapped                   |
 
 ### `VisualSearchResultsScreen.test.tsx`
 
-| Test | Assertion |
-|------|-----------|
-| renders loading state | loading indicator visible |
-| renders result list | product cards rendered for each result |
-| shows match-reason chip | chip text visible under each card |
-| empty state shown when results=[] | `SearchEmptyState` rendered |
-| "Browse All" CTA navigates to Shop | `navigation.navigate('Shop')` called |
-| retry button on error | visible + calls `trigger()` |
+| Test                               | Assertion                              |
+| ---------------------------------- | -------------------------------------- |
+| renders loading state              | loading indicator visible              |
+| renders result list                | product cards rendered for each result |
+| shows match-reason chip            | chip text visible under each card      |
+| empty state shown when results=[]  | `SearchEmptyState` rendered            |
+| "Browse All" CTA navigates to Shop | `navigation.navigate('Shop')` called   |
+| retry button on error              | visible + calls `trigger()`            |
 
 ### `visualSearch.test.js` (Wix backend — cfutons repo)
 
-| Test | Assertion |
-|------|-----------|
-| allowlist: non-openai host rejected | returns 400 |
-| allowlist: `api.openai.com` permitted | passes through |
-| non-https scheme rejected (`http://api.openai.com`) | returns 400 |
-| non-443 port rejected (`https://api.openai.com:22`) | returns 400 |
-| 3xx from OpenAI rejected | returns 502, no redirect followed |
-| RFC-1918 target blocked (10.x.x.x) | returns 400 |
-| link-local blocked (169.254.x.x) | returns 400 |
-| DNS rebinding: resolved IP used in request, Host header set to `api.openai.com` | single DNS resolution, no re-resolve |
-| malformed image body → 400 | validation error returned |
-| OpenAI returns structured JSON | 200 with `{ category, style, colorFamily, keywords }` |
-| OpenAI returns malformed JSON | 502 with safe error message |
-| image body exceeds 10MB | 413 Payload Too Large before forwarding to OpenAI |
-| OpenAI request timeout (>30s) | 504 Gateway Timeout returned to client |
-| OpenAI API error (4xx/5xx) | 502 error propagated with safe message (no raw API error exposed) |
+| Test                                                                            | Assertion                                                         |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| allowlist: non-openai host rejected                                             | returns 400                                                       |
+| allowlist: `api.openai.com` permitted                                           | passes through                                                    |
+| non-https scheme rejected (`http://api.openai.com`)                             | returns 400                                                       |
+| non-443 port rejected (`https://api.openai.com:22`)                             | returns 400                                                       |
+| 3xx from OpenAI rejected                                                        | returns 502, no redirect followed                                 |
+| RFC-1918 target blocked (10.x.x.x)                                              | returns 400                                                       |
+| link-local blocked (169.254.x.x)                                                | returns 400                                                       |
+| DNS rebinding: resolved IP used in request, Host header set to `api.openai.com` | single DNS resolution, no re-resolve                              |
+| malformed image body → 400                                                      | validation error returned                                         |
+| OpenAI returns structured JSON                                                  | 200 with `{ category, style, colorFamily, keywords }`             |
+| OpenAI returns malformed JSON                                                   | 502 with safe error message                                       |
+| image body exceeds 10MB                                                         | 413 Payload Too Large before forwarding to OpenAI                 |
+| OpenAI request timeout (>30s)                                                   | 504 Gateway Timeout returned to client                            |
+| OpenAI API error (4xx/5xx)                                                      | 502 error propagated with safe message (no raw API error exposed) |
 
 ---
 

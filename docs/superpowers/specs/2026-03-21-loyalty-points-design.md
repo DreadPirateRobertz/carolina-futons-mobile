@@ -15,21 +15,21 @@ Tiered loyalty points system for Carolina Futons mobile app. Members earn points
 
 ## Tier Structure
 
-| Tier   | Threshold  | Perk                         |
-|--------|-----------|------------------------------|
-| Bronze | 0–999 pts | 5% off next purchase         |
-| Silver | 1000–4999 | 10% off + free shipping      |
-| Gold   | 5000+     | 15% off + priority support   |
+| Tier   | Threshold | Perk                       |
+| ------ | --------- | -------------------------- |
+| Bronze | 0–999 pts | 5% off next purchase       |
+| Silver | 1000–4999 | 10% off + free shipping    |
+| Gold   | 5000+     | 15% off + priority support |
 
 ---
 
 ## Earning Rules
 
-| Action            | Points | Timing                                              |
-|-------------------|--------|-----------------------------------------------------|
-| Purchase          | 10 pts / $1 | On `order_confirmed` (NOT BNPL auth) — prevents points on failed installments |
-| Photo review      | 100 pts | On review approval                                  |
-| Referral          | 500 pts | On referral's first completed order                 |
+| Action       | Points      | Timing                                                                        |
+| ------------ | ----------- | ----------------------------------------------------------------------------- |
+| Purchase     | 10 pts / $1 | On `order_confirmed` (NOT BNPL auth) — prevents points on failed installments |
+| Photo review | 100 pts     | On review approval                                                            |
+| Referral     | 500 pts     | On referral's first completed order                                           |
 
 **BNPL point timing (melania directive):** Award on `order_confirmed` event only, never on BNPL authorization. This prevents phantom points from failed Klarna/Affirm installments.
 
@@ -38,9 +38,11 @@ Tiered loyalty points system for Carolina Futons mobile app. Members earn points
 ## Data Architecture
 
 ### Identity Anchor
+
 Use **Wix Members API** for identity (memberId, email) only. No extensible fields in Wix Members — do not store loyalty data there.
 
 ### Custom Wix Data Collection: `LoyaltyPoints`
+
 ```
 {
   _id: string,           // Wix auto-generated
@@ -54,6 +56,7 @@ Use **Wix Members API** for identity (memberId, email) only. No extensible field
 ```
 
 ### Custom Wix Data Collection: `LoyaltyTransactions`
+
 ```
 {
   _id: string,
@@ -73,6 +76,7 @@ Use **Wix Members API** for identity (memberId, email) only. No extensible field
 ## Components
 
 ### `useLoyalty` Hook
+
 ```typescript
 interface LoyaltyState {
   points: number;
@@ -94,6 +98,7 @@ useLoyalty(): LoyaltyState & {
 - Empty state for new members (0 points, bronze)
 
 ### `LoyaltyScreen`
+
 - Current points balance + tier badge
 - Tier progress bar (points to next tier)
 - Transaction history (FlatList, infinite scroll)
@@ -102,6 +107,7 @@ useLoyalty(): LoyaltyState & {
 - Error state with retry
 
 ### `LoyaltyBadge` (shared component)
+
 - Small tier indicator for ProfileScreen / CheckoutScreen
 - Props: `tier`, `points`, `compact?: boolean`
 
@@ -118,6 +124,7 @@ useLoyalty(): LoyaltyState & {
 ## Velo Compatibility (Melania Review Required)
 
 Before implementation: melania reviews this spec for Wix Velo compatibility:
+
 - Wix Data collection field types match Velo schema constraints
 - Backend function patterns for atomic point credit
 - CF-yq80 (web tier display) reads from same collections — schema must be shared
@@ -127,6 +134,7 @@ Before implementation: melania reviews this spec for Wix Velo compatibility:
 ## TDD Acceptance Criteria (16 tests)
 
 ### `useLoyalty` hook (8 tests)
+
 1. Returns 0 points + bronze tier for new member
 2. Returns correct points and tier for existing member
 3. Calculates tier from points: 0→bronze, 1000→silver, 5000→gold
@@ -137,6 +145,7 @@ Before implementation: melania reviews this spec for Wix Velo compatibility:
 8. Empty transaction history shows empty state
 
 ### `LoyaltyScreen` (5 tests)
+
 9. Renders points balance and tier correctly
 10. Shows tier progress bar with correct percentage
 11. Renders transaction history list
@@ -144,6 +153,7 @@ Before implementation: melania reviews this spec for Wix Velo compatibility:
 13. Shows error state with retry button
 
 ### `LoyaltyBadge` (3 tests)
+
 14. Renders bronze badge for 0–999 pts
 15. Renders silver badge for 1000–4999 pts
 16. Renders gold badge for 5000+ pts

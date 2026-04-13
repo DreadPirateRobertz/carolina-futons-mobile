@@ -74,6 +74,7 @@ Stack screens push on top for detail views.
 **When you see it:** First time opening the app (or after clearing app data).
 
 **What it should look like:**
+
 - Dark background (`#1C1410` warm espresso, NOT pure black)
 - MountainSkyline SVG at top — `sunrise` variant with blue-to-gold gradient sky
 - 3 brand story slides you swipe through:
@@ -88,6 +89,7 @@ Stack screens push on top for detail views.
 - Completion screen with "Get Started" coral CTA button
 
 **What to check:**
+
 - [ ] MountainSkyline renders with gradient (not a gray box)
 - [ ] Playfair Display font on headings (serif, elegant)
 - [ ] Source Sans 3 font on body text (clean sans-serif)
@@ -105,6 +107,7 @@ Stack screens push on top for detail views.
 ### 2. Home Screen (Tab 1)
 
 **What it should look like:**
+
 - Full-width MountainSkyline hero at top — `sunrise` variant
   - Blue sky gradient fading to gold at horizon
   - Mountain silhouette layers (currently 2, upgrading to 7)
@@ -116,6 +119,7 @@ Stack screens push on top for detail views.
 - Brand content sections below
 
 **What to check:**
+
 - [ ] Mountain SVG renders smoothly (no jagged edges, no gray fallback)
 - [ ] Sky gradient has correct colors: blue top (`#B8D4E3`) fading to gold (`#F0C87A`)
 - [ ] GlassCards have glassmorphism effect (semi-transparent with blur hint)
@@ -132,6 +136,7 @@ Stack screens push on top for detail views.
 ### 3. Shop Screen (Tab 2)
 
 **What it should look like:**
+
 - Dark background (`#1C1410`)
 - SearchBar at top with placeholder text
 - CategoryFilter chips below search (horizontal scroll): Futons, Mattresses, Covers, Accessories
@@ -144,6 +149,7 @@ Stack screens push on top for detail views.
 - Sand-colored (`#E8D5B7`) product cards on dark background
 
 **What to check:**
+
 - [ ] Search works: type a product name, results filter
 - [ ] Category chips filter products when tapped
 - [ ] Sort picker changes product order
@@ -153,6 +159,7 @@ Stack screens push on top for detail views.
 - [ ] Empty search shows empty state with illustration
 
 **Empty state (no results):**
+
 - [ ] Shows Blue Ridge SVG illustration (mountain scene)
 - [ ] "No products found" message
 - [ ] Suggest clearing filters
@@ -164,6 +171,7 @@ Stack screens push on top for detail views.
 **How to get here:** Tap any product from Shop.
 
 **What it should look like:**
+
 - Dark surface background (`#2A1F19`)
 - Product image gallery (swipeable if multiple images)
 - Product name in Playfair Display (large)
@@ -179,6 +187,7 @@ Stack screens push on top for detail views.
 - WishlistButton (heart icon in header or on image)
 
 **What to check:**
+
 - [ ] Product image loads (or shows placeholder)
 - [ ] Fabric dots show correct colors for each option
 - [ ] Tapping fabric dot updates selection
@@ -197,6 +206,7 @@ Stack screens push on top for detail views.
 #### Cart with Items
 
 **What it should look like:**
+
 - Dark background (`#1C1410`)
 - MountainSkyline header (sunset variant)
 - List of cart items, each showing:
@@ -215,6 +225,7 @@ Stack screens push on top for detail views.
 - "Proceed to Checkout" coral CTA button
 
 **What to check:**
+
 - [ ] Quantity updates change line prices and total
 - [ ] Removing an item updates the list and total
 - [ ] Free shipping note shows when subtotal > $500
@@ -224,12 +235,14 @@ Stack screens push on top for detail views.
 #### Cart Empty State
 
 **What it should look like:**
+
 - Dark background
 - Blue Ridge mountain SVG illustration (centered)
 - "Your cart is empty" heading
 - "Start Shopping" coral CTA button
 
 **What to check:**
+
 - [ ] Illustration renders (not just an emoji icon)
 - [ ] "Start Shopping" navigates to Shop tab
 
@@ -240,6 +253,7 @@ Stack screens push on top for detail views.
 #### Authenticated State
 
 **What it should look like:**
+
 - Dark background (`#1C1410`)
 - MountainSkyline (sunrise variant) at top
 - User avatar + display name
@@ -253,6 +267,7 @@ Stack screens push on top for detail views.
 - "Sign Out" button at bottom
 
 **What to check:**
+
 - [ ] User name displays correctly
 - [ ] Each menu item navigates to its screen
 - [ ] GlassCards have glassmorphism effect
@@ -261,6 +276,7 @@ Stack screens push on top for detail views.
 #### Guest State
 
 **What it should look like:**
+
 - Dark background
 - MountainSkyline at top
 - Heading: "Welcome" or similar in Playfair Display
@@ -268,6 +284,7 @@ Stack screens push on top for detail views.
 - "Sign In" coral CTA button
 
 **What to check:**
+
 - [ ] "Sign In" navigates to Login screen (modal)
 
 ---
@@ -275,6 +292,7 @@ Stack screens push on top for detail views.
 ### 7. Login Screen
 
 **What it should look like:**
+
 - Dark editorial or warm sand background
 - GlassCard form container with:
   - Email input field
@@ -285,6 +303,7 @@ Stack screens push on top for detail views.
 - "Don't have an account? Sign Up" link
 
 **What to check:**
+
 - [ ] Email field accepts text, keyboard shows @
 - [ ] Password field masks input
 - [ ] Social buttons are styled (not default blue)
@@ -297,6 +316,7 @@ Stack screens push on top for detail views.
 ### 8. Sign Up Screen
 
 **What it should look like:**
+
 - Similar to Login but with:
   - Name input
   - Email input
@@ -307,6 +327,7 @@ Stack screens push on top for detail views.
   - "Already have an account? Sign In" link
 
 **What to check:**
+
 - [ ] All fields accept input
 - [ ] T&C checkbox toggles
 - [ ] Validation fires on empty/invalid fields
@@ -317,6 +338,7 @@ Stack screens push on top for detail views.
 ### 9. Checkout Screen
 
 **What it should look like:**
+
 - Dark editorial background
 - Order summary at top (items, subtotal, shipping, total)
 - Payment method selection in GlassCard containers:
@@ -327,6 +349,7 @@ Stack screens push on top for detail views.
 - "Place Order" coral CTA button
 
 **What to check (with Stripe configured):**
+
 - [ ] Payment methods display correctly
 - [ ] Google Pay shows (not Apple Pay) on Android
 - [ ] Selecting a payment method highlights it
@@ -335,6 +358,7 @@ Stack screens push on top for detail views.
 - [ ] Double-tap prevention (button disables after first tap)
 
 **What to check (without Stripe):**
+
 - [ ] Graceful fallback — shows payment options but explains setup needed
 
 ---
@@ -344,6 +368,7 @@ Stack screens push on top for detail views.
 **Requires:** Dev build (not Expo Go). AR uses the camera.
 
 **What it should look like:**
+
 - Full camera view (your room)
 - ARProductPicker at bottom (horizontal strip of product thumbnails)
 - Once surface detected: PlaneIndicator shows floor/wall markers
@@ -355,6 +380,7 @@ Stack screens push on top for detail views.
 - ARFutonOverlay shows the 3D furniture model on the detected surface
 
 **What to check:**
+
 - [ ] Camera permission prompt appears
 - [ ] Camera feed is live (not frozen)
 - [ ] Surface detection indicators appear on flat surfaces
@@ -374,17 +400,20 @@ Real Carolina Futons models need CDN hosting.
 **How to get here:** Account > Wishlist, or tap heart on any product.
 
 **What it should look like:**
+
 - Dark background
 - Product grid (same style as Shop) showing saved items
 - Share button (top right)
 - "Clear All" option
 
 **Empty state:**
+
 - Mountain SVG illustration
 - "No saved items" message
 - "Browse Products" CTA
 
 **What to check:**
+
 - [ ] Products you hearted appear here
 - [ ] Removing heart removes from wishlist
 - [ ] Share generates shareable text
@@ -397,6 +426,7 @@ Real Carolina Futons models need CDN hosting.
 **How to get here:** Account > Store Locator.
 
 **What it should look like:**
+
 - Warm sand background (lighter than other screens)
 - SearchBar for location search
 - List of store cards (4 NC showroom locations):
@@ -404,6 +434,7 @@ Real Carolina Futons models need CDN hosting.
   - StoreCard with warm styling
 
 **What to check:**
+
 - [ ] All 4 stores display
 - [ ] Distance shows (if location permission granted)
 - [ ] Tapping a store opens StoreDetail
@@ -415,6 +446,7 @@ Real Carolina Futons models need CDN hosting.
 ### 13. Store Detail Screen
 
 **What it should look like:**
+
 - Store hero photo
 - Address, phone, email (tappable)
 - Hours table (day-by-day open/close)
@@ -422,6 +454,7 @@ Real Carolina Futons models need CDN hosting.
 - Action buttons: Call, Directions, Email
 
 **What to check:**
+
 - [ ] Phone number opens dialer
 - [ ] Email opens mail app
 - [ ] Directions opens maps
@@ -435,6 +468,7 @@ Real Carolina Futons models need CDN hosting.
 **How to get here:** Account > Order History.
 
 **What it should look like:**
+
 - Dark background
 - List of order cards:
   - Order thumbnail, order ID
@@ -443,6 +477,7 @@ Real Carolina Futons models need CDN hosting.
 - Tap to see Order Detail
 
 **Empty state:**
+
 - Mountain illustration
 - "No orders yet" message
 - "Start Shopping" CTA
@@ -452,6 +487,7 @@ Real Carolina Futons models need CDN hosting.
 ### 15. Order Detail Screen
 
 **What it should look like:**
+
 - Order header (ID, date, status badge)
 - Item list with thumbnails
 - Tracking timeline (if shipped)
@@ -465,6 +501,7 @@ Real Carolina Futons models need CDN hosting.
 **How to get here:** Account > Notification Preferences.
 
 **What it should look like:**
+
 - Toggle switches for each notification type:
   - Order updates
   - Promotions
@@ -472,6 +509,7 @@ Real Carolina Futons models need CDN hosting.
   - Cart reminders
 
 **What to check:**
+
 - [ ] Toggles work
 - [ ] State persists after leaving and returning
 
@@ -482,6 +520,7 @@ Real Carolina Futons models need CDN hosting.
 **How to get here:** Tap a category chip on Shop, or deep link.
 
 **What it should look like:**
+
 - Same as Shop but filtered to one category
 - Category name in header
 - SortPicker + product grid
@@ -508,6 +547,7 @@ adb shell am start -a android.intent.action.VIEW -d "carolinafutons://notificati
 ```
 
 **What to check:**
+
 - [ ] Each link opens the correct screen
 - [ ] Product deep link shows the correct product
 - [ ] App launches if not running, navigates if already open
@@ -518,18 +558,18 @@ adb shell am start -a android.intent.action.VIEW -d "carolinafutons://notificati
 
 These should be true on EVERY screen:
 
-| Check | Expected |
-|-------|----------|
-| Background color | Warm espresso `#1C1410` (NOT pure `#000000` black) |
-| Heading font | Playfair Display (serif, elegant) |
-| Body font | Source Sans 3 (clean sans-serif) |
-| Primary CTA color | Sunset Coral `#E8845C` |
-| Card shadows | Warm brown tint (NOT gray) |
-| Text color (primary) | Off-white `#F5F0EB` (NOT pure `#FFFFFF` white) |
-| Text color (muted) | Warm muted `#B8A99A` |
-| GlassCard effect | Semi-transparent dark with subtle light border |
-| Mountain SVGs | Smooth gradients, no gray rectangles |
-| Status bar | Light text on dark background |
+| Check                | Expected                                           |
+| -------------------- | -------------------------------------------------- |
+| Background color     | Warm espresso `#1C1410` (NOT pure `#000000` black) |
+| Heading font         | Playfair Display (serif, elegant)                  |
+| Body font            | Source Sans 3 (clean sans-serif)                   |
+| Primary CTA color    | Sunset Coral `#E8845C`                             |
+| Card shadows         | Warm brown tint (NOT gray)                         |
+| Text color (primary) | Off-white `#F5F0EB` (NOT pure `#FFFFFF` white)     |
+| Text color (muted)   | Warm muted `#B8A99A`                               |
+| GlassCard effect     | Semi-transparent dark with subtle light border     |
+| Mountain SVGs        | Smooth gradients, no gray rectangles               |
+| Status bar           | Light text on dark background                      |
 
 ### Color Reference Card
 
@@ -551,34 +591,35 @@ Dark Surface:    #2A1F19  ████  (slightly lighter — card surfaces)
 These features are coded but haven't landed on main yet. You may or may not see
 them depending on which branch you're testing:
 
-| Feature | PR | What You'll See |
-|---------|-----|-----------------|
-| **Animation Primitives** | #44 | Spring-press feedback on buttons, shimmer skeleton loaders, parallax scroll headers, staggered list entry animations |
-| **Blue Ridge Visual Identity** | #45 | Dark editorial redesign on Home/Shop/Onboarding/ProductDetail/Account/Cart, MountainSkyline hero with sunrise glow |
-| **Screen Visual Polish** | #46 | Login/SignUp/ForgotPassword/Checkout/OrderHistory/StoreLocator get dark editorial + glassmorphic forms (172 new tests) |
-| **Stripe Payment** | #47 | Real checkout: card entry, Apple/Google Pay, Affirm, Klarna, order confirmation, double-submit guard |
-| **Push Notifications** | #48 | Real expo-notifications: permission prompt, foreground badge, tap-to-navigate |
-| **Review Photo Upload** | #49 | Photo picker in review form: up to 5 photos, previews with remove, photos in submission |
+| Feature                        | PR  | What You'll See                                                                                                        |
+| ------------------------------ | --- | ---------------------------------------------------------------------------------------------------------------------- |
+| **Animation Primitives**       | #44 | Spring-press feedback on buttons, shimmer skeleton loaders, parallax scroll headers, staggered list entry animations   |
+| **Blue Ridge Visual Identity** | #45 | Dark editorial redesign on Home/Shop/Onboarding/ProductDetail/Account/Cart, MountainSkyline hero with sunrise glow     |
+| **Screen Visual Polish**       | #46 | Login/SignUp/ForgotPassword/Checkout/OrderHistory/StoreLocator get dark editorial + glassmorphic forms (172 new tests) |
+| **Stripe Payment**             | #47 | Real checkout: card entry, Apple/Google Pay, Affirm, Klarna, order confirmation, double-submit guard                   |
+| **Push Notifications**         | #48 | Real expo-notifications: permission prompt, foreground badge, tap-to-navigate                                          |
+| **Review Photo Upload**        | #49 | Photo picker in review form: up to 5 photos, previews with remove, photos in submission                                |
 
 ---
 
 ## Sprint Beads (Current Work)
 
-| Bead | Task | Owner | Status |
-|------|------|-------|--------|
-| `cm-dyg` | Merge queue — land PRs #44-49 | Dallas | In progress |
-| `cm-sgi` | Shared illustration utilities | Dallas | Blocked by cm-dyg |
-| `cm-6dp` | MountainSkyline 7-layer upgrade | Dallas | Blocked by cm-sgi |
-| `cm-0qn` | Empty state illustrations (8 screens) | Bishop | Blocked by cm-sgi |
-| `cm-rcy` | Nightly CI/CD workflow | Ripley | Blocked by cm-dyg |
-| `cm-3m3` | Sandbox testing (iOS/Android/Web) | Dallas + Bishop | Blocked by illustrations |
-| `cm-6kb` | Brand uniqueness pass | Crew | Blocked by sandbox |
+| Bead     | Task                                  | Owner           | Status                   |
+| -------- | ------------------------------------- | --------------- | ------------------------ |
+| `cm-dyg` | Merge queue — land PRs #44-49         | Dallas          | In progress              |
+| `cm-sgi` | Shared illustration utilities         | Dallas          | Blocked by cm-dyg        |
+| `cm-6dp` | MountainSkyline 7-layer upgrade       | Dallas          | Blocked by cm-sgi        |
+| `cm-0qn` | Empty state illustrations (8 screens) | Bishop          | Blocked by cm-sgi        |
+| `cm-rcy` | Nightly CI/CD workflow                | Ripley          | Blocked by cm-dyg        |
+| `cm-3m3` | Sandbox testing (iOS/Android/Web)     | Dallas + Bishop | Blocked by illustrations |
+| `cm-6kb` | Brand uniqueness pass                 | Crew            | Blocked by sandbox       |
 
 ---
 
 ## Test Flows (Recommended Order)
 
 ### Flow 1: First-Time User
+
 1. Fresh install / clear data
 2. Onboarding slides (swipe through 3)
 3. Style quiz (answer 3 questions)
@@ -586,6 +627,7 @@ them depending on which branch you're testing:
 5. Verify MountainSkyline hero renders
 
 ### Flow 2: Shopping Journey
+
 1. Home > "Shop Collection"
 2. Browse products, use search
 3. Filter by category (Futons)
@@ -598,6 +640,7 @@ them depending on which branch you're testing:
 10. "Proceed to Checkout"
 
 ### Flow 3: AR Experience
+
 1. Home > "View in AR" (needs dev build)
 2. Grant camera permission
 3. Point at floor, wait for surface detection
@@ -607,6 +650,7 @@ them depending on which branch you're testing:
 7. Check screenshot in gallery
 
 ### Flow 4: Wishlist & Social
+
 1. Shop > heart a few products
 2. Go to Wishlist screen
 3. Verify all hearted items show
@@ -615,6 +659,7 @@ them depending on which branch you're testing:
 6. Verify it disappears
 
 ### Flow 5: Account & Stores
+
 1. Account tab (guest) > Sign In
 2. Sign In with email/password
 3. Account tab (auth) > Order History
@@ -624,12 +669,14 @@ them depending on which branch you're testing:
 7. Back to Account > Sign Out
 
 ### Flow 6: Empty States
+
 1. Cart (remove all items) > empty state with illustration
 2. Shop > search for "zzzzz" > empty state
 3. Wishlist (remove all) > empty state
 4. Order History (new account) > empty state
 
 ### Flow 7: Deep Links
+
 1. Use `adb` commands from the Deep Link section
 2. Verify each opens the correct screen
 3. Test while app is running and while app is closed
@@ -638,17 +685,17 @@ them depending on which branch you're testing:
 
 ## Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| QR code won't scan | Make sure phone and Mac are on same WiFi network |
-| "Network request failed" | Check `.env` vars or confirm mock data mode |
-| Fonts look wrong (system font) | Kill and restart the app — fonts load async |
-| Gray box instead of mountain | `react-native-svg` may need rebuild: `npx expo start -c` |
-| AR won't open (Expo Go) | AR needs a dev build — use Option B or C above |
-| Cart count stuck | Pull to refresh or restart app |
-| App crashes on launch | Run `npx expo start -c` (clears cache) |
-| "Module not found" | Run `npm install` then restart |
-| Slow on old phone | Normal for dev mode — production builds are much faster |
+| Issue                          | Fix                                                      |
+| ------------------------------ | -------------------------------------------------------- |
+| QR code won't scan             | Make sure phone and Mac are on same WiFi network         |
+| "Network request failed"       | Check `.env` vars or confirm mock data mode              |
+| Fonts look wrong (system font) | Kill and restart the app — fonts load async              |
+| Gray box instead of mountain   | `react-native-svg` may need rebuild: `npx expo start -c` |
+| AR won't open (Expo Go)        | AR needs a dev build — use Option B or C above           |
+| Cart count stuck               | Pull to refresh or restart app                           |
+| App crashes on launch          | Run `npx expo start -c` (clears cache)                   |
+| "Module not found"             | Run `npm install` then restart                           |
+| Slow on old phone              | Normal for dev mode — production builds are much faster  |
 
 ---
 

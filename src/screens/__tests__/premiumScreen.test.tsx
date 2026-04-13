@@ -83,7 +83,11 @@ jest.mock('@/components/GlassCard', () => ({
 describe('PremiumScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUsePremium.mockReturnValue({ ...DEFAULT_PREMIUM, purchase: mockPurchase, restore: mockRestore });
+    mockUsePremium.mockReturnValue({
+      ...DEFAULT_PREMIUM,
+      purchase: mockPurchase,
+      restore: mockRestore,
+    });
   });
 
   it('renders feature list', () => {
@@ -251,12 +255,24 @@ describe('PremiumScreen', () => {
   describe('buttons disabled during active purchase', () => {
     it('disables both plan buttons while a purchase is in progress', async () => {
       let resolvePurchase!: (v: string) => void;
-      mockPurchase.mockReturnValueOnce(new Promise((res) => { resolvePurchase = res; }));
+      mockPurchase.mockReturnValueOnce(
+        new Promise((res) => {
+          resolvePurchase = res;
+        }),
+      );
       const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
       fireEvent.press(getByTestId('purchase-monthly'));
-      expect(getByTestId('purchase-monthly').props.accessibilityState?.disabled ?? getByTestId('purchase-monthly').props.disabled).toBeTruthy();
-      expect(getByTestId('purchase-annual').props.accessibilityState?.disabled ?? getByTestId('purchase-annual').props.disabled).toBeTruthy();
-      await act(async () => { resolvePurchase('cancelled'); });
+      expect(
+        getByTestId('purchase-monthly').props.accessibilityState?.disabled ??
+          getByTestId('purchase-monthly').props.disabled,
+      ).toBeTruthy();
+      expect(
+        getByTestId('purchase-annual').props.accessibilityState?.disabled ??
+          getByTestId('purchase-annual').props.disabled,
+      ).toBeTruthy();
+      await act(async () => {
+        resolvePurchase('cancelled');
+      });
     });
   });
 

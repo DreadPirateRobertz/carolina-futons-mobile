@@ -24,6 +24,7 @@ git checkout -b cm-epicB-ai-personalization
 ## Task 1: PersonalizationCache
 
 **Files:**
+
 - Create: `src/services/personalizationCache.ts`
 - Create: `src/services/__tests__/personalizationCache.test.ts`
 
@@ -125,9 +126,8 @@ export async function getCachedFitScore(
   productId: string,
   memberId: string,
 ): Promise<FitScoreCacheEntry | null> {
-  const cache = await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(
-    FIT_SCORE_KEY,
-  );
+  const cache =
+    await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(FIT_SCORE_KEY);
   const entry = cache[`${productId}_${memberId}`];
   if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
   return { score: entry.score, reasons: entry.reasons };
@@ -138,9 +138,8 @@ export async function setCachedFitScore(
   memberId: string,
   data: FitScoreCacheEntry,
 ): Promise<void> {
-  const cache = await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(
-    FIT_SCORE_KEY,
-  );
+  const cache =
+    await readCache<Record<string, FitScoreCacheEntry & { cachedAt: number }>>(FIT_SCORE_KEY);
   cache[`${productId}_${memberId}`] = { ...data, cachedAt: Date.now() };
   await AsyncStorage.setItem(FIT_SCORE_KEY, JSON.stringify(cache));
 }
@@ -148,9 +147,8 @@ export async function setCachedFitScore(
 export async function getCachedSommelierResult(
   memberId: string,
 ): Promise<SommelierCacheEntry | null> {
-  const cache = await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(
-    SOMMELIER_KEY,
-  );
+  const cache =
+    await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(SOMMELIER_KEY);
   const entry = cache[memberId];
   if (!entry || Date.now() - entry.cachedAt > TTL_MS) return null;
   const { cachedAt: _, ...rest } = entry;
@@ -161,9 +159,8 @@ export async function setCachedSommelierResult(
   memberId: string,
   data: SommelierCacheEntry,
 ): Promise<void> {
-  const cache = await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(
-    SOMMELIER_KEY,
-  );
+  const cache =
+    await readCache<Record<string, SommelierCacheEntry & { cachedAt: number }>>(SOMMELIER_KEY);
   cache[memberId] = { ...data, cachedAt: Date.now() };
   await AsyncStorage.setItem(SOMMELIER_KEY, JSON.stringify(cache));
 }
@@ -194,6 +191,7 @@ git commit -m "feat(epicB): PersonalizationCache with 1-hour TTL for Fit Score +
 ## Task 2: useFitScore hook
 
 **Files:**
+
 - Create: `src/hooks/useFitScore.ts`
 - Create: `src/hooks/__tests__/useFitScore.test.ts`
 
@@ -297,14 +295,17 @@ export function useFitScore(productId: string, memberId: string | null): FitScor
           setReasons(cached.reasons);
           return;
         }
-        const result = await client!.callFunction(
+        const result = (await client!.callFunction(
           `/_functions/getFitScore?productId=${encodeURIComponent(productId)}&memberId=${encodeURIComponent(memberId!)}`,
           'GET',
-        ) as { score: number; reasons: string[] };
+        )) as { score: number; reasons: string[] };
         if (!cancelled) {
           setScore(result.score);
           setReasons(result.reasons);
-          await setCachedFitScore(productId, memberId!, { score: result.score, reasons: result.reasons });
+          await setCachedFitScore(productId, memberId!, {
+            score: result.score,
+            reasons: result.reasons,
+          });
         }
       } catch (err) {
         if (!cancelled) {
@@ -317,7 +318,9 @@ export function useFitScore(productId: string, memberId: string | null): FitScor
     }
 
     fetch();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [productId, memberId, client]);
 
   return { score, reasons, isLoading, error };
@@ -342,6 +345,7 @@ git commit -m "feat(epicB): useFitScore hook — cache-first, guest-safe, featur
 ## Task 3: FitScoreBadge component
 
 **Files:**
+
 - Modify: `src/components/productBadgeTypes.ts` (add FIT_SCORE type)
 - Create: `src/components/FitScoreBadge.tsx`
 - Create: `src/components/__tests__/FitScoreBadge.test.tsx`
@@ -481,6 +485,7 @@ git commit -m "feat(epicB): FitScoreBadge component — skeleton, score, gracefu
 ## Task 4: usePersonalization hook (replaces double waterfall)
 
 **Files:**
+
 - Create: `src/hooks/usePersonalization.ts`
 - Create: `src/hooks/__tests__/usePersonalization.test.ts`
 - Modify: `src/screens/HomeScreen.tsx` (swap out double hook for single usePersonalization)
@@ -517,8 +522,16 @@ it('fires both fetches in parallel (single loading gate)', async () => {
   let resolveA: (v: unknown) => void;
   let resolveB: (v: unknown) => void;
   mockCallFunction
-    .mockReturnValueOnce(new Promise((r) => { resolveA = r; }))
-    .mockReturnValueOnce(new Promise((r) => { resolveB = r; }));
+    .mockReturnValueOnce(
+      new Promise((r) => {
+        resolveA = r;
+      }),
+    )
+    .mockReturnValueOnce(
+      new Promise((r) => {
+        resolveB = r;
+      }),
+    );
 
   const { result } = renderHook(() => usePersonalization('member-1'));
   expect(result.current.isLoading).toBe(true);
@@ -534,7 +547,12 @@ it('fires both fetches in parallel (single loading gate)', async () => {
 
 it('partial failure does not crash — returns what succeeded', async () => {
   mockCallFunction
-    .mockResolvedValueOnce({ memberId: 'member-1', topStyle: 'Cozy', flavors: [], recommendations: [] })
+    .mockResolvedValueOnce({
+      memberId: 'member-1',
+      topStyle: 'Cozy',
+      flavors: [],
+      recommendations: [],
+    })
     .mockRejectedValueOnce(new Error('network'));
 
   const { result } = renderHook(() => usePersonalization('member-1'));
@@ -556,7 +574,10 @@ npx jest src/hooks/__tests__/usePersonalization.test.ts --no-coverage
 // src/hooks/usePersonalization.ts
 import { useState, useEffect } from 'react';
 import { useWixClient } from '@/services/wix/wixProvider';
-import { getCachedSommelierResult, setCachedSommelierResult } from '@/services/personalizationCache';
+import {
+  getCachedSommelierResult,
+  setCachedSommelierResult,
+} from '@/services/personalizationCache';
 import { captureException } from '@/services/crashReporting';
 import type { SommelierCacheEntry } from '@/services/personalizationCache';
 
@@ -584,19 +605,19 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
     async function fetchSommelier(): Promise<SommelierCacheEntry | null> {
       const cached = await getCachedSommelierResult(memberId!);
       if (cached) return cached;
-      const result = await client!.callFunction(
+      const result = (await client!.callFunction(
         `/_functions/getSommelierResults?memberId=${encodeURIComponent(memberId!)}`,
         'GET',
-      ) as SommelierCacheEntry;
+      )) as SommelierCacheEntry;
       await setCachedSommelierResult(memberId!, result);
       return result;
     }
 
     async function fetchRecommendations(): Promise<unknown[]> {
-      const result = await client!.callFunction(
+      const result = (await client!.callFunction(
         `/_functions/getQuizRecommendations?memberId=${encodeURIComponent(memberId!)}`,
         'GET',
-      ) as unknown[];
+      )) as unknown[];
       return result ?? [];
     }
 
@@ -614,7 +635,9 @@ export function usePersonalization(memberId: string | null): PersonalizationResu
       setIsLoading(false);
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [memberId, client]);
 
   return {
@@ -636,13 +659,19 @@ npx jest src/hooks/__tests__/usePersonalization.test.ts --no-coverage
 - [ ] **Step 5: Update HomeScreen to use usePersonalization**
 
 In `src/screens/HomeScreen.tsx`, replace the two separate hook calls:
+
 ```typescript
 // REMOVE:
 const { result: sommelierResult } = useSommelierResults(memberId);
 const { recommendations } = useQuizRecommendations(memberId);
 
 // REPLACE WITH:
-const { sommelierResult, recommendations, topStyle, isLoading: personalizationLoading } = usePersonalization(memberId);
+const {
+  sommelierResult,
+  recommendations,
+  topStyle,
+  isLoading: personalizationLoading,
+} = usePersonalization(memberId);
 ```
 
 Update any references to the old hook return values to match the new property names.
@@ -652,6 +681,7 @@ Update any references to the old hook return values to match the new property na
 ```bash
 npx jest src/screens/__tests__/HomeScreen.test.tsx --no-coverage
 ```
+
 Fix any test failures caused by the hook swap (update mocks to mock `usePersonalization` instead of two separate hooks).
 
 - [ ] **Step 7: Commit**
@@ -666,6 +696,7 @@ git commit -m "feat(epicB): usePersonalization parallel fetch — eliminates dou
 ## Task 5: SommelierHeroCard component
 
 **Files:**
+
 - Create: `src/components/SommelierHeroCard.tsx`
 - Create: `src/components/__tests__/SommelierHeroCard.test.tsx`
 

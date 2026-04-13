@@ -138,7 +138,15 @@ jest.mock('react-native-reanimated', () => {
   const View = require('react-native').View;
   return {
     __esModule: true,
-    default: { View, Text: View, Image: View, ScrollView: View, FlatList: View, createAnimatedComponent: (comp) => comp, call: () => {} },
+    default: {
+      View,
+      Text: View,
+      Image: View,
+      ScrollView: View,
+      FlatList: View,
+      createAnimatedComponent: (comp) => comp,
+      call: () => {},
+    },
     useSharedValue: (init) => ({ value: init }),
     useAnimatedStyle: (fn) => fn(),
     useDerivedValue: (fn) => ({ value: fn() }),
@@ -167,18 +175,42 @@ jest.mock('react-native-reanimated', () => {
       quad: (v) => v,
       cubic: (v) => v,
     },
-    ...((() => {
+    ...(() => {
       // Fluent animation-builder stub — every config method returns `self` for unlimited chaining.
       // Covers: .duration().delay(), .springify().damping().stiffness().mass(), etc.
       const self = {};
-      const methods = ['duration', 'delay', 'springify', 'damping', 'stiffness', 'mass',
-        'overshootClamping', 'restDisplacementThreshold', 'restSpeedThreshold',
-        'withInitialValues', 'easing', 'reduceMotion'];
-      methods.forEach((m) => { self[m] = () => self; });
-      const names = ['FadeIn','FadeOut','FadeInDown','FadeInUp','SlideInRight','SlideOutRight',
-        'SlideInUp','SlideOutUp','SlideInDown','SlideOutDown','Layout'];
+      const methods = [
+        'duration',
+        'delay',
+        'springify',
+        'damping',
+        'stiffness',
+        'mass',
+        'overshootClamping',
+        'restDisplacementThreshold',
+        'restSpeedThreshold',
+        'withInitialValues',
+        'easing',
+        'reduceMotion',
+      ];
+      methods.forEach((m) => {
+        self[m] = () => self;
+      });
+      const names = [
+        'FadeIn',
+        'FadeOut',
+        'FadeInDown',
+        'FadeInUp',
+        'SlideInRight',
+        'SlideOutRight',
+        'SlideInUp',
+        'SlideOutUp',
+        'SlideInDown',
+        'SlideOutDown',
+        'Layout',
+      ];
       return Object.fromEntries(names.map((n) => [n, { ...self, toString: () => n }]));
-    })()),
+    })(),
     runOnJS: (fn) => fn,
     runOnUI: (fn) => fn,
     createAnimatedComponent: (comp) => comp,

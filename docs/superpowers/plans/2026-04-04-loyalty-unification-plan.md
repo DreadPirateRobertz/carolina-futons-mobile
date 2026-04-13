@@ -12,23 +12,24 @@
 
 ## File Structure
 
-| Action | Path | Responsibility |
-|--------|------|----------------|
-| Modify | `src/hooks/useLoyalty.ts` | Update tier definitions, add perks fetching |
-| Modify | `src/screens/LoyaltyScreen.tsx` | Display new tier names + perks section |
-| Modify | `src/screens/RewardsScreen.tsx` | Align redemption tiers with new names |
-| Modify | `src/screens/PointsHistoryScreen.tsx` | Update tier labels in history entries |
-| Create | `src/data/loyaltyTiers.ts` | Shared tier config (names, thresholds, colors, perks) |
-| Create | `src/hooks/__tests__/useLoyalty.unification.test.ts` | Tests for new tier system |
-| Modify | `src/hooks/__tests__/useLoyalty.test.ts` | Update existing tests for new tier names |
-| Create | `src/components/TierPerkCard.tsx` | Perk display card component |
-| Create | `src/components/__tests__/TierPerkCard.test.tsx` | TierPerkCard tests |
+| Action | Path                                                 | Responsibility                                        |
+| ------ | ---------------------------------------------------- | ----------------------------------------------------- |
+| Modify | `src/hooks/useLoyalty.ts`                            | Update tier definitions, add perks fetching           |
+| Modify | `src/screens/LoyaltyScreen.tsx`                      | Display new tier names + perks section                |
+| Modify | `src/screens/RewardsScreen.tsx`                      | Align redemption tiers with new names                 |
+| Modify | `src/screens/PointsHistoryScreen.tsx`                | Update tier labels in history entries                 |
+| Create | `src/data/loyaltyTiers.ts`                           | Shared tier config (names, thresholds, colors, perks) |
+| Create | `src/hooks/__tests__/useLoyalty.unification.test.ts` | Tests for new tier system                             |
+| Modify | `src/hooks/__tests__/useLoyalty.test.ts`             | Update existing tests for new tier names              |
+| Create | `src/components/TierPerkCard.tsx`                    | Perk display card component                           |
+| Create | `src/components/__tests__/TierPerkCard.test.tsx`     | TierPerkCard tests                                    |
 
 ---
 
 ### Task 1: Define Shared Tier Configuration
 
 **Files:**
+
 - Create: `src/data/loyaltyTiers.ts`
 - Create: `src/hooks/__tests__/useLoyalty.unification.test.ts`
 
@@ -125,14 +126,25 @@ export const LOYALTY_TIERS: LoyaltyTierConfig[] = [
     minPoints: 2000,
     color: '#E8845C',
     icon: 'summit-master',
-    perks: ['Earn 2x points per $1', 'Free expedited shipping', 'Free styling consultation', 'Exclusive member pricing'],
+    perks: [
+      'Earn 2x points per $1',
+      'Free expedited shipping',
+      'Free styling consultation',
+      'Exclusive member pricing',
+    ],
   },
   {
     name: 'Blue Ridge Legend',
     minPoints: 5000,
     color: '#C9A84C',
     icon: 'blue-ridge-legend',
-    perks: ['Earn 3x points per $1', 'Free white-glove delivery', 'Dedicated concierge', 'Annual loyalty gift', 'Early access to new products'],
+    perks: [
+      'Earn 3x points per $1',
+      'Free white-glove delivery',
+      'Dedicated concierge',
+      'Annual loyalty gift',
+      'Early access to new products',
+    ],
   },
 ];
 
@@ -164,6 +176,7 @@ git commit -m "feat(cm-elo): define 4-tier loyalty config aligned with web"
 ### Task 2: Update useLoyalty Hook
 
 **Files:**
+
 - Modify: `src/hooks/useLoyalty.ts`
 - Modify: `src/hooks/__tests__/useLoyalty.test.ts`
 
@@ -179,6 +192,7 @@ Expected: FAIL — old tier names no longer match
 - [ ] **Step 3: Update useLoyalty.ts internals**
 
 In `src/hooks/useLoyalty.ts`:
+
 - Replace the `LoyaltyTier` type with import from `@/data/loyaltyTiers`
 - Replace hardcoded tier thresholds with `getTierForPoints()`
 - Update the `LoyaltyTier` type export to `LoyaltyTierConfig`
@@ -207,6 +221,7 @@ git commit -m "feat(cm-elo): update useLoyalty to 4-tier web-aligned system"
 ### Task 3: Create TierPerkCard Component
 
 **Files:**
+
 - Create: `src/components/TierPerkCard.tsx`
 - Create: `src/components/__tests__/TierPerkCard.test.tsx`
 
@@ -348,12 +363,14 @@ git commit -m "feat(cm-elo): TierPerkCard component — display tier perks with 
 ### Task 4: Update LoyaltyScreen with New Tiers + Perks
 
 **Files:**
+
 - Modify: `src/screens/LoyaltyScreen.tsx`
 - Modify: `src/screens/__tests__/LoyaltyScreen.test.tsx` (if exists, or create)
 
 - [ ] **Step 1: Write/update LoyaltyScreen tests**
 
 Add tests that verify:
+
 - Screen displays new tier name (e.g., "Trail Blazer" not "Bronze")
 - Screen shows TierPerkCard for each of the 4 tiers
 - Current tier is highlighted with "Current Tier" badge
@@ -368,6 +385,7 @@ Expected: FAIL — old tier names or missing TierPerkCard
 - [ ] **Step 3: Update LoyaltyScreen**
 
 In `src/screens/LoyaltyScreen.tsx`:
+
 - Import `LOYALTY_TIERS, getTierForPoints` from `@/data/loyaltyTiers`
 - Import `TierPerkCard` from `@/components/TierPerkCard`
 - Replace hardcoded tier display with `getTierForPoints(points)`
@@ -396,6 +414,7 @@ git commit -m "feat(cm-elo): LoyaltyScreen — 4-tier display with perk cards"
 ### Task 5: Update RewardsScreen and PointsHistoryScreen
 
 **Files:**
+
 - Modify: `src/screens/RewardsScreen.tsx`
 - Modify: `src/screens/PointsHistoryScreen.tsx`
 
@@ -432,6 +451,7 @@ git commit -m "feat(cm-elo): align RewardsScreen + PointsHistoryScreen to 4-tier
 ### Task 6: Full Integration Test + PR
 
 **Files:**
+
 - All files from Tasks 1-5
 
 - [ ] **Step 1: Run full test suite**

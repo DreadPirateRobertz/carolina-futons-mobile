@@ -299,21 +299,33 @@ describe('NotificationsScreen', () => {
     });
 
     it('shows "Xm ago" for events 1-59 minutes ago', () => {
-      const mins = { ...notificationFixtures[0], id: 'n-mins', createdAt: Date.now() - 15 * 60_000 };
+      const mins = {
+        ...notificationFixtures[0],
+        id: 'n-mins',
+        createdAt: Date.now() - 15 * 60_000,
+      };
       mockFetchNotifications.mockReturnValue(makeResult({ notifications: [mins] }));
       const { getByTestId } = renderScreen();
       expect(getByTestId('notification-time-n-mins').props.children).toBe('15m ago');
     });
 
     it('shows "Xh ago" for events 1-23 hours ago', () => {
-      const hours = { ...notificationFixtures[0], id: 'n-hours', createdAt: Date.now() - 3 * 3_600_000 };
+      const hours = {
+        ...notificationFixtures[0],
+        id: 'n-hours',
+        createdAt: Date.now() - 3 * 3_600_000,
+      };
       mockFetchNotifications.mockReturnValue(makeResult({ notifications: [hours] }));
       const { getByTestId } = renderScreen();
       expect(getByTestId('notification-time-n-hours').props.children).toBe('3h ago');
     });
 
     it('shows "Xd ago" for events 1+ days ago', () => {
-      const days = { ...notificationFixtures[0], id: 'n-days', createdAt: Date.now() - 2 * 86_400_000 };
+      const days = {
+        ...notificationFixtures[0],
+        id: 'n-days',
+        createdAt: Date.now() - 2 * 86_400_000,
+      };
       mockFetchNotifications.mockReturnValue(makeResult({ notifications: [days] }));
       const { getByTestId } = renderScreen();
       expect(getByTestId('notification-time-n-days').props.children).toBe('2d ago');

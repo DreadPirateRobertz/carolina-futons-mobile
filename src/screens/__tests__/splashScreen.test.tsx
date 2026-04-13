@@ -118,7 +118,10 @@ describe('slow load timeout', () => {
   it('shows loading spinner while AsyncStorage is resolving', async () => {
     let resolveStorage: ((val: string | null) => void) | undefined;
     (AsyncStorage.getItem as jest.Mock).mockImplementation(
-      () => new Promise((resolve) => { resolveStorage = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveStorage = resolve;
+        }),
     );
     const { getByTestId } = renderNavigator();
     expect(getByTestId('onboarding-loading')).toBeTruthy();

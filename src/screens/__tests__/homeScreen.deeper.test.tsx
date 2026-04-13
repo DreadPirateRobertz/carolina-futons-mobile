@@ -26,7 +26,9 @@ jest.mock('@/components/LivingSkyBackground', () => ({
 jest.mock('@/components/WildlifeLayer', () => ({
   WildlifeLayer: ({ skyState }: any) => {
     const { View } = require('react-native');
-    return <View testID="wildlife-layer" accessibilityLabel={`birdOpacity:${skyState.birdOpacity}`} />;
+    return (
+      <View testID="wildlife-layer" accessibilityLabel={`birdOpacity:${skyState.birdOpacity}`} />
+    );
   },
 }));
 
@@ -136,7 +138,12 @@ jest.mock('@/hooks/usePromotion', () => ({
 }));
 
 jest.mock('@/hooks/useRecentlyViewed', () => ({
-  useRecentlyViewed: () => ({ recentProducts: [], addViewed: jest.fn(), clearAll: jest.fn(), count: 0 }),
+  useRecentlyViewed: () => ({
+    recentProducts: [],
+    addViewed: jest.fn(),
+    clearAll: jest.fn(),
+    count: 0,
+  }),
 }));
 
 jest.mock('@/hooks/useStreak', () => ({
@@ -236,7 +243,21 @@ describe('personalization rail empty', () => {
   it('shows personalized-picks when quiz recommendations are loaded', () => {
     mockUsePersonalization.mockReturnValue({
       sommelierResult: null,
-      recommendations: [{ id: 'p1', slug: 'asheville-full', name: 'Asheville Full', price: 349, images: [], category: 'futon', description: '', isFeatured: false, rating: 4.5, reviewCount: 10, sizeOptions: [] }],
+      recommendations: [
+        {
+          id: 'p1',
+          slug: 'asheville-full',
+          name: 'Asheville Full',
+          price: 349,
+          images: [],
+          category: 'futon',
+          description: '',
+          isFeatured: false,
+          rating: 4.5,
+          reviewCount: 10,
+          sizeOptions: [],
+        },
+      ],
       topStyle: null,
       isLoading: false,
       error: null,

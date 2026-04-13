@@ -54,6 +54,7 @@ git commit -m "feat(epicD): useReducedMotion applied to all gamification animati
 ## Task 1: ReferralService
 
 **Files:**
+
 - Create: `src/services/referralService.ts`
 - Create: `src/services/__tests__/referralService.test.ts`
 
@@ -75,11 +76,9 @@ it('generateReferralLink calls Wix and returns deep link URL', async () => {
   mockCallFunction.mockResolvedValue({ code: 'ABC123' });
   const link = await generateReferralLink(mockCallFunction as never, 'member-1');
   expect(link).toBe('carolinafutons://referral/ABC123');
-  expect(mockCallFunction).toHaveBeenCalledWith(
-    '/_functions/generateReferralLink',
-    'POST',
-    { memberId: 'member-1' },
-  );
+  expect(mockCallFunction).toHaveBeenCalledWith('/_functions/generateReferralLink', 'POST', {
+    memberId: 'member-1',
+  });
 });
 
 it('generateReferralLink returns null on error without throwing', async () => {
@@ -91,11 +90,10 @@ it('generateReferralLink returns null on error without throwing', async () => {
 it('recordReferralConversion calls Wix record endpoint', async () => {
   mockCallFunction.mockResolvedValue({ success: true });
   await recordReferralConversion(mockCallFunction as never, 'ABC123', 'new-member-1');
-  expect(mockCallFunction).toHaveBeenCalledWith(
-    '/_functions/recordReferralConversion',
-    'POST',
-    { code: 'ABC123', newMemberId: 'new-member-1' },
-  );
+  expect(mockCallFunction).toHaveBeenCalledWith('/_functions/recordReferralConversion', 'POST', {
+    code: 'ABC123',
+    newMemberId: 'new-member-1',
+  });
 });
 
 it('recordReferralConversion does not throw on Wix error', async () => {
@@ -125,7 +123,9 @@ export async function generateReferralLink(
   memberId: string,
 ): Promise<string | null> {
   try {
-    const result = await callFunction('/_functions/generateReferralLink', 'POST', { memberId }) as { code: string };
+    const result = (await callFunction('/_functions/generateReferralLink', 'POST', {
+      memberId,
+    })) as { code: string };
     return `carolinafutons://referral/${result.code}`;
   } catch (err) {
     captureException(err instanceof Error ? err : new Error(String(err)));
@@ -164,6 +164,7 @@ git commit -m "feat(epicD): ReferralService — generateReferralLink + recordRef
 ## Task 2: ShareSheet component
 
 **Files:**
+
 - Create: `src/components/ShareSheet.tsx`
 - Create: `src/components/__tests__/ShareSheet.test.tsx`
 
@@ -323,6 +324,7 @@ git commit -m "feat(epicD): ShareSheet + ProfileScreen Share & Earn section"
 ## Task 3: ReferralLandingScreen
 
 **Files:**
+
 - Create: `src/screens/ReferralLandingScreen.tsx`
 - Create: `src/screens/__tests__/ReferralLandingScreen.test.tsx`
 - Modify: `src/navigation/index.ts` (add route + deep-link handler for `carolinafutons://referral/:code`)
@@ -463,6 +465,7 @@ git commit -m "feat(epicD): ReferralLandingScreen with deep-link + conversion re
 ## Task 4: RewardsScreen error UX fix
 
 **Files:**
+
 - Create: `src/hooks/useRewardsSectionData.ts`
 - Create: `src/hooks/__tests__/useRewardsSectionData.test.ts`
 - Modify: `src/screens/RewardsScreen.tsx`
@@ -540,15 +543,23 @@ function useSection<T>(fetcher: () => Promise<T>, deps: unknown[]) {
     let cancelled = false;
     setState(makeSection<T>());
     fetcher()
-      .then((data) => { if (!cancelled) setState({ data, isLoading: false, error: null }); })
+      .then((data) => {
+        if (!cancelled) setState({ data, isLoading: false, error: null });
+      })
       .catch((err) => {
         if (!cancelled) {
-          setState({ data: null, isLoading: false, error: err instanceof Error ? err.message : String(err) });
+          setState({
+            data: null,
+            isLoading: false,
+            error: err instanceof Error ? err.message : String(err),
+          });
           captureException(err instanceof Error ? err : new Error(String(err)));
         }
       });
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   return state;
 }
@@ -594,6 +605,7 @@ git commit -m "feat(epicD): useRewardsSectionData — per-section error isolatio
 ## Task 5: DailyQuestsCard flash fix
 
 **Files:**
+
 - Modify: `src/components/DailyQuestsCard.tsx`
 
 - [ ] **Step 1: Find the remount pattern**
@@ -665,6 +677,7 @@ git commit -m "fix(epicD): DailyQuestsCard — in-place state update eliminates 
 ## Task 6: Gamification push wiring (requires Epic A merged)
 
 **Files:**
+
 - Modify: `src/screens/LoyaltyScreen.tsx` (call emitBadgeEarned after badge award)
 - Modify: `src/hooks/useStreak.ts` (call emitTierChanged after tier change)
 
@@ -673,6 +686,7 @@ git commit -m "fix(epicD): DailyQuestsCard — in-place state update eliminates 
 ```bash
 git log --oneline main | grep "epicA" | head -3
 ```
+
 If Epic A commit is not in log, do not start this task.
 
 - [ ] **Step 2: Wire badge push in LoyaltyScreen**
@@ -695,6 +709,7 @@ grep -rn "tier\|Tier" src/hooks/useStreak.ts src/services/gamificationEventBridg
 ```
 
 After tier upgrade detected:
+
 ```typescript
 import { emitTierChanged } from '@/services/crossRigEventBus';
 

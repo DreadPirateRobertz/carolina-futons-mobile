@@ -32,12 +32,12 @@ Carolina Futons has unique differentiation opportunities that large retailers ca
 
 **Core mechanism:** `ARWorldTrackingConfiguration` provides 6DoF device tracking. `planeDetection` supports `.horizontal` (floors — primary for futons) and `.vertical` (walls — murphy cabinets). Raycasting via `ARSession.raycast()` projects screen taps to 3D plane intersections for tap-to-place.
 
-| Feature | Min iOS | Min Hardware |
-|---|---|---|
-| ARKit basic (plane detection, anchors) | iOS 11 | iPhone 6s (A9) |
-| AR Quick Look (zero-code AR viewer) | iOS 12 | iPhone 6s+ |
-| LiDAR scene reconstruction | iOS 13.4 | iPhone 12 Pro+ |
-| Object/people occlusion | iOS 13 | A12 chip+ |
+| Feature                                | Min iOS  | Min Hardware   |
+| -------------------------------------- | -------- | -------------- |
+| ARKit basic (plane detection, anchors) | iOS 11   | iPhone 6s (A9) |
+| AR Quick Look (zero-code AR viewer)    | iOS 12   | iPhone 6s+     |
+| LiDAR scene reconstruction             | iOS 13.4 | iPhone 12 Pro+ |
+| Object/people occlusion                | iOS 13   | A12 chip+      |
 
 **Lighting:** Environmental HDR mode provides three components — main directional light (shadows), ambient spherical harmonics (indirect illumination), and HDR cubemap (specular reflections on glossy surfaces like polished wood frames). RealityKit handles this automatically.
 
@@ -49,13 +49,13 @@ Carolina Futons has unique differentiation opportunities that large retailers ca
 
 **Core mechanism:** `Session` + `Config.PlaneFindingMode` for surface detection. `Frame.hitTest()` for raycasting. `HitResult.createAnchor()` locks virtual objects to world positions.
 
-| Requirement | Value |
-|---|---|
-| Min SDK (AR Required) | API 24 (Android 7.0) |
-| Min SDK (AR Optional) | API 19 (Android 4.4) |
-| OpenGL ES | 3.0+ |
-| Runtime dependency | Google Play Services for AR |
-| Depth API coverage | ~87% of ARCore devices |
+| Requirement           | Value                       |
+| --------------------- | --------------------------- |
+| Min SDK (AR Required) | API 24 (Android 7.0)        |
+| Min SDK (AR Optional) | API 19 (Android 4.4)        |
+| OpenGL ES             | 3.0+                        |
+| Runtime dependency    | Google Play Services for AR |
+| Depth API coverage    | ~87% of ARCore devices      |
 
 **Lighting:** Environmental HDR mode mirrors ARKit's three-component model (directional light, spherical harmonics, HDR cubemap). Comparable shadow/lighting realism.
 
@@ -65,14 +65,14 @@ Carolina Futons has unique differentiation opportunities that large retailers ca
 
 ### 2.3 Cross-Platform Parity
 
-| Feature | iOS | Android | Parity |
-|---|---|---|---|
-| Horizontal/vertical plane detection | Yes | Yes | Full |
-| Raycasting / hit testing | Yes | Yes | Full |
-| Environmental HDR lighting | Yes | Yes | Full |
-| E-commerce AR viewer | Quick Look (USDZ) | Scene Viewer (GLB) | Conceptual parity, different formats |
-| Depth/occlusion | LiDAR (Pro) or monocular | Monocular + optional ToF | Near-full |
-| `<model-viewer>` web component | Routes to Quick Look | Routes to Scene Viewer | Full (web) |
+| Feature                             | iOS                      | Android                  | Parity                               |
+| ----------------------------------- | ------------------------ | ------------------------ | ------------------------------------ |
+| Horizontal/vertical plane detection | Yes                      | Yes                      | Full                                 |
+| Raycasting / hit testing            | Yes                      | Yes                      | Full                                 |
+| Environmental HDR lighting          | Yes                      | Yes                      | Full                                 |
+| E-commerce AR viewer                | Quick Look (USDZ)        | Scene Viewer (GLB)       | Conceptual parity, different formats |
+| Depth/occlusion                     | LiDAR (Pro) or monocular | Monocular + optional ToF | Near-full                            |
+| `<model-viewer>` web component      | Routes to Quick Look     | Routes to Scene Viewer   | Full (web)                           |
 
 **iOS-only:** LiDAR mesh classification, Quick Look with Apple Pay, people occlusion, RealityKit framework.
 
@@ -97,6 +97,7 @@ Zero-compression ZIP archive containing USD geometry + embedded textures. Single
 Binary glTF — the "JPEG of 3D." Single-file container with JSON scene graph + binary geometry + textures.
 
 **Materials:** Metallic-roughness PBR model. Key extensions for furniture:
+
 - `KHR_materials_sheen` — fabric appearance (critical for futon upholstery)
 - `KHR_materials_clearcoat` — lacquered/varnished wood
 - `KHR_texture_basisu` — GPU-compressed textures for size reduction
@@ -122,12 +123,12 @@ Source Asset (Blender .blend)
 
 ### 3.4 Budget Targets
 
-| Parameter | Target | Maximum |
-|---|---|---|
-| Triangle count | 20K-50K | 100K |
-| Texture resolution | 2048x2048 | 4096x4096 |
-| File size per model | 5-15 MB | 25 MB |
-| Texture format | JPEG (diffuse), PNG (normal) | — |
+| Parameter           | Target                       | Maximum   |
+| ------------------- | ---------------------------- | --------- |
+| Triangle count      | 20K-50K                      | 100K      |
+| Texture resolution  | 2048x2048                    | 4096x4096 |
+| File size per model | 5-15 MB                      | 25 MB     |
+| Texture format      | JPEG (diffuse), PNG (normal) | —         |
 
 ### 3.5 Scale and Dimensions
 
@@ -147,13 +148,13 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 
 ### 4.1 Library Landscape
 
-| Library | Status | AR? | Expo Go? | Notes |
-|---|---|---|---|---|
+| Library                                   | Status                 | AR?     | Expo Go?       | Notes                                                             |
+| ----------------------------------------- | ---------------------- | ------- | -------------- | ----------------------------------------------------------------- |
 | **ViroReact** (`@reactvision/react-viro`) | Active (Morrow-backed) | Full AR | No (dev build) | Wraps ARKit + ARCore. Config plugin for Expo. Best RN AR library. |
-| react-native-arkit | Abandoned | — | — | Explicitly unmaintained. Do not use. |
-| react-native-arcore | Abandoned | — | — | Do not use. |
-| expo-gl + expo-three | Maintained | 3D only | Yes | No camera passthrough or plane detection. Good for 3D spin views. |
-| react-native-filament (Margelo) | Active | 3D only | No | Best 3D render quality in RN. Not an AR SDK. |
+| react-native-arkit                        | Abandoned              | —       | —              | Explicitly unmaintained. Do not use.                              |
+| react-native-arcore                       | Abandoned              | —       | —              | Do not use.                                                       |
+| expo-gl + expo-three                      | Maintained             | 3D only | Yes            | No camera passthrough or plane detection. Good for 3D spin views. |
+| react-native-filament (Margelo)           | Active                 | 3D only | No             | Best 3D render quality in RN. Not an AR SDK.                      |
 
 ### 4.2 Integration Approaches
 
@@ -162,11 +163,13 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 **How:** `Linking.openURL()` with USDZ URL on iOS (triggers Quick Look) or Scene Viewer intent URL on Android. The `react-native-ar-viewer` npm package wraps exactly this pattern.
 
 **Pros:**
+
 - Zero native code. Works with Expo managed workflow and Expo Go
 - High-quality AR powered by Apple/Google's own engines
 - 1-2 day implementation effort
 
 **Cons:**
+
 - Leaves the app (system modal/separate activity)
 - No custom UI overlay (no in-AR add-to-cart, no fabric picker)
 - No analytics on in-AR behavior
@@ -177,12 +180,14 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 **How:** Add `@reactvision/react-viro` with Expo config plugin. Use `ViroARScene`, `ViroARPlaneSelector`, `Viro3DObject`. Requires custom dev build (`expo prebuild`).
 
 **Pros:**
+
 - Full in-app AR with custom React Native UI overlays
 - Plane detection, tap-to-place, drag, rotate, pinch gestures
 - Can overlay add-to-cart, fabric picker, dimension labels
 - Loads GLB/OBJ models cross-platform
 
 **Cons:**
+
 - Requires custom dev build (no Expo Go)
 - Large native footprint (ARKit/ARCore SDKs + Viro engine)
 - 2-4 week implementation effort
@@ -206,12 +211,12 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 
 ### 4.3 Expo Compatibility
 
-| Approach | Expo Go | Dev Build | Bare |
-|---|---|---|---|
-| Quick Look / Scene Viewer (Linking) | **Yes** | **Yes** | **Yes** |
-| `<model-viewer>` WebView | **Yes** | **Yes** | **Yes** |
-| ViroReact | No | **Yes** (config plugin) | **Yes** |
-| Custom native module | No | **Yes** | **Yes** |
+| Approach                            | Expo Go | Dev Build               | Bare    |
+| ----------------------------------- | ------- | ----------------------- | ------- |
+| Quick Look / Scene Viewer (Linking) | **Yes** | **Yes**                 | **Yes** |
+| `<model-viewer>` WebView            | **Yes** | **Yes**                 | **Yes** |
+| ViroReact                           | No      | **Yes** (config plugin) | **Yes** |
+| Custom native module                | No      | **Yes**                 | **Yes** |
 
 ---
 
@@ -245,15 +250,15 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 
 ### 5.6 Universal UX Patterns
 
-| Pattern | Standard |
-|---|---|
-| Entry point | "View in Your Room" button on product detail page |
-| Onboarding | "Point camera at floor" with animated illustration, 3-5 seconds |
-| Surface feedback | Animated dots/grid on detected plane |
-| Placement | Tap to place at true scale |
-| Manipulation | Drag (move), pinch (scale — often locked), two-finger rotate |
-| Realism minimum | Shadow plane + light estimation + PBR materials |
-| Actions | Screenshot, share, add to cart (if in-app AR) |
+| Pattern          | Standard                                                        |
+| ---------------- | --------------------------------------------------------------- |
+| Entry point      | "View in Your Room" button on product detail page               |
+| Onboarding       | "Point camera at floor" with animated illustration, 3-5 seconds |
+| Surface feedback | Animated dots/grid on detected plane                            |
+| Placement        | Tap to place at true scale                                      |
+| Manipulation     | Drag (move), pinch (scale — often locked), two-finger rotate    |
+| Realism minimum  | Shadow plane + light estimation + PBR materials                 |
+| Actions          | Screenshot, share, add to cart (if in-app AR)                   |
 
 ---
 
@@ -264,6 +269,7 @@ Serve models from a CDN (CloudFront, Cloudflare R2), not bundled in the app bina
 #### Phase 1: Quick Look + Scene Viewer (Ship in 1-2 days)
 
 Add a "View in Your Room" button on `ProductDetailScreen` that:
+
 - **iOS:** Opens `.usdz` URL via `Linking.openURL()` → Apple Quick Look AR
 - **Android:** Opens Scene Viewer intent URL with `.glb` model
 
@@ -272,6 +278,7 @@ Zero native code. Works with current Expo managed workflow. Gives users a high-q
 #### Phase 2: ViroReact In-App AR (2-4 weeks, if Phase 1 justifies)
 
 If Phase 1 analytics show strong AR adoption, upgrade to ViroReact for:
+
 - In-app AR with custom UI overlays (fabric picker, add-to-cart, dimension labels)
 - Multi-product placement
 - Analytics on AR behavior
@@ -289,17 +296,17 @@ These features set us apart from large retailers who cannot invest per-product a
 
 ### 6.3 3D Asset Requirements
 
-| Item | Spec |
-|---|---|
-| Formats per product | `.usdz` (iOS) + `.glb` (Android) |
-| Source format | Blender `.blend` files |
-| Triangle budget | 20K-50K per model |
-| Texture resolution | 2K default |
-| File size target | 5-15 MB per format |
-| Scale | Real-world dimensions, origin at bottom-center |
-| Hosting | CDN (not bundled in app) |
-| Catalog size | ~20-50 products |
-| Fabric rendering | `KHR_materials_sheen` (GLB), UsdPreviewSurface (USDZ) |
+| Item                | Spec                                                  |
+| ------------------- | ----------------------------------------------------- |
+| Formats per product | `.usdz` (iOS) + `.glb` (Android)                      |
+| Source format       | Blender `.blend` files                                |
+| Triangle budget     | 20K-50K per model                                     |
+| Texture resolution  | 2K default                                            |
+| File size target    | 5-15 MB per format                                    |
+| Scale               | Real-world dimensions, origin at bottom-center        |
+| Hosting             | CDN (not bundled in app)                              |
+| Catalog size        | ~20-50 products                                       |
+| Fabric rendering    | `KHR_materials_sheen` (GLB), UsdPreviewSurface (USDZ) |
 
 ### 6.4 Key Metrics to Track
 
@@ -310,13 +317,13 @@ These features set us apart from large retailers who cannot invest per-product a
 
 ### 6.5 Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|---|---|---|
-| 3D model production cost/time | High | Start with top 5 best-selling products. Use Blender (free). Consider commissioning from Fiverr/Upwork 3D artists at $50-200/model. |
-| Android device fragmentation | Medium | Use AR Optional manifest flag. Graceful fallback to static images on unsupported devices. |
-| Pottery Barn precedent (feature sunset) | Low | Phase 1 approach has near-zero maintenance cost. Only invest in Phase 2 if metrics justify. |
-| ViroReact maintenance risk | Medium | Morrow acquisition funds full-time team. Quick Look/Scene Viewer approach has zero dependency on ViroReact. |
-| Wrong scale in AR | High (user trust) | Mandatory on-device QA for every model before publishing. Embed explicit dimensions in model metadata. |
+| Risk                                    | Impact            | Mitigation                                                                                                                         |
+| --------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 3D model production cost/time           | High              | Start with top 5 best-selling products. Use Blender (free). Consider commissioning from Fiverr/Upwork 3D artists at $50-200/model. |
+| Android device fragmentation            | Medium            | Use AR Optional manifest flag. Graceful fallback to static images on unsupported devices.                                          |
+| Pottery Barn precedent (feature sunset) | Low               | Phase 1 approach has near-zero maintenance cost. Only invest in Phase 2 if metrics justify.                                        |
+| ViroReact maintenance risk              | Medium            | Morrow acquisition funds full-time team. Quick Look/Scene Viewer approach has zero dependency on ViroReact.                        |
+| Wrong scale in AR                       | High (user trust) | Mandatory on-device QA for every model before publishing. Embed explicit dimensions in model metadata.                             |
 
 ---
 

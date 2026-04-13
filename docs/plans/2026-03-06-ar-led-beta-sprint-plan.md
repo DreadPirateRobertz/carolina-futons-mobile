@@ -15,6 +15,7 @@
 ### Task 1: Sentry Crash Reporting Integration
 
 **Files:**
+
 - Modify: `src/services/providers/sentryCrashReporting.ts`
 - Modify: `src/services/crashReportingInit.ts`
 - Modify: `App.tsx`
@@ -63,6 +64,7 @@ Expected: FAIL — `resetCrashReportingInit` or `getProvider` not exported yet.
 **Step 3: Implement crash reporting init with Sentry provider**
 
 Update `src/services/crashReportingInit.ts` to:
+
 - Read `EXPO_PUBLIC_SENTRY_DSN` from env
 - If present, instantiate `SentryCrashReportingProvider` with DSN
 - Call `crashReporting.registerProvider(provider)`
@@ -101,6 +103,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 2: Analytics Provider Registration (Firebase + Mixpanel)
 
 **Files:**
+
 - Modify: `src/services/analyticsInit.ts`
 - Modify: `App.tsx`
 - Modify: `.env.example`
@@ -127,7 +130,11 @@ describe('initAnalytics', () => {
 
   it('registers both providers when Mixpanel token provided', async () => {
     const spy = jest.spyOn(analytics, 'registerProvider');
-    await initAnalytics({ enableFirebase: true, enableMixpanel: true, mixpanelToken: 'test-token' });
+    await initAnalytics({
+      enableFirebase: true,
+      enableMixpanel: true,
+      mixpanelToken: 'test-token',
+    });
     expect(spy).toHaveBeenCalledTimes(1);
     // MultiProvider wraps both
     spy.mockRestore();
@@ -150,6 +157,7 @@ Run: `npx jest src/services/__tests__/analyticsInit.test.ts --no-coverage`
 **Step 3: Implement — analyticsInit.ts already exists and is mostly complete**
 
 The file already has the right structure. Verify it reads from env:
+
 - `EXPO_PUBLIC_MIXPANEL_TOKEN`
 - `EXPO_PUBLIC_ENABLE_FIREBASE` (default true)
 
@@ -176,6 +184,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 3: Stripe Payment Integration
 
 **Files:**
+
 - Modify: `src/services/payment.ts`
 - Modify: `src/hooks/usePayment.ts`
 - Modify: `src/screens/CheckoutScreen.tsx`
@@ -196,12 +205,13 @@ describe('createPaymentIntent', () => {
   it('calls backend API with cart items and returns client secret', async () => {
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({
-        clientSecret: 'pi_test_secret',
-        paymentIntentId: 'pi_test',
-        ephemeralKey: 'ek_test',
-        customerId: 'cus_test',
-      }),
+      json: () =>
+        Promise.resolve({
+          clientSecret: 'pi_test_secret',
+          paymentIntentId: 'pi_test',
+          ephemeralKey: 'ek_test',
+          customerId: 'cus_test',
+        }),
     });
 
     const result = await createPaymentIntent([], 'card');
@@ -234,6 +244,7 @@ Run: `npx jest src/services/__tests__/payment.test.ts --no-coverage`
 **Step 3: Implement createPaymentIntent in payment.ts**
 
 Add `createPaymentIntent(items: CartItem[], method: PaymentMethod): Promise<PaymentIntentResponse>` that:
+
 - POSTs to `${API_BASE}/payments/create-intent`
 - Sends cart items, payment method, totals
 - Returns PaymentIntentResponse
@@ -242,6 +253,7 @@ Add `createPaymentIntent(items: CartItem[], method: PaymentMethod): Promise<Paym
 **Step 4: Wire usePayment hook to Stripe SDK**
 
 Update `src/hooks/usePayment.ts`:
+
 - Call `createPaymentIntent` to get clientSecret
 - Use `useStripe().initPaymentSheet()` + `presentPaymentSheet()`
 - Handle success → navigate to OrderConfirmation
@@ -268,6 +280,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 4: Push Notification Token Registration
 
 **Files:**
+
 - Modify: `src/services/notifications.ts`
 - Modify: `src/hooks/useNotifications.tsx`
 - Create: `src/services/__tests__/notificationRegistration.test.ts`
@@ -307,6 +320,7 @@ Run: `npx jest src/services/__tests__/notificationRegistration.test.ts --no-cove
 **Step 3: Implement registerPushToken**
 
 Add to `src/services/notifications.ts`:
+
 - `registerPushToken(token: string): Promise<void>` — POSTs token to backend
 - 3 retries with exponential backoff (reuse `src/services/wix/retry.ts` pattern)
 - Stores last-registered token in AsyncStorage to avoid re-registering same token
@@ -328,6 +342,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 5: Offline Queue Replay Wiring
 
 **Files:**
+
 - Modify: `src/services/offlineQueue.ts`
 - Modify: `src/hooks/useOfflineSync.tsx`
 - Create: `src/services/__tests__/offlineQueueReplay.test.ts`
@@ -352,7 +367,8 @@ describe('OfflineQueue replay', () => {
 
   it('retries failed replays with exponential backoff', async () => {
     const queue = new OfflineQueue();
-    const mockExecutor = jest.fn()
+    const mockExecutor = jest
+      .fn()
       .mockRejectedValueOnce(new Error('Network'))
       .mockResolvedValueOnce(true);
     queue.registerExecutor('add_to_cart', mockExecutor);
@@ -372,6 +388,7 @@ Run: `npx jest src/services/__tests__/offlineQueueReplay.test.ts --no-coverage`
 **Step 3: Implement executor registry and replay with backoff**
 
 Update `src/services/offlineQueue.ts`:
+
 - Add `registerExecutor(type: string, fn: (payload) => Promise<void>)` method
 - Wire `replay()` to iterate queue, call registered executor per mutation type
 - Exponential backoff: 1s → 2s → 4s, max 3 retries per mutation
@@ -397,6 +414,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 6: AR Room Measurement Tool
 
 **Files:**
+
 - Create: `src/hooks/useARMeasurement.ts`
 - Create: `src/hooks/__tests__/useARMeasurement.test.ts`
 - Create: `src/components/ARMeasurementOverlay.tsx`
@@ -433,7 +451,7 @@ describe('useARMeasurement', () => {
     act(() => result.current.placePoint({ x: 1, y: 0, z: 0 }));
     expect(result.current.state).toBe('measured');
     expect(result.current.distanceMeters).toBeCloseTo(1.0);
-    expect(result.current.distanceDisplay).toBe("3' 3\""); // ~39.37 inches
+    expect(result.current.distanceDisplay).toBe('3\' 3"'); // ~39.37 inches
   });
 
   it('compares measurement to selected model and reports fit', () => {
@@ -532,6 +550,7 @@ describe('ARMeasurementOverlay', () => {
 **Step 5: Implement ARMeasurementOverlay component**
 
 Renders:
+
 - Endpoint markers (pulsing circles) at tap locations
 - Dashed line between two points
 - Distance label centered on line
@@ -557,6 +576,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 7: AR Fabric Texture Preview
 
 **Files:**
+
 - Create: `src/services/fabricTextureLoader.ts`
 - Create: `src/services/__tests__/fabricTextureLoader.test.ts`
 - Modify: `src/components/ARFutonOverlay.tsx`
@@ -622,6 +642,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 8: AR Multi-Product Staging
 
 **Files:**
+
 - Create: `src/hooks/useARScene.ts`
 - Create: `src/hooks/__tests__/useARScene.test.ts`
 - Modify: `src/screens/ARScreen.tsx`
@@ -717,6 +738,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 9: AR Comparison Mode
 
 **Files:**
+
 - Create: `src/components/ARComparisonOverlay.tsx`
 - Create: `src/components/__tests__/ARComparisonOverlay.test.tsx`
 - Modify: `src/screens/ARScreen.tsx`
@@ -768,6 +790,7 @@ Run: `npx jest src/components/__tests__/ARComparisonOverlay.test.tsx --no-covera
 **Step 4: Wire into ARScreen**
 
 Add comparison mode state. When active:
+
 - ARControls shows two model pickers (A and B)
 - ARComparisonOverlay replaces single ARFutonOverlay
 - Share button generates comparison screenshot with both models
@@ -787,6 +810,7 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ### Task 10: EAS Build Configuration + Beta Submission
 
 **Files:**
+
 - Create/Modify: `eas.json`
 - Modify: `app.json` (version bump, bundle IDs)
 
@@ -877,15 +901,15 @@ Task 9 (Comparison) ───┘
 
 After plan approval, create these beads:
 
-| ID | Title | Priority | Depends On | Assignee |
-|----|-------|----------|------------|----------|
-| NEW | Sentry crash reporting integration | P1 | — | TBD |
-| NEW | Firebase + Mixpanel analytics wiring | P1 | — | TBD |
-| NEW | Stripe payment integration | P1 | — | TBD |
-| NEW | Push notification token registration | P2 | — | TBD |
-| NEW | Offline queue replay wiring | P2 | — | TBD |
-| NEW | AR room measurement tool | P1 | — | TBD |
-| NEW | AR fabric texture preview | P2 | — | TBD |
-| NEW | AR multi-product staging | P1 | — | TBD |
-| NEW | AR comparison mode | P2 | — | TBD |
-| NEW | EAS build + beta submission | P1 | All above | TBD |
+| ID  | Title                                | Priority | Depends On | Assignee |
+| --- | ------------------------------------ | -------- | ---------- | -------- |
+| NEW | Sentry crash reporting integration   | P1       | —          | TBD      |
+| NEW | Firebase + Mixpanel analytics wiring | P1       | —          | TBD      |
+| NEW | Stripe payment integration           | P1       | —          | TBD      |
+| NEW | Push notification token registration | P2       | —          | TBD      |
+| NEW | Offline queue replay wiring          | P2       | —          | TBD      |
+| NEW | AR room measurement tool             | P1       | —          | TBD      |
+| NEW | AR fabric texture preview            | P2       | —          | TBD      |
+| NEW | AR multi-product staging             | P1       | —          | TBD      |
+| NEW | AR comparison mode                   | P2       | —          | TBD      |
+| NEW | EAS build + beta submission          | P1       | All above  | TBD      |

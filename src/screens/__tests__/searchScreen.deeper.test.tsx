@@ -205,9 +205,7 @@ describe('SearchScreen — sort picker', () => {
 
 describe('SearchScreen — edge queries', () => {
   it('special-char query "!@#$" returns empty state (no crash)', async () => {
-    mockUseProducts.mockReturnValue(
-      makeProductsState({ searchQuery: '!@#$', products: [] }),
-    );
+    mockUseProducts.mockReturnValue(makeProductsState({ searchQuery: '!@#$', products: [] }));
     const { getByTestId } = renderSearch();
     await act(async () => {
       jest.advanceTimersByTime(400);
@@ -217,16 +215,12 @@ describe('SearchScreen — edge queries', () => {
 
   it('100-character query does not crash', async () => {
     const longQuery = 'a'.repeat(100);
-    mockUseProducts.mockReturnValue(
-      makeProductsState({ searchQuery: longQuery, products: [] }),
-    );
+    mockUseProducts.mockReturnValue(makeProductsState({ searchQuery: longQuery, products: [] }));
     expect(() => renderSearch()).not.toThrow();
   });
 
   it('query consisting only of numbers shows empty state', async () => {
-    mockUseProducts.mockReturnValue(
-      makeProductsState({ searchQuery: '12345', products: [] }),
-    );
+    mockUseProducts.mockReturnValue(makeProductsState({ searchQuery: '12345', products: [] }));
     const { getByTestId } = renderSearch();
     await act(async () => {
       jest.advanceTimersByTime(400);
@@ -305,7 +299,15 @@ describe('SearchScreen — initial state guard', () => {
     await act(async () => {
       jest.advanceTimersByTime(400);
     });
-    for (const cat of ['futons', 'murphy-beds', 'covers', 'mattresses', 'frames', 'pillows', 'accessories']) {
+    for (const cat of [
+      'futons',
+      'murphy-beds',
+      'covers',
+      'mattresses',
+      'frames',
+      'pillows',
+      'accessories',
+    ]) {
       expect(getByTestId(`initial-category-${cat}`)).toBeTruthy();
     }
   });

@@ -13,6 +13,7 @@
 ### Task 1: Shared Illustration Utilities
 
 **Files:**
+
 - Create: `src/components/illustrations/shared.ts`
 - Test: `src/components/illustrations/__tests__/shared.test.ts`
 
@@ -135,7 +136,7 @@ export const MOUNTAIN_LAYER_CONFIGS = [
   { name: 'mid-far', baseHeight: 0.55, seed: 29 },
   { name: 'mid', baseHeight: 0.62, seed: 61 },
   { name: 'mid-near', baseHeight: 0.72, seed: 88 },
-  { name: 'front', baseHeight: 0.80, seed: 55 },
+  { name: 'front', baseHeight: 0.8, seed: 55 },
 ] as const;
 
 // Atmospheric opacity ramp: distant (faint) → front (solid)
@@ -258,10 +259,30 @@ export interface BirdConfig {
 export function buildBirds(vbW: number, vbH: number): BirdConfig[] {
   const spread = vbW / 5;
   return [
-    { path: `M${spread * 1},${vbH * 0.18} C${spread * 1 + 5},${vbH * 0.15} ${spread * 1 + 10},${vbH * 0.14} ${spread * 1 + 15},${vbH * 0.16} C${spread * 1 + 20},${vbH * 0.14} ${spread * 1 + 25},${vbH * 0.15} ${spread * 1 + 30},${vbH * 0.18}`, strokeWidth: 1.2, x: spread * 1, y: vbH * 0.18 },
-    { path: `M${spread * 2.5},${vbH * 0.13} C${spread * 2.5 + 4},${vbH * 0.10} ${spread * 2.5 + 7},${vbH * 0.09} ${spread * 2.5 + 10},${vbH * 0.11} C${spread * 2.5 + 13},${vbH * 0.09} ${spread * 2.5 + 16},${vbH * 0.10} ${spread * 2.5 + 20},${vbH * 0.13}`, strokeWidth: 1.0, x: spread * 2.5, y: vbH * 0.13 },
-    { path: `M${spread * 3.5},${vbH * 0.20} C${spread * 3.5 + 3},${vbH * 0.18} ${spread * 3.5 + 5},${vbH * 0.17} ${spread * 3.5 + 8},${vbH * 0.19} C${spread * 3.5 + 11},${vbH * 0.17} ${spread * 3.5 + 13},${vbH * 0.18} ${spread * 3.5 + 16},${vbH * 0.20}`, strokeWidth: 0.8, x: spread * 3.5, y: vbH * 0.20 },
-    { path: `M${spread * 4},${vbH * 0.15} C${spread * 4 + 3},${vbH * 0.13} ${spread * 4 + 6},${vbH * 0.12} ${spread * 4 + 8},${vbH * 0.14} C${spread * 4 + 10},${vbH * 0.12} ${spread * 4 + 13},${vbH * 0.13} ${spread * 4 + 16},${vbH * 0.15}`, strokeWidth: 0.9, x: spread * 4, y: vbH * 0.15 },
+    {
+      path: `M${spread * 1},${vbH * 0.18} C${spread * 1 + 5},${vbH * 0.15} ${spread * 1 + 10},${vbH * 0.14} ${spread * 1 + 15},${vbH * 0.16} C${spread * 1 + 20},${vbH * 0.14} ${spread * 1 + 25},${vbH * 0.15} ${spread * 1 + 30},${vbH * 0.18}`,
+      strokeWidth: 1.2,
+      x: spread * 1,
+      y: vbH * 0.18,
+    },
+    {
+      path: `M${spread * 2.5},${vbH * 0.13} C${spread * 2.5 + 4},${vbH * 0.1} ${spread * 2.5 + 7},${vbH * 0.09} ${spread * 2.5 + 10},${vbH * 0.11} C${spread * 2.5 + 13},${vbH * 0.09} ${spread * 2.5 + 16},${vbH * 0.1} ${spread * 2.5 + 20},${vbH * 0.13}`,
+      strokeWidth: 1.0,
+      x: spread * 2.5,
+      y: vbH * 0.13,
+    },
+    {
+      path: `M${spread * 3.5},${vbH * 0.2} C${spread * 3.5 + 3},${vbH * 0.18} ${spread * 3.5 + 5},${vbH * 0.17} ${spread * 3.5 + 8},${vbH * 0.19} C${spread * 3.5 + 11},${vbH * 0.17} ${spread * 3.5 + 13},${vbH * 0.18} ${spread * 3.5 + 16},${vbH * 0.2}`,
+      strokeWidth: 0.8,
+      x: spread * 3.5,
+      y: vbH * 0.2,
+    },
+    {
+      path: `M${spread * 4},${vbH * 0.15} C${spread * 4 + 3},${vbH * 0.13} ${spread * 4 + 6},${vbH * 0.12} ${spread * 4 + 8},${vbH * 0.14} C${spread * 4 + 10},${vbH * 0.12} ${spread * 4 + 13},${vbH * 0.13} ${spread * 4 + 16},${vbH * 0.15}`,
+      strokeWidth: 0.9,
+      x: spread * 4,
+      y: vbH * 0.15,
+    },
   ];
 }
 
@@ -275,14 +296,23 @@ export function buildPineTrees(vbW: number, vbH: number): TreeConfig[] {
   return positions.map((x) => {
     const trunkH = vbH * 0.15;
     const trunkW = vbW * 0.003;
-    const trunkY = vbH * 0.70;
+    const trunkY = vbH * 0.7;
     const spread = vbW * 0.014;
     return {
       trunk: { x, y: trunkY, width: trunkW, height: trunkH },
       canopyLayers: [
-        { path: `M${x - spread},${trunkY + trunkH * 0.35} C${x - spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread},${trunkY + trunkH * 0.35}`, opacity: 0.45 },
-        { path: `M${x - spread * 0.8},${trunkY + trunkH * 0.2} C${x - spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.8},${trunkY + trunkH * 0.2}`, opacity: 0.55 },
-        { path: `M${x - spread * 0.6},${trunkY + trunkH * 0.05} C${x - spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.6},${trunkY + trunkH * 0.05}`, opacity: 0.65 },
+        {
+          path: `M${x - spread},${trunkY + trunkH * 0.35} C${x - spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread * 0.5},${trunkY - trunkH * 0.1} ${x + spread},${trunkY + trunkH * 0.35}`,
+          opacity: 0.45,
+        },
+        {
+          path: `M${x - spread * 0.8},${trunkY + trunkH * 0.2} C${x - spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.3},${trunkY - trunkH * 0.25} ${x + spread * 0.8},${trunkY + trunkH * 0.2}`,
+          opacity: 0.55,
+        },
+        {
+          path: `M${x - spread * 0.6},${trunkY + trunkH * 0.05} C${x - spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.15},${trunkY - trunkH * 0.35} ${x + spread * 0.6},${trunkY + trunkH * 0.05}`,
+          opacity: 0.65,
+        },
       ],
     };
   });
@@ -295,15 +325,15 @@ export interface FloraConfig {
 
 export function buildFlora(vbW: number, vbH: number): FloraConfig[] {
   const positions = [
-    { x: vbW * 0.10, bloomColor: colors.sunsetCoral },
+    { x: vbW * 0.1, bloomColor: colors.sunsetCoral },
     { x: vbW * 0.11, bloomColor: colors.sandBase },
     { x: vbW * 0.47, bloomColor: colors.sunsetCoral },
     { x: vbW * 0.49, bloomColor: colors.mountainBlueLight },
-    { x: vbW * 0.90, bloomColor: colors.sunsetCoral },
+    { x: vbW * 0.9, bloomColor: colors.sunsetCoral },
     { x: vbW * 0.92, bloomColor: colors.sandBase },
   ];
   return positions.map(({ x, bloomColor }) => ({
-    stem: { x1: x, y1: vbH * 0.90, x2: x + 1, y2: vbH * 0.84, strokeWidth: 1 },
+    stem: { x1: x, y1: vbH * 0.9, x2: x + 1, y2: vbH * 0.84, strokeWidth: 1 },
     bloom: { cx: x, cy: vbH * 0.83, r: vbW * 0.002 + 1.5, color: bloomColor },
   }));
 }
@@ -326,6 +356,7 @@ git commit -m "feat: shared illustration utilities — mountain paths, gradients
 ### Task 2: MountainSkyline Upgrade to 7-Layer Fidelity
 
 **Files:**
+
 - Modify: `src/components/MountainSkyline.tsx`
 - Modify: `src/components/__tests__/MountainSkyline.test.tsx`
 
@@ -379,6 +410,7 @@ Expected: FAIL — `showDetails` and `transparent` props not supported, only 2 l
 **Step 3: Rewrite MountainSkyline with 7-layer architecture**
 
 Replace `src/components/MountainSkyline.tsx` with full implementation using:
+
 - `MOUNTAIN_LAYER_CONFIGS` for 7 C-curve bezier layers
 - `GRADIENT_PRESETS_MULTI` for 5-6 stop gradients
 - `buildBirds`, `buildPineTrees`, `buildFlora` for detail elements
@@ -390,6 +422,7 @@ Replace `src/components/MountainSkyline.tsx` with full implementation using:
 - Keep existing props: `variant`, `height`, `showGlow`, `style`, `testID`
 
 Key structure:
+
 ```
 <Svg>
   <Defs> multi-stop gradient + glow radial </Defs>
@@ -426,6 +459,7 @@ git commit -m "feat(MountainSkyline): upgrade to 7-layer fidelity with birds, tr
 ### Task 3: Empty State Illustrations Upgrade (Batch)
 
 **Files:**
+
 - Modify: `src/components/illustrations/CartIllustration.tsx`
 - Modify: `src/components/illustrations/SearchIllustration.tsx`
 - Modify: `src/components/illustrations/WishlistIllustration.tsx`
@@ -457,6 +491,7 @@ Expected: FAIL — current illustrations have only 3-4 paths
 **Step 3: Upgrade each illustration**
 
 For each of the 8 illustrations, apply:
+
 - Replace Q-curve paths with C-curve bezier paths using `buildSmallMountainPath()` from shared.ts
 - Increase from 3 layers to 5 mountain layers (distant, far, mid, near, front)
 - Upgrade gradients from 2-3 stops to 4-5 stops
@@ -487,6 +522,7 @@ git commit -m "feat(illustrations): upgrade all 8 empty states to 5-layer C-bezi
 ### Task 4: Nightly CI/CD Workflow
 
 **Files:**
+
 - Create: `.github/workflows/nightly.yml`
 - Test: (manual — verify YAML syntax)
 
@@ -498,8 +534,8 @@ name: Nightly Integration
 
 on:
   schedule:
-    - cron: '0 4 * * *'  # 4 AM UTC daily
-  workflow_dispatch:  # Allow manual trigger
+    - cron: '0 4 * * *' # 4 AM UTC daily
+  workflow_dispatch: # Allow manual trigger
 
 jobs:
   test:
@@ -632,6 +668,7 @@ git commit -m "ci: add nightly integration workflow — test, lint, typecheck, b
 ### Task 5: Sandbox Testing and Report
 
 **Files:**
+
 - Create: `docs/reports/2026-03-04-sandbox-testing-report.md`
 
 **Step 1: Start Expo dev server**
@@ -644,6 +681,7 @@ Run: `npx expo run:ios --device "iPhone 15 Pro"`
 
 Navigate through all screens: Home, Shop, ProductDetail (tap a product), Cart, Account, Onboarding.
 For each screen, note:
+
 - SVG rendering quality (gradients, paths, opacity layers)
 - Dark mode contrast
 - MountainSkyline proportions
@@ -670,51 +708,62 @@ Create `docs/reports/2026-03-04-sandbox-testing-report.md`:
 # Sandbox Testing Report — 2026-03-04
 
 ## Summary
-| Platform | Screens Tested | Pass | Fail | Issues |
-|----------|---------------|------|------|--------|
-| iOS Simulator (iPhone 15 Pro) | 6 | ? | ? | ... |
-| Android Emulator (Pixel 7) | 6 | ? | ? | ... |
-| Web (Chrome) | 6 | ? | ? | ... |
+
+| Platform                      | Screens Tested | Pass | Fail | Issues |
+| ----------------------------- | -------------- | ---- | ---- | ------ |
+| iOS Simulator (iPhone 15 Pro) | 6              | ?    | ?    | ...    |
+| Android Emulator (Pixel 7)    | 6              | ?    | ?    | ...    |
+| Web (Chrome)                  | 6              | ?    | ?    | ...    |
 
 ## Screen-by-Screen Results
 
 ### HomeScreen
+
 | Platform | Status | Notes |
-|----------|--------|-------|
-| iOS | | |
-| Android | | |
-| Web | | |
+| -------- | ------ | ----- |
+| iOS      |        |       |
+| Android  |        |       |
+| Web      |        |       |
 
 ### ShopScreen
+
 ...
 
 ### ProductDetailScreen
+
 ...
 
 ### CartScreen
+
 ...
 
 ### AccountScreen
+
 ...
 
 ### OnboardingScreen
+
 ...
 
 ## MountainSkyline Rendering
+
 - [ ] 7 layers visible with atmospheric depth
 - [ ] Gradient colors match brand tokens
 - [ ] Bird/tree/flora details render at correct scale
 - [ ] Transparent mode works on dark sections
 
 ## Empty State Illustrations
+
 - [ ] 5-layer depth visible
 - [ ] C-curve paths render smoothly (no jagged edges)
 - [ ] Scene details visible at default size
 
 ## Issues Found
+
 1. ...
 
 ## Recommendations
+
 1. ...
 ```
 

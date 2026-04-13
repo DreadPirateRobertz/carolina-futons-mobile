@@ -131,9 +131,7 @@ jest.mock('@/hooks/useAffirmPrequalification', () => ({
 
 jest.mock('@/services/affirmService', () => ({
   checkAffirmPrequalification: jest.fn().mockResolvedValue({ eligible: false }),
-  initiateAffirmCheckout: jest
-    .fn()
-    .mockResolvedValue({ checkoutUrl: '', checkoutToken: '' }),
+  initiateAffirmCheckout: jest.fn().mockResolvedValue({ checkoutUrl: '', checkoutToken: '' }),
   AFFIRM_MIN_AMOUNT: 50,
   AFFIRM_MAX_AMOUNT: 30000,
 }));
@@ -352,9 +350,7 @@ describe('address validation failure messages', () => {
     fireEvent.changeText(utils.getByTestId('shipping-zip'), 'ABCDE');
     fireEvent.press(utils.getByTestId('payment-affirm'));
     fireEvent.press(utils.getByTestId('place-order-button'));
-    expect(utils.getByTestId('shipping-zip-error').props.children).toBe(
-      'Enter a valid ZIP code',
-    );
+    expect(utils.getByTestId('shipping-zip-error').props.children).toBe('Enter a valid ZIP code');
   });
 
   it('state error says "Enter a valid 2-letter state code" for invalid state', () => {
@@ -533,7 +529,10 @@ describe('order ID display', () => {
   });
 
   it('long order number renders without crashing', () => {
-    const longNumberOrder = { ...mockOrder, orderNumber: 'CF-20260413-VERY-LONG-ORDER-NUMBER-123456' };
+    const longNumberOrder = {
+      ...mockOrder,
+      orderNumber: 'CF-20260413-VERY-LONG-ORDER-NUMBER-123456',
+    };
     const { getByTestId } = renderConfirmation({ order: longNumberOrder });
     expect(getByTestId('order-number')).toBeTruthy();
   });

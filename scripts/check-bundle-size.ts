@@ -70,7 +70,15 @@ export function checkBundleSize(
 
   const message = `${status} — Bundle: ${formattedSize} / Limit: ${formattedLimit} (${budgetLine})`;
 
-  return { passed, actualBytes, limitBytes, budgetRemaining, formattedSize, formattedLimit, message };
+  return {
+    passed,
+    actualBytes,
+    limitBytes,
+    budgetRemaining,
+    formattedSize,
+    formattedLimit,
+    message,
+  };
 }
 
 // ---------------------------------------------------------------------------

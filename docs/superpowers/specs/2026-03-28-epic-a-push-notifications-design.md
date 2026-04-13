@@ -13,6 +13,7 @@
 Deliver a complete push notification system covering order status events, gamification triggers (streaks, challenges), and price-drop alerts. Includes the full permission UX flow and a preferences management screen.
 
 Success criteria:
+
 - User receives order_shipped, order_delivered, order_refunded push within 30s of Wix webhook firing
 - Streak/challenge/badge pushes fire within 5s of gamification event
 - Price-drop push fires when watched product drops in price (Wix product update event)
@@ -48,6 +49,7 @@ Screen (OrderDetailScreen / ChallengesScreen / ProductDetailScreen)
 ```
 
 **Device token lifecycle:**
+
 1. App launches → request permission (after pre-prompt) → register with Expo → store token in `MemberPushTokens` Wix collection via `callFunction('/_functions/registerPushToken', 'POST', { token, platform })`
 2. On foreground: refresh token if stale (>7 days)
 3. On logout: deregister token (`/_functions/deregisterPushToken`)
@@ -61,12 +63,14 @@ Screen (OrderDetailScreen / ChallengesScreen / ProductDetailScreen)
 ### 3.1 Permission Flow (new screens)
 
 **`NotificationPermissionPromptScreen`** (`src/screens/NotificationPermissionPromptScreen.tsx`)
+
 - Shown once before iOS system dialog, never shown again if already decided
 - Explains what notifications the user will receive and why
 - Two CTAs: "Turn on notifications" (triggers system dialog) / "Maybe later" (defers, shown again after 7 days)
 - A11y: full VoiceOver support, no animation blocking
 
 **`NotificationPreferencesScreen`** (exists — needs full rework)
+
 - Replace loading-free fetch with skeleton (3 toggle rows)
 - Each toggle: `accessibilityRole="switch"`, `accessibilityState={{ checked }}`, announces state change
 - Categories: Order Updates, Challenges & Streaks, Price Drops, Promotional
@@ -93,6 +97,7 @@ Error handling: registration failures logged to Sentry, do NOT throw (notificati
 ### 3.3 NotificationRouter (`src/navigation/NotificationRouter.ts`) — NEW
 
 Maps notification `data.type` to navigation action:
+
 - `order_shipped` / `order_delivered` / `order_refunded` → `OrderDetailScreen` with orderId
 - `challenge_started` / `streak_extended` → `ChallengesScreen`
 - `badge_earned` → `LoyaltyScreen`
@@ -102,8 +107,11 @@ Maps notification `data.type` to navigation action:
 ### 3.4 useNotificationPermission hook (`src/hooks/useNotificationPermission.ts`) — NEW
 
 ```ts
-{ status, requestPermission, openSettings }
+{
+  (status, requestPermission, openSettings);
+}
 ```
+
 - Wraps `expo-notifications` permission API
 - Persists "asked before" flag in AsyncStorage so pre-prompt shows only once
 - `openSettings()` calls `Linking.openSettings()` for denied state
@@ -113,11 +121,13 @@ Maps notification `data.type` to navigation action:
 ## 4. Data Contracts
 
 ### MemberPushTokens (Wix collection — new)
+
 ```
 { memberId, token, platform: 'ios'|'android', registeredAt, appVersion }
 ```
 
 ### Notification envelope (Wix → EPNS → device)
+
 ```ts
 {
   to: string,           // Expo push token
@@ -140,13 +150,13 @@ Maps notification `data.type` to navigation action:
 
 ## 5. Error Handling
 
-| Scenario | Handling |
-|----------|----------|
-| Permission denied on first ask | Show Settings CTA on preferences screen; do not re-prompt for 7 days |
-| Token registration fails | Log to Sentry, retry on next foreground event, do not crash |
-| Notification tap with unknown type | Navigate to HomeScreen |
-| Wix endpoint 400 (bad token) | Deregister token locally, trigger re-registration |
-| Wix endpoint 5xx | Retry with exponential backoff (3 attempts), then Sentry alert |
+| Scenario                           | Handling                                                             |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| Permission denied on first ask     | Show Settings CTA on preferences screen; do not re-prompt for 7 days |
+| Token registration fails           | Log to Sentry, retry on next foreground event, do not crash          |
+| Notification tap with unknown type | Navigate to HomeScreen                                               |
+| Wix endpoint 400 (bad token)       | Deregister token locally, trigger re-registration                    |
+| Wix endpoint 5xx                   | Retry with exponential backoff (3 attempts), then Sentry alert       |
 
 ---
 
@@ -161,13 +171,13 @@ Maps notification `data.type` to navigation action:
 
 ## 7. Beads
 
-| Bead | Description | Lead |
-|------|-------------|------|
-| cm-epicA-1 | NotificationService + token registration | bishop |
-| cm-epicA-2 | NotificationPermissionPromptScreen | burke |
-| cm-epicA-3 | NotificationPreferencesScreen rework (skeleton + a11y) | burke |
-| cm-epicA-4 | NotificationRouter + deep-link tap handling | bishop |
-| cm-epicA-5 | Order status push integration (Wix webhook → EPNS) | bishop |
-| cm-epicA-6 | Gamification push triggers (streak/challenge/badge) | hicks |
-| cm-epicA-7 | Price-drop push trigger | ripley |
-| cm-epicA-8 | Physical device validation + E2E test suite | bishop + burke |
+| Bead       | Description                                            | Lead           |
+| ---------- | ------------------------------------------------------ | -------------- |
+| cm-epicA-1 | NotificationService + token registration               | bishop         |
+| cm-epicA-2 | NotificationPermissionPromptScreen                     | burke          |
+| cm-epicA-3 | NotificationPreferencesScreen rework (skeleton + a11y) | burke          |
+| cm-epicA-4 | NotificationRouter + deep-link tap handling            | bishop         |
+| cm-epicA-5 | Order status push integration (Wix webhook → EPNS)     | bishop         |
+| cm-epicA-6 | Gamification push triggers (streak/challenge/badge)    | hicks          |
+| cm-epicA-7 | Price-drop push trigger                                | ripley         |
+| cm-epicA-8 | Physical device validation + E2E test suite            | bishop + burke |

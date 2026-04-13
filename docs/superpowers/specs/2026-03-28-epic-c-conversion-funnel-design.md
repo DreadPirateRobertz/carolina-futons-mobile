@@ -14,6 +14,7 @@
 Remove the top three conversion drop-off points: cart abandonment (no recovery sequence), checkout friction (keyboard/form UX), and missing promo code entry. Guest checkout is specced here but gated on a Stilgar Wix configuration change — the rest of the epic proceeds without it.
 
 Success criteria:
+
 - Cart abandonment recovery push + email fires within 30 min of cart being abandoned (via existing `useCartAbandonmentRecovery` hook)
 - Promo code entry visible and functional on CheckoutScreen
 - CheckoutScreen shows skeleton form during Stripe/Klarna init (not generic spinner)
@@ -42,6 +43,7 @@ Cart state (useCart)
 
 **Analytics event taxonomy (pre-epic — bishop):**
 Before Sprint 1 starts, define `analyticsEvents.ts` with typed event constants:
+
 ```ts
 export const ANALYTICS = {
   CHECKOUT_STARTED: 'checkout_started',
@@ -54,6 +56,7 @@ export const ANALYTICS = {
   GUEST_CHECKOUT_STARTED: 'guest_checkout_started',
 } as const;
 ```
+
 All Epic C instrumentation uses these constants. No ad-hoc string events.
 
 ---
@@ -63,6 +66,7 @@ All Epic C instrumentation uses these constants. No ad-hoc string events.
 ### 3.1 PromoCodeInput (`src/components/PromoCodeInput.tsx`) — NEW
 
 Inline expandable row at the bottom of the order summary:
+
 - Collapsed: "Add promo code" tappable row with chevron
 - Expanded: text input + "Apply" button
 - States: idle, loading (applying), success (code + discount shown), error (message shown)
@@ -77,6 +81,7 @@ Error cases: expired code, minimum order not met, already used, invalid format.
 ### 3.2 CheckoutFormSkeleton (`src/components/CheckoutFormSkeleton.tsx`) — NEW
 
 Shown during Stripe/Klarna SDK initialization (~2-3s). Matches the final form layout:
+
 - Name field skeleton
 - Card number skeleton
 - Expiry + CVV row skeleton
@@ -103,6 +108,7 @@ pollPaymentConfirmation(
 ### 3.4 CheckoutScreen keyboard chain (existing file — rework)
 
 Changes to `CheckoutScreen.tsx`:
+
 - Wrap scroll content in `KeyboardAvoidingView` with `behavior={Platform.OS === 'ios' ? 'padding' : 'height'}`
 - `ScrollView` with `keyboardShouldPersistTaps="handled"`
 - All TextInput fields: explicit `ref` chain, `returnKeyType="next"` advancing focus, last field `returnKeyType="done"` dismisses keyboard
@@ -112,6 +118,7 @@ Changes to `CheckoutScreen.tsx`:
 ### 3.5 Cart Abandonment Bridge (existing hook — extend)
 
 `useCartAbandonmentRecovery` already exists. Add push notification trigger:
+
 - When cart abandoned flag fires → call `crossRigEventBus.emitCartAbandoned()` (new emitter)
 - Wix handles the 30-min delay and sends push + email
 - Recovery push deep-links to CartScreen with cart pre-populated
@@ -119,6 +126,7 @@ Changes to `CheckoutScreen.tsx`:
 ### 3.6 GuestCheckoutFlow (`src/screens/GuestCheckoutScreen.tsx`) — GATED
 
 Spec complete, implementation blocked on Stilgar enabling guest checkout in Wix eCommerce settings (cf-2zr3). When unblocked:
+
 - Pre-checkout modal: "Continue as guest or sign in"
 - Guest path: email only, no account created
 - Post-purchase: "Save your details" upsell to create account
@@ -128,14 +136,14 @@ Spec complete, implementation blocked on Stilgar enabling guest checkout in Wix 
 
 ## 4. Error Handling
 
-| Scenario | Handling |
-|----------|----------|
-| Promo code invalid | Show specific error message from API, keep input visible |
-| Promo code API unreachable | "Unable to verify code — try again", do not block checkout |
-| Stripe SDK init timeout | Show skeleton for max 5s, then show "Payment unavailable" with retry |
-| Payment timeout (30s) | "Taking longer than expected — check your email", do not mark as failed |
-| Cart abandonment emit fails | Queue in AsyncStorage (crossRigEventBus pattern), replay on next session |
-| Keyboard covering fields | KeyboardAvoidingView handles on iOS; Android uses `adjustResize` windowSoftInputMode |
+| Scenario                    | Handling                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Promo code invalid          | Show specific error message from API, keep input visible                             |
+| Promo code API unreachable  | "Unable to verify code — try again", do not block checkout                           |
+| Stripe SDK init timeout     | Show skeleton for max 5s, then show "Payment unavailable" with retry                 |
+| Payment timeout (30s)       | "Taking longer than expected — check your email", do not mark as failed              |
+| Cart abandonment emit fails | Queue in AsyncStorage (crossRigEventBus pattern), replay on next session             |
+| Keyboard covering fields    | KeyboardAvoidingView handles on iOS; Android uses `adjustResize` windowSoftInputMode |
 
 ---
 
@@ -150,12 +158,12 @@ Spec complete, implementation blocked on Stilgar enabling guest checkout in Wix 
 
 ## 6. Beads
 
-| Bead | Description | Lead |
-|------|-------------|------|
-| cm-epicC-0 | Shared analytics event taxonomy (pre-epic, unblocks all) | bishop |
-| cm-epicC-1 | PromoCodeInput component + Wix validatePromoCode API | ripley |
-| cm-epicC-2 | CheckoutFormSkeleton (replaces generic spinner) | ripley |
-| cm-epicC-3 | PaymentPoller with 30s timeout | hicks |
-| cm-epicC-4 | CheckoutScreen keyboard chain + a11y rework | burke |
-| cm-epicC-5 | Cart abandonment push bridge | hicks |
-| cm-epicC-6 | GuestCheckoutFlow (GATED — starts when cf-2zr3 unblocked) | burke |
+| Bead       | Description                                               | Lead   |
+| ---------- | --------------------------------------------------------- | ------ |
+| cm-epicC-0 | Shared analytics event taxonomy (pre-epic, unblocks all)  | bishop |
+| cm-epicC-1 | PromoCodeInput component + Wix validatePromoCode API      | ripley |
+| cm-epicC-2 | CheckoutFormSkeleton (replaces generic spinner)           | ripley |
+| cm-epicC-3 | PaymentPoller with 30s timeout                            | hicks  |
+| cm-epicC-4 | CheckoutScreen keyboard chain + a11y rework               | burke  |
+| cm-epicC-5 | Cart abandonment push bridge                              | hicks  |
+| cm-epicC-6 | GuestCheckoutFlow (GATED — starts when cf-2zr3 unblocked) | burke  |

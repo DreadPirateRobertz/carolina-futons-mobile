@@ -9,13 +9,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  type LayoutChangeEvent,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, type LayoutChangeEvent } from 'react-native';
 import { Image } from 'expo-image';
 import type { RealRoomPhoto } from '@/hooks/useRealRoomPhotos';
 

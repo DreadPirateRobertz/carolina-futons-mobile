@@ -68,7 +68,16 @@ const MOCK_ROOMS: RoomGalleryItem[] = [
     roomStyle: 'Modern',
     createdDate: '2026-03-01T00:00:00Z',
     featured: true,
-    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'asheville-full',
+        productName: 'Asheville Full',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   }),
   makeRoom({
     roomId: 'room-002',
@@ -77,7 +86,16 @@ const MOCK_ROOMS: RoomGalleryItem[] = [
     roomStyle: 'Coastal',
     createdDate: '2026-03-02T00:00:00Z',
     featured: false,
-    tags: [{ productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'biltmore-queen',
+        productName: 'Biltmore Queen',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   }),
   makeRoom({
     roomId: 'room-003',
@@ -86,7 +104,16 @@ const MOCK_ROOMS: RoomGalleryItem[] = [
     roomStyle: 'Rustic',
     createdDate: '2026-03-03T00:00:00Z',
     featured: true,
-    tags: [{ productId: 'blue-ridge-full', productName: 'Blue Ridge Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'blue-ridge-full',
+        productName: 'Blue Ridge Full',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   }),
 ];
 

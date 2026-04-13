@@ -542,9 +542,7 @@ describe('useConsultationBooking', () => {
       expect(result.current.confirmedBooking?.id).toBe('booking-xyz');
       expect(result.current.confirmedBooking?.memberId).toBe(MEMBER_ID);
       expect(result.current.confirmedBooking?.memberEmail).toBe('jane@example.com');
-      expect(result.current.confirmedBooking?.consultationDate).toBe(
-        `${TODAY}T${SLOT_09}:00`,
-      );
+      expect(result.current.confirmedBooking?.consultationDate).toBe(`${TODAY}T${SLOT_09}:00`);
     });
 
     it('confirmedBooking reflects consultationType and durationMinutes', async () => {

@@ -59,7 +59,11 @@ jest.mock('@/services/crossRigSync', () => ({
 beforeEach(() => {
   jest.clearAllMocks();
   mockSendGamificationEvent.mockResolvedValue({ success: true, newTotal: 100 });
-  mockCompleteMobileChallenge.mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 });
+  mockCompleteMobileChallenge.mockResolvedValue({
+    success: true,
+    alreadyAwarded: false,
+    pointsAwarded: 75,
+  });
   mockUseOptionalWixClient.mockReturnValue(mockWixClient);
   mockUseAuth.mockReturnValue({ user: { id: 'member-abc', email: 'test@test.com' } });
 });

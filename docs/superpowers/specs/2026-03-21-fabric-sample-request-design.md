@@ -27,27 +27,27 @@ ProductDetailScreen
 
 ## Files
 
-| File | Change |
-|------|--------|
-| `src/hooks/useSwatchRequest.ts` | **Modify** — accept `wixClient` param, call Wix API in `submitRequest`, handle Wix failure |
-| `src/hooks/__tests__/useSwatchRequest.test.ts` | **Modify** — add Wix API call tests, network error tests, offline tests |
-| `src/components/FabricSampleRequest.tsx` | **Delete** — redundant, untested, inferior UX |
-| `src/screens/ProductDetailScreen.tsx` | **Modify** — remove `FabricSampleRequest` import/render |
-| `src/components/SwatchRequestModal.tsx` | **Modify** — add optional `wixClient?: WixClient \| null` prop to Props interface; pass it to `useSwatchRequest`; add error/retry UI; verify a11y: 44pt targets + accessibilityLiveRegion on errors |
-| `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** — verify Wix error display, a11y attributes |
+| File                                                   | Change                                                                                                                                                                                              |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/hooks/useSwatchRequest.ts`                        | **Modify** — accept `wixClient` param, call Wix API in `submitRequest`, handle Wix failure                                                                                                          |
+| `src/hooks/__tests__/useSwatchRequest.test.ts`         | **Modify** — add Wix API call tests, network error tests, offline tests                                                                                                                             |
+| `src/components/FabricSampleRequest.tsx`               | **Delete** — redundant, untested, inferior UX                                                                                                                                                       |
+| `src/screens/ProductDetailScreen.tsx`                  | **Modify** — remove `FabricSampleRequest` import/render                                                                                                                                             |
+| `src/components/SwatchRequestModal.tsx`                | **Modify** — add optional `wixClient?: WixClient \| null` prop to Props interface; pass it to `useSwatchRequest`; add error/retry UI; verify a11y: 44pt targets + accessibilityLiveRegion on errors |
+| `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** — verify Wix error display, a11y attributes                                                                                                                                              |
 
 ## Hook Signature Change
 
 ```ts
 // Before
-export function useSwatchRequest(productId: string): SwatchRequestState
+export function useSwatchRequest(productId: string): SwatchRequestState;
 
 // After (wixClient and productName are optional for backward-compat; existing callers without Wix work as before)
 export function useSwatchRequest(
   productId: string,
   productName?: string,
   wixClient?: WixClient | null,
-): SwatchRequestState
+): SwatchRequestState;
 ```
 
 All existing tests that call `useSwatchRequest('prod-id')` without additional args continue to pass — they exercise the null/no-Wix path, which writes to AsyncStorage only (same as current behavior).
@@ -55,6 +55,7 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 ## Data Flow
 
 ### submitRequest (updated)
+
 1. Guard: `if (submittingRef.current) return false`
 2. Validate fabrics (≥1 selected)
 3. Validate address (all required fields, ZIP regex)
@@ -72,11 +73,13 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 9. Haptic success, `setStatus('submitted')`, `setHasRecentRequest(true)`, `return true`
 
 ### Null wixClient fallback (offline / no Wix config)
+
 - Skip step 6 entirely
 - Continue to steps 7-9: write AsyncStorage, fire analytics, show success
 - Behavior is identical to current implementation — no regression for environments without Wix
 
 ### Error states
+
 - `status === 'error'` with Wix failure → modal shows error message (`testID="swatch-error-message"`) + Retry button (`testID="swatch-retry-button"`)
 - Network offline (wixClient throws network error) → same `status === 'error'` path
 - AsyncStorage write failure after Wix success → catch, call `captureException` (import from `@/services/crashReporting`), do NOT block success state (non-critical)
@@ -95,13 +98,13 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 
 ```ts
 {
-  customerName: string;       // address.fullName
-  shippingAddress: string;    // formatted single-line
-  productName: string;        // from props
-  fabricIds: string;          // comma-joined fabric IDs
-  fabricNames: string;        // comma-joined fabric names
-  status: 'pending';          // set by WixClient
-  requestedAt: string;        // ISO timestamp, set by WixClient
+  customerName: string; // address.fullName
+  shippingAddress: string; // formatted single-line
+  productName: string; // from props
+  fabricIds: string; // comma-joined fabric IDs
+  fabricNames: string; // comma-joined fabric names
+  status: 'pending'; // set by WixClient
+  requestedAt: string; // ISO timestamp, set by WixClient
 }
 ```
 
@@ -115,6 +118,7 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 ## Tests (TDD — write tests first)
 
 ### useSwatchRequest additions
+
 - calls `wixClient.submitFabricSampleRequest` with correct payload on valid submission
 - does NOT write AsyncStorage when Wix call fails (allows retry)
 - sets status to 'error' when Wix throws
@@ -127,6 +131,7 @@ All existing tests that call `useSwatchRequest('prod-id')` without additional ar
 - calls `captureException` (not `setStatus('error')`) when AsyncStorage write fails after successful Wix call, and still returns `true`
 
 ### SwatchRequestModal additions
+
 - shows error message (`testID="swatch-error-message"`) when status is 'error'
 - shows retry button (`testID="swatch-retry-button"`) when status is 'error'
 - pressing retry re-triggers submission and succeeds on second attempt

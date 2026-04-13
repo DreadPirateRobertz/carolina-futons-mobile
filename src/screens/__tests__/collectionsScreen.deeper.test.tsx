@@ -303,7 +303,12 @@ describe('CollectionsScreen — screen structure', () => {
   it('header cart icon opens mini-cart when 2 collections present', () => {
     const mockOpen = jest.fn();
     jest.mock('@/hooks/useMiniCartDrawer', () => ({
-      useMiniCartDrawer: () => ({ open: mockOpen, close: jest.fn(), toggle: jest.fn(), isOpen: false }),
+      useMiniCartDrawer: () => ({
+        open: mockOpen,
+        close: jest.fn(),
+        toggle: jest.fn(),
+        isOpen: false,
+      }),
     }));
     mockUseCollections.mockReturnValue({
       collections: [BASE_COLLECTION, COLLECTION_B],

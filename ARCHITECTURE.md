@@ -11,24 +11,24 @@ dark theme ported from the web design system. 23 screens, 30+ components,
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Framework | Expo (managed workflow) | SDK 52 |
-| Language | TypeScript | strict mode |
-| Navigation | React Navigation v6 | @react-navigation/native-stack |
-| Animations | react-native-reanimated | v3 |
-| Gestures | react-native-gesture-handler | v2 |
-| State | React Context + useReducer + SWR | |
-| API | REST / fetch | Wix CMS Data API |
-| Payments | Stripe React Native | PaymentSheet |
-| Crash Reporting | Sentry | @sentry/react-native |
-| Analytics | Firebase + Mixpanel | Multi-provider |
-| Push | expo-notifications | APNs/FCM via Expo |
-| AR | Platform-native (ARKit/ARCore/model-viewer) | |
-| Testing | Jest + React Native Testing Library | RNTL v13 |
-| E2E | Detox | |
-| Build | EAS Build | dev/preview/production profiles |
-| Linting | ESLint + Prettier | Expo config |
+| Layer           | Technology                                  | Version                         |
+| --------------- | ------------------------------------------- | ------------------------------- |
+| Framework       | Expo (managed workflow)                     | SDK 52                          |
+| Language        | TypeScript                                  | strict mode                     |
+| Navigation      | React Navigation v6                         | @react-navigation/native-stack  |
+| Animations      | react-native-reanimated                     | v3                              |
+| Gestures        | react-native-gesture-handler                | v2                              |
+| State           | React Context + useReducer + SWR            |                                 |
+| API             | REST / fetch                                | Wix CMS Data API                |
+| Payments        | Stripe React Native                         | PaymentSheet                    |
+| Crash Reporting | Sentry                                      | @sentry/react-native            |
+| Analytics       | Firebase + Mixpanel                         | Multi-provider                  |
+| Push            | expo-notifications                          | APNs/FCM via Expo               |
+| AR              | Platform-native (ARKit/ARCore/model-viewer) |                                 |
+| Testing         | Jest + React Native Testing Library         | RNTL v13                        |
+| E2E             | Detox                                       |                                 |
+| Build           | EAS Build                                   | dev/preview/production profiles |
+| Linting         | ESLint + Prettier                           | Expo config                     |
 
 ## Directory Structure
 
@@ -130,15 +130,15 @@ Source of truth: `src/public/sharedTokens.js` (cross-platform with web).
 
 ### Colors
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `sandBase` | #E8D5B7 | Light backgrounds, splash |
-| `espresso` | #3A2518 | Primary text, headings |
-| `mountainBlue` | #5B8FA8 | Links, accents, secondary CTA |
-| `sunsetCoral` | #E8845C | **Primary CTA (ALWAYS)**, sale badges |
-| Dark BG | #1C1410 | App background (warm espresso, NOT black) |
-| Dark Surface | #2A1F19 | Card/surface backgrounds |
-| Glass | rgba(42,31,25,0.7) | Glassmorphism overlay |
+| Token          | Hex                | Usage                                     |
+| -------------- | ------------------ | ----------------------------------------- |
+| `sandBase`     | #E8D5B7            | Light backgrounds, splash                 |
+| `espresso`     | #3A2518            | Primary text, headings                    |
+| `mountainBlue` | #5B8FA8            | Links, accents, secondary CTA             |
+| `sunsetCoral`  | #E8845C            | **Primary CTA (ALWAYS)**, sale badges     |
+| Dark BG        | #1C1410            | App background (warm espresso, NOT black) |
+| Dark Surface   | #2A1F19            | Card/surface backgrounds                  |
+| Glass          | rgba(42,31,25,0.7) | Glassmorphism overlay                     |
 
 ### Typography
 
@@ -196,11 +196,11 @@ AppNavigator (lazy-loaded screens)
 
 Platform-native AR (no custom engine):
 
-| Platform | Engine | Model Format |
-|----------|--------|-------------|
-| iOS | AR Quick Look (ARKit) | .usdz |
-| Android | Scene Viewer (ARCore) | .glb |
-| Web | model-viewer (Google) | .glb |
+| Platform | Engine                | Model Format |
+| -------- | --------------------- | ------------ |
+| iOS      | AR Quick Look (ARKit) | .usdz        |
+| Android  | Scene Viewer (ARCore) | .glb         |
+| Web      | model-viewer (Google) | .glb         |
 
 Features: room measurement with fit check, multi-product staging (up to 5), side-by-side comparison, fabric texture preview, model download progress with branded UI, share screenshot.
 

@@ -95,7 +95,16 @@ export const PLACEHOLDER_ROOMS: RoomGalleryItem[] = [
     caption: 'Modern Living Room',
     slug: 'placeholder-001',
     altText: 'Modern living room with Carolina Futons furniture',
-    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'asheville-full',
+        productName: 'Asheville Full',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   },
   {
     roomId: 'placeholder-002',
@@ -109,7 +118,16 @@ export const PLACEHOLDER_ROOMS: RoomGalleryItem[] = [
     caption: 'Coastal Retreat',
     slug: 'placeholder-002',
     altText: 'Coastal living room with Biltmore Queen futon',
-    tags: [{ productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'biltmore-queen',
+        productName: 'Biltmore Queen',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   },
   {
     roomId: 'placeholder-003',
@@ -123,7 +141,16 @@ export const PLACEHOLDER_ROOMS: RoomGalleryItem[] = [
     caption: 'Rustic Mountain Style',
     slug: 'placeholder-003',
     altText: 'Rustic living room with Blue Ridge Full futon',
-    tags: [{ productId: 'blue-ridge-full', productName: 'Blue Ridge Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'blue-ridge-full',
+        productName: 'Blue Ridge Full',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   },
   {
     roomId: 'placeholder-004',
@@ -137,7 +164,16 @@ export const PLACEHOLDER_ROOMS: RoomGalleryItem[] = [
     caption: 'Minimal & Clean',
     slug: 'placeholder-004',
     altText: 'Minimalist living room with Asheville Full futon',
-    tags: [{ productId: 'asheville-full', productName: 'Asheville Full', x: 0.5, y: 0.5, width: 0.1, height: 0.1 }],
+    tags: [
+      {
+        productId: 'asheville-full',
+        productName: 'Asheville Full',
+        x: 0.5,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
+    ],
   },
 ];
 

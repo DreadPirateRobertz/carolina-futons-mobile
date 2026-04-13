@@ -365,9 +365,9 @@ describe('Notification service', () => {
     it('propagates errors from callFn', async () => {
       const callFn = jest.fn().mockRejectedValue(new Error('network error'));
 
-      await expect(
-        registerPushToken('token', 'member-001', callFn),
-      ).rejects.toThrow('network error');
+      await expect(registerPushToken('token', 'member-001', callFn)).rejects.toThrow(
+        'network error',
+      );
     });
 
     it('calls callFn exactly once (retry is caller responsibility)', async () => {

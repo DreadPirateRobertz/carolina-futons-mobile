@@ -19,6 +19,7 @@ glassmorphism. However it's missing the illustrated visual identity elements
 that give the web its distinctive character.
 
 **Design references:**
+
 - `design.jpeg` (cfutons repo root) — north star visual
 - `src/public/sharedTokens.js` — cross-platform brand tokens
 - `src/public/MountainSkyline.js` — programmatic SVG mountain skyline
@@ -37,6 +38,7 @@ Create `<MountainSkyline variant="sunrise|sunset" height={120} />` component.
 **Where:** `src/components/MountainSkyline.tsx`
 
 **Details:**
+
 - Translate the SVG path data from the web's `generateMountainSVG()` function
 - Use brand tokens from `tokens.ts` for gradient colors (skyGradientTop/Bottom, sunsetCoral)
 - Support sunrise (blue-gold) and sunset (coral-gold) gradient variants
@@ -53,6 +55,7 @@ header matching design.jpeg.
 **Where:** `src/screens/HomeScreen.tsx`
 
 **Details:**
+
 - Add sky gradient background behind hero section (skyGradientTop → sandBase)
 - Place MountainSkyline component as hero backdrop
 - Keep "Handcrafted in NC" badge and "Carolina Futons" headline
@@ -67,10 +70,12 @@ header matching design.jpeg.
 empty state screens.
 
 **Where:**
+
 - New: `src/components/illustrations/` directory (one component per illustration)
 - Modified: `src/components/EmptyState.tsx` (add illustration prop)
 
 **Details:**
+
 - Port: cart, search, wishlist, orders, reviews, favorites, compare, returns
 - Each illustration becomes a React Native SVG component
 - Update EmptyState to accept `illustration` prop (component) alongside `icon`
@@ -86,6 +91,7 @@ empty state screens.
 screens for aesthetic consistency.
 
 **Where:** Multiple screens:
+
 - `LoginScreen.tsx` — dark editorial background, GlassCard form
 - `SignUpScreen.tsx` — same treatment as Login
 - `ForgotPasswordScreen.tsx` — same treatment
@@ -95,6 +101,7 @@ screens for aesthetic consistency.
 - `NotificationPreferencesScreen.tsx` — consistent toggles
 
 **Details:**
+
 - Apply `darkPalette` or warm sand backgrounds consistently
 - Use `GlassCard` for elevated content areas
 - Ensure all typography uses `fontFamily` from theme tokens
@@ -111,6 +118,7 @@ add mountain skyline element.
 **Where:** `src/screens/OnboardingScreen.tsx`
 
 **Details:**
+
 - Switch background from sandBase to darkPalette.background
 - Update text colors to darkPalette.textPrimary/textMuted
 - Add MountainSkyline as visual accent between brand slides
@@ -124,11 +132,13 @@ add mountain skyline element.
 **What:** Each crew member tests their work on all three platforms.
 
 **Platforms:**
+
 - iOS Simulator (via `expo start --ios`)
 - Android Emulator (via `expo start --android`)
 - Expo Web (via `expo start --web`)
 
 **Checklist per platform:**
+
 - [ ] Colors match brand tokens (no gray shadows, no off-brand colors)
 - [ ] Typography renders correctly (Playfair Display headings, Source Sans 3 body)
 - [ ] Mountain skyline SVG renders at correct proportions

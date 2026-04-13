@@ -8,7 +8,7 @@ updates:
     directory: /
     schedule:
       interval: daily
-      time: "08:00"
+      time: '08:00'
       timezone: America/New_York
     labels:
       - dependencies
@@ -24,9 +24,9 @@ updates:
       # Group Expo SDK bumps together (they must upgrade in lockstep)
       expo-sdk:
         patterns:
-          - "expo"
-          - "expo-*"
-          - "@expo/*"
+          - 'expo'
+          - 'expo-*'
+          - '@expo/*'
         update-types:
           - minor
           - patch
@@ -34,9 +34,9 @@ updates:
       security-patches:
         applies-to: security-updates
         patterns:
-          - "*"
+          - '*'
     # Ignore ALL semver-major bumps — major upgrades require manual coordination
     ignore:
-      - dependency-name: "*"
+      - dependency-name: '*'
         update-types:
           - version-update:semver-major

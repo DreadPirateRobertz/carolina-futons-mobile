@@ -23,8 +23,8 @@ actModule.default = function react19CompatAct(callback) {
     const result = _originalActDefault(callback);
     if (result && typeof result.then === 'function') {
       const originalThen = result.then.bind(result);
-      result.then = function(resolve, reject) {
-        return originalThen(resolve, function(error) {
+      result.then = function (resolve, reject) {
+        return originalThen(resolve, function (error) {
           if (error instanceof AggregateError) {
             if (resolve) resolve(undefined);
             return;

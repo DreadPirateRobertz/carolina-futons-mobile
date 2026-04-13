@@ -105,9 +105,7 @@ describe('ReferralLandingScreen', () => {
   describe('welcome UI elements', () => {
     it('renders the subtitle / instructions text', () => {
       const { getByText } = renderScreen();
-      expect(
-        getByText(/sign in or create an account to redeem your discount/i),
-      ).toBeTruthy();
+      expect(getByText(/sign in or create an account to redeem your discount/i)).toBeTruthy();
     });
 
     it('renders an ActivityIndicator spinner', () => {
@@ -128,9 +126,7 @@ describe('ReferralLandingScreen', () => {
   describe('boundary: code with special characters', () => {
     it('passes code with hyphens and digits unchanged', async () => {
       renderScreen('REF-2026-XK7P');
-      await waitFor(() =>
-        expect(mockStoreReferredByCode).toHaveBeenCalledWith('REF-2026-XK7P'),
-      );
+      await waitFor(() => expect(mockStoreReferredByCode).toHaveBeenCalledWith('REF-2026-XK7P'));
     });
   });
 });

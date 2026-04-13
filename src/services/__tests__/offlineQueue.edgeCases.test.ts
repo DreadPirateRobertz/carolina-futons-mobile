@@ -50,8 +50,12 @@ beforeEach(() => {
 describe('offlineQueue — replay ordering', () => {
   it('replays actions in enqueue order (FIFO)', async () => {
     const callOrder: string[] = [];
-    registerExecutor('A', async (p) => { callOrder.push(p.id as string); });
-    registerExecutor('B', async (p) => { callOrder.push(p.id as string); });
+    registerExecutor('A', async (p) => {
+      callOrder.push(p.id as string);
+    });
+    registerExecutor('B', async (p) => {
+      callOrder.push(p.id as string);
+    });
 
     enqueue('cart', 'A', { id: 'first' });
     enqueue('cart', 'B', { id: 'second' });
@@ -64,9 +68,15 @@ describe('offlineQueue — replay ordering', () => {
 
   it('maintains global order across domains', async () => {
     const callOrder: string[] = [];
-    registerExecutor('CART_ADD', async (p) => { callOrder.push(`cart:${p.id}`); });
-    registerExecutor('WISH_ADD', async (p) => { callOrder.push(`wish:${p.id}`); });
-    registerExecutor('PROF_UPD', async (p) => { callOrder.push(`prof:${p.id}`); });
+    registerExecutor('CART_ADD', async (p) => {
+      callOrder.push(`cart:${p.id}`);
+    });
+    registerExecutor('WISH_ADD', async (p) => {
+      callOrder.push(`wish:${p.id}`);
+    });
+    registerExecutor('PROF_UPD', async (p) => {
+      callOrder.push(`prof:${p.id}`);
+    });
 
     enqueue('cart', 'CART_ADD', { id: '1' });
     enqueue('wishlist', 'WISH_ADD', { id: '2' });
@@ -97,9 +107,9 @@ describe('offlineQueue — replay ordering', () => {
 
   it('compactByLWW preserves timestamp order after compaction', () => {
     // Enqueue items across domains in specific order
-    enqueue('cart', 'CART_ADD', { productId: 'p1' });       // t=0
-    enqueue('wishlist', 'WISH_ADD', { productId: 'w1' });   // t=1
-    enqueue('cart', 'CART_ADD', { productId: 'p1' });        // t=2, supersedes t=0
+    enqueue('cart', 'CART_ADD', { productId: 'p1' }); // t=0
+    enqueue('wishlist', 'WISH_ADD', { productId: 'w1' }); // t=1
+    enqueue('cart', 'CART_ADD', { productId: 'p1' }); // t=2, supersedes t=0
 
     compactByLWW('cart', 'productId');
 
@@ -111,10 +121,11 @@ describe('offlineQueue — replay ordering', () => {
   });
 
   it('successfully replayed actions are removed, failed ones remain in order', async () => {
-    const executor = jest.fn()
-      .mockResolvedValueOnce(undefined)   // first succeeds
+    const executor = jest
+      .fn()
+      .mockResolvedValueOnce(undefined) // first succeeds
       .mockRejectedValueOnce(new Error()) // second fails
-      .mockResolvedValueOnce(undefined);  // third succeeds
+      .mockResolvedValueOnce(undefined); // third succeeds
 
     registerExecutor('X', executor);
 
@@ -219,10 +230,7 @@ describe('offlineQueue — network recovery races', () => {
     enqueue('cart', 'X', { id: '2' });
 
     // Fire two replays simultaneously
-    const [r1, r2] = await Promise.all([
-      replay({ maxRetries: 0 }),
-      replay({ maxRetries: 0 }),
-    ]);
+    const [r1, r2] = await Promise.all([replay({ maxRetries: 0 }), replay({ maxRetries: 0 })]);
 
     // Both replay calls snapshot the queue at call time, so both see 2 items.
     // First replay dequeues them; second replay's executor calls are on
@@ -236,7 +244,10 @@ describe('offlineQueue — network recovery races', () => {
   it('enqueuing during replay does not lose the new action', async () => {
     let resolveFirst!: () => void;
     const slowExecutor = jest.fn(
-      () => new Promise<void>((resolve) => { resolveFirst = resolve; }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolveFirst = resolve;
+        }),
     );
     registerExecutor('SLOW', slowExecutor);
     registerExecutor('FAST', jest.fn().mockResolvedValue(undefined));
@@ -395,14 +406,18 @@ describe('offlineQueue — storage corruption recovery', () => {
 
   it('isValidQueueEntry rejects entries with wrong field types', () => {
     expect(isValidQueueEntry({ id: 123, timestamp: 1, domain: 'cart', action: 'A' })).toBe(false);
-    expect(isValidQueueEntry({ id: 'ok', timestamp: 'nope', domain: 'cart', action: 'A' })).toBe(false);
+    expect(isValidQueueEntry({ id: 'ok', timestamp: 'nope', domain: 'cart', action: 'A' })).toBe(
+      false,
+    );
     expect(isValidQueueEntry(null)).toBe(false);
     expect(isValidQueueEntry(undefined)).toBe(false);
     expect(isValidQueueEntry('string')).toBe(false);
   });
 
   it('isValidQueueEntry accepts well-formed entries', () => {
-    expect(isValidQueueEntry({ id: 'ok', timestamp: 1, domain: 'cart', action: 'A', payload: {} })).toBe(true);
+    expect(
+      isValidQueueEntry({ id: 'ok', timestamp: 1, domain: 'cart', action: 'A', payload: {} }),
+    ).toBe(true);
   });
 
   it('persistQueue failure does not corrupt in-memory queue', () => {

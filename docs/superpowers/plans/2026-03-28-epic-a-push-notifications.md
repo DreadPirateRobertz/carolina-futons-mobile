@@ -24,6 +24,7 @@ git checkout -b cm-epicA-push-engine
 ## Task 1: useNotificationPermission hook
 
 **Files:**
+
 - Create: `src/hooks/useNotificationPermission.ts`
 - Create: `src/hooks/__tests__/useNotificationPermission.test.ts`
 
@@ -68,7 +69,9 @@ it('requestPermission stores asked flag and returns granted', async () => {
   (Notifications.requestPermissionsAsync as jest.Mock).mockResolvedValue({ status: 'granted' });
   const { result } = renderHook(() => useNotificationPermission());
   await act(async () => {});
-  await act(async () => { await result.current.requestPermission(); });
+  await act(async () => {
+    await result.current.requestPermission();
+  });
   expect(AsyncStorage.setItem).toHaveBeenCalledWith(ASKED_KEY, 'true');
   expect(result.current.status).toBe('granted');
 });
@@ -96,6 +99,7 @@ it('hasAskedBefore is true when AsyncStorage flag is set', async () => {
 # On linux SSH (pop-os):
 npx jest src/hooks/__tests__/useNotificationPermission.test.ts --no-coverage
 ```
+
 Expected: `Cannot find module '../useNotificationPermission'`
 
 - [ ] **Step 3: Implement hook**
@@ -155,6 +159,7 @@ export function useNotificationPermission(): NotificationPermissionResult {
 ```bash
 npx jest src/hooks/__tests__/useNotificationPermission.test.ts --no-coverage
 ```
+
 Expected: 4 tests pass
 
 - [ ] **Step 5: Commit**
@@ -169,6 +174,7 @@ git commit -m "feat(epicA): useNotificationPermission hook with AsyncStorage ask
 ## Task 2: NotificationService
 
 **Files:**
+
 - Create: `src/services/notificationService.ts`
 - Create: `src/services/__tests__/notificationService.test.ts`
 
@@ -186,10 +192,7 @@ jest.mock('expo-notifications', () => ({
 jest.mock('@/services/crashReporting', () => ({ captureException: jest.fn() }));
 
 import * as Notifications from 'expo-notifications';
-import {
-  registerDeviceToken,
-  deregisterDeviceToken,
-} from '../notificationService';
+import { registerDeviceToken, deregisterDeviceToken } from '../notificationService';
 
 const mockWixClient = {
   callFunction: jest.fn(),
@@ -299,6 +302,7 @@ git commit -m "feat(epicA): NotificationService register/deregister device token
 ## Task 3: NotificationRouter
 
 **Files:**
+
 - Create: `src/navigation/NotificationRouter.ts`
 - Create: `src/navigation/__tests__/NotificationRouter.test.ts`
 
@@ -408,6 +412,7 @@ git commit -m "feat(epicA): NotificationRouter maps notification types to screen
 ## Task 4: emitBadgeEarned + emitTierChanged (crossRigEventBus extension)
 
 **Files:**
+
 - Modify: `src/services/crossRigEventBus.ts` (add two emitters at bottom)
 - Modify: `src/services/__tests__/crossRigEventBus.test.ts` (add tests for new emitters)
 
@@ -423,7 +428,11 @@ it('emitBadgeEarned sends badge_earned event', async () => {
   expect(mockCallFunction).toHaveBeenCalledWith(
     'crossRigEvent',
     'POST',
-    expect.objectContaining({ event: 'badge_earned', badgeId: 'badge-1', badgeName: 'First Purchase' }),
+    expect.objectContaining({
+      event: 'badge_earned',
+      badgeId: 'badge-1',
+      badgeName: 'First Purchase',
+    }),
   );
 });
 
@@ -494,6 +503,7 @@ git commit -m "feat(epicA): add emitBadgeEarned + emitTierChanged to crossRigEve
 ## Task 5: NotificationPermissionPromptScreen
 
 **Files:**
+
 - Create: `src/screens/NotificationPermissionPromptScreen.tsx`
 - Create: `src/screens/__tests__/NotificationPermissionPromptScreen.test.tsx`
 
@@ -636,6 +646,7 @@ git commit -m "feat(epicA): NotificationPermissionPromptScreen with pre-prompt e
 ## Task 6: NotificationPreferencesScreen rework
 
 **Files:**
+
 - Modify: `src/screens/NotificationPreferencesScreen.tsx` (add skeleton + a11y)
 - Modify or create: `src/screens/__tests__/NotificationPreferencesScreen.test.tsx`
 
@@ -765,12 +776,14 @@ if (isLoading) {
 ```
 
 Update each `Switch` to include:
+
 ```typescript
 accessibilityRole="switch"
 accessibilityState={{ checked: preferences.orderUpdates }}
 accessibilityLabel="Order update notifications"
 onValueChange={(val) => toggle('orderUpdates', val)}
 ```
+
 (Repeat pattern for each of the 4 preference toggles.)
 
 - [ ] **Step 5: Run all tests — expect PASS**
@@ -791,6 +804,7 @@ git commit -m "feat(epicA): NotificationPreferencesScreen skeleton + a11y switch
 ## Task 7: Wire token registration into AuthProvider + open PR
 
 **Files:**
+
 - Modify: `src/hooks/useAuth.tsx` (call registerDeviceToken after login, deregister on logout)
 
 - [ ] **Step 1: Locate auth hooks**
@@ -816,6 +830,7 @@ deregisterDeviceToken(wixClient).catch(() => {}); // best-effort
 ```bash
 npx jest --no-coverage 2>&1 | tail -10
 ```
+
 Expected: all existing tests pass + new tests pass.
 
 - [ ] **Step 4: Commit and open PR**
