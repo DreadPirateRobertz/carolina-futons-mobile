@@ -32,25 +32,32 @@ export interface UseAfterpayScheduleResult {
 
 const FORTNIGHT_DAYS = 14;
 
+const SAFE_EMPTY: UseAfterpayScheduleResult = { installments: [], isEligible: false, totalAmount: 0 };
+
 export function useAfterpaySchedule(price: number): UseAfterpayScheduleResult {
   return useMemo(() => {
-    const isEligible = isAfterpayEligible(price);
-    if (!isEligible) {
-      return { installments: [], isEligible: false, totalAmount: 0 };
+    try {
+      const isEligible = isAfterpayEligible(price);
+      if (!isEligible) {
+        return SAFE_EMPTY;
+      }
+
+      const base = getAfterpayInstallments(price);
+      const today = new Date();
+
+      const installments: AfterpayScheduleInstallment[] = base.map((inst) => {
+        const dueDate = new Date(today);
+        dueDate.setDate(today.getDate() + (inst.number - 1) * FORTNIGHT_DAYS);
+        return { ...inst, dueDate };
+      });
+
+      const totalAmount =
+        Math.round(installments.reduce((sum, i) => sum + i.amount, 0) * 100) / 100;
+
+      return { installments, isEligible, totalAmount };
+    } catch (err) {
+      console.error('[useAfterpaySchedule] failed to compute installments:', err);
+      return SAFE_EMPTY;
     }
-
-    const base = getAfterpayInstallments(price);
-    const today = new Date();
-
-    const installments: AfterpayScheduleInstallment[] = base.map((inst) => {
-      const dueDate = new Date(today);
-      dueDate.setDate(today.getDate() + (inst.number - 1) * FORTNIGHT_DAYS);
-      return { ...inst, dueDate };
-    });
-
-    const totalAmount =
-      Math.round(installments.reduce((sum, i) => sum + i.amount, 0) * 100) / 100;
-
-    return { installments, isEligible, totalAmount };
   }, [price]);
 }

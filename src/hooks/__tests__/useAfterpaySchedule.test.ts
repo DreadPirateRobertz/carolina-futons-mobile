@@ -1,5 +1,5 @@
 /**
- * useAfterpaySchedule TDD tests — hq-03t
+ * useAfterpaySchedule TDD tests — hq-03t, hq-jqm, hq-ym4
  *
  * Tests written BEFORE implementation per CLAUDE.md mandate.
  *
@@ -8,11 +8,13 @@
  *   - totalAmount (sum of all installments — must match price)
  *   - 4 installments with fortnightly dueDate (today, +14d, +28d, +42d)
  *   - accessible labels on each installment
+ *   - try/catch in useMemo — throws return safe empty state, error is logged
  *
- * AC: 4 installments shown, total matches price, accessible.
+ * AC: 4 installments shown, total matches price, accessible, no silent crashes.
  */
 
 import { renderHook } from '@testing-library/react-native';
+import * as financing from '@/utils/financing';
 import { useAfterpaySchedule } from '../useAfterpaySchedule';
 
 // Pin "today" for deterministic date assertions
@@ -37,23 +39,38 @@ describe('useAfterpaySchedule — eligibility', () => {
     expect(result.current.isEligible).toBe(true);
   });
 
-  it('isEligible true at $1 (min is > 0)', () => {
+  it('isEligible false below $35 minimum ($1)', () => {
     const { result } = renderHook(() => useAfterpaySchedule(1));
+    expect(result.current.isEligible).toBe(false);
+  });
+
+  it('isEligible true at $35 minimum boundary', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(35));
     expect(result.current.isEligible).toBe(true);
   });
 
-  it('isEligible true at maximum $2,000', () => {
-    const { result } = renderHook(() => useAfterpaySchedule(2000));
+  it('isEligible true at $1,000 maximum boundary', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(1000));
     expect(result.current.isEligible).toBe(true);
   });
 
-  it('isEligible false above $2,000', () => {
-    const { result } = renderHook(() => useAfterpaySchedule(2001));
+  it('isEligible false above $1,000 maximum ($1,001)', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(1001));
     expect(result.current.isEligible).toBe(false);
   });
 
   it('isEligible false for zero', () => {
     const { result } = renderHook(() => useAfterpaySchedule(0));
+    expect(result.current.isEligible).toBe(false);
+  });
+
+  it('isEligible false for negative price', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(-50));
+    expect(result.current.isEligible).toBe(false);
+  });
+
+  it('isEligible false for NaN', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(NaN));
     expect(result.current.isEligible).toBe(false);
   });
 });
@@ -69,7 +86,7 @@ describe('useAfterpaySchedule — installment count', () => {
   });
 
   it('returns empty array for ineligible price', () => {
-    const { result } = renderHook(() => useAfterpaySchedule(2001));
+    const { result } = renderHook(() => useAfterpaySchedule(1001));
     expect(result.current.installments).toHaveLength(0);
   });
 
@@ -114,7 +131,7 @@ describe('useAfterpaySchedule — total matches price', () => {
   });
 
   it('totalAmount is 0 when ineligible', () => {
-    const { result } = renderHook(() => useAfterpaySchedule(2001));
+    const { result } = renderHook(() => useAfterpaySchedule(1001));
     expect(result.current.totalAmount).toBe(0);
   });
 });
@@ -209,8 +226,63 @@ describe('useAfterpaySchedule — reactivity', () => {
     });
     expect(result.current.installments).toHaveLength(4);
 
-    rerender({ price: 2500 });
+    rerender({ price: 1001 });
     expect(result.current.installments).toHaveLength(0);
     expect(result.current.isEligible).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Error recovery (hq-jqm) — getAfterpayInstallments throws → safe state
+// ---------------------------------------------------------------------------
+
+describe('useAfterpaySchedule — error recovery', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+    jest.restoreAllMocks();
+  });
+
+  it('returns safe empty state when getAfterpayInstallments throws', () => {
+    jest.spyOn(financing, 'getAfterpayInstallments').mockImplementation(() => {
+      throw new Error('financing exploded');
+    });
+
+    const { result } = renderHook(() => useAfterpaySchedule(299));
+    expect(result.current.installments).toHaveLength(0);
+    expect(result.current.isEligible).toBe(false);
+    expect(result.current.totalAmount).toBe(0);
+  });
+
+  it('logs error with [useAfterpaySchedule] prefix when getAfterpayInstallments throws', () => {
+    const boom = new Error('financing exploded');
+    jest.spyOn(financing, 'getAfterpayInstallments').mockImplementation(() => {
+      throw boom;
+    });
+
+    renderHook(() => useAfterpaySchedule(299));
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[useAfterpaySchedule]'),
+      boom,
+    );
+  });
+
+  it('returns safe empty state for negative price without throwing', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(-100));
+    expect(result.current.installments).toHaveLength(0);
+    expect(result.current.isEligible).toBe(false);
+    expect(result.current.totalAmount).toBe(0);
+  });
+
+  it('returns safe empty state for NaN price without throwing', () => {
+    const { result } = renderHook(() => useAfterpaySchedule(NaN));
+    expect(result.current.installments).toHaveLength(0);
+    expect(result.current.isEligible).toBe(false);
+    expect(result.current.totalAmount).toBe(0);
   });
 });
