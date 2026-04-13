@@ -1,23 +1,37 @@
 /**
  * @module useProductRecommendations
  *
- * DB-driven product recommendation hook — cm-cm1 (Phase 2.2).
+ * DB-driven product recommendation hook — hq-bzb (schema alignment).
  *
- * Fetches related products by querying Wix CMS (or falling back to the
- * static PRODUCTS catalog) filtered by same category and ±50% price range,
- * then sorted by relevance score (category + fabric overlap + price proximity).
+ * Fetches "Recommended for You" products from the Wix `ProductRecommendations`
+ * CMS collection, filtered to pairingType='recommended_for_you' and sorted by
+ * sortOrder ASC. Resolves product IDs against the local catalog and caps at 8.
+ *
+ * When Wix is unavailable (no client or network error), falls back to a static
+ * catalog filter: same-category products within ±50% price, sorted by relevance.
  *
  * Results are cached in memory for 1 hour per productId.
+ *
+ * Schema (cm-mmy confirmed):
+ *   - productId: string           — the source product
+ *   - recommendedProductIds: string  — JSON-encoded string[]
+ *   - pairingType: 'recommended_for_you' | ...
+ *   - sortOrder: number           — display order (ASC)
+ *   - updatedAt: string           — ISO 8601
  */
 import { useState, useEffect, useRef } from 'react';
 import { PRODUCTS, type Product } from '@/data/products';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
+import { captureException } from '@/services/crashReporting';
 
 /** Cache TTL: 1 hour in milliseconds. */
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
 /** Maximum number of recommendations to return. */
 const MAX_RESULTS = 8;
+
+const COLLECTION_ID = 'ProductRecommendations';
+const PAIRING_TYPE = 'recommended_for_you';
 
 interface CacheEntry {
   data: Product[];
@@ -40,15 +54,32 @@ export interface ProductRecommendationsResult {
   error: string | null;
 }
 
+interface RecommendationRow {
+  productId: string;
+  /** JSON-encoded string[] of product IDs. */
+  recommendedProductIds: string;
+  pairingType: string;
+  sortOrder: number;
+  updatedAt: string;
+}
+
+/**
+ * Parse the recommendedProductIds JSON field safely.
+ * Returns empty array for any malformed or non-array value.
+ */
+function parseRecommendedIds(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === 'string');
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Compute a relevance score for a candidate product relative to the source.
- * Higher score = more relevant.
- *
- * Scoring:
- *  +10  same category
- *  +1   per overlapping fabric option
- *  +3   price within ±20%
- *  +1   price within ±50%
+ * Used only for the static fallback path.
  */
 function relevanceScore(source: Product, candidate: Product): number {
   let score = 0;
@@ -64,8 +95,8 @@ function relevanceScore(source: Product, candidate: Product): number {
 }
 
 /**
- * Filter and sort products relative to source using static PRODUCTS catalog.
- * Returns up to MAX_RESULTS products in the same category within ±50% price.
+ * Static fallback: filter + sort products from local catalog.
+ * Returns same-category products within ±50% price, capped at MAX_RESULTS.
  */
 function getStaticRecommendations(source: Product): Product[] {
   const minPrice = source.price * 0.5;
@@ -82,10 +113,11 @@ function getStaticRecommendations(source: Product): Product[] {
 }
 
 /**
- * Fetches product recommendations for a given product.
+ * Returns "Recommended for You" products for a given productId.
  *
- * Queries Wix CMS when a WixClient is available; falls back to the static
- * PRODUCTS array on failure or when offline. Results are cached for 5 minutes.
+ * Queries the Wix ProductRecommendations CMS collection filtered to
+ * pairingType='recommended_for_you', sorted by sortOrder ASC. Falls back to
+ * a static category/price-based filter when Wix is unavailable.
  *
  * @param productId - The ID of the product to fetch recommendations for.
  * @returns { recommendations, isLoading, error }
@@ -111,10 +143,20 @@ export function useProductRecommendations(productId: string): ProductRecommendat
   }, []);
 
   useEffect(() => {
-    const source = PRODUCTS.find((p) => p.id === productId);
-
-    if (!source) {
+    if (!productId) {
       setRecommendations([]);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
+    const client = wixClientRef.current;
+
+    // No Wix client — serve static recommendations immediately
+    if (!client) {
+      const source = PRODUCTS.find((p) => p.id === productId);
+      const recs = source ? getStaticRecommendations(source) : [];
+      setRecommendations(recs);
       setIsLoading(false);
       setError(null);
       return;
@@ -133,38 +175,53 @@ export function useProductRecommendations(productId: string): ProductRecommendat
     setError(null);
 
     (async () => {
-      const client = wixClientRef.current;
       try {
-        let recs: Product[];
-        if (client) {
-          const minPrice = source.price * 0.5;
-          const maxPrice = source.price * 1.5;
-          const { products: wixProducts } = await client.queryProducts({ limit: 100 });
-          recs = wixProducts
-            .filter(
-              (p) =>
-                p.id !== source.id &&
-                p.category === source.category &&
-                p.price >= minPrice &&
-                p.price <= maxPrice,
-            )
-            .sort((a, b) => relevanceScore(source, b) - relevanceScore(source, a))
-            .slice(0, MAX_RESULTS);
-        } else {
-          recs = getStaticRecommendations(source);
+        const { items } = await client.queryData<RecommendationRow>(COLLECTION_ID, {
+          filter: {
+            productId: { $eq: productId },
+            pairingType: { $eq: PAIRING_TYPE },
+          },
+          sort: [{ fieldName: 'sortOrder', order: 'ASC' }],
+        });
+
+        // Sort client-side as a defensive measure
+        const sorted = [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+        // Flatten all recommendedProductIds across rows, resolve against local
+        // catalog, cap at MAX_RESULTS.
+        const resolved: Product[] = [];
+        for (const item of sorted) {
+          const ids = parseRecommendedIds(item.recommendedProductIds);
+          for (const id of ids) {
+            if (resolved.length >= MAX_RESULTS) break;
+            const product = PRODUCTS.find((p) => p.id === id);
+            if (product) resolved.push(product);
+          }
+          if (resolved.length >= MAX_RESULTS) break;
         }
 
-        recommendationsCache.set(productId, { data: recs, expiresAt: Date.now() + CACHE_TTL_MS });
+        recommendationsCache.set(productId, {
+          data: resolved,
+          expiresAt: Date.now() + CACHE_TTL_MS,
+        });
 
         if (mountedRef.current) {
-          setRecommendations(recs);
+          setRecommendations(resolved);
           setIsLoading(false);
           setError(null);
         }
-      } catch {
+      } catch (err) {
+        captureException(err instanceof Error ? err : new Error(String(err)));
+
         // Wix unavailable — fall back to static catalog
-        const recs = getStaticRecommendations(source);
-        recommendationsCache.set(productId, { data: recs, expiresAt: Date.now() + CACHE_TTL_MS });
+        const source = PRODUCTS.find((p) => p.id === productId);
+        const recs = source ? getStaticRecommendations(source) : [];
+
+        recommendationsCache.set(productId, {
+          data: recs,
+          expiresAt: Date.now() + CACHE_TTL_MS,
+        });
+
         if (mountedRef.current) {
           setRecommendations(recs);
           setIsLoading(false);

@@ -189,13 +189,13 @@ function renderDetail() {
   );
 }
 
-describe('ProductDetailScreen — "Customers also bought" section', () => {
+describe('ProductDetailScreen — "Recommended for You" section', () => {
   describe('loading state', () => {
     beforeEach(() => {
       mockProductRecs.mockReturnValue({ isLoading: true, recommendations: [], error: null });
     });
 
-    it('shows skeleton while loading co-purchase recommendations', () => {
+    it('shows skeleton while loading recommendations', () => {
       const { getByTestId } = renderDetail();
       expect(getByTestId('skeleton-also-bought')).toBeTruthy();
     });
@@ -215,7 +215,7 @@ describe('ProductDetailScreen — "Customers also bought" section', () => {
       });
     });
 
-    it('shows "Customers also bought" carousel after load', () => {
+    it('shows "Recommended for You" carousel after load', () => {
       const { getByTestId } = renderDetail();
       expect(getByTestId('also-bought-carousel')).toBeTruthy();
     });
@@ -231,7 +231,7 @@ describe('ProductDetailScreen — "Customers also bought" section', () => {
       mockProductRecs.mockReturnValue({ isLoading: false, recommendations: [], error: null });
     });
 
-    it('hides "Customers also bought" section when no recommendations', () => {
+    it('hides section when no recommendations', () => {
       const { queryByTestId } = renderDetail();
       expect(queryByTestId('also-bought-carousel')).toBeNull();
       expect(queryByTestId('skeleton-also-bought')).toBeNull();
