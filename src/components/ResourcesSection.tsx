@@ -74,10 +74,22 @@ function ResourcesSectionInner({
 
   const toggle = useCallback(() => setExpanded((v) => !v), []);
 
-  const handleSpec = useCallback(() => void openPdf(resources.specSheetUrl!), [resources.specSheetUrl]);
-  const handleCare = useCallback(() => void openPdf(resources.careGuideUrl!), [resources.careGuideUrl]);
-  const handleReturn = useCallback(() => void openLink(resources.returnPolicyUrl!), [resources.returnPolicyUrl]);
-  const handleWarranty = useCallback(() => void openLink(resources.warrantyPolicyUrl!), [resources.warrantyPolicyUrl]);
+  const handleSpec = useCallback(
+    () => void openPdf(resources.specSheetUrl!),
+    [resources.specSheetUrl],
+  );
+  const handleCare = useCallback(
+    () => void openPdf(resources.careGuideUrl!),
+    [resources.careGuideUrl],
+  );
+  const handleReturn = useCallback(
+    () => void openLink(resources.returnPolicyUrl!),
+    [resources.returnPolicyUrl],
+  );
+  const handleWarranty = useCallback(
+    () => void openLink(resources.warrantyPolicyUrl!),
+    [resources.warrantyPolicyUrl],
+  );
 
   return (
     <View testID={testID} style={[styles.container, { paddingHorizontal: spacing.lg }]}>
@@ -121,7 +133,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Spec sheet, PDF"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>📄</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Spec Sheet
               </Text>
               <Text style={[styles.itemBadge, { color: colors.espressoLight }]}>PDF</Text>
@@ -137,7 +154,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Care guide, PDF"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>📋</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Care Guide
               </Text>
               <Text style={[styles.itemBadge, { color: colors.espressoLight }]}>PDF</Text>
@@ -153,7 +175,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Return policy"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>↩️</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Return Policy
               </Text>
               <Text style={[styles.itemChevron, { color: colors.espressoLight }]}>›</Text>
@@ -169,7 +196,12 @@ function ResourcesSectionInner({
               accessibilityLabel="Warranty policy"
             >
               <Text style={[styles.itemIcon, { color: colors.espressoLight }]}>🛡</Text>
-              <Text style={[styles.itemLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}>
+              <Text
+                style={[
+                  styles.itemLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
+              >
                 Warranty Policy
               </Text>
               <Text style={[styles.itemChevron, { color: colors.espressoLight }]}>›</Text>

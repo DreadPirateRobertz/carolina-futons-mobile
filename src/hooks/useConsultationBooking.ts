@@ -167,9 +167,7 @@ export function useConsultationBooking(
           },
         );
         // Extract HH:MM from "YYYY-MM-DDTHH:MM:SS"
-        const takenSet = new Set(
-          result.items.map((item) => item.consultationDate.slice(11, 16)),
-        );
+        const takenSet = new Set(result.items.map((item) => item.consultationDate.slice(11, 16)));
         setSlots(ALL_SLOTS.map((time) => ({ time, available: !takenSet.has(time) })));
         setSlotsError(null);
       } catch (err) {

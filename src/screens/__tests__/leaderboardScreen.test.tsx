@@ -206,7 +206,15 @@ describe('LeaderboardScreen', () => {
     it('renders list with exactly one entry', () => {
       mockHookState = {
         ...mockHookState,
-        entries: [{ memberId: 'm1', displayName: 'Solo', points: 500, tier: getTierForPoints(500), rank: 1 }],
+        entries: [
+          {
+            memberId: 'm1',
+            displayName: 'Solo',
+            points: 500,
+            tier: getTierForPoints(500),
+            rank: 1,
+          },
+        ],
         currentUserRank: 1,
       };
       const { getByTestId } = wrap(<LeaderboardScreen />);

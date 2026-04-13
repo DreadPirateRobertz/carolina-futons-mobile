@@ -6,14 +6,7 @@
  * Dismissible via close button or backdrop tap.
  */
 import React, { memo } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '@/theme';
 import type { Challenge } from '@/data/challenges';
 

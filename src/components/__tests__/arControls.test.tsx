@@ -266,9 +266,7 @@ describe('ARControls', () => {
     });
 
     it('browse products button has accessibilityLabel', () => {
-      const { getByTestId } = render(
-        <ARControls {...defaultProps} onBrowseProducts={jest.fn()} />,
-      );
+      const { getByTestId } = render(<ARControls {...defaultProps} onBrowseProducts={jest.fn()} />);
       const btn = getByTestId('ar-browse-products');
       expect(btn.props.accessibilityLabel).toBe('Browse all products');
       expect(btn.props.accessibilityRole).toBe('button');
@@ -291,9 +289,7 @@ describe('ARControls', () => {
     });
 
     it('save to gallery button has accessibilityLabel', () => {
-      const { getByTestId } = render(
-        <ARControls {...defaultProps} onSaveToGallery={jest.fn()} />,
-      );
+      const { getByTestId } = render(<ARControls {...defaultProps} onSaveToGallery={jest.fn()} />);
       const btn = getByTestId('ar-save-gallery');
       expect(btn.props.accessibilityLabel).toBe('Save to photo library');
       expect(btn.props.accessibilityRole).toBe('button');

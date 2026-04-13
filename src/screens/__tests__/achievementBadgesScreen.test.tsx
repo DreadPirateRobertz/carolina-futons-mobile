@@ -350,7 +350,9 @@ describe('Locked vs earned badge visual state', () => {
   it('earned badge has opacity 1', () => {
     const { getByTestId } = wrap(<AchievementBadgesScreen />);
     const card = getByTestId('badge-card-7'); // milestone 7 is earned
-    const flat = Array.isArray(card.props.style) ? card.props.style.flat(Infinity) : [card.props.style];
+    const flat = Array.isArray(card.props.style)
+      ? card.props.style.flat(Infinity)
+      : [card.props.style];
     const opacity = flat.reduce((acc: number | undefined, s: any) => s?.opacity ?? acc, undefined);
     expect(opacity).toBe(1);
   });
@@ -358,7 +360,9 @@ describe('Locked vs earned badge visual state', () => {
   it('locked badge has opacity 0.5', () => {
     const { getByTestId } = wrap(<AchievementBadgesScreen />);
     const card = getByTestId('badge-card-14'); // milestone 14 is locked in LOADED_SOME_EARNED
-    const flat = Array.isArray(card.props.style) ? card.props.style.flat(Infinity) : [card.props.style];
+    const flat = Array.isArray(card.props.style)
+      ? card.props.style.flat(Infinity)
+      : [card.props.style];
     const opacity = flat.reduce((acc: number | undefined, s: any) => s?.opacity ?? acc, undefined);
     expect(opacity).toBe(0.5);
   });
