@@ -1,42 +1,37 @@
 import React from 'react';
 import { Alert } from 'react-native';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { PremiumScreen } from '../PremiumScreen';
 
 jest.spyOn(Alert, 'alert');
 
 const mockPurchase = jest.fn().mockResolvedValue('cancelled');
 const mockRestore = jest.fn().mockResolvedValue(false);
+const mockUsePremium = jest.fn();
+
+const DEFAULT_PREMIUM = {
+  isPremium: false,
+  isLoading: false,
+  offerings: [
+    {
+      identifier: '$rc_monthly',
+      product: { priceString: '$4.99', title: 'CF+ Monthly', description: 'Monthly subscription' },
+      packageType: 'MONTHLY',
+    },
+    {
+      identifier: '$rc_annual',
+      product: { priceString: '$39.99', title: 'CF+ Annual', description: 'Annual subscription' },
+      packageType: 'ANNUAL',
+    },
+  ],
+  error: null,
+  purchase: mockPurchase,
+  restore: mockRestore,
+};
 
 jest.mock('@/hooks/usePremium', () => ({
   PremiumProvider: ({ children }: { children: React.ReactNode }) => children,
-  usePremium: () => ({
-    isPremium: false,
-    isLoading: false,
-    offerings: [
-      {
-        identifier: '$rc_monthly',
-        product: {
-          priceString: '$4.99',
-          title: 'CF+ Monthly',
-          description: 'Monthly subscription',
-        },
-        packageType: 'MONTHLY',
-      },
-      {
-        identifier: '$rc_annual',
-        product: {
-          priceString: '$39.99',
-          title: 'CF+ Annual',
-          description: 'Annual subscription',
-        },
-        packageType: 'ANNUAL',
-      },
-    ],
-    error: null,
-    purchase: mockPurchase,
-    restore: mockRestore,
-  }),
+  usePremium: () => mockUsePremium(),
 }));
 
 jest.mock('@/theme', () => ({
@@ -86,7 +81,10 @@ jest.mock('@/components/GlassCard', () => ({
 }));
 
 describe('PremiumScreen', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUsePremium.mockReturnValue({ ...DEFAULT_PREMIUM, purchase: mockPurchase, restore: mockRestore });
+  });
 
   it('renders feature list', () => {
     const { getByText } = render(<PremiumScreen onBack={() => {}} />);
@@ -161,5 +159,111 @@ describe('PremiumScreen', () => {
       expect(mockPurchase).toHaveBeenCalled();
     });
     expect(Alert.alert).not.toHaveBeenCalled();
+  });
+
+  // ── Edge cases (cm-2iw) ───────────────────────────────────────────────────
+
+  describe('isPremium=true state', () => {
+    it('shows CF+ Active badge when user is already premium', () => {
+      mockUsePremium.mockReturnValue({ ...DEFAULT_PREMIUM, isPremium: true });
+      const { getByText } = render(<PremiumScreen onBack={() => {}} />);
+      expect(getByText('CF+ Active')).toBeTruthy();
+    });
+
+    it('shows "You\'re a CF+ member" title when already premium', () => {
+      mockUsePremium.mockReturnValue({ ...DEFAULT_PREMIUM, isPremium: true });
+      const { getByText } = render(<PremiumScreen onBack={() => {}} />);
+      expect(getByText("You're a CF+ member")).toBeTruthy();
+    });
+
+    it('does not show purchase buttons when already premium', () => {
+      mockUsePremium.mockReturnValue({ ...DEFAULT_PREMIUM, isPremium: true });
+      const { queryByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      expect(queryByTestId('purchase-monthly')).toBeNull();
+      expect(queryByTestId('purchase-annual')).toBeNull();
+    });
+  });
+
+  describe('hook error state', () => {
+    it('shows purchase-error when hook returns an error string', () => {
+      mockUsePremium.mockReturnValue({
+        ...DEFAULT_PREMIUM,
+        error: 'RevenueCat unavailable',
+        purchase: mockPurchase,
+        restore: mockRestore,
+      });
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      expect(getByTestId('purchase-error')).toBeTruthy();
+    });
+
+    it('displays the exact error message text', () => {
+      mockUsePremium.mockReturnValue({
+        ...DEFAULT_PREMIUM,
+        error: 'RevenueCat unavailable',
+        purchase: mockPurchase,
+        restore: mockRestore,
+      });
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      expect(getByTestId('purchase-error').props.children).toBe('RevenueCat unavailable');
+    });
+  });
+
+  describe('empty offerings', () => {
+    it('hides purchase buttons when offerings list is empty', () => {
+      mockUsePremium.mockReturnValue({
+        ...DEFAULT_PREMIUM,
+        offerings: [],
+        purchase: mockPurchase,
+        restore: mockRestore,
+      });
+      const { queryByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      expect(queryByTestId('purchase-monthly')).toBeNull();
+      expect(queryByTestId('purchase-annual')).toBeNull();
+    });
+  });
+
+  describe('restore alerts', () => {
+    it('shows "Restored!" alert title on successful restore', async () => {
+      mockRestore.mockResolvedValueOnce(true);
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      fireEvent.press(getByTestId('restore-purchases'));
+      await waitFor(() => {
+        expect(Alert.alert).toHaveBeenCalledWith(
+          'Restored!',
+          'Your CF+ subscription has been restored.',
+        );
+      });
+    });
+
+    it('shows "No Purchases Found" alert title when restore finds nothing', async () => {
+      mockRestore.mockResolvedValueOnce(false);
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      fireEvent.press(getByTestId('restore-purchases'));
+      await waitFor(() => {
+        expect(Alert.alert).toHaveBeenCalledWith(
+          'No Purchases Found',
+          'We could not find any previous purchases for this account.',
+        );
+      });
+    });
+  });
+
+  describe('buttons disabled during active purchase', () => {
+    it('disables both plan buttons while a purchase is in progress', async () => {
+      let resolvePurchase!: (v: string) => void;
+      mockPurchase.mockReturnValueOnce(new Promise((res) => { resolvePurchase = res; }));
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} />);
+      fireEvent.press(getByTestId('purchase-monthly'));
+      expect(getByTestId('purchase-monthly').props.accessibilityState?.disabled ?? getByTestId('purchase-monthly').props.disabled).toBeTruthy();
+      expect(getByTestId('purchase-annual').props.accessibilityState?.disabled ?? getByTestId('purchase-annual').props.disabled).toBeTruthy();
+      await act(async () => { resolvePurchase('cancelled'); });
+    });
+  });
+
+  describe('custom testID', () => {
+    it('renders root with custom testID', () => {
+      const { getByTestId } = render(<PremiumScreen onBack={() => {}} testID="my-premium" />);
+      expect(getByTestId('my-premium')).toBeTruthy();
+    });
   });
 });

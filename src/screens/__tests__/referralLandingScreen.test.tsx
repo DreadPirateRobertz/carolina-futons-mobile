@@ -1,11 +1,12 @@
 /**
- * Tests for ReferralLandingScreen — cm-z0x.
+ * Tests for ReferralLandingScreen — cm-z0x / cm-2iw.
  *
  * Covers:
  * - Renders welcome UI
  * - Calls storeReferredByCode with route param code
  * - Navigates to Tabs after storing code
  * - Ignores empty/invalid code (edge case)
+ * - Graceful error handling, subtitle, spinner, boundary values
  */
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
@@ -78,5 +79,58 @@ describe('ReferralLandingScreen', () => {
   it('passes different code correctly', async () => {
     renderScreen('SALE-ABCD');
     await waitFor(() => expect(mockStoreReferredByCode).toHaveBeenCalledWith('SALE-ABCD'));
+  });
+
+  // ── Edge cases (cm-2iw) ───────────────────────────────────────────────────
+
+  describe('graceful error handling', () => {
+    it('still navigates to Tabs even when storeReferredByCode throws', async () => {
+      mockStoreReferredByCode.mockRejectedValueOnce(new Error('AsyncStorage unavailable'));
+      renderScreen('FUTON-ERR1');
+      await waitFor(() =>
+        expect(mockNavigationReset).toHaveBeenCalledWith({
+          index: 0,
+          routes: [{ name: 'Tabs' }],
+        }),
+      );
+    });
+
+    it('calls storeReferredByCode exactly once even when it throws', async () => {
+      mockStoreReferredByCode.mockRejectedValueOnce(new Error('fail'));
+      renderScreen('CODE-X');
+      await waitFor(() => expect(mockStoreReferredByCode).toHaveBeenCalledTimes(1));
+    });
+  });
+
+  describe('welcome UI elements', () => {
+    it('renders the subtitle / instructions text', () => {
+      const { getByText } = renderScreen();
+      expect(
+        getByText(/sign in or create an account to redeem your discount/i),
+      ).toBeTruthy();
+    });
+
+    it('renders an ActivityIndicator spinner', () => {
+      const { UNSAFE_getByType } = renderScreen();
+      const { ActivityIndicator } = require('react-native');
+      expect(UNSAFE_getByType(ActivityIndicator)).toBeTruthy();
+    });
+  });
+
+  describe('boundary: empty code', () => {
+    it('calls storeReferredByCode with empty string and still navigates', async () => {
+      renderScreen('');
+      await waitFor(() => expect(mockStoreReferredByCode).toHaveBeenCalledWith(''));
+      await waitFor(() => expect(mockNavigationReset).toHaveBeenCalled());
+    });
+  });
+
+  describe('boundary: code with special characters', () => {
+    it('passes code with hyphens and digits unchanged', async () => {
+      renderScreen('REF-2026-XK7P');
+      await waitFor(() =>
+        expect(mockStoreReferredByCode).toHaveBeenCalledWith('REF-2026-XK7P'),
+      );
+    });
   });
 });
