@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/theme';
 import { useOptionalWixClient } from '@/services/wix';
+import { sanitizeInput } from '@/utils/sanitizeInput';
 
 interface PromoCodeInputProps {
   cartTotal: number;
@@ -29,8 +30,8 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
   const [appliedCode, setAppliedCode] = useState('');
 
   async function handleApply() {
-    const trimmed = code.trim().toUpperCase();
-    if (!trimmed) return;
+    const sanitized = sanitizeInput(code, PROMO_MAX_LENGTH).toUpperCase();
+    if (!sanitized) return;
     if (!client) {
       setState('error');
       setErrorMsg('Promo codes unavailable — please sign in to apply');
@@ -39,13 +40,13 @@ export function PromoCodeInput({ cartTotal, onDiscount }: PromoCodeInputProps) {
     setState('loading');
     try {
       const result = (await client.callFunction('/_functions/validatePromoCode', 'POST', {
-        code: trimmed,
+        code: sanitized,
         cartTotal,
       })) as { valid: boolean; discount: number; type: 'percent' | 'fixed'; error?: string };
 
       if (result.valid) {
         setState('success');
-        setAppliedCode(trimmed);
+        setAppliedCode(sanitized);
         onDiscount(result.discount, result.type);
       } else {
         setState('error');
