@@ -14,12 +14,14 @@ import { useTheme } from '@/theme';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import type { LoyaltyTierConfig } from '@/data/loyaltyTiers';
 import { useStreak } from '@/hooks/useStreak';
+import { usePointsHistory, type PointsEvent } from '@/hooks/usePointsHistory';
+import { useTierPerks, type TierPerk } from '@/hooks/useTierPerks';
 import { emitStreakExtended, emitTierChanged } from '@/services/crossRigEventBus';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { captureException } from '@/services/crashReporting';
 import { LoyaltyBadge } from '@/components/LoyaltyBadge';
 import { TierPerkCard } from '@/components/TierPerkCard';
-import { SkeletonCard } from '@/components/Skeleton';
+import { SkeletonCard, SkeletonRow } from '@/components/Skeleton';
 
 /** Module-level flag to prevent duplicate streak emissions across remounts. */
 let streakEmittedThisSession = false;
@@ -45,10 +47,39 @@ interface Props {
   initialTab?: LoyaltyInitialTab;
 }
 
+/** Icon map matching PointsHistoryScreen. */
+const ACTIVITY_ICON: Record<PointsEvent['type'], string> = {
+  purchase: '🛒',
+  review: '⭐',
+  referral: '🤝',
+  challenge_complete: '🏆',
+  streak_milestone: '🔥',
+  daily_quest: '✅',
+};
+
+/** Human-readable label for a perk type. */
+function perkLabel(perkType: string): string {
+  const labels: Record<string, string> = {
+    BIRTHDAY_DISCOUNT: 'Birthday Discount',
+    ACCESSORY_DISCOUNT: 'Accessory Discount',
+    PRIORITY_SUPPORT: 'Priority Support',
+    FREE_WHITE_GLOVE: 'Free White-Glove Delivery',
+    EARLY_ACCESS: 'Early Access',
+    STYLING_CALL: 'Free Styling Consultation',
+  };
+  return labels[perkType] ?? perkType;
+}
+
 export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
   const { colors, spacing, typography } = useTheme();
   const { points, tier, nextTier, progress, loading, error, refreshPoints } = useLoyalty();
   const { streak, loading: streakLoading, wasExtendedToday } = useStreak();
+  const {
+    events: activityEvents,
+    loading: activityLoading,
+    error: activityError,
+  } = usePointsHistory();
+  const { perks, loading: perksLoading } = useTierPerks();
   const prevTierRef = useRef<LoyaltyTierConfig | null>(null);
 
   useEffect(() => {
@@ -185,7 +216,43 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
         Your Perks
       </Text>
       <View style={[styles.perksWrap, { paddingHorizontal: spacing.lg }]}>
-        <TierPerkCard tier={tier} testID="loyalty-tier-perk-card" />
+        {perksLoading ? (
+          <SkeletonRow testID="loyalty-perks-loading" height={16} />
+        ) : perks.length === 0 ? (
+          <View testID="loyalty-perks-empty">
+            <TierPerkCard tier={tier} testID="loyalty-tier-perk-card" />
+          </View>
+        ) : (
+          perks.map((perk: TierPerk) => (
+            <View
+              key={perk.perkType}
+              style={styles.perkRow}
+              testID={`loyalty-perk-${perk.perkType}`}
+            >
+              <Text
+                style={[styles.perkLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+              >
+                {perkLabel(perk.perkType)}
+              </Text>
+              {perk.couponCode ? (
+                <Text
+                  style={[styles.perkCode, { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold }]}
+                  testID={`loyalty-perk-coupon-${perk.perkType}`}
+                >
+                  {perk.couponCode}
+                </Text>
+              ) : null}
+              {perk.bookingUrl ? (
+                <Text
+                  style={[styles.perkCode, { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold }]}
+                  testID={`loyalty-perk-booking-${perk.perkType}`}
+                >
+                  Book now
+                </Text>
+              ) : null}
+            </View>
+          ))
+        )}
       </View>
       <Text
         style={[
@@ -199,17 +266,54 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       >
         Activity
       </Text>
-      <View style={styles.emptyTx}>
-        <Text
-          style={[
-            styles.emptyText,
-            { color: colors.espressoLight, fontFamily: typography.bodyFamily },
-          ]}
-          testID="loyalty-no-transactions"
-        >
-          No transactions yet. Earn points by shopping!
-        </Text>
-      </View>
+      {activityLoading ? (
+        <SkeletonRow
+          testID="loyalty-activity-loading"
+          height={16}
+          style={{ marginHorizontal: spacing.lg, marginVertical: spacing.xs }}
+        />
+      ) : activityError ? (
+        <View style={styles.emptyTx} testID="loyalty-activity-error">
+          <Text
+            style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+          >
+            {activityError}
+          </Text>
+        </View>
+      ) : activityEvents.length === 0 ? (
+        <View style={styles.emptyTx}>
+          <Text
+            style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            testID="loyalty-no-activity"
+          >
+            No activity yet. Earn points by shopping!
+          </Text>
+        </View>
+      ) : (
+        <View style={{ paddingHorizontal: spacing.lg }}>
+          {activityEvents.slice(0, 5).map((event: PointsEvent) => (
+            <View
+              key={event.id}
+              style={[styles.activityRow, { borderBottomColor: colors.sandDark }]}
+              testID={`loyalty-activity-event-${event.id}`}
+            >
+              <Text style={styles.activityIcon}>{ACTIVITY_ICON[event.type] ?? '✨'}</Text>
+              <Text
+                style={[styles.activityDesc, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+                numberOfLines={1}
+              >
+                {event.description}
+              </Text>
+              <Text
+                style={[styles.activityPoints, { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold }]}
+                testID={`loyalty-activity-points-${event.id}`}
+              >
+                {`+${event.points}`}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -238,4 +342,17 @@ const styles = StyleSheet.create({
   errorText: { fontSize: 15, textAlign: 'center', marginHorizontal: 32, marginBottom: 20 },
   retryButton: { paddingVertical: 12, paddingHorizontal: 32, borderRadius: 8 },
   retryText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  perkRow: { paddingVertical: 8, gap: 4 },
+  perkLabel: { fontSize: 14 },
+  perkCode: { fontSize: 13 },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 10,
+  },
+  activityIcon: { fontSize: 18, width: 28, textAlign: 'center' },
+  activityDesc: { flex: 1, fontSize: 13 },
+  activityPoints: { fontSize: 13 },
 });

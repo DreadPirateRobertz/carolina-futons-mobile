@@ -23,6 +23,31 @@ jest.mock('@/hooks/useLoyalty', () => ({
   useLoyalty: () => mockUseLoyalty(),
 }));
 
+jest.mock('@/hooks/useStreak', () => ({
+  useStreak: () => ({ streak: 0, loading: false, wasExtendedToday: false, longestStreak: 0 }),
+}));
+
+jest.mock('@/hooks/usePointsHistory', () => ({
+  usePointsHistory: () => ({ events: [], loading: false, error: null, refresh: jest.fn() }),
+}));
+
+jest.mock('@/hooks/useTierPerks', () => ({
+  useTierPerks: () => ({ perks: [], loading: false, error: null }),
+}));
+
+jest.mock('@/services/wix/wixClientSingleton', () => ({
+  getWixClientSingleton: jest.fn(() => null),
+}));
+
+jest.mock('@/services/crossRigEventBus', () => ({
+  emitStreakExtended: jest.fn(() => Promise.resolve()),
+  emitTierChanged: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock('@/services/crashReporting', () => ({
+  captureException: jest.fn(),
+}));
+
 const DEFAULT_LOYALTY = {
   points: 750,
   tier: TRAIL_BLAZER,
@@ -117,9 +142,9 @@ describe('LoyaltyScreen', () => {
     expect(queryByTestId('loyalty-progress')).toBeNull();
   });
 
-  it('shows no-transactions notice in loaded state', () => {
+  it('shows no-activity notice when no events (cm-jyl: wired to live data)', () => {
     const { getByTestId } = renderScreen();
-    expect(getByTestId('loyalty-no-transactions')).toBeTruthy();
+    expect(getByTestId('loyalty-no-activity')).toBeTruthy();
   });
 
   it('shows perks section heading in loaded state', () => {

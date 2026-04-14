@@ -991,6 +991,55 @@ export class WixClient {
   }
 
   /**
+   * Fetch the authenticated member's delivered tier perks from TierPerkDeliveries
+   * via the getTierPerks webMethod (cm-jyl). Member token is required.
+   */
+  async getTierPerks(memberToken: string): Promise<{
+    perks: Array<{
+      perkType: string;
+      tier: string;
+      deliveredAt: string;
+      couponCode?: string;
+      bookingUrl?: string;
+    }>;
+  }> {
+    const url = `${this.baseUrl}/_functions/getTierPerks`;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: memberToken,
+          'wix-site-id': this.siteId,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new WixApiError(
+          `getTierPerks failed: ${response.status}`,
+          response.status,
+          '/_functions/getTierPerks',
+        );
+      }
+      return response.json() as Promise<{ perks: Array<{ perkType: string; tier: string; deliveredAt: string; couponCode?: string; bookingUrl?: string }> }>;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new WixApiError(`Request timeout after ${this.timeoutMs}ms`, undefined, '/_functions/getTierPerks');
+      }
+      if (err instanceof WixApiError) throw err;
+      throw new WixApiError(
+        `Network error: ${err instanceof Error ? err.message : String(err)}`,
+        undefined,
+        '/_functions/getTierPerks',
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /**
    * Fetch the loyalty leaderboard from the Wix backend webMethod (cf-op6).
    * Returns ranked entries and the current user's rank if authenticated.
    */
