@@ -64,7 +64,7 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <p class="meta">
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
-Tests: 10,053 passing (550 suites) | Session 34 · 2026-04-13 (62 S31 screenshots + 8 S34 placeholders — Tailscale blocked Linux SSH)<br>
+Tests: 10,053 passing (550 suites) | Session 34 · 2026-04-13 (62 S31 screenshots + 8 S34 live captures — Android emulator, pop-os GPU build)<br>
 PRs merged: #357–#508 | Convoy S34: #504 (cm-74i AR edge), #505 (cm-pkp a11y), #506 (cm-ajd coverage), #508 (cm-ox9 perf) — ALL MERGED
 </p>
 
@@ -1150,11 +1150,11 @@ npx jest --passWithNoTests</pre>
 <tr><td>cm-ox9</td><td>Perf telemetry</td><td class="status-warn">PR #508</td><td>perfMark service (dev-only). TTI markers on Home/PDP. React.memo on Cart/OrderHistory rows.</td></tr>
 </table>
 
-<h3>S34 Screen Captures (Pending — APK Build In Progress)</h3>
+<h3>S34 Screen Captures — Session 34 · 2026-04-13</h3>
 <div class="grid">
 
 <div class="card">
-  <div class="placeholder">📱 TrailsScreen<div class="build-hint">Screenshot pending S34 APK build · cm-ay9</div></div>
+  <img src="screenshots/s34-20260413/01-trails-screen.png" alt="TrailsScreen" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>TrailsScreen <span class="session-tag">S34</span></h3>
     <p>3 curated style trails (Spring Refresh, Summer Bold, Fall Classic) × 5 challenges each. Progress rings per trail. Tap challenge → ChallengeDetailSheet. Badge awarded on trail completion.</p>
@@ -1166,7 +1166,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">📶 OfflineBanner<div class="build-hint">Screenshot pending S34 APK build · cm-049</div></div>
+  <img src="screenshots/s34-20260413/02-offline-banner.png" alt="OfflineBanner" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>OfflineBanner — Queue Count <span class="session-tag">S34</span></h3>
     <p>Red banner at top of app when offline. Shows "N changes queued — will sync when reconnected". useQueueStatus reports pending write count. Dismisses automatically on reconnect.</p>
@@ -1177,7 +1177,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">🏠 RoomGallery Real Photos<div class="build-hint">Screenshot pending S34 APK build · cm-5aw</div></div>
+  <img src="screenshots/s34-20260413/03-room-gallery-real-photos.png" alt="RoomGallery Real Photos" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>RoomGallery — Real Room Photos <span class="session-tag">S34</span></h3>
     <p>Member-submitted room photos from Wix RealRoomPhotos collection. Hotspot (+) overlays link directly to featured products. Attribution shows member city/state. Masonry grid layout.</p>
@@ -1189,10 +1189,10 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">📋 PDP Resources Accordion<div class="build-hint">Screenshot pending S34 APK build · cm-cgo</div></div>
+  <img src="screenshots/s34-20260413/04-pdp-size-guide.png" alt="PDP Size Guide + Resources Area" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>ProductDetail — Resources Accordion <span class="session-tag">S34</span></h3>
-    <p>Collapsible Resources section below BundleRow on PDP. Links to spec sheet PDF, care guide, warranty policy, and product video. Chevron toggle. Deep-links open in-app browser.</p>
+    <p>Collapsible Resources section below BundleRow on PDP. Links to spec sheet PDF, care guide, warranty policy, and product video. Chevron toggle. Deep-links open in-app browser. <em>Note: renders null without Wix product resources data — adjacent Size Guide accordion shown.</em></p>
     <div class="features">
       <span class="badge badge-commerce">PDP</span>
     </div>
@@ -1200,7 +1200,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">🛒 Cart Recommendations<div class="build-hint">Screenshot pending S34 APK build · hq-bzb</div></div>
+  <img src="screenshots/s34-20260413/05-cart-recommendations.png" alt="CartScreen Recommendations" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>CartScreen — Recommendations Row <span class="session-tag">S34</span></h3>
     <p>"Recommended for you" horizontal ProductRecommendationRow at bottom of CartScreen. Powered by useProductRecommendations → Wix CMS. Also appears on PDP below fabric selector.</p>
@@ -1212,7 +1212,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">🎯 HomeScreen Challenges Rail<div class="build-hint">Screenshot pending S34 APK build · cm-jyw</div></div>
+  <img src="screenshots/s34-20260413/06-home-challenges-rail.png" alt="HomeScreen Challenges Rail" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>HomeScreen — Challenges Rail <span class="session-tag">S34</span></h3>
     <p>Horizontal ChallengeCard rail above featured products. Active challenges get coral (#E8845C) border. Tap → ChallengeDetailSheet bottom sheet with instructions + claim button. Auto-refreshes on gamification events.</p>
@@ -1223,7 +1223,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">🚚 PDP Shipping Estimate<div class="build-hint">Screenshot pending S34 APK build · cm-9yn</div></div>
+  <img src="screenshots/s34-20260413/07-pdp-shipping-estimate.png" alt="PDP Shipping Estimate" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>ProductDetail — Shipping Estimate <span class="session-tag">S34</span></h3>
     <p>ZIP code entry below fabric selector. On submit: calls getShippingEstimate → returns carrier name + estimated days. Displays "Ships via UPS Ground · 5–7 business days". Cached per ZIP × productId.</p>
@@ -1234,7 +1234,7 @@ npx jest --passWithNoTests</pre>
 </div>
 
 <div class="card">
-  <div class="placeholder">📅 Consultation Booking<div class="build-hint">Screenshot pending S34 APK build · cm-5x7</div></div>
+  <img src="screenshots/s34-20260413/08-consultation-booking.png" alt="ConsultationBookingScreen" style="width:100%;height:auto;display:block;">
   <div class="card-info">
     <h3>ConsultationBookingScreen <span class="session-tag">S34</span></h3>
     <p>Book in-store consultation via Wix ConsultationBookings CMS. Date picker (YYYY-MM-DD), time slot selector (HH:MM), optional notes field. Conflict detection (409). Confirmation + calendar add prompt.</p>
