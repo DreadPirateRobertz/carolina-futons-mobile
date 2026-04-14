@@ -19,6 +19,7 @@
 ### Task 1: Add Timeout + Error Handling to Wix Client
 
 **Files:**
+
 - Modify: `src/services/wix/wixClient.ts` (line ~945, `rawRequest` method)
 - Create: `src/__tests__/services/wix/wixClientTimeout.test.ts`
 
@@ -38,9 +39,7 @@ afterEach(() => {
 describe('WixClient timeout', () => {
   it('aborts request after 10s timeout', async () => {
     // Simulate a request that never resolves
-    global.fetch = jest.fn(
-      () => new Promise((resolve) => setTimeout(resolve, 30000))
-    );
+    global.fetch = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 30000)));
 
     const client = new WixClient({
       apiKey: 'test-key',
@@ -56,7 +55,7 @@ describe('WixClient timeout', () => {
         ok: true,
         status: 200,
         json: () => Promise.resolve({ items: [], totalResults: 0 }),
-      })
+      }),
     );
 
     const client = new WixClient({
@@ -69,9 +68,7 @@ describe('WixClient timeout', () => {
   });
 
   it('includes timeout duration in error message', async () => {
-    global.fetch = jest.fn(
-      () => new Promise((resolve) => setTimeout(resolve, 30000))
-    );
+    global.fetch = jest.fn(() => new Promise((resolve) => setTimeout(resolve, 30000)));
 
     const client = new WixClient({
       apiKey: 'test-key',
@@ -160,6 +157,7 @@ git commit -m "feat(wix): add 10s request timeout with AbortController"
 ### Task 2: Wix Backend Activation (Mock → Production)
 
 **Files:**
+
 - Modify: `src/services/prefetch.ts` (replace mock imports with Wix API calls)
 - Modify: `src/hooks/useStores.ts` (replace mock data with Wix CMS query)
 - Modify: `.env` or `eas.json` (add production Wix env vars)
@@ -264,7 +262,7 @@ Replace the hardcoded PRODUCTS/COLLECTIONS usage in the prefetch function body w
 ```typescript
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(`Prefetch timed out after ${ms}ms`)), ms)
+    setTimeout(() => reject(new Error(`Prefetch timed out after ${ms}ms`)), ms),
   );
   return Promise.race([promise, timeout]);
 }
@@ -272,7 +270,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 // In prefetchCriticalData():
 const [products, collections] = await withTimeout(
   Promise.all([fetchProducts(), fetchCollections()]),
-  5000
+  5000,
 );
 ```
 
@@ -368,6 +366,7 @@ Expected: PASS
 - [ ] **Step 8: Add production Wix env vars to eas.json preview profile**
 
 In `eas.json`, add to the `preview.env` block:
+
 ```json
 "EXPO_PUBLIC_WIX_SITE_ID": "3af610bf-06fb-410d-a406-c1258fa84372",
 "EXPO_PUBLIC_WIX_API_KEY": "${WIX_API_KEY}"
@@ -397,6 +396,7 @@ falling back to static mock data when env vars not set."
 ### Task 3: Replace Hardcoded Tax with Stripe Tax + UPS Shipping
 
 **Files:**
+
 - Modify: `src/services/payment.ts` (replace `calculateTotals`)
 - Create: `src/services/taxService.ts`
 - Create: `src/services/shippingService.ts`
@@ -488,8 +488,16 @@ const TAX_FREE_STATES = new Set(['OR', 'MT', 'NH', 'DE', 'AK']);
 
 // State-level fallback rates (used when Stripe Tax unavailable)
 const STATE_TAX_RATES: Record<string, number> = {
-  NC: 0.07, SC: 0.06, VA: 0.053, GA: 0.04, TN: 0.07,
-  FL: 0.06, TX: 0.0625, NY: 0.04, CA: 0.0725, PA: 0.06,
+  NC: 0.07,
+  SC: 0.06,
+  VA: 0.053,
+  GA: 0.04,
+  TN: 0.07,
+  FL: 0.06,
+  TX: 0.0625,
+  NY: 0.04,
+  CA: 0.0725,
+  PA: 0.06,
 };
 
 export async function calculateTax(input: TaxInput): Promise<TaxResult> {
@@ -680,7 +688,9 @@ export async function calculateCheckoutTotals(
 describe('calculateCheckoutTotals', () => {
   it('uses dynamic tax and shipping for NC address', async () => {
     const totals = await calculateCheckoutTotals(499, false, {
-      state: 'NC', zip: '28202', country: 'US',
+      state: 'NC',
+      zip: '28202',
+      country: 'US',
     });
     expect(totals.tax).toBeGreaterThan(0);
     expect(totals.shipping).toBe(0); // >= $499 threshold
@@ -715,6 +725,7 @@ Tax-free states (OR, MT, NH, DE, AK) correctly return $0."
 ### Task 4: Stripe ↔ Wix Order Saga with Rollback
 
 **Files:**
+
 - Create: `src/services/orderSaga.ts`
 - Create: `src/__tests__/services/orderSaga.test.ts`
 - Modify: `src/hooks/usePayment.ts` (use saga instead of direct calls)
@@ -883,11 +894,7 @@ export async function executeOrderSaga(
   // Step 1: Create payment intent
   let paymentIntentId: string;
   try {
-    const intent = await createPaymentIntent(
-      client,
-      input.items,
-      input.totals
-    );
+    const intent = await createPaymentIntent(client, input.items, input.totals);
     paymentIntentId = intent.paymentIntentId;
   } catch (error: unknown) {
     return {
@@ -904,7 +911,7 @@ export async function executeOrderSaga(
         paymentIntentId,
         input.items,
         input.totals,
-        input.paymentMethod
+        input.paymentMethod,
       );
 
       return {
@@ -1007,6 +1014,7 @@ for manual resolution. Idempotency key added to offline queue."
 ### Task 5: Token Refresh Mutex + Account Deletion
 
 **Files:**
+
 - Modify: `src/services/wix/wixAuth.ts` (add refresh mutex)
 - Modify: `src/hooks/useAccountDeletion.ts` (add re-auth + 30-day retention)
 - Create: `src/__tests__/services/wix/tokenRefreshMutex.test.ts`
@@ -1210,6 +1218,7 @@ Account deletion gated behind confirmation, with error handling."
 ### Task 6: Push Notification Backend Spike
 
 **Files:**
+
 - Create: `src/services/pushService.ts` (spike: evaluate Expo managed vs serverless)
 - Create: `src/__tests__/services/pushService.test.ts`
 
@@ -1238,7 +1247,7 @@ describe('pushService', () => {
         userId: 'user-123',
         pushToken: 'invalid-token',
         platform: 'ios',
-      })
+      }),
     ).rejects.toThrow(/invalid.*token/i);
   });
 
@@ -1284,7 +1293,7 @@ export async function storeDeviceToken(input: DeviceTokenInput): Promise<{ store
   const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
   await AsyncStorage.setItem(
     `push_token_${input.userId}`,
-    JSON.stringify({ token: input.pushToken, platform: input.platform, updatedAt: Date.now() })
+    JSON.stringify({ token: input.pushToken, platform: input.platform, updatedAt: Date.now() }),
   );
 
   return { stored: true };
@@ -1318,6 +1327,7 @@ Expected: PASS
 - [ ] **Step 4: Document spike findings**
 
 Add comment at top of `pushService.ts`:
+
 ```
 // SPIKE RESULT: Expo Push API works for direct send.
 // For production: store tokens in Wix CMS 'PushTokens' collection,
@@ -1401,12 +1411,14 @@ After all tasks complete:
 These spec items are acknowledged but deferred to separate implementation plans to keep this plan focused:
 
 **Auth (spec 1.4) — not covered here:**
+
 - Password reset via Wix email service (requires Wix email endpoint investigation)
 - Saved addresses CRUD (requires Wix Members API address fields)
 - Stripe Customer creation for payment method vault
 - Session invalidation on password change
 
 **Push (spec 1.5) — only spike covered here:**
+
 - Order status change triggers (requires order saga from Task 4 to exist first)
 - Cart abandonment 24hr delay trigger
 - Back-in-stock notification triggers (requires inventory sync)
@@ -1418,12 +1430,12 @@ These will be filed as separate beads once this plan's Tasks 4-6 are complete.
 
 ## Crew Assignment Summary
 
-| Task | Owner | Parallel? |
-|------|-------|-----------|
-| Task 1: Wix Timeout | hicks | Start immediately |
-| Task 2: Wix Activation | dallas | After Task 1 |
-| Task 3: Tax + Shipping | dallas + melania coordination | After Task 2 |
-| Task 4: Order Saga | bishop | After Task 2 |
-| Task 5: Auth Completion | burke (a11y) + ripley (UI) | Parallel with Tasks 3-4 |
-| Task 6: Push Spike | hicks | Parallel (1 day) |
-| Task 7: Store Sync | ripley | Parallel with Tasks 3-4 |
+| Task                    | Owner                         | Parallel?               |
+| ----------------------- | ----------------------------- | ----------------------- |
+| Task 1: Wix Timeout     | hicks                         | Start immediately       |
+| Task 2: Wix Activation  | dallas                        | After Task 1            |
+| Task 3: Tax + Shipping  | dallas + melania coordination | After Task 2            |
+| Task 4: Order Saga      | bishop                        | After Task 2            |
+| Task 5: Auth Completion | burke (a11y) + ripley (UI)    | Parallel with Tasks 3-4 |
+| Task 6: Push Spike      | hicks                         | Parallel (1 day)        |
+| Task 7: Store Sync      | ripley                        | Parallel with Tasks 3-4 |

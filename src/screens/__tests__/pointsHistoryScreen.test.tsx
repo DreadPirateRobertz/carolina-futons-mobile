@@ -110,7 +110,11 @@ describe('PointsHistoryScreen', () => {
   });
 
   it('renders content (list) when loading=false', () => {
-    mockUsePointsHistory.mockReturnValue({ ...defaultHookState, events: MOCK_EVENTS, loading: false });
+    mockUsePointsHistory.mockReturnValue({
+      ...defaultHookState,
+      events: MOCK_EVENTS,
+      loading: false,
+    });
     const { getByTestId } = renderScreen();
     expect(getByTestId('points-history-list')).toBeTruthy();
   });

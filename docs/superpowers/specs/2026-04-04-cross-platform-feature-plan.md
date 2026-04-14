@@ -25,6 +25,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 **Web source of truth:** `gamificationTokens.js POINTS_CONFIG`, `loyaltyService.web.js`, `loyaltyTiers.web.js`
 
 **Mobile changes:**
+
 - Wire `LoyaltyScreen`, `PointsHistoryScreen`, `RewardsScreen` to Wix Members API
 - Replace local mock points with shared `LoyaltyPoints` Wix collection
 - Sync tier perks with web's `TierPerkDeliveries` collection
@@ -37,6 +38,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 **Goal:** Users submit room photos on both platforms, displayed everywhere.
 
 **Shared Wix collection:** `UGCPhotos`
+
 ```
 {
   roomType: "living-room" | "bedroom" | "office" | "dorm" | "porch" | "other",
@@ -51,6 +53,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 ```
 
 **Mobile changes:**
+
 - `RoomGalleryScreen`: add photo submit (expo-image-picker)
 - `ProductDetailScreen`: add UGC gallery section (horizontal scroll)
 - Vote/like functionality
@@ -65,6 +68,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 **Web reference:** `financingCalc.web.js`, `BNPLWidget.js`
 
 **Mobile changes:**
+
 - Align `FinancingCalculator` component math with web's `financingCalc.web.js`
 - Ensure same Affirm merchant config
 - Mobile already has Affirm + Afterpay calculator on PDP (PR #403 merged)
@@ -102,6 +106,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 **New component:** `PriceAlertButton` on ProductDetailScreen
 **Wix collection:** `PriceAlerts`
 **Webhook format (from melania):**
+
 ```json
 {
   "productId": "string",
@@ -112,6 +117,7 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
   "subscriberDeviceToken": "string"
 }
 ```
+
 **Features:** Subscribe from PDP, push on price drop, deep link to PDP on tap
 **Assigned:** Bishop
 
@@ -140,13 +146,13 @@ Coordinated feature roadmap across cfutons_mobile (React Native) and carolina-fu
 
 ## Phase 3: Mobile-Unique (In Progress)
 
-| Bead | Feature | Assigned | Status |
-|------|---------|----------|--------|
-| deacon-51g | Product ratings & reviews | Bishop | Active |
-| deacon-59x | Promo banner carousel | Ripley | Active |
-| deacon-t26 | Share via native sheet | Hicks | Active |
-| deacon-905 | Visual search camera | Nux | Active |
-| deacon-gia | Test coverage gap-fill | Burke | Active |
+| Bead       | Feature                   | Assigned | Status |
+| ---------- | ------------------------- | -------- | ------ |
+| deacon-51g | Product ratings & reviews | Bishop   | Active |
+| deacon-59x | Promo banner carousel     | Ripley   | Active |
+| deacon-t26 | Share via native sheet    | Hicks    | Active |
+| deacon-905 | Visual search camera      | Nux      | Active |
+| deacon-gia | Test coverage gap-fill    | Burke    | Active |
 
 ## Design Constraints
 

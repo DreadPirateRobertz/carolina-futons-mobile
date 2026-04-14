@@ -27,6 +27,7 @@ Source product images from carolinafutons.com. Real furniture photos flowing thr
 ## Illustrations
 
 Coordinated with cfutons/crew/melania:
+
 - 8 empty state SVGs — **already on main** (`public/emptyStateIllustrations`)
 - Mountain skyline SVG — incoming, dark-bg variant
 - Comfort card SVGs — incoming, dark-bg variant
@@ -38,6 +39,7 @@ Coordinated with cfutons/crew/melania:
 ## Screen Designs
 
 ### Home Screen
+
 - Full-bleed hero: lifestyle photo from carolinafutons.com with parallax scroll
 - "View in Your Room" AR CTA: primary, large, glassmorphism button overlaying hero
 - Featured collection cards below hero with staggered entrance animations
@@ -45,6 +47,7 @@ Coordinated with cfutons/crew/melania:
 - Bottom nav with glassmorphism background blur
 
 ### Shop Screen
+
 - Dark background, product grid with larger cards
 - Staggered fade-in on scroll (`FadeInDown.delay(index * 80)`)
 - Category chips with glassmorphism pill treatment
@@ -53,6 +56,7 @@ Coordinated with cfutons/crew/melania:
 - Skeleton shimmer loaders while images load
 
 ### Product Detail Screen (Scrollytelling)
+
 - Shared element transition: product image morphs from Shop grid card to full-screen hero
 - Full-screen hero image with parallax scroll (image at 0.5x, content at 1x)
 - As user scrolls: price/title fade in, fabric swatches appear, AR CTA pulses
@@ -62,6 +66,7 @@ Coordinated with cfutons/crew/melania:
 - Reviews section with photo gallery
 
 ### AR Screen
+
 - Smoother transition from Product Detail (shared element on product image)
 - Glassmorphism controls panel (bottom sheet with blur backdrop)
 - Material/color swapping within AR view
@@ -69,6 +74,7 @@ Coordinated with cfutons/crew/melania:
 - Share screenshot button
 
 ### Cart Screen (Light Mode)
+
 - Light background for readability during purchase flow
 - Product thumbnails on cart items
 - Animated quantity stepper (spring bounce)
@@ -76,15 +82,18 @@ Coordinated with cfutons/crew/melania:
 - BNPL teaser card
 
 ### Account Screen (Light Mode)
+
 - Light background for form readability
 - Profile avatar with edit button
 - Menu items with subtle right-chevron animations
 - Order history with status badges
 
 ### Onboarding (3 slides, Dark)
+
 1. **Welcome**: Lifestyle illustration (from Melania), "Welcome to Carolina Futons", "Handcrafted comfort from the Blue Ridge Mountains"
 2. **AR Preview**: AR illustration, "See It In Your Space", "Preview any piece in your room with AR"
 3. **Shop With Confidence**: Delivery illustration, "Free Shipping & Easy Returns", "Secure payment, hassle-free returns"
+
 - Real lifestyle photography backgrounds from carolinafutons.com
 - Animated text reveals between slides
 - Page indicator dots with spring animation
@@ -96,31 +105,31 @@ Coordinated with cfutons/crew/melania:
 
 All implemented with React Native Reanimated v3 + react-native-gesture-handler.
 
-| Pattern | Where | Implementation |
-|---------|-------|----------------|
-| Shared element transitions | Shop → Product Detail | `sharedTransitionTag` on product images |
-| Parallax scroll | Product Detail hero, Home hero | `useAnimatedScrollHandler` + `interpolate` |
-| Spring press feedback | All buttons, cards | `withSpring({damping: 15, stiffness: 150})` + `expo-haptics` |
-| Staggered list entrance | Shop grid, cart items | `FadeInDown.delay(index * 80)` entering animations |
-| Skeleton shimmer | All loading states | Custom shimmer with `LinearGradient` + Reanimated translateX |
-| Glassmorphism | Nav bar, bottom sheets, AR controls | `expo-blur` BlurView + semi-transparent overlay |
-| Fade-through transitions | Tab switches | Cross-fade with slight upward drift |
-| Haptic punctuation | Favorite, add-to-cart, order placed | Light/medium/success via `expo-haptics` |
+| Pattern                    | Where                               | Implementation                                               |
+| -------------------------- | ----------------------------------- | ------------------------------------------------------------ |
+| Shared element transitions | Shop → Product Detail               | `sharedTransitionTag` on product images                      |
+| Parallax scroll            | Product Detail hero, Home hero      | `useAnimatedScrollHandler` + `interpolate`                   |
+| Spring press feedback      | All buttons, cards                  | `withSpring({damping: 15, stiffness: 150})` + `expo-haptics` |
+| Staggered list entrance    | Shop grid, cart items               | `FadeInDown.delay(index * 80)` entering animations           |
+| Skeleton shimmer           | All loading states                  | Custom shimmer with `LinearGradient` + Reanimated translateX |
+| Glassmorphism              | Nav bar, bottom sheets, AR controls | `expo-blur` BlurView + semi-transparent overlay              |
+| Fade-through transitions   | Tab switches                        | Cross-fade with slight upward drift                          |
+| Haptic punctuation         | Favorite, add-to-cart, order placed | Light/medium/success via `expo-haptics`                      |
 
 ---
 
 ## New Components
 
-| Component | Purpose |
-|-----------|---------|
-| `SkeletonLoader` | Shimmer placeholder matching card/list layouts |
-| `ParallaxHeader` | Reusable scroll-driven parallax hero image |
-| `GlassCard` | Frosted glass card with blur backdrop |
-| `AnimatedProductCard` | Spring press feedback + shared element tag |
-| `EditorialHero` | Full-bleed image with overlay text + glassmorphism CTA |
-| `EmptyStateIllustration` | Wrapper for Melania's SVG scenes |
-| `FabricSwatchSelector` | Animated swatch picker with spring selection |
-| `AnimatedTabBar` | Glassmorphism bottom nav with active indicator animation |
+| Component                | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `SkeletonLoader`         | Shimmer placeholder matching card/list layouts           |
+| `ParallaxHeader`         | Reusable scroll-driven parallax hero image               |
+| `GlassCard`              | Frosted glass card with blur backdrop                    |
+| `AnimatedProductCard`    | Spring press feedback + shared element tag               |
+| `EditorialHero`          | Full-bleed image with overlay text + glassmorphism CTA   |
+| `EmptyStateIllustration` | Wrapper for Melania's SVG scenes                         |
+| `FabricSwatchSelector`   | Animated swatch picker with spring selection             |
+| `AnimatedTabBar`         | Glassmorphism bottom nav with active indicator animation |
 
 ---
 
@@ -141,6 +150,7 @@ dark: {
 ```
 
 ### Glassmorphism Recipe
+
 ```
 background: surfaceGlass
 backdropFilter: blur(20px)
@@ -169,24 +179,28 @@ borderRadius: tokens.radius.lg
 ## Sprint Structure (4 Polecats)
 
 ### Stream 1: Theme + Tokens
+
 - Dark mode token system
 - Glassmorphism utilities
 - AnimatedTabBar component
 - Apply dark theme to Home, Shop, Product Detail
 
 ### Stream 2: Animation System
+
 - Shared element transitions (Shop → Product Detail)
 - ParallaxHeader component
 - Spring press feedback (AnimatedProductCard)
 - Staggered list entrance animations
 
 ### Stream 3: Screen Redesigns
+
 - Home screen (editorial hero + parallax)
 - Product Detail (scrollytelling layout)
 - Onboarding (dark slides with illustrations)
 - Shop screen (larger cards, shimmer loaders)
 
 ### Stream 4: New Components + Polish
+
 - SkeletonLoader
 - GlassCard
 - EditorialHero

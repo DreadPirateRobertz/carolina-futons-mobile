@@ -13,6 +13,7 @@ PRs without tests are **rejected outright**. No review until tests exist.
 ## Edge Case Coverage — Required in Every PR
 
 Tests MUST cover:
+
 - Error states (API failures, network drops, timeouts)
 - Empty/null/undefined values and boundary conditions
 - Invalid input (malformed data, XSS, injection, negative numbers)
@@ -35,6 +36,7 @@ Happy-path-only PRs will be sent back with specific edge cases to add.
 ## CI Requirements
 
 All PRs must pass before review:
+
 - `lint` — ESLint + Prettier (run `npx eslint src/ --ext .ts,.tsx` and `npx prettier --check src/`)
 - `test` — Jest with coverage (run `npx jest --ci --coverage`)
 - `catalog-sync` — Wix catalog validation
@@ -46,6 +48,7 @@ All PRs must pass before review:
 ```
 cm-<bead-id>-<short-desc>
 ```
+
 Example: `cm-wrt-warranty-registration`
 
 ## PR Process

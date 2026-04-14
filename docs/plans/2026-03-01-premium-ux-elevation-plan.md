@@ -17,6 +17,7 @@
 ### Task 1.1: Expand Dark Color Tokens
 
 **Files:**
+
 - Modify: `src/theme/tokens.ts`
 - Modify: `src/theme/ThemeProvider.tsx`
 - Test: `src/theme/__tests__/tokens.test.ts`
@@ -105,6 +106,7 @@ git commit -m "feat(theme): add editorial dark palette tokens (cm-ux-1.1)"
 ### Task 1.2: Force Dark Mode for Browse Screens
 
 **Files:**
+
 - Modify: `src/theme/ThemeProvider.tsx`
 - Modify: `src/theme/__tests__/theme.test.tsx`
 
@@ -127,10 +129,9 @@ it('defaults to dark color mode', () => {
 **Step 3: Change default in ThemeProvider**
 
 In `ThemeProvider.tsx`, change the default:
+
 ```typescript
-const [colorMode, setColorMode] = useState<ColorMode>(
-  initialColorMode ?? 'dark',
-);
+const [colorMode, setColorMode] = useState<ColorMode>(initialColorMode ?? 'dark');
 ```
 
 **Step 4: Run test — expect PASS**
@@ -151,6 +152,7 @@ git commit -m "feat(theme): default to dark mode for editorial experience (cm-ux
 ### Task 1.3: GlassCard Component
 
 **Files:**
+
 - Create: `src/components/GlassCard.tsx`
 - Create: `src/components/__tests__/GlassCard.test.tsx`
 
@@ -246,6 +248,7 @@ git commit -m "feat(ui): add GlassCard component for glassmorphism panels (cm-ux
 ### Task 2.1: AnimatedPressable — Spring Press Feedback
 
 **Files:**
+
 - Create: `src/components/AnimatedPressable.tsx`
 - Create: `src/components/__tests__/AnimatedPressable.test.tsx`
 
@@ -385,6 +388,7 @@ git commit -m "feat(ui): add AnimatedPressable with spring feedback + haptics (c
 ### Task 2.2: SkeletonLoader Component
 
 **Files:**
+
 - Create: `src/components/SkeletonLoader.tsx`
 - Create: `src/components/__tests__/SkeletonLoader.test.tsx`
 
@@ -496,6 +500,7 @@ git commit -m "feat(ui): add SkeletonLoader with shimmer animation (cm-ux-2.2)"
 ### Task 2.3: ParallaxHeader Component
 
 **Files:**
+
 - Create: `src/components/ParallaxHeader.tsx`
 - Create: `src/components/__tests__/ParallaxHeader.test.tsx`
 
@@ -629,6 +634,7 @@ git commit -m "feat(ui): add ParallaxHeader with scroll-driven parallax (cm-ux-2
 ### Task 2.4: Staggered List Entrance Animation
 
 **Files:**
+
 - Create: `src/components/AnimatedListItem.tsx`
 - Create: `src/components/__tests__/AnimatedListItem.test.tsx`
 
@@ -694,6 +700,7 @@ git commit -m "feat(ui): add AnimatedListItem with staggered entrance (cm-ux-2.4
 ### Task 3.1: HomeScreen — Editorial Hero with Parallax
 
 **Files:**
+
 - Modify: `src/screens/HomeScreen.tsx`
 - Modify: `src/screens/__tests__/HomeScreen.test.tsx`
 
@@ -702,6 +709,7 @@ git commit -m "feat(ui): add AnimatedListItem with staggered entrance (cm-ux-2.4
 **Step 1: Update HomeScreen test for new structure**
 
 Update `src/screens/__tests__/HomeScreen.test.tsx` to expect:
+
 - `testID="home-hero"` for parallax header
 - `testID="ar-cta"` for the glass AR button
 - `testID="shop-cta"` for browse button
@@ -713,6 +721,7 @@ Update `src/screens/__tests__/HomeScreen.test.tsx` to expect:
 **Step 3: Rewrite HomeScreen**
 
 Replace the flat layout with:
+
 - `Animated.ScrollView` with `useAnimatedScrollHandler`
 - `ParallaxHeader` with a placeholder hero image (or brand color gradient until real photos)
 - `GlassCard` wrapping the AR CTA
@@ -741,6 +750,7 @@ git commit -m "feat(home): editorial dark hero with parallax + glassmorphism CTA
 ### Task 3.2: ShopScreen — Dark Grid with Staggered Animation
 
 **Files:**
+
 - Modify: `src/screens/ShopScreen.tsx`
 - Modify: `src/components/ProductCard.tsx`
 - Modify: `src/screens/__tests__/ShopScreen.test.tsx`
@@ -772,6 +782,7 @@ git commit -m "feat(shop): dark grid with spring press + staggered entrance (cm-
 ### Task 3.3: ProductDetailScreen — Scrollytelling
 
 **Files:**
+
 - Modify: `src/screens/ProductDetailScreen.tsx`
 - Modify: `src/screens/__tests__/ProductDetailScreen.test.tsx`
 
@@ -802,6 +813,7 @@ git commit -m "feat(product): scrollytelling layout with parallax hero (cm-ux-3.
 ### Task 3.4: OnboardingScreen — Dark Editorial with Illustrations
 
 **Files:**
+
 - Modify: `src/screens/OnboardingScreen.tsx`
 - Modify: `src/screens/__tests__/OnboardingScreen.test.tsx`
 
@@ -828,6 +840,7 @@ git commit -m "feat(onboarding): dark editorial slides with animation (cm-ux-3.4
 ### Task 3.5: CartScreen + AccountScreen — Light Mode Override
 
 **Files:**
+
 - Modify: `src/screens/CartScreen.tsx`
 - Modify: `src/screens/AccountScreen.tsx`
 - Modify: respective test files
@@ -837,6 +850,7 @@ git commit -m "feat(onboarding): dark editorial slides with animation (cm-ux-3.4
 **Step 1: Add light mode wrapper**
 
 In each screen, wrap content in a View with explicit light-mode colors:
+
 ```typescript
 const lightBg = '#F5F0EB'; // warm cream
 const lightText = '#3A2518'; // espresso
@@ -864,12 +878,14 @@ git commit -m "feat(cart,account): light mode overrides for utility screens (cm-
 ### Task 4.1: AnimatedTabBar with Glassmorphism
 
 **Files:**
+
 - Modify: `src/navigation/TabNavigator.tsx`
 - Modify: `src/navigation/__tests__/Navigation.test.tsx`
 
 **Step 1: Update TabNavigator**
 
 Replace default tab bar with custom `tabBar` prop:
+
 - Glassmorphism background (dark glass surface + subtle border)
 - Active tab: spring scale animation + cream color
 - Inactive tab: muted color
@@ -889,6 +905,7 @@ git commit -m "feat(nav): glassmorphism tab bar with spring animations (cm-ux-4.
 ### Task 4.2: EditorialHero Component
 
 **Files:**
+
 - Create: `src/components/EditorialHero.tsx`
 - Create: `src/components/__tests__/EditorialHero.test.tsx`
 
@@ -928,6 +945,7 @@ git commit -m "feat(ui): add EditorialHero for full-bleed hero sections (cm-ux-4
 ### Task 4.3: EmptyStateIllustration Wrapper
 
 **Files:**
+
 - Create: `src/components/EmptyStateIllustration.tsx`
 - Create: `src/components/__tests__/EmptyStateIllustration.test.tsx`
 
@@ -949,6 +967,7 @@ git commit -m "feat(ui): add EmptyStateIllustration wrapper for Melania's SVGs (
 ### Task 4.4: Full Integration Test + Visual QA
 
 **Files:**
+
 - No new files — this is a verification task
 
 **Step 1: Run full test suite**
@@ -970,6 +989,7 @@ Expected: No errors
 
 Run: `npx expo start --ios`
 Screenshot every screen. Verify:
+
 - Dark background on Home, Shop, Product Detail, Onboarding
 - Light background on Cart, Account
 - Glassmorphism on tab bar, AR CTA, cards
@@ -1015,9 +1035,9 @@ Parallelism:
 
 ## Convoy Assignment (4 Polecats)
 
-| Polecat | Stream | Tasks | Dependencies |
-|---------|--------|-------|--------------|
-| Alpha | Theme + Tokens | 1.1, 1.2, 1.3 | None — starts immediately |
-| Bravo | Animation Primitives | 2.1, 2.2, 2.3, 2.4 | None — starts immediately |
-| Charlie | Screen Redesigns | 3.1, 3.2, 3.3, 3.4, 3.5 | Waits for Alpha 1.2 + Bravo 2.1 |
-| Delta | Polish + Integration | 4.1, 4.2, 4.3, 4.4 | Waits for Alpha 1.3 + Bravo 2.1 |
+| Polecat | Stream               | Tasks                   | Dependencies                    |
+| ------- | -------------------- | ----------------------- | ------------------------------- |
+| Alpha   | Theme + Tokens       | 1.1, 1.2, 1.3           | None — starts immediately       |
+| Bravo   | Animation Primitives | 2.1, 2.2, 2.3, 2.4      | None — starts immediately       |
+| Charlie | Screen Redesigns     | 3.1, 3.2, 3.3, 3.4, 3.5 | Waits for Alpha 1.2 + Bravo 2.1 |
+| Delta   | Polish + Integration | 4.1, 4.2, 4.3, 4.4      | Waits for Alpha 1.3 + Bravo 2.1 |

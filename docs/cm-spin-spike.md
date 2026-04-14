@@ -23,6 +23,7 @@ The spin wheel lives in the Loyalty screen (`initialTab: 'spin'`). Notification 
 ## Option A: Native (react-native-reanimated + react-native-svg)
 
 ### What we'd build
+
 - SVG `<Pie>` segments rendered via `react-native-svg` (already installed: `15.8.0`)
 - Rotation driven by `useSharedValue` + `withTiming/withSpring` from reanimated (`~3.16.0` — already installed)
 - Pointer/indicator: static SVG triangle at top
@@ -30,6 +31,7 @@ The spin wheel lives in the Loyalty screen (`initialTab: 'spin'`). Notification 
 - Prize reveal: slide-up modal using reanimated (same pattern as `TierCelebrationModal`)
 
 ### Pros
+
 - **Zero new dependencies** — SVG + reanimated already in the tree
 - **60fps guaranteed** — reanimated runs on the UI thread, no bridge crossing
 - **Fully themeable** — segments use design tokens (espresso, mountain blue, coral, sand)
@@ -38,10 +40,12 @@ The spin wheel lives in the Loyalty screen (`initialTab: 'spin'`). Notification 
 - **Offline-capable** — spin logic works without network (random seed cached)
 
 ### Cons
+
 - Need to hand-code the segment geometry (pie slice paths via `d` attribute)
 - More upfront code: ~180 lines for the wheel + ~60 for the animation hook
 
 ### Estimated complexity
+
 - `SpinWheelCanvas.tsx` — SVG pie + rotation: **~180 lines**
 - `useSpinWheel.ts` — animation state + prize calc: **~60 lines**
 - `SpinScreen.tsx` — screen + CTA button: **~80 lines**
@@ -53,6 +57,7 @@ The spin wheel lives in the Loyalty screen (`initialTab: 'spin'`). Notification 
 ## Option B: Lottie (lottie-react-native)
 
 ### What we'd build
+
 - Pre-exported `.json` animation from Lottie/After Effects
 - `<LottieView>` component plays the spin animation
 - Sync segment stops to frame ranges
@@ -62,11 +67,13 @@ The spin wheel lives in the Loyalty screen (`initialTab: 'spin'`). Notification 
 **Not recommended for this use case.**
 
 Lottie shines for icon micro-animations and fixed-path animations. A spin wheel requires:
+
 - **Programmatic control** — the final angle is server-seeded, not fixed
 - **Dynamic segments** — number of prizes, labels, and colors come from Wix CMS
 - **Pause at arbitrary frame** — lottie supports `progress` prop but syncing prize position to frame math is fragile
 
 Additionally:
+
 - `lottie-react-native` is **not in our tree** — adds ~2MB native module
 - Requires native rebuild (`expo run:ios / run:android`) to install
 - Animation JSON is a design artifact — requires designer collaboration or After Effects license
@@ -79,6 +86,7 @@ Additionally:
 ## Option C: WebView (Wix-hosted or inline HTML)
 
 ### What we'd build
+
 - `<WebView source={{ uri: 'https://halworker85.wixstudio.com/spin-wheel' }}` OR
 - `<WebView source={{ html: spinHtml }}>` (inline)
 
@@ -86,15 +94,15 @@ Additionally:
 
 **Not recommended.**
 
-| Risk | Detail |
-|------|--------|
-| Network dependency | Hosted WebView requires Wix site reachable — emulator fails |
-| Bridge latency | postMessage round-trips for prize result introduce 50-200ms lag |
-| Theme mismatch | WebView can't read our design tokens natively |
-| Deep link state | `initialTab: 'spin'` needs to pass prize config INTO the WebView via URL params |
-| Test coverage | WebView is effectively untestable in jest — zero coverage for the animation |
-| Security | `injectedJavaScript` opens XSS surface |
-| Complexity | More moving parts for a simple rotating wheel |
+| Risk               | Detail                                                                          |
+| ------------------ | ------------------------------------------------------------------------------- |
+| Network dependency | Hosted WebView requires Wix site reachable — emulator fails                     |
+| Bridge latency     | postMessage round-trips for prize result introduce 50-200ms lag                 |
+| Theme mismatch     | WebView can't read our design tokens natively                                   |
+| Deep link state    | `initialTab: 'spin'` needs to pass prize config INTO the WebView via URL params |
+| Test coverage      | WebView is effectively untestable in jest — zero coverage for the animation     |
+| Security           | `injectedJavaScript` opens XSS surface                                          |
+| Complexity         | More moving parts for a simple rotating wheel                                   |
 
 The one scenario where WebView wins: if the Wix web crew builds a spin wheel for the website and we want pixel-identical parity at zero mobile cost. But the web crew hasn't built it, and our quality gate requires testable code.
 
@@ -138,6 +146,7 @@ export function useSpinWheel(segments: PrizeSegment[], onLand: (prize: PrizeSegm
 If this spike is approved: assign `SpinScreen` implementation as `cm-spin-impl` (P3, ~1 crew-day). Suggest bishop or ripley — either can own the SVG geometry.
 
 The screen must handle:
+
 - Cold state (spin button enabled, daily quota not used)
 - Spinning state (disable button, play animation)
 - Result state (show prize modal — reuse `TierCelebrationModal` pattern)

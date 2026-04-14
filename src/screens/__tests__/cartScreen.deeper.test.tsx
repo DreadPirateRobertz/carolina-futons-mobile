@@ -208,9 +208,7 @@ describe('remove last item', () => {
   it('removing sole item via X button shows empty state', async () => {
     const seed = [{ model: asheville, fabric: naturalLinen, qty: 1 }];
     const { getByTestId, queryByTestId } = renderCartScreen({}, seed);
-    await waitFor(() =>
-      expect(getByTestId('cart-item-asheville-full:natural-linen')).toBeTruthy(),
-    );
+    await waitFor(() => expect(getByTestId('cart-item-asheville-full:natural-linen')).toBeTruthy());
     fireEvent.press(getByTestId('cart-item-remove-asheville-full:natural-linen'));
     await waitFor(() => {
       expect(getByTestId('cart-empty-state')).toBeTruthy();
@@ -249,7 +247,10 @@ describe('promo code loading state', () => {
   it('shows loading spinner while applying promo code', async () => {
     let promiseResolve: ((value: any) => void) | undefined;
     mockApplyCoupon.mockImplementation(
-      () => new Promise((resolve) => { promiseResolve = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          promiseResolve = resolve;
+        }),
     );
     const { getByTestId } = renderCartScreen({}, seed);
     fireEvent.changeText(getByTestId('promo-input'), 'SLOW20');
@@ -258,29 +259,45 @@ describe('promo code loading state', () => {
       expect(getByTestId('promo-loading')).toBeTruthy();
     });
     // Resolve to clean up open handle
-    promiseResolve?.({ id: 'c1', code: 'SLOW20', name: 'Test', discountType: 'fixed', discountValue: 0 });
+    promiseResolve?.({
+      id: 'c1',
+      code: 'SLOW20',
+      name: 'Test',
+      discountType: 'fixed',
+      discountValue: 0,
+    });
   });
 
   it('apply button is disabled while validating', async () => {
     let promiseResolve: ((value: any) => void) | undefined;
     mockApplyCoupon.mockImplementation(
-      () => new Promise((resolve) => { promiseResolve = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          promiseResolve = resolve;
+        }),
     );
     const { getByTestId } = renderCartScreen({}, seed);
     fireEvent.changeText(getByTestId('promo-input'), 'SLOW20');
     fireEvent.press(getByTestId('promo-apply-button'));
     await waitFor(() => {
-      expect(
-        getByTestId('promo-apply-button').props.accessibilityState?.disabled,
-      ).toBe(true);
+      expect(getByTestId('promo-apply-button').props.accessibilityState?.disabled).toBe(true);
     });
-    promiseResolve?.({ id: 'c1', code: 'SLOW20', name: 'Test', discountType: 'fixed', discountValue: 0 });
+    promiseResolve?.({
+      id: 'c1',
+      code: 'SLOW20',
+      name: 'Test',
+      discountType: 'fixed',
+      discountValue: 0,
+    });
   });
 
   it('promo input is non-editable while validating', async () => {
     let promiseResolve: ((value: any) => void) | undefined;
     mockApplyCoupon.mockImplementation(
-      () => new Promise((resolve) => { promiseResolve = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          promiseResolve = resolve;
+        }),
     );
     const { getByTestId } = renderCartScreen({}, seed);
     fireEvent.changeText(getByTestId('promo-input'), 'SLOW20');
@@ -288,7 +305,13 @@ describe('promo code loading state', () => {
     await waitFor(() => {
       expect(getByTestId('promo-input').props.editable).toBe(false);
     });
-    promiseResolve?.({ id: 'c1', code: 'SLOW20', name: 'Test', discountType: 'fixed', discountValue: 0 });
+    promiseResolve?.({
+      id: 'c1',
+      code: 'SLOW20',
+      name: 'Test',
+      discountType: 'fixed',
+      discountValue: 0,
+    });
   });
 
   it('promo error has accessibilityRole alert', async () => {

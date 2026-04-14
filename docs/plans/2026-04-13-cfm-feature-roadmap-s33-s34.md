@@ -21,6 +21,7 @@
 **ripley:** P0 gap: no unified Image wrapper (caching/placeholder/retry). P1: no shared EmptyState or Skeleton primitives — every screen rolls its own. P2: no OfflineBanner — offline feature has no visible proof. These unblock multiple downstream features.
 
 **New beads filed from crew input:**
+
 - `cm-48e` P1 — Image wrapper (ripley, after hq-bzb) ← **P0 unblocked by ripley**
 - `cm-2ts` P1 — EmptyState component (ripley queue)
 - `cm-sxj` P1 — Skeleton primitives (hicks, after cm-b3b)
@@ -32,15 +33,16 @@
 
 ## Baseline State (2026-04-13)
 
-| Metric | Value |
-|--------|-------|
-| Screens | 40+ |
-| Tests | 7,400+ |
-| Core flows | Browse, AR preview, cart, checkout (Stripe), order history, gamification, push notifications, offline sync |
-| Screen guide | S29 — **stale, rebuild in progress** |
-| CI | Unblocked (lint baseline 220 pre-existing errors — separate cleanup bead needed) |
+| Metric       | Value                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------- |
+| Screens      | 40+                                                                                                        |
+| Tests        | 7,400+                                                                                                     |
+| Core flows   | Browse, AR preview, cart, checkout (Stripe), order history, gamification, push notifications, offline sync |
+| Screen guide | S29 — **stale, rebuild in progress**                                                                       |
+| CI           | Unblocked (lint baseline 220 pre-existing errors — separate cleanup bead needed)                           |
 
 ### Merged this session (S33)
+
 - `cm-t6wl` — arLayoutSync wired to Wix ARLayouts collection (36 tests)
 - `hq-1jcj` — useGamificationActions hook (11 tests)
 - `cm-b0u` — CI unblocked (NPS test casing conflict)
@@ -51,9 +53,11 @@
 ## Track 1: S33 In-Flight (Priority — unblock crew)
 
 ### Task 1.1: ProductRecommendationRow + PDP/Cart Integration
+
 **Bead:** `hq-bzb` | **Owner:** ripley + furiosa polecat | **Convoy:** `hq-cv-9cpkr`
 
 **Files:**
+
 - Create: `src/components/ProductRecommendationRow.tsx`
 - Create: `src/components/__tests__/ProductRecommendationRow.test.tsx`
 - Modify: `src/screens/ProductDetailScreen.tsx` (add row below fabric selector)
@@ -73,13 +77,17 @@ const PRODUCTS = [
 ];
 
 it('renders all recommended products', () => {
-  const { getByText } = render(<ProductRecommendationRow products={PRODUCTS} onPress={jest.fn()} />);
+  const { getByText } = render(
+    <ProductRecommendationRow products={PRODUCTS} onPress={jest.fn()} />,
+  );
   expect(getByText('Blue Ridge Sofa')).toBeTruthy();
 });
 
 it('calls onPress with productId when card tapped', () => {
   const onPress = jest.fn();
-  const { getAllByRole } = render(<ProductRecommendationRow products={PRODUCTS} onPress={onPress} />);
+  const { getAllByRole } = render(
+    <ProductRecommendationRow products={PRODUCTS} onPress={onPress} />,
+  );
   fireEvent.press(getAllByRole('button')[0]);
   expect(onPress).toHaveBeenCalledWith('p1');
 });
@@ -91,14 +99,14 @@ it('renders nothing when products array is empty', () => {
 
 it('shows loading skeleton when loading=true', () => {
   const { getByTestId } = render(
-    <ProductRecommendationRow products={[]} loading onPress={jest.fn()} />
+    <ProductRecommendationRow products={[]} loading onPress={jest.fn()} />,
   );
   expect(getByTestId('recommendation-skeleton')).toBeTruthy();
 });
 
 it('each card has accessible label', () => {
   const { getAllByLabelText } = render(
-    <ProductRecommendationRow products={PRODUCTS} onPress={jest.fn()} />
+    <ProductRecommendationRow products={PRODUCTS} onPress={jest.fn()} />,
   );
   expect(getAllByLabelText(/Blue Ridge Sofa/)).toHaveLength(1);
 });
@@ -109,6 +117,7 @@ it('each card has accessible label', () => {
 ```bash
 cd ~/gt/cfutons_mobile && npx jest src/components/__tests__/ProductRecommendationRow.test.tsx --no-coverage
 ```
+
 Expected: `Cannot find module '../ProductRecommendationRow'`
 
 - [ ] **Step 3: Implement ProductRecommendationRow**
@@ -154,7 +163,9 @@ export function ProductRecommendationRow({
 
   return (
     <View testID="recommendation-row">
-      <Text style={[typography.subtitle, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}>
+      <Text
+        style={[typography.subtitle, { paddingHorizontal: spacing.md, marginBottom: spacing.sm }]}
+      >
         {title}
       </Text>
       <FlatList
@@ -172,7 +183,9 @@ export function ProductRecommendationRow({
             style={styles.card}
           >
             <Image source={{ uri: item.imageUrl }} style={styles.image} />
-            <Text style={typography.caption} numberOfLines={2}>{item.name}</Text>
+            <Text style={typography.caption} numberOfLines={2}>
+              {item.name}
+            </Text>
             <Text style={[typography.price, { color: colors.sunsetCoral }]}>
               ${item.price.toFixed(2)}
             </Text>
@@ -194,11 +207,13 @@ const styles = StyleSheet.create({
 ```bash
 npx jest src/components/__tests__/ProductRecommendationRow.test.tsx --no-coverage
 ```
+
 Expected: 5/5 pass
 
 - [ ] **Step 5: Wire into ProductDetailScreen**
 
 In `src/screens/ProductDetailScreen.tsx`, after the fabric selector `</View>`:
+
 ```tsx
 import { ProductRecommendationRow } from '@/components/ProductRecommendationRow';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
@@ -211,7 +226,7 @@ const { recommendations, loading: recsLoading } = useProductRecommendations(prod
   products={recommendations}
   loading={recsLoading}
   onPress={(id) => navigation.push('ProductDetail', { productId: id })}
-/>
+/>;
 ```
 
 - [ ] **Step 6: Commit**
@@ -228,9 +243,11 @@ git commit -m "feat(hq-bzb): ProductRecommendationRow component + PDP integratio
 ---
 
 ### Task 1.2: CompleteTheLook Screen
+
 **Bead:** `cm-0q4` | **Owner:** nux | **Convoy:** `hq-cv-9cpkr`
 
 **Files:**
+
 - Create: `src/screens/CompleteTheLookScreen.tsx`
 - Create: `src/screens/__tests__/CompleteTheLookScreen.test.tsx`
 - Create: `src/hooks/useCompleteTheLook.ts` (if not exists — check first)
@@ -259,9 +276,7 @@ it('returns items for a given sourceProductId', async () => {
   mockClient.queryData.mockResolvedValue({
     items: [{ data: { items: JSON.stringify(items), roomPhotoUrl: 'room.jpg' } }],
   });
-  const { result, waitForNextUpdate } = renderHook(() =>
-    useCompleteTheLook('source-123')
-  );
+  const { result, waitForNextUpdate } = renderHook(() => useCompleteTheLook('source-123'));
   await waitForNextUpdate();
   expect(result.current.items).toEqual(items);
   expect(result.current.roomPhotoUrl).toBe('room.jpg');
@@ -269,9 +284,7 @@ it('returns items for a given sourceProductId', async () => {
 
 it('returns empty items when no look configured for product', async () => {
   mockClient.queryData.mockResolvedValue({ items: [] });
-  const { result, waitForNextUpdate } = renderHook(() =>
-    useCompleteTheLook('source-999')
-  );
+  const { result, waitForNextUpdate } = renderHook(() => useCompleteTheLook('source-999'));
   await waitForNextUpdate();
   expect(result.current.items).toEqual([]);
 });
@@ -279,12 +292,13 @@ it('returns empty items when no look configured for product', async () => {
 it('logs and returns empty on API error', async () => {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
   mockClient.queryData.mockRejectedValue(new Error('network'));
-  const { result, waitForNextUpdate } = renderHook(() =>
-    useCompleteTheLook('source-123')
-  );
+  const { result, waitForNextUpdate } = renderHook(() => useCompleteTheLook('source-123'));
   await waitForNextUpdate();
   expect(result.current.items).toEqual([]);
-  expect(spy).toHaveBeenCalledWith(expect.stringContaining('[useCompleteTheLook]'), expect.anything());
+  expect(spy).toHaveBeenCalledWith(
+    expect.stringContaining('[useCompleteTheLook]'),
+    expect.anything(),
+  );
   spy.mockRestore();
 });
 ```
@@ -362,9 +376,7 @@ npx jest src/hooks/__tests__/useCompleteTheLook.test.ts --no-coverage
 ```tsx
 // src/screens/CompleteTheLookScreen.tsx
 import React, { useState } from 'react';
-import {
-  FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View,
-} from 'react-native';
+import { FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
@@ -486,29 +498,35 @@ import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
 beforeEach(() => {
   jest.clearAllMocks();
   (useCompleteTheLook as jest.Mock).mockReturnValue({
-    items: ITEMS, roomPhotoUrl: 'room.jpg', loading: false,
+    items: ITEMS,
+    roomPhotoUrl: 'room.jpg',
+    loading: false,
   });
 });
 
 it('renders items from hook', () => {
   const { getByText } = render(
-    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />
+    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />,
   );
   expect(getByText('Blue Rug')).toBeTruthy();
   expect(getByText('Throw Pillow')).toBeTruthy();
 });
 
 it('shows loading state', () => {
-  (useCompleteTheLook as jest.Mock).mockReturnValue({ items: [], roomPhotoUrl: null, loading: true });
+  (useCompleteTheLook as jest.Mock).mockReturnValue({
+    items: [],
+    roomPhotoUrl: null,
+    loading: true,
+  });
   const { getByTestId } = render(
-    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />
+    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />,
   );
   expect(getByTestId('ctl-loading')).toBeTruthy();
 });
 
 it('toggles item selection and updates CTA count', () => {
   const { getByTestId, getByText } = render(
-    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />
+    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />,
   );
   fireEvent.press(getByTestId('ctl-item-p1'));
   expect(getByText('Add 1 Item to Cart')).toBeTruthy();
@@ -518,7 +536,7 @@ it('toggles item selection and updates CTA count', () => {
 
 it('calls addItem for each selected item on Add All', async () => {
   const { getByTestId } = render(
-    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />
+    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />,
   );
   fireEvent.press(getByTestId('ctl-item-p1'));
   fireEvent.press(getByTestId('ctl-add-all'));
@@ -528,7 +546,7 @@ it('calls addItem for each selected item on Add All', async () => {
 
 it('Add All disabled when nothing selected', () => {
   const { getByTestId } = render(
-    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />
+    <CompleteTheLookScreen route={mockRoute as any} navigation={mockNav as any} />,
   );
   expect(getByTestId('ctl-add-all').props.disabled).toBe(true);
 });
@@ -540,28 +558,33 @@ it('Add All disabled when nothing selected', () => {
 npx jest src/hooks/__tests__/useCompleteTheLook.test.ts \
          src/screens/__tests__/CompleteTheLookScreen.test.tsx --no-coverage
 ```
+
 Expected: all pass
 
 - [ ] **Step 8: Add CTA to ProductDetailScreen + register in navigator**
 
 In `src/screens/ProductDetailScreen.tsx`:
+
 ```tsx
 import { useCompleteTheLook } from '@/hooks/useCompleteTheLook';
 
 // After ProductRecommendationRow:
 const { items: lookItems } = useCompleteTheLook(product.id);
-{lookItems.length > 0 && (
-  <TouchableOpacity
-    testID="pdp-complete-the-look-cta"
-    style={ctaStyles.lookButton}
-    onPress={() => navigation.navigate('CompleteTheLook', { sourceProductId: product.id })}
-  >
-    <Text>Complete the Look</Text>
-  </TouchableOpacity>
-)}
+{
+  lookItems.length > 0 && (
+    <TouchableOpacity
+      testID="pdp-complete-the-look-cta"
+      style={ctaStyles.lookButton}
+      onPress={() => navigation.navigate('CompleteTheLook', { sourceProductId: product.id })}
+    >
+      <Text>Complete the Look</Text>
+    </TouchableOpacity>
+  );
+}
 ```
 
 In `src/navigation/AppNavigator.tsx`, inside the Stack.Navigator:
+
 ```tsx
 <Stack.Screen name="CompleteTheLook" component={CompleteTheLookScreen} />
 ```
@@ -578,9 +601,11 @@ git commit -m "feat(cm-0q4): CompleteTheLook screen — room outfit builder with
 ---
 
 ### Task 1.3: NPS Survey Post-Purchase Modal
+
 **Bead:** `cm-to0` | **Owner:** burke
 
 **Files:**
+
 - Create: `src/components/NPSSurveyModal.tsx`
 - Modify: `src/components/__tests__/npsSurveyModal.test.tsx` (add missing edge cases)
 - Create: `src/hooks/useNPSTrigger.ts`
@@ -598,7 +623,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNPSTrigger } from '../useNPSTrigger';
 
 jest.mock('@react-native-async-storage/async-storage', () =>
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
 
 const ORDER = {
@@ -631,7 +656,7 @@ it('returns shouldShow=false when already responded (AsyncStorage key present)',
 
 it('returns shouldShow=false when no deliveredAt on order', async () => {
   const { result, waitForNextUpdate } = renderHook(() =>
-    useNPSTrigger({ id: 'order-3', deliveredAt: null })
+    useNPSTrigger({ id: 'order-3', deliveredAt: null }),
   );
   await waitForNextUpdate();
   expect(result.current.shouldShow).toBe(false);
@@ -653,7 +678,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
-interface Order { id: string; deliveredAt: string | null; }
+interface Order {
+  id: string;
+  deliveredAt: string | null;
+}
 
 /**
  * Determines whether the NPS survey modal should be shown for a given order.
@@ -670,7 +698,9 @@ export function useNPSTrigger(order: Order) {
     if (Date.now() - deliveredMs < THREE_DAYS_MS) return;
 
     AsyncStorage.getItem(`@nps_responded_${order.id}`)
-      .then((val) => { if (!val) setShouldShow(true); })
+      .then((val) => {
+        if (!val) setShouldShow(true);
+      })
       .catch((e) => console.error('[useNPSTrigger] storage read failed:', e));
   }, [order.id, order.deliveredAt]);
 
@@ -757,7 +787,10 @@ export function NPSSurveyModal({ visible, orderId, memberId, onDismiss }: Props)
                   <TouchableOpacity
                     key={i}
                     onPress={() => setScore(i)}
-                    style={[styles.scoreBtn, score === i && { backgroundColor: colors.sunsetCoral }]}
+                    style={[
+                      styles.scoreBtn,
+                      score === i && { backgroundColor: colors.sunsetCoral },
+                    ]}
                     accessibilityLabel={`Score ${i}`}
                     testID={`nps-score-${i}`}
                   >
@@ -799,7 +832,14 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24 },
   scaleRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 16 },
-  scoreBtn: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#2a1f19' },
+  scoreBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#2a1f19',
+  },
   input: { borderWidth: 1, borderRadius: 8, padding: 12, marginBottom: 16, minHeight: 80 },
   actions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   submitBtn: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: 8 },
@@ -816,9 +856,11 @@ git commit -m "feat(cm-to0): NPSSurveyModal — 0-10 scale, comment, Wix SurveyR
 ---
 
 ### Task 1.4: Security Hardening (Input Sanitization + Secure Storage)
+
 **Bead:** `cm-3fd` | **Owner:** bishop | **Convoy:** `hq-cv-f1ilb`
 
 **Files:**
+
 - Create: `src/utils/sanitizeInput.ts`
 - Create: `src/utils/__tests__/sanitizeInput.test.ts`
 - Create: `src/services/secureStorage.ts`
@@ -845,7 +887,7 @@ it('rejects SQL injection patterns', () => {
 });
 
 it('allows normal text', () => {
-  expect(sanitizeInput("Nice sofa! 5 stars.")).toBe("Nice sofa! 5 stars.");
+  expect(sanitizeInput('Nice sofa! 5 stars.')).toBe('Nice sofa! 5 stars.');
 });
 
 it('trims whitespace', () => {
@@ -968,6 +1010,7 @@ export async function deleteSecure(key: string): Promise<void> {
 npx jest src/utils/__tests__/sanitizeInput.test.ts \
          src/services/__tests__/secureStorage.test.ts --no-coverage
 ```
+
 Expected: all pass
 
 - [ ] **Step 6: Commit**
@@ -985,16 +1028,19 @@ git commit -m "feat(cm-3fd): sanitizeInput + secureStorage — CFM leg of securi
 Priority order based on conversion impact and crew availability:
 
 ### ~~Task 2.1: Price Drop Push Notifications~~ ✓ ALREADY SHIPPED
+
 **Bead:** `cm-xw4` CLOSED | **Shipped as:** `cm-pda` PR #424 (PriceAlertButton, usePriceAlertSubscription, 51 tests)
 
 > **bishop confirmed 2026-04-13:** Feature complete. Track 2.1 dropped from roadmap. Bishop capacity reallocated to cm-3fd + cm-48e Image wrapper.
 
 ---
 
-### Task 2.1b: Unified Image Wrapper *(new — from ripley P0)*
+### Task 2.1b: Unified Image Wrapper _(new — from ripley P0)_
+
 **Bead:** `cm-48e` | **Owner:** ripley (after hq-bzb)
 
 **Files:**
+
 - Create: `src/components/PriceAlertButton.tsx`
 - Create: `src/components/__tests__/PriceAlertButton.test.tsx`
 - Create: `src/hooks/usePriceAlerts.ts`
@@ -1004,6 +1050,7 @@ Priority order based on conversion impact and crew availability:
 **Wix collection:** `PriceAlerts` (fields: `productId` Text, `memberId` Text, `deviceToken` Text, `targetPrice` Number optional, `active` Boolean)
 
 **Webhook format (from melania):**
+
 ```json
 {
   "productId": "string",
@@ -1035,12 +1082,15 @@ it('subscribeAlert inserts a PriceAlerts record', async () => {
   mockClient.insertData.mockResolvedValue({});
   const { result } = renderHook(() => usePriceAlerts('prod-1'));
   await act(() => result.current.subscribeAlert());
-  expect(mockClient.insertData).toHaveBeenCalledWith('PriceAlerts', expect.objectContaining({
-    productId: 'prod-1',
-    memberId: 'mem-1',
-    deviceToken: 'device-tok-abc',
-    active: true,
-  }));
+  expect(mockClient.insertData).toHaveBeenCalledWith(
+    'PriceAlerts',
+    expect.objectContaining({
+      productId: 'prod-1',
+      memberId: 'mem-1',
+      deviceToken: 'device-tok-abc',
+      active: true,
+    }),
+  );
 });
 
 it('isSubscribed=true when active record exists', async () => {
@@ -1058,7 +1108,11 @@ it('unsubscribeAlert sets active=false on existing record', async () => {
   const { result, waitForNextUpdate } = renderHook(() => usePriceAlerts('prod-1'));
   await waitForNextUpdate();
   await act(() => result.current.unsubscribeAlert());
-  expect(mockClient.updateDataItem).toHaveBeenCalledWith('PriceAlerts', 'rec-1', expect.objectContaining({ active: false }));
+  expect(mockClient.updateDataItem).toHaveBeenCalledWith(
+    'PriceAlerts',
+    'rec-1',
+    expect.objectContaining({ active: false }),
+  );
 });
 
 it('swallows error on subscribe failure', async () => {
@@ -1110,7 +1164,10 @@ export function usePriceAlerts(productId: string) {
     if (!wixClient || !user?.id) return;
     try {
       await wixClient.insertData('PriceAlerts', {
-        productId, memberId: user.id, deviceToken, active: true,
+        productId,
+        memberId: user.id,
+        deviceToken,
+        active: true,
       });
       setIsSubscribed(true);
     } catch (e) {
@@ -1149,7 +1206,9 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { usePriceAlerts } from '@/hooks/usePriceAlerts';
 import { useTheme } from '@/theme';
 
-interface Props { productId: string; }
+interface Props {
+  productId: string;
+}
 
 /** Bell icon button on PDP to subscribe/unsubscribe from price drop push alerts. */
 export function PriceAlertButton({ productId }: Props) {
@@ -1158,7 +1217,9 @@ export function PriceAlertButton({ productId }: Props) {
   return (
     <TouchableOpacity
       onPress={isSubscribed ? unsubscribeAlert : subscribeAlert}
-      accessibilityLabel={isSubscribed ? 'Unsubscribe from price alerts' : 'Alert me when price drops'}
+      accessibilityLabel={
+        isSubscribed ? 'Unsubscribe from price alerts' : 'Alert me when price drops'
+      }
       testID="price-alert-button"
       style={[styles.btn, isSubscribed && { borderColor: colors.sunsetCoral }]}
     >
@@ -1170,15 +1231,22 @@ export function PriceAlertButton({ productId }: Props) {
 }
 
 const styles = StyleSheet.create({
-  btn: { padding: 8, borderWidth: 1, borderColor: '#3a2518', borderRadius: 8, alignSelf: 'flex-start' },
+  btn: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#3a2518',
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
 });
 ```
 
 In `src/screens/ProductDetailScreen.tsx`, below the price display:
+
 ```tsx
 import { PriceAlertButton } from '@/components/PriceAlertButton';
 // ...
-<PriceAlertButton productId={product.id} />
+<PriceAlertButton productId={product.id} />;
 ```
 
 - [ ] **Step 5: Final commit**
@@ -1191,6 +1259,7 @@ git commit -m "feat(cm-xw4): PriceAlertButton on PDP — subscribe to price drop
 ---
 
 ### Task 2.2: Virtual Consultation Booking
+
 **Bead:** `cm-4yk` | **Owner:** bishop | **BLOCKED:** requires melania to provide `ConsultationBookings` schema
 
 > **Do not start this task until melania confirms schema.** Expected fields (pending confirmation): `memberId` Text, `slotId` Text, `scheduledAt` DateTime, `status` Text (pending/confirmed/cancelled), `notes` Text.
@@ -1200,9 +1269,11 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 ---
 
 ### Task 2.3: Product Q&A on PDP
+
 **Bead:** Create `cm-qa` | **Owner:** ripley (after hq-bzb)
 
 **Files:**
+
 - Create: `src/components/ProductQASection.tsx`
 - Create: `src/components/__tests__/ProductQASection.test.tsx`
 - Create: `src/hooks/useProductQA.ts`
@@ -1215,6 +1286,7 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 ---
 
 ### Task 2.4: Bundle Deals on PDP + Cart
+
 **Bead:** `cm-bw2` maps partially — Create `cm-bundle` | **Owner:** hicks (after cm-b3b)
 
 **Wix API:** `getCompatibleItems`, `calculateBundlePrice`, `addBundleToCart`
@@ -1223,6 +1295,7 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 ---
 
 ### Task 2.5: Video Reviews on PDP
+
 **Bead:** Create `cm-vid` | **Owner:** burke (after cm-to0)
 
 **Wix collection:** `VideoReviews`
@@ -1233,24 +1306,29 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 ## Track 3: Phase 1 — Cross-Platform Unification (Ongoing)
 
 ### Task 3.1: Loyalty Unification
+
 **Bead:** `cm-elo` | **Status:** spec LOCKED with melania, implementation pending crew capacity
 
 **Scope:**
+
 - Wire `LoyaltyScreen`, `PointsHistoryScreen`, `RewardsScreen` to Wix Members API
 - Replace local mock points with shared `LoyaltyPoints` Wix collection
 - Sync tier perks with web's `TierPerkDeliveries` collection
 - Tiers: Trail Blazer → Mountain Guide → Summit Master → Blue Ridge Legend
 
 ### Task 3.2: UGC Photo Sharing
+
 **Bead:** `cm-nw8` | **Owner:** ripley (queued)
 
 **Scope:**
+
 - `RoomGalleryScreen`: add photo submit (expo-image-picker)
 - `ProductDetailScreen`: add UGC horizontal gallery section
 - Vote/like functionality; show only `approved` + `featured` status
 - Shared collection: `UGCPhotos`
 
 ### Task 3.3: BNPL Parity (Affirm)
+
 **Bead:** `cm-1s7` | **Owner:** hicks (queued)
 
 **Scope:** Align `FinancingCalculator` math with web's `financingCalc.web.js`
@@ -1260,6 +1338,7 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 ## Track 4: Technical Debt
 
 ### Task 4.1: Pre-existing Lint Debt
+
 **220 errors on main** (pre-existing, not from recent PRs)
 
 - [ ] **Audit:** `npx eslint src --format json | jq '[.[] | select(.errorCount > 0)]'`
@@ -1268,6 +1347,7 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 - [ ] **Create bead:** `bd create --title "fix(lint): resolve 220 pre-existing lint errors on main" --priority=2`
 
 ### Task 4.2: Screen Reference Guide Rebuild
+
 **Status:** S29 — two sessions stale. Emulator booting now.
 
 - [ ] Boot emulator: `ssh pop-os "~/Android/Sdk/emulator/emulator -avd cfutons_pixel7 -no-snapshot-load -no-audio -gpu swiftshader_indirect -no-window &"`
@@ -1277,23 +1357,28 @@ Once unblocked, implementation follows same pattern as Task 2.1: hook → screen
 - [ ] Commit: `git commit -m "docs: rebuild screen-reference.html — S33 screenshots"`
 
 ### Task 4.3: CartSessions Screen Wiring
+
 **Hook complete (24 tests), UI not wired.**
 
 In `src/screens/CartScreen.tsx`:
+
 ```tsx
 const { saveCart, mergeOnLogin } = useCartSessions({ memberId: user?.id ?? null });
 
 // On cart items change — best-effort sync
 useEffect(() => {
-  saveCart(cartItems.map((i) => ({ productId: i.id, variantId: i.variantId, quantity: i.quantity })))
-    .catch((e) => console.error('[CartScreen] saveCart failed:', e));
+  saveCart(
+    cartItems.map((i) => ({ productId: i.id, variantId: i.variantId, quantity: i.quantity })),
+  ).catch((e) => console.error('[CartScreen] saveCart failed:', e));
 }, [cartItems, saveCart]);
 
 // On login — merge remote cart
 useEffect(() => {
   if (!user?.id) return;
   mergeOnLogin(user.id)
-    .then((merged) => { if (merged.length) dispatch(setCartItems(merged)); })
+    .then((merged) => {
+      if (merged.length) dispatch(setCartItems(merged));
+    })
     .catch((e) => console.error('[CartScreen] mergeOnLogin failed:', e));
 }, [user?.id, mergeOnLogin, dispatch]);
 ```
@@ -1302,13 +1387,13 @@ useEffect(() => {
 
 ## Crew Assignments — S34 Queue
 
-| Crew | Current (S33) | Next (S34) |
-|------|---------------|------------|
-| bishop | cm-3fd security | cm-xw4 price alerts → cm-4yk consultation (blocked) |
-| ripley | hq-bzb ProductRec | cm-nw8 UGC photo sharing |
-| nux | cm-0q4 CompleteTheLook | cm-qa Product Q&A |
-| burke | cm-to0 NPS survey | cm-vid Video Reviews |
-| hicks | cm-b3b AR sync | cm-bundle Bundle Deals → cm-1s7 BNPL parity |
+| Crew   | Current (S33)          | Next (S34)                                          |
+| ------ | ---------------------- | --------------------------------------------------- |
+| bishop | cm-3fd security        | cm-xw4 price alerts → cm-4yk consultation (blocked) |
+| ripley | hq-bzb ProductRec      | cm-nw8 UGC photo sharing                            |
+| nux    | cm-0q4 CompleteTheLook | cm-qa Product Q&A                                   |
+| burke  | cm-to0 NPS survey      | cm-vid Video Reviews                                |
+| hicks  | cm-b3b AR sync         | cm-bundle Bundle Deals → cm-1s7 BNPL parity         |
 
 ---
 
@@ -1335,10 +1420,10 @@ Per Stilgar mandate — every PR must demonstrate:
 
 ## Crew Assignments — Updated
 
-| Crew | Now (S33) | Next | Queue |
-|------|-----------|------|-------|
-| bishop | cm-3fd security | cm-2s8 bead hygiene | cm-4yk (blocked on melania) |
-| ripley | hq-bzb ProductRec | cm-48e Image wrapper | cm-2ts EmptyState, cm-nw8 UGC |
-| nux | cm-0q4 CompleteTheLook | cm-qa Product Q&A | — |
-| burke | cm-to0 NPS survey | cm-vid Video Reviews | cm-049 OfflineBanner |
-| hicks | cm-b3b AR sync | cm-sxj Skeleton primitives | cm-ox9 Perf telemetry |
+| Crew   | Now (S33)              | Next                       | Queue                         |
+| ------ | ---------------------- | -------------------------- | ----------------------------- |
+| bishop | cm-3fd security        | cm-2s8 bead hygiene        | cm-4yk (blocked on melania)   |
+| ripley | hq-bzb ProductRec      | cm-48e Image wrapper       | cm-2ts EmptyState, cm-nw8 UGC |
+| nux    | cm-0q4 CompleteTheLook | cm-qa Product Q&A          | —                             |
+| burke  | cm-to0 NPS survey      | cm-vid Video Reviews       | cm-049 OfflineBanner          |
+| hicks  | cm-b3b AR sync         | cm-sxj Skeleton primitives | cm-ox9 Perf telemetry         |

@@ -24,7 +24,15 @@ jest.mock('@/hooks/useAuth', () => ({
 }));
 
 jest.mock('@/hooks/useLoyalty', () => ({
-  useLoyalty: () => ({ points: 0, tier: 'bronze', loading: false, error: null, totalEarned: 0, transactions: [], refreshPoints: jest.fn() }),
+  useLoyalty: () => ({
+    points: 0,
+    tier: 'bronze',
+    loading: false,
+    error: null,
+    totalEarned: 0,
+    transactions: [],
+    refreshPoints: jest.fn(),
+  }),
 }));
 
 jest.mock('@/hooks/useStreak', () => ({
@@ -33,9 +41,16 @@ jest.mock('@/hooks/useStreak', () => ({
 
 jest.mock('@/hooks/useReferral', () => ({
   useReferral: () => ({
-    code: null, creditsEarned: 0, referralCount: 0, shareUrl: null,
-    loading: false, error: null, referredByCode: null, referrals: [],
-    storeReferredByCode: jest.fn(), submitReferral: jest.fn(),
+    code: null,
+    creditsEarned: 0,
+    referralCount: 0,
+    shareUrl: null,
+    loading: false,
+    error: null,
+    referredByCode: null,
+    referrals: [],
+    storeReferredByCode: jest.fn(),
+    submitReferral: jest.fn(),
   }),
 }));
 
@@ -60,17 +75,27 @@ jest.mock('@/hooks/useDataExport', () => ({
 
 jest.mock('@/hooks/useAddressBook', () => ({
   useAddressBook: () => ({
-    addresses: [], addAddress: jest.fn(), updateAddress: jest.fn(),
-    deleteAddress: jest.fn(), setDefault: jest.fn(), saveFromCheckout: jest.fn(),
-    defaultAddress: null, loading: false,
+    addresses: [],
+    addAddress: jest.fn(),
+    updateAddress: jest.fn(),
+    deleteAddress: jest.fn(),
+    setDefault: jest.fn(),
+    saveFromCheckout: jest.fn(),
+    defaultAddress: null,
+    loading: false,
   }),
 }));
 
 jest.mock('@/hooks/useSavedAddresses', () => ({
   useSavedAddresses: () => ({
-    addresses: [], addAddress: jest.fn(), updateAddress: jest.fn(),
-    deleteAddress: jest.fn(), setDefault: jest.fn(), saveFromCheckout: jest.fn(),
-    defaultAddress: null, loading: false,
+    addresses: [],
+    addAddress: jest.fn(),
+    updateAddress: jest.fn(),
+    deleteAddress: jest.fn(),
+    setDefault: jest.fn(),
+    saveFromCheckout: jest.fn(),
+    defaultAddress: null,
+    loading: false,
   }),
 }));
 
@@ -89,8 +114,10 @@ jest.mock('@/hooks/useBiometricAuth', () => ({
 
 jest.mock('@/hooks/useGamificationEvents', () => ({
   useGamificationEvents: () => ({
-    referralShared: jest.fn(), productViewed: jest.fn(),
-    addedToCart: jest.fn(), purchaseCompleted: jest.fn(),
+    referralShared: jest.fn(),
+    productViewed: jest.fn(),
+    addedToCart: jest.fn(),
+    purchaseCompleted: jest.fn(),
   }),
 }));
 
@@ -216,7 +243,9 @@ function renderAccountSettings(props: Partial<React.ComponentProps<typeof Accoun
   );
 }
 
-function renderNotifPrefs(props: Partial<React.ComponentProps<typeof NotificationPreferencesScreen>> = {}) {
+function renderNotifPrefs(
+  props: Partial<React.ComponentProps<typeof NotificationPreferencesScreen>> = {},
+) {
   return render(
     <ThemeProvider>
       <NotificationPreferencesScreen {...props} />
@@ -475,12 +504,10 @@ describe('account deletion confirm', () => {
 
   it('tapping Delete in alert calls confirmDeletion', async () => {
     let deleteAction: (() => void) | undefined;
-    jest.spyOn(require('react-native').Alert, 'alert').mockImplementation(
-      (...args: unknown[]) => {
-        const buttons = args[2] as any[];
-        deleteAction = buttons.find((b: any) => b.style === 'destructive')?.onPress;
-      },
-    );
+    jest.spyOn(require('react-native').Alert, 'alert').mockImplementation((...args: unknown[]) => {
+      const buttons = args[2] as any[];
+      deleteAction = buttons.find((b: any) => b.style === 'destructive')?.onPress;
+    });
 
     const { getByTestId } = renderAccountSettings();
     await waitFor(() => expect(getByTestId('account-delete-account')).toBeTruthy());
@@ -493,12 +520,10 @@ describe('account deletion confirm', () => {
 
   it('tapping Cancel in alert calls deletion.cancel', async () => {
     let cancelAction: (() => void) | undefined;
-    jest.spyOn(require('react-native').Alert, 'alert').mockImplementation(
-      (...args: unknown[]) => {
-        const buttons = args[2] as any[];
-        cancelAction = buttons.find((b: any) => b.text === 'Cancel')?.onPress;
-      },
-    );
+    jest.spyOn(require('react-native').Alert, 'alert').mockImplementation((...args: unknown[]) => {
+      const buttons = args[2] as any[];
+      cancelAction = buttons.find((b: any) => b.text === 'Cancel')?.onPress;
+    });
 
     const { getByTestId } = renderAccountSettings();
     await waitFor(() => expect(getByTestId('account-delete-account')).toBeTruthy());

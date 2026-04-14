@@ -128,7 +128,9 @@ describe('ResourcesSection', () => {
     });
 
     it('renders warranty policy link when warrantyPolicyUrl provided', () => {
-      const { getByTestId } = openResources({ warrantyPolicyUrl: MOCK_RESOURCES.warrantyPolicyUrl });
+      const { getByTestId } = openResources({
+        warrantyPolicyUrl: MOCK_RESOURCES.warrantyPolicyUrl,
+      });
       expect(getByTestId('resource-item-warranty-policy')).toBeTruthy();
     });
 

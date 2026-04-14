@@ -16,6 +16,7 @@ Current mobile: 2 layers (mid-ground + foreground), 2-stop gradient, basic linea
 Target: 7 C-curve bezier layers with atmospheric opacity ramp, detail elements, rich gradients.
 
 **Port from web:**
+
 - 7 ridgeline layers (distant → front) with C-curve bezier organic paths
 - Atmospheric opacity ramp: 0.12 → 0.85 (standard), 0.12 → 0.6 (transparent)
 - Layer colors: distant/far = mountainBlue, back→front = espresso (standard mode)
@@ -28,6 +29,7 @@ Target: 7 C-curve bezier layers with atmospheric opacity ramp, detail elements, 
 - Transparent mode for dark section dividers (different color/opacity ramp)
 
 **Skip for mobile performance:**
+
 - feTurbulence/feDisplacementMap watercolor displacement filter
 - feGaussianBlur haze filter (use opacity-only haze instead)
 - Paper grain noise filter (use simple low-opacity overlay)
@@ -35,6 +37,7 @@ Target: 7 C-curve bezier layers with atmospheric opacity ramp, detail elements, 
 ### Empty State Illustrations — Depth Upgrade
 
 Each of the 8 illustrations (Cart, Search, Wishlist, Reviews, Category, Error, NotFound, Stream):
+
 - Upgrade from 3 Q-curve layers to 5 C-curve bezier layers
 - Multi-stop gradients (3-stop → 5-stop)
 - Scene-specific detail elements (trail markers, cabin smoke, fog wisps, lightning, etc.)
@@ -43,6 +46,7 @@ Each of the 8 illustrations (Cart, Search, Wishlist, Reviews, Category, Error, N
 ### Shared Utilities
 
 Extract into `src/components/illustrations/shared.ts`:
+
 - Mountain path generator (C-curve bezier with wobble offsets)
 - Gradient preset configs
 - Detail element builders (birds, trees, flora)
@@ -59,19 +63,23 @@ Extract into `src/components/illustrations/shared.ts`:
 ## Workstream 3: Sandbox Testing
 
 ### Platforms
+
 - iOS Simulator (iPhone 15 Pro)
 - Android Emulator (Pixel 7)
 - Web browser (Expo web export)
 
 ### Screens to Test
+
 Home, Shop, ProductDetail, Cart, Account, Onboarding + all empty states
 
 ### Report Format
-| Platform | Screen | Status | Issues |
-|----------|--------|--------|--------|
+
+| Platform | Screen | Status    | Issues      |
+| -------- | ------ | --------- | ----------- |
 | iOS      | Home   | pass/fail | description |
 
 ### Focus Areas
+
 - SVG rendering fidelity (gradients, paths, opacity)
 - Dark mode contrast and readability
 - MountainSkyline proportions at different screen sizes
@@ -95,6 +103,7 @@ Home, Shop, ProductDetail, Cart, Account, Onboarding + all empty states
 7. **build-web** — `expo export --platform web` bundle verification
 
 **Infrastructure:**
+
 - iOS build requires `macos-latest` runner
 - Android/test/lint/typecheck on `ubuntu-latest`
 - Coverage reports + build artifacts retained 7 days

@@ -49,7 +49,12 @@ jest.mock('@/hooks/useRealRoomPhotos', () => ({
 // ── useFeaturedPhotos mock ─────────────────────────────────────────────────────
 
 jest.mock('@/hooks/useFeaturedPhotos', () => ({
-  useFeaturedPhotos: () => ({ featuredPhotos: [], featuredPhotoIds: new Set(), isLoading: false, error: null }),
+  useFeaturedPhotos: () => ({
+    featuredPhotos: [],
+    featuredPhotoIds: new Set(),
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -65,7 +70,14 @@ const PHOTOS: RealRoomPhoto[] = [
     altText: 'Living room with Summit Futon',
     createdAt: '2026-03-15T10:00:00.000Z',
     tags: [
-      { productId: 'prod-1', productName: 'Summit Futon', x: 0.3, y: 0.4, width: 0.15, height: 0.2 },
+      {
+        productId: 'prod-1',
+        productName: 'Summit Futon',
+        x: 0.3,
+        y: 0.4,
+        width: 0.15,
+        height: 0.2,
+      },
     ],
   },
   {

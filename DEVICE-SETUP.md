@@ -44,21 +44,21 @@ npx expo start --dev-client
 
 ## What Works Right Now (v0.1.0)
 
-| Feature | Status | Notes |
-|---------|--------|-------|
-| Home screen | Working | Brand-themed, AR + Shop CTAs |
-| Shop / Browse | Working | Product grid with cards, badges, ratings |
-| Categories | Working | Filtered product views |
+| Feature        | Status  | Notes                                                              |
+| -------------- | ------- | ------------------------------------------------------------------ |
+| Home screen    | Working | Brand-themed, AR + Shop CTAs                                       |
+| Shop / Browse  | Working | Product grid with cards, badges, ratings                           |
+| Categories     | Working | Filtered product views                                             |
 | Product Detail | Working | Images, pricing, size/color, dimensions, Afterpay/Affirm messaging |
-| AR Camera | Partial | UI built, needs real AR models (uses placeholder teapot) |
-| Cart | Working | Add/remove items, quantity, subtotal |
-| Wishlist | Working | Save/remove products, persisted locally |
-| Store Locator | Working | Store list with distance calculation |
-| Account | Working | Login/signup UI (mock auth — real Wix auth in progress) |
-| Order History | Working | Mock order data display |
-| Checkout | Working | UI flow (no real payment processing yet) |
-| Theme | Working | Full Blue Ridge Mountain palette, dark mode toggle |
-| Deep Links | Working | `carolinafutons://` scheme configured |
+| AR Camera      | Partial | UI built, needs real AR models (uses placeholder teapot)           |
+| Cart           | Working | Add/remove items, quantity, subtotal                               |
+| Wishlist       | Working | Save/remove products, persisted locally                            |
+| Store Locator  | Working | Store list with distance calculation                               |
+| Account        | Working | Login/signup UI (mock auth — real Wix auth in progress)            |
+| Order History  | Working | Mock order data display                                            |
+| Checkout       | Working | UI flow (no real payment processing yet)                           |
+| Theme          | Working | Full Blue Ridge Mountain palette, dark mode toggle                 |
+| Deep Links     | Working | `carolinafutons://` scheme configured                              |
 
 ## What's Coming Next
 
@@ -71,18 +71,22 @@ npx expo start --dev-client
 ## Troubleshooting
 
 ### "Network error" or app won't connect
+
 - Ensure phone and computer are on same Wi-Fi
 - Try `npx expo start --tunnel` (slower but works across networks)
 
 ### Fonts look wrong / system fallback
+
 - Fonts load from Google Fonts on first launch — needs internet
 - If fonts fail, app still works with system fallback
 
 ### AR Camera shows black/crashes
+
 - AR requires a development build (not Expo Go)
 - Pixel 9 supports ARCore — should work with dev build
 
 ### Build fails
+
 ```bash
 # Clear caches and retry
 npx expo start --clear

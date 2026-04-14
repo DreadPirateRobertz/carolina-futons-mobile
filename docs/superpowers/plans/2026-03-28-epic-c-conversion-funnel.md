@@ -15,6 +15,7 @@
 ## Pre-task 0: Analytics event taxonomy (bishop — must complete before Sprint 1)
 
 **Files:**
+
 - Create: `src/services/analyticsEvents.ts`
 - Create: `src/services/__tests__/analyticsEvents.test.ts`
 
@@ -78,6 +79,7 @@ git commit -m "feat(epicC): shared analytics event taxonomy"
 ## Task 1: PromoCodeInput component
 
 **Files:**
+
 - Create: `src/components/PromoCodeInput.tsx`
 - Create: `src/components/__tests__/PromoCodeInput.test.tsx`
 
@@ -293,6 +295,7 @@ git commit -m "feat(epicC): PromoCodeInput — expandable, validated, a11y live 
 ## Task 2: PaymentPoller
 
 **Files:**
+
 - Create: `src/services/paymentPoller.ts`
 - Create: `src/services/__tests__/paymentPoller.test.ts`
 
@@ -415,6 +418,7 @@ git commit -m "feat(epicC): PaymentPoller with 30s timeout — prevents indefini
 ## Task 3: CheckoutScreen keyboard chain + a11y
 
 **Files:**
+
 - Modify: `src/screens/CheckoutScreen.tsx`
 
 - [ ] **Step 1: Write failing tests for keyboard chain**
@@ -449,6 +453,7 @@ npx jest src/screens/__tests__/CheckoutScreen.test.tsx --no-coverage
 In `src/screens/CheckoutScreen.tsx`:
 
 1. Wrap scroll area:
+
 ```typescript
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 
@@ -460,6 +465,7 @@ import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 ```
 
 2. Add refs and `returnKeyType` chain to each TextInput:
+
 ```typescript
 const nameRef = useRef<TextInput>(null);
 const emailRef = useRef<TextInput>(null);
@@ -486,6 +492,7 @@ const addressRef = useRef<TextInput>(null);
 ```
 
 3. Add progress bar a11y:
+
 ```typescript
 <View
   testID="checkout-progress"
@@ -495,6 +502,7 @@ const addressRef = useRef<TextInput>(null);
 ```
 
 4. Add `accessibilityLiveRegion="assertive"` to error Text components:
+
 ```typescript
 <Text accessibilityLiveRegion="assertive">{formError}</Text>
 ```
@@ -517,6 +525,7 @@ git commit -m "feat(epicC): checkout keyboard chain + a11y progress bar + assert
 ## Task 4: CheckoutFormSkeleton + cart abandonment push
 
 **Files:**
+
 - Create: `src/components/CheckoutFormSkeleton.tsx`
 - Modify: `src/hooks/useCartAbandonmentRecovery.ts` (add push bridge)
 - Modify: `src/services/crossRigEventBus.ts` (add emitCartAbandoned)
@@ -603,6 +612,7 @@ if (stripeLoading) {
 ```bash
 npx jest src/services/__tests__/crossRigEventBus.test.ts src/components/__tests__/PromoCodeInput.test.tsx src/services/__tests__/paymentPoller.test.ts src/screens/__tests__/CheckoutScreen.test.tsx --no-coverage
 ```
+
 Expected: all pass.
 
 - [ ] **Step 6: Commit and open PR**

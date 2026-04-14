@@ -122,7 +122,9 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
   // Re-entry guard: skip onboarding if already completed
   useEffect(() => {
     AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY)
-      .then((val) => { if (val === 'true') onComplete(); })
+      .then((val) => {
+        if (val === 'true') onComplete();
+      })
       .catch(() => {
         // Storage read failure is non-fatal — show onboarding normally
       });
@@ -195,7 +197,13 @@ export function OnboardingScreen({ onComplete, testID }: Props) {
         { text: 'OK' },
       ]);
     }
-  }, [savePreferences, onComplete, styleQuizComplete, preferences.stylePreference, requestPermission]);
+  }, [
+    savePreferences,
+    onComplete,
+    styleQuizComplete,
+    preferences.stylePreference,
+    requestPermission,
+  ]);
 
   // ── Progress Bar ────────────────────────────────────────────────
 

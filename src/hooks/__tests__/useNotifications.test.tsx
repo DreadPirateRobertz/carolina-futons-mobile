@@ -142,7 +142,13 @@ describe('useNotifications', () => {
     mockCallFunction.mockResolvedValue(undefined);
     // Default: authenticated user with a known member ID
     mockUseAuth.mockReturnValue({
-      user: { id: 'member-test-001', email: 'test@example.com', displayName: 'Test', phone: '', provider: 'email' },
+      user: {
+        id: 'member-test-001',
+        email: 'test@example.com',
+        displayName: 'Test',
+        phone: '',
+        provider: 'email',
+      },
       loading: false,
       error: null,
     });
@@ -771,7 +777,13 @@ describe('useNotifications', () => {
 
       // User logs in — re-render with authenticated user
       mockUseAuth.mockReturnValue({
-        user: { id: 'member-test-001', email: 'test@example.com', displayName: 'Test', phone: '', provider: 'email' },
+        user: {
+          id: 'member-test-001',
+          email: 'test@example.com',
+          displayName: 'Test',
+          phone: '',
+          provider: 'email',
+        },
         loading: false,
         error: null,
       });

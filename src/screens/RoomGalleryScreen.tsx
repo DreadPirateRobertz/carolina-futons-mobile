@@ -106,7 +106,10 @@ function RoomCard({
           {item.roomStyle}
         </Text>
         <Text
-          style={[styles.memberName, { color: colors.sandLight, fontFamily: typography.bodyFamily }]}
+          style={[
+            styles.memberName,
+            { color: colors.sandLight, fontFamily: typography.bodyFamily },
+          ]}
           testID={`room-member-${item.roomId}`}
           numberOfLines={1}
         >

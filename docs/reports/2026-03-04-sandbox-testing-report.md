@@ -9,36 +9,36 @@
 
 ## Blockers Fixed During Testing
 
-| # | Issue | Fix | Commit |
-|---|-------|-----|--------|
-| 1 | App crashes without `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Created `.env` with required vars; Ripley added `.env.example` (PR #52) | f449920, 3c71c9f |
-| 2 | `@stripe/stripe-react-native` breaks web builds (deep RN internal imports) | Added `web/empty-module.js` stub + metro.config.js web routing | f449920 |
-| 3 | `app.json` missing `bundler: "metro"` for web | Added to web config | f449920 |
-| 4 | Stripe plugin missing `merchantIdentifier` in app.json | Added config object with merchantIdentifier + enableGooglePay | f449920 |
-| 5 | `react-native@0.76.7` version mismatch | Upgraded to 0.76.9 via `npx expo install --fix` | f449920 |
+| #   | Issue                                                                      | Fix                                                                     | Commit           |
+| --- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------- |
+| 1   | App crashes without `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY`                   | Created `.env` with required vars; Ripley added `.env.example` (PR #52) | f449920, 3c71c9f |
+| 2   | `@stripe/stripe-react-native` breaks web builds (deep RN internal imports) | Added `web/empty-module.js` stub + metro.config.js web routing          | f449920          |
+| 3   | `app.json` missing `bundler: "metro"` for web                              | Added to web config                                                     | f449920          |
+| 4   | Stripe plugin missing `merchantIdentifier` in app.json                     | Added config object with merchantIdentifier + enableGooglePay           | f449920          |
+| 5   | `react-native@0.76.7` version mismatch                                     | Upgraded to 0.76.9 via `npx expo install --fix`                         | f449920          |
 
 ## Expo Web Results
 
-| Screen | Status | Elements | SVGs | Notes |
-|--------|--------|----------|------|-------|
-| Onboarding | PASS | 74 | 1 (20 paths) | MountainSkyline renders, text correct, Skip/Next work |
-| Home | PASS | 159 | 2 | Tab nav, CTAs (Try in Room, Browse), brand header |
-| Shop | PASS | 370 | 3 | Full catalog, 8 categories, products with ratings/prices |
-| Product Detail | PASS | 279 | 1 | Images, fabric selector, 3D dimensions, reviews with ratings |
-| Cart (empty) | PASS | 84 | 1 | Empty state illustration + message |
-| Account | PASS | 85 | 1 | Sign-in prompt renders |
-| Checkout | PASS | 55 | 0 | Payment methods: Google Pay, Affirm, Klarna, CC |
-| Collections | PASS | 108 | 0 | 5 curated collections with tags |
-| Wishlist (empty) | PASS | 44 | 1 | Empty state with illustration |
-| Store Locator | FAIL | — | — | Redirects to /home (route not in linking config) |
+| Screen           | Status | Elements | SVGs         | Notes                                                        |
+| ---------------- | ------ | -------- | ------------ | ------------------------------------------------------------ |
+| Onboarding       | PASS   | 74       | 1 (20 paths) | MountainSkyline renders, text correct, Skip/Next work        |
+| Home             | PASS   | 159      | 2            | Tab nav, CTAs (Try in Room, Browse), brand header            |
+| Shop             | PASS   | 370      | 3            | Full catalog, 8 categories, products with ratings/prices     |
+| Product Detail   | PASS   | 279      | 1            | Images, fabric selector, 3D dimensions, reviews with ratings |
+| Cart (empty)     | PASS   | 84       | 1            | Empty state illustration + message                           |
+| Account          | PASS   | 85       | 1            | Sign-in prompt renders                                       |
+| Checkout         | PASS   | 55       | 0            | Payment methods: Google Pay, Affirm, Klarna, CC              |
+| Collections      | PASS   | 108      | 0            | 5 curated collections with tags                              |
+| Wishlist (empty) | PASS   | 44       | 1            | Empty state with illustration                                |
+| Store Locator    | FAIL   | —        | —            | Redirects to /home (route not in linking config)             |
 
 **Web Summary**: 9/10 screens pass. Store Locator needs route fix.
 
 ## iOS Simulator Results (iPhone 16e, iOS 26.2)
 
-| Screen | Status | Notes |
-|--------|--------|-------|
-| Onboarding | PASS | MountainSkyline SVG renders, dark editorial treatment, pagination dots visible |
+| Screen          | Status  | Notes                                                                                |
+| --------------- | ------- | ------------------------------------------------------------------------------------ |
+| Onboarding      | PASS    | MountainSkyline SVG renders, dark editorial treatment, pagination dots visible       |
 | Further screens | BLOCKED | Expo Go dev menu modal cannot be dismissed via `simctl io tap` (iOS 26.2 limitation) |
 
 **iOS Summary**: App launches, Expo Go SDK 52.0.0 confirmed, Onboarding renders correctly. Further screen testing requires manual interaction or Expo Dev Client build.

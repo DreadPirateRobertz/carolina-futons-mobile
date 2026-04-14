@@ -180,9 +180,9 @@ describe('checkBundleSize', () => {
   // ── Missing file ──────────────────────────────────────────────────────────
 
   it('throws when bundle file does not exist', () => {
-    expect(() =>
-      checkBundleSize(path.join(tmpDir, 'nonexistent.js'), 500 * 1024),
-    ).toThrow(/not found|no such file|does not exist/i);
+    expect(() => checkBundleSize(path.join(tmpDir, 'nonexistent.js'), 500 * 1024)).toThrow(
+      /not found|no such file|does not exist/i,
+    );
   });
 
   // ── Custom limit ─────────────────────────────────────────────────────────
@@ -235,11 +235,9 @@ describe('check-bundle-size CLI', () => {
   });
 
   it('exits 1 with error message when bundle file is missing', () => {
-    const result = spawnSync(
-      'npx',
-      ['tsx', scriptPath, path.join(tmpDir, 'missing.js')],
-      { encoding: 'utf8' },
-    );
+    const result = spawnSync('npx', ['tsx', scriptPath, path.join(tmpDir, 'missing.js')], {
+      encoding: 'utf8',
+    });
     expect(result.status).toBe(1);
     expect(result.stdout + result.stderr).toMatch(/not found|no such|missing/i);
   });

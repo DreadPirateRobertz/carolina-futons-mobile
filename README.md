@@ -9,6 +9,7 @@
 ## What the App Does
 
 ### Augmented Reality — Place Before You Buy
+
 The centerpiece feature. Point your camera at any room and place true-to-scale 3D futon models directly in your space before purchasing. Powered by ARKit (iOS) and ARCore (Android).
 
 - Full AR room placement with ARKit/ARCore
@@ -21,6 +22,7 @@ The centerpiece feature. Point your camera at any room and place true-to-scale 3
 - Offline model caching — downloaded models available without internet
 
 ### Product Discovery
+
 - **39 screens** covering the full shopping journey (see [Screen Reference Guide](docs/screen-reference.html))
 - Shop grid with full Wix catalog (88+ products, real CDN images)
 - Category and collection browsing
@@ -29,6 +31,7 @@ The centerpiece feature. Point your camera at any room and place true-to-scale 3
 - Search with Wix search API
 
 ### Product Detail
+
 - Multi-image gallery with pinch-to-zoom
 - Video gallery (product demos, lifestyle)
 - Fabric/finish variant picker
@@ -39,6 +42,7 @@ The centerpiece feature. Point your camera at any room and place true-to-scale 3
 - "Launch AR" deep link from PDP to AR camera
 
 ### Cart & Checkout
+
 - Persistent cart with Wix sync
 - Stripe PaymentSheet — full card, Apple Pay, Google Pay
 - Cart abandonment recovery — push notification at 1hr with email dedup
@@ -47,6 +51,7 @@ The centerpiece feature. Point your camera at any room and place true-to-scale 3
 - Order confirmation with points earned (gamification)
 
 ### Loyalty & Gamification
+
 A full RPG-style loyalty system layered on top of commerce:
 
 - **Points & Tiers** — Bronze → Silver → Gold → Platinum with escalating perks
@@ -60,11 +65,13 @@ A full RPG-style loyalty system layered on top of commerce:
 - **Cross-rig Event Bus** — gamification events fire on order placed, streak extended, badge earned, tier change; synced to Wix backend via webhook
 
 ### AI Personalization
+
 - **Fit Score** — AI-powered compatibility score for each product based on quiz answers and browse history
 - **Style Sommelier** — conversational AI that asks a few questions and recommends the right futon
 - Parallel fetch architecture — personalization data loaded alongside product data, no waterfall
 
 ### Push Notifications
+
 - Permission prompt with pre-ask explanation screen
 - Per-channel preference toggles (order updates, promos, price drops, loyalty, cart reminders)
 - Order shipped / delivered / refunded alerts
@@ -74,6 +81,7 @@ A full RPG-style loyalty system layered on top of commerce:
 - Token registration tied to auth lifecycle (fires on sign-in, clears on sign-out)
 
 ### Authentication
+
 - Email/password via Wix Members
 - Google Sign-In (OAuth)
 - Apple Sign-In (iOS)
@@ -81,12 +89,14 @@ A full RPG-style loyalty system layered on top of commerce:
 - Secure token storage
 
 ### CF+ Premium Membership
+
 - Exclusive product access
 - Priority shipping tier
 - Double points on purchases
 - In-app purchase flow
 
 ### Offline Support
+
 - `OfflineBanner` — real-time network status indicator
 - Cached product catalog and 3D models available offline
 - Cart persists locally and syncs on reconnect
@@ -95,23 +105,23 @@ A full RPG-style loyalty system layered on top of commerce:
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Expo SDK 55 (bare workflow, React Native 0.84) |
-| Language | TypeScript (strict) |
-| Navigation | React Navigation v7 (native-stack) |
-| Animations | react-native-reanimated v4 |
-| Gestures | react-native-gesture-handler v2 |
-| State | React Context + useReducer + SWR |
-| Backend | Wix Headless (products, auth, orders, CMS) |
-| Payments | Stripe React Native (PaymentSheet) |
-| Push | expo-notifications (APNs + FCM via Expo) |
-| AR | ARKit (iOS) / ARCore (Android) + model-viewer web fallback |
-| Analytics | Firebase + Mixpanel (multi-provider) |
-| Crash Reporting | Sentry |
-| Testing | Jest + React Native Testing Library (6,936 tests) |
-| Build | EAS Build (dev / preview / production profiles) |
-| CI | GitHub Actions (lint, test, catalog-sync) |
+| Layer           | Technology                                                 |
+| --------------- | ---------------------------------------------------------- |
+| Framework       | Expo SDK 55 (bare workflow, React Native 0.84)             |
+| Language        | TypeScript (strict)                                        |
+| Navigation      | React Navigation v7 (native-stack)                         |
+| Animations      | react-native-reanimated v4                                 |
+| Gestures        | react-native-gesture-handler v2                            |
+| State           | React Context + useReducer + SWR                           |
+| Backend         | Wix Headless (products, auth, orders, CMS)                 |
+| Payments        | Stripe React Native (PaymentSheet)                         |
+| Push            | expo-notifications (APNs + FCM via Expo)                   |
+| AR              | ARKit (iOS) / ARCore (Android) + model-viewer web fallback |
+| Analytics       | Firebase + Mixpanel (multi-provider)                       |
+| Crash Reporting | Sentry                                                     |
+| Testing         | Jest + React Native Testing Library (6,936 tests)          |
+| Build           | EAS Build (dev / preview / production profiles)            |
+| CI              | GitHub Actions (lint, test, catalog-sync)                  |
 
 ---
 
@@ -139,12 +149,12 @@ npx expo start
 
 ### Required Environment Variables
 
-| Variable | Description |
-|---|---|
-| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
-| `EXPO_PUBLIC_WIX_CLIENT_ID` | Wix OAuth client ID |
-| `EXPO_PUBLIC_WIX_API_KEY` | Wix REST API key (`IST.eyJ...`) |
-| `EXPO_PUBLIC_WIX_SITE_ID` | Wix site ID |
+| Variable                             | Description                     |
+| ------------------------------------ | ------------------------------- |
+| `EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key          |
+| `EXPO_PUBLIC_WIX_CLIENT_ID`          | Wix OAuth client ID             |
+| `EXPO_PUBLIC_WIX_API_KEY`            | Wix REST API key (`IST.eyJ...`) |
+| `EXPO_PUBLIC_WIX_SITE_ID`            | Wix site ID                     |
 
 See [`.env.example`](.env.example) for the full list.
 

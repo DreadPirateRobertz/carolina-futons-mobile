@@ -14,6 +14,7 @@
 Surface AI-powered personalization throughout the app: Fit Score badge on PDP, Sommelier results on HomeScreen, and a personalized hero section. Resolve the double-waterfall fetch on HomeScreen. Add a CMS cache layer so personalization data doesn't hit Wix on every mount.
 
 Success criteria:
+
 - PDP shows "94% match" Fit Score badge for logged-in users with a quiz result
 - HomeScreen shows Sommelier top-style recommendation with product grid
 - HomeScreen personalization data loads from cache on repeat visits (no Wix round-trip)
@@ -119,37 +120,41 @@ Replaces standard HomeScreen FlatList for logged-in users with quiz results. Sho
 ## 4. Data Contracts
 
 ### getFitScore (cf-hx8m — in development by miquella)
+
 ```
 GET /_functions/getFitScore?productId={id}&memberId={id}
 → { score: number (0-100), reasons: string[], computedAt: number }
 ```
 
 ### getSommelierResults (cf-a220 — live)
+
 ```
 GET /_functions/getSommelierResults?memberId={id}
 → { memberId, topStyle, flavors[], recommendations[] }
 ```
 
 ### PersonalizationCache schema (AsyncStorage)
+
 ```ts
 {
   fitScore: { [productId_memberId]: { score, reasons, cachedAt } },
   sommelierResult: { [memberId]: { result, cachedAt } },
 }
 ```
+
 TTL: 1 hour. Invalidated on new quiz completion.
 
 ---
 
 ## 5. Error Handling
 
-| Scenario | Handling |
-|----------|----------|
-| getFitScore API not yet live | Feature flag `PERSONALIZATION_FIT_SCORE_ENABLED` — false until cf-hx8m ships |
-| getSommelierResults 404 (no quiz) | Return null, show standard UI |
-| Both personalization fetches fail | Show standard HomeScreen, log to Sentry (non-fatal) |
-| Cache read fails | Fall through to network fetch, log warning |
-| memberId null (guest) | Skip all personalization fetches entirely |
+| Scenario                          | Handling                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| getFitScore API not yet live      | Feature flag `PERSONALIZATION_FIT_SCORE_ENABLED` — false until cf-hx8m ships |
+| getSommelierResults 404 (no quiz) | Return null, show standard UI                                                |
+| Both personalization fetches fail | Show standard HomeScreen, log to Sentry (non-fatal)                          |
+| Cache read fails                  | Fall through to network fetch, log warning                                   |
+| memberId null (guest)             | Skip all personalization fetches entirely                                    |
 
 ---
 
@@ -163,12 +168,12 @@ TTL: 1 hour. Invalidated on new quiz completion.
 
 ## 7. Beads
 
-| Bead | Description | Lead |
-|------|-------------|------|
-| cm-epicB-1 | PersonalizationCache + usePersonalization hook (parallel fetch) | hicks |
-| cm-epicB-2 | useFitScore hook + FIT_SCORE badge type | ripley |
-| cm-epicB-3 | FitScoreBadge component + FitScoreExplainerSheet | ripley |
-| cm-epicB-4 | SommelierHeroCard component | ripley |
-| cm-epicB-5 | PersonalizedProductGrid + HomeScreen integration | hicks |
-| cm-epicB-6 | Wire live getFitScore API (blocked on cf-hx8m) | hicks |
-| cm-epicB-7 | Feature flag + graceful degradation audit | bishop |
+| Bead       | Description                                                     | Lead   |
+| ---------- | --------------------------------------------------------------- | ------ |
+| cm-epicB-1 | PersonalizationCache + usePersonalization hook (parallel fetch) | hicks  |
+| cm-epicB-2 | useFitScore hook + FIT_SCORE badge type                         | ripley |
+| cm-epicB-3 | FitScoreBadge component + FitScoreExplainerSheet                | ripley |
+| cm-epicB-4 | SommelierHeroCard component                                     | ripley |
+| cm-epicB-5 | PersonalizedProductGrid + HomeScreen integration                | hicks  |
+| cm-epicB-6 | Wire live getFitScore API (blocked on cf-hx8m)                  | hicks  |
+| cm-epicB-7 | Feature flag + graceful degradation audit                       | bishop |

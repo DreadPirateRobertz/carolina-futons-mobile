@@ -55,7 +55,9 @@ function buildContent(
     const newTier = typeof payload.newTier === 'string' ? payload.newTier : '';
     return {
       title: 'Your loyalty tier has been updated',
-      body: newTier ? `You've reached ${newTier} status!` : 'Your status has changed — check your profile.',
+      body: newTier
+        ? `You've reached ${newTier} status!`
+        : 'Your status has changed — check your profile.',
       data: { event, newTier },
     };
   }

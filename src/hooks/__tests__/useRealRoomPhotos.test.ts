@@ -158,19 +158,14 @@ describe('useRealRoomPhotos', () => {
     it('queries the RealRoomPhotos collection', async () => {
       const { result } = renderHook(() => useRealRoomPhotos());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
-      expect(mockQueryData).toHaveBeenCalledWith(
-        'RealRoomPhotos',
-        expect.any(Object),
-      );
+      expect(mockQueryData).toHaveBeenCalledWith('RealRoomPhotos', expect.any(Object));
     });
 
     it('MANDATORY: applies status=approved filter', async () => {
       const { result } = renderHook(() => useRealRoomPhotos());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       const [, query] = mockQueryData.mock.calls[0];
-      expect(query.filter).toEqual(
-        expect.objectContaining({ status: { $eq: 'approved' } }),
-      );
+      expect(query.filter).toEqual(expect.objectContaining({ status: { $eq: 'approved' } }));
     });
 
     it('sorts by createdAt descending', async () => {
@@ -290,9 +285,7 @@ describe('useRealRoomPhotos', () => {
     });
 
     it('handles pre-parsed tags (already an array)', async () => {
-      mockQueryData.mockResolvedValue(
-        makeQueryResult([{ ...RAW_PHOTO_1, tags: TAGS_ARRAY }]),
-      );
+      mockQueryData.mockResolvedValue(makeQueryResult([{ ...RAW_PHOTO_1, tags: TAGS_ARRAY }]));
       const { result } = renderHook(() => useRealRoomPhotos());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
       expect(result.current.photos[0].tags).toEqual(TAGS_ARRAY);

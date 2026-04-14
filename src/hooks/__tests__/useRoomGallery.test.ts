@@ -1,5 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
-import { useRoomGallery, PLACEHOLDER_ROOMS, type RoomGalleryItem, type RoomPhotoTag } from '../useRoomGallery';
+import {
+  useRoomGallery,
+  PLACEHOLDER_ROOMS,
+  type RoomGalleryItem,
+  type RoomPhotoTag,
+} from '../useRoomGallery';
 
 // Mock wixProvider
 const mockQueryData = jest.fn();
@@ -13,12 +18,27 @@ function makeRawPhoto(overrides: Record<string, unknown> = {}): Record<string, u
   return {
     memberId: 'member-001',
     memberName: 'Jane Doe',
-    imageUrl: 'wix:image://v1/e04e89_abc123def456/living-room.jpg#originWidth=1200&originHeight=800',
+    imageUrl:
+      'wix:image://v1/e04e89_abc123def456/living-room.jpg#originWidth=1200&originHeight=800',
     city: 'Charlotte',
     state: 'NC',
     tags: JSON.stringify([
-      { productId: 'asheville-full', productName: 'Asheville Full', x: 0.3, y: 0.4, width: 0.1, height: 0.1 },
-      { productId: 'biltmore-queen', productName: 'Biltmore Queen', x: 0.6, y: 0.5, width: 0.1, height: 0.1 },
+      {
+        productId: 'asheville-full',
+        productName: 'Asheville Full',
+        x: 0.3,
+        y: 0.4,
+        width: 0.1,
+        height: 0.1,
+      },
+      {
+        productId: 'biltmore-queen',
+        productName: 'Biltmore Queen',
+        x: 0.6,
+        y: 0.5,
+        width: 0.1,
+        height: 0.1,
+      },
     ]),
     caption: 'My cozy living room',
     slug: 'jane-room-001',
@@ -95,7 +115,10 @@ describe('useRoomGallery', () => {
     });
 
     it('maps slug to roomId', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ slug: 'unique-slug-xyz' })], totalResults: 1 });
+      mockQueryData.mockResolvedValue({
+        items: [makeRawPhoto({ slug: 'unique-slug-xyz' })],
+        totalResults: 1,
+      });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -103,7 +126,10 @@ describe('useRoomGallery', () => {
     });
 
     it('maps caption to roomStyle', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ caption: 'Rustic charm' })], totalResults: 1 });
+      mockQueryData.mockResolvedValue({
+        items: [makeRawPhoto({ caption: 'Rustic charm' })],
+        totalResults: 1,
+      });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -111,7 +137,10 @@ describe('useRoomGallery', () => {
     });
 
     it('maps createdAt to createdDate', async () => {
-      mockQueryData.mockResolvedValue({ items: [makeRawPhoto({ createdAt: '2026-01-15T12:00:00Z' })], totalResults: 1 });
+      mockQueryData.mockResolvedValue({
+        items: [makeRawPhoto({ createdAt: '2026-01-15T12:00:00Z' })],
+        totalResults: 1,
+      });
 
       const { result } = renderHook(() => useRoomGallery());
       await waitFor(() => expect(result.current.isLoading).toBe(false));

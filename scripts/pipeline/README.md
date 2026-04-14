@@ -49,11 +49,11 @@ output/manifest.json → CDN-ready URLs + hashes
 
 ## Commands
 
-| Script | Purpose |
-|--------|---------|
-| `generate.ts` | Photo-to-3D generation via AI services |
-| `convert.ts` | Main pipeline — optimize, convert, validate |
-| `validate.ts` | Standalone validation of .glb/.usdz files |
+| Script            | Purpose                                       |
+| ----------------- | --------------------------------------------- |
+| `generate.ts`     | Photo-to-3D generation via AI services        |
+| `convert.ts`      | Main pipeline — optimize, convert, validate   |
+| `validate.ts`     | Standalone validation of .glb/.usdz files     |
 | `sync-catalog.ts` | Sync pipeline output → app TypeScript catalog |
 
 ### generate.ts flags
@@ -84,12 +84,12 @@ cp scripts/pipeline/generate.config.json.example scripts/pipeline/generate.confi
 
 ## Quality Targets
 
-| Metric | Target | Hard Limit |
-|--------|--------|------------|
-| Triangles | 65,000 | 100,000 |
-| GLB size | 8 MB | 20 MB |
-| USDZ size | 15 MB | 25 MB |
-| Texture | 2048x2048 | — |
+| Metric    | Target    | Hard Limit |
+| --------- | --------- | ---------- |
+| Triangles | 65,000    | 100,000    |
+| GLB size  | 8 MB      | 20 MB      |
+| USDZ size | 15 MB     | 25 MB      |
+| Texture   | 2048x2048 | —          |
 
 ## Prerequisites
 

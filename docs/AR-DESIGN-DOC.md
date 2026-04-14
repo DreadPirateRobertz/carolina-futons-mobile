@@ -23,11 +23,11 @@ An augmented reality feature that lets customers point their phone camera at a r
 
 **Platform behavior differs** — each phone OS has its own AR engine:
 
-| Platform | What Happens | Who Built The AR |
-|----------|-------------|-----------------|
-| iPhone | Apple's AR Quick Look opens (same as IKEA uses) | Apple (ARKit) |
-| Android | Google's Scene Viewer opens | Google (ARCore) |
-| Web browser | 3D model viewer with rotate/zoom | Google's model-viewer |
+| Platform    | What Happens                                    | Who Built The AR      |
+| ----------- | ----------------------------------------------- | --------------------- |
+| iPhone      | Apple's AR Quick Look opens (same as IKEA uses) | Apple (ARKit)         |
+| Android     | Google's Scene Viewer opens                     | Google (ARCore)       |
+| Web browser | 3D model viewer with rotate/zoom                | Google's model-viewer |
 
 We don't build our own AR engine. We use each platform's built-in one. This means zero maintenance burden and the best possible AR quality on each device.
 
@@ -58,6 +58,7 @@ We don't build our own AR engine. We use each platform's built-in one. This mean
 ### Key Principle: Platform-Native AR
 
 We leverage each platform's built-in AR capabilities instead of building a custom renderer. This means:
+
 - **iOS** handles plane detection, shadows, lighting, and real-world scaling via ARKit
 - **Android** does the same via ARCore
 - **Web** provides a 3D preview with AR on supported browsers
@@ -90,6 +91,7 @@ src/data/models3d.ts    shared/models3d.web.js
 ### What the Catalog Contains
 
 Each model entry in `catalog-3d.json`:
+
 - `productId` — Links to product database
 - `category` — `murphy-beds`, `futons`, or `frames`
 - `dimensions` — Width/depth/height in inches (converted to meters for mobile)
@@ -106,33 +108,33 @@ Previously, model data was manually ported between mobile (`models3d.ts`) and we
 
 Every product needs two model files:
 
-| Format | Platform | Extension | Why |
-|--------|----------|-----------|-----|
-| **USDZ** | iOS | `.usdz` | Apple's required format for AR Quick Look |
-| **GLB** | Android + Web | `.glb` | Universal 3D format (binary glTF) |
+| Format   | Platform      | Extension | Why                                       |
+| -------- | ------------- | --------- | ----------------------------------------- |
+| **USDZ** | iOS           | `.usdz`   | Apple's required format for AR Quick Look |
+| **GLB**  | Android + Web | `.glb`    | Universal 3D format (binary glTF)         |
 
 Both formats contain the same 3D geometry, textures, and materials — just packaged differently for each platform.
 
 ### Model Specs
 
-| Spec | Target | Hard Limit | Why |
-|------|--------|------------|-----|
-| Triangle count | 15K-65K | 100K | More triangles = more detail but slower rendering |
-| GLB file size | 3-8 MB | 20 MB | Larger = slower download on mobile data |
-| USDZ file size | 5-15 MB | 25 MB | USDZ is typically larger than GLB |
-| Texture resolution | 1024x1024 | 2048x2048 | Fabric detail needs decent resolution |
-| Scale | 1 GLB unit = 1 meter | — | Required by ARKit/ARCore for real-world sizing |
-| Origin | Bottom-center | — | So furniture sits flush on detected floors |
+| Spec               | Target               | Hard Limit | Why                                               |
+| ------------------ | -------------------- | ---------- | ------------------------------------------------- |
+| Triangle count     | 15K-65K              | 100K       | More triangles = more detail but slower rendering |
+| GLB file size      | 3-8 MB               | 20 MB      | Larger = slower download on mobile data           |
+| USDZ file size     | 5-15 MB              | 25 MB      | USDZ is typically larger than GLB                 |
+| Texture resolution | 1024x1024            | 2048x2048  | Fabric detail needs decent resolution             |
+| Scale              | 1 GLB unit = 1 meter | —          | Required by ARKit/ARCore for real-world sizing    |
+| Origin             | Bottom-center        | —          | So furniture sits flush on detected floors        |
 
 ### Real-World Dimensions
 
 Every 3D model is built to exact product dimensions. Example:
 
-| Product | Width | Depth | Height | GLB Size |
-|---------|-------|-------|--------|----------|
-| Murphy Queen Vertical | 64" (1.63m) | 24" (0.61m) | 42" (1.07m) | 7.2 MB |
-| Asheville Full Futon | 54" (1.37m) | 34" (0.86m) | 33" (0.84m) | 6.8 MB |
-| Pisgah Twin Futon | 39" (0.99m) | 32" (0.81m) | 31" (0.79m) | 5.2 MB |
+| Product               | Width       | Depth       | Height      | GLB Size |
+| --------------------- | ----------- | ----------- | ----------- | -------- |
+| Murphy Queen Vertical | 64" (1.63m) | 24" (0.61m) | 42" (1.07m) | 7.2 MB   |
+| Asheville Full Futon  | 54" (1.37m) | 34" (0.86m) | 33" (0.84m) | 6.8 MB   |
+| Pisgah Twin Futon     | 39" (0.99m) | 32" (0.81m) | 31" (0.79m) | 5.2 MB   |
 
 When a customer places the Asheville in their room via AR, it appears at exactly 54" wide — matching the real product.
 
@@ -161,6 +163,7 @@ Product Photos (8-12 angles)
 ```
 
 **Pipeline scripts** live in `scripts/pipeline/`:
+
 - `generate.ts` — Calls Tripo/Meshy API with product photos → raw GLB
 - `convert.ts` — Optimizes GLB + converts to USDZ
 - `validate.ts` — Checks quality against specs
@@ -174,10 +177,10 @@ Product Photos (8-12 angles)
 
 Futons come in multiple fabric options. Two approaches:
 
-| Platform | Technique | Details |
-|----------|-----------|---------|
+| Platform          | Technique                | Details                                                      |
+| ----------------- | ------------------------ | ------------------------------------------------------------ |
 | GLB (Android/Web) | `KHR_materials_variants` | One file, multiple fabric textures — user switches in-viewer |
-| USDZ (iOS) | Separate files | One USDZ per fabric variant (Apple limitation) |
+| USDZ (iOS)        | Separate files           | One USDZ per fabric variant (Apple limitation)               |
 
 Currently 8 fabric options × 4 futon models = 32 potential USDZ variants. For PoC, we start with one fabric per model.
 
@@ -192,6 +195,7 @@ Currently 8 fabric options × 4 futon models = 32 potential USDZ variants. For P
 User taps "View in Room" → phone's native AR viewer opens with the 3D model. No custom AR code. Works in Expo managed workflow.
 
 **What's implemented**:
+
 - `openARViewer.ts` — Launches Quick Look (iOS) or Scene Viewer (Android) with fallbacks
 - `ModelViewerWeb.tsx` — `<model-viewer>` web component for browser 3D viewing
 - `ARWebScreen.tsx` — Full-screen web 3D viewer modal
@@ -209,12 +213,14 @@ User taps "View in Room" → phone's native AR viewer opens with the 3D model. N
 - `AROnboarding.tsx` — First-time AR tutorial overlay
 
 **What's missing**:
+
 - Real 3D model files on CDN (all URLs are placeholders)
 - Fabric texture images for AR preview
 
 ### Phase 2 — ViroReact Custom AR (Future, if metrics justify)
 
 Full in-app AR with custom UI overlays:
+
 - Plane detection with visual surface indicators
 - Furniture placement on detected surfaces
 - In-AR fabric picker, dimension labels, add-to-cart
@@ -227,6 +233,7 @@ Full in-app AR with custom UI overlays:
 ### Phase 3 — Premium iOS (Future)
 
 RealityKit integration for LiDAR-equipped iPhones:
+
 - Instant plane detection (no scanning needed)
 - Object occlusion (furniture behind real objects)
 - More accurate measurements
@@ -237,21 +244,21 @@ RealityKit integration for LiDAR-equipped iPhones:
 
 ### AR Support by Platform
 
-| Platform | AR Capability | Min Version | Coverage |
-|----------|-------------|-------------|----------|
-| iOS | ARKit via Quick Look | iOS 12+ | ~99% of active iPhones |
-| Android | ARCore via Scene Viewer | Android 7.0+ with ARCore | ~87% of active Android |
-| Web | 3D viewer (no AR) | Any modern browser | 100% |
-| Web + Android Chrome | WebXR AR | Chrome 79+ | ~60% of Android web |
-| Web + iOS Safari | Quick Look AR | iOS 12+ | ~99% (launches native) |
+| Platform             | AR Capability           | Min Version              | Coverage               |
+| -------------------- | ----------------------- | ------------------------ | ---------------------- |
+| iOS                  | ARKit via Quick Look    | iOS 12+                  | ~99% of active iPhones |
+| Android              | ARCore via Scene Viewer | Android 7.0+ with ARCore | ~87% of active Android |
+| Web                  | 3D viewer (no AR)       | Any modern browser       | 100%                   |
+| Web + Android Chrome | WebXR AR                | Chrome 79+               | ~60% of Android web    |
+| Web + iOS Safari     | Quick Look AR           | iOS 12+                  | ~99% (launches native) |
 
 ### Device Tiers
 
-| Tier | Devices | Experience |
-|------|---------|-----------|
-| **Premium** | iPhone 12 Pro+ (LiDAR) | Instant plane detection, occlusion, shadows |
-| **Standard** | Other iPhones, Android flagships | Standard plane detection, basic shadows |
-| **Fallback** | No AR support, web | 3D model viewer only (rotate/zoom, no camera) |
+| Tier         | Devices                          | Experience                                    |
+| ------------ | -------------------------------- | --------------------------------------------- |
+| **Premium**  | iPhone 12 Pro+ (LiDAR)           | Instant plane detection, occlusion, shadows   |
+| **Standard** | Other iPhones, Android flagships | Standard plane detection, basic shadows       |
+| **Fallback** | No AR support, web               | 3D model viewer only (rotate/zoom, no camera) |
 
 ---
 
@@ -303,6 +310,7 @@ scripts/
 ### Test Coverage
 
 30+ AR-related test suites covering:
+
 - AR controls and overlay rendering (32 model x fabric combos)
 - Camera permission flows
 - AR viewer launching (iOS Quick Look, Android Scene Viewer, web callback)
@@ -322,23 +330,23 @@ scripts/
 
 ## Open Work Items
 
-| Item | Priority | Status |
-|------|----------|--------|
-| Source/generate real 3D furniture models (min 5 products) | P1 | Blocked — needs model production |
-| Fabric texture images for AR preview | P2 | Open |
-| E2E Detox tests for AR navigation flows | P2 | Tests written, need device runner |
-| Save AR room layouts for later/sharing | P3 | Proposed (see feature roadmap) |
+| Item                                                      | Priority | Status                            |
+| --------------------------------------------------------- | -------- | --------------------------------- |
+| Source/generate real 3D furniture models (min 5 products) | P1       | Blocked — needs model production  |
+| Fabric texture images for AR preview                      | P2       | Open                              |
+| E2E Detox tests for AR navigation flows                   | P2       | Tests written, need device runner |
+| Save AR room layouts for later/sharing                    | P3       | Proposed (see feature roadmap)    |
 
 ---
 
 ## Competitor Landscape
 
-| Company | AR Investment | Result |
-|---------|-------------|--------|
-| **IKEA Place** | Major (dedicated app) | 189% conversion lift, 8M+ downloads |
-| **Wayfair** | Major (in-app) | 11x purchase likelihood, 92% conversion increase |
-| **Houzz** | Major (in-app) | 11x purchase lift |
-| **Pottery Barn** | $112M invested | Quietly sunset — 3D model maintenance too expensive |
+| Company          | AR Investment         | Result                                              |
+| ---------------- | --------------------- | --------------------------------------------------- |
+| **IKEA Place**   | Major (dedicated app) | 189% conversion lift, 8M+ downloads                 |
+| **Wayfair**      | Major (in-app)        | 11x purchase likelihood, 92% conversion increase    |
+| **Houzz**        | Major (in-app)        | 11x purchase lift                                   |
+| **Pottery Barn** | $112M invested        | Quietly sunset — 3D model maintenance too expensive |
 
 **Lesson from Pottery Barn**: The ongoing cost isn't the AR tech — it's maintaining 3D models as products change. Our AI pipeline (Tripo/Meshy at $0.25-0.60/model) keeps this cost manageable vs. the $85-220/model professional services that crushed Pottery Barn.
 
@@ -346,28 +354,28 @@ scripts/
 
 ## Rejected Approaches
 
-| Approach | Why Rejected |
-|----------|-------------|
-| **WebXR / 8th Wall** | iOS Safari doesn't support `immersive-ar` — non-starter for our audience |
-| **Custom native AR renderer** | 4-8 weeks of native iOS/Android code when Quick Look/Scene Viewer exist |
-| **react-native-arkit/arcore** | Both libraries abandoned (no commits since 2022) |
-| **Bundling models in app binary** | 11 models × ~7MB = 77MB+ added to app download size |
+| Approach                          | Why Rejected                                                             |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| **WebXR / 8th Wall**              | iOS Safari doesn't support `immersive-ar` — non-starter for our audience |
+| **Custom native AR renderer**     | 4-8 weeks of native iOS/Android code when Quick Look/Scene Viewer exist  |
+| **react-native-arkit/arcore**     | Both libraries abandoned (no commits since 2022)                         |
+| **Bundling models in app binary** | 11 models × ~7MB = 77MB+ added to app download size                      |
 
 ---
 
 ## Glossary
 
-| Term | Meaning |
-|------|---------|
-| **ARKit** | Apple's AR framework built into iOS |
-| **ARCore** | Google's AR framework for Android |
-| **Quick Look** | Apple's built-in 3D/AR model viewer |
-| **Scene Viewer** | Google's built-in 3D/AR model viewer |
-| **USDZ** | Apple's 3D file format (required for Quick Look) |
-| **GLB** | Binary glTF — universal 3D format (used by Android + web) |
+| Term                | Meaning                                                          |
+| ------------------- | ---------------------------------------------------------------- |
+| **ARKit**           | Apple's AR framework built into iOS                              |
+| **ARCore**          | Google's AR framework for Android                                |
+| **Quick Look**      | Apple's built-in 3D/AR model viewer                              |
+| **Scene Viewer**    | Google's built-in 3D/AR model viewer                             |
+| **USDZ**            | Apple's 3D file format (required for Quick Look)                 |
+| **GLB**             | Binary glTF — universal 3D format (used by Android + web)        |
 | **Plane detection** | AR recognizes flat surfaces (floors, tables) to place objects on |
-| **LiDAR** | Laser scanner on iPhone Pro models — enables instant, precise AR |
-| **model-viewer** | Google's web component for 3D viewing in browsers |
-| **Draco** | Google's 3D mesh compression (makes GLB files smaller) |
-| **KTX2** | Compressed texture format (smaller than PNG/JPG for 3D) |
-| **PBR** | Physically Based Rendering — realistic material/lighting system |
+| **LiDAR**           | Laser scanner on iPhone Pro models — enables instant, precise AR |
+| **model-viewer**    | Google's web component for 3D viewing in browsers                |
+| **Draco**           | Google's 3D mesh compression (makes GLB files smaller)           |
+| **KTX2**            | Compressed texture format (smaller than PNG/JPG for 3D)          |
+| **PBR**             | Physically Based Rendering — realistic material/lighting system  |

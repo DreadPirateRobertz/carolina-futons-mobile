@@ -24,15 +24,15 @@ EXPO_PUBLIC_WIX_BASE_URL=https://www.wixapis.com   # optional, this is the defau
 
 Wix powers: product listings, collections, inventory, user auth (login/register/OAuth), orders.
 
-| Step | Where | Result |
-|------|-------|--------|
-| Create/select Wix site | wix.com → My Sites | You have a site |
-| Generate API key | Dashboard → Settings → API Keys | `EXPO_PUBLIC_WIX_API_KEY` |
-| Copy Site ID | Dashboard → Settings → Advanced → Site ID | `EXPO_PUBLIC_WIX_SITE_ID` |
-| Create OAuth app | Dashboard → Settings → OAuth Apps → New | `EXPO_PUBLIC_WIX_CLIENT_ID` |
-| Set OAuth redirect URI | Same OAuth app settings | `carolinafutons://oauth/wix/callback` |
-| Enable Stores API | Dashboard → Settings → APIs & Extensions | Products/collections endpoints work |
-| Enable Members API | Same location | Login/register/OAuth works |
+| Step                   | Where                                     | Result                                |
+| ---------------------- | ----------------------------------------- | ------------------------------------- |
+| Create/select Wix site | wix.com → My Sites                        | You have a site                       |
+| Generate API key       | Dashboard → Settings → API Keys           | `EXPO_PUBLIC_WIX_API_KEY`             |
+| Copy Site ID           | Dashboard → Settings → Advanced → Site ID | `EXPO_PUBLIC_WIX_SITE_ID`             |
+| Create OAuth app       | Dashboard → Settings → OAuth Apps → New   | `EXPO_PUBLIC_WIX_CLIENT_ID`           |
+| Set OAuth redirect URI | Same OAuth app settings                   | `carolinafutons://oauth/wix/callback` |
+| Enable Stores API      | Dashboard → Settings → APIs & Extensions  | Products/collections endpoints work   |
+| Enable Members API     | Same location                             | Login/register/OAuth works            |
 
 **Verify**: With env vars set, `npx expo start` should show products from your Wix store.
 
@@ -42,12 +42,12 @@ Wix powers: product listings, collections, inventory, user auth (login/register/
 
 AR uses GLB (Android) and USDZ (iOS) files hosted on a CDN.
 
-| Step | Details |
-|------|---------|
-| Set up CDN | CloudFront, Cloudflare R2, or any HTTPS host |
-| Upload models | `/glb/{productId}-{hash}.glb` and `/usdz/{productId}-{hash}.usdz` |
-| Update catalog | Edit `shared/catalog-3d.json` → set `cdnBase` to your CDN URL |
-| Regenerate | Run `npm run catalog:sync` (writes `src/data/models3d.ts`) |
+| Step           | Details                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| Set up CDN     | CloudFront, Cloudflare R2, or any HTTPS host                      |
+| Upload models  | `/glb/{productId}-{hash}.glb` and `/usdz/{productId}-{hash}.usdz` |
+| Update catalog | Edit `shared/catalog-3d.json` → set `cdnBase` to your CDN URL     |
+| Regenerate     | Run `npm run catalog:sync` (writes `src/data/models3d.ts`)        |
 
 **Current state**: Catalog has 11 products defined with PoC model (KhronosGroup SheenChair). Replace with real product models when ready.
 
@@ -58,14 +58,15 @@ AR uses GLB (Android) and USDZ (iOS) files hosted on a CDN.
 ## 4. Deep Linking & Universal Links
 
 **Custom scheme** (works now, no server config needed):
+
 - `carolinafutons://product/{slug}`, `carolinafutons://cart`, etc.
 
 **Universal links** (HTTPS — needs server config for production):
 
-| Platform | File to host | Location |
-|----------|-------------|----------|
-| iOS | `apple-app-site-association` | `https://carolinafutons.com/.well-known/apple-app-site-association` |
-| Android | `assetlinks.json` | `https://carolinafutons.com/.well-known/assetlinks.json` |
+| Platform | File to host                 | Location                                                            |
+| -------- | ---------------------------- | ------------------------------------------------------------------- |
+| iOS      | `apple-app-site-association` | `https://carolinafutons.com/.well-known/apple-app-site-association` |
+| Android  | `assetlinks.json`            | `https://carolinafutons.com/.well-known/assetlinks.json`            |
 
 **Routes supported**: home, shop, category/{slug}, product/{slug}, cart, checkout, orders, orders/{id}, account, login, signup, wishlist, ar, notifications, stores, stores/{id}, reset-password, collections, collections/{slug}, forgot-password
 
@@ -77,15 +78,16 @@ AR uses GLB (Android) and USDZ (iOS) files hosted on a CDN.
 
 Uses Expo Push Notifications (routes through APNs/FCM automatically).
 
-| Step | Details |
-|------|---------|
-| Backend integration | Send pushes via `https://exp.host/--/api/v2/push/send` |
-| Token registration | App registers push token on login; backend stores it |
-| No extra service needed | Expo handles APNs/FCM routing |
+| Step                    | Details                                                |
+| ----------------------- | ------------------------------------------------------ |
+| Backend integration     | Send pushes via `https://exp.host/--/api/v2/push/send` |
+| Token registration      | App registers push token on login; backend stores it   |
+| No extra service needed | Expo handles APNs/FCM routing                          |
 
 **Notification types**: order_update, promotion, back_in_stock, cart_reminder — each deep-links to the relevant screen.
 
 **Direct payload routing** (cm-pdg): Notifications can also use direct payload keys instead of type-based routing:
+
 - `product_id` → ProductDetailScreen
 - `order_id` → OrderDetailScreen
 - `collection_slug` → CollectionDetailScreen
@@ -103,16 +105,17 @@ To configure: set `EXPO_PUBLIC_MIXPANEL_TOKEN` in `.env`. Firebase is enabled by
 
 ## 7. Build & Deploy (EAS)
 
-| Step | Command / Action |
-|------|-----------------|
-| Create Expo account | https://expo.dev |
-| Login | `npx eas login` |
+| Step                    | Command / Action                                         |
+| ----------------------- | -------------------------------------------------------- |
+| Create Expo account     | https://expo.dev                                         |
+| Login                   | `npx eas login`                                          |
 | Dev build (Android APK) | `npx eas build --profile development --platform android` |
-| Dev build (iOS) | `npx eas build --profile development --platform ios` |
-| Production build | `npx eas build --profile production --platform all` |
-| Submit to stores | `npx eas submit --platform ios` / `--platform android` |
+| Dev build (iOS)         | `npx eas build --profile development --platform ios`     |
+| Production build        | `npx eas build --profile production --platform all`      |
+| Submit to stores        | `npx eas submit --platform ios` / `--platform android`   |
 
 **Signing**:
+
 - iOS: Provisioning profiles + certificates (EAS can manage these)
 - Android: Keystore file (EAS generates or you provide)
 
@@ -124,18 +127,21 @@ To configure: set `EXPO_PUBLIC_MIXPANEL_TOKEN` in `.env`. Firebase is enabled by
 
 Latest preview builds — install directly on Android device or emulator:
 
-| Build | Date | Artifact URL | Notes |
-|-------|------|-------------|-------|
+| Build                                     | Date       | Artifact URL                                              | Notes                                  |
+| ----------------------------------------- | ---------- | --------------------------------------------------------- | -------------------------------------- |
 | Android Preview (v0.2.x, post-session-16) | 2026-03-16 | https://expo.dev/artifacts/eas/dF3a4xX84P9Z8wwrFRSHda.apk | Last stable pre-Klarna/saved-addresses |
 
 **Rebuild protocol** — trigger after each sprint/epic close:
+
 ```bash
 npx eas build --profile preview --platform android
 ```
+
 Then update the table above with the new artifact URL from `expo.dev/accounts/carolinafutons/projects/carolina-futons/builds`.
 
 **Pending rebuild** (session 23, 2026-03-22 — wait for EAS quota reset 2026-04-01):
 Next APK will contain all session-22 + session-23 work:
+
 - CollectionsScreen error state + skeleton loader (cm-thv) ✓ merged
 - RoomGalleryScreen expo-image + blurhash (cm-x6f) ✓ merged
 - StyleQuizScreen Wix product thumbnails (cm-49p) ✓ merged
@@ -163,9 +169,11 @@ Next APK will contain all session-22 + session-23 work:
 **EAS build blocker**: Free plan Android build quota exhausted. Resets 2026-04-01. To build before then, upgrade plan at https://expo.dev/accounts/halworker85/settings/billing or wait for reset.
 
 **Install on Android**:
+
 ```bash
 adb install <downloaded-apk-file>
 ```
+
 Or open the artifact URL in the device browser to install directly.
 
 ---
@@ -174,15 +182,15 @@ Or open the artifact URL in the device browser to install directly.
 
 Already configured in `app.json`:
 
-| Field | Value |
-|-------|-------|
-| Name | Carolina Futons |
-| Slug | carolina-futons-mobile |
-| Version | 1.0.0-beta.1 |
-| iOS Bundle ID | com.carolinafutons.mobile |
+| Field           | Value                     |
+| --------------- | ------------------------- |
+| Name            | Carolina Futons           |
+| Slug            | carolina-futons-mobile    |
+| Version         | 1.0.0-beta.1              |
+| iOS Bundle ID   | com.carolinafutons.mobile |
 | Android Package | com.carolinafutons.mobile |
-| Scheme | carolinafutons |
-| Splash BG | #E8D5B7 (sandBase) |
+| Scheme          | carolinafutons            |
+| Splash BG       | #E8D5B7 (sandBase)        |
 
 **Fonts**: Playfair Display (headings), Source Sans 3 (body) — loaded via `@expo-google-fonts`.
 
@@ -191,6 +199,7 @@ Already configured in `app.json`:
 ## 9. CI/CD (GitHub Actions)
 
 Already configured in `.github/workflows/ci.yml`:
+
 - **test**: Node 18 + 20, TypeScript check, Jest with coverage
 - **lint**: ESLint on `src/`
 - **catalog-sync**: Verifies 3D catalog is in sync
@@ -237,43 +246,43 @@ The app uses a warm, editorial dark theme inspired by Blue Ridge Mountain waterc
 
 All brand colors, typography, spacing come from tokens mirroring `sharedTokens.js` (web):
 
-| Token Group | Key Values |
-|-------------|-----------|
+| Token Group    | Key Values                                                                   |
+| -------------- | ---------------------------------------------------------------------------- |
 | Primary colors | Sand `#E8D5B7`, Espresso `#3A2518`, Mountain Blue `#5B8FA8`, Coral `#E8845C` |
-| Dark palette | Background `#1C1410`, Surface `#2A1F19`, Glass `rgba(42,31,25,0.7)` |
-| Typography | Playfair Display (headings), Source Sans 3 (body) |
-| Shadows | Espresso-tinted (warm brown, NOT gray) |
+| Dark palette   | Background `#1C1410`, Surface `#2A1F19`, Glass `rgba(42,31,25,0.7)`          |
+| Typography     | Playfair Display (headings), Source Sans 3 (body)                            |
+| Shadows        | Espresso-tinted (warm brown, NOT gray)                                       |
 
 ### Key Visual Components
 
-| Component | File | Description |
-|-----------|------|-------------|
+| Component         | File                                 | Description                                                                                                                                    |
+| ----------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | `MountainSkyline` | `src/components/MountainSkyline.tsx` | SVG mountain silhouette with sky gradient. Variants: `sunrise` (blue-gold), `sunset` (coral-gold). Used as hero backdrop and section dividers. |
-| `GlassCard` | `src/components/GlassCard.tsx` | Glassmorphism card with dark espresso tint. Intensity: `light`, `medium`, `heavy`. |
-| `EmptyState` | `src/components/EmptyState.tsx` | Empty state display with icon/illustration + action button. |
+| `GlassCard`       | `src/components/GlassCard.tsx`       | Glassmorphism card with dark espresso tint. Intensity: `light`, `medium`, `heavy`.                                                             |
+| `EmptyState`      | `src/components/EmptyState.tsx`      | Empty state display with icon/illustration + action button.                                                                                    |
 
 ### Screen Aesthetic Checklist
 
 When testing, verify each screen matches the Blue Ridge editorial feel:
 
-| Screen | Expected Treatment | Last Updated |
-|--------|--------------------|-------------|
-| Home | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider | — |
-| Shop | Dark editorial background, sand product cards, category pills | — |
-| Search | Search input with 300ms debounce + CMS trending chips (Wix) + results grid. Reachable via HomeScreen search icon (cm-we6) | 2026-03-22 cm-we6 |
-| Product Detail | Dark surfaces, editorial typography, warm shadows. Freight delivery banner (🚛) when requiresFreight=true with optional liftgate badge | 2026-03-22 cm-z9n |
-| Cart (empty) | Dark background, illustrated empty state (Blue Ridge SVG) | — |
-| Cart (items) | Dark editorial, product thumbnails, coral CTA | — |
-| Checkout | KeyboardAwareScrollView, saved address picker chips, address pre-fill. Loyalty tier banner near order summary when cart has items (hides on loading/error) | 2026-03-22 cm-ds5 |
-| Account | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion). Loyalty section tappable → LoyaltyScreen (cm-1fh) | 2026-03-22 cm-1fh |
-| Onboarding | Brand story slides + style quiz (dark editorial treatment). Quiz result shows Wix-fetched product thumbnails (expo-image) | 2026-03-22 cm-49p |
-| Login/SignUp | Dark editorial with GlassCard form container, KeyboardAwareScrollView | — |
-| OrderDetail | Order tracking with status timeline. Tracking number shows as tappable link only when URL present; plain text otherwise. recordDelivery fires exactly once | 2026-03-22 cm-tsh |
-| Collections | Collection grid with error state card + retry button + skeleton loader during fetch | 2026-03-22 cm-thv |
-| RoomGallery | Room photos with expo-image memory-disk cache + blurhash blur-in placeholder | 2026-03-22 cm-x6f |
-| OrderConfirmation | "+N points earned" toast animation on purchase. Streak badge display. Tier progress bar | 2026-03-22 cm-ihz |
-| NotificationPreferences | Per-category toggle switches | — |
-| ForceUpdateModal | Required/recommended variants with store link | — |
+| Screen                  | Expected Treatment                                                                                                                                                            | Last Updated      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Home                    | Mountain skyline hero backdrop + GlassCard CTAs + mountain divider                                                                                                            | —                 |
+| Shop                    | Dark editorial background, sand product cards, category pills                                                                                                                 | —                 |
+| Search                  | Search input with 300ms debounce + CMS trending chips (Wix) + results grid. Reachable via HomeScreen search icon (cm-we6)                                                     | 2026-03-22 cm-we6 |
+| Product Detail          | Dark surfaces, editorial typography, warm shadows. Freight delivery banner (🚛) when requiresFreight=true with optional liftgate badge                                        | 2026-03-22 cm-z9n |
+| Cart (empty)            | Dark background, illustrated empty state (Blue Ridge SVG)                                                                                                                     | —                 |
+| Cart (items)            | Dark editorial, product thumbnails, coral CTA                                                                                                                                 | —                 |
+| Checkout                | KeyboardAwareScrollView, saved address picker chips, address pre-fill. Loyalty tier banner near order summary when cart has items (hides on loading/error)                    | 2026-03-22 cm-ds5 |
+| Account                 | Dark editorial, Playfair Display heading, coral Sign In, saved addresses, privacy section (data export + account deletion). Loyalty section tappable → LoyaltyScreen (cm-1fh) | 2026-03-22 cm-1fh |
+| Onboarding              | Brand story slides + style quiz (dark editorial treatment). Quiz result shows Wix-fetched product thumbnails (expo-image)                                                     | 2026-03-22 cm-49p |
+| Login/SignUp            | Dark editorial with GlassCard form container, KeyboardAwareScrollView                                                                                                         | —                 |
+| OrderDetail             | Order tracking with status timeline. Tracking number shows as tappable link only when URL present; plain text otherwise. recordDelivery fires exactly once                    | 2026-03-22 cm-tsh |
+| Collections             | Collection grid with error state card + retry button + skeleton loader during fetch                                                                                           | 2026-03-22 cm-thv |
+| RoomGallery             | Room photos with expo-image memory-disk cache + blurhash blur-in placeholder                                                                                                  | 2026-03-22 cm-x6f |
+| OrderConfirmation       | "+N points earned" toast animation on purchase. Streak badge display. Tier progress bar                                                                                       | 2026-03-22 cm-ihz |
+| NotificationPreferences | Per-category toggle switches                                                                                                                                                  | —                 |
+| ForceUpdateModal        | Required/recommended variants with store link                                                                                                                                 | —                 |
 
 ### Sandbox Testing Protocol
 
@@ -292,6 +301,7 @@ npm test
 ```
 
 **Visual checks per platform:**
+
 - [ ] Mountain skyline SVG renders with correct gradient (no gray fallback)
 - [ ] Fonts load (Playfair Display headings, Source Sans 3 body)
 - [ ] GlassCard opacity looks correct (semi-transparent dark, not solid)
@@ -303,53 +313,53 @@ npm test
 
 ### Dependencies Added
 
-| Package | Version | Purpose |
-|---------|---------|---------|
+| Package            | Version  | Purpose                                           |
+| ------------------ | -------- | ------------------------------------------------- |
 | `react-native-svg` | ^15.15.3 | SVG rendering for MountainSkyline + illustrations |
 
 ---
 
 ## Quick Status Check
 
-| Component | Status | What's Needed |
-|-----------|--------|---------------|
-| Wix integration | **Live** | API keys in `.env` |
-| Auth (login/register/OAuth) | **Live** | Wix OAuth app configured |
-| Product catalog + collections | **Live** | Wix Stores API enabled |
-| AR / 3D models | **Live** | CDN hosting + real models |
-| AR measurement tool | **Live** | Nothing |
-| AR comparison mode | **Live** | Nothing |
-| AR multi-product staging | **Live** (up to 5) | Nothing |
-| Model download progress | **Live** | Nothing |
-| Deep linking (custom scheme) | **Live** | Nothing |
-| Universal links (HTTPS) | **Configured** | Server-side AASA/assetlinks hosting |
-| Push notifications | **Live** | Backend token storage endpoint |
-| Push notification deep links | **Live** | product_id, order_id, collection_slug, promo payload routing |
-| Push token refresh | **Live** | Nothing |
-| Analytics (Firebase + Mixpanel) | **Live** | Mixpanel token in `.env` |
-| Sentry crash reporting | **Live** | Real DSN in `.env` |
-| Offline queue + SWR caching | **Live** | Nothing |
-| CI/CD (GitHub Actions) | **Running** | Billing limit currently blocking PRs |
-| EAS Build pipeline | **Configured** | `eas build` ready (dev/preview/production) |
-| OTA Updates | **Configured** | `runtimeVersion` appVersion policy |
-| CF+ Premium features | **Live** | AR unlock, free shipping, early access gates |
-| BrandedSpinner | **Live** | Replaces all ActivityIndicator usage |
-| AnimatedPressable | **Live** | Haptic feedback + spring animation |
-| MountainSkyline SVG | **Live** | Renders on Home hero + divider |
-| Dark editorial theme | **Live** | All 23 screens |
-| GlassCard components | **Live** | Home CTAs, form containers |
-| KeyboardAwareScrollView | **Live** | Auto-scroll to focused field on forms |
-| Saved address book | **Live** | Max 5 addresses, default selection, checkout pre-fill |
-| Force update check | **Live** | Semver comparison, AppState foreground re-check |
-| Account deletion (GDPR/CCPA) | **Live** | Wix member deletion + local data wipe |
-| Data export (GDPR/CCPA) | **Live** | JSON export via share sheet (native) / Share API (web) |
-| Custom SVG tab icons | **Live** | Mountain/house, tag, bag, profile — streak 🔥 + tier ★ gamification badges |
-| Recently Viewed rail | **Live** | AsyncStorage FIFO queue, max 10, shown on PDP |
-| Wishlist polish | **Live** | Item count header, swipe Remove/Move to Cart, Add All to Cart |
-| Challenges rail | **Live** | ChallengeCard with progress + countdown, ChallengesRail horizontal scroll |
-| Live points chip | **Live** | PointsChip on PDP, CartPointsSummary earn estimate (Mountain Blue) |
-| A11y shipping/share | **Live** | ARIA labels, accessibilityHint, reduced-motion guards on all shipping + share UI |
-| Loyalty nav (cm-1fh) | **Live** | LoyaltyScreen reachable from AccountScreen tap |
-| Search nav (cm-we6) | **Live** | HomeScreen search icon → SearchScreen |
-| CollectionCard null safety | **Live** | heroImage/mood/productIds null guards (cm-crd) |
-| Test suite | **5761+ tests passing** | All green (session 24) |
+| Component                       | Status                  | What's Needed                                                                    |
+| ------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| Wix integration                 | **Live**                | API keys in `.env`                                                               |
+| Auth (login/register/OAuth)     | **Live**                | Wix OAuth app configured                                                         |
+| Product catalog + collections   | **Live**                | Wix Stores API enabled                                                           |
+| AR / 3D models                  | **Live**                | CDN hosting + real models                                                        |
+| AR measurement tool             | **Live**                | Nothing                                                                          |
+| AR comparison mode              | **Live**                | Nothing                                                                          |
+| AR multi-product staging        | **Live** (up to 5)      | Nothing                                                                          |
+| Model download progress         | **Live**                | Nothing                                                                          |
+| Deep linking (custom scheme)    | **Live**                | Nothing                                                                          |
+| Universal links (HTTPS)         | **Configured**          | Server-side AASA/assetlinks hosting                                              |
+| Push notifications              | **Live**                | Backend token storage endpoint                                                   |
+| Push notification deep links    | **Live**                | product_id, order_id, collection_slug, promo payload routing                     |
+| Push token refresh              | **Live**                | Nothing                                                                          |
+| Analytics (Firebase + Mixpanel) | **Live**                | Mixpanel token in `.env`                                                         |
+| Sentry crash reporting          | **Live**                | Real DSN in `.env`                                                               |
+| Offline queue + SWR caching     | **Live**                | Nothing                                                                          |
+| CI/CD (GitHub Actions)          | **Running**             | Billing limit currently blocking PRs                                             |
+| EAS Build pipeline              | **Configured**          | `eas build` ready (dev/preview/production)                                       |
+| OTA Updates                     | **Configured**          | `runtimeVersion` appVersion policy                                               |
+| CF+ Premium features            | **Live**                | AR unlock, free shipping, early access gates                                     |
+| BrandedSpinner                  | **Live**                | Replaces all ActivityIndicator usage                                             |
+| AnimatedPressable               | **Live**                | Haptic feedback + spring animation                                               |
+| MountainSkyline SVG             | **Live**                | Renders on Home hero + divider                                                   |
+| Dark editorial theme            | **Live**                | All 23 screens                                                                   |
+| GlassCard components            | **Live**                | Home CTAs, form containers                                                       |
+| KeyboardAwareScrollView         | **Live**                | Auto-scroll to focused field on forms                                            |
+| Saved address book              | **Live**                | Max 5 addresses, default selection, checkout pre-fill                            |
+| Force update check              | **Live**                | Semver comparison, AppState foreground re-check                                  |
+| Account deletion (GDPR/CCPA)    | **Live**                | Wix member deletion + local data wipe                                            |
+| Data export (GDPR/CCPA)         | **Live**                | JSON export via share sheet (native) / Share API (web)                           |
+| Custom SVG tab icons            | **Live**                | Mountain/house, tag, bag, profile — streak 🔥 + tier ★ gamification badges       |
+| Recently Viewed rail            | **Live**                | AsyncStorage FIFO queue, max 10, shown on PDP                                    |
+| Wishlist polish                 | **Live**                | Item count header, swipe Remove/Move to Cart, Add All to Cart                    |
+| Challenges rail                 | **Live**                | ChallengeCard with progress + countdown, ChallengesRail horizontal scroll        |
+| Live points chip                | **Live**                | PointsChip on PDP, CartPointsSummary earn estimate (Mountain Blue)               |
+| A11y shipping/share             | **Live**                | ARIA labels, accessibilityHint, reduced-motion guards on all shipping + share UI |
+| Loyalty nav (cm-1fh)            | **Live**                | LoyaltyScreen reachable from AccountScreen tap                                   |
+| Search nav (cm-we6)             | **Live**                | HomeScreen search icon → SearchScreen                                            |
+| CollectionCard null safety      | **Live**                | heroImage/mood/productIds null guards (cm-crd)                                   |
+| Test suite                      | **5761+ tests passing** | All green (session 24)                                                           |

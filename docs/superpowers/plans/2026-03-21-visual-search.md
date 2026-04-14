@@ -14,39 +14,40 @@
 
 ### New files — mobile (`cfutons_mobile`)
 
-| Path | Responsibility |
-|------|---------------|
-| `src/hooks/useVisualSearch.ts` | State machine + image picker + backend call + local scoring |
-| `src/hooks/__tests__/useVisualSearch.test.ts` | 12 unit tests (TDD) |
-| `src/components/VisualSearchEmptyState.tsx` | Zero-result empty state (distinct from SearchEmptyState) |
-| `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Render + "Browse All" CTA tests |
-| `src/screens/VisualSearchResultsScreen.tsx` | "Find Similar" results with match-reason chips |
-| `src/screens/__tests__/VisualSearchResultsScreen.test.tsx` | Screen render + navigation tests |
+| Path                                                       | Responsibility                                              |
+| ---------------------------------------------------------- | ----------------------------------------------------------- |
+| `src/hooks/useVisualSearch.ts`                             | State machine + image picker + backend call + local scoring |
+| `src/hooks/__tests__/useVisualSearch.test.ts`              | 12 unit tests (TDD)                                         |
+| `src/components/VisualSearchEmptyState.tsx`                | Zero-result empty state (distinct from SearchEmptyState)    |
+| `src/components/__tests__/VisualSearchEmptyState.test.tsx` | Render + "Browse All" CTA tests                             |
+| `src/screens/VisualSearchResultsScreen.tsx`                | "Find Similar" results with match-reason chips              |
+| `src/screens/__tests__/VisualSearchResultsScreen.test.tsx` | Screen render + navigation tests                            |
 
 ### Modified files — mobile
 
-| Path | Change |
-|------|--------|
-| `src/data/products.ts` | Add `tags?: string[]` and `colorFamily?: string` to `Product` interface; populate on all PRODUCTS entries |
-| `src/services/wix/wixClient.ts` | Add `callVisualSearch(imageBase64: string)` method |
-| `src/components/SearchBar.tsx` | Add `onCameraPress?: () => void` prop + camera icon button |
-| `src/components/__tests__/SearchBar.test.tsx` | Add test: camera icon press calls onCameraPress |
-| `src/screens/SearchScreen.tsx` | Wire `useVisualSearch`, inject results, show badge |
-| `src/screens/ProductDetailScreen.tsx` | Add "Find Similar" secondary CTA |
-| `src/navigation/AppNavigator.tsx` | Add `VisualSearchResults` to `RootStackParamList` and Stack |
+| Path                                          | Change                                                                                                    |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `src/data/products.ts`                        | Add `tags?: string[]` and `colorFamily?: string` to `Product` interface; populate on all PRODUCTS entries |
+| `src/services/wix/wixClient.ts`               | Add `callVisualSearch(imageBase64: string)` method                                                        |
+| `src/components/SearchBar.tsx`                | Add `onCameraPress?: () => void` prop + camera icon button                                                |
+| `src/components/__tests__/SearchBar.test.tsx` | Add test: camera icon press calls onCameraPress                                                           |
+| `src/screens/SearchScreen.tsx`                | Wire `useVisualSearch`, inject results, show badge                                                        |
+| `src/screens/ProductDetailScreen.tsx`         | Add "Find Similar" secondary CTA                                                                          |
+| `src/navigation/AppNavigator.tsx`             | Add `VisualSearchResults` to `RootStackParamList` and Stack                                               |
 
 ### New files — Wix backend (`cfutons` repo at `/Users/hal/gt/cfutons`)
 
-| Path | Responsibility |
-|------|---------------|
-| `src/public/visualSearch.js` | POST `/_functions/visualSearch` — SSRF-guarded OpenAI call |
-| `tests/unit/visualSearch.test.js` | 13 SSRF + API error tests (TDD) |
+| Path                              | Responsibility                                             |
+| --------------------------------- | ---------------------------------------------------------- |
+| `src/public/visualSearch.js`      | POST `/_functions/visualSearch` — SSRF-guarded OpenAI call |
+| `tests/unit/visualSearch.test.js` | 13 SSRF + API error tests (TDD)                            |
 
 ---
 
 ## Task 1: Product schema — add tags and colorFamily
 
 **Files:**
+
 - Modify: `src/data/products.ts`
 
 - [ ] **Step 1: Add fields to Product interface**
@@ -91,6 +92,7 @@ git commit -m "feat(cm-21k): add tags + colorFamily to Product schema, populate 
 ## Task 2: WixClient — callVisualSearch method
 
 **Files:**
+
 - Modify: `src/services/wix/wixClient.ts`
 
 - [ ] **Step 1: Add method to WixClient class**
@@ -140,6 +142,7 @@ git commit -m "feat(cm-21k): add callVisualSearch method to WixClient"
 ## Task 3: useVisualSearch hook — tests first (TDD)
 
 **Files:**
+
 - Create: `src/hooks/__tests__/useVisualSearch.test.ts`
 
 - [ ] **Step 1: Write the failing tests**
@@ -209,16 +212,24 @@ describe('useVisualSearch', () => {
   it('stays idle when picker is cancelled', async () => {
     (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue(CANCELLED_RESULT);
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('idle');
   });
 
   it('transitions to loading while awaiting backend', async () => {
     let resolveBackend!: (v: typeof AI_RESPONSE) => void;
-    mockCallVisualSearch.mockReturnValue(new Promise((r) => { resolveBackend = r; }));
+    mockCallVisualSearch.mockReturnValue(
+      new Promise((r) => {
+        resolveBackend = r;
+      }),
+    );
 
     const { result } = renderHook(() => useVisualSearch());
-    act(() => { result.current.trigger(); });
+    act(() => {
+      result.current.trigger();
+    });
 
     await waitFor(() => expect(result.current.status).toBe('loading'));
     resolveBackend(AI_RESPONSE);
@@ -226,7 +237,9 @@ describe('useVisualSearch', () => {
 
   it('transitions to success with scored results', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('success');
     expect(result.current.results.length).toBeGreaterThan(0);
   });
@@ -239,20 +252,26 @@ describe('useVisualSearch', () => {
       keywords: [],
     });
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.query?.matchType).toBe('fallback');
   });
 
   it('sets matchType=scored when at least one product scores >= 1', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.query?.matchType).toBe('scored');
   });
 
   it('transitions to error on backend 500', async () => {
     mockCallVisualSearch.mockRejectedValue(new Error('Internal Server Error'));
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
     expect(result.current.error).toBeTruthy();
   });
@@ -260,7 +279,9 @@ describe('useVisualSearch', () => {
   it('transitions to error on network timeout', async () => {
     mockCallVisualSearch.mockRejectedValue(new Error('Network timeout'));
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
   });
 
@@ -268,16 +289,22 @@ describe('useVisualSearch', () => {
     const { useOptionalWixClient } = require('@/services/wix/wixProvider');
     (useOptionalWixClient as jest.Mock).mockReturnValueOnce(null);
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('error');
     expect(result.current.error).toContain('unavailable');
   });
 
   it('reset() returns to idle with empty results', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(result.current.status).toBe('success');
-    act(() => { result.current.reset(); });
+    act(() => {
+      result.current.reset();
+    });
     expect(result.current.status).toBe('idle');
     expect(result.current.results).toEqual([]);
     expect(result.current.query).toBeNull();
@@ -285,7 +312,9 @@ describe('useVisualSearch', () => {
 
   it('calls launchImageLibraryAsync with exif:false', async () => {
     const { result } = renderHook(() => useVisualSearch());
-    await act(async () => { await result.current.trigger(); });
+    await act(async () => {
+      await result.current.trigger();
+    });
     expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalledWith(
       expect.objectContaining({ exif: false }),
     );
@@ -315,6 +344,7 @@ git commit -m "test(cm-21k): useVisualSearch — 11 TDD tests (all failing)"
 ## Task 4: useVisualSearch hook — implementation
 
 **Files:**
+
 - Create: `src/hooks/useVisualSearch.ts`
 
 - [ ] **Step 1: Create the hook**
@@ -380,67 +410,73 @@ export function useVisualSearch(): UseVisualSearchReturn {
 
   const wixClient = useOptionalWixClient();
 
-  const trigger = useCallback(async (opts?: { useCamera?: boolean }) => {
-    // Launch picker with EXIF stripped (zhora security requirement)
-    const launcher = opts?.useCamera ? ImagePicker.launchCameraAsync : ImagePicker.launchImageLibraryAsync;
-    const picked = await launcher({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      base64: true,
-      exif: false,
-      quality: 0.7,
-    });
+  const trigger = useCallback(
+    async (opts?: { useCamera?: boolean }) => {
+      // Launch picker with EXIF stripped (zhora security requirement)
+      const launcher = opts?.useCamera
+        ? ImagePicker.launchCameraAsync
+        : ImagePicker.launchImageLibraryAsync;
+      const picked = await launcher({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        base64: true,
+        exif: false,
+        quality: 0.7,
+      });
 
-    if (picked.canceled || !picked.assets?.[0]?.base64) {
-      return; // user cancelled — stay idle
-    }
-
-    if (!wixClient) {
-      setStatus('error');
-      setError('Wix client unavailable — visual search requires a connected session');
-      return;
-    }
-
-    setStatus('loading');
-    setError(null);
-
-    try {
-      const attrs = await wixClient.callVisualSearch(picked.assets[0].base64);
-      const { category, style, colorFamily, keywords } = attrs;
-
-      // Score all products locally — no additional network call
-      const scored = PRODUCTS.map((p) => ({
-        product: p,
-        score: scoreProduct(p, category, colorFamily, style, keywords ?? []),
-      }));
-
-      const hasScored = scored.some((s) => s.score >= 1);
-      let finalResults: Product[];
-      const matchType: 'scored' | 'fallback' = hasScored ? 'scored' : 'fallback';
-
-      if (hasScored) {
-        finalResults = scored
-          .filter((s) => s.score >= 1)
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 6)
-          .map((s) => s.product);
-      } else {
-        // Fallback: top 3 by rating, same-category preferred
-        finalResults = [...PRODUCTS]
-          .sort((a, b) => {
-            const catBoost = (a.category === category ? 1 : 0) - (b.category === category ? 1 : 0);
-            return catBoost !== 0 ? -catBoost : b.rating - a.rating;
-          })
-          .slice(0, 3);
+      if (picked.canceled || !picked.assets?.[0]?.base64) {
+        return; // user cancelled — stay idle
       }
 
-      setResults(finalResults);
-      setQuery({ category, style, colorFamily, keywords: keywords ?? [], matchType });
-      setStatus('success');
-    } catch (err) {
-      setStatus('error');
-      setError(err instanceof Error ? err.message : 'Visual search failed');
-    }
-  }, [wixClient]);
+      if (!wixClient) {
+        setStatus('error');
+        setError('Wix client unavailable — visual search requires a connected session');
+        return;
+      }
+
+      setStatus('loading');
+      setError(null);
+
+      try {
+        const attrs = await wixClient.callVisualSearch(picked.assets[0].base64);
+        const { category, style, colorFamily, keywords } = attrs;
+
+        // Score all products locally — no additional network call
+        const scored = PRODUCTS.map((p) => ({
+          product: p,
+          score: scoreProduct(p, category, colorFamily, style, keywords ?? []),
+        }));
+
+        const hasScored = scored.some((s) => s.score >= 1);
+        let finalResults: Product[];
+        const matchType: 'scored' | 'fallback' = hasScored ? 'scored' : 'fallback';
+
+        if (hasScored) {
+          finalResults = scored
+            .filter((s) => s.score >= 1)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 6)
+            .map((s) => s.product);
+        } else {
+          // Fallback: top 3 by rating, same-category preferred
+          finalResults = [...PRODUCTS]
+            .sort((a, b) => {
+              const catBoost =
+                (a.category === category ? 1 : 0) - (b.category === category ? 1 : 0);
+              return catBoost !== 0 ? -catBoost : b.rating - a.rating;
+            })
+            .slice(0, 3);
+        }
+
+        setResults(finalResults);
+        setQuery({ category, style, colorFamily, keywords: keywords ?? [], matchType });
+        setStatus('success');
+      } catch (err) {
+        setStatus('error');
+        setError(err instanceof Error ? err.message : 'Visual search failed');
+      }
+    },
+    [wixClient],
+  );
 
   const reset = useCallback(() => {
     setStatus('idle');
@@ -479,6 +515,7 @@ git commit -m "feat(cm-21k): useVisualSearch hook — idle→loading→success|e
 ## Task 5: VisualSearchEmptyState component
 
 **Files:**
+
 - Create: `src/components/VisualSearchEmptyState.tsx`
 - Create: `src/components/__tests__/VisualSearchEmptyState.test.tsx`
 
@@ -616,6 +653,7 @@ git commit -m "feat(cm-21k): VisualSearchEmptyState component with Browse All CT
 ## Task 6: SearchBar — camera icon
 
 **Files:**
+
 - Modify: `src/components/SearchBar.tsx`
 - Modify: `src/components/__tests__/SearchBar.test.tsx` (or create if not exists)
 
@@ -705,6 +743,7 @@ git commit -m "feat(cm-21k): add camera icon to SearchBar with onCameraPress pro
 ## Task 7: SearchScreen integration
 
 **Files:**
+
 - Modify: `src/screens/SearchScreen.tsx`
 
 - [ ] **Step 0: Write failing tests for new visual search states**
@@ -758,10 +797,12 @@ describe('SearchScreen visual search integration', () => {
 ```
 
 Run to confirm they fail:
+
 ```bash
 cd /Users/hal/gt/cfutons_mobile
 npx jest src/screens/__tests__/SearchScreen.test.tsx --no-coverage 2>&1 | tail -10
 ```
+
 Expected: test failures referencing missing `visual-search-loading`, `visual-search-badge`, `visual-search-empty-state` testIDs.
 
 - [ ] **Step 1: Add useVisualSearch and visual badge to SearchScreen**
@@ -769,22 +810,26 @@ Expected: test failures referencing missing `visual-search-loading`, `visual-sea
 In `src/screens/SearchScreen.tsx`:
 
 1. Import `useVisualSearch` and `VisualSearchEmptyState`:
+
 ```typescript
 import { useVisualSearch } from '@/hooks/useVisualSearch';
 import { VisualSearchEmptyState } from '@/components/VisualSearchEmptyState';
 ```
 
 2. Add hook call near top of component (after existing hooks):
+
 ```typescript
 const { trigger, status: vsStatus, results: vsResults, reset: vsReset } = useVisualSearch();
 ```
 
 3. Add `visualSearchActive` derived boolean:
+
 ```typescript
 const visualSearchActive = vsStatus === 'success' || vsStatus === 'loading';
 ```
 
 4. Clear visual search when text input changes (add to existing `onChangeText` handler or wrap):
+
 ```typescript
 const handleTextChange = (text: string) => {
   if (vsStatus !== 'idle') vsReset();
@@ -801,6 +846,7 @@ const handleTextChange = (text: string) => {
    - Otherwise: existing `useProducts()` results
 
 7. Add "Visual Search" badge (only when `visualSearchActive`):
+
 ```typescript
 {visualSearchActive && (
   <View testID="visual-search-badge" style={styles.vsBadge}>
@@ -842,6 +888,7 @@ git commit -m "feat(cm-21k): wire useVisualSearch into SearchScreen — camera i
 ## Task 8: Navigation — add VisualSearchResults route
 
 **Files:**
+
 - Modify: `src/navigation/AppNavigator.tsx`
 
 - [ ] **Step 1: Add to RootStackParamList**
@@ -864,6 +911,7 @@ VisualSearchResults: {
 Note: Pass only `productSlugs: string[]` in route params (serializable). `VisualSearchResultsScreen` will look up the full Product objects from `PRODUCTS` by slug.
 
 Revise the param type to:
+
 ```typescript
 VisualSearchResults: {
   query: VisualSearchQuery; // import from useVisualSearch
@@ -882,6 +930,7 @@ const VisualSearchResultsScreen = lazy(() =>
 ```
 
 Add to Stack navigator (near Search route):
+
 ```typescript
 <Stack.Screen name="VisualSearchResults" component={VisualSearchResultsScreen} />
 ```
@@ -907,6 +956,7 @@ git commit -m "feat(cm-21k): add VisualSearchResults route to navigation stack"
 ## Task 9: VisualSearchResultsScreen
 
 **Files:**
+
 - Create: `src/screens/VisualSearchResultsScreen.tsx`
 - Create: `src/screens/__tests__/VisualSearchResultsScreen.test.tsx`
 
@@ -1102,6 +1152,7 @@ git commit -m "feat(cm-21k): VisualSearchResultsScreen with match-reason chips"
 ## Task 10: ProductDetailScreen — "Find Similar" CTA
 
 **Files:**
+
 - Modify: `src/screens/ProductDetailScreen.tsx`
 
 - [ ] **Step 0: Write failing tests for Find Similar button**
@@ -1146,10 +1197,12 @@ describe('ProductDetailScreen Find Similar', () => {
 ```
 
 Run to confirm they fail:
+
 ```bash
 cd /Users/hal/gt/cfutons_mobile
 npx jest src/screens/__tests__/ProductDetailScreen.test.tsx --no-coverage -t "Find Similar" 2>&1 | tail -10
 ```
+
 Expected: failures referencing missing `find-similar-btn` testID.
 
 - [ ] **Step 1: Add useVisualSearch hook call and "Find Similar" button**
@@ -1157,16 +1210,24 @@ Expected: failures referencing missing `find-similar-btn` testID.
 In `src/screens/ProductDetailScreen.tsx`:
 
 1. Import `useVisualSearch`:
+
 ```typescript
 import { useVisualSearch } from '@/hooks/useVisualSearch';
 ```
 
 2. Add hook call inside component:
+
 ```typescript
-const { trigger: triggerVisualSearch, status: vsStatus, results: vsResults, query: vsQuery } = useVisualSearch();
+const {
+  trigger: triggerVisualSearch,
+  status: vsStatus,
+  results: vsResults,
+  query: vsQuery,
+} = useVisualSearch();
 ```
 
 3. Add `useEffect` to navigate when results arrive:
+
 ```typescript
 useEffect(() => {
   if (vsStatus === 'success' && vsResults.length > 0 && vsQuery) {
@@ -1179,6 +1240,7 @@ useEffect(() => {
 ```
 
 4. Add "Find Similar" button below the "Add to Cart" button:
+
 ```typescript
 <TouchableOpacity
   testID="find-similar-btn"
@@ -1221,6 +1283,7 @@ git commit -m "feat(cm-21k): add Find Similar button to ProductDetailScreen"
 ## Task 11: Wix backend — visualSearch function (cfutons repo)
 
 **Files:**
+
 - Create: `/Users/hal/gt/cfutons/src/public/visualSearch.js`
 - Create: `/Users/hal/gt/cfutons/tests/unit/visualSearch.test.js`
 
@@ -1308,11 +1371,26 @@ describe('visualSearch SSRF controls', () => {
     mockHttpsRequest.mockImplementation((opts, callback) => {
       const res = {
         statusCode: 200,
-        on: (event, fn) => { if (event === 'end') fn(); return res; },
+        on: (event, fn) => {
+          if (event === 'end') fn();
+          return res;
+        },
         headers: {},
       };
       res.on = (event, fn) => {
-        if (event === 'data') fn(JSON.stringify({ choices: [{ message: { content: '{"category":"futons","style":"modern","colorFamily":"neutral","keywords":[]}' } }] }));
+        if (event === 'data')
+          fn(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content:
+                      '{"category":"futons","style":"modern","colorFamily":"neutral","keywords":[]}',
+                  },
+                },
+              ],
+            }),
+          );
         if (event === 'end') fn();
         return res;
       };
@@ -1349,7 +1427,14 @@ describe('visualSearch SSRF controls', () => {
   it('returns 200 with structured JSON on valid OpenAI response', async () => {
     dns.promises.lookup.mockResolvedValue({ address: '104.18.7.192' });
     const openAiBody = JSON.stringify({
-      choices: [{ message: { content: '{"category":"futons","style":"modern","colorFamily":"neutral","keywords":["cozy","clean"]}' } }],
+      choices: [
+        {
+          message: {
+            content:
+              '{"category":"futons","style":"modern","colorFamily":"neutral","keywords":["cozy","clean"]}',
+          },
+        },
+      ],
     });
     mockOpenAiResponse(200, openAiBody);
     const res = await handler(makeReq({ image: 'base64data' }));
@@ -1381,7 +1466,10 @@ describe('visualSearch SSRF controls', () => {
     // Control 3: handler must reject redirects rather than follow them
     mockHttpsRequest.mockImplementation((opts, callback) => {
       const res = { statusCode: 301, headers: { location: 'https://evil.com' }, on: null };
-      res.on = (event, fn) => { if (event === 'end') fn(); return res; };
+      res.on = (event, fn) => {
+        if (event === 'end') fn();
+        return res;
+      };
       callback(res);
       return { on: jest.fn(), write: jest.fn(), end: jest.fn(), setTimeout: jest.fn() };
     });
@@ -1498,13 +1586,13 @@ export async function post(request) {
 
     const response = await new Promise((resolve, reject) => {
       const options = {
-        hostname: resolvedIp,      // Control 5: TCP connects to resolved IP
+        hostname: resolvedIp, // Control 5: TCP connects to resolved IP
         host: resolvedIp,
         port: 443,
         path: OPENAI_PATH,
         method: 'POST',
         headers: {
-          Host: ALLOWED_HOST,      // Control 5: TLS SNI + server routing via Host header
+          Host: ALLOWED_HOST, // Control 5: TLS SNI + server routing via Host header
           Authorization: `Bearer ${openAiKey}`,
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(requestBody),
@@ -1518,12 +1606,16 @@ export async function post(request) {
           return;
         }
         let data = '';
-        res.on('data', (chunk) => { data += chunk; });
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
         res.on('end', () => resolve({ statusCode: res.statusCode, body: data }));
       });
 
       req.on('error', reject);
-      req.setTimeout(30000, () => { req.destroy(new Error('OpenAI request timeout')); });
+      req.setTimeout(30000, () => {
+        req.destroy(new Error('OpenAI request timeout'));
+      });
       req.write(requestBody);
       req.end();
     });
@@ -1551,7 +1643,6 @@ export async function post(request) {
 
     // No logging/retention of image data (zhora requirement)
     return respond(200, { category, style, colorFamily, keywords: keywords ?? [] });
-
   } catch (err) {
     if (err.message?.includes('timeout')) {
       return respond(504, { error: 'Gateway timeout' });

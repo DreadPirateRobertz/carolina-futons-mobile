@@ -14,34 +14,35 @@
 
 ## Phase Status
 
-| Track | Status |
-|-------|--------|
-| 1 — perfTelemetry service | ⬜ not started |
-| 2 — usePerfMark hook | ⬜ not started |
-| 3 — Screen instrumentation (5 screens) | ⬜ blocked on Track 2 |
-| 4 — FlatList memo audit (ShopScreen, SearchScreen) | ⬜ not started |
+| Track                                              | Status                |
+| -------------------------------------------------- | --------------------- |
+| 1 — perfTelemetry service                          | ⬜ not started        |
+| 2 — usePerfMark hook                               | ⬜ not started        |
+| 3 — Screen instrumentation (5 screens)             | ⬜ blocked on Track 2 |
+| 4 — FlatList memo audit (ShopScreen, SearchScreen) | ⬜ not started        |
 
 ---
 
 ## File Structure
 
-| Action | Path | Responsibility |
-|--------|------|----------------|
-| Create | `src/services/perfTelemetry.ts` | Singleton: markStart/markEnd/getReport/clearAll |
-| Create | `src/services/__tests__/perfTelemetry.test.ts` | Unit tests for mark/measure/report |
-| Create | `src/hooks/usePerfMark.ts` | React hook wrapping perfTelemetry |
-| Create | `src/hooks/__tests__/usePerfMark.test.ts` | Hook tests |
-| Modify | `src/screens/HomeScreen.tsx` | Add `usePerfMark('HomeScreen')` |
-| Modify | `src/screens/ShopScreen.tsx` | Add `usePerfMark('ShopScreen')`, memo ProductCard |
-| Modify | `src/screens/ProductDetailScreen.tsx` | Add `usePerfMark('ProductDetailScreen')` |
-| Modify | `src/screens/ARScreen.tsx` | Add `usePerfMark('ARScreen')` |
-| Modify | `src/screens/CartScreen.tsx` | Add `usePerfMark('CartScreen')` |
+| Action | Path                                           | Responsibility                                    |
+| ------ | ---------------------------------------------- | ------------------------------------------------- |
+| Create | `src/services/perfTelemetry.ts`                | Singleton: markStart/markEnd/getReport/clearAll   |
+| Create | `src/services/__tests__/perfTelemetry.test.ts` | Unit tests for mark/measure/report                |
+| Create | `src/hooks/usePerfMark.ts`                     | React hook wrapping perfTelemetry                 |
+| Create | `src/hooks/__tests__/usePerfMark.test.ts`      | Hook tests                                        |
+| Modify | `src/screens/HomeScreen.tsx`                   | Add `usePerfMark('HomeScreen')`                   |
+| Modify | `src/screens/ShopScreen.tsx`                   | Add `usePerfMark('ShopScreen')`, memo ProductCard |
+| Modify | `src/screens/ProductDetailScreen.tsx`          | Add `usePerfMark('ProductDetailScreen')`          |
+| Modify | `src/screens/ARScreen.tsx`                     | Add `usePerfMark('ARScreen')`                     |
+| Modify | `src/screens/CartScreen.tsx`                   | Add `usePerfMark('CartScreen')`                   |
 
 ---
 
 ## Task 1: perfTelemetry service
 
 **Files:**
+
 - Create: `src/services/perfTelemetry.ts`
 - Create: `src/services/__tests__/perfTelemetry.test.ts`
 
@@ -49,13 +50,7 @@
 
 ```typescript
 // src/services/__tests__/perfTelemetry.test.ts
-import {
-  markStart,
-  markEnd,
-  getReport,
-  clearAll,
-  type PerfEntry,
-} from '../perfTelemetry';
+import { markStart, markEnd, getReport, clearAll, type PerfEntry } from '../perfTelemetry';
 
 beforeEach(() => {
   clearAll();
@@ -236,6 +231,7 @@ git commit -m "feat(cm-ox9): perfTelemetry service — markStart/markEnd/getRepo
 ## Task 2: usePerfMark hook
 
 **Files:**
+
 - Create: `src/hooks/usePerfMark.ts`
 - Create: `src/hooks/__tests__/usePerfMark.test.ts`
 
@@ -376,6 +372,7 @@ git commit -m "feat(cm-ox9): usePerfMark hook — TTI instrumentation for screen
 ## Task 3: Instrument HomeScreen
 
 **Files:**
+
 - Modify: `src/screens/HomeScreen.tsx`
 
 HomeScreen is a brand/CTA screen with no async data load — TTI ends when the component renders.
@@ -423,6 +420,7 @@ git commit -m "feat(cm-ox9): instrument HomeScreen TTI"
 ## Task 4: Instrument ShopScreen + memo ProductCard
 
 **Files:**
+
 - Modify: `src/screens/ShopScreen.tsx`
 
 ShopScreen loads products via `useProducts()`. TTI ends when `isLoading` transitions to `false`.
@@ -507,6 +505,7 @@ git commit -m "feat(cm-ox9): ShopScreen — TTI mark + React.memo ProductCardIte
 ## Task 5: Instrument ProductDetailScreen, ARScreen, CartScreen
 
 **Files:**
+
 - Modify: `src/screens/ProductDetailScreen.tsx`
 - Modify: `src/screens/ARScreen.tsx`
 - Modify: `src/screens/CartScreen.tsx`
@@ -614,6 +613,7 @@ git commit -m "feat(cm-ox9): instrument ProductDetailScreen, ARScreen, CartScree
 ## Task 6: SearchScreen FlatList memo audit
 
 **Files:**
+
 - Modify: `src/screens/SearchScreen.tsx`
 
 SearchScreen renders a FlatList of search results. Same React.memo pattern as Task 4.
@@ -715,6 +715,7 @@ EOF
 ## Self-Review
 
 **Spec coverage:**
+
 - ✅ perfTelemetry singleton: Task 1
 - ✅ usePerfMark hook: Task 2
 - ✅ 5 screens instrumented: Tasks 3-5
@@ -724,6 +725,7 @@ EOF
 **Placeholder scan:** None found. All steps have actual code.
 
 **Type consistency:**
+
 - `PerfEntry` defined in `perfTelemetry.ts`, imported in test — consistent
 - `UsePerfMarkResult.markContentReady: () => void` — consistent across hook + tests
 - `markStart(name: string)` / `markEnd(name: string)` — used correctly in hook

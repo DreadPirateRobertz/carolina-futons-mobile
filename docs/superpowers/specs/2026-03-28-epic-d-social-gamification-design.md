@@ -14,6 +14,7 @@
 Build the social sharing layer (referral deep links, share sheet, leaderboard social context) on top of the existing gamification foundation. Fix the known UX debt in RewardsScreen and DailyQuestsCard. Wire streak/badge/challenge push notifications via the Epic A engine.
 
 Success criteria:
+
 - User can share a referral link from ProfileScreen; link deep-links to app download with referral attribution
 - ReferralLinks Wix collection tracks clicks and conversions
 - RewardsScreen has consistent error UX across all 8 try/catch blocks
@@ -70,6 +71,7 @@ Wix collection: `ReferralLinks { memberId, code, clickCount, conversions, create
 ### 3.2 ShareSheet (`src/components/ShareSheet.tsx`) — NEW
 
 Wraps React Native `Share.share()`:
+
 - Share message: "Check out Carolina Futons! Use my link for [X] points: {deepLink}"
 - Copy link button as fallback (clipboard)
 - Analytics: `REFERRAL_SHARED` event on successful share
@@ -79,6 +81,7 @@ Entry point: ProfileScreen "Share & Earn" card (new section on ProfileScreen).
 ### 3.3 ReferralLandingScreen (`src/screens/ReferralLandingScreen.tsx`) — NEW
 
 Handles `carolinafutons://referral/{code}` deep link:
+
 - If guest: shows app download CTA with referral context preserved
 - If new logged-in user: calls `recordReferralConversion`, shows "You and [referrer] each earn X points"
 - If existing user: shows "Referral already applied" message, no double-award
@@ -88,6 +91,7 @@ Handles `carolinafutons://referral/{code}` deep link:
 Current: 8 try/catch blocks with inconsistent handling (some show error state, some swallow silently).
 
 Fix: Extract shared `useRewardsSectionData` hook that wraps all 8 fetches with:
+
 - Unified error state per section (not global error — each section can fail independently)
 - All errors logged to Sentry (none silently swallowed)
 - Per-section retry button
@@ -102,12 +106,14 @@ Fix: Replace unmount pattern with in-place state update. Keep the component moun
 ### 3.6 Gamification push wiring (crossRigEventBus — extend)
 
 Add two new emitters (Epic A engine prerequisite):
+
 ```ts
 emitBadgeEarned(client, { badgeId, badgeName }): Promise<CrossRigEventResult>
 emitTierChanged(client, { oldTier, newTier }): Promise<CrossRigEventResult>
 ```
 
 Push copy:
+
 - Badge earned: "🏅 New badge: {badgeName}!"
 - Tier changed: "⬆️ You reached {newTier} tier!"
 - Streak extended: "🔥 {n}-day streak! Keep it up."
@@ -117,10 +123,12 @@ Push copy:
 **useReducedMotion audit:** Inventory all `Animated` usages in gamification components; wrap with `useReducedMotion` check. Affected: streak reveal animation, badge unlock animation, points increment counter, challenge progress bar.
 
 **Leaderboard/challenge list semantics:**
+
 - FlatList items: `accessibilityLabel="Rank {n} of {total}: {username}, {points} points"`
 - Challenges: `accessibilityLabel="Challenge: {name}, {n} of {m} steps complete"`
 
 **Badge/achievement modal focus management:**
+
 - On modal open: focus first interactive element
 - On modal dismiss: return focus to trigger element (`useRef` on trigger button)
 
@@ -129,11 +137,13 @@ Push copy:
 ## 4. Data Contracts
 
 ### ReferralLinks (Wix — cf-heou, radahn)
+
 ```
 { memberId, code, clickCount, conversions, createdAt, rewardPoints }
 ```
 
 ### crossRigEventBus new events
+
 ```ts
 badge_earned:  { badgeId: string, badgeName: string }
 tier_changed:  { oldTier: string, newTier: string }
@@ -143,13 +153,13 @@ tier_changed:  { oldTier: string, newTier: string }
 
 ## 5. Error Handling
 
-| Scenario | Handling |
-|----------|----------|
-| generateReferralLink fails | Show "Unable to generate link — try again" in ShareSheet, do not crash |
-| recordReferralConversion fails | Log to Sentry, show generic welcome (user doesn't lose their points — Wix handles idempotency) |
-| Duplicate referral code | ReferralLandingScreen shows "Already applied" message |
-| Badge push fires but Epic A not yet live | Emitter queues in AsyncStorage (existing crossRigEventBus pattern) |
-| RewardsScreen section fetch fails | Per-section error state with retry button — never silently swallowed |
+| Scenario                                 | Handling                                                                                       |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| generateReferralLink fails               | Show "Unable to generate link — try again" in ShareSheet, do not crash                         |
+| recordReferralConversion fails           | Log to Sentry, show generic welcome (user doesn't lose their points — Wix handles idempotency) |
+| Duplicate referral code                  | ReferralLandingScreen shows "Already applied" message                                          |
+| Badge push fires but Epic A not yet live | Emitter queues in AsyncStorage (existing crossRigEventBus pattern)                             |
+| RewardsScreen section fetch fails        | Per-section error state with retry button — never silently swallowed                           |
 
 ---
 
@@ -164,14 +174,14 @@ tier_changed:  { oldTier: string, newTier: string }
 
 ## 7. Beads
 
-| Bead | Description | Lead |
-|------|-------------|------|
-| cm-epicD-0 | useReducedMotion audit across gamification (pre-epic) | burke |
-| cm-epicD-1 | ReferralService + generateReferralLink API | bishop |
+| Bead       | Description                                                 | Lead   |
+| ---------- | ----------------------------------------------------------- | ------ |
+| cm-epicD-0 | useReducedMotion audit across gamification (pre-epic)       | burke  |
+| cm-epicD-1 | ReferralService + generateReferralLink API                  | bishop |
 | cm-epicD-2 | ShareSheet component + ProfileScreen "Share & Earn" section | ripley |
-| cm-epicD-3 | ReferralLandingScreen + deep-link routing | ripley |
-| cm-epicD-4 | RewardsScreen error UX rework (useRewardsSectionData) | hicks |
-| cm-epicD-5 | DailyQuestsCard flash fix | hicks |
-| cm-epicD-6 | emitBadgeEarned + emitTierChanged (crossRigEventBus) | bishop |
-| cm-epicD-7 | Gamification push wiring via Epic A engine | bishop |
-| cm-epicD-8 | A11y fixes: focus management, list semantics, reducedMotion | burke |
+| cm-epicD-3 | ReferralLandingScreen + deep-link routing                   | ripley |
+| cm-epicD-4 | RewardsScreen error UX rework (useRewardsSectionData)       | hicks  |
+| cm-epicD-5 | DailyQuestsCard flash fix                                   | hicks  |
+| cm-epicD-6 | emitBadgeEarned + emitTierChanged (crossRigEventBus)        | bishop |
+| cm-epicD-7 | Gamification push wiring via Epic A engine                  | bishop |
+| cm-epicD-8 | A11y fixes: focus management, list semantics, reducedMotion | burke  |

@@ -262,7 +262,12 @@ describe('ConsultationBookingScreen', () => {
     });
 
     it('renders slot grid (content) when slotsLoading=false', () => {
-      mockHookState = { ...mockHookState, selectedDate: TODAY, slots: availableSlots, slotsLoading: false };
+      mockHookState = {
+        ...mockHookState,
+        selectedDate: TODAY,
+        slots: availableSlots,
+        slotsLoading: false,
+      };
       const { getByTestId } = renderScreen();
       expect(getByTestId('slot-grid')).toBeTruthy();
     });

@@ -22,11 +22,7 @@ import type { RoomGalleryItem } from '../useRoomGallery';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
-function makeRoom(
-  roomId: string,
-  roomStyle: string,
-  productIds: string[],
-): RoomGalleryItem {
+function makeRoom(roomId: string, roomStyle: string, productIds: string[]): RoomGalleryItem {
   return {
     roomId,
     imageUrl: `https://example.com/${roomId}.jpg`,
@@ -39,7 +35,14 @@ function makeRoom(
     caption: roomStyle,
     slug: roomId,
     altText: '',
-    tags: productIds.map((pid) => ({ productId: pid, productName: pid, x: 0.5, y: 0.5, width: 0.1, height: 0.1 })),
+    tags: productIds.map((pid) => ({
+      productId: pid,
+      productName: pid,
+      x: 0.5,
+      y: 0.5,
+      width: 0.1,
+      height: 0.1,
+    })),
   };
 }
 

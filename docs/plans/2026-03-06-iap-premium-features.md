@@ -13,6 +13,7 @@
 ### Task 1: IAP Service Layer
 
 **Files:**
+
 - Create: `src/services/purchases.ts`
 - Test: `src/services/__tests__/purchases.test.ts`
 
@@ -185,9 +186,7 @@ export async function getOfferings(): Promise<PurchasesPackage[]> {
   return offerings.current?.availablePackages ?? [];
 }
 
-export async function purchasePackage(
-  pkg: PurchasesPackage,
-): Promise<CustomerInfo | null> {
+export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo | null> {
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
     return customerInfo;
@@ -224,6 +223,7 @@ git commit -m "feat(iap): add RevenueCat purchases service layer (cm-iqn)"
 ### Task 2: Premium Context Provider & Hook
 
 **Files:**
+
 - Create: `src/hooks/usePremium.tsx`
 - Test: `src/hooks/__tests__/usePremium.test.tsx`
 
@@ -451,6 +451,7 @@ git commit -m "feat(iap): add PremiumProvider context and usePremium hook (cm-iq
 ### Task 3: Premium Upgrade Screen
 
 **Files:**
+
 - Create: `src/screens/PremiumScreen.tsx`
 - Test: `src/screens/__tests__/PremiumScreen.test.tsx`
 
@@ -580,6 +581,7 @@ git commit -m "feat(iap): add PremiumScreen with plan selection UI (cm-iqn)"
 ### Task 4: Navigation & AccountScreen Integration
 
 **Files:**
+
 - Modify: `src/navigation/AppNavigator.tsx` — add Premium route
 - Modify: `src/screens/AccountScreen.tsx` — add CF+ menu item
 - Modify: `App.tsx` — wrap with PremiumProvider
@@ -628,9 +630,7 @@ jest.mock('react-native-purchases', () => ({
     getOfferings: jest.fn(() => Promise.resolve({ current: null })),
     purchasePackage: jest.fn(),
     restorePurchases: jest.fn(),
-    getCustomerInfo: jest.fn(() =>
-      Promise.resolve({ entitlements: { active: {} } }),
-    ),
+    getCustomerInfo: jest.fn(() => Promise.resolve({ entitlements: { active: {} } })),
     setLogLevel: jest.fn(),
     LOG_LEVEL: { DEBUG: 'DEBUG' },
   },

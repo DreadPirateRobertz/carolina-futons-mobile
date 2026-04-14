@@ -14,20 +14,21 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `src/hooks/useSwatchRequest.ts` | **Modify** | Accept `wixClient` param; call Wix API before AsyncStorage |
-| `src/hooks/__tests__/useSwatchRequest.test.ts` | **Modify** | Add 10 new tests for Wix path |
-| `src/components/SwatchRequestModal.tsx` | **Modify** | Add `wixClient` prop; error/retry UI; a11y fixes |
-| `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** | Add 6 new tests for error UI and a11y |
-| `src/screens/ProductDetailScreen.tsx` | **Modify** | Acquire `wixClient`; pass to modal; remove `FabricSampleRequest` |
-| `src/components/FabricSampleRequest.tsx` | **Delete** | Redundant; zero tests; inferior UX |
+| File                                                   | Action     | Responsibility                                                   |
+| ------------------------------------------------------ | ---------- | ---------------------------------------------------------------- |
+| `src/hooks/useSwatchRequest.ts`                        | **Modify** | Accept `wixClient` param; call Wix API before AsyncStorage       |
+| `src/hooks/__tests__/useSwatchRequest.test.ts`         | **Modify** | Add 10 new tests for Wix path                                    |
+| `src/components/SwatchRequestModal.tsx`                | **Modify** | Add `wixClient` prop; error/retry UI; a11y fixes                 |
+| `src/components/__tests__/SwatchRequestModal.test.tsx` | **Modify** | Add 6 new tests for error UI and a11y                            |
+| `src/screens/ProductDetailScreen.tsx`                  | **Modify** | Acquire `wixClient`; pass to modal; remove `FabricSampleRequest` |
+| `src/components/FabricSampleRequest.tsx`               | **Delete** | Redundant; zero tests; inferior UX                               |
 
 ---
 
 ## Task 1: Hook tests — Wix API path (TDD)
 
 **Files:**
+
 - Modify: `src/hooks/__tests__/useSwatchRequest.test.ts`
 
 > Write ALL 10 new tests before touching the hook implementation. They must fail first.
@@ -167,9 +168,7 @@
     });
 
     it('sets status to error and does NOT write AsyncStorage when Wix throws', async () => {
-      mockWixClient.submitFabricSampleRequest.mockRejectedValueOnce(
-        new Error('Network error'),
-      );
+      mockWixClient.submitFabricSampleRequest.mockRejectedValueOnce(new Error('Network error'));
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
@@ -185,9 +184,7 @@
     });
 
     it('returns true and calls captureException (not setStatus error) when AsyncStorage write fails after Wix success', async () => {
-      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(
-        new Error('Storage unavailable'),
-      );
+      (AsyncStorage.setItem as jest.Mock).mockRejectedValueOnce(new Error('Storage unavailable'));
       const { result } = renderHook(() =>
         useSwatchRequest('prod-asheville', 'The Asheville', mockWixClient as any),
       );
@@ -199,7 +196,11 @@
       });
 
       expect(result.current.status).toBe('submitted');
-      expect(captureException).toHaveBeenCalledWith(expect.any(Error), 'warning', expect.any(Object));
+      expect(captureException).toHaveBeenCalledWith(
+        expect.any(Error),
+        'warning',
+        expect.any(Object),
+      );
     });
 
     it('falls back to AsyncStorage-only path when wixClient is null', async () => {
@@ -248,6 +249,7 @@
 ## Task 2: Implement hook changes
 
 **Files:**
+
 - Modify: `src/hooks/useSwatchRequest.ts`
 
 - [ ] **Step 1: Add imports**
@@ -262,6 +264,7 @@
 - [ ] **Step 2: Update hook signature**
 
   Change line 58:
+
   ```typescript
   // Before
   export function useSwatchRequest(productId: string): SwatchRequestState {
@@ -352,11 +355,10 @@
       } catch (err) {
         if (wixClient) {
           // Wix succeeded — AsyncStorage failure is non-critical
-          captureException(
-            err instanceof Error ? err : new Error(String(err)),
-            'warning',
-            { screen: 'SwatchRequestModal', action: 'asyncStorageWrite' },
-          );
+          captureException(err instanceof Error ? err : new Error(String(err)), 'warning', {
+            screen: 'SwatchRequestModal',
+            action: 'asyncStorageWrite',
+          });
           // Fall through to success
         } else {
           // No Wix — AsyncStorage is primary persistence; this is a real failure
@@ -411,6 +413,7 @@
 ## Task 3: SwatchRequestModal tests — error UI and a11y (TDD)
 
 **Files:**
+
 - Modify: `src/components/__tests__/SwatchRequestModal.test.tsx`
 
 > Write these 6 tests before touching the modal implementation. They must fail first.
@@ -516,7 +519,10 @@
       // Delay Wix resolution so we can inspect mid-flight state
       let resolve: () => void;
       mockSubmitFabricSampleRequest.mockImplementationOnce(
-        () => new Promise<void>((r) => { resolve = r; }),
+        () =>
+          new Promise<void>((r) => {
+            resolve = r;
+          }),
       );
       const { getByTestId } = renderModal({ wixClient: mockWixClient as any });
       fireEvent.press(getByTestId('swatch-option-natural-linen'));
@@ -566,6 +572,7 @@
 ## Task 4: Implement SwatchRequestModal changes
 
 **Files:**
+
 - Modify: `src/components/SwatchRequestModal.tsx`
 
 - [ ] **Step 1: Add WixClient import and update Props**
@@ -606,6 +613,7 @@
 - [ ] **Step 3: Replace the error state UI section**
 
   Find the existing error state block (around line 418–422):
+
   ```typescript
   {/* Error state */}
   {swatch.status === 'error' && (
@@ -616,6 +624,7 @@
   ```
 
   Replace with:
+
   ```typescript
   {/* Error state */}
   {swatch.status === 'error' && (
@@ -646,11 +655,13 @@
 - [ ] **Step 4: Update submit button `accessibilityState` to include `busy`**
 
   Find the submit button's `accessibilityState` prop (around line 445):
+
   ```typescript
   accessibilityState={{ disabled: swatch.isSubmitting || swatch.hasRecentRequest }}
   ```
 
   Replace with:
+
   ```typescript
   accessibilityState={{
     busy: swatch.isSubmitting,
@@ -735,17 +746,20 @@
 ## Task 5: Wire ProductDetailScreen
 
 **Files:**
+
 - Modify: `src/screens/ProductDetailScreen.tsx`
 
 - [ ] **Step 1: Add `useOptionalWixClient` import and remove `FabricSampleRequest` import**
 
   Find the two import lines (around lines 67–68):
+
   ```typescript
   import { FabricSampleRequest } from '@/components/FabricSampleRequest';
   import { SwatchRequestModal } from '@/components/SwatchRequestModal';
   ```
 
   Replace with:
+
   ```typescript
   import { SwatchRequestModal } from '@/components/SwatchRequestModal';
   import { useOptionalWixClient } from '@/services/wix';
@@ -764,14 +778,16 @@
   Find and delete the entire `{/* Fabric Sample Request */}` section (around lines 615–622):
 
   ```tsx
-  {/* Fabric Sample Request */}
+  {
+    /* Fabric Sample Request */
+  }
   <View style={{ paddingHorizontal: spacing.lg }}>
     <FabricSampleRequest
       fabrics={model.fabrics}
       productName={model.name}
       testID="fabric-sample-request"
     />
-  </View>
+  </View>;
   ```
 
   Delete this entire block (including the surrounding `<View>`).
@@ -825,6 +841,7 @@
 ## Task 6: Delete FabricSampleRequest
 
 **Files:**
+
 - Delete: `src/components/FabricSampleRequest.tsx`
 
 - [ ] **Step 1: Verify no remaining references**
@@ -887,7 +904,6 @@
 - [ ] **Step 2: Verify acceptance criteria**
 
   Check each item from the spec:
-
   - [ ] `FabricSampleRequest` deleted, no references: `grep -r FabricSampleRequest src/` → empty
   - [ ] Wix API wired: `grep "submitFabricSampleRequest" src/hooks/useSwatchRequest.ts`
   - [ ] Error state with retry: `grep "swatch-error-message\|swatch-retry-button" src/components/SwatchRequestModal.tsx`
