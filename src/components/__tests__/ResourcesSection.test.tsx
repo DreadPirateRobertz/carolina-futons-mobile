@@ -13,7 +13,6 @@ import * as Sharing from 'expo-sharing';
 import * as WebBrowser from 'expo-web-browser';
 
 // expo-sharing is auto-mocked via __mocks__/expo-sharing.js
-// expo-av is auto-mocked via __mocks__/expo-av.js
 
 jest.mock('expo-web-browser', () => ({
   openBrowserAsync: jest.fn(() => Promise.resolve({ type: 'cancel' })),
@@ -155,6 +154,16 @@ describe('ResourcesSection', () => {
     it('does not render video player when videoUrl is absent', () => {
       const { queryByTestId } = openResources({ specSheetUrl: MOCK_RESOURCES.specSheetUrl });
       expect(queryByTestId('resources-video-player')).toBeNull();
+    });
+
+    // cm-zo1: expo-av was imported but never used. Video taps go through
+    // expo-web-browser. Lock that behavior in so the dead import can't creep back.
+    it('tapping the video player opens the video URL in the in-app browser', async () => {
+      const { getByTestId } = openResources({ videoUrl: MOCK_RESOURCES.videoUrl });
+      await act(async () => {
+        fireEvent.press(getByTestId('resources-video-player'));
+      });
+      expect(WebBrowser.openBrowserAsync).toHaveBeenCalledWith(MOCK_RESOURCES.videoUrl);
     });
   });
 

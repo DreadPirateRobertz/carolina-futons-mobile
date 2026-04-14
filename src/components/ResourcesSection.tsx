@@ -9,7 +9,7 @@
  * PDF taps: expo-sharing (native share sheet on mobile); falls back to
  * expo-web-browser if sharing is unavailable.
  * Policy links: expo-web-browser (in-app browser).
- * Video: expo-av Video component, lazy-loaded (mounted only when expanded).
+ * Video: expo-web-browser — taps open the video URL in the in-app browser.
  */
 
 import React, { memo, useState, useCallback } from 'react';
