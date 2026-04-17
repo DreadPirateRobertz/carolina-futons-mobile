@@ -64,8 +64,8 @@ th { color:#e8845c;font-weight:600;background:#1c1410 }
 <p class="meta">
 Platform: Android (Pixel 7 emulator, API 35, 1080×2400) + iOS (iPhone 15 Pro sim, iOS 18)<br>
 Build: Expo SDK 55 + React Native 0.84 + React 19 | Node 22 | Linux pop-os (31GB RAM, 16 cores)<br>
-Tests: 10,053 passing (550 suites) | Session 34 · 2026-04-13 (62 S31 screenshots + 8 S34 live captures — Android emulator, pop-os GPU build)<br>
-PRs merged: #357–#508 | Convoy S34: #504 (cm-74i AR edge), #505 (cm-pkp a11y), #506 (cm-ajd coverage), #508 (cm-ox9 perf) — ALL MERGED
+Tests: 10,053+ passing | Session 35 · 2026-04-16 (62 S31 + 8 S34 screenshots; S35 captures in progress — Android emulator, pop-os GPU build)<br>
+PRs merged: #357–#512 | Convoy S35: #509 (cm-zo1 expo-av), #510 (cm-1we challenge progress), #511 (prettier fix), #512 (cm-703 deep links) — ALL MERGED
 </p>
 
 <!-- ══════════════════════════════════════════════════
@@ -1246,6 +1246,25 @@ npx jest --passWithNoTests</pre>
 </div>
 
 </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SESSION 35 NEW SCREENS (S35 · 2026-04-16)
+══════════════════════════════════════════════════ -->
+<div class="section" id="s35-features">
+<h2>Session 35 Features <span class="session-tag">2026-04-16</span></h2>
+<p class="meta">Screenshots capturing now via Android emulator (pop-os swiftshader build). All screens verified via Jest + code review.</p>
+<table>
+<tr><th>Bead</th><th>Feature</th><th>Status</th><th>Notes</th></tr>
+<tr><td>cm-jyl</td><td>Loyalty unification — live data</td><td class="status-ok">Shipped</td><td>LoyaltyScreen wired to Wix TierPerkDeliveries CMS. Real tier perks (free white glove, accessory discount, styling call). Live activity feed from TierPerkDeliveries.</td></tr>
+<tr><td>cm-6ws</td><td>Gamification push event UI</td><td class="status-ok">Shipped</td><td>BadgeCelebrationToast, TierUpModal, StreakBanner wired to push notification events. Fires on ar_discovery_completed, quiz_completed, social_share_completed.</td></tr>
+<tr><td>cm-1we</td><td>MobileChallengeProgressScreen</td><td class="status-ok">Shipped</td><td>New screen: 3 type cards (AR Discovery, Quiz, Social Share) with per-type point values + completion counts. Derived total-points tally. Pull-to-refresh. Real-time notification sync.</td></tr>
+<tr><td>cm-703</td><td>Deep link routing</td><td class="status-ok">Shipped</td><td>carolinafutons:// URI scheme + https://carolinafutons.com Universal Links. Handlers: /product/:id, /order/:id, /collection/:slug, /challenges/:id, /loyalty.</td></tr>
+<tr><td>cm-img</td><td>CachedImage unified wrapper</td><td class="status-warn">In Progress</td><td>CachedImage.tsx: blurhash placeholder, 3× retry backoff, WebP CDN encoding. Replacing 6+ direct expo-image usages. ripley assigned.</td></tr>
+</table>
+
+<h3>S35 Screen Captures — Session 35 · 2026-04-16</h3>
+<p class="meta" style="color:#e8845c">Screenshots capturing now — section will update when emulator captures are complete and verified.</p>
 </div>
 
 <!-- ══════════════════════════════════════════════════
