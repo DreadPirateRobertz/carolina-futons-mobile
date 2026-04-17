@@ -66,7 +66,11 @@ describe('useTierPerks — happy path', () => {
     mockGetTierPerks.mockResolvedValue({
       perks: [
         makeDelivery({ perkType: 'FREE_WHITE_GLOVE', tier: 'Summit Master' }),
-        makeDelivery({ perkType: 'STYLING_CALL', tier: 'Summit Master', bookingUrl: 'https://calendly.com/test' }),
+        makeDelivery({
+          perkType: 'STYLING_CALL',
+          tier: 'Summit Master',
+          bookingUrl: 'https://calendly.com/test',
+        }),
         makeDelivery({ perkType: 'EARLY_ACCESS', tier: 'Blue Ridge Legend' }),
       ],
     });

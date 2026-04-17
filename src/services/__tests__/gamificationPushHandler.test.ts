@@ -262,7 +262,11 @@ describe('malformed payload', () => {
 // ── Full round-trip: all 4 event types ───────────────────────────────────────
 
 describe('all 4 event types — round-trip', () => {
-  const scenarios: Array<{ label: string; payload: GamificationPushPayload; handler: keyof GamificationPushActions }> = [
+  const scenarios: {
+    label: string;
+    payload: GamificationPushPayload;
+    handler: keyof GamificationPushActions;
+  }[] = [
     {
       label: 'badge_earned → showBadgeToast',
       payload: { event: 'badge_earned', badgeName: 'Gold', badgeId: 'b-gold' },

@@ -230,13 +230,19 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
               testID={`loyalty-perk-${perk.perkType}`}
             >
               <Text
-                style={[styles.perkLabel, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+                style={[
+                  styles.perkLabel,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
               >
                 {perkLabel(perk.perkType)}
               </Text>
               {perk.couponCode ? (
                 <Text
-                  style={[styles.perkCode, { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold }]}
+                  style={[
+                    styles.perkCode,
+                    { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold },
+                  ]}
                   testID={`loyalty-perk-coupon-${perk.perkType}`}
                 >
                   {perk.couponCode}
@@ -244,7 +250,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
               ) : null}
               {perk.bookingUrl ? (
                 <Text
-                  style={[styles.perkCode, { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold }]}
+                  style={[
+                    styles.perkCode,
+                    { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+                  ]}
                   testID={`loyalty-perk-booking-${perk.perkType}`}
                 >
                   Book now
@@ -275,7 +284,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       ) : activityError ? (
         <View style={styles.emptyTx} testID="loyalty-activity-error">
           <Text
-            style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.emptyText,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
           >
             {activityError}
           </Text>
@@ -283,7 +295,10 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
       ) : activityEvents.length === 0 ? (
         <View style={styles.emptyTx}>
           <Text
-            style={[styles.emptyText, { color: colors.espressoLight, fontFamily: typography.bodyFamily }]}
+            style={[
+              styles.emptyText,
+              { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+            ]}
             testID="loyalty-no-activity"
           >
             No activity yet. Earn points by shopping!
@@ -299,13 +314,19 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
             >
               <Text style={styles.activityIcon}>{ACTIVITY_ICON[event.type] ?? '✨'}</Text>
               <Text
-                style={[styles.activityDesc, { color: colors.espresso, fontFamily: typography.bodyFamily }]}
+                style={[
+                  styles.activityDesc,
+                  { color: colors.espresso, fontFamily: typography.bodyFamily },
+                ]}
                 numberOfLines={1}
               >
                 {event.description}
               </Text>
               <Text
-                style={[styles.activityPoints, { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold }]}
+                style={[
+                  styles.activityPoints,
+                  { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold },
+                ]}
                 testID={`loyalty-activity-points-${event.id}`}
               >
                 {`+${event.points}`}
