@@ -47,6 +47,8 @@
 import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useRealRoomPhotos } from '../useRealRoomPhotos';
 
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
+
 // ── Mock Wix client ───────────────────────────────────────────────────────────
 
 const mockQueryData = jest.fn();
@@ -55,8 +57,6 @@ const mockWixClient = { queryData: mockQueryData };
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: jest.fn(),
 }));
-
-import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 const mockUseOptionalWixClient = useOptionalWixClient as jest.Mock;
 

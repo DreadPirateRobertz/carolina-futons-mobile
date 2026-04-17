@@ -9,6 +9,8 @@ import { renderHook, act, waitFor } from '@testing-library/react-native';
 import { useSavedARLayouts, MAX_SAVED_LAYOUTS } from '../useSavedARLayouts';
 import { pushLayouts, pullLayouts } from '@/services/arLayoutSync';
 
+import { useOptionalWixClient } from '@/services/wix/wixProvider';
+
 // ── AsyncStorage mock ─────────────────────────────────────────────────────────
 const mockSetItem: jest.Mock = jest.fn(() => Promise.resolve());
 const mockGetItem: jest.Mock = jest.fn(() => Promise.resolve(null));
@@ -35,8 +37,6 @@ const mockWixClient = {
 jest.mock('@/services/wix/wixProvider', () => ({
   useOptionalWixClient: jest.fn(() => null),
 }));
-
-import { useOptionalWixClient } from '@/services/wix/wixProvider';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ITEM_A = { modelId: 'asheville-full', fabricId: 'natural-linen' };

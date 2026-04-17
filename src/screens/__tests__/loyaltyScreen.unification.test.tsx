@@ -72,7 +72,10 @@ jest.mock('@/services/crashReporting', () => ({
 }));
 
 jest.mock('@/services/wix/wixClientSingleton', () => ({
-  getWixClientSingleton: jest.fn(() => ({ emitStreakExtended: jest.fn(), emitTierChanged: jest.fn() })),
+  getWixClientSingleton: jest.fn(() => ({
+    emitStreakExtended: jest.fn(),
+    emitTierChanged: jest.fn(),
+  })),
 }));
 
 jest.mock('@/services/crossRigEventBus', () => ({
@@ -209,7 +212,12 @@ describe('Activity section — renders live points history', () => {
   });
 
   it('shows activity loading skeleton while history is loading', () => {
-    mockUsePointsHistory.mockReturnValue({ events: [], loading: true, error: null, refresh: jest.fn() });
+    mockUsePointsHistory.mockReturnValue({
+      events: [],
+      loading: true,
+      error: null,
+      refresh: jest.fn(),
+    });
     const { getByTestId } = render(<LoyaltyScreen />);
     expect(getByTestId('loyalty-activity-loading')).toBeTruthy();
   });
@@ -231,8 +239,20 @@ describe('Activity section — renders live points history', () => {
     mockUsePointsHistory.mockReturnValue({
       events: [
         POINTS_EVENT,
-        { id: 'ev-2', type: 'review' as const, description: 'Reviewed sofa', points: 50, earnedAt: '2026-04-02T10:00:00Z' },
-        { id: 'ev-3', type: 'referral' as const, description: 'Referred a friend', points: 100, earnedAt: '2026-04-03T10:00:00Z' },
+        {
+          id: 'ev-2',
+          type: 'review' as const,
+          description: 'Reviewed sofa',
+          points: 50,
+          earnedAt: '2026-04-02T10:00:00Z',
+        },
+        {
+          id: 'ev-3',
+          type: 'referral' as const,
+          description: 'Referred a friend',
+          points: 100,
+          earnedAt: '2026-04-03T10:00:00Z',
+        },
       ],
       loading: false,
       error: null,
@@ -258,7 +278,13 @@ describe('Your Perks section — tier perk deliveries', () => {
 
   it('renders delivered perk rows when perks are loaded', async () => {
     mockUseTierPerks.mockReturnValue({
-      perks: [{ perkType: 'FREE_WHITE_GLOVE', tier: 'Summit Master', deliveredAt: '2026-04-01T00:00:00Z' }],
+      perks: [
+        {
+          perkType: 'FREE_WHITE_GLOVE',
+          tier: 'Summit Master',
+          deliveredAt: '2026-04-01T00:00:00Z',
+        },
+      ],
       loading: false,
       error: null,
     });
@@ -270,7 +296,14 @@ describe('Your Perks section — tier perk deliveries', () => {
 
   it('renders coupon code when perk has one', async () => {
     mockUseTierPerks.mockReturnValue({
-      perks: [{ perkType: 'ACCESSORY_DISCOUNT', tier: 'Mountain Guide', deliveredAt: '2026-04-01T00:00:00Z', couponCode: 'CF-XYZ9999' }],
+      perks: [
+        {
+          perkType: 'ACCESSORY_DISCOUNT',
+          tier: 'Mountain Guide',
+          deliveredAt: '2026-04-01T00:00:00Z',
+          couponCode: 'CF-XYZ9999',
+        },
+      ],
       loading: false,
       error: null,
     });
@@ -282,7 +315,14 @@ describe('Your Perks section — tier perk deliveries', () => {
 
   it('renders booking link for STYLING_CALL perk', async () => {
     mockUseTierPerks.mockReturnValue({
-      perks: [{ perkType: 'STYLING_CALL', tier: 'Summit Master', deliveredAt: '2026-04-01T00:00:00Z', bookingUrl: 'https://calendly.com/test' }],
+      perks: [
+        {
+          perkType: 'STYLING_CALL',
+          tier: 'Summit Master',
+          deliveredAt: '2026-04-01T00:00:00Z',
+          bookingUrl: 'https://calendly.com/test',
+        },
+      ],
       loading: false,
       error: null,
     });

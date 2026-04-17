@@ -995,13 +995,13 @@ export class WixClient {
    * via the getTierPerks webMethod (cm-jyl). Member token is required.
    */
   async getTierPerks(memberToken: string): Promise<{
-    perks: Array<{
+    perks: {
       perkType: string;
       tier: string;
       deliveredAt: string;
       couponCode?: string;
       bookingUrl?: string;
-    }>;
+    }[];
   }> {
     const url = `${this.baseUrl}/_functions/getTierPerks`;
     const controller = new AbortController();
@@ -1023,10 +1023,22 @@ export class WixClient {
           '/_functions/getTierPerks',
         );
       }
-      return response.json() as Promise<{ perks: Array<{ perkType: string; tier: string; deliveredAt: string; couponCode?: string; bookingUrl?: string }> }>;
+      return response.json() as Promise<{
+        perks: {
+          perkType: string;
+          tier: string;
+          deliveredAt: string;
+          couponCode?: string;
+          bookingUrl?: string;
+        }[];
+      }>;
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new WixApiError(`Request timeout after ${this.timeoutMs}ms`, undefined, '/_functions/getTierPerks');
+        throw new WixApiError(
+          `Request timeout after ${this.timeoutMs}ms`,
+          undefined,
+          '/_functions/getTierPerks',
+        );
       }
       if (err instanceof WixApiError) throw err;
       throw new WixApiError(
