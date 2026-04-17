@@ -44,6 +44,13 @@ export type DeepLinkRoute =
   | { screen: 'ForgotPassword' }
   | { screen: 'Collections' }
   | { screen: 'CollectionDetail'; params: { slug: string } }
+  | { screen: 'Challenges' }
+  | { screen: 'Challenges'; params: { challengeId: string } }
+  | { screen: 'Leaderboard' }
+  | { screen: 'AchievementBadges' }
+  | { screen: 'AchievementBadges'; params: { badgeId: string } }
+  | { screen: 'Trails' }
+  | { screen: 'Trails'; params: { trailId: string } }
   | { screen: 'NotFound'; params: { path: string } };
 
 /** Parse a deep link URL into components */
@@ -152,6 +159,22 @@ export function resolveRoute(parsed: ParsedDeepLink): DeepLinkRoute {
     case 'collections':
       if (second) return { screen: 'CollectionDetail', params: { slug: second } };
       return { screen: 'Collections' };
+
+    case 'challenges':
+      if (second) return { screen: 'Challenges', params: { challengeId: second } };
+      return { screen: 'Challenges' };
+
+    case 'leaderboard':
+      return { screen: 'Leaderboard' };
+
+    case 'badges':
+    case 'achievements':
+      if (second) return { screen: 'AchievementBadges', params: { badgeId: second } };
+      return { screen: 'AchievementBadges' };
+
+    case 'trails':
+      if (second) return { screen: 'Trails', params: { trailId: second } };
+      return { screen: 'Trails' };
 
     default:
       return { screen: 'NotFound', params: { path: parsed.path } };

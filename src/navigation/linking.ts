@@ -23,6 +23,7 @@
  *   carolinafutons://alerts            → NotificationsScreen (gamification feed)
  *   carolinafutons://leaderboard       → LeaderboardScreen
  *   carolinafutons://challenges        → ChallengesScreen
+ *   carolinafutons://challenges/{id}   → ChallengesScreen (focus a specific challenge)
  *   carolinafutons://avatar            → AvatarEquipScreen
  *   carolinafutons://gallery           → RoomGalleryScreen
  *   carolinafutons://premium            → PremiumScreen
@@ -33,6 +34,7 @@
  *   carolinafutons://warranty           → WarrantyRegistrationScreen
  *   carolinafutons://account/addresses  → SavedAddressesScreen (hq-qw5)
  *   carolinafutons://badges             → AchievementBadgesScreen (alias for achievements)
+ *   carolinafutons://badges/{id}        → AchievementBadgesScreen (focus a specific badge)
  *   carolinafutons://trails             → TrailsScreen (seasonal trail list)
  *   carolinafutons://trails/{trailId}   → TrailsScreen (specific trail)
  */
@@ -45,9 +47,11 @@ import type { RootStackParamList } from './AppNavigator';
 const normalizePathForLinking: NonNullable<
   LinkingOptions<RootStackParamList>['getStateFromPath']
 > = (path, options) => {
-  let normalized = path.replace(/^\/products\//, '/product/');
+  // Backend deepLinkService emits products/<id>; canonical mobile route is product/<slug>.
+  // Match with or without a leading slash because push payloads arrive in both forms.
+  let normalized = path.replace(/^\/?products\//, '/product/');
   normalized = normalized.replace(/^\/?store-locator(\/|$)/, '/stores$1');
-  // carolinafutons://badges → achievements (alias)
+  // carolinafutons://badges[/id] → achievements[/id] (alias)
   normalized = normalized.replace(/^\/?badges(\/|$)/, '/achievements$1');
   return getStateFromPath(normalized, options);
 };
@@ -87,10 +91,16 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       CollectionDetail: 'collections/:slug',
       ForgotPassword: 'forgot-password',
       StyleQuiz: 'style-quiz',
-      AchievementBadges: 'achievements',
+      AchievementBadges: {
+        path: 'achievements/:badgeId?',
+        parse: { badgeId: (id: string) => id },
+      },
       Notifications: 'alerts',
       Leaderboard: 'leaderboard',
-      Challenges: 'challenges',
+      Challenges: {
+        path: 'challenges/:challengeId?',
+        parse: { challengeId: (id: string) => id },
+      },
       AvatarEquip: 'avatar',
       RoomGallery: 'gallery',
       ConsultationBooking: 'consultation',
