@@ -235,10 +235,10 @@ export type RootStackParamList = {
   Premium: undefined;
   StyleQuiz: undefined;
   // Gamification screens
-  AchievementBadges: undefined;
+  AchievementBadges: { badgeId: string } | undefined;
   Notifications: undefined;
   Leaderboard: undefined;
-  Challenges: undefined;
+  Challenges: { challengeId: string } | undefined;
   AvatarEquip: undefined;
   RoomGallery: undefined;
   // User account screens

@@ -303,7 +303,9 @@ describe('linkingConfig — AchievementBadges and Notifications', () => {
   const screens = linkingConfig.config!.screens as any;
 
   it('maps AchievementBadges screen', () => {
-    expect(screens.AchievementBadges).toBe('achievements');
+    // cm-703: AchievementBadges now accepts an optional badgeId param
+    const ab = screens.AchievementBadges;
+    expect((ab as { path: string }).path).toBe('achievements/:badgeId?');
   });
 
   it('maps Notifications screen', () => {
@@ -331,7 +333,9 @@ describe('linkingConfig — gamification screens', () => {
   });
 
   it('maps Challenges screen', () => {
-    expect(screens.Challenges).toBe('challenges');
+    // cm-703: Challenges now accepts an optional challengeId param
+    const ch = screens.Challenges;
+    expect((ch as { path: string }).path).toBe('challenges/:challengeId?');
   });
 
   it('maps AvatarEquip screen', () => {
@@ -566,5 +570,106 @@ describe('SUPPORTED_PATHS — Trails and badges (cm-ay9)', () => {
 
   it('includes trails', () => {
     expect(SUPPORTED_PATHS).toContain('trails');
+  });
+});
+
+// ── cm-703: parametric deep links for gamification + product scheme handlers ──
+
+describe('linkingConfig — cm-703 parametric routes', () => {
+  const screens = linkingConfig.config!.screens as any;
+
+  it('maps Challenges with optional challengeId param', () => {
+    const ch = screens.Challenges;
+    expect(typeof ch).toBe('object');
+    expect((ch as { path: string }).path).toBe('challenges/:challengeId?');
+  });
+
+  it('maps AchievementBadges with optional badgeId param', () => {
+    const ab = screens.AchievementBadges;
+    expect(typeof ab).toBe('object');
+    expect((ab as { path: string }).path).toBe('achievements/:badgeId?');
+  });
+});
+
+describe('deep link route resolution — cm-703 parametric routes', () => {
+  describe('challenges/:challengeId', () => {
+    it('resolves bare /challenges to Challenges (no id)', () => {
+      expect(getScreen('challenges')).toBe('Challenges');
+      expect(getParams('challenges')?.challengeId).toBeUndefined();
+    });
+
+    it('resolves /challenges/:id to Challenges with challengeId', () => {
+      expect(getScreen('challenges/ch-1')).toBe('Challenges');
+      expect(getParams('challenges/ch-1')).toEqual({ challengeId: 'ch-1' });
+    });
+
+    it('resolves UUID-style challenge id', () => {
+      expect(getParams('challenges/abc-123-def')).toEqual({ challengeId: 'abc-123-def' });
+    });
+
+    it('resolves numeric challenge id', () => {
+      expect(getParams('challenges/42')).toEqual({ challengeId: '42' });
+    });
+  });
+
+  describe('badges/:badgeId (alias for achievements/:badgeId)', () => {
+    it('resolves bare /badges to AchievementBadges (no id)', () => {
+      expect(getScreen('badges')).toBe('AchievementBadges');
+      expect(getParams('badges')?.badgeId).toBeUndefined();
+    });
+
+    it('resolves /badges/:id to AchievementBadges with badgeId', () => {
+      expect(getScreen('badges/first-purchase')).toBe('AchievementBadges');
+      expect(getParams('badges/first-purchase')).toEqual({ badgeId: 'first-purchase' });
+    });
+
+    it('resolves /achievements/:id with badgeId (canonical path)', () => {
+      expect(getScreen('achievements/top-tier')).toBe('AchievementBadges');
+      expect(getParams('achievements/top-tier')).toEqual({ badgeId: 'top-tier' });
+    });
+
+    it('resolves numeric badge id', () => {
+      expect(getParams('badges/100')).toEqual({ badgeId: '100' });
+    });
+  });
+
+  describe('products/:id alias (backend-produced scheme)', () => {
+    it('resolves backend-produced carolinafutons://products/:id through ProductDetail', () => {
+      expect(getScreen('products/wix-sku-123')).toBe('ProductDetail');
+      expect(getParams('products/wix-sku-123')).toEqual({ slug: 'wix-sku-123' });
+    });
+  });
+
+  describe('leaderboard (no params)', () => {
+    it('resolves /leaderboard with no params', () => {
+      expect(getScreen('leaderboard')).toBe('Leaderboard');
+      expect(getParams('leaderboard')).toBeUndefined();
+    });
+  });
+
+  describe('malformed / edge-case inputs', () => {
+    it('ignores trailing slash on /challenges/', () => {
+      expect(getScreen('challenges/')).toBe('Challenges');
+    });
+
+    it('ignores trailing slash on /badges/', () => {
+      expect(getScreen('badges/')).toBe('AchievementBadges');
+    });
+
+    it('returns NO_MATCH for unknown top-level path', () => {
+      expect(getScreen('totally-unknown-route')).toBe('NO_MATCH');
+    });
+
+    it('does not misroute /challenges/foo/bar (extra segments) permissively', () => {
+      const screen = getScreen('challenges/foo/bar');
+      expect(['NO_MATCH', 'Challenges']).toContain(screen);
+      if (screen === 'Challenges') {
+        expect(getParams('challenges/foo/bar')?.challengeId).toBe('foo');
+      }
+    });
+
+    it('handles url-encoded challenge id', () => {
+      expect(getParams('challenges/ch%2D1')).toEqual({ challengeId: 'ch-1' });
+    });
   });
 });

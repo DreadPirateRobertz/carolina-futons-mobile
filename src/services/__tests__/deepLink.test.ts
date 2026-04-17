@@ -304,6 +304,102 @@ describe('deepLink', () => {
     });
   });
 
+  // ── cm-703: gamification route handlers ──────────────────────────────────
+  describe('resolveRoute — cm-703 gamification routes', () => {
+    it('resolves carolinafutons://challenges to Challenges (no id)', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://challenges'));
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route).toBe(false);
+    });
+
+    it('resolves carolinafutons://challenges/:id to Challenges with challengeId', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://challenges/ch-7'));
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route && route.params).toEqual({ challengeId: 'ch-7' });
+    });
+
+    it('resolves carolinafutons://leaderboard to Leaderboard', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://leaderboard'));
+      expect(route.screen).toBe('Leaderboard');
+      expect('params' in route).toBe(false);
+    });
+
+    it('resolves carolinafutons://badges to AchievementBadges (no id)', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://badges'));
+      expect(route.screen).toBe('AchievementBadges');
+      expect('params' in route).toBe(false);
+    });
+
+    it('resolves carolinafutons://badges/:id to AchievementBadges with badgeId', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://badges/first-purchase'));
+      expect(route.screen).toBe('AchievementBadges');
+      expect('params' in route && route.params).toEqual({ badgeId: 'first-purchase' });
+    });
+
+    it('resolves carolinafutons://trails to Trails (no id)', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://trails'));
+      expect(route.screen).toBe('Trails');
+      expect('params' in route).toBe(false);
+    });
+
+    it('resolves carolinafutons://trails/:id to Trails with trailId', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://trails/spring'));
+      expect(route.screen).toBe('Trails');
+      expect('params' in route && route.params).toEqual({ trailId: 'spring' });
+    });
+
+    it('resolves universal link https://carolinafutons.com/challenges/ch-1', () => {
+      const route = resolveRoute(parseDeepLink('https://carolinafutons.com/challenges/ch-1'));
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route && route.params).toEqual({ challengeId: 'ch-1' });
+    });
+
+    it('keeps UTM extraction working for gamification links', () => {
+      const parsed = parseDeepLink(
+        'https://carolinafutons.com/challenges/ch-1?utm_source=push&utm_medium=app',
+      );
+      expect(parsed.utm?.source).toBe('push');
+      expect(parsed.utm?.medium).toBe('app');
+      const route = resolveRoute(parsed);
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route && route.params).toEqual({ challengeId: 'ch-1' });
+    });
+  });
+
+  describe('resolveRoute — cm-703 edge cases', () => {
+    it('falls through to NotFound for unknown gamification-adjacent paths', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://gamification/foo'));
+      expect(route.screen).toBe('NotFound');
+    });
+
+    it('handles trailing slash on /challenges/', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://challenges/'));
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route).toBe(false);
+    });
+
+    it('handles trailing slash on /badges/', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://badges/'));
+      expect(route.screen).toBe('AchievementBadges');
+      expect('params' in route).toBe(false);
+    });
+
+    it('ignores extra segments beyond the id (takes first segment)', () => {
+      const route = resolveRoute(parseDeepLink('carolinafutons://challenges/ch-1/extra'));
+      expect(route.screen).toBe('Challenges');
+      expect('params' in route && route.params).toEqual({ challengeId: 'ch-1' });
+    });
+
+    it('passes url-encoded id through unchanged (documents current behavior)', () => {
+      // parseDeepLink does not decode path segments (only query params), so the
+      // raw encoded form flows through to the route. Documented so a future
+      // change is intentional.
+      const route = resolveRoute(parseDeepLink('carolinafutons://badges/top%20tier'));
+      expect(route.screen).toBe('AchievementBadges');
+      expect('params' in route && route.params).toEqual({ badgeId: 'top%20tier' });
+    });
+  });
+
   describe('deferred deep links', () => {
     it('stores and consumes a pending deep link', () => {
       storePendingDeepLink('carolinafutons://product/test');
