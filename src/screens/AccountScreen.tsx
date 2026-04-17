@@ -42,6 +42,7 @@ import { PremiumBadge } from '@/components/PremiumBadge';
 import { AccountGamificationHeader } from '@/components/AccountGamificationHeader';
 import { ShareSheet } from '@/components/ShareSheet';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
+import { AccountSkeleton } from '@/components/AccountSkeleton';
 
 /** Props for the AccountScreen component. */
 interface Props {
@@ -242,6 +243,10 @@ export function AccountScreen({
         : 'We could not find any previous purchases for this account.',
     );
   };
+
+  if (loading && !isAuthenticated && !user) {
+    return <AccountSkeleton testID="account-skeleton" />;
+  }
 
   if (!isAuthenticated || !user) {
     return (
