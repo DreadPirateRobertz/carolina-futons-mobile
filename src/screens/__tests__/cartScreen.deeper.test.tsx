@@ -129,9 +129,10 @@ beforeEach(() => {
 // ── Empty cart CTA accessibility ──────────────────────────────────────────────
 
 describe('empty cart CTA accessibility', () => {
-  it('empty state CTA has accessibilityRole button', () => {
+  it('empty state CTA has accessibilityRole button', async () => {
     const onContinueShopping = jest.fn();
-    const { getByTestId } = renderCartScreen({ onContinueShopping });
+    const { getByTestId, findByTestId } = renderCartScreen({ onContinueShopping });
+    await findByTestId('cart-empty-state-action');
     expect(getByTestId('cart-empty-state-action').props.accessibilityRole).toBe('button');
   });
 

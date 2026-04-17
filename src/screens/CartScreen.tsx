@@ -54,6 +54,7 @@ import { modelIdToProductId } from '@/utils';
 import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
+import { CartSkeleton } from '@/components/CartSkeleton';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
 const SHIPPING_THRESHOLD = 499;
@@ -90,6 +91,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
     clearCart,
     syncError,
     clearSyncError,
+    hydrated,
   } = useCart();
   const { isAuthenticated } = useAuth();
   const promo = usePromoCode();
@@ -149,6 +151,10 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
     },
     [updateQuantity, handleRemove],
   );
+
+  if (!hydrated && items.length === 0) {
+    return <CartSkeleton testID="cart-skeleton" />;
+  }
 
   if (items.length === 0) {
     return (

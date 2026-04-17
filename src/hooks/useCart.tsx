@@ -139,6 +139,8 @@ interface CartContextValue {
   syncError: string | null;
   /** Clear the current sync error. */
   clearSyncError: () => void;
+  /** True once initial AsyncStorage hydration has completed (with or without data). */
+  hydrated: boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -213,6 +215,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [] });
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
   const authCtx = useContext(AuthContext);
   const user = authCtx?.user ?? null;
   const prevUserRef = useRef<typeof user>(null);
@@ -291,6 +294,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {
         // AsyncStorage not available — operate in-memory
+      } finally {
+        setHydrated(true);
       }
     })();
   }, []);
@@ -458,6 +463,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       loadItems,
       syncError,
       clearSyncError,
+      hydrated,
     }),
     [
       state.items,
@@ -473,6 +479,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       loadItems,
       syncError,
       clearSyncError,
+      hydrated,
     ],
   );
 
