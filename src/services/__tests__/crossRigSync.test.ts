@@ -121,13 +121,30 @@ describe('sendCrossRigEvent', () => {
     await expect(sendCrossRigEvent(wixClient, '   ', 'quiz_completed', {})).rejects.toThrow();
   });
 
-  it('propagates wixClient.callFunction rejection', async () => {
+  // R6 updated for cm-006: single-leg Wix failure now logs instead of throws.
+  // Aggregate error only fires when BOTH legs fail (covered in crossRigSync.dualWrite.test.ts).
+  it('logs (does not throw) when only wixClient.callFunction rejects', async () => {
     const wixClient = makeMockWixClient(
       jest.fn().mockRejectedValue(new Error('[crossRigSync] network error')),
     );
-    await expect(sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {})).rejects.toThrow(
-      '[crossRigSync] network error',
+    // CFW leg succeeds — so only one leg fails, no aggregate throw
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('ok', { status: 200 }) as unknown as Response);
+    process.env.CROSS_RIG_SECRET = 'test-secret';
+    process.env.CFW_API_URL = 'https://api.carolinafutons.com';
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(
+      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
+    ).resolves.toBeUndefined();
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[crossRigSync] Wix leg failed'),
+      expect.anything(),
     );
+
+    jest.restoreAllMocks();
   });
 });
 

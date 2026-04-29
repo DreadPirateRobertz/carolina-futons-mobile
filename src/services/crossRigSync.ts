@@ -106,7 +106,11 @@ function assertMemberId(memberId: string): void {
 // ── sendCrossRigEvent ─────────────────────────────────────────────────────────
 
 /**
- * Send a cross-rig event to the web layer (cf-0cx crossRigEventReceiver).
+ * Send a cross-rig event to both the Wix backend and CFW API (cm-006 dual-write).
+ *
+ * Both legs fire concurrently via Promise.allSettled. A single-leg failure is
+ * logged but does not block the other. Both failing throws an aggregate error.
+ * If CROSS_RIG_SECRET is absent the CFW leg is skipped with a console.warn.
  *
  * @param wixClient - Authenticated Wix client with callFunction capability
  * @param memberId  - The authenticated member's ID (must be non-empty)
@@ -114,7 +118,7 @@ function assertMemberId(memberId: string): void {
  * @param payload   - Event-specific data (e.g. `{ badgeId }`, `{ tier }`)
  *
  * @throws {Error} if `memberId` is empty or whitespace
- * @throws {Error} if the wixClient call fails
+ * @throws {Error} if both legs fail
  */
 export async function sendCrossRigEvent(
   wixClient: WixClientLike,
@@ -124,12 +128,38 @@ export async function sendCrossRigEvent(
 ): Promise<void> {
   assertMemberId(memberId);
 
-  await wixClient.callFunction('crossRigEventReceiver', 'POST', {
-    memberId,
-    event,
-    payload,
-    sourceRig: CROSS_RIG_SOURCE,
+  const body = { memberId, event, payload, sourceRig: CROSS_RIG_SOURCE };
+
+  const wixLeg = wixClient.callFunction('crossRigEventReceiver', 'POST', body);
+
+  const secret = process.env.CROSS_RIG_SECRET;
+  if (!secret) {
+    console.warn('[crossRigSync] CROSS_RIG_SECRET not set — CFW leg skipped');
+    await wixLeg;
+    return;
+  }
+
+  const cfwLeg = fetch(`${process.env.CFW_API_URL}/api/cross-rig`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Cross-Rig-Secret': secret,
+    },
+    body: JSON.stringify(body),
   });
+
+  const [wixResult, cfwResult] = await Promise.allSettled([wixLeg, cfwLeg]);
+
+  if (wixResult.status === 'rejected') {
+    console.error('[crossRigSync] Wix leg failed', wixResult.reason);
+  }
+  if (cfwResult.status === 'rejected') {
+    console.error('[crossRigSync] CFW leg failed', cfwResult.reason);
+  }
+
+  if (wixResult.status === 'rejected' && cfwResult.status === 'rejected') {
+    throw new Error('[crossRigSync] dual-write: both legs failed');
+  }
 }
 
 // ── syncMobilePoints ──────────────────────────────────────────────────────────
