@@ -28,7 +28,8 @@ const LTL_THRESHOLD_LBS = 70;
 const FREIGHT_THRESHOLD_LBS = 500;
 
 function isNcZip(zip: string): boolean {
-  return zip.startsWith('27') || zip.startsWith('28');
+  const prefix = parseInt(zip.substring(0, 3), 10);
+  return prefix >= 270 && prefix <= 289;
 }
 
 function resolveDeliveryTier(zip: string, weightLbs: number): ShippingResult['deliveryTier'] {
