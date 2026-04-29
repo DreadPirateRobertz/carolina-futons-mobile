@@ -90,6 +90,44 @@ describe('calculateShipping — free shipping rules', () => {
   });
 });
 
+describe('calculateShipping — input validation', () => {
+  it('throws for negative itemWeightLbs', async () => {
+    await expect(
+      calculateShipping({ subtotal: 200, shippingZip: NON_NC_ZIP, isPremium: false, itemWeightLbs: -1 }),
+    ).rejects.toThrow('itemWeightLbs must be >= 0');
+  });
+
+  it('accepts zero weight', async () => {
+    const result = await calculateShipping({
+      subtotal: 200,
+      shippingZip: NON_NC_ZIP,
+      isPremium: false,
+      itemWeightLbs: 0,
+    });
+    expect(result.deliveryTier).toBe('parcel');
+  });
+
+  it('non-numeric zip string does not crash (treated as non-NC)', async () => {
+    const result = await calculateShipping({
+      subtotal: 200,
+      shippingZip: 'INVALID',
+      isPremium: false,
+      itemWeightLbs: 10,
+    });
+    expect(result.deliveryTier).toBe('parcel');
+  });
+
+  it('empty zip string does not crash (treated as non-NC)', async () => {
+    const result = await calculateShipping({
+      subtotal: 200,
+      shippingZip: '',
+      isPremium: false,
+      itemWeightLbs: 10,
+    });
+    expect(result.deliveryTier).toBe('parcel');
+  });
+});
+
 describe('calculateShipping — weight-based delivery tiers', () => {
   const base = { subtotal: 200, isPremium: false, shippingZip: NON_NC_ZIP };
 
@@ -110,6 +148,11 @@ describe('calculateShipping — weight-based delivery tiers', () => {
 
   it('assigns ltl tier at exactly 500 lbs (boundary)', async () => {
     const result = await calculateShipping({ ...base, itemWeightLbs: 500 });
+    expect(result.deliveryTier).toBe('ltl');
+  });
+
+  it('assigns ltl tier at 499.9 lbs (just under freight boundary)', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 499.9 });
     expect(result.deliveryTier).toBe('ltl');
   });
 
@@ -160,6 +203,36 @@ describe('calculateShipping — NC zip white-glove override', () => {
   it('zip starting with 29 is not NC', async () => {
     const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '29201' });
     expect(result.deliveryTier).toBe('parcel');
+  });
+
+  it('assigns white_glove at NC range lower boundary 27000', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '27000' });
+    expect(result.deliveryTier).toBe('white_glove');
+  });
+
+  it('assigns white_glove at NC range upper boundary 27999', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '27999' });
+    expect(result.deliveryTier).toBe('white_glove');
+  });
+
+  it('assigns white_glove at NC range lower boundary 28000', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '28000' });
+    expect(result.deliveryTier).toBe('white_glove');
+  });
+
+  it('assigns white_glove at NC range upper boundary 28999', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '28999' });
+    expect(result.deliveryTier).toBe('white_glove');
+  });
+
+  it('zip 26999 just outside NC range is not white_glove', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '26999' });
+    expect(result.deliveryTier).not.toBe('white_glove');
+  });
+
+  it('zip 29000 just outside NC range is not white_glove', async () => {
+    const result = await calculateShipping({ ...base, itemWeightLbs: 10, shippingZip: '29000' });
+    expect(result.deliveryTier).not.toBe('white_glove');
   });
 
   it('white_glove still applies free shipping for premium NC member', async () => {
