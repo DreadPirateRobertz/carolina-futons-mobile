@@ -376,6 +376,45 @@ describe('Error message content', () => {
   });
 });
 
+// ── Accessibility — cm-7s9 ────────────────────────────────────────────────────
+
+describe('Accessibility — badge cards + modal close (cm-7s9)', () => {
+  it('badge card has accessibilityRole=button', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    const card = getByTestId('badge-card-7');
+    expect(card.props.accessibilityRole).toBe('button');
+  });
+
+  it('earned badge card has descriptive accessibilityLabel', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    const card = getByTestId('badge-card-7');
+    expect(card.props.accessibilityLabel).toBeTruthy();
+    expect(card.props.accessibilityLabel).toMatch(/7.day/i);
+  });
+
+  it('locked badge card accessibilityLabel indicates locked state', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    const card = getByTestId('badge-card-14');
+    expect(card.props.accessibilityLabel).toBeTruthy();
+    expect(card.props.accessibilityLabel.toLowerCase()).toMatch(/lock|not earned|14.day/i);
+  });
+
+  it('modal close button has accessibilityRole=button', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    const closeBtn = getByTestId('badge-sheet-close');
+    expect(closeBtn.props.accessibilityRole).toBe('button');
+  });
+
+  it('modal close button has accessibilityLabel', () => {
+    const { getByTestId } = wrap(<AchievementBadgesScreen />);
+    fireEvent.press(getByTestId('badge-card-7'));
+    const closeBtn = getByTestId('badge-sheet-close');
+    expect(closeBtn.props.accessibilityLabel).toBeTruthy();
+    expect(closeBtn.props.accessibilityLabel.toLowerCase()).toMatch(/close/);
+  });
+});
+
 describe('Sheet description text', () => {
   it('earned sheet shows personalised description', () => {
     const { getByTestId } = wrap(<AchievementBadgesScreen />);
