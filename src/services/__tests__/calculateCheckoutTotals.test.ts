@@ -30,6 +30,7 @@ beforeEach(() => {
     freeShippingReason: 'threshold',
     fallback: false,
     estimatedDays: 5,
+    deliveryTier: 'parcel',
   });
 });
 
@@ -61,6 +62,7 @@ describe('calculateCheckoutTotals', () => {
       subtotal: 100,
       shippingZip: '28202',
       isPremium: true,
+      itemWeightLbs: 0,
     });
   });
 
@@ -85,6 +87,7 @@ describe('calculateCheckoutTotals', () => {
       freeShippingApplied: false,
       fallback: true,
       estimatedDays: 7,
+      deliveryTier: 'parcel',
     });
     mockCalculateTax.mockResolvedValue({
       taxAmount: 14.0,
