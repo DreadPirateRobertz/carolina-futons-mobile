@@ -135,7 +135,12 @@ export async function sendCrossRigEvent(
   const secret = process.env.CROSS_RIG_SECRET;
   if (!secret) {
     console.warn('[crossRigSync] CROSS_RIG_SECRET not set — CFW leg skipped');
-    await wixLeg;
+    try {
+      await wixLeg;
+    } catch (err) {
+      console.error('[crossRigSync] Wix leg failed', err);
+      throw err;
+    }
     return;
   }
 
