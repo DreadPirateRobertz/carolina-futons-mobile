@@ -41,6 +41,26 @@ function makeMockWixClient(callFunctionImpl?: jest.Mock): MockWixClient {
 // ── sendCrossRigEvent ─────────────────────────────────────────────────────────
 
 describe('sendCrossRigEvent', () => {
+  let origSecret: string | undefined;
+  let origCfwUrl: string | undefined;
+
+  beforeEach(() => {
+    origSecret = process.env.CROSS_RIG_SECRET;
+    origCfwUrl = process.env.CFW_API_URL;
+  });
+
+  afterEach(() => {
+    if (origSecret === undefined) {
+      delete process.env.CROSS_RIG_SECRET;
+    } else {
+      process.env.CROSS_RIG_SECRET = origSecret;
+    }
+    if (origCfwUrl === undefined) {
+      delete process.env.CFW_API_URL;
+    } else {
+      process.env.CFW_API_URL = origCfwUrl;
+    }
+  });
   it('resolves without error for quiz_completed event', async () => {
     const wixClient = makeMockWixClient();
     await expect(
@@ -119,6 +139,26 @@ describe('sendCrossRigEvent', () => {
   it('throws (or rejects) when memberId is whitespace only', async () => {
     const wixClient = makeMockWixClient();
     await expect(sendCrossRigEvent(wixClient, '   ', 'quiz_completed', {})).rejects.toThrow();
+  });
+
+  // cm-007: when secret is absent and wixLeg throws, error must be logged before re-throw
+  it('logs error and rethrows when CROSS_RIG_SECRET absent and wixLeg fails', async () => {
+    delete process.env.CROSS_RIG_SECRET;
+    const wixClient = makeMockWixClient(
+      jest.fn().mockRejectedValue(new Error('wix network error')),
+    );
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(
+      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
+    ).rejects.toThrow('wix network error');
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[crossRigSync] Wix leg failed'),
+      expect.anything(),
+    );
+
+    jest.restoreAllMocks();
   });
 
   // R6 updated for cm-006: single-leg Wix failure now logs instead of throws.
