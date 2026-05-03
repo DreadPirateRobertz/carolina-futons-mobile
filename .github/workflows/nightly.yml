@@ -1,9 +1,7 @@
 name: Nightly Integration
 
 on:
-  schedule:
-    - cron: '0 4 * * *' # 4 AM UTC daily
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch: # Manual trigger only — scheduled nightly runs disabled
 
 concurrency:
   group: nightly-${{ github.ref }}
