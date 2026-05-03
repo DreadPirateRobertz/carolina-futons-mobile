@@ -127,6 +127,12 @@ export function AchievementBadgesScreen() {
         <TouchableOpacity
           testID={`badge-card-${item.milestone}`}
           onPress={() => handleBadgePress(item)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isEarned
+              ? item.label + ' badge, ' + item.milestone + '-day streak achieved'
+              : item.label + ' badge, ' + item.milestone + '-day streak, not yet earned'
+          }
           style={[
             styles.badgeCard,
             {
@@ -272,6 +278,8 @@ export function AchievementBadgesScreen() {
               <TouchableOpacity
                 testID="badge-sheet-close"
                 onPress={handleClose}
+                accessibilityRole="button"
+                accessibilityLabel="Close badge details"
                 style={[
                   styles.closeBtn,
                   {
