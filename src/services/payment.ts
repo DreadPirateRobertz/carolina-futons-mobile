@@ -78,10 +78,11 @@ export async function calculateCheckoutTotals(
   subtotal: number,
   isPremium: boolean,
   shippingAddress: { state: string; zip: string; country: string },
+  itemWeightLbs = 0,
 ): Promise<OrderTotals & { taxJurisdiction: string; freeShippingApplied: boolean }> {
   const [taxResult, shippingResult] = await Promise.all([
     calculateTax({ subtotal, shippingAddress }),
-    calculateShipping({ subtotal, shippingZip: shippingAddress.zip, isPremium }),
+    calculateShipping({ subtotal, shippingZip: shippingAddress.zip, isPremium, itemWeightLbs }),
   ]);
 
   const total =

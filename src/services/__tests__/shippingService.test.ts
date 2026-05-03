@@ -93,7 +93,12 @@ describe('calculateShipping — free shipping rules', () => {
 describe('calculateShipping — input validation', () => {
   it('throws for negative itemWeightLbs', async () => {
     await expect(
-      calculateShipping({ subtotal: 200, shippingZip: NON_NC_ZIP, isPremium: false, itemWeightLbs: -1 }),
+      calculateShipping({
+        subtotal: 200,
+        shippingZip: NON_NC_ZIP,
+        isPremium: false,
+        itemWeightLbs: -1,
+      }),
     ).rejects.toThrow('itemWeightLbs must be >= 0');
   });
 

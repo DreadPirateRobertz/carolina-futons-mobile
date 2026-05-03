@@ -9,11 +9,7 @@
  * Secret missing: CFW leg skipped + console.warn, Wix leg fires normally.
  */
 
-import {
-  sendCrossRigEvent,
-  CROSS_RIG_SOURCE,
-  type CrossRigEventType,
-} from '../crossRigSync';
+import { sendCrossRigEvent, CROSS_RIG_SOURCE, type CrossRigEventType } from '../crossRigSync';
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 
@@ -159,9 +155,7 @@ describe('H — CFW request shape', () => {
 
 describe('W — Wix leg failure is isolated', () => {
   it('W1: CFW leg fires even when Wix leg throws', async () => {
-    const wixClient = makeMockWixClient(
-      jest.fn().mockRejectedValue(new Error('wix down')),
-    );
+    const wixClient = makeMockWixClient(jest.fn().mockRejectedValue(new Error('wix down')));
     const mockFetch = mockFetchOk();
 
     await sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {});
@@ -170,9 +164,7 @@ describe('W — Wix leg failure is isolated', () => {
   });
 
   it('W2: function does not throw on Wix-only failure', async () => {
-    const wixClient = makeMockWixClient(
-      jest.fn().mockRejectedValue(new Error('wix down')),
-    );
+    const wixClient = makeMockWixClient(jest.fn().mockRejectedValue(new Error('wix down')));
     mockFetchOk();
 
     await expect(
@@ -294,39 +286,31 @@ describe('S — secret missing guard', () => {
 
 describe('A — aggregate error when both legs fail', () => {
   it('A1: throws when both Wix and CFW legs fail', async () => {
-    const wixClient = makeMockWixClient(
-      jest.fn().mockRejectedValue(new Error('wix down')),
-    );
+    const wixClient = makeMockWixClient(jest.fn().mockRejectedValue(new Error('wix down')));
     jest.spyOn(global, 'fetch').mockRejectedValue(new Error('cfw down'));
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(
-      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
-    ).rejects.toThrow('[crossRigSync] dual-write: both legs failed');
+    await expect(sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {})).rejects.toThrow(
+      '[crossRigSync] dual-write: both legs failed',
+    );
   });
 
   it('A2: thrown error message references both failures', async () => {
-    const wixClient = makeMockWixClient(
-      jest.fn().mockRejectedValue(new Error('wix down')),
-    );
+    const wixClient = makeMockWixClient(jest.fn().mockRejectedValue(new Error('wix down')));
     jest.spyOn(global, 'fetch').mockRejectedValue(new Error('cfw down'));
     jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(
-      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
-    ).rejects.toThrow('[crossRigSync] dual-write: both legs failed');
+    await expect(sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {})).rejects.toThrow(
+      '[crossRigSync] dual-write: both legs failed',
+    );
   });
 
   it('A3: both errors logged before aggregate throw', async () => {
-    const wixClient = makeMockWixClient(
-      jest.fn().mockRejectedValue(new Error('wix down')),
-    );
+    const wixClient = makeMockWixClient(jest.fn().mockRejectedValue(new Error('wix down')));
     jest.spyOn(global, 'fetch').mockRejectedValue(new Error('cfw down'));
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(
-      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
-    ).rejects.toThrow();
+    await expect(sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {})).rejects.toThrow();
 
     expect(errorSpy).toHaveBeenCalledTimes(2);
   });
