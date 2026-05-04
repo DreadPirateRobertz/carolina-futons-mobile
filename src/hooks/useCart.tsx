@@ -377,8 +377,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (isOnlineRef.current) {
         const client = wixClientRef.current;
         if (client) {
+          const itemId = `${model.id}:${fabric.id}`;
           client.addToCart(model.id, quantity, fabric.id).catch(() => {
-            // Fire-and-forget: local cart is source of truth
+            dispatch({ type: 'REMOVE_ITEM', itemId });
+            setSyncError('Unable to sync cart — please try again');
           });
         }
       } else {
