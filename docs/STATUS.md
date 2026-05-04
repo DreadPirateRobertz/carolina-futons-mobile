@@ -1,20 +1,14 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 05:54 MDT (auto-refreshed every 20 min)
-
----
-
-## Android Build Artifacts
-
-(run gen-status.sh on pop-os for APK stats)
+> **Last updated:** 2026-05-04 05:58 MDT (auto-refreshed every 20 min)
 
 ---
 
 ## CI Status (last 3 runs)
 
+  FAILURE — fix(cm-b8y): resolve 14 CI test failures + exclude GT subdir (main)
   FAILURE — feat(cm-anr): wire SkeletonBox/SkeletonText into ProductCard (cm-anr-skeleton-integration)
   FAILURE — feat(cm-7wx): wire OfflineBanner pendingCount from AppShell (cm-7wx-appshell-offline-wiring)
-  FAILURE — fix(ci): resolve 4 TS/prettier errors breaking CI (main)
 
 ---
 
@@ -22,15 +16,15 @@
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 74058ed0 fix(ci): resolve 4 TS/prettier errors breaking CI
+**Last commit:** f081e55c fix(cm-b8y): resolve 14 CI test failures + exclude GT subdirs from jest
 
 **Recent commits:**
 ```
+f081e55c fix(cm-b8y): resolve 14 CI test failures + exclude GT subdirs from jest
+00d8a911 chore(status): auto-update [skip ci]
 74058ed0 fix(ci): resolve 4 TS/prettier errors breaking CI
 64c410b8 chore(status): auto-update [skip ci]
 15478bfb chore(status): auto-update [skip ci]
-86de9ebc chore(status): auto-update [skip ci]
-881cba40 fix(hq-bzb): update PDP recommendations test — skeleton testID rec-row-skeleton
 ```
 
 ---
@@ -48,9 +42,7 @@
 
 ---
 
-## Test Suite
+## Android Build / Test Suite
 
-  (run tests to refresh)
-
----
+(run gen-status.sh on pop-os for APK stats and full test counts)
 
