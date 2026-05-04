@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 00:45 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 00:56 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
+**Last commit:** 88b7a5da chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+88b7a5da chore(status): auto-update [skip ci]
 1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
 a8515467 chore(status): auto-update [skip ci]
 594e8c06 chore(status): auto-update [skip ci]
 a1f65392 chore(status): auto-update [skip ci]
-515dbd19 chore(status): auto-update [skip ci]
 ```
 
 ---
@@ -63,8 +63,8 @@ a1f65392 chore(status): auto-update [skip ci]
 
 ## Test Suite
 
-Test Suites: 2 failed, 2 skipped, 573 passed, 575 of 577 total
-Tests:       2 failed, 32 skipped, 10755 passed, 10789 total
+Test Suites: 3 failed, 2 skipped, 572 passed, 575 of 577 total
+Tests:       3 failed, 32 skipped, 10754 passed, 10789 total
 
 ---
 
