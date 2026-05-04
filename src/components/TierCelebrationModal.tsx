@@ -207,6 +207,7 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
         testID="tier-celebration-modal"
         style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.85)' }]}
         accessibilityViewIsModal
+        accessibilityLabel={tierLabel + ' tier celebration'}
       >
         {/* Confetti layer — hidden when reduce motion is enabled */}
         {!reduceMotion && (
@@ -233,7 +234,12 @@ export const TierCelebrationModal = memo(function TierCelebrationModal({
           ]}
         >
           {/* Animated badge */}
-          <Animated.View testID="tier-celebration-badge" style={[styles.badgeWrap, badgeStyle]}>
+          <Animated.View
+            testID="tier-celebration-badge"
+            style={[styles.badgeWrap, badgeStyle]}
+            accessibilityElementsHidden={true}
+            importantForAccessibility="no-hide-descendants"
+          >
             <Text style={styles.badgeEmoji}>{tierEmoji}</Text>
           </Animated.View>
 

@@ -14,6 +14,7 @@
  *       streak_milestone   → reportTriggers({ milestoneUnlocked: true })
  */
 import { useEffect } from 'react';
+import { AccessibilityInfo } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { dispatchCrossRigPush } from '@/services/crossRigPushDispatch';
 import {
@@ -37,6 +38,14 @@ export function GamificationPushBridge() {
       const memberId = typeof data.memberId === 'string' ? data.memberId : '';
 
       dispatchCrossRigPush(memberId, event, data);
+
+      if (event === 'badge_earned') {
+        const badgeName = typeof data.badgeName === 'string' ? data.badgeName : 'a badge';
+        AccessibilityInfo.announceForAccessibility('You earned ' + badgeName);
+      } else if (event === 'tier_changed') {
+        const newTier = typeof data.newTier === 'string' ? data.newTier : 'a new tier';
+        AccessibilityInfo.announceForAccessibility('You reached ' + newTier);
+      }
 
       handleGamificationPushEvent(data as GamificationPushPayload, {
         showBadgeToast,
