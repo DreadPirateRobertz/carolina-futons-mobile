@@ -7,8 +7,8 @@
  * individual products.
  */
 
-import React, { useCallback, useEffect } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback } from 'react';
+import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,8 +20,7 @@ import { useMiniCartDrawer } from '@/hooks/useMiniCartDrawer';
 import { CollectionCard } from '@/components/CollectionCard';
 import { PremiumBadge } from '@/components/PremiumBadge';
 import { Header } from '@/components/Header';
-import { SkeletonCollectionCard } from '@/components/SkeletonCollectionCard';
-import { ScreenDataState } from '@/components/ScreenDataState';
+import { SkeletonCollectionList } from '@/components/SkeletonCollectionCard';
 import { useScrollPerformance } from '@/hooks/useScrollPerformance';
 import type { RootStackParamList } from '@/navigation/AppNavigator';
 import type { EditorialCollection } from '@/data/collections';
@@ -46,12 +45,6 @@ export function CollectionsScreen() {
   const { itemCount } = useCart();
   const { open: openCart } = useMiniCartDrawer();
   const scrollPerf = useScrollPerformance('CollectionsScreen');
-
-  useEffect(() => {
-    if (error) {
-      console.error('[CollectionsScreen] collections fetch failed:', error);
-    }
-  }, [error]);
 
   const handleCollectionPress = useCallback(
     (collection: EditorialCollection) => {
@@ -123,61 +116,77 @@ export function CollectionsScreen() {
     [colors, spacing, typography],
   );
 
-  const skeleton = (
-    <View
-      testID="collections-skeleton"
-      style={{ paddingHorizontal: spacing.pagePadding, paddingTop: spacing.lg }}
-    >
-      {[0, 1, 2, 3].map((i) => (
-        <SkeletonCollectionCard key={i} testID={`skeleton-collection-card-${i}`} />
-      ))}
-    </View>
-  );
-
-  const renderContent = () => (
-    <ScreenDataState
-      isLoading={isLoading}
-      hasData={collections.length > 0}
-      error={error ? error.message || 'Something went wrong loading collections.' : null}
-      onRetry={refresh}
-      skeleton={skeleton}
-    >
-      {collections.length === 0 ? (
-        <View testID="collections-empty" style={styles.centerContent}>
-          <Text
-            testID="collections-empty-message"
-            style={[typography.body, { color: colors.espressoLight, textAlign: 'center' }]}
-          >
-            No collections available right now.
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          testID="collections-list"
-          data={collections}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          ItemSeparatorComponent={renderSeparator}
-          ListHeaderComponent={renderHeader}
-          contentContainerStyle={{
-            paddingTop: spacing.lg,
-            paddingBottom: insets.bottom + spacing.xl,
-          }}
-          showsVerticalScrollIndicator={false}
-          windowSize={5}
-          maxToRenderPerBatch={6}
-          removeClippedSubviews
-          getItemLayout={(_data, index) => ({
-            length: ESTIMATED_COLLECTION_CARD_HEIGHT,
-            offset: ESTIMATED_COLLECTION_CARD_HEIGHT * index,
-            index,
-          })}
-          onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
-          onScrollEndDrag={scrollPerf.onScrollEndDrag}
+  if (isLoading) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
         />
-      )}
-    </ScreenDataState>
-  );
+        <SkeletonCollectionList count={3} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
+        />
+        <Text
+          style={[styles.errorText, { color: colors.espresso }]}
+          testID="collections-error"
+        >
+          Couldn't load collections. Check your connection.
+        </Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: colors.sunsetCoral }]}
+          onPress={refresh}
+          testID="collections-retry"
+          accessibilityRole="button"
+        >
+          <Text style={[styles.retryButtonText, { color: colors.white }]}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (collections.length === 0) {
+    return (
+      <View
+        style={[styles.container, styles.centered, { backgroundColor: colors.sandBase }]}
+        testID="collections-screen"
+      >
+        <Header
+          title="Curated Looks"
+          showBack
+          cartCount={itemCount}
+          onCartPress={openCart}
+          testID="collections-header"
+        />
+        <Text
+          style={[styles.emptyText, { color: colors.espressoLight }]}
+          testID="collections-empty"
+        >
+          No collections available yet. Check back soon!
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -191,7 +200,29 @@ export function CollectionsScreen() {
         onCartPress={openCart}
         testID="collections-header"
       />
-      {renderContent()}
+      <FlatList
+        testID="collections-list"
+        data={collections}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ItemSeparatorComponent={renderSeparator}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={{
+          paddingTop: spacing.lg,
+          paddingBottom: insets.bottom + spacing.xl,
+        }}
+        showsVerticalScrollIndicator={false}
+        windowSize={5}
+        maxToRenderPerBatch={6}
+        removeClippedSubviews
+        getItemLayout={(_data, index) => ({
+          length: ESTIMATED_COLLECTION_CARD_HEIGHT,
+          offset: ESTIMATED_COLLECTION_CARD_HEIGHT * index,
+          index,
+        })}
+        onScrollBeginDrag={scrollPerf.onScrollBeginDrag}
+        onScrollEndDrag={scrollPerf.onScrollEndDrag}
+      />
     </View>
   );
 }
@@ -200,12 +231,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centerContent: {
-    flex: 1,
+  centered: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    gap: 16,
+  },
+  errorText: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginHorizontal: 32,
+    marginBottom: 20,
+  },
+  retryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  emptyText: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginHorizontal: 32,
   },
   earlyAccessOverlay: {
     flexDirection: 'row',

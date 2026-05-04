@@ -1,75 +1,87 @@
 /**
  * @module SkeletonCollectionCard
  *
- * Skeleton loading placeholder matching CollectionCard dimensions:
- * large hero image with title, subtitle, and mood tags below.
- * Used while editorial collections are loading.
+ * Skeleton loading placeholder matching CollectionCard's 'featured' variant:
+ * full-bleed image with a gradient overlay, title, and subtitle shimmers.
+ * Used while the EditorialCollections list is loading.
  *
- * cm-thv: CollectionsScreen skeleton / error / empty states
+ * cm-thv: CollectionsScreen error state + skeleton loader
  */
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';
-import { Shimmer, ShimmerLines } from './Shimmer';
+import { Shimmer } from './Shimmer';
 
-const HERO_HEIGHT = 220;
+const CARD_HEIGHT = 220;
 
-/** Skeleton placeholder matching a single featured CollectionCard. */
+/** Skeleton placeholder matching a single CollectionCard in 'featured' variant. */
 export const SkeletonCollectionCard = memo(function SkeletonCollectionCard({
   testID,
 }: {
   testID?: string;
 }) {
-  const { colors, borderRadius, shadows, spacing } = useTheme();
+  const { borderRadius, spacing } = useTheme();
 
   return (
     <View
-      style={[
-        styles.card,
-        shadows.card,
-        { backgroundColor: colors.white, borderRadius: borderRadius.card },
-      ]}
+      style={[styles.card, { borderRadius: borderRadius.card }]}
       testID={testID ?? 'skeleton-collection-card'}
       accessibilityLabel="Loading collection"
     >
-      {/* Hero image placeholder */}
-      <Shimmer
-        height={HERO_HEIGHT}
-        borderRadius={0}
-        style={{
-          width: '100%',
-          borderTopLeftRadius: borderRadius.card,
-          borderTopRightRadius: borderRadius.card,
-        }}
-      />
+      {/* Hero image shimmer */}
+      <Shimmer width="100%" height={CARD_HEIGHT} borderRadius={borderRadius.card} />
 
-      {/* Info area */}
-      <View style={[styles.info, { padding: spacing.md }]}>
+      {/* Bottom overlay: mood tags + title + subtitle */}
+      <View style={[styles.overlay, { padding: spacing.md }]}>
+        {/* Mood tag */}
+        <Shimmer width={60} height={12} borderRadius={4} style={{ marginBottom: spacing.xs }} />
         {/* Title */}
-        <ShimmerLines lines={1} lineHeight={18} gap={0} lastLineWidth="80%" />
+        <Shimmer width="70%" height={18} borderRadius={4} style={{ marginBottom: spacing.xs }} />
         {/* Subtitle */}
-        <Shimmer width="60%" height={13} style={{ marginTop: 6 }} />
-        {/* Mood tags */}
-        <View style={styles.tagsRow}>
-          <Shimmer width={60} height={22} borderRadius={11} />
-          <Shimmer width={50} height={22} borderRadius={11} />
-        </View>
+        <Shimmer width="50%" height={13} borderRadius={4} />
       </View>
     </View>
   );
 });
 
+/** Vertical list of skeleton collection cards matching CollectionsScreen layout. */
+export function SkeletonCollectionList({
+  count = 3,
+  testID,
+}: {
+  count?: number;
+  testID?: string;
+}) {
+  const { spacing } = useTheme();
+
+  return (
+    <View testID={testID ?? 'skeleton-collection-list'}>
+      {Array.from({ length: count }, (_, i) => (
+        <View
+          key={i}
+          style={[
+            styles.cardWrapper,
+            { paddingHorizontal: spacing.pagePadding, marginBottom: spacing.md },
+          ]}
+        >
+          <SkeletonCollectionCard testID={`skeleton-collection-${i}`} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   card: {
+    height: CARD_HEIGHT,
     overflow: 'hidden',
-    marginBottom: 12,
+    position: 'relative',
   },
-  info: {
-    gap: 4,
+  overlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
-  tagsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
-  },
+  cardWrapper: {},
 });

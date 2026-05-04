@@ -216,16 +216,14 @@ describe('CollectionsScreen — empty state content', () => {
     });
   });
 
-  it('empty state shows "No collections available right now."', () => {
+  it('empty state shows empty message', () => {
     const { getByText } = renderCollections();
-    expect(getByText('No collections available right now.')).toBeTruthy();
+    expect(getByText('No collections available yet. Check back soon!')).toBeTruthy();
   });
 
-  it('empty state has collections-empty-message testID with correct text', () => {
+  it('empty state has collections-empty testID', () => {
     const { getByTestId } = renderCollections();
-    expect(getByTestId('collections-empty-message').props.children).toBe(
-      'No collections available right now.',
-    );
+    expect(getByTestId('collections-empty')).toBeTruthy();
   });
 });
 
@@ -264,7 +262,7 @@ describe('CollectionsScreen — stale data', () => {
 // ── Error with Error object ───────────────────────────────────────────────────
 
 describe('CollectionsScreen — error message from Error.message', () => {
-  it('shows the Error.message text in error state', () => {
+  it('shows error state when error present', () => {
     mockUseCollections.mockReturnValue({
       collections: [],
       featured: [],
@@ -273,11 +271,11 @@ describe('CollectionsScreen — error message from Error.message', () => {
       error: new Error('Connection timeout'),
       refresh: jest.fn(),
     });
-    const { getByText } = renderCollections();
-    expect(getByText('Connection timeout')).toBeTruthy();
+    const { getByTestId } = renderCollections();
+    expect(getByTestId('collections-error')).toBeTruthy();
   });
 
-  it('shows fallback text when Error has no message', () => {
+  it('shows fixed error message regardless of error content', () => {
     const emptyError = new Error('');
     mockUseCollections.mockReturnValue({
       collections: [],
@@ -288,7 +286,7 @@ describe('CollectionsScreen — error message from Error.message', () => {
       refresh: jest.fn(),
     });
     const { getByText } = renderCollections();
-    expect(getByText('Something went wrong loading collections.')).toBeTruthy();
+    expect(getByText("Couldn't load collections. Check your connection.")).toBeTruthy();
   });
 });
 
