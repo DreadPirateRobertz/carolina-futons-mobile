@@ -1,19 +1,37 @@
-# Dallas PM Progress Report — FINAL (Mac session ending)
+# Dallas PM Progress Report
 
-**Updated:** 2026-05-04T17:14:24Z
-**Session:** 0fc77192 (2026-05-04) — WIND-DOWN COMPLETE
+**Updated:** 2026-05-04T17:24:10Z
+**Session:** 0fc77192 (2026-05-04)
 
-## Final Merges
-- de7593ed test(cm-9s8): deep link navigation integration tests
-- 230ab8c3 fix(cm-gdz): LoyaltyScreen perks error/race/a11y
-- 5718f7c8 test(cm-ad2): Sentry breadcrumb integration tests
-- 56eda2a8 fix(cm-kj9): error boundaries OnboardingScreen + OrderConfirmationScreen
-- a6ea387e test(cm-ty9): useCartSessions edge cases (13 tests)
+## Recent Commits (last 10)
+- ca352880 chore(report): final progress-report — Mac session wind-down [skip ci]
+- de7593ed test(cm-9s8): deep link navigation integration tests — cm-703 follow-up
+- 230ab8c3 fix(cm-gdz): LoyaltyScreen perks — error state + race condition + a11y
+- 9fc5b37d chore(report): progress-report update [skip ci]
+- 20f2d8f1 chore(status): auto-update [skip ci]
+- 520586af chore(report): progress-report update [skip ci]
+- 457c8a6a chore(report): progress-report update [skip ci]
+- 75a85ddb chore(status): auto-update [skip ci]
+- 1c952d41 chore(report): progress-report update [skip ci]
+- 39fd1e1c chore(report): progress-report update [skip ci]
 
-## Crew Status at Hand-off
-All crew migrated to Lenox (Linux/pop-os). Mac session deactivating.
-cm-rpz (P1 refinery bug) remains open — Linux Dallas to handle.
+## Open Crew PRs
+- (none)
 
-## Standing Directives Transferred
-- Progress report cron cancelled (session ending)
-- All work continues on Lenox
+## In-Progress Beads
+◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
+
+## Crew Status
+| Worker | Platform | Status |
+|--------|----------|--------|
+| bishop | Linux (Lenox) | Awaiting check-in |
+| ripley | Linux (Lenox) | Awaiting check-in |
+| hicks  | Linux (Lenox) | cm-f6h pending pickup |
+| nux    | Linux (Lenox) | cm-2ok pending pickup |
+| burke  | Linux (Lenox) | No response |
+
+## Standing Directives
+- All crew on Linux (Lenox/pop-os). Mac = coordination only.
+- Progress report cron: job cc3afc78, every 10 min
+- gen-status.sh: SSH jest hangs — using inline fallback
+- cm-rpz P1 (refinery test_command bug) open — needs Linux assignment
