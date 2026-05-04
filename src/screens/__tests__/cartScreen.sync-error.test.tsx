@@ -83,6 +83,11 @@ jest.mock('@/hooks/useBundleSuggestion', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useProductRecommendations', () => ({
+  useProductRecommendations: () => ({ recommendations: [], isLoading: false, error: null }),
+  clearRecommendationsCache: jest.fn(),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),
