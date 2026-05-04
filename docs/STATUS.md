@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 00:56 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 01:38 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -8,8 +8,8 @@
 
 | Build | Size | Timestamp | Path |
 |-------|------|-----------|------|
-| **Release APK** | 136M | 2026-04-12 19:01:46.811532435 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk` |
-| **Debug APK** | 109M | 2026-05-03 17:18:51.025906635 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/debug/app-debug.apk` |
+| **Release APK** | (unavailable) | (unavailable) | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk` |
+| **Debug APK** | (unavailable) | (unavailable) | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/debug/app-debug.apk` |
 
 To install on a connected device:
 ```
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 88b7a5da chore(status): auto-update [skip ci]
+**Last commit:** dffa4cf1 feat(hq-mtc6): EmptyState — rename message→subtitle, expand tests to 41, wire ARProductPicker (#535)
 
 **Recent commits:**
 ```
+dffa4cf1 feat(hq-mtc6): EmptyState — rename message→subtitle, expand tests to 41, wire ARProductPicker (#535)
+b6a17463 chore(status): auto-update [skip ci]
 88b7a5da chore(status): auto-update [skip ci]
 1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
 a8515467 chore(status): auto-update [skip ci]
-594e8c06 chore(status): auto-update [skip ci]
-a1f65392 chore(status): auto-update [skip ci]
 ```
 
 ---
@@ -63,8 +63,7 @@ a1f65392 chore(status): auto-update [skip ci]
 
 ## Test Suite
 
-Test Suites: 3 failed, 2 skipped, 572 passed, 575 of 577 total
-Tests:       3 failed, 32 skipped, 10754 passed, 10789 total
+(unavailable)
 
 ---
 
