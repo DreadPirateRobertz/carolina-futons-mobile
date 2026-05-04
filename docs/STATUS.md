@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 21:14 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 23:41 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 53531fc3 fix(hq-5sa4): a11y audit — GamificationPushBridge + TierCelebrationModal
+**Last commit:** 8660c47b chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+8660c47b chore(status): auto-update [skip ci]
 53531fc3 fix(hq-5sa4): a11y audit — GamificationPushBridge + TierCelebrationModal
 cdeeb40c feat(hq-kjyd): wire managePushPreferences Velo webMethod to mobile
 d6e4c42a feat(hq-452z): migrate 6 components from expo-image to AppImage
 b1d9a7c9 fix(hq-sxgx/hq-1e63): wire CFW dual-write + push pipeline
-bf074778 chore(status): auto-update [skip ci]
 ```
 
 ---
