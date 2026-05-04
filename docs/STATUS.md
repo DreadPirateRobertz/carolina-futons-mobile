@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 19:06 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 19:20 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -30,17 +30,17 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 ## Current Branch
 
-`cm-isj-sentry-flaky-fix` — ↑2 ↓2 vs origin/main
+`main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 187b216b fix(cm-isj): mock useWishlist in PDS tests — prevent async state leak
+**Last commit:** e493f163 chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
-187b216b fix(cm-isj): mock useWishlist in PDS tests — prevent async state leak
-1ff443e8 fix(cm-isj): sentry module isolation + PDS wishlist async leak
+e493f163 chore(status): auto-update [skip ci]
+0fc1f6a2 fix(cm-isj): mock useWishlist in PDS tests — prevent async state leak
+6b490e66 fix(cm-isj): sentry module isolation + PDS wishlist async leak
 16a4b46a fix(cm-b5f): addItem rollback + syncError on addToCart rejection (cm-vjz)
 a8316fbe fix(cm-b5f): add waitFor for hydration-dependent tests + mock useProductRecommendations
-bed42f3b fix(cm-b5f): CartScreen test isolation — mock useBundleSuggestion to prevent OOM
 ```
 
 ---
