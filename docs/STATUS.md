@@ -1,17 +1,17 @@
 # cfutons_mobile — Status
 
-**Updated:** 2026-05-04 16:22 MDT
+**Updated:** 2026-05-04 17:10 MDT
 **Branch:** main
-**Last commit:** 9e51b0b8 chore(report): progress-report update [skip ci]
+**Last commit:** c3937db2 chore(report): progress-report update [skip ci]
 
 ## Recent Commits
 | Hash | Message |
 |------|---------|
-| 9e51b0b8 | chore(report): progress-report update [skip ci] |
-| ff192880 | chore(report): progress-report update [skip ci] |
-| ecaa8cf4 | chore(status): auto-update [skip ci] |
-| 47a10dc7 | feat(cm-afw): ChallengesScreen — deeper tests + onChallengePress prop |
-| 68da257c | feat(cm-4ga): SavedAddressesScreen a11y audit + error state |
+| c3937db2 | chore(report): progress-report update [skip ci] |
+| ec7a6802 | chore(report): progress-report update [skip ci] |
+| d7a5b975 | feat(cm-4sp): BookingCancellationScreen a11y audit + deeper tests (burke) |
+| 173d741f | test(cm-2su): VisualSearchScreen + VisualSearchResultsScreen deeper tests (nux) |
+| 325d21fc | test(cm-gyd): StyleQuizScreen deeper edge-case suite — 26 tests |
 
 ## Open PRs
 Dependabot only — no crew feature PRs open.
@@ -24,8 +24,8 @@ Dependabot only — no crew feature PRs open.
 ## Crew Status
 | Member | Status | Bead |
 |--------|--------|------|
-| bishop | nudged — push pending | cm-8wc (bead closed, no branch on remote) |
-| hicks | hooked | cm-f6h (StoreLocatorScreen skeleton) |
-| ripley | nudged — push before /clear | cm-bue (branch lost) |
-| nux | complete | cm-afw ✓ |
-| burke | complete | cm-4ga ✓ |
+| bishop | hooked | cm-yex (WishlistScreen deeper tests) |
+| hicks | nudged | cm-f6h (StoreLocatorScreen skeleton) |
+| ripley | FINAL NOTICE | cm-bue (re-push or convoy closes without) |
+| nux | hooked | cm-4j2 (ARCameraScreen deeper tests) |
+| burke | hooked | cm-g5q (ProfileScreen a11y + deeper tests) |
