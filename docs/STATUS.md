@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 02:14 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 02:28 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 1eff0c7d feat(hq-yg56): SkeletonBox + SkeletonText shared primitives (#536)
+**Last commit:** 0bcbfc7a fix(gen-status): add --forceExit --maxWorkers=1 to jest call — stop zombie workers
 
 **Recent commits:**
 ```
+0bcbfc7a fix(gen-status): add --forceExit --maxWorkers=1 to jest call — stop zombie workers
+455a589d feat(hq-f8lt): ProductRecommendationRow — self-contained recommendation rail
+18007c37 chore(status): auto-update [skip ci]
 1eff0c7d feat(hq-yg56): SkeletonBox + SkeletonText shared primitives (#536)
 6343366c chore(status): auto-update [skip ci]
-047b65b2 chore(status): auto-update [skip ci]
-fe10abdc chore(status): auto-update [skip ci]
-e91c719d fix(jest): cap maxWorkers at 2 to prevent zombie worker RAM exhaustion
 ```
 
 ---
@@ -63,8 +63,8 @@ e91c719d fix(jest): cap maxWorkers at 2 to prevent zombie worker RAM exhaustion
 
 ## Test Suite
 
-Test Suites: 2 failed, 2 skipped, 573 passed, 575 of 577 total
-Tests:       2 failed, 32 skipped, 10755 passed, 10789 total
+Test Suites: 4 failed, 2 skipped, 572 passed, 576 of 578 total
+Tests:       4 failed, 32 skipped, 10790 passed, 10826 total
 
 ---
 
