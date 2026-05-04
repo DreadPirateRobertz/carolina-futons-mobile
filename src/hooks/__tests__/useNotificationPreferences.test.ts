@@ -48,8 +48,11 @@ jest.mock('@/services/pushPreferencesService', () => ({
 }));
 
 const mockCallFunction = jest.fn();
+let mockWixClientSingletonReturn: { callFunction: jest.Mock } | null = {
+  callFunction: mockCallFunction,
+};
 jest.mock('@/services/wix/wixClientSingleton', () => ({
-  getWixClientSingleton: () => ({ callFunction: mockCallFunction }),
+  getWixClientSingleton: () => mockWixClientSingletonReturn,
 }));
 
 // --- Tests ----------------------------------------------------------------
@@ -60,6 +63,7 @@ describe('useNotificationPreferences', () => {
     mockSavePreferences.mockResolvedValue(undefined);
     mockGetPushPreferences.mockResolvedValue(mockPreferences);
     mockUpdatePushPreferences.mockResolvedValue(undefined);
+    mockWixClientSingletonReturn = { callFunction: mockCallFunction };
   });
 
   describe('initial state', () => {
@@ -265,6 +269,50 @@ describe('useNotificationPreferences', () => {
           await result.current.toggle('questComplete');
         }),
       ).resolves.not.toThrow();
+    });
+  });
+
+  describe('null WixClient (unconfigured / offline singleton)', () => {
+    beforeEach(() => {
+      mockWixClientSingletonReturn = null;
+    });
+
+    it('does not call getPushPreferences when singleton returns null', async () => {
+      renderHook(() => useNotificationPreferences());
+      await waitFor(() => expect(mockGetPushPreferences).not.toHaveBeenCalled());
+    });
+
+    it('does not throw when singleton returns null on mount', async () => {
+      const { result } = renderHook(() => useNotificationPreferences());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.error).toBeNull();
+    });
+
+    it('toggle still saves locally when singleton returns null', async () => {
+      const { result } = renderHook(() => useNotificationPreferences());
+      await act(async () => {
+        await result.current.toggle('streakMilestone');
+      });
+      expect(mockSavePreferences).toHaveBeenCalledWith({
+        ...mockPreferences,
+        streakMilestone: false,
+      });
+    });
+
+    it('toggle does not call updatePushPreferences when singleton returns null', async () => {
+      const { result } = renderHook(() => useNotificationPreferences());
+      await act(async () => {
+        await result.current.toggle('questComplete');
+      });
+      expect(mockUpdatePushPreferences).not.toHaveBeenCalled();
+    });
+
+    it('toggle does not set error when singleton returns null (graceful skip)', async () => {
+      const { result } = renderHook(() => useNotificationPreferences());
+      await act(async () => {
+        await result.current.toggle('dailySpinReminder');
+      });
+      expect(result.current.error).toBeNull();
     });
   });
 });

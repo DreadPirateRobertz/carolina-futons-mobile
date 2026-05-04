@@ -53,6 +53,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
     (async () => {
       try {
         const client = getWixClientSingleton();
+        if (!client) return;
         await getPushPreferences(client);
       } catch {
         // Backend unavailable — local storage is authoritative
@@ -68,7 +69,7 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
       try {
         await savePreferences(updated);
         const client = getWixClientSingleton();
-        await updatePushPreferences(client, updated);
+        if (client) await updatePushPreferences(client, updated);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to save preferences'));
       } finally {
