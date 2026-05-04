@@ -5,11 +5,6 @@
  * contexts. Wires:
  *  - 24hr reminder (useCartAbandonmentReminder)
  *  - 1hr recovery push with web email dedup (useCartAbandonmentRecovery, hq-8k690)
- *
- * When itemCount transitions to 0 from non-zero (checkout completed), both
- * hooks' onOrderPlaced() are called to cancel scheduled pushes and clear
- * dedup state. On any other itemCount change, normal cart activity callbacks
- * fire.
  */
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { useCart } from '@/hooks/useCart';
@@ -38,14 +33,14 @@ export function CartAbandonmentBridge() {
   );
 
   // 24hr reminder
-  const { onCartChanged, onOrderPlaced: onReminderOrderPlaced } = useCartAbandonmentReminder({
+  const { onCartChanged } = useCartAbandonmentReminder({
     itemCount,
     cartRemindersEnabled: preferences.cartReminders,
     permissionGranted: pushPermitted,
   });
 
   // 1hr recovery push (hq-8k690)
-  const { onCartActivity, onOrderPlaced: onRecoveryOrderPlaced } = useCartAbandonmentRecovery({
+  const { onCartActivity } = useCartAbandonmentRecovery({
     items,
     subtotal,
     cartId,
@@ -54,30 +49,16 @@ export function CartAbandonmentBridge() {
   });
 
   const isFirstRender = useRef(true);
-  const prevItemCount = useRef(itemCount);
 
   useEffect(() => {
     // Skip initial mount to avoid scheduling on app launch
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      prevItemCount.current = itemCount;
       return;
     }
-
-    const prev = prevItemCount.current;
-    prevItemCount.current = itemCount;
-
-    // Cart emptied after having items — checkout completed or all items removed.
-    // Cancel any scheduled push and clear dedup state on both hooks.
-    if (itemCount === 0 && prev > 0) {
-      void onReminderOrderPlaced();
-      void onRecoveryOrderPlaced();
-      return;
-    }
-
     onCartChanged();
     onCartActivity();
-  }, [itemCount, onCartChanged, onCartActivity, onReminderOrderPlaced, onRecoveryOrderPlaced]);
+  }, [itemCount, onCartChanged, onCartActivity]);
 
   return null;
 }
