@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 00:26 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 00:34 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** a1f65392 chore(status): auto-update [skip ci]
+**Last commit:** 594e8c06 chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+594e8c06 chore(status): auto-update [skip ci]
 a1f65392 chore(status): auto-update [skip ci]
 515dbd19 chore(status): auto-update [skip ci]
 644f4794 chore(status): auto-update [skip ci]
 3ca689f1 perf(hq-1q82): GamificationPushBridge — latest-ref pattern, single listener registration (#533)
-0f1e3121 chore(status): auto-update [skip ci]
 ```
 
 ---
@@ -63,8 +63,8 @@ a1f65392 chore(status): auto-update [skip ci]
 
 ## Test Suite
 
-Test Suites: 2 skipped, 570 passed, 570 of 572 total
-Tests:       32 skipped, 10706 passed, 10738 total
+Test Suites: 2 failed, 2 skipped, 573 passed, 575 of 577 total
+Tests:       2 failed, 32 skipped, 10755 passed, 10789 total
 
 ---
 
