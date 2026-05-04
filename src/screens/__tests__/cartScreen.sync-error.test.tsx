@@ -70,6 +70,19 @@ jest.mock('@/services/wix/wixProvider', () => ({
   }),
 }));
 
+jest.mock('@/hooks/useBundleSuggestion', () => ({
+  useBundleSuggestion: () => ({
+    bundle: null,
+    bundleProducts: [],
+    pricing: null,
+    isLoading: false,
+    error: null,
+    addBundleToCart: jest.fn(),
+    isAddingToCart: false,
+    addSuccess: false,
+  }),
+}));
+
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn().mockResolvedValue(null),
   setItem: jest.fn().mockResolvedValue(undefined),

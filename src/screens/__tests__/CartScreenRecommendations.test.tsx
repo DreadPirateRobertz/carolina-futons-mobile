@@ -72,6 +72,20 @@ jest.mock('@/services/wix/wixProvider', () => ({
   }),
 }));
 
+// Mock useBundleSuggestion to prevent async Wix fetches accumulating across tests (cm-b5f).
+jest.mock('@/hooks/useBundleSuggestion', () => ({
+  useBundleSuggestion: () => ({
+    bundle: null,
+    bundleProducts: [],
+    pricing: null,
+    isLoading: false,
+    error: null,
+    addBundleToCart: jest.fn(),
+    isAddingToCart: false,
+    addSuccess: false,
+  }),
+}));
+
 // ── Controlled recommendation mock ────────────────────────────────────────────
 
 const mockProductRecommendations = jest.fn();
