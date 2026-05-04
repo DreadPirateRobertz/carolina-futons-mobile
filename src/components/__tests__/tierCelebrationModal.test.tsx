@@ -43,7 +43,7 @@ describe('TierCelebrationModal', () => {
 
     it('shows tier badge element', () => {
       const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
-      expect(getByTestId('tier-celebration-badge')).toBeTruthy();
+      expect(getByTestId('tier-celebration-badge', { includeHiddenElements: true })).toBeTruthy();
     });
 
     it('shows confetti container', () => {
@@ -83,10 +83,34 @@ describe('TierCelebrationModal', () => {
       expect(btn.props.accessibilityRole).toBe('button');
     });
 
+    it('dismiss button has descriptive accessibilityLabel', () => {
+      const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
+      const btn = getByTestId('tier-celebration-dismiss');
+      expect(btn.props.accessibilityLabel).toMatch(/Mountain Guide/i);
+    });
+
+    it('heading has accessibilityRole="header"', () => {
+      const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
+      const heading = getByTestId('tier-celebration-heading');
+      expect(heading.props.accessibilityRole).toBe('header');
+    });
+
     it('modal has accessibilityViewIsModal', () => {
       const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
       const modal = getByTestId('tier-celebration-modal');
       expect(modal.props.accessibilityViewIsModal).toBe(true);
+    });
+
+    it('modal overlay has an accessibilityLabel for screen readers', () => {
+      const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
+      const modal = getByTestId('tier-celebration-modal');
+      expect(modal.props.accessibilityLabel).toBeTruthy();
+    });
+
+    it('badge emoji container is hidden from accessibility tree (decorative)', () => {
+      const { getByTestId } = renderModal(LOYALTY_TIERS[1]);
+      const badge = getByTestId('tier-celebration-badge', { includeHiddenElements: true });
+      expect(badge.props.accessibilityElementsHidden).toBe(true);
     });
 
     it('renders without crash when reduced motion is enabled', () => {

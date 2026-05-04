@@ -7,6 +7,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import * as Notifications from 'expo-notifications';
 import { dispatchCrossRigPush } from '@/services/crossRigPushDispatch';
@@ -157,5 +158,60 @@ describe('GamificationPushBridge', () => {
     triggerPush({ event: 'badge_earned', badgeName: 'First AR', badgeId: 'ar-01' });
 
     expect(dispatchCrossRigPush).toHaveBeenCalledWith('', 'badge_earned', expect.anything());
+  });
+
+  describe('accessibility', () => {
+    let announceSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      announceSpy = jest
+        .spyOn(AccessibilityInfo, 'announceForAccessibility')
+        .mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      announceSpy.mockRestore();
+    });
+
+    it('announces badge_earned event to screen readers', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ event: 'badge_earned', memberId: 'member-1', badgeName: 'First AR' });
+
+      expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
+        expect.stringContaining('First AR'),
+      );
+    });
+
+    it('announces tier_changed event to screen readers', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ event: 'tier_changed', memberId: 'member-2', newTier: 'silver' });
+
+      expect(AccessibilityInfo.announceForAccessibility).toHaveBeenCalledWith(
+        expect.stringContaining('silver'),
+      );
+    });
+
+    it('does not announce for events with no recognized event field', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ someOtherField: 'value' });
+
+      expect(AccessibilityInfo.announceForAccessibility).not.toHaveBeenCalled();
+    });
+
+    it('does not announce for challenge_complete or streak_milestone (modal handles it)', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ event: 'challenge_complete', memberId: 'member-1', challengeName: 'AR Pro' });
+      triggerPush({ event: 'streak_milestone', memberId: 'member-1' });
+
+      expect(AccessibilityInfo.announceForAccessibility).not.toHaveBeenCalled();
+    });
   });
 });
