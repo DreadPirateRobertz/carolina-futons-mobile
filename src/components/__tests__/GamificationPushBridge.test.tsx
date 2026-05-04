@@ -12,6 +12,7 @@ import { AccessibilityInfo } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { dispatchCrossRigPush } from '@/services/crossRigPushDispatch';
 import { handleGamificationPushEvent } from '@/services/gamificationPushHandler';
+import { emitBadgeEarned } from '@/services/crossRigEventBus';
 import { GamificationPushBridge } from '../GamificationPushBridge';
 
 jest.mock('expo-notifications', () => ({
@@ -30,6 +31,14 @@ jest.mock('@/services/gamificationPushHandler', () => ({
     CHALLENGE_COMPLETE: 'challenge_complete',
     STREAK_MILESTONE: 'streak_milestone',
   },
+}));
+
+jest.mock('@/services/crossRigEventBus', () => ({
+  emitBadgeEarned: jest.fn().mockResolvedValue({ success: true }),
+}));
+
+jest.mock('@/services/wix/wixClientSingleton', () => ({
+  getWixClientSingleton: jest.fn(() => ({ callFunction: jest.fn() })),
 }));
 
 jest.mock('@/contexts/BadgeToastContext', () => ({
@@ -166,6 +175,48 @@ describe('GamificationPushBridge', () => {
     triggerPush({ event: 'badge_earned', badgeName: 'First AR', badgeId: 'ar-01' });
 
     expect(dispatchCrossRigPush).toHaveBeenCalledWith('', 'badge_earned', expect.anything());
+  });
+
+  describe('emitBadgeEarned cross-rig emission (hq-ap43)', () => {
+    it('calls emitBadgeEarned when badge_earned push arrives', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({
+        event: 'badge_earned',
+        memberId: 'member-1',
+        badgeName: 'First AR',
+        badgeId: 'ar-01',
+      });
+
+      expect(emitBadgeEarned).toHaveBeenCalledWith(
+        expect.anything(),
+        { badgeId: 'ar-01', badgeName: 'First AR' },
+        { memberId: 'member-1' },
+      );
+    });
+
+    it('uses empty string for badgeId when absent from payload', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ event: 'badge_earned', memberId: 'member-1', badgeName: 'First AR' });
+
+      expect(emitBadgeEarned).toHaveBeenCalledWith(
+        expect.anything(),
+        { badgeId: '', badgeName: 'First AR' },
+        { memberId: 'member-1' },
+      );
+    });
+
+    it('does not call emitBadgeEarned for tier_changed push', () => {
+      const { triggerPush } = setupListener();
+      render(<GamificationPushBridge />);
+
+      triggerPush({ event: 'tier_changed', memberId: 'member-2', newTier: 'silver' });
+
+      expect(emitBadgeEarned).not.toHaveBeenCalled();
+    });
   });
 
   describe('accessibility', () => {

@@ -49,6 +49,8 @@ interface Options {
   cartId: string;
   userId: string | null;
   pushPermitted: boolean;
+  /** Called when the 1hr abandonment timer fires and a recovery push is scheduled (hq-ap43). */
+  onAbandoned?: (cartTotal: number, itemCount: number) => void;
 }
 
 // ── Payload builder ──────────────────────────────────────────────────────────
@@ -72,7 +74,7 @@ export function buildRecoveryPayload(
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useCartAbandonmentRecovery(options: Options) {
-  const { items, subtotal, cartId, userId, pushPermitted } = options;
+  const { items, subtotal, cartId, userId, pushPermitted, onAbandoned } = options;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scheduledIdRef = useRef<string | null>(null);
 
@@ -82,6 +84,7 @@ export function useCartAbandonmentRecovery(options: Options) {
   const cartIdRef = useRef(cartId);
   const userIdRef = useRef(userId);
   const pushPermittedRef = useRef(pushPermitted);
+  const onAbandonedRef = useRef(onAbandoned);
 
   useEffect(() => {
     itemsRef.current = items;
@@ -89,7 +92,8 @@ export function useCartAbandonmentRecovery(options: Options) {
     cartIdRef.current = cartId;
     userIdRef.current = userId;
     pushPermittedRef.current = pushPermitted;
-  }, [items, subtotal, cartId, userId, pushPermitted]);
+    onAbandonedRef.current = onAbandoned;
+  }, [items, subtotal, cartId, userId, pushPermitted, onAbandoned]);
 
   // Load persisted state on mount
   useEffect(() => {
@@ -150,6 +154,9 @@ export function useCartAbandonmentRecovery(options: Options) {
       // Dedup flag: mobile push sent — web email should be suppressed.
       // TODO(cf-a220): sync to Wix member field once melania's endpoint ships.
       await AsyncStorage.setItem(DEDUP_KEY, currentUserId);
+
+      // Cross-rig: notify web layer that this cart was abandoned (hq-ap43).
+      onAbandonedRef.current?.(subtotalRef.current, itemCount);
     } catch {
       // Non-critical — don't crash the app for a notification failure
     }

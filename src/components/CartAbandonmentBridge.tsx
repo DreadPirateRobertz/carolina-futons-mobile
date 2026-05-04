@@ -11,12 +11,14 @@
  * dedup state. On any other itemCount change, normal cart activity callbacks
  * fire.
  */
-import { useContext, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useCartAbandonmentReminder } from '@/hooks/useCartAbandonmentReminder';
 import { useCartAbandonmentRecovery } from '@/hooks/useCartAbandonmentRecovery';
 import { AuthContext } from '@/hooks/useAuth';
+import { emitCartAbandoned } from '@/services/crossRigEventBus';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 
 export function CartAbandonmentBridge() {
   const { items, itemCount, subtotal } = useCart();
@@ -44,6 +46,17 @@ export function CartAbandonmentBridge() {
     permissionGranted: pushPermitted,
   });
 
+  const onAbandoned = useCallback(
+    (cartTotal: number, itemCount: number) => {
+      emitCartAbandoned(
+        getWixClientSingleton(),
+        { cartTotal, itemCount },
+        { memberId: userId ?? '' },
+      ).catch(() => {});
+    },
+    [userId],
+  );
+
   // 1hr recovery push (hq-8k690)
   const { onCartActivity, onOrderPlaced: onRecoveryOrderPlaced } = useCartAbandonmentRecovery({
     items,
@@ -51,6 +64,7 @@ export function CartAbandonmentBridge() {
     cartId,
     userId,
     pushPermitted,
+    onAbandoned,
   });
 
   const isFirstRender = useRef(true);

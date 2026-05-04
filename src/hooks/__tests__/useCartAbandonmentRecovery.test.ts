@@ -262,6 +262,55 @@ describe('useCartAbandonmentRecovery', () => {
     });
   });
 
+  // ── onAbandoned callback (hq-ap43) ─────────────────────────────────────
+
+  describe('onAbandoned callback', () => {
+    it('calls onAbandoned with cartTotal and itemCount when 1hr timer fires and push is scheduled', async () => {
+      const onAbandoned = jest.fn();
+      const opts = { ...DEFAULT_OPTS, onAbandoned };
+      const { result } = renderHook(() => useCartAbandonmentRecovery(opts));
+
+      await act(async () => {
+        result.current.onCartActivity();
+      });
+
+      jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
+      await act(async () => {});
+
+      expect(onAbandoned).toHaveBeenCalledWith(2397, 2);
+    });
+
+    it('does not call onAbandoned when cart is empty (push not scheduled)', async () => {
+      const onAbandoned = jest.fn();
+      const opts = { ...DEFAULT_OPTS, items: [], onAbandoned };
+      const { result } = renderHook(() => useCartAbandonmentRecovery(opts));
+
+      await act(async () => {
+        result.current.onCartActivity();
+      });
+
+      jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
+      await act(async () => {});
+
+      expect(onAbandoned).not.toHaveBeenCalled();
+    });
+
+    it('does not call onAbandoned when push is not permitted', async () => {
+      const onAbandoned = jest.fn();
+      const opts = { ...DEFAULT_OPTS, pushPermitted: false, onAbandoned };
+      const { result } = renderHook(() => useCartAbandonmentRecovery(opts));
+
+      await act(async () => {
+        result.current.onCartActivity();
+      });
+
+      jest.advanceTimersByTime(RECOVERY_TRIGGER_MS);
+      await act(async () => {});
+
+      expect(onAbandoned).not.toHaveBeenCalled();
+    });
+  });
+
   // ── Timer reset ────────────────────────────────────────────────────────
 
   describe('timer management', () => {

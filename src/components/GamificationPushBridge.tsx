@@ -21,6 +21,8 @@ import {
   handleGamificationPushEvent,
   type GamificationPushPayload,
 } from '@/services/gamificationPushHandler';
+import { emitBadgeEarned } from '@/services/crossRigEventBus';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { useBadgeToastContext } from '@/contexts/BadgeToastContext';
 import { useTriggerMomentsContext } from '@/contexts/TriggerMomentsContext';
 import type { ServerTriggers, ChallengeCompletedItem } from '@/hooks/useTriggerMoments';
@@ -54,7 +56,13 @@ export function GamificationPushBridge() {
 
       if (event === 'badge_earned') {
         const badgeName = typeof data.badgeName === 'string' ? data.badgeName : 'a badge';
+        const badgeId = typeof data.badgeId === 'string' ? data.badgeId : '';
         AccessibilityInfo.announceForAccessibility('You earned ' + badgeName);
+        emitBadgeEarned(
+          getWixClientSingleton(),
+          { badgeId, badgeName },
+          { memberId },
+        ).catch(() => {});
       } else if (event === 'tier_changed') {
         const newTier = typeof data.newTier === 'string' ? data.newTier : 'a new tier';
         AccessibilityInfo.announceForAccessibility('You reached ' + newTier);

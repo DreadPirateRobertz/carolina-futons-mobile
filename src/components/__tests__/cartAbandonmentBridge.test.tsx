@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { render, act } from '@testing-library/react-native';
+import { emitCartAbandoned } from '@/services/crossRigEventBus';
 import { CartAbandonmentBridge } from '../CartAbandonmentBridge';
 
 // ── mutable mock state (prefixed 'mock' so Jest hoisting allows factory access) ──
@@ -39,6 +40,14 @@ const mockOnCartActivity = jest.fn();
 const mockOnRecoveryOrderPlaced = jest.fn();
 
 // ── module mocks ──────────────────────────────────────────────────────────────
+
+jest.mock('@/services/crossRigEventBus', () => ({
+  emitCartAbandoned: jest.fn().mockResolvedValue({ success: true }),
+}));
+
+jest.mock('@/services/wix/wixClientSingleton', () => ({
+  getWixClientSingleton: jest.fn(() => ({ callFunction: jest.fn() })),
+}));
 
 jest.mock('@/hooks/useCart', () => ({
   useCart: () => mockCartState,
@@ -214,6 +223,29 @@ describe('CartAbandonmentBridge', () => {
       expect(mockOnRecoveryOrderPlaced).not.toHaveBeenCalled();
       expect(mockOnOrderPlaced).not.toHaveBeenCalled();
     });
+  });
+
+  describe('emitCartAbandoned cross-rig emission (hq-ap43)', () => {
+    it('passes onAbandoned callback to useCartAbandonmentRecovery', () => {
+      render(<CartAbandonmentBridge />);
+      const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
+      expect(callArgs?.onAbandoned).toBeInstanceOf(Function);
+    });
+
+    it('onAbandoned callback calls emitCartAbandoned with subtotal and itemCount', () => {
+      render(<CartAbandonmentBridge />);
+      const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
+      const onAbandoned = callArgs?.onAbandoned as (cartTotal: number, itemCount: number) => void;
+
+      onAbandoned(899, 2);
+
+      expect(emitCartAbandoned).toHaveBeenCalledWith(
+        expect.anything(),
+        { cartTotal: 899, itemCount: 2 },
+        { memberId: 'member-1' },
+      );
+    });
+
   });
 
   describe('cartId dep array — variant swap resets 1hr timer', () => {
