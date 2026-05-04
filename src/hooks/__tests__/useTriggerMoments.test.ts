@@ -610,8 +610,10 @@ describe('useTriggerMoments', () => {
     });
 
     it('is a no-op for an unrecognised tier name', async () => {
+      getItem.mockResolvedValue('Trail Blazer'); // skip baseline setItem call
       mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
       const { result } = renderHook(() => useTriggerMoments());
+      await waitFor(() => expect(getItem).toHaveBeenCalled());
 
       await act(async () => {
         result.current.reportTierChanged('Diamond Elite');
