@@ -17,7 +17,7 @@ import {
   Share,
   Platform,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import { useTheme } from '@/theme';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { formatPrice } from '@/utils';
@@ -134,7 +134,7 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
                 accessibilityRole="imagebutton"
               >
                 {item.uri ? (
-                  <Image
+                  <AppImage
                     source={{
                       uri:
                         wixImageUrl(item.uri, {
@@ -144,10 +144,8 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
                     }}
                     style={styles.galleryImage}
                     contentFit="cover"
-                    placeholder={{ blurhash: item.blurhash ?? DEFAULT_BLURHASH }}
+                    placeholder={item.blurhash ?? DEFAULT_BLURHASH}
                     transition={300}
-                    recyclingKey={item.uri}
-                    cachePolicy="memory-disk"
                     testID={`gallery-image-${index}`}
                   />
                 ) : (

@@ -9,7 +9,7 @@
 
 import React, { useCallback, memo } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import { useTheme } from '@/theme';
 import { StarRating } from './StarRating';
 import { Product, DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
@@ -56,7 +56,7 @@ export function RecommendationCarousel({
         ]}
       >
         {item.images[0] && (
-          <Image
+          <AppImage
             source={{ uri: asWebP(item.images[0].uri) }}
             style={[
               styles.image,
@@ -64,10 +64,8 @@ export function RecommendationCarousel({
             ]}
             contentFit="cover"
             transition={200}
-            recyclingKey={item.id}
             accessibilityLabel={item.images[0].alt}
-            cachePolicy="memory-disk"
-            placeholder={{ blurhash: item.images[0].blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
+            placeholder={item.images[0].blurhash ?? DEFAULT_PRODUCT_BLURHASH}
           />
         )}
         <View style={[styles.cardBody, { padding: spacing.sm }]}>

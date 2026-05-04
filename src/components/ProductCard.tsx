@@ -10,7 +10,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
 import {
@@ -65,13 +65,12 @@ function LifestylePhotoSlot({ lifestyleUri, productId: pId }: LifestylePhotoSlot
       testID={`product-lifestyle-photo-${pId}`}
       accessibilityLabel="Lifestyle room setting photo"
     >
-      <Image
+      <AppImage
         source={{ uri: wixImageUrl(uri, { width: 120, height: 80 }) ?? uri }}
         style={styles.lifestyleImage}
         contentFit="cover"
         transition={150}
-        placeholder={{ blurhash: DEFAULT_PRODUCT_BLURHASH }}
-        cachePolicy="memory-disk"
+        placeholder={DEFAULT_PRODUCT_BLURHASH}
       />
     </View>
   );
@@ -161,7 +160,7 @@ export const ProductCard = memo(function ProductCard({
             { borderTopLeftRadius: borderRadius.card, borderTopRightRadius: borderRadius.card },
           ]}
         >
-          <Image
+          <AppImage
             testID={`product-hero-image-${product.id}`}
             source={{
               uri:
@@ -174,11 +173,8 @@ export const ProductCard = memo(function ProductCard({
             style={styles.image}
             contentFit="cover"
             transition={200}
-            recyclingKey={product.id}
             accessibilityLabel={product.images[0]?.alt}
-            cachePolicy="memory-disk"
-            placeholder={{ blurhash: product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH }}
-            onLoadStart={imageTracking.onLoadStart}
+            placeholder={product.images[0]?.blurhash ?? DEFAULT_PRODUCT_BLURHASH}
             onLoad={imageTracking.onLoad}
           />
           {product.videoUri && (
