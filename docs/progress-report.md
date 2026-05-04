@@ -1,11 +1,12 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04 16:12 MDT
+**Updated:** 2026-05-04 16:18 MDT
 **Session:** 0fc77192 (2026-05-04)
 
 ## Last 10 Commits
 | Hash | Message |
 |------|---------|
+| ff192880 | chore(report): progress-report update [skip ci] |
 | ecaa8cf4 | chore(status): auto-update [skip ci] |
 | ed8299ea | chore(report): progress-report update [skip ci] |
 | 6b1d5cf2 | chore(report): progress-report update [skip ci] |
@@ -15,7 +16,6 @@
 | 177025a9 | chore(report): progress-report update [skip ci] |
 | 3d0dcb97 | chore(report): progress-report update [skip ci] |
 | 68da257c | feat(cm-4ga): SavedAddressesScreen a11y audit + error state |
-| 0bbc5568 | chore(status): auto-update [skip ci] |
 
 ## Open Crew PRs
 None (dependabot only).
@@ -41,3 +41,7 @@ None (dependabot only).
 - cm-afw: ChallengesScreen deeper tests + onChallengePress (nux, 46 tests)
 - cm-bue: PENDING re-merge (ripley branch lost)
 - cm-8wc: PENDING (bishop bead closed, no branch pushed)
+
+## Stilgar Directives Active
+- 30-min Discord DM cross-meeting cron: job 6f8bb36c (every 31 min)
+- Progress-report cron: job cc3afc78 (every 10 min)
