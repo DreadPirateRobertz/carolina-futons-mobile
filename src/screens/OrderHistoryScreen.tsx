@@ -11,7 +11,15 @@
  * hq-xdn: Refactored onto useOrderHistory hook — screen is a pure presentation layer.
  */
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Platform,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import { useTheme } from '@/theme';
 import { darkPalette } from '@/theme/tokens';
 import { EmptyState } from '@/components/EmptyState';
@@ -427,7 +435,8 @@ export function OrderHistoryScreen({
         testID="order-list"
         windowSize={5}
         maxToRenderPerBatch={8}
-        removeClippedSubviews
+        updateCellsBatchingPeriod={100}
+        removeClippedSubviews={Platform.OS === 'android'}
         initialNumToRender={6}
       />
 

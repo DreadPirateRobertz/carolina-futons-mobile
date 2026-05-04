@@ -8,7 +8,7 @@
  * for smooth scrolling on lower-end devices.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Platform, ScrollView } from 'react-native';
 import { BrandedSpinner } from '@/components/BrandedSpinner';
 import { SkeletonProductGrid } from '@/components/SkeletonProductCard';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -389,8 +389,9 @@ export function ShopScreen({ onProductPress, testID }: Props) {
         keyboardShouldPersistTaps="handled"
         windowSize={5}
         maxToRenderPerBatch={6}
+        updateCellsBatchingPeriod={100}
         initialNumToRender={4}
-        removeClippedSubviews
+        removeClippedSubviews={Platform.OS === 'android'}
         testID="product-list"
       />
       <CompareTray onNavigateToCompare={handleNavigateToCompare} testID="shop-compare-tray" />
