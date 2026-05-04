@@ -1,30 +1,20 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 04:46 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 05:54 MDT (auto-refreshed every 20 min)
 
 ---
 
 ## Android Build Artifacts
 
-| Build | Size | Timestamp | Path |
-|-------|------|-----------|------|
-| **Release APK** | 136M | 2026-04-12 19:01:46.811532435 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk` |
-| **Debug APK** | 109M | 2026-05-03 17:18:51.025906635 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/debug/app-debug.apk` |
-
-To install on a connected device:
-```
-adb install -r "~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk"
-```
-Or pull to Mac first:
-```
-scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk ~/Desktop/cf-latest.apk
-```
+(run gen-status.sh on pop-os for APK stats)
 
 ---
 
 ## CI Status (last 3 runs)
 
-  (gh not available)
+  FAILURE — feat(cm-anr): wire SkeletonBox/SkeletonText into ProductCard (cm-anr-skeleton-integration)
+  FAILURE — feat(cm-7wx): wire OfflineBanner pendingCount from AppShell (cm-7wx-appshell-offline-wiring)
+  FAILURE — fix(ci): resolve 4 TS/prettier errors breaking CI (main)
 
 ---
 
@@ -32,53 +22,35 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 15478bfb chore(status): auto-update [skip ci]
+**Last commit:** 74058ed0 fix(ci): resolve 4 TS/prettier errors breaking CI
 
 **Recent commits:**
 ```
+74058ed0 fix(ci): resolve 4 TS/prettier errors breaking CI
+64c410b8 chore(status): auto-update [skip ci]
 15478bfb chore(status): auto-update [skip ci]
 86de9ebc chore(status): auto-update [skip ci]
 881cba40 fix(hq-bzb): update PDP recommendations test — skeleton testID rec-row-skeleton
-15688f54 chore(status): auto-update [skip ci]
-86ab8627 chore(status): auto-update [skip ci]
 ```
 
 ---
 
 ## Open PRs
 
-  (gh not available)
-
----
-
-## Bead Progress
-
-### In Progress
-◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
-
-### Ready (no blockers)
-○ cfutons_mobile-rig-cfutons_mobile ● P2 cfutons_mobile
+  #537 feat(cm-anr): wire SkeletonBox/SkeletonText into Produc [cm-anr-skeleton-integration]
+  #536 feat(cm-7wx): wire OfflineBanner pendingCount from AppS [cm-7wx-appshell-offline-wiring]
+  #515 chore(deps-dev): bump the dev-dependencies group across [dependabot/npm_and_yarn/dev-dependencies-c105d44130]
+  #507 chore(deps): bump react-native from 0.83.2 to 0.85.1 [dependabot/npm_and_yarn/react-native-0.85.1]
+  #502 chore(deps): bump react-dom from 19.2.0 to 19.2.5 [dependabot/npm_and_yarn/react-dom-19.2.5]
+  #501 chore(deps): bump @stripe/stripe-react-native from 0.58 [dependabot/npm_and_yarn/stripe/stripe-react-native-0.63.0]
+  #500 chore(deps): bump react-native-gesture-handler from 2.3 [dependabot/npm_and_yarn/react-native-gesture-handler-2.31.1]
+  #498 chore(deps): bump react-native-purchases from 9.11.2 to [dependabot/npm_and_yarn/react-native-purchases-9.15.2]
 
 ---
 
 ## Test Suite
 
-Test Suites: 15 failed, 2 skipped, 562 passed, 577 of 579 total
-Tests:       341 failed, 32 skipped, 10473 passed, 10846 total
+  (run tests to refresh)
 
 ---
-
-## Build Instructions
-
-**Build release APK on Linux:**
-```bash
-ssh pop-os "source ~/.nvm/nvm.sh && cd ~/gt/cfutons_mobile && npm run build:android"
-# or manually:
-ssh pop-os "cd ~/gt/cfutons_mobile && ./android/gradlew -p android assembleRelease --no-daemon"
-```
-
-**Run tests on Linux:**
-```bash
-ssh pop-os "source ~/.nvm/nvm.sh && cd ~/gt/cfutons_mobile && npm test -- --ci"
-```
 
