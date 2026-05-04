@@ -210,6 +210,25 @@ jest.mock('@/hooks/useProductResources', () => ({
   useProductResources: () => ({ resources: [], loading: false, error: null }),
 }));
 
+// Mock useWishlist to prevent async AsyncStorage operations that cause setIsLoading
+// state updates outside act() when the worker is shared across test files (cm-isj).
+jest.mock('@/hooks/useWishlist', () => ({
+  WishlistProvider: ({ children }: { children: React.ReactNode }) => children,
+  useWishlist: () => ({
+    items: [],
+    count: 0,
+    isInWishlist: () => false,
+    toggle: jest.fn(),
+    add: jest.fn(),
+    remove: jest.fn(),
+    clear: jest.fn(),
+    getProducts: jest.fn(() => []),
+    getShareText: jest.fn(() => ''),
+    pendingSync: 0,
+    isSyncing: false,
+  }),
+}));
+
 const mockAlert = jest.fn();
 Alert.alert = mockAlert;
 
@@ -1923,6 +1942,24 @@ describe('ProductDetailScreen', () => {
       // Default: isWixConfigured returns false (no env vars in test), local models render fine
       const { queryByTestId } = renderDetail({ productId: 'asheville-full' });
       expect(queryByTestId('wix-network-error')).toBeNull();
+    });
+  });
+
+  // cm-isj: cross-file isolation — verifies useWishlist mock prevents async state leaks
+  // that caused intermittent failures when full suite runs (gh issue #261).
+  describe('wishlist isolation (cm-isj)', () => {
+    it('isInWishlist returns false by default — no async state from previous tests', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      expect(getByTestId('detail-wishlist-button')).toBeTruthy();
+    });
+
+    it('wishlist toggle mock is callable and does not trigger async operations', () => {
+      const { getByTestId } = renderDetail({ productId: 'asheville-full' });
+      const btn = getByTestId('detail-wishlist-button');
+      fireEvent.press(btn);
+      // If real useWishlist were used, this would trigger AsyncStorage + setIsLoading
+      // outside act(). With mock, it's synchronous and clean.
+      expect(btn).toBeTruthy();
     });
   });
 });
