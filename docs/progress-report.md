@@ -1,9 +1,10 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04T16:50:58Z
+**Updated:** 2026-05-04T17:00:59Z
 **Session:** 0fc77192 (2026-05-04)
 
 ## Recent Commits (last 10)
+- 457c8a6a chore(report): progress-report update [skip ci]
 - 75a85ddb chore(status): auto-update [skip ci]
 - 1c952d41 chore(report): progress-report update [skip ci]
 - 39fd1e1c chore(report): progress-report update [skip ci]
@@ -13,7 +14,6 @@
 - 8f06ca6c chore(status): auto-update [skip ci]
 - 25f00985 chore(report): progress-report update [skip ci]
 - 7700ee6a chore(report): init progress-report.md — Stilgar directive [skip ci]
-- fbc9e047 chore(status): auto-update [skip ci]
 
 ## Open Crew PRs
 - #539 fix(cm-gdz): LoyaltyScreen perks — error state + race + a11y
