@@ -385,7 +385,7 @@ export function WishlistScreen({ onProductPress, onBrowse, testID }: Props) {
       <EmptyState
         illustration={<WishlistIllustration testID="wishlist-illustration" />}
         title="Your wishlist is empty"
-        message="Save products you love and come back to them later."
+        subtitle="Save products you love and come back to them later."
         action={onBrowse ? { label: 'Start shopping', onPress: onBrowse } : undefined}
         testID="wishlist-empty"
       />

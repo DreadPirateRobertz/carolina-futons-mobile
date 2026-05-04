@@ -187,7 +187,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         <EmptyState
           icon="cart"
           title="Your cart is empty"
-          message="Browse our handcrafted futons and find the perfect fit for your space."
+          subtitle="Browse our handcrafted futons and find the perfect fit for your space."
           action={
             onContinueShopping
               ? { label: 'Start Shopping', onPress: onContinueShopping }

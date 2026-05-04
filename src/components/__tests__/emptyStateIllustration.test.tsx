@@ -13,7 +13,7 @@ describe('EmptyState — illustration prop', () => {
     const { getByTestId } = render(
       <EmptyState
         title="Empty"
-        message="Nothing here"
+        subtitle="Nothing here"
         illustration={<MockIllustration testID="my-illustration" />}
         testID="empty-state"
       />,
@@ -25,7 +25,7 @@ describe('EmptyState — illustration prop', () => {
     const { getByTestId, queryByTestId } = render(
       <EmptyState
         title="Empty"
-        message="Nothing here"
+        subtitle="Nothing here"
         icon="cart"
         illustration={<MockIllustration testID="my-illustration" />}
         testID="empty-state"
@@ -37,7 +37,7 @@ describe('EmptyState — illustration prop', () => {
 
   it('still renders icon when no illustration provided', () => {
     const { getByTestId } = render(
-      <EmptyState title="Empty" message="Nothing here" icon="cart" testID="empty-state" />,
+      <EmptyState title="Empty" subtitle="Nothing here" icon="cart" testID="empty-state" />,
     );
     expect(getByTestId('empty-state-icon')).toBeTruthy();
   });
