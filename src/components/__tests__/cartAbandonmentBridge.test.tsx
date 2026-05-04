@@ -123,8 +123,9 @@ describe('CartAbandonmentBridge', () => {
   });
 
   describe('pushPermitted derivation', () => {
-    it('is true when permissionStatus is granted', () => {
+    it('is true when permissionStatus is granted and cartRecovery enabled', () => {
       mockNotifState.permissionStatus = 'granted';
+      mockNotifState.preferences.cartRecovery = true;
       render(<CartAbandonmentBridge />);
       const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
       expect(callArgs?.pushPermitted).toBe(true);
@@ -218,7 +219,6 @@ describe('CartAbandonmentBridge', () => {
 
   describe('cartId dep array — variant swap resets 1hr timer', () => {
     it('calls onCartActivity when cartId changes but itemCount stays the same', async () => {
-      // Start with asheville:linen in cart
       mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:linen' }];
       mockCartState.itemCount = 1;
       const { rerender } = render(<CartAbandonmentBridge />);
@@ -227,7 +227,6 @@ describe('CartAbandonmentBridge', () => {
       await act(async () => {
         // User swaps to a different fabric — same quantity, different item id
         mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:charcoal' }];
-        // itemCount stays 1
         rerender(<CartAbandonmentBridge />);
       });
 
