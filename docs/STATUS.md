@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 02:06 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 02:14 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 047b65b2 chore(status): auto-update [skip ci]
+**Last commit:** 1eff0c7d feat(hq-yg56): SkeletonBox + SkeletonText shared primitives (#536)
 
 **Recent commits:**
 ```
+1eff0c7d feat(hq-yg56): SkeletonBox + SkeletonText shared primitives (#536)
+6343366c chore(status): auto-update [skip ci]
 047b65b2 chore(status): auto-update [skip ci]
 fe10abdc chore(status): auto-update [skip ci]
 e91c719d fix(jest): cap maxWorkers at 2 to prevent zombie worker RAM exhaustion
-a6b5702d chore(status): auto-update [skip ci]
-5420069b chore(status): auto-update [skip ci]
 ```
 
 ---
