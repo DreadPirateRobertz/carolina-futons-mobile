@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 18:14 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 18:28 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `cm-7s9-achievement-badges-a11y` — ↑0 ↓0 vs origin/main
 
-**Last commit:** e29f3644 chore(status): auto-update [skip ci]
+**Last commit:** a17df50e chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+a17df50e chore(status): auto-update [skip ci]
 e29f3644 chore(status): auto-update [skip ci]
 8a86d924 docs(status): session update 2026-05-03 18:01 MDT [skip ci]
 717f936c fix(cm-7s9): a11y — badge card + modal close button in AchievementBadgesScreen
 13ebb1c3 test(cm-7s9): TDD a11y tests for badge cards + modal close button
-f567930c chore: disable nightly integration schedule (#522)
 ```
 
 ---
@@ -57,6 +57,9 @@ f567930c chore: disable nightly integration schedule (#522)
 ◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
 
 ### Ready (no blockers)
+○ cm-isj ● P2 [bug] fix(ci): sentryCrashReporting.withSentry + ProductDetailScreen flaky in full suite
+○ cm-b5f ● P2 fix(ci): CartScreen test isolation — OOM SIGTERM after BundleSuggestion wire-in
+○ cm-7hg ● P2 fix(ci): SearchScreen test isolation — scope useFakeTimers to prevent OOM SIGTERM
 ○ cfutons_mobile-rig-cfutons_mobile ● P2 cfutons_mobile
 
 ---
