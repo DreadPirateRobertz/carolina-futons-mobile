@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 18:01 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 18:08 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -9,7 +9,7 @@
 | Build | Size | Timestamp | Path |
 |-------|------|-----------|------|
 | **Release APK** | 136M | 2026-04-12 19:01:46.811532435 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release.apk` |
-| **Debug APK** | 105M | 2026-04-13 22:15:38.312664691 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/debug/app-debug.apk` |
+| **Debug APK** | 109M | 2026-05-03 17:18:51.025906635 -0600 | `pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/debug/app-debug.apk` |
 
 To install on a connected device:
 ```
@@ -30,46 +30,41 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 ## Current Branch
 
-`main` — up to date with origin/main
+`cm-7s9-achievement-badges-a11y` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 717f936 fix(cm-7s9): a11y — badge card + modal close button in AchievementBadgesScreen
+**Last commit:** 8a86d924 docs(status): session update 2026-05-03 18:01 MDT [skip ci]
 
 **Recent commits:**
 ```
-717f936 fix(cm-7s9): a11y — AchievementBadgesScreen badge cards + modal close
-13ebb1c test(cm-7s9): TDD a11y tests for badge cards + modal close button
-f567930 chore: disable nightly integration schedule (#522)
-817b632 fix(cm-007,cm-008): crossRigSync secret-absent error logging + env var cleanup (#521)
-5f2be08 fix(ci): TypeScript + prettier failures blocking CI since cm-001 (#520)
+8a86d924 docs(status): session update 2026-05-03 18:01 MDT [skip ci]
+717f936c fix(cm-7s9): a11y — badge card + modal close button in AchievementBadgesScreen
+13ebb1c3 test(cm-7s9): TDD a11y tests for badge cards + modal close button
+f567930c chore: disable nightly integration schedule (#522)
+817b6324 fix(cm-007,cm-008): crossRigSync secret-absent error logging + env var cleanup (#521)
 ```
 
 ---
 
 ## Open PRs
 
-- **CFW PR #315** `cm-002-ar-model-viewer` — AR model-viewer on CFW PDP (CI running)
-  - ripley's ArModelViewer component + dallas models3d catalog + catalog-guarded render
-  - 29 vitest tests pass, typecheck clean
+  (gh not available)
 
 ---
 
 ## Bead Progress
 
-### Completed This Session
-✓ cm-7s9 — AchievementBadgesScreen a11y (badge card + modal close) — PR #523 merged
-✓ cm-2c8 — LeaderboardScreen a11y — already fixed by cm-b6v, closed
-✓ hq-wegjr — CROSS_RIG_SECRET provisioning — mobile .env set, CFW .env.local set
-✓ cm-002 (CFW) — AR model-viewer on PDP — PR #315 open, CI running
+### In Progress
+◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
 
-### No Open cfutons_mobile Beads
-All current P1 beads closed. System up to date.
+### Ready (no blockers)
+○ cfutons_mobile-rig-cfutons_mobile ● P2 cfutons_mobile
 
 ---
 
 ## Test Suite
 
-Test Suites: 601 test files (from npx jest --listTests)
-Latest run: 56/56 AchievementBadgesScreen, 31/31 LeaderboardScreen — all passing
+Test Suites: 2 skipped, 564 passed, 564 of 566 total
+Tests:       31 skipped, 10578 passed, 10609 total
 
 ---
 
