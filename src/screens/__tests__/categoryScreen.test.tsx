@@ -208,4 +208,29 @@ describe('CategoryScreen', () => {
       expect(flatList.props.refreshControl).toBeTruthy();
     });
   });
+
+  describe('skeleton loading state', () => {
+    it('shows skeleton grid immediately before data loads', () => {
+      const { getByTestId } = render(
+        <ThemeProvider>
+          <WishlistProvider>
+            <CompareProvider>
+              <CategoryScreen onProductPress={jest.fn()} onBack={jest.fn()} categoryId="futons" />
+            </CompareProvider>
+          </WishlistProvider>
+        </ThemeProvider>,
+      );
+      expect(getByTestId('skeleton-category-grid')).toBeTruthy();
+    });
+
+    it('skeleton grid is NOT shown after data loads', async () => {
+      const { queryByTestId } = await renderCategory({ categoryId: 'futons' });
+      expect(queryByTestId('skeleton-category-grid')).toBeNull();
+    });
+
+    it('product list IS shown after data loads', async () => {
+      const { getByTestId } = await renderCategory({ categoryId: 'futons' });
+      expect(getByTestId('category-product-list')).toBeTruthy();
+    });
+  });
 });

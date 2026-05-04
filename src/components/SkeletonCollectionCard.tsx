@@ -1,26 +1,17 @@
-/**
- * @module SkeletonCollectionCard
- *
- * Skeleton loading placeholder matching CollectionCard dimensions:
- * large hero image with title, subtitle, and mood tags below.
- * Used while editorial collections are loading.
- *
- * cm-thv: CollectionsScreen skeleton / error / empty states
- */
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';
-import { Shimmer, ShimmerLines } from './Shimmer';
+import { SkeletonBox, SkeletonText } from './Skeleton';
 
 const HERO_HEIGHT = 220;
 
-/** Skeleton placeholder matching a single featured CollectionCard. */
 export const SkeletonCollectionCard = memo(function SkeletonCollectionCard({
   testID,
 }: {
   testID?: string;
 }) {
   const { colors, borderRadius, shadows, spacing } = useTheme();
+  const id = testID ?? 'skeleton-collection-card';
 
   return (
     <View
@@ -29,11 +20,11 @@ export const SkeletonCollectionCard = memo(function SkeletonCollectionCard({
         shadows.card,
         { backgroundColor: colors.white, borderRadius: borderRadius.card },
       ]}
-      testID={testID ?? 'skeleton-collection-card'}
+      testID={id}
       accessibilityLabel="Loading collection"
     >
-      {/* Hero image placeholder */}
-      <Shimmer
+      <SkeletonBox
+        testID={`${id}-image`}
         height={HERO_HEIGHT}
         borderRadius={0}
         style={{
@@ -43,16 +34,12 @@ export const SkeletonCollectionCard = memo(function SkeletonCollectionCard({
         }}
       />
 
-      {/* Info area */}
       <View style={[styles.info, { padding: spacing.md }]}>
-        {/* Title */}
-        <ShimmerLines lines={1} lineHeight={18} gap={0} lastLineWidth="80%" />
-        {/* Subtitle */}
-        <Shimmer width="60%" height={13} style={{ marginTop: 6 }} />
-        {/* Mood tags */}
+        <SkeletonText testID={`${id}-title`} lines={1} lineHeight={18} />
+        <SkeletonBox width="60%" height={13} borderRadius={4} style={{ marginTop: 6 }} />
         <View style={styles.tagsRow}>
-          <Shimmer width={60} height={22} borderRadius={11} />
-          <Shimmer width={50} height={22} borderRadius={11} />
+          <SkeletonBox width={60} height={22} borderRadius={11} />
+          <SkeletonBox width={50} height={22} borderRadius={11} />
         </View>
       </View>
     </View>

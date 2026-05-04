@@ -156,7 +156,7 @@ describe('CollectionsScreen — skeleton loading', () => {
       isLoading: true,
     });
     const { getAllByTestId } = renderCollectionsScreen();
-    expect(getAllByTestId(/^skeleton-collection-card-/).length).toBe(4);
+    expect(getAllByTestId(/^skeleton-collection-card-\d+$/).length).toBe(4);
   });
 
   it('does not show error state while loading', () => {
