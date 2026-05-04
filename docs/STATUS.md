@@ -1,17 +1,17 @@
 # cfutons_mobile — Status
 
-**Updated:** 2026-05-04 17:10 MDT
+**Updated:** 2026-05-04 17:43 MDT
 **Branch:** main
-**Last commit:** c3937db2 chore(report): progress-report update [skip ci]
+**Last commit:** 47bd04da chore(report): progress-report update [skip ci]
 
 ## Recent Commits
 | Hash | Message |
 |------|---------|
-| c3937db2 | chore(report): progress-report update [skip ci] |
-| ec7a6802 | chore(report): progress-report update [skip ci] |
-| d7a5b975 | feat(cm-4sp): BookingCancellationScreen a11y audit + deeper tests (burke) |
-| 173d741f | test(cm-2su): VisualSearchScreen + VisualSearchResultsScreen deeper tests (nux) |
-| 325d21fc | test(cm-gyd): StyleQuizScreen deeper edge-case suite — 26 tests |
+| 47bd04da | chore(report): progress-report update [skip ci] |
+| e463da60 | test(cm-2a2): OrderDetailScreen deeper edge-case suite (bishop) |
+| d87c97d2 | test(cm-5xf): NotificationsScreen deeper edge cases (ripley) |
+| 90e1904c | test(cm-4j2): ARCameraScreen deeper tests (nux) |
+| 2b47d148 | test(cm-yex): WishlistScreen deeper edge-case test suite (bishop) |
 
 ## Open PRs
 Dependabot only — no crew feature PRs open.
@@ -20,12 +20,14 @@ Dependabot only — no crew feature PRs open.
 | Bead | Priority | Title |
 |------|----------|-------|
 | cm-rpz | P1 | Refinery test_command misconfigured (refinery-owned) |
+| cm-7s4 | P2 | PushNotificationScreen: deeper tests (bishop) |
+| cm-f6h | P2 | StoreLocatorScreen + StoreDetailScreen skeleton loading states (hicks) |
 
 ## Crew Status
 | Member | Status | Bead |
 |--------|--------|------|
-| bishop | hooked | cm-yex (WishlistScreen deeper tests) |
-| hicks | nudged | cm-f6h (StoreLocatorScreen skeleton) |
-| ripley | FINAL NOTICE | cm-bue (re-push or convoy closes without) |
-| nux | hooked | cm-4j2 (ARCameraScreen deeper tests) |
+| bishop | hooked | cm-7s4 (PushNotificationScreen deeper tests) |
+| hicks | overdue — re-nudged | cm-f6h (StoreLocator skeleton) |
+| ripley | hooked | cm-z49 (SearchScreen deeper tests) |
+| nux | hooked | cm-ggn (CheckoutScreen deeper tests) |
 | burke | hooked | cm-g5q (ProfileScreen a11y + deeper tests) |
