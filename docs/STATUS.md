@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 17:08 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 18:01 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -30,43 +30,46 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 ## Current Branch
 
-`ci-fix-typecheck-lint` — ↑0 ↓0 vs origin/main
+`main` — up to date with origin/main
 
-**Last commit:** 7aeba4cf feat(cm-006): dual-write sendCrossRigEvent to Wix + CFW
+**Last commit:** 717f936 fix(cm-7s9): a11y — badge card + modal close button in AchievementBadgesScreen
 
 **Recent commits:**
 ```
-7aeba4cf feat(cm-006): dual-write sendCrossRigEvent to Wix + CFW
-944ab952 docs(cm-006): TDD spec for Channel A dual-write (Wix + CFW legs)
-019f3dfa fix(cm-001): align isNcZip to CFW numeric prefix range 270-289
-b5e87407 fix(cm-001): restore weight tier impl + add bishop's edge cases
-39732d20 docs(cm-001): TDD spec for weight tiers — regression map + gap analysis
+717f936 fix(cm-7s9): a11y — AchievementBadgesScreen badge cards + modal close
+13ebb1c test(cm-7s9): TDD a11y tests for badge cards + modal close button
+f567930 chore: disable nightly integration schedule (#522)
+817b632 fix(cm-007,cm-008): crossRigSync secret-absent error logging + env var cleanup (#521)
+5f2be08 fix(ci): TypeScript + prettier failures blocking CI since cm-001 (#520)
 ```
 
 ---
 
 ## Open PRs
 
-  (gh not available)
+- **CFW PR #315** `cm-002-ar-model-viewer` — AR model-viewer on CFW PDP (CI running)
+  - ripley's ArModelViewer component + dallas models3d catalog + catalog-guarded render
+  - 29 vitest tests pass, typecheck clean
 
 ---
 
 ## Bead Progress
 
-### In Progress
-◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
+### Completed This Session
+✓ cm-7s9 — AchievementBadgesScreen a11y (badge card + modal close) — PR #523 merged
+✓ cm-2c8 — LeaderboardScreen a11y — already fixed by cm-b6v, closed
+✓ hq-wegjr — CROSS_RIG_SECRET provisioning — mobile .env set, CFW .env.local set
+✓ cm-002 (CFW) — AR model-viewer on PDP — PR #315 open, CI running
 
-### Ready (no blockers)
-○ cm-7s9 ● P1 a11y: AchievementBadgesScreen — badge press + modal close buttons missing accessibilityLabel/Role
-○ cm-2c8 ● P1 a11y: LeaderboardScreen — period-tab and refresh TouchableOpacity missing accessibilityRole/Label
-○ cfutons_mobile-rig-cfutons_mobile ● P2 cfutons_mobile
+### No Open cfutons_mobile Beads
+All current P1 beads closed. System up to date.
 
 ---
 
 ## Test Suite
 
-Test Suites: 2 skipped, 429 passed, 429 of 431 total
-Tests:       32 skipped, 7455 passed, 7487 total
+Test Suites: 601 test files (from npx jest --listTests)
+Latest run: 56/56 AchievementBadgesScreen, 31/31 LeaderboardScreen — all passing
 
 ---
 
