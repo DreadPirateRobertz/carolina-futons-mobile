@@ -16,7 +16,6 @@ import {
   FlatList,
   Modal,
   TouchableOpacity,
-  ActivityIndicator,
   StyleSheet,
   Dimensions,
 } from 'react-native';
@@ -25,6 +24,7 @@ import { darkPalette } from '@/theme/tokens';
 import { useAchievements } from '@/hooks/useAchievements';
 import type { Achievement } from '@/hooks/useAchievements';
 import { BadgeSvgIcon } from '@/components/BadgeSvgIcon';
+import { SkeletonBadgeGrid } from '@/components/SkeletonBadgeCard';
 
 // ── Badge catalog ─────────────────────────────────────────────────────────────
 
@@ -95,7 +95,12 @@ function formatDate(iso: string): string {
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
-export function AchievementBadgesScreen() {
+export interface AchievementBadgesScreenProps {
+  testID?: string;
+}
+
+export function AchievementBadgesScreen({ testID }: AchievementBadgesScreenProps = {}) {
+  const id = testID ?? 'achievements-screen';
   const { colors, spacing, borderRadius } = useTheme();
   const { achievements, loading, error } = useAchievements();
   const [selected, setSelected] = useState<SelectedBadge | null>(null);
@@ -178,11 +183,8 @@ export function AchievementBadgesScreen() {
 
   if (loading) {
     return (
-      <View
-        testID="achievements-screen"
-        style={[styles.centered, { backgroundColor: darkPalette.background }]}
-      >
-        <ActivityIndicator testID="achievements-loading" size="large" color={colors.mountainBlue} />
+      <View testID={id} style={[styles.container, { backgroundColor: darkPalette.background }]}>
+        <SkeletonBadgeGrid testID="achievements-skeleton" />
       </View>
     );
   }
@@ -191,10 +193,7 @@ export function AchievementBadgesScreen() {
 
   if (error) {
     return (
-      <View
-        testID="achievements-screen"
-        style={[styles.centered, { backgroundColor: darkPalette.background }]}
-      >
+      <View testID={id} style={[styles.centered, { backgroundColor: darkPalette.background }]}>
         <Text testID="achievements-error" style={[styles.errorText, { color: colors.sunsetCoral }]}>
           {error}
         </Text>
@@ -206,7 +205,7 @@ export function AchievementBadgesScreen() {
 
   return (
     <View
-      testID="achievements-screen"
+      testID={id}
       style={[styles.container, { backgroundColor: darkPalette.background }]}
     >
       <FlatList
