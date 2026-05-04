@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 01:56 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 02:04 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** e91c719d fix(jest): cap maxWorkers at 2 to prevent zombie worker RAM exhaustion
+**Last commit:** fe10abdc chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+fe10abdc chore(status): auto-update [skip ci]
 e91c719d fix(jest): cap maxWorkers at 2 to prevent zombie worker RAM exhaustion
 a6b5702d chore(status): auto-update [skip ci]
 5420069b chore(status): auto-update [skip ci]
 56ce4781 chore(status): auto-update [skip ci]
-dffa4cf1 feat(hq-mtc6): EmptyState — rename message→subtitle, expand tests to 41, wire ARProductPicker (#535)
 ```
 
 ---
