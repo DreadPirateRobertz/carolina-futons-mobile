@@ -1,9 +1,11 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04T16:01:04Z
+**Updated:** 2026-05-04T16:11:07Z
 **Session:** 0fc77192 (2026-05-04)
 
 ## Recent Commits (last 10)
+- 8f06ca6c chore(status): auto-update [skip ci]
+- 25f00985 chore(report): progress-report update [skip ci]
 - 7700ee6a chore(report): init progress-report.md — Stilgar directive [skip ci]
 - fbc9e047 chore(status): auto-update [skip ci]
 - 5718f7c8 test(cm-ad2): Sentry.addBreadcrumb integration tests for ScreenErrorBoundary
@@ -12,11 +14,9 @@
 - a6ea387e test(cm-ty9): edge case coverage for useCartSessions + CartSessionsSync
 - 885fc827 chore(status): auto-update [skip ci]
 - 7849fca3 fix(cm-vpv): fix act() hang in cartScreen.sync-error test
-- f98ca983 chore(status): auto-update [skip ci]
-- a8f9a235 feat(cm-7wx): wire OfflineBanner pendingCount from AppShell
 
 ## Open Crew PRs
-- (none)
+- #513 test(cm-9s8): deep link navigation integration tests — cm-703 follow-up
 
 ## In-Progress Beads
 ◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
