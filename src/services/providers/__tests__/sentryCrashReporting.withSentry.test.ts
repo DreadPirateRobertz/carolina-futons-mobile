@@ -66,6 +66,12 @@ beforeEach(() => {
   });
 });
 
+// Reset after each test so the next test file doesn't inherit a stale module registry
+// after this file's resetModules() calls. Prevents the cm-isj cross-file state leak.
+afterEach(() => {
+  jest.resetModules();
+});
+
 describe('SentryCrashReportingProvider (with Sentry)', () => {
   it('calls Sentry.init with DSN and defaults', () => {
     const provider = new SentryCrashReportingProvider({
@@ -212,5 +218,14 @@ describe('SentryCrashReportingProvider (with Sentry)', () => {
     const result = wrapWithSentry(FakeComponent);
     expect(mockWrap).toHaveBeenCalledWith(FakeComponent);
     expect(result).toBe(FakeComponent);
+  });
+
+  // cm-isj: module isolation — verifies each test gets a fresh SentryCrashReportingProvider
+  // with a clean mock. If isolateModules breaks, init would be called with stale state.
+  it('provider is freshly loaded each test — mock call counts reset between tests (cm-isj)', () => {
+    expect(mockInit).not.toHaveBeenCalled(); // clearAllMocks in beforeEach cleared prior calls
+    const provider = new SentryCrashReportingProvider({ dsn: 'https://x@sentry.io/1' });
+    provider.init();
+    expect(mockInit).toHaveBeenCalledTimes(1); // exactly one call, not accumulated
   });
 });
