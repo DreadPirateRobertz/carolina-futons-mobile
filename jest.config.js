@@ -26,6 +26,9 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/crew/',
+    '<rootDir>/polecats/',
+    '<rootDir>/refinery/',
+    '<rootDir>/mayor/',
     'stores\\.test\\.ts',
     'storeCard\\.test\\.tsx',
     'storeLocatorScreen\\.test\\.tsx',

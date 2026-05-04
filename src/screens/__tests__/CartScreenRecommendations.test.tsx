@@ -61,15 +61,19 @@ jest.mock('@/hooks/useLoyalty', () => ({
   }),
 }));
 
+// Stable client object — prevents CartSessionsSync infinite loop (see cartScreen.sync-error.test.tsx).
+const mockWixClient = {
+  applyCoupon: jest.fn(),
+  addToCart: jest.fn().mockResolvedValue(undefined),
+  removeFromCart: jest.fn().mockResolvedValue(undefined),
+  updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
+  queryData: jest.fn().mockResolvedValue({ items: [] }),
+  insertDataItem: jest.fn().mockResolvedValue({ id: 'mock-id', data: {} }),
+  upsertDataItem: jest.fn().mockResolvedValue(undefined),
+};
+
 jest.mock('@/services/wix/wixProvider', () => ({
-  useOptionalWixClient: () => ({
-    applyCoupon: jest.fn(),
-    addToCart: jest.fn().mockResolvedValue(undefined),
-    removeFromCart: jest.fn().mockResolvedValue(undefined),
-    updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
-    queryData: jest.fn().mockResolvedValue({ items: [] }),
-    insertDataItem: jest.fn().mockResolvedValue({ id: 'mock-id', data: {} }),
-  }),
+  useOptionalWixClient: () => mockWixClient,
 }));
 
 // Mock useBundleSuggestion to prevent async Wix fetches accumulating across tests (cm-b5f).
