@@ -191,12 +191,7 @@ export async function syncMobilePoints(
     throw new Error(`[crossRigSync] points must be >= 0, got ${points}`);
   }
 
-  await wixClient.callFunction('crossRigEventReceiver', 'POST', {
-    memberId,
-    event: eventType,
-    payload: { points },
-    sourceRig: CROSS_RIG_SOURCE,
-  });
+  await sendCrossRigEvent(wixClient, memberId, eventType, { points });
 }
 
 // ── completeMobileChallenge ───────────────────────────────────────────────────
@@ -233,7 +228,17 @@ export async function completeMobileChallenge(
     sourceRig: CROSS_RIG_SOURCE,
   });
 
-  return result as CompleteMobileChallengeResult;
+  const typed = result as CompleteMobileChallengeResult;
+
+  // CFW dual-write: notify the web layer when a new challenge is completed.
+  // Best-effort — never blocks or overrides the main result.
+  if (typed.success && !typed.alreadyAwarded) {
+    sendCrossRigEvent(wixClient, memberId, eventName, { challengeType }).catch((err) => {
+      console.error('[crossRigSync] completeMobileChallenge CFW dual-write failed', err);
+    });
+  }
+
+  return typed;
 }
 
 // ── getMobileChallengeProgress ────────────────────────────────────────────────

@@ -255,6 +255,42 @@ describe('syncMobilePoints', () => {
       }),
     );
   });
+
+  it('fires the CFW leg when CROSS_RIG_SECRET and CFW_API_URL are set', async () => {
+    const origSecret = process.env.CROSS_RIG_SECRET;
+    const origUrl = process.env.CFW_API_URL;
+    process.env.CROSS_RIG_SECRET = 'test-secret';
+    process.env.CFW_API_URL = 'https://api.carolinafutons.com';
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('ok', { status: 200 }) as unknown as Response);
+
+    const wixClient = makeMockWixClient();
+    await syncMobilePoints(wixClient, 'member-1', 75, 'ar_discovery_completed');
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://api.carolinafutons.com/api/cross-rig',
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    jest.restoreAllMocks();
+    process.env.CROSS_RIG_SECRET = origSecret;
+    process.env.CFW_API_URL = origUrl;
+  });
+
+  it('does not fire the CFW leg when CROSS_RIG_SECRET is absent', async () => {
+    const origSecret = process.env.CROSS_RIG_SECRET;
+    delete process.env.CROSS_RIG_SECRET;
+    const fetchSpy = jest.spyOn(global, 'fetch');
+
+    const wixClient = makeMockWixClient();
+    await syncMobilePoints(wixClient, 'member-1', 50, 'quiz_completed');
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    jest.restoreAllMocks();
+    process.env.CROSS_RIG_SECRET = origSecret;
+  });
 });
 
 // ── completeMobileChallenge ───────────────────────────────────────────────────
@@ -405,6 +441,90 @@ describe('completeMobileChallenge', () => {
       await expect(
         completeMobileChallenge(wixClient, 'member-1', 'quiz_completion', {}),
       ).resolves.toEqual({ success: true, alreadyAwarded: false, pointsAwarded: 50 });
+    });
+  });
+
+  describe('CFW dual-write (hq-sxgx)', () => {
+    it('fires the CFW leg after a successful ar_discovery challenge when secrets are set', async () => {
+      const origSecret = process.env.CROSS_RIG_SECRET;
+      const origUrl = process.env.CFW_API_URL;
+      process.env.CROSS_RIG_SECRET = 'test-secret';
+      process.env.CFW_API_URL = 'https://api.carolinafutons.com';
+      const fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(new Response('ok', { status: 200 }) as unknown as Response);
+
+      const wixClient = makeMockWixClient(
+        jest.fn().mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 }),
+      );
+      await completeMobileChallenge(wixClient, 'member-1', 'ar_discovery', {});
+
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://api.carolinafutons.com/api/cross-rig',
+        expect.objectContaining({ method: 'POST' }),
+      );
+
+      jest.restoreAllMocks();
+      process.env.CROSS_RIG_SECRET = origSecret;
+      process.env.CFW_API_URL = origUrl;
+    });
+
+    it('does not fire CFW leg when alreadyAwarded is true', async () => {
+      const origSecret = process.env.CROSS_RIG_SECRET;
+      const origUrl = process.env.CFW_API_URL;
+      process.env.CROSS_RIG_SECRET = 'test-secret';
+      process.env.CFW_API_URL = 'https://api.carolinafutons.com';
+      const fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(new Response('ok', { status: 200 }) as unknown as Response);
+
+      const wixClient = makeMockWixClient(
+        jest.fn().mockResolvedValue({ success: true, alreadyAwarded: true, pointsAwarded: 0 }),
+      );
+      await completeMobileChallenge(wixClient, 'member-1', 'ar_discovery', {});
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      jest.restoreAllMocks();
+      process.env.CROSS_RIG_SECRET = origSecret;
+      process.env.CFW_API_URL = origUrl;
+    });
+
+    it('does not fire CFW leg when CROSS_RIG_SECRET is absent', async () => {
+      const origSecret = process.env.CROSS_RIG_SECRET;
+      delete process.env.CROSS_RIG_SECRET;
+      const fetchSpy = jest.spyOn(global, 'fetch');
+
+      const wixClient = makeMockWixClient(
+        jest.fn().mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 }),
+      );
+      await completeMobileChallenge(wixClient, 'member-1', 'ar_discovery', {});
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+
+      jest.restoreAllMocks();
+      process.env.CROSS_RIG_SECRET = origSecret;
+    });
+
+    it('returns the challenge result even if CFW leg throws', async () => {
+      const origSecret = process.env.CROSS_RIG_SECRET;
+      const origUrl = process.env.CFW_API_URL;
+      process.env.CROSS_RIG_SECRET = 'test-secret';
+      process.env.CFW_API_URL = 'https://api.carolinafutons.com';
+      jest
+        .spyOn(global, 'fetch')
+        .mockRejectedValue(new Error('network error'));
+
+      const wixClient = makeMockWixClient(
+        jest.fn().mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 }),
+      );
+      const result = await completeMobileChallenge(wixClient, 'member-1', 'ar_discovery', {});
+
+      expect(result).toEqual({ success: true, alreadyAwarded: false, pointsAwarded: 75 });
+
+      jest.restoreAllMocks();
+      process.env.CROSS_RIG_SECRET = origSecret;
+      process.env.CFW_API_URL = origUrl;
     });
   });
 });

@@ -57,6 +57,14 @@ export interface UseTriggerMomentsResult {
   reportChallengesCompleted: (items: ChallengeCompletedItem[]) => void;
   /** Apply server-side triggers from a receiveGamificationEvent response. */
   reportTriggers: (serverTriggers: ServerTriggers) => void;
+  /**
+   * Imperatively surface a tier upgrade — called by GamificationPushBridge
+   * when a tier_changed push arrives. Finds the LoyaltyTierConfig by name
+   * and sets tierChanged so TierCelebrationModal fires immediately.
+   * Also persists the new tier to AsyncStorage so the passive detection
+   * path doesn't re-fire on next session.
+   */
+  reportTierChanged: (newTierName: string) => void;
 }
 
 export function useTriggerMoments(): UseTriggerMomentsResult {
@@ -140,6 +148,13 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
     }
   }, []);
 
+  const reportTierChanged = useCallback((newTierName: string) => {
+    const found = LOYALTY_TIERS.find((t) => t.name === newTierName);
+    if (!found) return;
+    setTierChanged(found);
+    AsyncStorage.setItem(STORAGE_KEY, found.name).catch(() => {});
+  }, []);
+
   return {
     triggers: {
       tierChanged,
@@ -151,5 +166,6 @@ export function useTriggerMoments(): UseTriggerMomentsResult {
     dismiss,
     reportChallengesCompleted,
     reportTriggers,
+    reportTierChanged,
   };
 }

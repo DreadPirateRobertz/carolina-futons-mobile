@@ -19,9 +19,11 @@ import { PremiumProvider } from '@/hooks/usePremium';
 import { RecommendationsProvider } from '@/hooks/useRecommendations';
 import { CompareProvider } from '@/contexts/CompareContext';
 import { CartAbandonmentBridge } from '@/components/CartAbandonmentBridge';
+import { GamificationPushBridge } from '@/components/GamificationPushBridge';
 import { StreakMilestoneBridge } from '@/components/StreakMilestoneBridge';
 import { PostPurchaseReviewBridge } from '@/components/PostPurchaseReviewBridge';
 import { OnboardingStyleModalBridge } from '@/components/OnboardingStyleModalBridge';
+import { BadgeToastProvider } from '@/contexts/BadgeToastContext';
 import { runSecurityAudit } from '@/services/securityAudit';
 import { NPSSurveyBridge } from '@/components/NPSSurveyBridge';
 import { WixProvider } from '@/services/wix/wixProvider';
@@ -42,6 +44,7 @@ import { useForceUpdate } from '@/hooks/useForceUpdate';
 import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { TierCelebrationModal } from '@/components/TierCelebrationModal';
+import { TriggerMomentsProvider } from '@/contexts/TriggerMomentsContext';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 const wixConfig = getWixConfig();
@@ -85,7 +88,8 @@ function App() {
     setCurrentRoute(navigationRef.getCurrentRoute()?.name);
   }, [trackState, navigationRef]);
   const forceUpdate = useForceUpdate();
-  const { triggers, dismiss } = useTriggerMoments();
+  const { triggers, dismiss, reportChallengesCompleted, reportTriggers, reportTierChanged } =
+    useTriggerMoments();
 
   // Defer non-critical service init to after first render for faster cold start
   useEffect(() => {
@@ -136,52 +140,68 @@ function App() {
                     <MiniCartDrawerProvider>
                       <WishlistProvider>
                         <NotificationProvider>
-                          <CartAbandonmentBridge />
-                          <StreakMilestoneBridge />
-                          <OnboardingStyleModalBridge />
-                          <NPSSurveyBridge />
-                          <PremiumProvider>
-                            <RecommendationsProvider>
-                              <CompareProvider>
-                                <ErrorBoundary>
-                                  <NavigationContainer
-                                    ref={navigationRef}
-                                    linking={linkingConfig}
-                                    onStateChange={onStateChange}
-                                    onReady={() => {
-                                      onScreenTrackingReady();
-                                      if (sentryNavigationIntegration && navigationRef.current) {
-                                        (
-                                          sentryNavigationIntegration as {
-                                            registerNavigationContainer: (ref: unknown) => void;
+                          <BadgeToastProvider>
+                            <TriggerMomentsProvider
+                              value={{
+                                triggers,
+                                dismiss,
+                                reportChallengesCompleted,
+                                reportTriggers,
+                                reportTierChanged,
+                              }}
+                            >
+                              <GamificationPushBridge />
+                              <CartAbandonmentBridge />
+                              <StreakMilestoneBridge />
+                              <OnboardingStyleModalBridge />
+                              <NPSSurveyBridge />
+                              <PremiumProvider>
+                                <RecommendationsProvider>
+                                  <CompareProvider>
+                                    <ErrorBoundary>
+                                      <NavigationContainer
+                                        ref={navigationRef}
+                                        linking={linkingConfig}
+                                        onStateChange={onStateChange}
+                                        onReady={() => {
+                                          onScreenTrackingReady();
+                                          if (
+                                            sentryNavigationIntegration &&
+                                            navigationRef.current
+                                          ) {
+                                            (
+                                              sentryNavigationIntegration as {
+                                                registerNavigationContainer: (ref: unknown) => void;
+                                              }
+                                            ).registerNavigationContainer(navigationRef);
                                           }
-                                        ).registerNavigationContainer(navigationRef);
-                                      }
-                                    }}
-                                  >
-                                    <DeepLinkProvider>
-                                      <OfflineBanner />
-                                      <AppNavigator />
-                                      <PostPurchaseReviewBridge />
-                                      <MiniCartDrawerHost
-                                        navigationRef={navigationRef}
-                                        currentRoute={currentRoute}
-                                      />
-                                      <ForceUpdateModal
-                                        visible={forceUpdate.visible}
-                                        required={forceUpdate.required}
-                                        onDismiss={forceUpdate.dismiss}
-                                      />
-                                      <TierCelebrationModal
-                                        newTier={triggers.tierChanged}
-                                        onDismiss={() => dismiss('tierChanged')}
-                                      />
-                                    </DeepLinkProvider>
-                                  </NavigationContainer>
-                                </ErrorBoundary>
-                              </CompareProvider>
-                            </RecommendationsProvider>
-                          </PremiumProvider>
+                                        }}
+                                      >
+                                        <DeepLinkProvider>
+                                          <OfflineBanner />
+                                          <AppNavigator />
+                                          <PostPurchaseReviewBridge />
+                                          <MiniCartDrawerHost
+                                            navigationRef={navigationRef}
+                                            currentRoute={currentRoute}
+                                          />
+                                          <ForceUpdateModal
+                                            visible={forceUpdate.visible}
+                                            required={forceUpdate.required}
+                                            onDismiss={forceUpdate.dismiss}
+                                          />
+                                          <TierCelebrationModal
+                                            newTier={triggers.tierChanged}
+                                            onDismiss={() => dismiss('tierChanged')}
+                                          />
+                                        </DeepLinkProvider>
+                                      </NavigationContainer>
+                                    </ErrorBoundary>
+                                  </CompareProvider>
+                                </RecommendationsProvider>
+                              </PremiumProvider>
+                            </TriggerMomentsProvider>
+                          </BadgeToastProvider>
                         </NotificationProvider>
                       </WishlistProvider>
                     </MiniCartDrawerProvider>

@@ -585,4 +585,55 @@ describe('useTriggerMoments', () => {
       });
     });
   });
+
+  describe('reportTierChanged (hq-1e63 push-driven tier upgrade)', () => {
+    it('sets tierChanged to the matching LoyaltyTierConfig', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      await act(async () => {
+        result.current.reportTierChanged('Mountain Guide');
+      });
+
+      expect(result.current.triggers.tierChanged).toBe(MOUNTAIN_GUIDE);
+    });
+
+    it('persists the new tier name to AsyncStorage', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      await act(async () => {
+        result.current.reportTierChanged('Summit Master');
+      });
+
+      expect(setItem).toHaveBeenCalledWith('@cf_last_known_tier', 'Summit Master');
+    });
+
+    it('is a no-op for an unrecognised tier name', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      await act(async () => {
+        result.current.reportTierChanged('Diamond Elite');
+      });
+
+      expect(result.current.triggers.tierChanged).toBeNull();
+      expect(setItem).not.toHaveBeenCalled();
+    });
+
+    it('dismiss("tierChanged") clears the push-set tier', async () => {
+      mockUseLoyalty.mockReturnValue(loyaltyOf(TRAIL_BLAZER));
+      const { result } = renderHook(() => useTriggerMoments());
+
+      await act(async () => {
+        result.current.reportTierChanged('Mountain Guide');
+      });
+      expect(result.current.triggers.tierChanged).toBe(MOUNTAIN_GUIDE);
+
+      await act(async () => {
+        result.current.dismiss('tierChanged');
+      });
+      expect(result.current.triggers.tierChanged).toBeNull();
+    });
+  });
 });
