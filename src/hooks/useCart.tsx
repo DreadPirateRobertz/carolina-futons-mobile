@@ -33,6 +33,7 @@ import { useOfflineSync } from './useOfflineSync';
 import { compactByLWW } from '@/services/offlineQueue';
 import { useOptionalWixClient } from '@/services/wix/wixProvider';
 import { useGamificationEvents } from './useGamificationEvents';
+import { useCartSessions } from './useCartSessions';
 
 /**
  * A single line item in the cart, keyed by `model:fabric` composite ID.
@@ -196,6 +197,42 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
     }
   }
   return merged;
+}
+
+/**
+ * Syncs local cart items to the CartSessions Wix collection and triggers
+ * guest→member session merge on login. Rendered as an internal child of
+ * CartProvider so it has access to cart context and auth context.
+ *
+ * hq-npba: wires useCartSessions which was previously implemented but unused.
+ */
+function CartSessionsSync() {
+  const { items } = useCart();
+  const authCtx = useContext(AuthContext);
+  const memberId = authCtx?.user?.id ?? null;
+  const prevMemberIdRef = useRef<string | null>(null);
+
+  const { saveCart, mergeOnLogin } = useCartSessions({ memberId });
+
+  // Save to CartSessions on every cart change
+  useEffect(() => {
+    const sessionItems = items.map((item) => ({
+      productId: item.model.id,
+      variantId: item.fabric.id,
+      quantity: item.quantity,
+    }));
+    saveCart(sessionItems).catch(() => {});
+  }, [items, saveCart]);
+
+  // Merge guest session into member session on login transition
+  useEffect(() => {
+    if (memberId && !prevMemberIdRef.current) {
+      mergeOnLogin(memberId).catch(() => {});
+    }
+    prevMemberIdRef.current = memberId;
+  }, [memberId, mergeOnLogin]);
+
+  return null;
 }
 
 /**
@@ -485,7 +522,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      <CartSessionsSync />
+      {children}
+    </CartContext.Provider>
+  );
 }
 
 /**
