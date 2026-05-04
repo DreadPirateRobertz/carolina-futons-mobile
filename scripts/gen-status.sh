@@ -48,7 +48,7 @@ BD_READY=$(bd ready 2>/dev/null | grep -E "^○" | head -5 || echo "  (none)")
 
 # ── test count (cached from last run) ────────────────────────────────────────
 
-TEST_SUMMARY=$(run_ssh "cd ~/gt/cfutons_mobile && source ~/.nvm/nvm.sh && npx jest --ci --passWithNoTests --silent 2>&1 | grep -E 'Tests:|Test Suites:' | tail -2" || echo "  (run tests to refresh)")
+TEST_SUMMARY=$(run_ssh "cd ~/gt/cfutons_mobile && source ~/.nvm/nvm.sh && npx jest --ci --passWithNoTests --silent --forceExit --maxWorkers=1 2>&1 | grep -E 'Tests:|Test Suites:' | tail -2" || echo "  (run tests to refresh)")
 
 # ── write doc ─────────────────────────────────────────────────────────────────
 
