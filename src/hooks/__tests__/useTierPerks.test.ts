@@ -177,3 +177,51 @@ describe('useTierPerks — unauthenticated', () => {
     expect(result.current.error).toBeNull();
   });
 });
+
+// ─── Race condition — unmount cancellation (cm-gdz) ──────────────────────────
+
+describe('useTierPerks — unmount cancellation', () => {
+  it('does not setState after unmount when fetch resolves later', async () => {
+    let resolvePerks: (value: { perks: ReturnType<typeof makeDelivery>[] }) => void = () => {};
+    mockGetTierPerks.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvePerks = resolve;
+        }),
+    );
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { unmount } = renderHook(() => useTierPerks());
+    unmount();
+    resolvePerks({ perks: [makeDelivery()] });
+    await new Promise((r) => setTimeout(r, 10));
+
+    const stateUpdateWarning = errSpy.mock.calls.find((args) =>
+      String(args[0]).includes("Can't perform a React state update on an unmounted component"),
+    );
+    expect(stateUpdateWarning).toBeUndefined();
+    errSpy.mockRestore();
+  });
+
+  it('does not setState after unmount when fetch rejects later', async () => {
+    let rejectPerks: (err: Error) => void = () => {};
+    mockGetTierPerks.mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectPerks = reject;
+        }),
+    );
+    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { unmount } = renderHook(() => useTierPerks());
+    unmount();
+    rejectPerks(new Error('Late failure'));
+    await new Promise((r) => setTimeout(r, 10));
+
+    const stateUpdateWarning = errSpy.mock.calls.find((args) =>
+      String(args[0]).includes("Can't perform a React state update on an unmounted component"),
+    );
+    expect(stateUpdateWarning).toBeUndefined();
+    errSpy.mockRestore();
+  });
+});

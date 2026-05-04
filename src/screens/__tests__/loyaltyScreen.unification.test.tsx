@@ -339,4 +339,80 @@ describe('Your Perks section — tier perk deliveries', () => {
       expect(getByTestId('loyalty-perks-empty')).toBeTruthy();
     });
   });
+
+  it('shows perks error banner when fetch fails (cm-gdz)', async () => {
+    mockUseTierPerks.mockReturnValue({
+      perks: [],
+      loading: false,
+      error: 'Unable to load perks. Please try again.',
+    });
+    const { getByTestId } = render(<LoyaltyScreen />);
+    await waitFor(() => {
+      expect(getByTestId('loyalty-perks-error')).toBeTruthy();
+    });
+  });
+
+  it('does NOT show empty perks card when perks fetch errors (cm-gdz)', async () => {
+    mockUseTierPerks.mockReturnValue({
+      perks: [],
+      loading: false,
+      error: 'Network failure',
+    });
+    const { queryByTestId } = render(<LoyaltyScreen />);
+    await waitFor(() => {
+      expect(queryByTestId('loyalty-perks-empty')).toBeNull();
+    });
+  });
+});
+
+// ─── A11y on perks section (cm-gdz) ──────────────────────────────────────────
+
+describe('Your Perks section — a11y', () => {
+  it('perks heading has accessibilityRole="header"', async () => {
+    mockUseTierPerks.mockReturnValue(noPerks);
+    const { getByTestId } = render(<LoyaltyScreen />);
+    await waitFor(() => {
+      expect(getByTestId('loyalty-perks-heading').props.accessibilityRole).toBe('header');
+    });
+  });
+
+  it('perk row has descriptive accessibilityLabel including perk name', async () => {
+    mockUseTierPerks.mockReturnValue({
+      perks: [
+        {
+          perkType: 'FREE_WHITE_GLOVE',
+          tier: 'Summit Master',
+          deliveredAt: '2026-04-01T00:00:00Z',
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+    const { getByTestId } = render(<LoyaltyScreen />);
+    await waitFor(() => {
+      const row = getByTestId('loyalty-perk-FREE_WHITE_GLOVE');
+      expect(row.props.accessibilityLabel).toBeTruthy();
+      expect(row.props.accessibilityLabel.toLowerCase()).toMatch(/white.glove|delivery/);
+    });
+  });
+
+  it('perk row with coupon code includes coupon in accessibilityLabel', async () => {
+    mockUseTierPerks.mockReturnValue({
+      perks: [
+        {
+          perkType: 'ACCESSORY_DISCOUNT',
+          tier: 'Mountain Guide',
+          deliveredAt: '2026-04-01T00:00:00Z',
+          couponCode: 'CF-XYZ9999',
+        },
+      ],
+      loading: false,
+      error: null,
+    });
+    const { getByTestId } = render(<LoyaltyScreen />);
+    await waitFor(() => {
+      const row = getByTestId('loyalty-perk-ACCESSORY_DISCOUNT');
+      expect(row.props.accessibilityLabel).toContain('CF-XYZ9999');
+    });
+  });
 });

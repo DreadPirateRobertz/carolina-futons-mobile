@@ -9,7 +9,7 @@
  * Returns empty perks without error when unauthenticated (Trail Blazer state).
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import { getWixSdkClient } from '@/services/wix/wixSdkClient';
 
@@ -32,42 +32,48 @@ export function useTierPerks(): UseTierPerksResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPerks = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      let memberToken: string | undefined;
-      try {
-        const tokens = getWixSdkClient().auth.getTokens();
-        memberToken = tokens.accessToken?.value;
-      } catch {
-        // SDK not initialized or user not authenticated — return empty perks
-      }
-
-      if (!memberToken) {
-        setPerks([]);
-        return;
-      }
-
-      const wixClient = getWixClientSingleton();
-      if (!wixClient) {
-        setError('Wix service unavailable');
-        return;
-      }
-
-      const data = await wixClient.getTierPerks(memberToken);
-      setPerks(Array.isArray(data?.perks) ? data.perks : []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPerks([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    fetchPerks();
-  }, [fetchPerks]);
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        let memberToken: string | undefined;
+        try {
+          const tokens = getWixSdkClient().auth.getTokens();
+          memberToken = tokens.accessToken?.value;
+        } catch {
+          // SDK not initialized or user not authenticated — return empty perks
+        }
+
+        if (!memberToken) {
+          if (!cancelled) setPerks([]);
+          return;
+        }
+
+        const wixClient = getWixClientSingleton();
+        if (!wixClient) {
+          if (!cancelled) setError('Wix service unavailable');
+          return;
+        }
+
+        const data = await wixClient.getTierPerks(memberToken);
+        if (cancelled) return;
+        setPerks(Array.isArray(data?.perks) ? data.perks : []);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : String(err));
+        setPerks([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return { perks, loading, error };
 }
