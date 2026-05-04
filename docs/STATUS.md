@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 20:24 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 20:26 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 99bf5bc2 feat(screenshots): S35 missing captures — screens 50-53, 63-68 [skip ci]
+**Last commit:** bf074778 chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+bf074778 chore(status): auto-update [skip ci]
 99bf5bc2 feat(screenshots): S35 missing captures — screens 50-53, 63-68 [skip ci]
 e64686a4 chore(status): auto-update [skip ci]
 cb678a8f chore(status): auto-update [skip ci]
 2feac34d chore(status): auto-update [skip ci]
-e493f163 chore(status): auto-update [skip ci]
 ```
 
 ---
