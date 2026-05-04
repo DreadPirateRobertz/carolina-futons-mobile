@@ -709,3 +709,155 @@ describe('SavedAddressesScreen — edit cancel restores list', () => {
     expect(mockUpdateAddress).not.toHaveBeenCalled();
   });
 });
+
+// ── A11y audit (cm-4ga) ────────────────────────────────────────────────────────
+
+describe('SavedAddressesScreen — a11y: add button', () => {
+  it('has accessibilityRole="button"', () => {
+    mockUseSavedAddresses.mockReturnValue(defaultHookState());
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('add-address-button').props.accessibilityRole).toBe('button');
+  });
+
+  it('has accessibilityLabel', () => {
+    mockUseSavedAddresses.mockReturnValue(defaultHookState());
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('add-address-button').props.accessibilityLabel).toBeTruthy();
+  });
+
+  it('has accessibilityState.disabled=false when under limit', () => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1], defaultAddress: ADDR_1 }),
+    );
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('add-address-button').props.accessibilityState?.disabled).toBe(false);
+  });
+
+  it('has accessibilityState.disabled=true when at max', () => {
+    const fiveAddresses = Array.from({ length: 5 }, (_, i) => ({
+      ...ADDR_1,
+      id: `addr-${i + 1}`,
+      isDefault: i === 0,
+    }));
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: fiveAddresses, defaultAddress: fiveAddresses[0] }),
+    );
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('add-address-button').props.accessibilityState?.disabled).toBe(true);
+  });
+});
+
+describe('SavedAddressesScreen — a11y: edit button', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('has accessibilityRole="button"', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('edit-button-addr-2').props.accessibilityRole).toBe('button');
+  });
+
+  it('accessibilityLabel identifies the address', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('edit-button-addr-2').props.accessibilityLabel).toMatch(/456 Oak Ave/i);
+  });
+
+  it('has accessibilityHint', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('edit-button-addr-2').props.accessibilityHint).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — a11y: delete button', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('has accessibilityRole="button"', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('delete-button-addr-2').props.accessibilityRole).toBe('button');
+  });
+
+  it('accessibilityLabel identifies the address', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('delete-button-addr-2').props.accessibilityLabel).toMatch(/456 Oak Ave/i);
+  });
+
+  it('has accessibilityHint', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('delete-button-addr-2').props.accessibilityHint).toBeTruthy();
+  });
+});
+
+describe('SavedAddressesScreen — a11y: set-default button', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue(
+      defaultHookState({ addresses: [ADDR_1, ADDR_2], defaultAddress: ADDR_1 }),
+    );
+  });
+
+  it('has accessibilityRole="button"', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('set-default-button-addr-2').props.accessibilityRole).toBe('button');
+  });
+
+  it('accessibilityLabel identifies the address (not generic)', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('set-default-button-addr-2').props.accessibilityLabel).toMatch(
+      /456 Oak Ave/i,
+    );
+  });
+
+  it('has accessibilityHint', () => {
+    const { getByTestId } = renderScreen();
+    expect(getByTestId('set-default-button-addr-2').props.accessibilityHint).toBeTruthy();
+  });
+});
+
+// ── AddAddress error state (cm-4ga) ───────────────────────────────────────────
+
+describe('SavedAddressesScreen — addAddress error state', () => {
+  it('form remains open after addAddress failure', async () => {
+    mockAddAddress.mockRejectedValueOnce(new Error('Network error'));
+    mockUseSavedAddresses.mockReturnValue(defaultHookState());
+    const { act } = require('@testing-library/react-native');
+    const { getByTestId, queryByTestId } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Carol White');
+    fireEvent.changeText(getByTestId('address-line1-input'), '789 Pine Rd');
+    fireEvent.changeText(getByTestId('address-city-input'), 'Durham');
+    fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+    fireEvent.changeText(getByTestId('address-zip-input'), '27701');
+
+    await act(async () => {
+      fireEvent.press(getByTestId('address-save-button'));
+    });
+
+    expect(queryByTestId('address-form')).toBeTruthy();
+  });
+
+  it('does not crash when addAddress rejects', async () => {
+    mockAddAddress.mockRejectedValueOnce(new Error('Network error'));
+    mockUseSavedAddresses.mockReturnValue(defaultHookState());
+    const { act } = require('@testing-library/react-native');
+    const { getByTestId } = renderScreen();
+    fireEvent.press(getByTestId('add-address-button'));
+
+    fireEvent.changeText(getByTestId('address-full-name-input'), 'Carol White');
+    fireEvent.changeText(getByTestId('address-line1-input'), '789 Pine Rd');
+    fireEvent.changeText(getByTestId('address-city-input'), 'Durham');
+    fireEvent.changeText(getByTestId('address-state-input'), 'NC');
+    fireEvent.changeText(getByTestId('address-zip-input'), '27701');
+
+    await expect(
+      act(async () => {
+        fireEvent.press(getByTestId('address-save-button'));
+      }),
+    ).resolves.not.toThrow();
+  });
+});

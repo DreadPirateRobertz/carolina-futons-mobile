@@ -68,6 +68,8 @@ export function SavedAddressesScreen() {
         }
         setFormMode('none');
         setEditingAddress(null);
+      } catch {
+        // hook owns error state; form stays open for retry
       } finally {
         setSaving(false);
       }
@@ -215,6 +217,7 @@ export function SavedAddressesScreen() {
                       onPress={() => handleEditPress(addr)}
                       accessibilityRole="button"
                       accessibilityLabel={`Edit address ${addr.line1}`}
+                      accessibilityHint="Opens a form to modify this address"
                     >
                       <Text style={[styles.actionText, { color: colors.mountainBlue }]}>Edit</Text>
                     </TouchableOpacity>
@@ -224,7 +227,8 @@ export function SavedAddressesScreen() {
                         testID={`set-default-button-${addr.id}`}
                         onPress={() => handleSetDefault(addr.id)}
                         accessibilityRole="button"
-                        accessibilityLabel="Set as default"
+                        accessibilityLabel={`Set ${addr.line1} as default shipping address`}
+                        accessibilityHint="Makes this the default address used at checkout"
                       >
                         <Text style={[styles.actionText, { color: colors.mountainBlue }]}>
                           Set Default
@@ -237,6 +241,7 @@ export function SavedAddressesScreen() {
                       onPress={() => handleDeletePress(addr)}
                       accessibilityRole="button"
                       accessibilityLabel={`Delete address ${addr.line1}`}
+                      accessibilityHint="Opens a confirmation before deleting"
                     >
                       <Text style={[styles.actionText, { color: colors.sunsetCoral }]}>Delete</Text>
                     </TouchableOpacity>
