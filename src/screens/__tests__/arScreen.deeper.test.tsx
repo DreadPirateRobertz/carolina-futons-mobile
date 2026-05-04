@@ -413,7 +413,8 @@ describe('ARScreen — snapshot capture flow (deeper)', () => {
   it('save-to-gallery button is disabled when isCapturing is true', () => {
     mockARCapture.isCapturing = true;
     const { getByTestId } = renderARScreen();
-    expect(getByTestId('ar-save-gallery').props.disabled).toBeTruthy();
+    const btn = getByTestId('ar-save-gallery');
+    expect(btn.props.accessibilityState?.disabled).toBe(true);
   });
 
   it('share button is enabled when isCapturing is false', () => {
@@ -423,56 +424,40 @@ describe('ARScreen — snapshot capture flow (deeper)', () => {
   });
 
   it('share message includes the selected model name', async () => {
-    // Force the Share.share fallback (expo-sharing unavailable)
-    const { isAvailableAsync } = require('expo-sharing');
-    isAvailableAsync.mockResolvedValueOnce(false);
-    const shareSpy = jest.spyOn(require('react-native').Share, 'share').mockResolvedValue({ action: 'sharedAction' });
-
     const { getByTestId } = renderARScreen();
 
     await act(async () => {
       fireEvent.press(getByTestId('ar-share'));
     });
 
-    expect(shareSpy).toHaveBeenCalledTimes(1);
-    const callArg = shareSpy.mock.calls[0]?.[0];
+    expect(mockARCapture.share).toHaveBeenCalledTimes(1);
+    const message: string = mockARCapture.share.mock.calls[0]?.[0];
     // Default model is Asheville — name should appear in message
-    expect(callArg?.message).toMatch(/Asheville/i);
-    shareSpy.mockRestore();
+    expect(message).toMatch(/Asheville/i);
   });
 
   it('share message includes the selected fabric name', async () => {
-    const { isAvailableAsync } = require('expo-sharing');
-    isAvailableAsync.mockResolvedValueOnce(false);
-    const shareSpy = jest.spyOn(require('react-native').Share, 'share').mockResolvedValue({ action: 'sharedAction' });
-
     const { getByTestId } = renderARScreen();
 
     await act(async () => {
       fireEvent.press(getByTestId('ar-share'));
     });
 
-    const callArg = shareSpy.mock.calls[0]?.[0];
+    const message: string = mockARCapture.share.mock.calls[0]?.[0];
     // Default fabric is Natural Linen
-    expect(callArg?.message).toMatch(/Natural Linen/i);
-    shareSpy.mockRestore();
+    expect(message).toMatch(/Natural Linen/i);
   });
 
   it('share message includes the price', async () => {
-    const { isAvailableAsync } = require('expo-sharing');
-    isAvailableAsync.mockResolvedValueOnce(false);
-    const shareSpy = jest.spyOn(require('react-native').Share, 'share').mockResolvedValue({ action: 'sharedAction' });
-
     const { getByTestId } = renderARScreen();
 
     await act(async () => {
       fireEvent.press(getByTestId('ar-share'));
     });
 
-    const callArg = shareSpy.mock.calls[0]?.[0];
+    const message: string = mockARCapture.share.mock.calls[0]?.[0];
     // Asheville base $349 + Natural Linen $0 = $349.00
-    expect(callArg?.message).toMatch(/\$349/);
-    shareSpy.mockRestore();
+    expect(message).toMatch(/\$349/);
   });
 
   it('watermark is rendered inside the ViewShot capture area', () => {
