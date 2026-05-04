@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 23:41 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 00:00 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 8660c47b chore(status): auto-update [skip ci]
+**Last commit:** 6e474c8a feat(hq-npba): wire useCartSessions — guest→member cart merge (#532)
 
 **Recent commits:**
 ```
+6e474c8a feat(hq-npba): wire useCartSessions — guest→member cart merge (#532)
+dcae024a feat(hq-8k690): cart abandonment recovery push notification
+8366c9c9 chore(status): auto-update [skip ci]
 8660c47b chore(status): auto-update [skip ci]
 53531fc3 fix(hq-5sa4): a11y audit — GamificationPushBridge + TierCelebrationModal
-cdeeb40c feat(hq-kjyd): wire managePushPreferences Velo webMethod to mobile
-d6e4c42a feat(hq-452z): migrate 6 components from expo-image to AppImage
-b1d9a7c9 fix(hq-sxgx/hq-1e63): wire CFW dual-write + push pipeline
 ```
 
 ---
@@ -54,15 +54,10 @@ b1d9a7c9 fix(hq-sxgx/hq-1e63): wire CFW dual-write + push pipeline
 ## Bead Progress
 
 ### In Progress
-◐ hq-bzb ● P2 ProductRecommendations — align useProductRecommendations hook to confirmed Wix schema; add recommended-for-you section on PDP and cart
-◐ hq-ap43 ● P3 [bug] GAP-M4/M5: wire emitBadgeEarned + emitCartAbandoned crossRig events — implemented but zero callers; loyalty point leakage on badge earn + cart abandon
+◐ cm-rpz ● P1 [bug] Refinery test_command misconfigured: go test on RN project
 
 ### Ready (no blockers)
-○ hq-s2o4 ● P1 [HIGH] Deacon stuck_heartbeat_857s detected by stuck-agent-dog
-○ hq-fjoq ● P1 RECOVERED_BEAD tl-c8n
-○ hq-m5mh ● P1 [HIGH] Deacon stuck_heartbeat_842s detected by stuck-agent-dog
-○ hq-bhei ● P1 [HIGH] Memory critical: 125MB free (8012 pages × 16KB). Below 200MB threshold. OOM kill risk.
-○ hq-x8sl ● P1 [HIGH] Deacon stuck_heartbeat_625s detected by stuck-agent-dog
+○ cfutons_mobile-rig-cfutons_mobile ● P2 cfutons_mobile
 
 ---
 
