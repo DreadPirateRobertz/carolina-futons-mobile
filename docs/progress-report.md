@@ -1,9 +1,11 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04T16:20:59Z
+**Updated:** 2026-05-04T16:31:04Z
 **Session:** 0fc77192 (2026-05-04)
 
 ## Recent Commits (last 10)
+- 66f1c3b7 chore(status): auto-update [skip ci]
+- 75a87536 chore(report): progress-report update [skip ci]
 - 8012e9da chore(report): progress-report update [skip ci]
 - 8f06ca6c chore(status): auto-update [skip ci]
 - 25f00985 chore(report): progress-report update [skip ci]
@@ -12,8 +14,6 @@
 - 5718f7c8 test(cm-ad2): Sentry.addBreadcrumb integration tests for ScreenErrorBoundary
 - e58bc435 test(cm-bt2): LeaderboardScreen + PointsHistoryScreen skeleton/error/empty edge cases
 - 56eda2a8 fix(cm-kj9): wire error boundaries to OnboardingScreen + OrderConfirmationScreen
-- a6ea387e test(cm-ty9): edge case coverage for useCartSessions + CartSessionsSync
-- 885fc827 chore(status): auto-update [skip ci]
 
 ## Open Crew PRs
 - #539 fix(cm-gdz): LoyaltyScreen perks — error state + race + a11y
