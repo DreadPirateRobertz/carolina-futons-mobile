@@ -88,6 +88,14 @@ describe('GamificationPushBridge', () => {
     expect(remove).toHaveBeenCalledTimes(1);
   });
 
+  it('does not re-register the listener on re-render (latest-ref pattern)', () => {
+    setupListener();
+    const { rerender } = render(<GamificationPushBridge />);
+    rerender(<GamificationPushBridge />);
+    rerender(<GamificationPushBridge />);
+    expect(Notifications.addNotificationReceivedListener).toHaveBeenCalledTimes(1);
+  });
+
   it('calls dispatchCrossRigPush when a badge_earned push arrives', () => {
     const { triggerPush } = setupListener();
     render(<GamificationPushBridge />);

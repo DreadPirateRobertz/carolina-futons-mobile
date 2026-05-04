@@ -13,7 +13,7 @@
  *       challenge_complete → reportChallengesCompleted (TriggerMomentsContext)
  *       streak_milestone   → reportTriggers({ milestoneUnlocked: true })
  */
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { AccessibilityInfo } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { dispatchCrossRigPush } from '@/services/crossRigPushDispatch';
@@ -23,11 +23,23 @@ import {
 } from '@/services/gamificationPushHandler';
 import { useBadgeToastContext } from '@/contexts/BadgeToastContext';
 import { useTriggerMomentsContext } from '@/contexts/TriggerMomentsContext';
+import type { ServerTriggers, ChallengeCompletedItem } from '@/hooks/useTriggerMoments';
+
+type Callbacks = {
+  showBadgeToast: (name: string) => void;
+  reportTierChanged: (tier: string) => void;
+  reportChallengesCompleted: (items: ChallengeCompletedItem[]) => void;
+  reportTriggers: (triggers: ServerTriggers) => void;
+};
 
 export function GamificationPushBridge() {
   const { showBadgeToast } = useBadgeToastContext();
   const { reportTierChanged, reportChallengesCompleted, reportTriggers } =
     useTriggerMomentsContext();
+
+  // Latest-ref pattern: keep callbacks current without re-registering the listener
+  const cbRef = useRef<Callbacks>({ showBadgeToast, reportTierChanged, reportChallengesCompleted, reportTriggers });
+  cbRef.current = { showBadgeToast, reportTierChanged, reportChallengesCompleted, reportTriggers };
 
   useEffect(() => {
     const sub = Notifications.addNotificationReceivedListener((notification) => {
@@ -36,6 +48,7 @@ export function GamificationPushBridge() {
       if (!event) return;
 
       const memberId = typeof data.memberId === 'string' ? data.memberId : '';
+      const cb = cbRef.current;
 
       dispatchCrossRigPush(memberId, event, data);
 
@@ -48,14 +61,14 @@ export function GamificationPushBridge() {
       }
 
       handleGamificationPushEvent(data as GamificationPushPayload, {
-        showBadgeToast,
-        showTierUpgradeModal: (_oldTier, newTier) => reportTierChanged(newTier),
+        showBadgeToast: cb.showBadgeToast,
+        showTierUpgradeModal: (_oldTier, newTier) => cb.reportTierChanged(newTier),
         showChallengeCompleteToast: (challengeName) =>
-          reportChallengesCompleted([
+          cb.reportChallengesCompleted([
             { challengeId: challengeName, title: challengeName, rewardPoints: 0 },
           ]),
         showStreakMilestoneBanner: () =>
-          reportTriggers({
+          cb.reportTriggers({
             milestoneUnlocked: true,
             badgeUnlocked: null,
             challengeCompleted: [],
@@ -67,7 +80,7 @@ export function GamificationPushBridge() {
     });
 
     return () => sub.remove();
-  }, [showBadgeToast, reportTierChanged, reportChallengesCompleted, reportTriggers]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 }
