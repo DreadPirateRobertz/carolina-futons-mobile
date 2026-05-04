@@ -59,15 +59,22 @@ jest.mock('@/hooks/useAuth', () => ({
 const mockAddToCart = jest.fn();
 const mockSyncNow = jest.fn().mockResolvedValue(undefined);
 
+// Stable client object — avoids infinite useEffect loop from CartSessionsSync
+// (useCartSessions.saveCart has wixClient in its deps; a new object each render
+// causes saveCart to be recreated → effect fires → saveCart called → setSaveError
+// → re-render → new wixClient → ... infinite loop).
+const mockWixClient = {
+  applyCoupon: jest.fn(),
+  addToCart: mockAddToCart,
+  removeFromCart: jest.fn().mockResolvedValue(undefined),
+  updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
+  queryData: jest.fn().mockResolvedValue({ items: [] }),
+  insertDataItem: jest.fn().mockResolvedValue({ id: 'mock-id', data: {} }),
+  upsertDataItem: jest.fn().mockResolvedValue(undefined),
+};
+
 jest.mock('@/services/wix/wixProvider', () => ({
-  useOptionalWixClient: () => ({
-    applyCoupon: jest.fn(),
-    addToCart: mockAddToCart,
-    removeFromCart: jest.fn().mockResolvedValue(undefined),
-    updateCartItemQuantity: jest.fn().mockResolvedValue(undefined),
-    queryData: jest.fn().mockResolvedValue({ items: [] }),
-    insertDataItem: jest.fn().mockResolvedValue({ id: 'mock-id', data: {} }),
-  }),
+  useOptionalWixClient: () => mockWixClient,
 }));
 
 jest.mock('@/hooks/useBundleSuggestion', () => ({

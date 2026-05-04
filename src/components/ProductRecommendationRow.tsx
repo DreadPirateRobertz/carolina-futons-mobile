@@ -10,6 +10,7 @@ interface ProductRecommendationRowProps {
   title?: string;
   onProductPress?: (product: Product) => void;
   testID?: string;
+  skeletonTestID?: string;
 }
 
 /**
@@ -22,13 +23,14 @@ export function ProductRecommendationRow({
   title = 'Recommended for You',
   onProductPress,
   testID,
+  skeletonTestID,
 }: ProductRecommendationRowProps) {
   const { recommendations, isLoading } = useProductRecommendations(productId);
 
   if (!productId) return null;
 
   if (isLoading) {
-    return <View testID="rec-row-skeleton"><SkeletonCarouselRow /></View>;
+    return <View testID={skeletonTestID ?? 'rec-row-skeleton'}><SkeletonCarouselRow /></View>;
   }
 
   if (recommendations.length === 0) return null;

@@ -339,7 +339,7 @@ export function WixProductDetail({ product, isLoading, onBack, testID }: Props) 
           galleryRef.current?.scrollToIndex({ index: activeIndex, animated: false });
         }}
         renderImage={(image) => (
-          <Image
+          <AppImage
             source={{
               uri: wixImageUrl(image.uri, { width: 1200, quality: 90 }) ?? image.uri,
             }}

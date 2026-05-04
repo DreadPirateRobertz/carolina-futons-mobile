@@ -283,6 +283,7 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
             <ProductRecommendationRow
               productId={modelIdToProductId(items[0].model.id)}
               testID="cart-recommendations-carousel"
+              skeletonTestID="cart-recommendations-skeleton"
             />
           </View>
         )}
