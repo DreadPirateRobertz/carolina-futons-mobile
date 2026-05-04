@@ -1,9 +1,10 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04T16:11:07Z
+**Updated:** 2026-05-04T16:20:59Z
 **Session:** 0fc77192 (2026-05-04)
 
 ## Recent Commits (last 10)
+- 8012e9da chore(report): progress-report update [skip ci]
 - 8f06ca6c chore(status): auto-update [skip ci]
 - 25f00985 chore(report): progress-report update [skip ci]
 - 7700ee6a chore(report): init progress-report.md — Stilgar directive [skip ci]
@@ -13,9 +14,9 @@
 - 56eda2a8 fix(cm-kj9): wire error boundaries to OnboardingScreen + OrderConfirmationScreen
 - a6ea387e test(cm-ty9): edge case coverage for useCartSessions + CartSessionsSync
 - 885fc827 chore(status): auto-update [skip ci]
-- 7849fca3 fix(cm-vpv): fix act() hang in cartScreen.sync-error test
 
 ## Open Crew PRs
+- #539 fix(cm-gdz): LoyaltyScreen perks — error state + race + a11y
 - #513 test(cm-9s8): deep link navigation integration tests — cm-703 follow-up
 
 ## In-Progress Beads
