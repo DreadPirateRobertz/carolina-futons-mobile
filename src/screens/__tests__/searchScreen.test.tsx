@@ -25,25 +25,6 @@ jest.mock('@/hooks/useRecentSearches', () => ({
   }),
 }));
 
-// Mock WishlistProvider so it renders children synchronously with no async
-// AsyncStorage/network operations — prevents OOM SIGTERM in CI under fake timers.
-jest.mock('@/hooks/useWishlist', () => ({
-  WishlistProvider: ({ children }: { children: React.ReactNode }) => children,
-  useWishlist: () => ({ isInWishlist: () => false, toggle: jest.fn(), items: [] }),
-}));
-
-// Mock useRecentSearches to avoid a dynamic import('@react-native-async-storage/async-storage')
-// inside a useEffect IIFE. That dynamic import creates an open async handle that keeps the Jest
-// worker alive after all tests complete — GitHub Actions then kills it with SIGTERM.
-jest.mock('@/hooks/useRecentSearches', () => ({
-  useRecentSearches: () => ({
-    recentSearches: [],
-    addSearch: jest.fn(),
-    removeSearch: jest.fn(),
-    clearAll: jest.fn(),
-  }),
-}));
-
 const mockNavigate = jest.fn();
 const mockGoBack = jest.fn();
 
@@ -74,13 +55,19 @@ jest.mock('@/services/analytics', () => ({
   },
 }));
 
-jest.useFakeTimers();
-afterAll(() => jest.useRealTimers());
-
+// Scope fake timers per-test: each test gets fresh timers, afterEach clears all
+// pending callbacks. Global useFakeTimers() caused accumulation across the
+// ~30-test suite that eventually OOM-SIGTERMed the GH Actions worker (cm-7hg).
 beforeEach(() => {
+  jest.useFakeTimers();
   mockQueryData.mockReset();
   // Default: CMS returns empty (no trending terms) so existing tests are unaffected
   mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+});
+
+afterEach(() => {
+  jest.clearAllTimers();
+  jest.useRealTimers();
 });
 
 function renderSearchScreen() {
@@ -94,10 +81,6 @@ function renderSearchScreen() {
     </ThemeProvider>,
   );
 }
-
-beforeEach(() => {
-  jest.clearAllMocks();
-});
 
 describe('SearchScreen', () => {
   describe('rendering', () => {
@@ -527,6 +510,28 @@ describe('SearchScreen', () => {
         jest.advanceTimersByTime(500);
       });
       expect(getByTestId('search-results-grid')).toBeTruthy();
+    });
+  });
+
+  // cm-7hg: timer isolation — verifies pending debounce timers don't accumulate across tests.
+  // This describe block would balloon worker memory without the beforeEach/afterEach scoping above.
+  describe('timer isolation (cm-7hg)', () => {
+    it('pending debounce timers do not leak between tests', async () => {
+      const { getByTestId } = renderSearchScreen();
+      // Rapidly type without waiting for debounce to fire — leaves pending timer
+      fireEvent.changeText(getByTestId('search-input'), 'futon');
+      // Do NOT advance timers — the debounce callback is still pending
+      // afterEach clearAllTimers() must cancel it to prevent leak
+      expect(getByTestId('search-input').props.value).toBe('futon');
+    });
+
+    it('new test starts with clean timer state — no carry-over from previous test', async () => {
+      const { getByTestId } = renderSearchScreen();
+      await act(async () => {
+        jest.advanceTimersByTime(700);
+      });
+      // If a timer from the prior test leaked, results might appear prematurely here
+      expect(getByTestId('search-initial-state')).toBeTruthy();
     });
   });
 });

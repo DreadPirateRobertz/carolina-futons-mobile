@@ -24,10 +24,8 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
   // TDD tests for unimplemented features — skip until modules exist
-  // SearchScreen: skipped in CI — fake-timer accumulation causes SIGTERM OOM on GH Actions
-  //   (7741 other tests pass; tracked in gh issue for SearchScreen test isolation fix)
   // CartScreen*: skipped in CI — OOM SIGTERM after BundleSuggestion wired in (cm-bun/deacon-y8lf)
-  //   CartScreen tests run fine locally; tracked alongside SearchScreen isolation fix
+  //   CartScreen tests run fine locally; tracked in cm-b5f
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/crew/',
@@ -35,7 +33,6 @@ module.exports = {
     'storeCard\\.test\\.tsx',
     'storeLocatorScreen\\.test\\.tsx',
     'useStoreLocator\\.test\\.tsx',
-    'searchScreen\\.test\\.tsx',
     'cartScreen\\.test\\.tsx',
     'cartScreen\\.sync-error\\.test\\.tsx',
     'CartScreenRecommendations\\.test\\.tsx',
