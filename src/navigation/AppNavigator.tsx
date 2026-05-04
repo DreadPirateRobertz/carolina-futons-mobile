@@ -15,10 +15,12 @@ import {
 import { CommonActions } from '@react-navigation/native';
 import { TabNavigator } from './TabNavigator';
 import { withScreenErrorBoundary } from './withScreenErrorBoundary';
-import { OnboardingScreen } from '@/screens/OnboardingScreen';
+import { OnboardingScreen as OnboardingScreenBase } from '@/screens/OnboardingScreen';
 import type { ARWebScreenParams } from '@/screens/ARWebScreen';
 import type { OrderConfirmation } from '@/services/payment';
 import { useOnboarding } from '@/hooks/useOnboarding';
+
+const OnboardingScreen = withScreenErrorBoundary(OnboardingScreenBase, 'Onboarding');
 
 // Lazy-load non-critical screens to reduce initial bundle parse time
 const ARScreen = lazy(() =>
@@ -113,7 +115,7 @@ const StyleQuizScreen = lazy(() =>
 );
 const OrderConfirmationScreen = lazy(() =>
   import('@/screens/OrderConfirmationScreen').then((m) => ({
-    default: m.OrderConfirmationScreen,
+    default: withScreenErrorBoundary(m.OrderConfirmationScreen, 'OrderConfirmation'),
   })),
 );
 const AchievementBadgesScreen = lazy(() =>
