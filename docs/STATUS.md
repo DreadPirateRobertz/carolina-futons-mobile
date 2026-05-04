@@ -1,15 +1,15 @@
 # cfutons_mobile — Status
 
-**Updated:** 2026-05-04T12:27:50Z
+**Updated:** 2026-05-04T15:46:52Z
 **Branch:** main
-**Last commit:** 7849fca3 fix(cm-vpv): fix act() hang in cartScreen.sync-error test
+**Last commit:** 5718f7c8 test(cm-ad2): Sentry.addBreadcrumb integration tests for ScreenErrorBoundary
 
 ## Open Crew PRs
   (none)
 
 ## Recent Merges (last 5)
-  7849fca3 fix(cm-vpv): fix act() hang in cartScreen.sync-error test
-  f98ca983 chore(status): auto-update [skip ci]
-  a8f9a235 feat(cm-7wx): wire OfflineBanner pendingCount from AppShell
-  6da9c453 fix(cm-6bs): null-guard WixClient in useNotificationPreferences
-  e8de333c chore(status): auto-update [skip ci]
+  5718f7c8 test(cm-ad2): Sentry.addBreadcrumb integration tests for ScreenErrorBoundary
+  e58bc435 test(cm-bt2): LeaderboardScreen + PointsHistoryScreen skeleton/error/empty edge cases
+  56eda2a8 fix(cm-kj9): wire error boundaries to OnboardingScreen + OrderConfirmationScreen
+  a6ea387e test(cm-ty9): edge case coverage for useCartSessions + CartSessionsSync
+  885fc827 chore(status): auto-update [skip ci]
