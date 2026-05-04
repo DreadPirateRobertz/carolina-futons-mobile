@@ -1,29 +1,18 @@
-/**
- * @module SkeletonCarouselItem
- *
- * Skeleton loading placeholder that mirrors the RecommendationCarousel card
- * dimensions (160x120 image, name, price, rating). Used while recommendation
- * data is being fetched to prevent layout shift.
- */
-
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';
-import { Shimmer } from './Shimmer';
+import { SkeletonBox, SkeletonText } from './Skeleton';
 
 const CARD_WIDTH = 160;
 const IMAGE_HEIGHT = 120;
 
-/**
- * Skeleton placeholder matching RecommendationCarousel card layout:
- * Image (160x120) → name (2 lines) → price → rating stars
- */
 export const SkeletonCarouselItem = memo(function SkeletonCarouselItem({
   testID,
 }: {
   testID?: string;
 }) {
   const { colors, borderRadius, shadows, spacing } = useTheme();
+  const id = testID ?? 'skeleton-carousel-item';
 
   return (
     <View
@@ -31,10 +20,11 @@ export const SkeletonCarouselItem = memo(function SkeletonCarouselItem({
         styles.card,
         { backgroundColor: colors.white, borderRadius: borderRadius.md, ...shadows.card },
       ]}
-      testID={testID ?? 'skeleton-carousel-item'}
+      testID={id}
       accessibilityLabel="Loading recommendation"
     >
-      <Shimmer
+      <SkeletonBox
+        testID={`${id}-image`}
         width={CARD_WIDTH}
         height={IMAGE_HEIGHT}
         borderRadius={0}
@@ -44,16 +34,20 @@ export const SkeletonCarouselItem = memo(function SkeletonCarouselItem({
         }}
       />
       <View style={[styles.body, { padding: spacing.sm }]}>
-        <Shimmer width="90%" height={13} />
-        <Shimmer width="60%" height={13} style={{ marginTop: 4 }} />
-        <Shimmer width={50} height={14} style={{ marginTop: 6 }} />
-        <Shimmer width={70} height={12} style={{ marginTop: 4 }} />
+        <SkeletonText testID={`${id}-name`} lines={2} lineHeight={13} />
+        <SkeletonBox
+          testID={`${id}-price`}
+          width={50}
+          height={14}
+          borderRadius={4}
+          style={{ marginTop: 6 }}
+        />
+        <SkeletonBox width={70} height={12} borderRadius={4} style={{ marginTop: 4 }} />
       </View>
     </View>
   );
 });
 
-/** Horizontal row of skeleton carousel items. */
 export function SkeletonCarouselRow({ count = 3 }: { count?: number }) {
   const { spacing } = useTheme();
 

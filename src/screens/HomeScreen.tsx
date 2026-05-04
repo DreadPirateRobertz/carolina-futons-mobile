@@ -33,6 +33,7 @@ import { darkPalette } from '@/theme/tokens';
 import { GlassCard } from '@/components/GlassCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
+import { SkeletonText } from '@/components/Skeleton';
 import { MountainSkyline } from '@/components/MountainSkyline';
 import { LivingSkyBackground } from '@/components/LivingSkyBackground';
 import { LivingSkyMountainSkyline } from '@/components/LivingSkyMountainSkyline';
@@ -417,7 +418,15 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
               Shop the Look
             </Text>
             {collectionsLoading && featured.length === 0 ? (
-              <SkeletonCarouselRow count={3} />
+              <>
+                <SkeletonText
+                  testID="skeleton-collections-title"
+                  lines={1}
+                  lineHeight={20}
+                  style={{ paddingHorizontal: spacing.lg, marginBottom: 12, width: 140 }}
+                />
+                <SkeletonCarouselRow count={3} />
+              </>
             ) : (
               <ScrollView
                 horizontal
@@ -461,6 +470,12 @@ export function HomeScreen({ onOpenAR, onOpenShop, onCollectionPress }: Props) {
           <View style={styles.carouselSection}>
             {quizLoading ? (
               <View testID="skeleton-personalized-picks">
+                <SkeletonText
+                  testID="skeleton-picks-title"
+                  lines={1}
+                  lineHeight={20}
+                  style={{ paddingHorizontal: spacing.lg, marginBottom: 12, width: 160 }}
+                />
                 <SkeletonCarouselRow count={3} />
               </View>
             ) : quizRecs.length > 0 ? (
