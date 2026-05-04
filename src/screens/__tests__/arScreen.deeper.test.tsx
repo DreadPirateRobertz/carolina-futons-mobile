@@ -407,7 +407,8 @@ describe('ARScreen — snapshot capture flow (deeper)', () => {
   it('share button is disabled when isCapturing is true', () => {
     mockARCapture.isCapturing = true;
     const { getByTestId } = renderARScreen();
-    expect(getByTestId('ar-share').props.disabled).toBeTruthy();
+    const btn = getByTestId('ar-share');
+    expect(btn.props.accessibilityState?.disabled).toBe(true);
   });
 
   it('save-to-gallery button is disabled when isCapturing is true', () => {
