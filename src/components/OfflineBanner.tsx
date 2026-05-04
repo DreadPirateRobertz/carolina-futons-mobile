@@ -7,8 +7,8 @@
  * Automatically hides when connectivity is restored.
  */
 
-import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
 import { useTheme } from '@/theme';
 import { useConnectivity } from '@/hooks/useConnectivity';
@@ -45,6 +45,25 @@ export function OfflineBanner({ testID }: Props) {
   const { isOnline } = useConnectivity();
   const reduceMotion = useReducedMotion();
   const { pendingCount } = useQueueStatus();
+
+  const prevOnlineRef = useRef<boolean | null>(null);
+
+  useEffect(() => {
+    // Skip announcement on initial render
+    if (prevOnlineRef.current === null) {
+      prevOnlineRef.current = isOnline;
+      return;
+    }
+    if (prevOnlineRef.current === isOnline) return;
+
+    prevOnlineRef.current = isOnline;
+
+    if (!isOnline) {
+      AccessibilityInfo.announceForAccessibility(accessibilityLabel(pendingCount));
+    } else {
+      AccessibilityInfo.announceForAccessibility("You're back online. Syncing queued changes.");
+    }
+  }, [isOnline, pendingCount]);
 
   if (isOnline) return null;
 
