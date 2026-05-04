@@ -77,17 +77,9 @@ jest.mock('@/hooks/useAddressBook', () => ({
   }),
 }));
 
+const mockUseSavedAddresses = jest.fn();
 jest.mock('@/hooks/useSavedAddresses', () => ({
-  useSavedAddresses: () => ({
-    addresses: [],
-    addAddress: jest.fn(),
-    updateAddress: jest.fn(),
-    deleteAddress: jest.fn(),
-    setDefault: jest.fn(),
-    saveFromCheckout: jest.fn(),
-    defaultAddress: null,
-    loading: false,
-  }),
+  useSavedAddresses: () => mockUseSavedAddresses(),
 }));
 
 jest.mock('@/hooks/useBiometricAuth', () => ({
@@ -173,6 +165,26 @@ function renderProfile(props: Partial<React.ComponentProps<typeof AccountScreen>
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 
+const defaultSavedAddresses = {
+  addresses: [] as {
+    id: string;
+    fullName: string;
+    line1: string;
+    line2: string;
+    city: string;
+    state: string;
+    zip: string;
+    isDefault: boolean;
+  }[],
+  addAddress: jest.fn(),
+  updateAddress: jest.fn(),
+  deleteAddress: jest.fn(),
+  setDefault: jest.fn(),
+  saveFromCheckout: jest.fn(),
+  defaultAddress: null,
+  loading: false,
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockUpdateProfile.mockResolvedValue(undefined);
@@ -188,6 +200,7 @@ beforeEach(() => {
   });
   mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 0, tier: 'bronze' });
   mockUseStreak.mockReturnValue({ streak: 0, loading: false });
+  mockUseSavedAddresses.mockReturnValue(defaultSavedAddresses);
 });
 
 // ── Avatar upload error ───────────────────────────────────────────────────────
@@ -464,5 +477,130 @@ describe('logout confirmation', () => {
     // Press sign out while editing
     expect(() => fireEvent.press(getByTestId('sign-out-button'))).not.toThrow();
     expect(mockSignOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ── A11y: avatar ──────────────────────────────────────────────────────────────
+
+describe('AccountScreen — a11y: avatar', () => {
+  it('user-avatar has accessibilityLabel', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId('user-avatar').props.accessibilityLabel).toBeTruthy();
+    });
+  });
+
+  it('user-avatar accessibilityLabel references the display name', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId('user-avatar').props.accessibilityLabel).toContain('Jane Smith');
+    });
+  });
+});
+
+// ── A11y: address action buttons ──────────────────────────────────────────────
+
+const ADDR = {
+  id: 'addr-1',
+  fullName: 'Jane Smith',
+  line1: '123 Main St',
+  line2: '',
+  city: 'Charlotte',
+  state: 'NC',
+  zip: '28201',
+  isDefault: false,
+};
+
+describe('AccountScreen — a11y: address action buttons', () => {
+  beforeEach(() => {
+    mockUseSavedAddresses.mockReturnValue({
+      ...defaultSavedAddresses,
+      addresses: [ADDR],
+    });
+  });
+
+  it('set-default button label identifies the address street', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId(`set-default-${ADDR.id}`).props.accessibilityLabel).toContain(
+        '123 Main St',
+      );
+    });
+  });
+
+  it('set-default button has accessibilityRole="button"', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId(`set-default-${ADDR.id}`).props.accessibilityRole).toBe('button');
+    });
+  });
+
+  it('delete-address button label identifies the address street', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId(`delete-address-${ADDR.id}`).props.accessibilityLabel).toContain(
+        '123 Main St',
+      );
+    });
+  });
+
+  it('delete-address button has accessibilityRole="button"', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId(`delete-address-${ADDR.id}`).props.accessibilityRole).toBe('button');
+    });
+  });
+});
+
+// ── A11y: app version tap ─────────────────────────────────────────────────────
+
+describe('AccountScreen — a11y: app version tap', () => {
+  it('has accessibilityRole="button"', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId('app-version-tap').props.accessibilityRole).toBe('button');
+    });
+  });
+
+  it('accessibilityLabel mentions version', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => {
+      expect(getByTestId('app-version-tap').props.accessibilityLabel).toMatch(/version/i);
+    });
+  });
+});
+
+// ── Edit flow: updateProfile call ────────────────────────────────────────────
+
+describe('AccountScreen — edit flow: updateProfile call', () => {
+  it('calls updateProfile with trimmed first name', async () => {
+    const { getByTestId } = renderProfile();
+    await waitFor(() => expect(getByTestId('edit-profile-button')).toBeTruthy());
+
+    fireEvent.press(getByTestId('edit-profile-button'));
+    await waitFor(() => expect(getByTestId('edit-first-name-input')).toBeTruthy());
+
+    fireEvent.changeText(getByTestId('edit-first-name-input'), '  Jane  ');
+    fireEvent.press(getByTestId('edit-save-button'));
+
+    await waitFor(() => {
+      expect(mockUpdateProfile).toHaveBeenCalledWith(
+        expect.objectContaining({ firstName: 'Jane' }),
+      );
+    });
+  });
+
+  it('edit form closes after a successful save', async () => {
+    const { getByTestId, queryByTestId } = renderProfile();
+    await waitFor(() => expect(getByTestId('edit-profile-button')).toBeTruthy());
+
+    fireEvent.press(getByTestId('edit-profile-button'));
+    await waitFor(() => expect(getByTestId('edit-profile-form')).toBeTruthy());
+
+    fireEvent.press(getByTestId('edit-save-button'));
+
+    await waitFor(() => {
+      expect(queryByTestId('edit-profile-form')).toBeNull();
+    });
   });
 });
