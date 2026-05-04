@@ -18,6 +18,7 @@ import {
 import { hasARModel } from '@/data/models3d';
 import { formatPrice } from '@/utils';
 import { wixImageUrl } from '@/utils/wixImageUrl';
+import { EmptyState } from '@/components/EmptyState';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const GRID_PADDING = 12;
@@ -163,9 +164,12 @@ export function ARProductPicker({ selectedProductId, onSelectProduct, onClose, t
         columnWrapperStyle={styles.gridRow}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No products in this category</Text>
-          </View>
+          <EmptyState
+            icon="empty"
+            title="No products"
+            subtitle="No products in this category"
+            testID="ar-picker-empty"
+          />
         }
       />
     </View>
@@ -305,13 +309,5 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '400',
     textDecorationLine: 'line-through',
-  },
-  empty: {
-    alignItems: 'center',
-    paddingTop: 40,
-  },
-  emptyText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
   },
 });

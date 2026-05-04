@@ -1166,7 +1166,7 @@ export function ProductDetailScreen({
           {!effectiveHasReviews ? (
             <EmptyState
               title="No Reviews Yet"
-              message="Be the first to share your experience with this product."
+              subtitle="Be the first to share your experience with this product."
               illustration={
                 <ReviewsIllustration width={200} height={140} testID="reviews-illustration" />
               }

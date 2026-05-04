@@ -19,15 +19,15 @@ const ICONS: Record<string, string> = {
 
 interface Props {
   title: string;
-  message: string;
+  subtitle: string;
   icon?: string;
   illustration?: React.ReactElement;
   action?: { label: string; onPress: () => void };
   testID?: string;
 }
 
-/** Centered empty-state placeholder with icon/illustration, message, and optional CTA. */
-export function EmptyState({ title, message, icon, illustration, action, testID }: Props) {
+/** Centered empty-state placeholder with icon/illustration, subtitle, and optional CTA. */
+export function EmptyState({ title, subtitle, icon, illustration, action, testID }: Props) {
   return (
     <View style={styles.container} testID={testID}>
       {illustration ? (
@@ -40,7 +40,7 @@ export function EmptyState({ title, message, icon, illustration, action, testID 
         )
       )}
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+      <Text style={styles.message}>{subtitle}</Text>
       {action && (
         <TouchableOpacity
           style={styles.actionButton}

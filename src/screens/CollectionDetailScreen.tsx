@@ -123,7 +123,7 @@ export function CollectionDetailScreen() {
           onCartPress={openCart}
           testID="collection-detail-header"
         />
-        <EmptyState title="Collection not found" message="This collection may have been removed." />
+        <EmptyState title="Collection not found" subtitle="This collection may have been removed." />
       </View>
     );
   }

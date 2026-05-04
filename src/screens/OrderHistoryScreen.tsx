@@ -410,7 +410,7 @@ export function OrderHistoryScreen({
           <EmptyState
             illustration={<CategoryIllustration testID="orders-illustration" />}
             title="No orders yet"
-            message="Once you place your first order, it will appear here."
+            subtitle="Once you place your first order, it will appear here."
             action={
               onStartShopping ? { label: 'Start Shopping', onPress: onStartShopping } : undefined
             }
