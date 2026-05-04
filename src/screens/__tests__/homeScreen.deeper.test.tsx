@@ -384,3 +384,51 @@ describe('refresh error', () => {
     expect(getByTestId('home-connection-error')).toBeTruthy();
   });
 });
+
+// ─── Skeleton section titles (SkeletonBox/SkeletonText integration) ───────────
+
+describe('skeleton section titles', () => {
+  it('shows skeleton title placeholder when collections are loading and featured is empty', () => {
+    mockUseCollections.mockReturnValue({ ...collectionsEmpty, isLoading: true });
+    const { getByTestId } = renderHomeScreen();
+    expect(getByTestId('skeleton-collections-title')).toBeTruthy();
+  });
+
+  it('does NOT show skeleton title when collections are loaded', () => {
+    mockUseCollections.mockReturnValue(collectionsLoaded);
+    const { queryByTestId } = renderHomeScreen();
+    expect(queryByTestId('skeleton-collections-title')).toBeNull();
+  });
+
+  it('shows skeleton title placeholder when quiz recommendations are loading', () => {
+    mockUsePersonalization.mockReturnValue({ ...noPersonalization, isLoading: true });
+    const { getByTestId } = renderHomeScreen();
+    expect(getByTestId('skeleton-picks-title')).toBeTruthy();
+  });
+
+  it('does NOT show skeleton picks title when quiz is loaded', () => {
+    mockUsePersonalization.mockReturnValue({
+      sommelierResult: null,
+      recommendations: [
+        {
+          id: 'p1',
+          slug: 'asheville-full',
+          name: 'Asheville Full',
+          price: 349,
+          images: [],
+          category: 'futon',
+          description: '',
+          isFeatured: false,
+          rating: 4.5,
+          reviewCount: 10,
+          sizeOptions: [],
+        },
+      ],
+      topStyle: null,
+      isLoading: false,
+      error: null,
+    });
+    const { queryByTestId } = renderHomeScreen();
+    expect(queryByTestId('skeleton-picks-title')).toBeNull();
+  });
+});

@@ -1,20 +1,8 @@
-/**
- * @module SkeletonProductCard
- *
- * Skeleton loading placeholder that mirrors the ProductCard dimensions
- * (4:3 image, name, description, rating, price). Used in product grids
- * while data is loading to prevent layout shift and give visual feedback.
- */
-
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@/theme';
-import { Shimmer, ShimmerLines } from './Shimmer';
+import { SkeletonBox, SkeletonText } from './Skeleton';
 
-/**
- * Skeleton placeholder matching ProductCard layout:
- * 4:3 image area + name (2 lines) + description (1 line) + rating + price
- */
 export const SkeletonProductCard = memo(function SkeletonProductCard({
   testID,
 }: {
@@ -32,8 +20,8 @@ export const SkeletonProductCard = memo(function SkeletonProductCard({
       testID={testID ?? 'skeleton-product-card'}
       accessibilityLabel="Loading product"
     >
-      {/* Image placeholder */}
-      <Shimmer
+      <SkeletonBox
+        testID={`${testID ?? 'skeleton-product-card'}-image`}
         height={0}
         borderRadius={0}
         style={{
@@ -44,28 +32,37 @@ export const SkeletonProductCard = memo(function SkeletonProductCard({
         }}
       />
 
-      {/* Info area */}
       <View style={[styles.info, { padding: spacing.sm }]}>
-        {/* Name - 2 lines */}
-        <ShimmerLines lines={2} lineHeight={14} gap={4} lastLineWidth="70%" />
+        <SkeletonText
+          testID={`${testID ?? 'skeleton-product-card'}-name`}
+          lines={2}
+          lineHeight={14}
+        />
 
-        {/* Description - 1 line */}
-        <Shimmer width="85%" height={12} style={{ marginTop: 4 }} />
+        <SkeletonText
+          testID={`${testID ?? 'skeleton-product-card'}-description`}
+          lines={1}
+          lineHeight={12}
+          style={{ marginTop: 4 }}
+        />
 
-        {/* Rating row */}
         <View style={styles.ratingRow}>
-          <Shimmer width={70} height={12} />
-          <Shimmer width={24} height={12} />
+          <SkeletonBox width={70} height={12} borderRadius={4} />
+          <SkeletonBox width={24} height={12} borderRadius={4} />
         </View>
 
-        {/* Price */}
-        <Shimmer width={60} height={16} borderRadius={4} style={{ marginTop: 2 }} />
+        <SkeletonBox
+          testID={`${testID ?? 'skeleton-product-card'}-price`}
+          width={60}
+          height={16}
+          borderRadius={4}
+          style={{ marginTop: 2 }}
+        />
       </View>
     </View>
   );
 });
 
-/** Grid of skeleton product cards matching ShopScreen 2-column layout. */
 export function SkeletonProductGrid({ count = 4, testID }: { count?: number; testID?: string }) {
   const rows = [];
   for (let i = 0; i < count; i += 2) {

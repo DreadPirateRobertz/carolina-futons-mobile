@@ -46,22 +46,42 @@ describe('SkeletonProductCard', () => {
     const shimmers = getAllByLabelText('Loading');
     expect(shimmers.length).toBeGreaterThanOrEqual(6);
   });
+
+  it('uses SkeletonBox for the image area placeholder', () => {
+    const { getByTestId } = wrap(<SkeletonProductCard />);
+    expect(getByTestId('skeleton-product-card-image')).toBeTruthy();
+  });
+
+  it('uses SkeletonText for the product name placeholder', () => {
+    const { getByTestId } = wrap(<SkeletonProductCard />);
+    expect(getByTestId('skeleton-product-card-name')).toBeTruthy();
+  });
+
+  it('uses SkeletonText for the description placeholder', () => {
+    const { getByTestId } = wrap(<SkeletonProductCard />);
+    expect(getByTestId('skeleton-product-card-description')).toBeTruthy();
+  });
+
+  it('uses SkeletonBox for the price placeholder', () => {
+    const { getByTestId } = wrap(<SkeletonProductCard />);
+    expect(getByTestId('skeleton-product-card-price')).toBeTruthy();
+  });
 });
 
 describe('SkeletonProductGrid', () => {
   it('renders default 4 skeleton cards', () => {
     const { getByTestId, getAllByTestId } = wrap(<SkeletonProductGrid />);
     expect(getByTestId('skeleton-product-grid')).toBeTruthy();
-    expect(getAllByTestId(/^skeleton-card-/)).toHaveLength(4);
+    expect(getAllByTestId(/^skeleton-card-\d+$/)).toHaveLength(4);
   });
 
   it('renders specified count of cards', () => {
     const { getAllByTestId } = wrap(<SkeletonProductGrid count={6} />);
-    expect(getAllByTestId(/^skeleton-card-/)).toHaveLength(6);
+    expect(getAllByTestId(/^skeleton-card-\d+$/)).toHaveLength(6);
   });
 
   it('handles odd count (last row has one card)', () => {
     const { getAllByTestId } = wrap(<SkeletonProductGrid count={3} />);
-    expect(getAllByTestId(/^skeleton-card-/)).toHaveLength(3);
+    expect(getAllByTestId(/^skeleton-card-\d+$/)).toHaveLength(3);
   });
 });
