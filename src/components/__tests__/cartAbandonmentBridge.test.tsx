@@ -91,6 +91,7 @@ describe('CartAbandonmentBridge', () => {
     jest.clearAllMocks();
     resetCart();
     mockNotifState.permissionStatus = 'granted';
+    mockNotifState.preferences.cartRecovery = true;
   });
 
   it('renders nothing (returns null)', () => {
@@ -138,6 +139,14 @@ describe('CartAbandonmentBridge', () => {
 
     it('is false when permissionStatus is undetermined', () => {
       mockNotifState.permissionStatus = 'undetermined';
+      render(<CartAbandonmentBridge />);
+      const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
+      expect(callArgs?.pushPermitted).toBe(false);
+    });
+
+    it('is false when cartRecovery preference is disabled (even if OS permission granted)', () => {
+      mockNotifState.permissionStatus = 'granted';
+      mockNotifState.preferences.cartRecovery = false;
       render(<CartAbandonmentBridge />);
       const callArgs = mockUseCartAbandonmentRecovery.mock.calls[0]?.[0];
       expect(callArgs?.pushPermitted).toBe(false);

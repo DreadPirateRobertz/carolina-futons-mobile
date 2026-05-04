@@ -23,7 +23,7 @@ export function CartAbandonmentBridge() {
   const { preferences, permissionStatus } = useNotifications();
   const authCtx = useContext(AuthContext);
   const userId = authCtx?.user?.id ?? null;
-  const pushPermitted = permissionStatus === 'granted';
+  const pushPermitted = permissionStatus === 'granted' && preferences.cartRecovery;
 
   // Stable cart ID derived from sorted item IDs — changes when cart composition changes.
   const cartId = useMemo(
@@ -77,7 +77,7 @@ export function CartAbandonmentBridge() {
 
     onCartChanged();
     onCartActivity();
-  }, [itemCount, onCartChanged, onCartActivity, onReminderOrderPlaced, onRecoveryOrderPlaced]);
+  }, [itemCount, cartId, onCartChanged, onCartActivity, onReminderOrderPlaced, onRecoveryOrderPlaced]);
 
   return null;
 }
