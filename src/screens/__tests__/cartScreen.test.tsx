@@ -63,6 +63,13 @@ jest.mock('@/services/wix/wixProvider', () => ({
   }),
 }));
 
+// Mock useBundleSuggestion to prevent async Wix fetches accumulating across tests (cm-b5f).
+// Most tests return null bundle (no-op). Integration describe below tests real rendering.
+const mockUseBundleSuggestion = jest.fn();
+jest.mock('@/hooks/useBundleSuggestion', () => ({
+  useBundleSuggestion: (...args: unknown[]) => mockUseBundleSuggestion(...args),
+}));
+
 const asheville = FUTON_MODELS[0]; // $349
 const blueRidge = FUTON_MODELS[1]; // $449
 const naturalLinen = FABRICS[0]; // $0
@@ -102,10 +109,22 @@ function CartSeeder({
   return null;
 }
 
+const nullBundle = {
+  bundle: null,
+  bundleProducts: [],
+  pricing: null,
+  isLoading: false,
+  error: null,
+  addBundleToCart: jest.fn(),
+  isAddingToCart: false,
+  addSuccess: false,
+};
+
 describe('CartScreen', () => {
   beforeEach(() => {
     mockUseLoyalty.mockReturnValue(loyaltyBase);
     mockUseAuth.mockReturnValue({ isAuthenticated: true });
+    mockUseBundleSuggestion.mockReturnValue(nullBundle);
   });
 
   describe('Empty cart', () => {
@@ -556,6 +575,45 @@ describe('CartScreen', () => {
       const { getByTestId } = renderCartScreen({}, seed);
       const bar = getByTestId('cart-loyalty-progress');
       expect(bar.props.accessibilityLabel).toMatch(/maximum tier reached/i);
+    });
+  });
+
+  // cm-b5f: BundleSuggestion integration — verifies component renders/hides in CartScreen.
+  // Uses controlled hook mock (no async Wix fetch) to avoid OOM accumulation.
+  describe('BundleSuggestion integration (cm-b5f)', () => {
+    const seed = [{ model: asheville, fabric: FABRICS[0], qty: 1 }];
+
+    it('renders BundleSuggestion when cart has items and bundle is available', async () => {
+      mockUseBundleSuggestion.mockReturnValue({
+        bundle: { bundleId: 'b1', name: 'Asheville Comfort Bundle', productIds: ['p1', 'p2'], discountPercent: 10 },
+        bundleProducts: [
+          { id: 'p1', name: 'Asheville Full', slug: 'asheville-full', price: 349, category: 'futons' as const, fabricOptions: [], images: [], rating: 4.5, reviewCount: 12, description: '', inStock: true, featured: false },
+          { id: 'p2', name: 'Linen Cover', slug: 'linen-cover', price: 79, category: 'covers' as const, fabricOptions: [], images: [], rating: 4.0, reviewCount: 5, description: '', inStock: true, featured: false },
+        ],
+        pricing: { originalTotal: 428, bundlePrice: 385, savings: 43, savingsPercent: 10, couponCode: 'CF-BUNDLE-ASHVLLE1' },
+        isLoading: false,
+        error: null,
+        addBundleToCart: jest.fn(),
+        isAddingToCart: false,
+        addSuccess: false,
+      });
+      const { getByTestId } = renderCartScreen({}, seed);
+      await waitFor(() => expect(getByTestId('bundle-suggestion-cart')).toBeTruthy());
+    });
+
+    it('does not render BundleSuggestion when cart is empty', () => {
+      mockUseBundleSuggestion.mockReturnValue({
+        bundle: { bundleId: 'b1', name: 'Bundle', productIds: ['p1'], discountPercent: 10 },
+        bundleProducts: [],
+        pricing: { originalTotal: 349, bundlePrice: 314, savings: 35, savingsPercent: 10, couponCode: 'CF-BUNDLE-X' },
+        isLoading: false,
+        error: null,
+        addBundleToCart: jest.fn(),
+        isAddingToCart: false,
+        addSuccess: false,
+      });
+      const { queryByTestId } = renderCartScreen();
+      expect(queryByTestId('bundle-suggestion-cart')).toBeNull();
     });
   });
 });

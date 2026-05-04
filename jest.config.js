@@ -24,8 +24,6 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/__tests__/**'],
   testMatch: ['**/__tests__/**/*.test.{ts,tsx}'],
   // TDD tests for unimplemented features — skip until modules exist
-  // CartScreen*: skipped in CI — OOM SIGTERM after BundleSuggestion wired in (cm-bun/deacon-y8lf)
-  //   CartScreen tests run fine locally; tracked in cm-b5f
   testPathIgnorePatterns: [
     '/node_modules/',
     '<rootDir>/crew/',
@@ -33,9 +31,6 @@ module.exports = {
     'storeCard\\.test\\.tsx',
     'storeLocatorScreen\\.test\\.tsx',
     'useStoreLocator\\.test\\.tsx',
-    'cartScreen\\.test\\.tsx',
-    'cartScreen\\.sync-error\\.test\\.tsx',
-    'CartScreenRecommendations\\.test\\.tsx',
   ],
   // Prevent zombie worker processes from accumulating memory after test runs.
   forceExit: true,
