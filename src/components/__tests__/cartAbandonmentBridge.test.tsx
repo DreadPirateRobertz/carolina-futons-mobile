@@ -215,4 +215,38 @@ describe('CartAbandonmentBridge', () => {
       expect(mockOnOrderPlaced).not.toHaveBeenCalled();
     });
   });
+
+  describe('cartId dep array — variant swap resets 1hr timer', () => {
+    it('calls onCartActivity when cartId changes but itemCount stays the same', async () => {
+      // Start with asheville:linen in cart
+      mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:linen' }];
+      mockCartState.itemCount = 1;
+      const { rerender } = render(<CartAbandonmentBridge />);
+      jest.clearAllMocks();
+
+      await act(async () => {
+        // User swaps to a different fabric — same quantity, different item id
+        mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:charcoal' }];
+        // itemCount stays 1
+        rerender(<CartAbandonmentBridge />);
+      });
+
+      expect(mockOnCartActivity).toHaveBeenCalledTimes(1);
+    });
+
+    it('does NOT call onOrderPlaced when only cartId changes (not going to 0)', async () => {
+      mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:linen' }];
+      mockCartState.itemCount = 1;
+      const { rerender } = render(<CartAbandonmentBridge />);
+      jest.clearAllMocks();
+
+      await act(async () => {
+        mockCartState.items = [{ ...mockCartItems[0], id: 'asheville:charcoal' }];
+        rerender(<CartAbandonmentBridge />);
+      });
+
+      expect(mockOnRecoveryOrderPlaced).not.toHaveBeenCalled();
+      expect(mockOnOrderPlaced).not.toHaveBeenCalled();
+    });
+  });
 });
