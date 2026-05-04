@@ -76,7 +76,7 @@ export function StoreLocatorScreen({ onStorePress, userLatitude, userLongitude, 
       <EmptyState
         icon="📍"
         title="No stores found"
-        message={
+        subtitle={
           searchQuery
             ? `No results for "${searchQuery}". Try a different city or zip code.`
             : 'No showroom locations available.'

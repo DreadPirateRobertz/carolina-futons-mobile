@@ -159,7 +159,7 @@ export function CategoryScreen({
       <EmptyState
         icon="empty"
         title="No products yet"
-        message={`We're adding more ${title.toLowerCase()} soon. Check back later!`}
+        subtitle={`We're adding more ${title.toLowerCase()} soon. Check back later!`}
         action={onBack ? { label: 'Go Back', onPress: onBack } : undefined}
         testID="category-empty"
       />

@@ -207,7 +207,7 @@ export function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[
  * hq-npba: wires useCartSessions which was previously implemented but unused.
  */
 function CartSessionsSync() {
-  const { items, loadItems } = useCart();
+  const { items } = useCart();
   const authCtx = useContext(AuthContext);
   const memberId = authCtx?.user?.id ?? null;
   const prevMemberIdRef = useRef<string | null>(null);
@@ -225,18 +225,15 @@ function CartSessionsSync() {
   }, [items, saveCart]);
 
   // Merge guest session into member session on login transition
+  // mergeOnLogin persists to storage; CartItem hydration happens on next server cart fetch.
   useEffect(() => {
     if (memberId && !prevMemberIdRef.current) {
-      mergeOnLogin(memberId)
-        .then((mergedItems) => {
-          if (mergedItems.length > 0) {
-            loadItems(mergedItems);
-          }
-        })
-        .catch((err) => console.warn('[CartSessionsSync] mergeOnLogin failed:', err));
+      mergeOnLogin(memberId).catch((err) =>
+        console.warn('[CartSessionsSync] mergeOnLogin failed:', err),
+      );
     }
     prevMemberIdRef.current = memberId;
-  }, [memberId, mergeOnLogin, loadItems]);
+  }, [memberId, mergeOnLogin]);
 
   return null;
 }

@@ -91,7 +91,14 @@ export function CartAbandonmentBridge() {
 
     onCartChanged();
     onCartActivity();
-  }, [itemCount, cartId, onCartChanged, onCartActivity, onReminderOrderPlaced, onRecoveryOrderPlaced]);
+  }, [
+    itemCount,
+    cartId,
+    onCartChanged,
+    onCartActivity,
+    onReminderOrderPlaced,
+    onRecoveryOrderPlaced,
+  ]);
 
   return null;
 }
