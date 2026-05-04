@@ -11,8 +11,13 @@
  *   /product/:slug           → ProductDetail
  *   /orders/:orderId         → OrderDetail
  *   /collections/:slug       → CollectionDetail
- *   /challenges/:challengeId → Challenges
+ *   /challenges/:challengeId → Challenges  (param is optional — both forms tested)
  *   /loyalty                 → Loyalty
+ *
+ * Also covers high-risk paths called out in PR #513 review:
+ *   /store-locator           → StoreLocator (alias normalized to /stores)
+ *   /referral/:code          → ReferralLanding (custom parse function)
+ *   /account/addresses       → SavedAddresses (nested path disambiguation)
  */
 import React from 'react';
 import { Text } from 'react-native';
@@ -73,6 +78,9 @@ function makeTestApp({ initialUrl }: { initialUrl?: string | null }) {
         <Stack.Screen name="Challenges" component={makeStub('Challenges')} />
         <Stack.Screen name="Loyalty" component={makeStub('Loyalty')} />
         <Stack.Screen name="Category" component={makeStub('Category')} />
+        <Stack.Screen name="StoreLocator" component={makeStub('StoreLocator')} />
+        <Stack.Screen name="ReferralLanding" component={makeStub('ReferralLanding')} />
+        <Stack.Screen name="SavedAddresses" component={makeStub('SavedAddresses')} />
         <Stack.Screen name="NotFound" component={makeStub('NotFound')} />
       </Stack.Navigator>
     </NavigationContainer>
@@ -139,6 +147,19 @@ describe('deep link navigation — integration (cm-9s8)', () => {
       expect(parseParamsJson(params)).toEqual({ challengeId: 'ch-spring-2026' });
     });
 
+    // The Challenges route declares challengeId as optional (`challenges/:challengeId?`),
+    // so a bare /challenges URL must still resolve to the Challenges screen — without a
+    // challengeId param. Reviewer flagged this case as missing in PR #513.
+    it('navigates to Challenges (no id) when app opens from carolinafutons://challenges', async () => {
+      const { App } = makeTestApp({ initialUrl: 'carolinafutons://challenges' });
+      const { findByTestId } = render(<App />);
+
+      await findByTestId('screen-Challenges');
+      const params = await findByTestId('screen-Challenges-params');
+      const parsed = parseParamsJson(params) as { challengeId?: unknown };
+      expect(parsed.challengeId).toBeUndefined();
+    });
+
     it('navigates to Loyalty when app opens from carolinafutons://loyalty', async () => {
       const { App } = makeTestApp({ initialUrl: 'carolinafutons://loyalty' });
       const { findByTestId } = render(<App />);
@@ -185,6 +206,70 @@ describe('deep link navigation — integration (cm-9s8)', () => {
       await findByTestId('screen-ProductDetail');
       const params = await findByTestId('screen-ProductDetail-params');
       expect(parseParamsJson(params)).toEqual({ slug: 'wix-sku-99' });
+    });
+  });
+
+  // High-risk paths called out in PR #513 review:
+  //   - alias normalization (store-locator → stores) runs through normalizePathForLinking
+  //   - custom parse function on ReferralLanding (`referral/:code`)
+  //   - nested-segment route SavedAddresses must not be eaten by the Tabs/Account prefix
+  describe('high-risk path resolution (alias / parse / nested)', () => {
+    it('normalizes /store-locator alias to StoreLocator (cold start)', async () => {
+      const { App } = makeTestApp({ initialUrl: 'carolinafutons://store-locator' });
+      const { findByTestId } = render(<App />);
+
+      await findByTestId('screen-StoreLocator');
+    });
+
+    it('canonical /stores also resolves to StoreLocator (cold start)', async () => {
+      const { App } = makeTestApp({ initialUrl: 'carolinafutons://stores' });
+      const { findByTestId } = render(<App />);
+
+      await findByTestId('screen-StoreLocator');
+    });
+
+    it('normalizes /store-locator alias on hot link too', async () => {
+      const { App, emit } = makeTestApp({ initialUrl: null });
+      const { findByTestId } = render(<App />);
+      await findByTestId('screen-Tabs');
+
+      await act(async () => {
+        emit('carolinafutons://store-locator');
+      });
+
+      await findByTestId('screen-StoreLocator');
+    });
+
+    it('parses ReferralLanding code via custom parse function (cold start)', async () => {
+      const { App } = makeTestApp({ initialUrl: 'carolinafutons://referral/SUMMER2026' });
+      const { findByTestId } = render(<App />);
+
+      await findByTestId('screen-ReferralLanding');
+      const params = await findByTestId('screen-ReferralLanding-params');
+      expect(parseParamsJson(params)).toEqual({ code: 'SUMMER2026' });
+    });
+
+    it('parses ReferralLanding code on hot link', async () => {
+      const { App, emit } = makeTestApp({ initialUrl: null });
+      const { findByTestId } = render(<App />);
+      await findByTestId('screen-Tabs');
+
+      await act(async () => {
+        emit('carolinafutons://referral/FALL2025');
+      });
+
+      await findByTestId('screen-ReferralLanding');
+      const params = await findByTestId('screen-ReferralLanding-params');
+      expect(parseParamsJson(params)).toEqual({ code: 'FALL2025' });
+    });
+
+    it('routes nested /account/addresses to SavedAddresses (not Tabs/Account)', async () => {
+      const { App } = makeTestApp({ initialUrl: 'carolinafutons://account/addresses' });
+      const { findByTestId, queryByTestId } = render(<App />);
+
+      await findByTestId('screen-SavedAddresses');
+      // Confirm the nested path was NOT swallowed by the Tabs/Account screen.
+      expect(queryByTestId('screen-Tabs')).toBeNull();
     });
   });
 
