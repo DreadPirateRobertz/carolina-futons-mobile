@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-03 19:21 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-03 19:24 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 2feac34d chore(status): auto-update [skip ci]
+**Last commit:** cb678a8f chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+cb678a8f chore(status): auto-update [skip ci]
 2feac34d chore(status): auto-update [skip ci]
 e493f163 chore(status): auto-update [skip ci]
 0fc1f6a2 fix(cm-isj): mock useWishlist in PDS tests — prevent async state leak
 6b490e66 fix(cm-isj): sentry module isolation + PDS wishlist async leak
-16a4b46a fix(cm-b5f): addItem rollback + syncError on addToCart rejection (cm-vjz)
 ```
 
 ---
