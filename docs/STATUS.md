@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 00:14 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 00:24 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 644f4794 chore(status): auto-update [skip ci]
+**Last commit:** 515dbd19 chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+515dbd19 chore(status): auto-update [skip ci]
 644f4794 chore(status): auto-update [skip ci]
 3ca689f1 perf(hq-1q82): GamificationPushBridge — latest-ref pattern, single listener registration (#533)
 0f1e3121 chore(status): auto-update [skip ci]
 6e474c8a feat(hq-npba): wire useCartSessions — guest→member cart merge (#532)
-dcae024a feat(hq-8k690): cart abandonment recovery push notification
 ```
 
 ---
@@ -63,8 +63,8 @@ dcae024a feat(hq-8k690): cart abandonment recovery push notification
 
 ## Test Suite
 
-Test Suites: 2 skipped, 570 passed, 570 of 572 total
-Tests:       32 skipped, 10706 passed, 10738 total
+Test Suites: 1 failed, 2 skipped, 569 passed, 570 of 572 total
+Tests:       1 failed, 32 skipped, 10705 passed, 10738 total
 
 ---
 
