@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 01:48 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 01:54 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 56ce4781 chore(status): auto-update [skip ci]
+**Last commit:** 5420069b chore(status): auto-update [skip ci]
 
 **Recent commits:**
 ```
+5420069b chore(status): auto-update [skip ci]
 56ce4781 chore(status): auto-update [skip ci]
 dffa4cf1 feat(hq-mtc6): EmptyState — rename message→subtitle, expand tests to 41, wire ARProductPicker (#535)
 b6a17463 chore(status): auto-update [skip ci]
 88b7a5da chore(status): auto-update [skip ci]
-1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
 ```
 
 ---
@@ -63,8 +63,8 @@ b6a17463 chore(status): auto-update [skip ci]
 
 ## Test Suite
 
-Test Suites: 3 failed, 2 skipped, 572 passed, 575 of 577 total
-Tests:       3 failed, 32 skipped, 10754 passed, 10789 total
+Test Suites: 2 failed, 2 skipped, 573 passed, 575 of 577 total
+Tests:       2 failed, 32 skipped, 10755 passed, 10789 total
 
 ---
 
