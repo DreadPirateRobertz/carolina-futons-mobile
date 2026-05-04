@@ -1,9 +1,11 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04T17:24:10Z
+**Updated:** 2026-05-04T17:41:05Z
 **Session:** 0fc77192 (2026-05-04)
 
 ## Recent Commits (last 10)
+- 0188c142 chore(status): auto-update [skip ci]
+- 97050334 chore(report): progress-report update [skip ci]
 - ca352880 chore(report): final progress-report — Mac session wind-down [skip ci]
 - de7593ed test(cm-9s8): deep link navigation integration tests — cm-703 follow-up
 - 230ab8c3 fix(cm-gdz): LoyaltyScreen perks — error state + race condition + a11y
@@ -12,8 +14,6 @@
 - 520586af chore(report): progress-report update [skip ci]
 - 457c8a6a chore(report): progress-report update [skip ci]
 - 75a85ddb chore(status): auto-update [skip ci]
-- 1c952d41 chore(report): progress-report update [skip ci]
-- 39fd1e1c chore(report): progress-report update [skip ci]
 
 ## Open Crew PRs
 - (none)
