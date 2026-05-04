@@ -281,10 +281,10 @@ describe('Bottom sheet — dismiss', () => {
 // ── Loading state ─────────────────────────────────────────────────────────────
 
 describe('Loading state', () => {
-  it('shows loading indicator while loading', () => {
+  it('shows skeleton grid while loading', () => {
     mockUseAchievements.mockReturnValue(LOADING_STATE);
     const { getByTestId } = wrap(<AchievementBadgesScreen />);
-    expect(getByTestId('achievements-loading')).toBeTruthy();
+    expect(getByTestId('achievements-skeleton')).toBeTruthy();
   });
 
   it('hides badge grid while loading', () => {
