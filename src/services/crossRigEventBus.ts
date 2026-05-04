@@ -71,6 +71,10 @@ interface QueuedEvent {
 const WIX_FN = 'crossRigEvent';
 const QUEUE_KEY = '@cf_cross_rig_queue';
 const IDEM_KEY_PREFIX = '@cf_idem_';
+const CROSS_RIG_SOURCE = 'cfutons_mobile';
+
+// Events that CFW /api/cross-rig accepts — badge_earned and tier_changed.
+const CFW_SUPPORTED_EVENTS = new Set(['badge_earned', 'tier_changed']);
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -141,6 +145,29 @@ async function callWithRetry(
   }
 }
 
+// CFW dual-write (hq-sxgx): best-effort POST to /api/cross-rig for events
+// the web layer handles (badge_earned, tier_changed). Never throws — a failed
+// CFW leg must not block or affect the primary Wix emission.
+async function fireCfwLeg(
+  event: string,
+  memberId: string,
+  payload: Record<string, unknown>,
+): Promise<void> {
+  if (!CFW_SUPPORTED_EVENTS.has(event)) return;
+  const secret = process.env.CROSS_RIG_SECRET;
+  const cfwUrl = process.env.CFW_API_URL;
+  if (!secret || !cfwUrl) return;
+  try {
+    await fetch(`${cfwUrl}/api/cross-rig`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-cross-rig-secret': secret },
+      body: JSON.stringify({ memberId, event, payload, sourceRig: CROSS_RIG_SOURCE }),
+    });
+  } catch (err) {
+    console.error('[crossRigEventBus] CFW leg failed', err);
+  }
+}
+
 async function enqueue(body: Record<string, unknown>): Promise<void> {
   try {
     const raw = await AsyncStorage.getItem(QUEUE_KEY);
@@ -178,6 +205,8 @@ async function emit(
     }
     // Only mark idempotent after confirmed server receipt — queued/failed are not marked
     if (memberId) await markIdempotent(memberId, event);
+    // CFW dual-write: best-effort, fire-and-forget for supported events (hq-sxgx)
+    if (memberId) fireCfwLeg(event, memberId, payload).catch(() => {});
     return { success: true };
   } catch (err) {
     if (is400(err)) {
