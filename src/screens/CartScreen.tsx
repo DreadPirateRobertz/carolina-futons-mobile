@@ -51,9 +51,7 @@ import { TierProgressBar } from '@/components/TierProgressBar';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { BundleSuggestion } from '@/components/BundleSuggestion';
 import { modelIdToProductId } from '@/utils';
-import { useProductRecommendations } from '@/hooks/useProductRecommendations';
-import { RecommendationCarousel } from '@/components/RecommendationCarousel';
-import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
+import { ProductRecommendationRow } from '@/components/ProductRecommendationRow';
 import { CartSkeleton } from '@/components/CartSkeleton';
 
 /** Subtotal (in dollars) above which shipping becomes free. */
@@ -98,11 +96,6 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
   const { points } = useLoyalty();
   const [promoInput, setPromoInput] = useState('');
   const [bnplModalVisible, setBnplModalVisible] = useState(false);
-
-  // Recommendations based on first cart item
-  const firstItemProductId = items.length > 0 ? modelIdToProductId(items[0].model.id) : '';
-  const { recommendations: cartRecommendations, isLoading: isCartRecommendationsLoading } =
-    useProductRecommendations(firstItemProductId);
 
   const discount = promo.getDiscount(subtotal);
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
@@ -285,20 +278,14 @@ export function CartScreen({ onCheckout, onContinueShopping, testID }: Props) {
         )}
 
         {/* Recommended for You — based on first cart item */}
-        {items.length > 0 &&
-          (isCartRecommendationsLoading ? (
-            <View style={{ marginTop: spacing.md }} testID="cart-recommendations-skeleton">
-              <SkeletonCarouselRow />
-            </View>
-          ) : cartRecommendations.length > 0 ? (
-            <View style={{ marginTop: spacing.md }}>
-              <RecommendationCarousel
-                title="Recommended for You"
-                products={cartRecommendations}
-                testID="cart-recommendations-carousel"
-              />
-            </View>
-          ) : null)}
+        {items.length > 0 && (
+          <View style={{ marginTop: spacing.md }}>
+            <ProductRecommendationRow
+              productId={modelIdToProductId(items[0].model.id)}
+              testID="cart-recommendations-carousel"
+            />
+          </View>
+        )}
 
         {/* Promo Code */}
         <View

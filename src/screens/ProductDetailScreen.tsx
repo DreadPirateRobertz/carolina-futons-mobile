@@ -59,9 +59,9 @@ import { ReviewsIllustration } from '@/components/illustrations/ReviewsIllustrat
 import { events } from '@/services/analytics';
 import { useGamificationEvents } from '@/hooks/useGamificationEvents';
 import { useRecommendations } from '@/hooks/useRecommendations';
-import { useProductRecommendations } from '@/hooks/useProductRecommendations';
 import { RecommendationCarousel } from '@/components/RecommendationCarousel';
 import { SkeletonCarouselRow } from '@/components/SkeletonCarouselItem';
+import { ProductRecommendationRow } from '@/components/ProductRecommendationRow';
 import { sharedTransitionTag } from '@/utils/sharedTransitionTag';
 import { modelIdToProductId, productIdToModelId, productId as toProductId } from '@/utils';
 import { PremiumBadge } from '@/components/PremiumBadge';
@@ -199,8 +199,6 @@ export function ProductDetailScreen({
   const { isAuthenticated } = useAuth();
   const cart = useCart();
   const { similarItems, trackView } = useRecommendations();
-  const { recommendations: recommendedForYou, isLoading: isRecommendedForYouLoading } =
-    useProductRecommendations(catalogProductId);
   const {
     products: completeTheLookProducts,
     isLoading: isCompleteTheLookLoading,
@@ -1495,20 +1493,13 @@ export function ProductDetailScreen({
         )}
 
         {/* Recommended for You */}
-        {isRecommendedForYouLoading ? (
-          <View style={[styles.section, { marginTop: spacing.md }]} testID="skeleton-also-bought">
-            <SkeletonCarouselRow />
-          </View>
-        ) : recommendedForYou.length > 0 ? (
-          <View style={[styles.section, { marginTop: spacing.md }]}>
-            <RecommendationCarousel
-              title="Recommended for You"
-              products={recommendedForYou}
-              onProductPress={onRelatedProductPress}
-              testID="also-bought-carousel"
-            />
-          </View>
-        ) : null}
+        <View style={[styles.section, { marginTop: spacing.md }]} testID="recommended-for-you">
+          <ProductRecommendationRow
+            productId={catalogProductId}
+            onProductPress={onRelatedProductPress}
+            testID="also-bought-carousel"
+          />
+        </View>
 
         {/* Video Reviews Section — cm-uh3 */}
         <VideoReviewGallery productId={model.id} />
