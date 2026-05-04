@@ -14,6 +14,7 @@
  */
 
 import React from 'react';
+import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { BookingCancellationScreen } from '../BookingCancellationScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -205,7 +206,11 @@ describe('BookingCancellationScreen', () => {
       expect(getByTestId('cancellation-success')).toBeTruthy();
     });
 
-    it('calls cancelBooking with booking id when cancel pressed', async () => {
+    it('calls cancelBooking with booking id when cancel pressed and confirmed', async () => {
+      jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+        const confirmBtn = buttons?.find((b) => b.style === 'destructive');
+        confirmBtn?.onPress?.();
+      });
       mockHookState = { ...mockHookState, bookings: [BOOKING] };
       const { getByTestId } = renderScreen();
       fireEvent.press(getByTestId(`cancel-booking-${BOOKING.id}`));
@@ -292,7 +297,11 @@ describe('BookingCancellationScreen', () => {
       expect(getByTestId(`cancel-booking-${BOOKING_2.id}`)).toBeTruthy();
     });
 
-    it('cancel button for second booking calls cancelBooking with correct id', () => {
+    it('cancel button for second booking calls cancelBooking with correct id when confirmed', () => {
+      jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+        const confirmBtn = buttons?.find((b) => b.style === 'destructive');
+        confirmBtn?.onPress?.();
+      });
       mockHookState = { ...mockHookState, bookings: [BOOKING, BOOKING_2] };
       const { getByTestId } = renderScreen();
       fireEvent.press(getByTestId(`cancel-booking-${BOOKING_2.id}`));

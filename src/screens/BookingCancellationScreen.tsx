@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Alert,
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,8 +61,19 @@ export function BookingCancellationScreen() {
     loadBookings(email.trim());
   };
 
-  const handleCancel = (bookingId: string) => {
-    cancelBooking(bookingId, 'User-initiated cancellation');
+  const handleCancel = (bookingId: string, dateLabel: string) => {
+    Alert.alert(
+      'Cancel Booking',
+      `Are you sure you want to cancel the booking on ${dateLabel}? This cannot be undone.`,
+      [
+        { text: 'Keep Booking', style: 'cancel', onPress: () => {} },
+        {
+          text: 'Cancel Booking',
+          style: 'destructive',
+          onPress: () => cancelBooking(bookingId, 'User-initiated cancellation'),
+        },
+      ],
+    );
   };
 
   // ── Success view ─────────────────────────────────────────────────────────────
@@ -87,6 +99,7 @@ export function BookingCancellationScreen() {
             style={styles.primaryButton}
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
+            accessibilityLabel="Done, return to previous screen"
           >
             <Text style={styles.primaryButtonText}>Done</Text>
           </TouchableOpacity>
@@ -119,6 +132,7 @@ export function BookingCancellationScreen() {
             autoCapitalize="none"
             returnKeyType="search"
             onSubmitEditing={canLookup ? handleLookup : undefined}
+            accessibilityLabel="Email address for booking lookup"
           />
           <TouchableOpacity
             testID="lookup-bookings-button"
@@ -126,6 +140,7 @@ export function BookingCancellationScreen() {
             onPress={handleLookup}
             disabled={!canLookup}
             accessibilityRole="button"
+            accessibilityLabel="Find my bookings"
             accessibilityState={{ disabled: !canLookup }}
           >
             <Text style={styles.primaryButtonText}>Find My Bookings</Text>
@@ -181,10 +196,11 @@ export function BookingCancellationScreen() {
             <TouchableOpacity
               testID={`cancel-booking-${booking.id}`}
               style={[styles.cancelButton, isCancelling && styles.buttonDisabled]}
-              onPress={() => handleCancel(booking.id)}
+              onPress={() => handleCancel(booking.id, formatDayLabel(booking.date))}
               disabled={isCancelling}
               accessibilityRole="button"
               accessibilityLabel={`Cancel booking on ${formatDayLabel(booking.date)}`}
+              accessibilityHint="Opens a confirmation before cancelling"
               accessibilityState={{ disabled: isCancelling }}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
