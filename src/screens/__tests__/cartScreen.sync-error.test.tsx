@@ -7,7 +7,7 @@
  *   3. Offer retry (testID: cart-sync-retry) and dismiss (testID: cart-sync-dismiss)
  */
 import React from 'react';
-import { render, waitFor, fireEvent, act } from '@testing-library/react-native';
+import { render, waitFor, fireEvent } from '@testing-library/react-native';
 import { CartScreen } from '../CartScreen';
 import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
@@ -177,14 +177,14 @@ describe('CartScreen — sync error recovery (cm-vjz)', () => {
     it('does not show cart-sync-error when addToCart succeeds', async () => {
       mockAddToCart.mockResolvedValue(undefined);
 
-      const { queryByTestId } = renderCartScreen({}, [
+      const { queryByTestId, findByTestId } = renderCartScreen({}, [
         { model: asheville, fabric: naturalLinen, qty: 1 },
       ]);
 
-      await act(async () => {
-        await Promise.resolve();
-      });
-
+      // Wait for cart item to appear — confirms addToCart resolved without error.
+      // Uses waitFor-based findByTestId instead of act() to avoid blocking on
+      // unresolved native SecureStore promises from CartSessionsSync.
+      await findByTestId(`cart-item-${asheville.id}:${naturalLinen.id}`);
       expect(queryByTestId('cart-sync-error')).toBeNull();
     });
   });
