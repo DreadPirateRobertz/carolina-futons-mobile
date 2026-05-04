@@ -11,7 +11,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
 import { useChallengeProgress } from '@/hooks/useChallengeProgress';
@@ -154,7 +154,15 @@ function ProgressBar({ ratio, color, testID }: { ratio: number; color: string; t
 
 // ── Challenge row ─────────────────────────────────────────────────────────────
 
-function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: boolean }) {
+function ChallengeRow({
+  challenge,
+  dim,
+  onPress,
+}: {
+  challenge: CatalogChallenge;
+  dim?: boolean;
+  onPress?: () => void;
+}) {
   const { colors, typography, spacing } = useTheme();
   const {
     id,
@@ -177,7 +185,7 @@ function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: b
       : colors.sunsetCoral;
 
   return (
-    <View
+    <TouchableOpacity
       style={[
         styles.row,
         {
@@ -187,6 +195,8 @@ function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: b
         },
       ]}
       testID={`challenge-row-${id}`}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
     >
       {/* Title + description */}
       <View style={styles.rowTop}>
@@ -250,7 +260,7 @@ function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: b
           </Text>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -258,9 +268,10 @@ function ChallengeRow({ challenge, dim }: { challenge: CatalogChallenge; dim?: b
 
 interface Props {
   testID?: string;
+  onChallengePress?: (challengeId: string) => void;
 }
 
-export function ChallengesScreen({ testID }: Props) {
+export function ChallengesScreen({ testID, onChallengePress }: Props) {
   const { colors, spacing } = useTheme();
   const { grouped, loading, error } = useChallengeCatalog();
   const { summary: progressSummary } = useChallengeProgress();
@@ -340,7 +351,7 @@ export function ChallengesScreen({ testID }: Props) {
         <>
           <SectionHeader label="In Progress" testID="section-in-progress" />
           {inProgress.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} />
+            <ChallengeRow key={c.id} challenge={c} onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
           ))}
         </>
       )}
@@ -349,7 +360,7 @@ export function ChallengesScreen({ testID }: Props) {
         <>
           <SectionHeader label="Available" testID="section-available" />
           {available.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} />
+            <ChallengeRow key={c.id} challenge={c} onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
           ))}
         </>
       )}
@@ -358,7 +369,7 @@ export function ChallengesScreen({ testID }: Props) {
         <>
           <SectionHeader label="Completed" testID="section-completed" />
           {completed.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} dim />
+            <ChallengeRow key={c.id} challenge={c} dim onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
           ))}
         </>
       )}
@@ -367,7 +378,7 @@ export function ChallengesScreen({ testID }: Props) {
         <>
           <SectionHeader label="Expired" testID="section-expired" />
           {expired.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} dim />
+            <ChallengeRow key={c.id} challenge={c} dim onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
           ))}
         </>
       )}
