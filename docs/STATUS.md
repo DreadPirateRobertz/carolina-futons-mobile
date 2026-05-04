@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 00:34 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 00:45 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 594e8c06 chore(status): auto-update [skip ci]
+**Last commit:** 1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
 
 **Recent commits:**
 ```
+1e53073e feat(hq-8zif): OfflineBanner a11y announcements + usePendingSyncCount hook (#534)
+a8515467 chore(status): auto-update [skip ci]
 594e8c06 chore(status): auto-update [skip ci]
 a1f65392 chore(status): auto-update [skip ci]
 515dbd19 chore(status): auto-update [skip ci]
-644f4794 chore(status): auto-update [skip ci]
-3ca689f1 perf(hq-1q82): GamificationPushBridge — latest-ref pattern, single listener registration (#533)
 ```
 
 ---
