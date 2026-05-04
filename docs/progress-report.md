@@ -1,21 +1,21 @@
 # Dallas PM Progress Report
 
-**Updated:** 2026-05-04 17:22 MDT
+**Updated:** 2026-05-04 17:38 MDT
 **Session:** 0fc77192 (2026-05-04)
 
 ## Last 10 Commits
 | Hash | Message |
 |------|---------|
-| fbf89401 | feat(cm-bue): migrate AchievementBadgesScreen from ActivityIndicator to SkeletonBadgeGrid |
+| e463da60 | test(cm-2a2): OrderDetailScreen deeper edge-case suite (bishop) |
+| d87c97d2 | test(cm-5xf): NotificationsScreen deeper edge cases (ripley) |
+| 90e1904c | test(cm-4j2): ARCameraScreen deeper tests (nux) |
+| 2b47d148 | test(cm-yex): WishlistScreen deeper edge-case test suite (bishop) |
+| ef5892c1 | chore(report): progress-report update [skip ci] |
+| fbf89401 | feat(cm-bue): migrate AchievementBadgesScreen → SkeletonBadgeGrid |
 | ede23ecb | chore(status): auto-update [skip ci] |
 | c3937db2 | chore(report): progress-report update [skip ci] |
 | ec7a6802 | chore(report): progress-report update [skip ci] |
 | d7a5b975 | feat(cm-4sp): BookingCancellationScreen a11y audit + deeper tests (burke) |
-| 173d741f | test(cm-2su): VisualSearchScreen + VisualSearchResultsScreen deeper tests (nux) |
-| 325d21fc | test(cm-gyd): StyleQuizScreen deeper edge-case suite — 26 tests |
-| 6d826506 | chore(report): progress-report update [skip ci] |
-| 06d45d0d | chore(status): auto-update [skip ci] |
-| 9e51b0b8 | chore(report): progress-report update [skip ci] |
 
 ## Open Crew PRs
 None (dependabot only).
@@ -24,19 +24,19 @@ None (dependabot only).
 | Bead | Priority | Title |
 |------|----------|-------|
 | cm-rpz | P1 | Refinery test_command misconfigured (refinery-owned) |
-| cm-5xf | P2 | NotificationsScreen: deeper tests (ripley) |
+| cm-7s4 | P2 | PushNotificationScreen: deeper tests (bishop) |
 | cm-f6h | P2 | StoreLocatorScreen + StoreDetailScreen skeleton loading states (hicks) |
 
 ## Crew Status
 | Member | Status | Bead |
 |--------|--------|------|
-| bishop | hooked | cm-yex (WishlistScreen deeper tests) |
-| hicks | in progress | cm-f6h (StoreLocator skeleton — ETA ~20 min from 17:00) |
-| ripley | hooked | cm-5xf (NotificationsScreen deeper tests) |
-| nux | hooked | cm-4j2 (ARCameraScreen deeper tests) |
+| bishop | hooked | cm-7s4 (PushNotificationScreen deeper tests) |
+| hicks | in progress | cm-f6h (StoreLocator skeleton — overdue, nudged) |
+| ripley | hooked | cm-z49 (SearchScreen deeper tests) |
+| nux | hooked | cm-ggn (CheckoutScreen deeper tests) |
 | burke | hooked | cm-g5q (ProfileScreen a11y + deeper tests) |
 
-## Session Merges (S36) — CONVOY CLOSED
+## Session Merges (S36 closed + S37 running)
 - cm-thv: CollectionsScreen skeleton/error/empty/retry (33 tests)
 - cm-perf2: FlatList batching + Android-only clip (9 tests)
 - cm-4ga: SavedAddressesScreen a11y + error state (burke)
@@ -44,8 +44,12 @@ None (dependabot only).
 - cm-gyd: StyleQuizScreen deeper edge cases — 26 tests (bishop)
 - cm-2su: VisualSearch deeper — camera perm/capture/URI (nux)
 - cm-4sp: BookingCancellationScreen a11y + deeper (burke)
-- cm-bue: AchievementBadgesScreen → SkeletonBadgeGrid — 67 tests (ripley, cherry-picked fbf89401)
-- cm-bt2: LeaderboardScreen + PointsHistoryScreen skeleton/error/empty (ripley, direct push)
+- cm-bue: AchievementBadgesScreen → SkeletonBadgeGrid — 67 tests (ripley)
+- cm-bt2: LeaderboardScreen + PointsHistoryScreen skeleton/error/empty (ripley)
+- cm-yex: WishlistScreen deeper — 26 tests (bishop)
+- cm-4j2: ARCameraScreen deeper — 28 tests (nux)
+- cm-2a2: OrderDetailScreen deeper — 39 tests (bishop)
+- cm-5xf: NotificationsScreen deeper (ripley)
 
 ## Active Crons
 - Progress-report: cc3afc78 (every 10 min)
