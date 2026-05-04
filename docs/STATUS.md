@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 01:14 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 01:10 MDT (auto-refreshed every 20 min)
 
 ---
 
