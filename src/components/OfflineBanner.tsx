@@ -17,6 +17,8 @@ import { useQueueStatus } from '@/hooks/useQueueStatus';
 
 interface Props {
   testID?: string;
+  /** Pending offline write count. If provided, overrides the internal useQueueStatus hook. */
+  pendingCount?: number;
 }
 
 function queueLabel(pendingCount: number): string {
@@ -40,11 +42,12 @@ function accessibilityLabel(pendingCount: number): string {
  * @param props.testID - Test identifier
  * @returns The banner View with slide animation when offline, or null when online
  */
-export function OfflineBanner({ testID }: Props) {
+export function OfflineBanner({ testID, pendingCount: pendingCountProp }: Props) {
   const { colors } = useTheme();
   const { isOnline } = useConnectivity();
   const reduceMotion = useReducedMotion();
-  const { pendingCount } = useQueueStatus();
+  const { pendingCount: pendingCountHook } = useQueueStatus();
+  const pendingCount = pendingCountProp ?? pendingCountHook;
 
   const prevOnlineRef = useRef<boolean | null>(null);
 

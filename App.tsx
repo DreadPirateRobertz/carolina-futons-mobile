@@ -45,6 +45,7 @@ import { ForceUpdateModal } from '@/components/ForceUpdateModal';
 import { useTriggerMoments } from '@/hooks/useTriggerMoments';
 import { TierCelebrationModal } from '@/components/TierCelebrationModal';
 import { TriggerMomentsProvider } from '@/contexts/TriggerMomentsContext';
+import { usePendingSyncCount } from '@/hooks/usePendingSyncCount';
 
 const STRIPE_MERCHANT_ID = 'merchant.com.carolinafutons';
 const wixConfig = getWixConfig();
@@ -90,6 +91,7 @@ function App() {
   const forceUpdate = useForceUpdate();
   const { triggers, dismiss, reportChallengesCompleted, reportTriggers, reportTierChanged } =
     useTriggerMoments();
+  const pendingSyncCount = usePendingSyncCount();
 
   // Defer non-critical service init to after first render for faster cold start
   useEffect(() => {
@@ -178,7 +180,7 @@ function App() {
                                         }}
                                       >
                                         <DeepLinkProvider>
-                                          <OfflineBanner />
+                                          <OfflineBanner pendingCount={pendingSyncCount} />
                                           <AppNavigator />
                                           <PostPurchaseReviewBridge />
                                           <MiniCartDrawerHost
