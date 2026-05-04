@@ -197,7 +197,7 @@ describe('ProductDetailScreen — "Recommended for You" section', () => {
 
     it('shows skeleton while loading recommendations', () => {
       const { getByTestId } = renderDetail();
-      expect(getByTestId('skeleton-also-bought')).toBeTruthy();
+      expect(getByTestId('rec-row-skeleton')).toBeTruthy();
     });
 
     it('does not show carousel while loading', () => {
@@ -222,7 +222,7 @@ describe('ProductDetailScreen — "Recommended for You" section', () => {
 
     it('does not show skeleton after load', () => {
       const { queryByTestId } = renderDetail();
-      expect(queryByTestId('skeleton-also-bought')).toBeNull();
+      expect(queryByTestId('rec-row-skeleton')).toBeNull();
     });
   });
 
@@ -234,7 +234,7 @@ describe('ProductDetailScreen — "Recommended for You" section', () => {
     it('hides section when no recommendations', () => {
       const { queryByTestId } = renderDetail();
       expect(queryByTestId('also-bought-carousel')).toBeNull();
-      expect(queryByTestId('skeleton-also-bought')).toBeNull();
+      expect(queryByTestId('rec-row-skeleton')).toBeNull();
     });
   });
 });
