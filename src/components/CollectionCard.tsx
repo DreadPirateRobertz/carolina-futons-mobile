@@ -9,7 +9,7 @@
 
 import React, { useState, useCallback, memo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import { useTheme } from '@/theme';
 import type { EditorialCollection } from '@/data/collections';
 import { DEFAULT_COLLECTION_BLURHASH } from '@/data/collections';
@@ -57,16 +57,15 @@ export const CollectionCard = memo(function CollectionCard({
           <Text style={styles.placeholderEmoji}>🏡</Text>
         </View>
       ) : (
-        <Image
+        <AppImage
           source={{ uri: collection.heroImage.uri }}
           style={styles.image}
           contentFit="cover"
           transition={200}
-          recyclingKey={collection.id}
+          testID={testID ? `${testID}-image` : undefined}
           accessibilityLabel={collection.heroImage.alt}
           onError={() => setImageError(true)}
-          cachePolicy="memory-disk"
-          placeholder={{ blurhash: collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH }}
+          placeholder={collection.heroImage.blurhash ?? DEFAULT_COLLECTION_BLURHASH}
         />
       )}
       <View style={[styles.overlay, { backgroundColor: colors.overlay, padding: spacing.md }]}>

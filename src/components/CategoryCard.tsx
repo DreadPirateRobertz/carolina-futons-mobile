@@ -9,7 +9,7 @@
 
 import React, { useState, useCallback, memo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import { colors, spacing, borderRadius, shadows, typography } from '@/theme/tokens';
 import { DEFAULT_PRODUCT_BLURHASH } from '@/data/products';
 
@@ -63,16 +63,14 @@ export const CategoryCard = memo(function CategoryCard({
           <Text style={styles.placeholderText}>🛋️</Text>
         </View>
       ) : (
-        <Image
+        <AppImage
           source={{ uri: category.image }}
           style={styles.image}
           testID={testID ? `${testID}-image` : undefined}
           onError={handleImageError}
           contentFit="cover"
           transition={200}
-          recyclingKey={category.id}
-          cachePolicy="memory-disk"
-          placeholder={{ blurhash: DEFAULT_PRODUCT_BLURHASH }}
+          placeholder={DEFAULT_PRODUCT_BLURHASH}
         />
       )}
       <View style={styles.overlay} testID={testID ? `${testID}-overlay` : undefined}>

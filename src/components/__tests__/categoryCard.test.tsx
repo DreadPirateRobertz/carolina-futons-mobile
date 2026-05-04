@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 
 import { CategoryCard } from '../CategoryCard';
 
@@ -59,12 +59,41 @@ describe('CategoryCard', () => {
   });
 
   describe('image handling', () => {
-    it('shows placeholder when image fails to load', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      act(() => {
+        jest.runOnlyPendingTimers();
+      });
+      jest.useRealTimers();
+    });
+
+    it('does not show placeholder on first error (AppImage retries internally)', () => {
+      const { getByTestId, queryByTestId } = render(
+        <CategoryCard category={mockCategory} onPress={() => {}} testID="category-card" />,
+      );
+      const image = getByTestId('category-card-image');
+      act(() => {
+        fireEvent(image, 'error');
+      });
+      // First error schedules a retry — placeholder must not appear yet
+      expect(queryByTestId('category-card-image-placeholder')).toBeNull();
+    });
+
+    it('shows placeholder after all retries are exhausted', () => {
       const { getByTestId } = render(
         <CategoryCard category={mockCategory} onPress={() => {}} testID="category-card" />,
       );
       const image = getByTestId('category-card-image');
-      fireEvent(image, 'error', { nativeEvent: { error: 'Load failed' } });
+      // AppImage defaults to maxRetries=3: need 4 errors (3 retries + final failure)
+      for (let i = 0; i <= 3; i++) {
+        act(() => {
+          fireEvent(image, 'error');
+          jest.runAllTimers();
+        });
+      }
       expect(getByTestId('category-card-image-placeholder')).toBeTruthy();
     });
   });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, fireEvent, act } from '@testing-library/react-native';
 import { CollectionCard } from '../CollectionCard';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import type { EditorialCollection } from '@/data/collections';
@@ -83,5 +83,39 @@ describe('CollectionCard', () => {
     };
     const { getByText } = renderCard({ collection: collectionNoProducts });
     expect(getByText('0 items')).toBeTruthy();
+  });
+
+  describe('image error handling', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      act(() => {
+        jest.runOnlyPendingTimers();
+      });
+      jest.useRealTimers();
+    });
+
+    it('does not show emoji placeholder on first image error (AppImage retries)', () => {
+      const { getByTestId, queryByText } = renderCard();
+      const image = getByTestId('test-card-image');
+      act(() => {
+        fireEvent(image, 'error');
+      });
+      expect(queryByText('🏡')).toBeNull();
+    });
+
+    it('shows emoji placeholder after all retries are exhausted', () => {
+      const { getByTestId, getByText } = renderCard();
+      const image = getByTestId('test-card-image');
+      for (let i = 0; i <= 3; i++) {
+        act(() => {
+          fireEvent(image, 'error');
+          jest.runAllTimers();
+        });
+      }
+      expect(getByText('🏡')).toBeTruthy();
+    });
   });
 });

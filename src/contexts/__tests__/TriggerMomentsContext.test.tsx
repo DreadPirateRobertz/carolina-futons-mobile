@@ -3,10 +3,7 @@
  */
 import React from 'react';
 import { renderHook } from '@testing-library/react-native';
-import {
-  TriggerMomentsProvider,
-  useTriggerMomentsContext,
-} from '../TriggerMomentsContext';
+import { TriggerMomentsProvider, useTriggerMomentsContext } from '../TriggerMomentsContext';
 import type { UseTriggerMomentsResult } from '@/hooks/useTriggerMoments';
 
 const stubValue: UseTriggerMomentsResult = {
@@ -27,18 +24,14 @@ describe('TriggerMomentsContext', () => {
   it('provides the value to consumers', () => {
     const { result } = renderHook(() => useTriggerMomentsContext(), {
       wrapper: ({ children }) => (
-        <TriggerMomentsProvider value={stubValue}>
-          {children}
-        </TriggerMomentsProvider>
+        <TriggerMomentsProvider value={stubValue}>{children}</TriggerMomentsProvider>
       ),
     });
 
     expect(result.current.triggers).toBe(stubValue.triggers);
     expect(result.current.dismiss).toBe(stubValue.dismiss);
     expect(result.current.reportTierChanged).toBe(stubValue.reportTierChanged);
-    expect(result.current.reportChallengesCompleted).toBe(
-      stubValue.reportChallengesCompleted,
-    );
+    expect(result.current.reportChallengesCompleted).toBe(stubValue.reportChallengesCompleted);
     expect(result.current.reportTriggers).toBe(stubValue.reportTriggers);
   });
 

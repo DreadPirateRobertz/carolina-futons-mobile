@@ -149,9 +149,9 @@ describe('sendCrossRigEvent', () => {
     );
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    await expect(
-      sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {}),
-    ).rejects.toThrow('wix network error');
+    await expect(sendCrossRigEvent(wixClient, 'member-1', 'quiz_completed', {})).rejects.toThrow(
+      'wix network error',
+    );
 
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('[crossRigSync] Wix leg failed'),
@@ -511,9 +511,7 @@ describe('completeMobileChallenge', () => {
       const origUrl = process.env.CFW_API_URL;
       process.env.CROSS_RIG_SECRET = 'test-secret';
       process.env.CFW_API_URL = 'https://api.carolinafutons.com';
-      jest
-        .spyOn(global, 'fetch')
-        .mockRejectedValue(new Error('network error'));
+      jest.spyOn(global, 'fetch').mockRejectedValue(new Error('network error'));
 
       const wixClient = makeMockWixClient(
         jest.fn().mockResolvedValue({ success: true, alreadyAwarded: false, pointsAwarded: 75 }),

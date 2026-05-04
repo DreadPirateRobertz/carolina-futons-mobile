@@ -27,7 +27,7 @@ import { useTheme } from '@/theme';
 import { useCart, type CartItem } from '@/hooks/useCart';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { formatPrice } from '@/utils';
-import { Image } from 'expo-image';
+import { AppImage } from './AppImage';
 import { wixImageUrl } from '@/utils/wixImageUrl';
 
 const SWIPE_DISMISS_TRANSLATION = 100;
@@ -76,12 +76,11 @@ function MiniCartItem({ item, onRemove, onUpdateQty }: MiniCartItemProps) {
     <View style={itemStyles.row} testID={`cartItemRow-${item.id}`} accessibilityLabel={a11yLabel}>
       {/* Product image or color swatch */}
       {item.imageUrl ? (
-        <Image
+        <AppImage
           testID={`cartItemImage-${item.id}`}
-          source={{ uri: wixImageUrl(item.imageUrl, { width: 56, height: 56 }) ?? undefined }}
+          source={{ uri: wixImageUrl(item.imageUrl, { width: 56, height: 56 }) ?? item.imageUrl }}
           style={[itemStyles.thumb, { borderRadius: borderRadius.sm }]}
           contentFit="cover"
-          cachePolicy="memory-disk"
         />
       ) : (
         <View
