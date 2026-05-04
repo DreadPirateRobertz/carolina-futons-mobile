@@ -10,6 +10,86 @@ import Animated, {
 import { useTheme } from '@/theme';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
+interface SkeletonBoxProps {
+  width?: number | string;
+  height?: number;
+  borderRadius?: number;
+  animated?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+export function SkeletonBox({
+  width = '100%',
+  height = 80,
+  borderRadius = 8,
+  animated = true,
+  style,
+  testID,
+}: SkeletonBoxProps) {
+  const { colors } = useTheme();
+  const reduceMotion = useReducedMotion();
+  const shimmer = useSharedValue(0.4);
+
+  useEffect(() => {
+    if (!animated || reduceMotion) {
+      shimmer.value = 0.6;
+      return;
+    }
+    shimmer.value = withRepeat(
+      withTiming(1, { duration: 900, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, [shimmer, animated, reduceMotion]);
+
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: shimmer.value }));
+
+  return (
+    <Animated.View
+      testID={testID}
+      accessibilityLabel="Loading"
+      style={[
+        { width: width as DimensionValue, height, borderRadius, backgroundColor: colors.sandBase },
+        animatedStyle,
+        style,
+      ]}
+    />
+  );
+}
+
+interface SkeletonTextProps {
+  lines?: number;
+  lineHeight?: number;
+  animated?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+export function SkeletonText({
+  lines = 1,
+  lineHeight = 14,
+  animated = true,
+  style,
+  testID,
+}: SkeletonTextProps) {
+  const { spacing } = useTheme();
+
+  return (
+    <View testID={testID} style={[{ gap: spacing.sm }, style]}>
+      {Array.from({ length: lines }).map((_, i) => (
+        <SkeletonRow
+          key={i}
+          testID={`${testID ?? 'sk-text'}-line`}
+          height={lineHeight}
+          width={i === lines - 1 && lines > 1 ? '65%' : '100%'}
+          animated={animated}
+        />
+      ))}
+    </View>
+  );
+}
+
 interface SkeletonRowProps {
   width?: number | string;
   height?: number;
