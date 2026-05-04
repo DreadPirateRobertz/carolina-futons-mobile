@@ -79,7 +79,7 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
     loading: activityLoading,
     error: activityError,
   } = usePointsHistory();
-  const { perks, loading: perksLoading } = useTierPerks();
+  const { perks, loading: perksLoading, error: perksError } = useTierPerks();
   const prevTierRef = useRef<LoyaltyTierConfig | null>(null);
 
   useEffect(() => {
@@ -212,55 +212,76 @@ export function LoyaltyScreen({ testID, onClose: _onClose }: Props) {
           },
         ]}
         testID="loyalty-perks-heading"
+        accessibilityRole="header"
       >
         Your Perks
       </Text>
       <View style={[styles.perksWrap, { paddingHorizontal: spacing.lg }]}>
         {perksLoading ? (
           <SkeletonRow testID="loyalty-perks-loading" height={16} />
+        ) : perksError ? (
+          <View style={styles.emptyTx} testID="loyalty-perks-error">
+            <Text
+              style={[
+                styles.emptyText,
+                { color: colors.espressoLight, fontFamily: typography.bodyFamily },
+              ]}
+            >
+              {perksError}
+            </Text>
+          </View>
         ) : perks.length === 0 ? (
           <View testID="loyalty-perks-empty">
             <TierPerkCard tier={tier} testID="loyalty-tier-perk-card" />
           </View>
         ) : (
-          perks.map((perk: TierPerk) => (
-            <View
-              key={perk.perkType}
-              style={styles.perkRow}
-              testID={`loyalty-perk-${perk.perkType}`}
-            >
-              <Text
-                style={[
-                  styles.perkLabel,
-                  { color: colors.espresso, fontFamily: typography.bodyFamily },
-                ]}
+          perks.map((perk: TierPerk) => {
+            const label = perkLabel(perk.perkType);
+            const a11yParts = [label];
+            if (perk.couponCode) a11yParts.push(`coupon code ${perk.couponCode}`);
+            if (perk.bookingUrl) a11yParts.push('booking available');
+            return (
+              <View
+                key={perk.perkType}
+                style={styles.perkRow}
+                testID={`loyalty-perk-${perk.perkType}`}
+                accessible
+                accessibilityRole="text"
+                accessibilityLabel={a11yParts.join(', ')}
               >
-                {perkLabel(perk.perkType)}
-              </Text>
-              {perk.couponCode ? (
                 <Text
                   style={[
-                    styles.perkCode,
-                    { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold },
+                    styles.perkLabel,
+                    { color: colors.espresso, fontFamily: typography.bodyFamily },
                   ]}
-                  testID={`loyalty-perk-coupon-${perk.perkType}`}
                 >
-                  {perk.couponCode}
+                  {label}
                 </Text>
-              ) : null}
-              {perk.bookingUrl ? (
-                <Text
-                  style={[
-                    styles.perkCode,
-                    { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
-                  ]}
-                  testID={`loyalty-perk-booking-${perk.perkType}`}
-                >
-                  Book now
-                </Text>
-              ) : null}
-            </View>
-          ))
+                {perk.couponCode ? (
+                  <Text
+                    style={[
+                      styles.perkCode,
+                      { color: colors.mountainBlue, fontFamily: typography.bodyFamilySemiBold },
+                    ]}
+                    testID={`loyalty-perk-coupon-${perk.perkType}`}
+                  >
+                    {perk.couponCode}
+                  </Text>
+                ) : null}
+                {perk.bookingUrl ? (
+                  <Text
+                    style={[
+                      styles.perkCode,
+                      { color: colors.sunsetCoral, fontFamily: typography.bodyFamilySemiBold },
+                    ]}
+                    testID={`loyalty-perk-booking-${perk.perkType}`}
+                  >
+                    Book now
+                  </Text>
+                ) : null}
+              </View>
+            );
+          })
         )}
       </View>
       <Text
