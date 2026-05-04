@@ -312,6 +312,7 @@ export function AccountScreen({
           <View
             style={[styles.avatar, { backgroundColor: colors.mountainBlue, borderRadius: 30 }]}
             testID="user-avatar"
+            accessibilityLabel={`Profile avatar for ${user.displayName}`}
           >
             <Text style={styles.avatarText}>{user.displayName.charAt(0).toUpperCase()}</Text>
           </View>
@@ -567,7 +568,7 @@ export function AccountScreen({
                         <TouchableOpacity
                           onPress={() => addressBook.setDefault(addr.id)}
                           testID={`set-default-${addr.id}`}
-                          accessibilityLabel="Set as default address"
+                          accessibilityLabel={`Set ${addr.line1} as default address`}
                           accessibilityRole="button"
                         >
                           <Text style={[styles.addressAction, { color: colors.mountainBlue }]}>
@@ -587,7 +588,7 @@ export function AccountScreen({
                           ]);
                         }}
                         testID={`delete-address-${addr.id}`}
-                        accessibilityLabel="Delete address"
+                        accessibilityLabel={`Delete address ${addr.line1}`}
                         accessibilityRole="button"
                       >
                         <Text style={[styles.addressAction, { color: colors.sunsetCoral }]}>
@@ -873,6 +874,7 @@ export function AccountScreen({
             onPress={handleVersionTap}
             activeOpacity={0.8}
             testID="app-version-tap"
+            accessibilityRole="button"
             accessibilityLabel={`App version ${appVersion}, build ${buildNumber}`}
           >
             <Text
