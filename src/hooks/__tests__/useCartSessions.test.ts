@@ -415,6 +415,146 @@ describe('useCartSessions', () => {
     });
   });
 
+  // ── saveCart — empty items ─────────────────────────────────────────────────
+
+  describe('saveCart — empty items array', () => {
+    it('upserts with JSON-serialized empty array when items is []', async () => {
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => result.current.saveCart([]));
+
+      const upsertedData = mockUpsertDataItem.mock.calls[0][2];
+      expect(upsertedData.items).toBe('[]');
+    });
+
+    it('updates items state to empty array after saveCart([])', async () => {
+      mockQueryData.mockResolvedValue({
+        items: [makeSessionRecord([{ productId: 'prod-1', variantId: 'var-a', quantity: 2 }])],
+        totalResults: 1,
+      });
+
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.items).toHaveLength(1));
+
+      await act(async () => result.current.saveCart([]));
+      expect(result.current.items).toEqual([]);
+    });
+
+    it('clears saveError before each new saveCart call', async () => {
+      mockUpsertDataItem.mockRejectedValueOnce(new Error('Write failed'));
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => result.current.saveCart([]));
+      expect(result.current.saveError).not.toBeNull();
+
+      mockUpsertDataItem.mockResolvedValueOnce({ id: 'doc-1', data: {} });
+      await act(async () => result.current.saveCart([]));
+      expect(result.current.saveError).toBeNull();
+    });
+  });
+
+  // ── mergeOnLogin — both sessions empty ────────────────────────────────────
+
+  describe('mergeOnLogin — no stored session exists (both carts absent)', () => {
+    it('returns empty array when both guest and member carts are absent', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      let merged: CartSessionItem[] = [];
+      await act(async () => {
+        merged = await result.current.mergeOnLogin(MEMBER_ID);
+      });
+      expect(merged).toEqual([]);
+    });
+
+    it('still writes empty merged cart keyed by memberId when both absent', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.mergeOnLogin(MEMBER_ID);
+      });
+
+      expect(mockUpsertDataItem).toHaveBeenCalledWith(
+        'CartSessions',
+        { memberId: { $eq: MEMBER_ID } },
+        expect.objectContaining({
+          memberId: MEMBER_ID,
+          items: '[]',
+        }),
+      );
+    });
+
+    it('does not set loadError when both carts are absent', async () => {
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+      const { result } = renderCartSessions(null);
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      await act(async () => {
+        await result.current.mergeOnLogin(MEMBER_ID);
+      });
+      expect(result.current.loadError).toBeNull();
+    });
+  });
+
+  // ── mergeOnLogin — race with concurrent initial load ─────────────────────
+
+  describe('mergeOnLogin — race with concurrent initial load', () => {
+    it('does not throw when called while initial load is still pending', async () => {
+      let resolveLoad!: (value: { items: unknown[]; totalResults: number }) => void;
+      mockQueryData.mockReturnValueOnce(new Promise((r) => (resolveLoad = r)));
+      mockQueryData.mockResolvedValue({ items: [], totalResults: 0 });
+
+      const { result } = renderCartSessions(null);
+
+      await expect(
+        act(async () => {
+          await result.current.mergeOnLogin(MEMBER_ID);
+        }),
+      ).resolves.not.toThrow();
+
+      await act(async () => {
+        resolveLoad({ items: [], totalResults: 0 });
+      });
+    });
+
+    it('returns correct merged items even when concurrent with initial load', async () => {
+      const guestItems: CartSessionItem[] = [
+        { productId: 'prod-a', variantId: 'var-x', quantity: 2 },
+      ];
+
+      let resolveLoad!: (value: { items: unknown[]; totalResults: number }) => void;
+      mockQueryData.mockReturnValueOnce(new Promise((r) => (resolveLoad = r)));
+      mockQueryData.mockImplementation(
+        (_col: string, opts: { filter: Record<string, unknown> }) => {
+          if ('sessionToken' in opts.filter)
+            return Promise.resolve({ items: [makeSessionRecord(guestItems)], totalResults: 1 });
+          return Promise.resolve({ items: [], totalResults: 0 });
+        },
+      );
+
+      const { result } = renderCartSessions(null);
+
+      let merged: CartSessionItem[] = [];
+      await act(async () => {
+        merged = await result.current.mergeOnLogin(MEMBER_ID);
+      });
+
+      expect(merged).toEqual(guestItems);
+
+      await act(async () => {
+        resolveLoad({ items: [], totalResults: 0 });
+      });
+    });
+  });
+
   // ── No Wix client ──────────────────────────────────────────────────────────
 
   describe('no Wix client', () => {

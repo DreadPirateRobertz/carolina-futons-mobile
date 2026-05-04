@@ -157,4 +157,105 @@ describe('CartSessionsSync', () => {
 
     expect(mockMergeOnLogin).toHaveBeenCalledTimes(1);
   });
+
+  // ── CartItem → CartSessionItem field mapping ───────────────────────────────
+
+  describe('CartItem → CartSessionItem mapping', () => {
+    it('maps model.id to productId — not the composite CartItem.id', async () => {
+      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
+
+      await waitFor(() =>
+        expect(mockSaveCart).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ productId: asheville.id }),
+          ]),
+        ),
+      );
+
+      // The composite CartItem.id is '${model.id}:${fabric.id}' — must NOT be used as productId
+      const lastCall = mockSaveCart.mock.calls[mockSaveCart.mock.calls.length - 1][0];
+      const productId = lastCall[0]?.productId;
+      expect(productId).not.toContain(':');
+      expect(productId).toBe(asheville.id);
+    });
+
+    it('maps fabric.id to variantId — not the optional CartItem.variantId field', async () => {
+      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
+
+      await waitFor(() =>
+        expect(mockSaveCart).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ variantId: naturalLinen.id }),
+          ]),
+        ),
+      );
+    });
+
+    it('maps quantity directly from CartItem.quantity', async () => {
+      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+
+      await act(async () => {
+        fireEvent.press(getByTestId('add-item'));
+      });
+
+      await waitFor(() =>
+        expect(mockSaveCart).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ quantity: 1 }),
+          ]),
+        ),
+      );
+    });
+
+    it('maps multiple items — all three fields correct for each', async () => {
+      const secondModel = FUTON_MODELS[1] ?? asheville;
+      const secondFabric = FABRICS[1] ?? naturalLinen;
+
+      function MultiItemHarness() {
+        const { addItem } = useCart();
+        return (
+          <View>
+            <TouchableOpacity
+              testID="add-first"
+              onPress={() => addItem(asheville, naturalLinen, 2)}
+            />
+            <TouchableOpacity
+              testID="add-second"
+              onPress={() => addItem(secondModel, secondFabric, 3)}
+            />
+          </View>
+        );
+      }
+
+      const { getByTestId } = render(
+        <Wrapper><MultiItemHarness /></Wrapper>,
+      );
+
+      await act(async () => {
+        fireEvent.press(getByTestId('add-first'));
+      });
+      await act(async () => {
+        fireEvent.press(getByTestId('add-second'));
+      });
+
+      await waitFor(() => {
+        const lastCall = mockSaveCart.mock.calls[mockSaveCart.mock.calls.length - 1][0];
+        expect(lastCall).toHaveLength(2);
+        expect(lastCall).toEqual(
+          expect.arrayContaining([
+            { productId: asheville.id, variantId: naturalLinen.id, quantity: 2 },
+            { productId: secondModel.id, variantId: secondFabric.id, quantity: 3 },
+          ]),
+        );
+      });
+    });
+  });
 });
