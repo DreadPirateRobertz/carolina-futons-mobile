@@ -7,9 +7,8 @@ process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = 'test-google-web-client-id';
 
 module.exports = {
   preset: 'jest-expo',
-  // Cap workers at 50% of CPUs to reduce resource contention under parallel load.
-  // Default (ncpus - 1) caused flaky timeouts in render-heavy test suites.
-  maxWorkers: '50%',
+  // Hard cap at 2 workers to prevent zombie jest-worker RAM exhaustion (mayor 2026-05-04).
+  maxWorkers: 2,
   // Kill and recycle workers that exceed this memory threshold, preventing OOM
   // crashes in CI when large test suites (e.g. SearchScreen) accumulate heap.
   workerIdleMemoryLimit: '512MB',
