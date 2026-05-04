@@ -1,6 +1,6 @@
 # Carolina Futons Mobile — Live Status
 
-> **Last updated:** 2026-05-04 02:32 MDT (auto-refreshed every 20 min)
+> **Last updated:** 2026-05-04 02:42 MDT (auto-refreshed every 20 min)
 
 ---
 
@@ -32,15 +32,15 @@ scp pop-os:~/gt/cfutons_mobile/android/app/build/outputs/apk/release/app-release
 
 `main` — ↑0 ↓0 vs origin/main
 
-**Last commit:** 635c98a9 fix(hq-ap43): wire emitBadgeEarned + emitCartAbandoned crossRig events (#537)
+**Last commit:** 881cba40 fix(hq-bzb): update PDP recommendations test — skeleton testID rec-row-skeleton
 
 **Recent commits:**
 ```
+881cba40 fix(hq-bzb): update PDP recommendations test — skeleton testID rec-row-skeleton
+15688f54 chore(status): auto-update [skip ci]
+86ab8627 chore(status): auto-update [skip ci]
 635c98a9 fix(hq-ap43): wire emitBadgeEarned + emitCartAbandoned crossRig events (#537)
 0bcbfc7a fix(gen-status): add --forceExit --maxWorkers=1 to jest call — stop zombie workers
-455a589d feat(hq-f8lt): ProductRecommendationRow — self-contained recommendation rail
-18007c37 chore(status): auto-update [skip ci]
-1eff0c7d feat(hq-yg56): SkeletonBox + SkeletonText shared primitives (#536)
 ```
 
 ---
