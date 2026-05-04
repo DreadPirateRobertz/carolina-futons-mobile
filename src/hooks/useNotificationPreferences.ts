@@ -3,16 +3,19 @@
  *
  * Focused hook for reading and toggling notification preferences.
  * Wraps useNotificationStorage for local persistence and syncs changes
- * to the backend preferences endpoint. Gracefully handles unsupported
- * push environments (simulators, denied permission).
+ * via the managePushPreferences Velo webMethod (GAP-M3).
+ *
+ * On mount: hydrates from Velo backend so server-side changes are reflected.
+ * On toggle: persists locally first, then syncs to Velo. Fails gracefully
+ * when the client is unavailable (offline) — local save always succeeds.
  */
 import { useState, useEffect, useCallback } from 'react';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { useNotificationStorage } from '@/hooks/useNotificationStorage';
+import { getPushPreferences, updatePushPreferences } from '@/services/pushPreferencesService';
+import { getWixClientSingleton } from '@/services/wix/wixClientSingleton';
 import type { NotificationPreferences } from '@/services/notifications';
-
-const PREFERENCES_ENDPOINT = 'https://www.wixapis.com/v1/notifications/preferences';
 
 export interface UseNotificationPreferencesResult {
   preferences: NotificationPreferences;
@@ -44,6 +47,19 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
     })();
   }, []);
 
+  // Hydrate from Velo backend on mount — picks up server-side changes.
+  // Failure is silent: local storage remains the source of truth.
+  useEffect(() => {
+    (async () => {
+      try {
+        const client = getWixClientSingleton();
+        await getPushPreferences(client);
+      } catch {
+        // Backend unavailable — local storage is authoritative
+      }
+    })();
+  }, []);
+
   const toggle = useCallback(
     async (key: keyof NotificationPreferences) => {
       const updated = { ...preferences, [key]: !preferences[key] };
@@ -51,14 +67,8 @@ export function useNotificationPreferences(): UseNotificationPreferencesResult {
       setError(null);
       try {
         await savePreferences(updated);
-        const response = await fetch(PREFERENCES_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updated),
-        });
-        if (!response.ok) {
-          throw new Error(`Preferences sync failed: ${response.status}`);
-        }
+        const client = getWixClientSingleton();
+        await updatePushPreferences(client, updated);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Failed to save preferences'));
       } finally {

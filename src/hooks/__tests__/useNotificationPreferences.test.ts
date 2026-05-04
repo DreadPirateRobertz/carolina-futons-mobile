@@ -12,7 +12,9 @@ const mockPreferences = {
   orderUpdates: true,
   promotions: true,
   backInStock: true,
+  priceDropAlerts: false,
   cartReminders: false,
+  cartRecovery: false,
   streakMilestone: true,
   questComplete: true,
   dailySpinReminder: false,
@@ -37,8 +39,18 @@ jest.mock('expo-device', () => ({
   },
 }));
 
-const mockFetch = jest.fn().mockResolvedValue({ ok: true });
-global.fetch = mockFetch;
+const mockGetPushPreferences = jest.fn().mockResolvedValue(mockPreferences);
+const mockUpdatePushPreferences = jest.fn().mockResolvedValue(undefined);
+
+jest.mock('@/services/pushPreferencesService', () => ({
+  getPushPreferences: (...args: unknown[]) => mockGetPushPreferences(...args),
+  updatePushPreferences: (...args: unknown[]) => mockUpdatePushPreferences(...args),
+}));
+
+const mockCallFunction = jest.fn();
+jest.mock('@/services/wix/wixClientSingleton', () => ({
+  getWixClientSingleton: () => ({ callFunction: mockCallFunction }),
+}));
 
 // --- Tests ----------------------------------------------------------------
 
@@ -46,7 +58,8 @@ describe('useNotificationPreferences', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSavePreferences.mockResolvedValue(undefined);
-    mockFetch.mockResolvedValue({ ok: true });
+    mockGetPushPreferences.mockResolvedValue(mockPreferences);
+    mockUpdatePushPreferences.mockResolvedValue(undefined);
   });
 
   describe('initial state', () => {
@@ -68,6 +81,28 @@ describe('useNotificationPreferences', () => {
     it('error starts null', () => {
       const { result } = renderHook(() => useNotificationPreferences());
       expect(result.current.error).toBeNull();
+    });
+  });
+
+  describe('backend hydration on mount', () => {
+    it('calls getPushPreferences on mount to load from Velo', async () => {
+      const { result } = renderHook(() => useNotificationPreferences());
+      await waitFor(() => expect(mockGetPushPreferences).toHaveBeenCalledTimes(1));
+      expect(result.current.preferences).toBeDefined();
+    });
+
+    it('does not throw when getPushPreferences fails (backend unavailable)', async () => {
+      mockGetPushPreferences.mockRejectedValueOnce(new Error('network error'));
+      const { result } = renderHook(() => useNotificationPreferences());
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(result.current.error).toBeNull();
+    });
+
+    it('falls back to local storage preferences when backend unavailable', async () => {
+      mockGetPushPreferences.mockRejectedValueOnce(new Error('offline'));
+      const { result } = renderHook(() => useNotificationPreferences());
+      await waitFor(() => expect(mockGetPushPreferences).toHaveBeenCalled());
+      expect(result.current.preferences).toEqual(mockPreferences);
     });
   });
 
@@ -119,18 +154,14 @@ describe('useNotificationPreferences', () => {
       });
     });
 
-    it('calls POST /notifications/preferences with updated prefs', async () => {
+    it('calls updatePushPreferences with updated prefs via Velo webMethod', async () => {
       const { result } = renderHook(() => useNotificationPreferences());
       await act(async () => {
         await result.current.toggle('questComplete');
       });
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/notifications/preferences'),
-        expect.objectContaining({
-          method: 'POST',
-          headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
-          body: expect.stringContaining('"questComplete":false'),
-        }),
+      expect(mockUpdatePushPreferences).toHaveBeenCalledWith(
+        expect.objectContaining({ callFunction: expect.any(Function) }),
+        expect.objectContaining({ questComplete: false }),
       );
     });
 
@@ -162,8 +193,8 @@ describe('useNotificationPreferences', () => {
       expect(result.current.isSaving).toBe(false);
     });
 
-    it('sets error when remote sync fails', async () => {
-      mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
+    it('sets error when updatePushPreferences fails', async () => {
+      mockUpdatePushPreferences.mockRejectedValueOnce(new Error('Velo error'));
       const { result } = renderHook(() => useNotificationPreferences());
       await act(async () => {
         await result.current.toggle('questComplete');
@@ -172,8 +203,8 @@ describe('useNotificationPreferences', () => {
       expect(result.current.isSaving).toBe(false);
     });
 
-    it('sets error when fetch throws (network offline)', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network request failed'));
+    it('sets error when updatePushPreferences throws offline (network)', async () => {
+      mockUpdatePushPreferences.mockRejectedValueOnce(new Error('Network request failed'));
       const { result } = renderHook(() => useNotificationPreferences());
       await act(async () => {
         await result.current.toggle('dailySpinReminder');
@@ -183,14 +214,14 @@ describe('useNotificationPreferences', () => {
     });
 
     it('clears previous error on next successful toggle', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockUpdatePushPreferences.mockRejectedValueOnce(new Error('Network error'));
       const { result } = renderHook(() => useNotificationPreferences());
       await act(async () => {
         await result.current.toggle('streakMilestone');
       });
       expect(result.current.error).toBeInstanceOf(Error);
 
-      mockFetch.mockResolvedValueOnce({ ok: true });
+      mockUpdatePushPreferences.mockResolvedValueOnce(undefined);
       await act(async () => {
         await result.current.toggle('questComplete');
       });
@@ -208,7 +239,8 @@ describe('useNotificationPreferences', () => {
         );
         jest.clearAllMocks();
         mockSavePreferences.mockResolvedValue(undefined);
-        mockFetch.mockResolvedValue({ ok: true });
+        mockUpdatePushPreferences.mockResolvedValue(undefined);
+        mockGetPushPreferences.mockResolvedValue(mockPreferences);
       }
     });
   });
@@ -225,8 +257,8 @@ describe('useNotificationPreferences', () => {
       expect(mockSavePreferences).toHaveBeenCalled();
     });
 
-    it('does not throw when remote sync 404s', async () => {
-      mockFetch.mockResolvedValueOnce({ ok: false, status: 404 });
+    it('does not throw when updatePushPreferences returns error response', async () => {
+      mockUpdatePushPreferences.mockRejectedValueOnce(new Error('validation_error'));
       const { result } = renderHook(() => useNotificationPreferences());
       await expect(
         act(async () => {
