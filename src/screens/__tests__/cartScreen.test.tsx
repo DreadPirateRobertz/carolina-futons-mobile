@@ -70,6 +70,12 @@ jest.mock('@/hooks/useBundleSuggestion', () => ({
   useBundleSuggestion: (...args: unknown[]) => mockUseBundleSuggestion(...args),
 }));
 
+// Mock useProductRecommendations to prevent async Wix calls that leak between tests.
+jest.mock('@/hooks/useProductRecommendations', () => ({
+  useProductRecommendations: () => ({ recommendations: [], isLoading: false, error: null }),
+  clearRecommendationsCache: jest.fn(),
+}));
+
 const asheville = FUTON_MODELS[0]; // $349
 const blueRidge = FUTON_MODELS[1]; // $449
 const naturalLinen = FABRICS[0]; // $0
@@ -128,9 +134,9 @@ describe('CartScreen', () => {
   });
 
   describe('Empty cart', () => {
-    it('renders empty state when cart is empty', () => {
-      const { getByTestId } = renderCartScreen();
-      expect(getByTestId('cart-empty-state')).toBeTruthy();
+    it('renders empty state when cart is empty', async () => {
+      const { findByTestId } = renderCartScreen();
+      expect(await findByTestId('cart-empty-state')).toBeTruthy();
     });
 
     // Skip: illustration component not yet built (sprint bead cm-0qn)
@@ -139,17 +145,18 @@ describe('CartScreen', () => {
       expect(getByTestId('cart-illustration')).toBeTruthy();
     });
 
-    it('shows "Start Shopping" action when onContinueShopping provided', () => {
+    it('shows "Start Shopping" action when onContinueShopping provided', async () => {
       const onContinueShopping = jest.fn();
-      const { getByTestId } = renderCartScreen({ onContinueShopping });
-      const action = getByTestId('cart-empty-state-action');
+      const { findByTestId } = renderCartScreen({ onContinueShopping });
+      const action = await findByTestId('cart-empty-state-action');
       expect(action).toBeTruthy();
       fireEvent.press(action);
       expect(onContinueShopping).toHaveBeenCalledTimes(1);
     });
 
-    it('does not show action when onContinueShopping not provided', () => {
-      const { queryByTestId } = renderCartScreen();
+    it('does not show action when onContinueShopping not provided', async () => {
+      const { findByTestId, queryByTestId } = renderCartScreen();
+      await findByTestId('cart-empty-state');
       expect(queryByTestId('cart-empty-state-action')).toBeNull();
     });
   });
@@ -320,10 +327,11 @@ describe('CartScreen', () => {
       { model: blueRidge, fabric: mountainBlue, qty: 1 },
     ];
 
-    it('clears all items', () => {
-      const { getByTestId } = renderCartScreen({}, seed);
+    it('clears all items', async () => {
+      const { getByTestId, findByTestId } = renderCartScreen({}, seed);
+      await findByTestId('cart-clear-button');
       fireEvent.press(getByTestId('cart-clear-button'));
-      expect(getByTestId('cart-empty-state')).toBeTruthy();
+      expect(await findByTestId('cart-empty-state')).toBeTruthy();
     });
   });
 
@@ -359,9 +367,9 @@ describe('CartScreen', () => {
   });
 
   describe('Custom testID', () => {
-    it('accepts custom testID', () => {
-      const { getByTestId } = renderCartScreen({ testID: 'my-cart' });
-      expect(getByTestId('my-cart')).toBeTruthy();
+    it('accepts custom testID', async () => {
+      const { findByTestId } = renderCartScreen({ testID: 'my-cart' });
+      expect(await findByTestId('my-cart')).toBeTruthy();
     });
   });
 
