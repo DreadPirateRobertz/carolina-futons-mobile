@@ -165,9 +165,11 @@ describe('long-press removal — confirm and cancel flows', () => {
 
     fireEvent(getByTestId(`wishlist-item-${product1.id}`), 'longPress');
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
     const removeButton = buttons.find((b) => b.text === 'Remove');
-    act(() => { removeButton?.onPress?.(); });
+    act(() => {
+      removeButton?.onPress?.();
+    });
 
     expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeNull();
     alertSpy.mockRestore();
@@ -179,9 +181,11 @@ describe('long-press removal — confirm and cancel flows', () => {
 
     fireEvent(getByTestId(`wishlist-item-${product1.id}`), 'longPress');
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
     const cancelButton = buttons.find((b) => b.text === 'Cancel');
-    act(() => { cancelButton?.onPress?.(); });
+    act(() => {
+      cancelButton?.onPress?.();
+    });
 
     expect(getByTestId(`wishlist-item-${product1.id}`)).toBeTruthy();
     alertSpy.mockRestore();
@@ -193,8 +197,10 @@ describe('long-press removal — confirm and cancel flows', () => {
 
     fireEvent(getByTestId(`wishlist-item-${product1.id}`), 'longPress');
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
-    act(() => { buttons.find((b) => b.text === 'Remove')?.onPress?.(); });
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    act(() => {
+      buttons.find((b) => b.text === 'Remove')?.onPress?.();
+    });
 
     expect(mockRemoveFromWishlist).toHaveBeenCalledWith(product1.id);
     alertSpy.mockRestore();
@@ -205,8 +211,10 @@ describe('long-press removal — confirm and cancel flows', () => {
     const { getByTestId } = renderScreen({ items: makeItems(product1, product2) });
 
     fireEvent(getByTestId(`wishlist-item-${product1.id}`), 'longPress');
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
-    act(() => { buttons.find((b) => b.text === 'Remove')?.onPress?.(); });
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
+    act(() => {
+      buttons.find((b) => b.text === 'Remove')?.onPress?.();
+    });
 
     expect(getByTestId(`wishlist-item-${product2.id}`)).toBeTruthy();
     alertSpy.mockRestore();
@@ -224,9 +232,11 @@ describe('clear all — confirm and cancel flows', () => {
 
     fireEvent.press(getByTestId('wishlist-clear'));
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
     const clearButton = buttons.find((b) => b.text === 'Clear All');
-    act(() => { clearButton?.onPress?.(); });
+    act(() => {
+      clearButton?.onPress?.();
+    });
 
     expect(queryByTestId(`wishlist-item-${product1.id}`)).toBeNull();
     expect(queryByTestId(`wishlist-item-${product2.id}`)).toBeNull();
@@ -240,9 +250,11 @@ describe('clear all — confirm and cancel flows', () => {
 
     fireEvent.press(getByTestId('wishlist-clear'));
 
-    const buttons = alertSpy.mock.calls[0][2] as Array<{ text: string; onPress?: () => void }>;
+    const buttons = alertSpy.mock.calls[0][2] as { text: string; onPress?: () => void }[];
     const cancelButton = buttons.find((b) => b.text === 'Cancel');
-    act(() => { cancelButton?.onPress?.(); });
+    act(() => {
+      cancelButton?.onPress?.();
+    });
 
     expect(getByTestId(`wishlist-item-${product1.id}`)).toBeTruthy();
     expect(getByTestId(`wishlist-item-${product2.id}`)).toBeTruthy();
@@ -291,9 +303,7 @@ describe('add all to cart — post-add removal behavior', () => {
 
 describe('share error handling', () => {
   it('does not crash when Share.share rejects (user cancelled)', async () => {
-    const shareSpy = jest
-      .spyOn(Share, 'share')
-      .mockRejectedValueOnce(new Error('cancelled'));
+    const shareSpy = jest.spyOn(Share, 'share').mockRejectedValueOnce(new Error('cancelled'));
     const { getByTestId } = renderScreen({ items: makeItems(product1) });
 
     fireEvent.press(getByTestId('wishlist-share'));
@@ -303,9 +313,9 @@ describe('share error handling', () => {
   });
 
   it('does not crash when Share.share throws synchronously', async () => {
-    const shareSpy = jest
-      .spyOn(Share, 'share')
-      .mockImplementationOnce(() => { throw new Error('sync error'); });
+    const shareSpy = jest.spyOn(Share, 'share').mockImplementationOnce(() => {
+      throw new Error('sync error');
+    });
     const { getByTestId } = renderScreen({ items: makeItems(product1) });
 
     expect(() => fireEvent.press(getByTestId('wishlist-share'))).not.toThrow();
@@ -313,7 +323,9 @@ describe('share error handling', () => {
   });
 
   it('does not call Share.share when getShareText returns empty string', () => {
-    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: 'sharedAction' } as any);
+    const shareSpy = jest
+      .spyOn(Share, 'share')
+      .mockResolvedValue({ action: 'sharedAction' } as any);
 
     // Override useSyncedWishlist to return empty getShareText
     jest.doMock('@/hooks/useSyncedWishlist', () => ({

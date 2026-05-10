@@ -71,7 +71,13 @@ jest.mock('react-native-reanimated', () => {
     __esModule: true,
     default: { View, createAnimatedComponent: (c: any) => c },
     useSharedValue: (init: any) => ({ value: init }),
-    useAnimatedStyle: (fn: any) => { try { return fn(); } catch { return {}; } },
+    useAnimatedStyle: (fn: any) => {
+      try {
+        return fn();
+      } catch {
+        return {};
+      }
+    },
     withSpring: (val: any) => val,
     withRepeat: (val: any) => val,
     withSequence: (...vals: any[]) => vals[0],
@@ -86,14 +92,31 @@ jest.mock('react-native-reanimated', () => {
 jest.mock('@/hooks/useSurfaceDetection', () => ({
   useSurfaceDetection: () => ({
     detectionState: 'tracking',
-    planes: [{ id: 'p1', type: 'floor', alignment: 'horizontal', center: { x: 0, y: 0, z: 0 }, extent: { width: 2, height: 2 }, rotation: 0, confidence: 0.9, lastUpdated: Date.now() }],
+    planes: [
+      {
+        id: 'p1',
+        type: 'floor',
+        alignment: 'horizontal',
+        center: { x: 0, y: 0, z: 0 },
+        extent: { width: 2, height: 2 },
+        rotation: 0,
+        confidence: 0.9,
+        lastUpdated: Date.now(),
+      },
+    ],
     hasFloor: true,
     hasWall: false,
     lightEstimate: null,
     shadowParams: { opacity: 0.2, blur: 6, offsetX: 0, offsetY: 4, color: 'rgba(0,0,0,0.2)' },
     lightingCondition: 'normal',
     lightingWarning: null,
-    performHitTest: jest.fn(() => ({ planeId: 'p1', position: { x: 0.5, y: 0.5 }, worldPosition: { x: 0, y: 0, z: 1 }, isValid: true, distance: 1.5 })),
+    performHitTest: jest.fn(() => ({
+      planeId: 'p1',
+      position: { x: 0.5, y: 0.5 },
+      worldPosition: { x: 0, y: 0, z: 1 },
+      isValid: true,
+      distance: 1.5,
+    })),
     isActive: true,
     error: null,
   }),

@@ -195,8 +195,12 @@ describe('VisualSearchScreen — capture error state (deeper)', () => {
     mockTakePicture.mockRejectedValue(new Error('Error A'));
     const { getByTestId } = renderScreen();
 
-    await act(async () => { fireEvent.press(getByTestId('visual-search-shutter')); });
-    await act(async () => { fireEvent.press(getByTestId('visual-search-shutter')); });
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
+    await act(async () => {
+      fireEvent.press(getByTestId('visual-search-shutter'));
+    });
 
     expect(mockCaptureException).toHaveBeenCalledTimes(2);
   });

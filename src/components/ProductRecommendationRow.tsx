@@ -30,7 +30,11 @@ export function ProductRecommendationRow({
   if (!productId) return null;
 
   if (isLoading) {
-    return <View testID={skeletonTestID ?? 'rec-row-skeleton'}><SkeletonCarouselRow /></View>;
+    return (
+      <View testID={skeletonTestID ?? 'rec-row-skeleton'}>
+        <SkeletonCarouselRow />
+      </View>
+    );
   }
 
   if (recommendations.length === 0) return null;
