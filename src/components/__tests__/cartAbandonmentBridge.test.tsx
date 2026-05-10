@@ -245,7 +245,6 @@ describe('CartAbandonmentBridge', () => {
         { memberId: 'member-1' },
       );
     });
-
   });
 
   describe('cartId dep array — variant swap resets 1hr timer', () => {

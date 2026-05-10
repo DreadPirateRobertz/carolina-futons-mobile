@@ -45,7 +45,10 @@ function renderWithControl(initialOnline = true, pendingCount = 0) {
   );
   return {
     ...result,
-    setOnline: (v: boolean) => act(() => { setOnlineRef(v); }),
+    setOnline: (v: boolean) =>
+      act(() => {
+        setOnlineRef(v);
+      }),
   };
 }
 

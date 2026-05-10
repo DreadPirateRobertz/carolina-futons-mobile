@@ -45,13 +45,7 @@ export const SkeletonCollectionCard = memo(function SkeletonCollectionCard({
 });
 
 /** Vertical list of skeleton collection cards matching CollectionsScreen layout. */
-export function SkeletonCollectionList({
-  count = 3,
-  testID,
-}: {
-  count?: number;
-  testID?: string;
-}) {
+export function SkeletonCollectionList({ count = 3, testID }: { count?: number; testID?: string }) {
   const { spacing } = useTheme();
 
   return (

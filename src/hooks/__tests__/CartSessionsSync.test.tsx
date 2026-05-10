@@ -100,12 +100,20 @@ describe('CartSessionsSync', () => {
   });
 
   it('calls saveCart with empty array on initial render', async () => {
-    render(<Wrapper><CartHarness /></Wrapper>);
+    render(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
     await waitFor(() => expect(mockSaveCart).toHaveBeenCalledWith([]));
   });
 
   it('calls saveCart with mapped CartSessionItems after addItem', async () => {
-    const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+    const { getByTestId } = render(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
 
     await act(async () => {
       fireEvent.press(getByTestId('add-item'));
@@ -126,20 +134,32 @@ describe('CartSessionsSync', () => {
 
   it('does not call mergeOnLogin when user is null on mount', async () => {
     mockUser = null;
-    render(<Wrapper><CartHarness /></Wrapper>);
+    render(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
     await waitFor(() => expect(mockSaveCart).toHaveBeenCalled());
     expect(mockMergeOnLogin).not.toHaveBeenCalled();
   });
 
   it('calls mergeOnLogin once on guest→member login transition', async () => {
     mockUser = null;
-    const { rerender } = render(<Wrapper><CartHarness /></Wrapper>);
+    const { rerender } = render(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
 
     await waitFor(() => expect(mockSaveCart).toHaveBeenCalled());
     expect(mockMergeOnLogin).not.toHaveBeenCalled();
 
     mockUser = { id: 'member-1', email: 'a@b.com', displayName: 'A', provider: 'wix' };
-    rerender(<Wrapper><CartHarness /></Wrapper>);
+    rerender(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
 
     await waitFor(() => expect(mockMergeOnLogin).toHaveBeenCalledWith('member-1'));
     expect(mockMergeOnLogin).toHaveBeenCalledTimes(1);
@@ -147,13 +167,25 @@ describe('CartSessionsSync', () => {
 
   it('does not call mergeOnLogin again on subsequent renders with same memberId', async () => {
     mockUser = { id: 'member-1', email: 'a@b.com', displayName: 'A', provider: 'wix' };
-    const { rerender } = render(<Wrapper><CartHarness /></Wrapper>);
+    const { rerender } = render(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
 
     await waitFor(() => expect(mockSaveCart).toHaveBeenCalled());
 
     // Rerender with same user — should not fire mergeOnLogin again
-    rerender(<Wrapper><CartHarness /></Wrapper>);
-    rerender(<Wrapper><CartHarness /></Wrapper>);
+    rerender(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
+    rerender(
+      <Wrapper>
+        <CartHarness />
+      </Wrapper>,
+    );
 
     expect(mockMergeOnLogin).toHaveBeenCalledTimes(1);
   });
@@ -162,7 +194,11 @@ describe('CartSessionsSync', () => {
 
   describe('CartItem → CartSessionItem mapping', () => {
     it('maps model.id to productId — not the composite CartItem.id', async () => {
-      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+      const { getByTestId } = render(
+        <Wrapper>
+          <CartHarness />
+        </Wrapper>,
+      );
 
       await act(async () => {
         fireEvent.press(getByTestId('add-item'));
@@ -170,9 +206,7 @@ describe('CartSessionsSync', () => {
 
       await waitFor(() =>
         expect(mockSaveCart).toHaveBeenCalledWith(
-          expect.arrayContaining([
-            expect.objectContaining({ productId: asheville.id }),
-          ]),
+          expect.arrayContaining([expect.objectContaining({ productId: asheville.id })]),
         ),
       );
 
@@ -184,7 +218,11 @@ describe('CartSessionsSync', () => {
     });
 
     it('maps fabric.id to variantId — not the optional CartItem.variantId field', async () => {
-      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+      const { getByTestId } = render(
+        <Wrapper>
+          <CartHarness />
+        </Wrapper>,
+      );
 
       await act(async () => {
         fireEvent.press(getByTestId('add-item'));
@@ -192,15 +230,17 @@ describe('CartSessionsSync', () => {
 
       await waitFor(() =>
         expect(mockSaveCart).toHaveBeenCalledWith(
-          expect.arrayContaining([
-            expect.objectContaining({ variantId: naturalLinen.id }),
-          ]),
+          expect.arrayContaining([expect.objectContaining({ variantId: naturalLinen.id })]),
         ),
       );
     });
 
     it('maps quantity directly from CartItem.quantity', async () => {
-      const { getByTestId } = render(<Wrapper><CartHarness /></Wrapper>);
+      const { getByTestId } = render(
+        <Wrapper>
+          <CartHarness />
+        </Wrapper>,
+      );
 
       await act(async () => {
         fireEvent.press(getByTestId('add-item'));
@@ -208,9 +248,7 @@ describe('CartSessionsSync', () => {
 
       await waitFor(() =>
         expect(mockSaveCart).toHaveBeenCalledWith(
-          expect.arrayContaining([
-            expect.objectContaining({ quantity: 1 }),
-          ]),
+          expect.arrayContaining([expect.objectContaining({ quantity: 1 })]),
         ),
       );
     });
@@ -236,7 +274,9 @@ describe('CartSessionsSync', () => {
       }
 
       const { getByTestId } = render(
-        <Wrapper><MultiItemHarness /></Wrapper>,
+        <Wrapper>
+          <MultiItemHarness />
+        </Wrapper>,
       );
 
       await act(async () => {

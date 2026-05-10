@@ -114,9 +114,7 @@ describe('ProductRecommendationRow', () => {
     it('does not throw when no onProductPress provided', () => {
       mockRecsState.recommendations = MOCK_PRODUCTS;
       const { getByTestId } = renderRow();
-      expect(() =>
-        fireEvent.press(getByTestId(`rec-card-${MOCK_PRODUCTS[0].id}`)),
-      ).not.toThrow();
+      expect(() => fireEvent.press(getByTestId(`rec-card-${MOCK_PRODUCTS[0].id}`))).not.toThrow();
     });
   });
 

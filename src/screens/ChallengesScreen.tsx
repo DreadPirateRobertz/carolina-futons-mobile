@@ -11,7 +11,14 @@
  */
 
 import React, { useEffect } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useTheme } from '@/theme';
 import { useChallengeCatalog, type CatalogChallenge } from '@/hooks/useChallengeCatalog';
 import { useChallengeProgress } from '@/hooks/useChallengeProgress';
@@ -351,7 +358,11 @@ export function ChallengesScreen({ testID, onChallengePress }: Props) {
         <>
           <SectionHeader label="In Progress" testID="section-in-progress" />
           {inProgress.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
+            <ChallengeRow
+              key={c.id}
+              challenge={c}
+              onPress={onChallengePress ? () => onChallengePress(c.id) : undefined}
+            />
           ))}
         </>
       )}
@@ -360,7 +371,11 @@ export function ChallengesScreen({ testID, onChallengePress }: Props) {
         <>
           <SectionHeader label="Available" testID="section-available" />
           {available.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
+            <ChallengeRow
+              key={c.id}
+              challenge={c}
+              onPress={onChallengePress ? () => onChallengePress(c.id) : undefined}
+            />
           ))}
         </>
       )}
@@ -369,7 +384,12 @@ export function ChallengesScreen({ testID, onChallengePress }: Props) {
         <>
           <SectionHeader label="Completed" testID="section-completed" />
           {completed.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} dim onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
+            <ChallengeRow
+              key={c.id}
+              challenge={c}
+              dim
+              onPress={onChallengePress ? () => onChallengePress(c.id) : undefined}
+            />
           ))}
         </>
       )}
@@ -378,7 +398,12 @@ export function ChallengesScreen({ testID, onChallengePress }: Props) {
         <>
           <SectionHeader label="Expired" testID="section-expired" />
           {expired.map((c) => (
-            <ChallengeRow key={c.id} challenge={c} dim onPress={onChallengePress ? () => onChallengePress(c.id) : undefined} />
+            <ChallengeRow
+              key={c.id}
+              challenge={c}
+              dim
+              onPress={onChallengePress ? () => onChallengePress(c.id) : undefined}
+            />
           ))}
         </>
       )}

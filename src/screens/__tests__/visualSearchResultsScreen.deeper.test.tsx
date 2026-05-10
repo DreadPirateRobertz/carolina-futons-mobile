@@ -187,13 +187,20 @@ describe('VisualSearchResultsScreen — error retry (deeper)', () => {
     let resolveRetry!: (v: any) => void;
     mockFetchCatalogExport
       .mockResolvedValueOnce({ success: false, products: [], error: 'Timeout' })
-      .mockImplementationOnce(() => new Promise((res) => { resolveRetry = res; }));
+      .mockImplementationOnce(
+        () =>
+          new Promise((res) => {
+            resolveRetry = res;
+          }),
+      );
 
     const { getByTestId, queryByTestId } = renderScreen();
 
     await waitFor(() => expect(getByTestId('visual-search-results-retry')).toBeTruthy());
 
-    act(() => { fireEvent.press(getByTestId('visual-search-results-retry')); });
+    act(() => {
+      fireEvent.press(getByTestId('visual-search-results-retry'));
+    });
 
     // Error should clear and loading appear while retry is in-flight
     expect(queryByTestId('visual-search-results-error')).toBeNull();

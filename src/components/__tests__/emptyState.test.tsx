@@ -29,16 +29,12 @@ describe('EmptyState', () => {
     });
 
     it('renders known icon glyph for "cart"', () => {
-      const { getByTestId } = render(
-        <EmptyState title="x" subtitle="y" icon="cart" testID="es" />,
-      );
+      const { getByTestId } = render(<EmptyState title="x" subtitle="y" icon="cart" testID="es" />);
       expect(getByTestId('es-icon').props.children).toBe('🛒');
     });
 
     it('falls back to raw icon string for unknown keys', () => {
-      const { getByTestId } = render(
-        <EmptyState title="x" subtitle="y" icon="🐦" testID="es" />,
-      );
+      const { getByTestId } = render(<EmptyState title="x" subtitle="y" icon="🐦" testID="es" />);
       expect(getByTestId('es-icon').props.children).toBe('🐦');
     });
 
@@ -58,17 +54,13 @@ describe('EmptyState', () => {
     });
 
     it('renders with no icon and no illustration', () => {
-      const { getByText } = render(
-        <EmptyState title="Nothing" subtitle="Empty here" />,
-      );
+      const { getByText } = render(<EmptyState title="Nothing" subtitle="Empty here" />);
       expect(getByText('Nothing')).toBeTruthy();
       expect(getByText('Empty here')).toBeTruthy();
     });
 
     it('applies testID to root view', () => {
-      const { getByTestId } = render(
-        <EmptyState title="x" subtitle="y" testID="my-empty" />,
-      );
+      const { getByTestId } = render(<EmptyState title="x" subtitle="y" testID="my-empty" />);
       expect(getByTestId('my-empty')).toBeTruthy();
     });
   });
@@ -156,9 +148,7 @@ describe('EmptyState', () => {
     });
 
     it('returns null for icon testID when testID not set', () => {
-      const { queryByTestId } = render(
-        <EmptyState title="x" subtitle="y" icon="cart" />,
-      );
+      const { queryByTestId } = render(<EmptyState title="x" subtitle="y" icon="cart" />);
       expect(queryByTestId('undefined-icon')).toBeNull();
     });
   });

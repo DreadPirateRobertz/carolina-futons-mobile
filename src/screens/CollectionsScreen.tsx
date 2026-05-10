@@ -147,10 +147,7 @@ export function CollectionsScreen() {
           onCartPress={openCart}
           testID="collections-header"
         />
-        <Text
-          style={[styles.errorText, { color: colors.espresso }]}
-          testID="collections-error"
-        >
+        <Text style={[styles.errorText, { color: colors.espresso }]} testID="collections-error">
           Couldn't load collections. Check your connection.
         </Text>
         <TouchableOpacity

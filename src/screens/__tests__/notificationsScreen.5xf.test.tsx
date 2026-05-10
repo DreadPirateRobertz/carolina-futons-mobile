@@ -27,21 +27,44 @@ const mockRefresh = jest.fn();
 const NOW = Date.now();
 
 const unreadA: GamificationNotification = {
-  id: 'a', type: 'streak_milestone', message: 'Streak!', createdAt: NOW - 1000, read: false,
+  id: 'a',
+  type: 'streak_milestone',
+  message: 'Streak!',
+  createdAt: NOW - 1000,
+  read: false,
 };
 const unreadB: GamificationNotification = {
-  id: 'b', type: 'daily_quest', message: 'Quest done', createdAt: NOW - 2000, read: false,
+  id: 'b',
+  type: 'daily_quest',
+  message: 'Quest done',
+  createdAt: NOW - 2000,
+  read: false,
 };
 const readC: GamificationNotification = {
-  id: 'c', type: 'referral', message: 'Referral', createdAt: NOW - 3000, read: true,
+  id: 'c',
+  type: 'referral',
+  message: 'Referral',
+  createdAt: NOW - 3000,
+  read: true,
 };
 
 function feed(notifications: GamificationNotification[], overrides = {}) {
-  return { notifications, loading: false, error: null, markAllRead: mockMarkAllRead, refresh: mockRefresh, ...overrides };
+  return {
+    notifications,
+    loading: false,
+    error: null,
+    markAllRead: mockMarkAllRead,
+    refresh: mockRefresh,
+    ...overrides,
+  };
 }
 
 function renderScreen(props: Partial<React.ComponentProps<typeof NotificationsScreen>> = {}) {
-  return render(<ThemeProvider><NotificationsScreen {...props} /></ThemeProvider>);
+  return render(
+    <ThemeProvider>
+      <NotificationsScreen {...props} />
+    </ThemeProvider>,
+  );
 }
 
 beforeEach(() => {
@@ -120,7 +143,12 @@ describe('unread badge number display (cm-5xf)', () => {
 
 describe('unread dots after mark-all-read (cm-5xf)', () => {
   it('unread dots absent when notifications updated to all-read', () => {
-    mockFeed.mockReturnValue(feed([{ ...unreadA, read: true }, { ...unreadB, read: true }]));
+    mockFeed.mockReturnValue(
+      feed([
+        { ...unreadA, read: true },
+        { ...unreadB, read: true },
+      ]),
+    );
     const { queryByTestId } = renderScreen();
     expect(queryByTestId('unread-dot-a')).toBeNull();
     expect(queryByTestId('unread-dot-b')).toBeNull();

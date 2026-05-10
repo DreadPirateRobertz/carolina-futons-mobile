@@ -40,7 +40,12 @@ export function GamificationPushBridge() {
     useTriggerMomentsContext();
 
   // Latest-ref pattern: keep callbacks current without re-registering the listener
-  const cbRef = useRef<Callbacks>({ showBadgeToast, reportTierChanged, reportChallengesCompleted, reportTriggers });
+  const cbRef = useRef<Callbacks>({
+    showBadgeToast,
+    reportTierChanged,
+    reportChallengesCompleted,
+    reportTriggers,
+  });
   cbRef.current = { showBadgeToast, reportTierChanged, reportChallengesCompleted, reportTriggers };
 
   useEffect(() => {
@@ -58,11 +63,9 @@ export function GamificationPushBridge() {
         const badgeName = typeof data.badgeName === 'string' ? data.badgeName : 'a badge';
         const badgeId = typeof data.badgeId === 'string' ? data.badgeId : '';
         AccessibilityInfo.announceForAccessibility('You earned ' + badgeName);
-        emitBadgeEarned(
-          getWixClientSingleton(),
-          { badgeId, badgeName },
-          { memberId },
-        ).catch(() => {});
+        emitBadgeEarned(getWixClientSingleton(), { badgeId, badgeName }, { memberId }).catch(
+          () => {},
+        );
       } else if (event === 'tier_changed') {
         const newTier = typeof data.newTier === 'string' ? data.newTier : 'a new tier';
         AccessibilityInfo.announceForAccessibility('You reached ' + newTier);
