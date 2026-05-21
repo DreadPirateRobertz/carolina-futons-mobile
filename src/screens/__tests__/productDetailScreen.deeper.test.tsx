@@ -314,9 +314,9 @@ jest.mock('@/services/wix/config', () => ({
 }));
 
 const mockUseProductBySlug = jest.fn(() => ({
-  product: null,
+  product: null as object | null,
   isLoading: false,
-  error: null,
+  error: null as Error | null,
   refresh: jest.fn(),
 }));
 jest.mock('@/hooks/useProduct', () => ({
