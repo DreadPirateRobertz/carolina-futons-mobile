@@ -18,6 +18,7 @@ import {
   Dimensions,
   Platform,
   ScrollView,
+  AccessibilityInfo,
   Alert,
   Share,
   TextInput,
@@ -426,6 +427,7 @@ export function ProductDetailScreen({
     cart.addItem(model, selectedFabric, quantity);
     onAddToCart?.(model, selectedFabric, quantity);
     events.addToCart(model.id, totalPrice, quantity);
+    AccessibilityInfo.announceForAccessibility(`Added ${quantity} ${model.name} to cart`);
     setQuantity(1);
     Alert.alert(
       'Added to Cart',
@@ -1349,6 +1351,7 @@ export function ProductDetailScreen({
               <View
                 style={[styles.stockAlert, { backgroundColor: '#F8D7DA' }]}
                 testID="out-of-stock-alert"
+                accessibilityRole="alert"
               >
                 <Text style={[styles.stockAlertText, { color: '#721C24' }]}>
                   Currently out of stock
