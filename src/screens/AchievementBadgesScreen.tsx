@@ -204,10 +204,7 @@ export function AchievementBadgesScreen({ testID }: AchievementBadgesScreenProps
   // ── Main ───────────────────────────────────────────────────────────────────
 
   return (
-    <View
-      testID={id}
-      style={[styles.container, { backgroundColor: darkPalette.background }]}
-    >
+    <View testID={id} style={[styles.container, { backgroundColor: darkPalette.background }]}>
       <FlatList
         testID="badge-grid"
         data={BADGE_CATALOG}

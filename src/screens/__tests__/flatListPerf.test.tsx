@@ -117,9 +117,9 @@ describe('ShopScreen — FlatList virtualization props (cm-perf2)', () => {
     expect(getByTestId('product-list').props.updateCellsBatchingPeriod).toBe(100);
   });
 
-  it('product-list removeClippedSubviews matches Platform.OS === android', async () => {
+  it('product-list has removeClippedSubviews enabled', async () => {
     const { getByTestId } = await renderShop();
-    expect(getByTestId('product-list').props.removeClippedSubviews).toBe(Platform.OS === 'android');
+    expect(getByTestId('product-list').props.removeClippedSubviews).toBe(true);
   });
 });
 

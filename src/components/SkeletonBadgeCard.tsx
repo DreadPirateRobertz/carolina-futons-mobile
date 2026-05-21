@@ -12,11 +12,7 @@ import { useTheme } from '@/theme';
 import { ShimmerCircle, Shimmer } from './Shimmer';
 
 /** Single skeleton badge card — mirrors the TouchableOpacity card layout. */
-export const SkeletonBadgeCard = memo(function SkeletonBadgeCard({
-  testID,
-}: {
-  testID?: string;
-}) {
+export const SkeletonBadgeCard = memo(function SkeletonBadgeCard({ testID }: { testID?: string }) {
   const { spacing, borderRadius } = useTheme();
   return (
     <View

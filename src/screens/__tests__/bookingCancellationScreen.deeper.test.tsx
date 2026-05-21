@@ -239,7 +239,9 @@ describe('BookingCancellationScreen — loading state', () => {
   it('cancel booking buttons disabled while isCancelling', () => {
     mockHookState = { ...mockHookState, bookings: [BOOKING], isCancelling: true };
     const { getByTestId } = renderScreen();
-    expect(getByTestId(`cancel-booking-${BOOKING.id}`).props.accessibilityState?.disabled).toBe(true);
+    expect(getByTestId(`cancel-booking-${BOOKING.id}`).props.accessibilityState?.disabled).toBe(
+      true,
+    );
   });
 });
 
@@ -310,6 +312,8 @@ describe('BookingCancellationScreen — a11y: cancel booking button', () => {
 
   it('has accessibilityState.disabled=false when not cancelling', () => {
     const { getByTestId } = renderScreen();
-    expect(getByTestId(`cancel-booking-${BOOKING.id}`).props.accessibilityState?.disabled).toBe(false);
+    expect(getByTestId(`cancel-booking-${BOOKING.id}`).props.accessibilityState?.disabled).toBe(
+      false,
+    );
   });
 });

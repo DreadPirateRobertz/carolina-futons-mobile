@@ -78,15 +78,15 @@ describe('skip question flow', () => {
   it('back from step 1 then back from step 0 exits the quiz', () => {
     const { getByTestId } = renderQuiz();
     fireEvent.press(getByTestId('quiz-option-living-room')); // step 0 → 1
-    fireEvent.press(getByTestId('style-quiz-back-button'));  // step 1 → 0
-    fireEvent.press(getByTestId('style-quiz-back-button'));  // step 0 → onBack
+    fireEvent.press(getByTestId('style-quiz-back-button')); // step 1 → 0
+    fireEvent.press(getByTestId('style-quiz-back-button')); // step 0 → onBack
     expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
 
   it('full back chain from step 2 exits without completing', () => {
     const { getByTestId } = renderQuiz();
-    fireEvent.press(getByTestId('quiz-option-bedroom'));     // step 0 → 1
-    fireEvent.press(getByTestId('quiz-option-rustic'));      // step 1 → 2
+    fireEvent.press(getByTestId('quiz-option-bedroom')); // step 0 → 1
+    fireEvent.press(getByTestId('quiz-option-rustic')); // step 1 → 2
     fireEvent.press(getByTestId('style-quiz-back-button')); // step 2 → 1
     fireEvent.press(getByTestId('style-quiz-back-button')); // step 1 → 0
     fireEvent.press(getByTestId('style-quiz-back-button')); // step 0 → onBack
@@ -233,7 +233,7 @@ describe('back navigation from mid-quiz', () => {
 
   it('room selection is preserved as pre-selected after navigating back from step 1', () => {
     const { getByTestId } = renderQuiz();
-    fireEvent.press(getByTestId('quiz-option-bedroom'));    // selects bedroom, advances
+    fireEvent.press(getByTestId('quiz-option-bedroom')); // selects bedroom, advances
     fireEvent.press(getByTestId('style-quiz-back-button')); // back to step 0
     expect(getByTestId('quiz-option-bedroom').props.accessibilityState?.selected).toBe(true);
   });
@@ -241,7 +241,7 @@ describe('back navigation from mid-quiz', () => {
   it('style selection is preserved as pre-selected after navigating back from step 2', () => {
     const { getByTestId } = renderQuiz();
     fireEvent.press(getByTestId('quiz-option-studio'));
-    fireEvent.press(getByTestId('quiz-option-classic'));    // selects classic, advances
+    fireEvent.press(getByTestId('quiz-option-classic')); // selects classic, advances
     fireEvent.press(getByTestId('style-quiz-back-button')); // back to step 1
     expect(getByTestId('quiz-option-classic').props.accessibilityState?.selected).toBe(true);
   });
@@ -261,14 +261,14 @@ describe('results screen shows correct recommendations', () => {
   it('completion body mentions the selected style label', () => {
     const { getByTestId, getByText } = renderQuiz();
     fireEvent.press(getByTestId('quiz-option-guest-room'));
-    fireEvent.press(getByTestId('quiz-option-rustic'));    // "Rustic & Warm"
+    fireEvent.press(getByTestId('quiz-option-rustic')); // "Rustic & Warm"
     fireEvent.press(getByTestId('quiz-option-guest-bed'));
     expect(getByText(/rustic & warm/i)).toBeTruthy();
   });
 
   it('completion body mentions the selected room label', () => {
     const { getByTestId, getByText } = renderQuiz();
-    fireEvent.press(getByTestId('quiz-option-studio'));    // "Studio / Dorm"
+    fireEvent.press(getByTestId('quiz-option-studio')); // "Studio / Dorm"
     fireEvent.press(getByTestId('quiz-option-minimalist'));
     fireEvent.press(getByTestId('quiz-option-seating'));
     expect(getByText(/studio \/ dorm/i)).toBeTruthy();
@@ -285,8 +285,8 @@ describe('results screen shows correct recommendations', () => {
   it('completion body shows a personalized sentence combining all three selections', () => {
     const { getByTestId, getByText } = renderQuiz();
     fireEvent.press(getByTestId('quiz-option-living-room')); // "Living Room"
-    fireEvent.press(getByTestId('quiz-option-modern'));       // "Modern & Clean"
-    fireEvent.press(getByTestId('quiz-option-seating'));      // "Everyday Seating"
+    fireEvent.press(getByTestId('quiz-option-modern')); // "Modern & Clean"
+    fireEvent.press(getByTestId('quiz-option-seating')); // "Everyday Seating"
     expect(getByText(/modern & clean.*living room.*everyday seating/i)).toBeTruthy();
   });
 });
@@ -311,8 +311,8 @@ describe('empty/null stored preferences', () => {
     const { getByTestId, getByText } = renderQuiz();
     await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalled());
     fireEvent.press(getByTestId('quiz-option-bedroom'));
-    fireEvent.press(getByTestId('quiz-option-classic'));       // "Classic & Cozy"
-    fireEvent.press(getByTestId('quiz-option-kid-friendly'));  // "Kid-Friendly"
+    fireEvent.press(getByTestId('quiz-option-classic')); // "Classic & Cozy"
+    fireEvent.press(getByTestId('quiz-option-kid-friendly')); // "Kid-Friendly"
     expect(getByText(/classic & cozy/i)).toBeTruthy();
     expect(getByText(/bedroom/i)).toBeTruthy();
     expect(getByText(/kid-friendly/i)).toBeTruthy();
@@ -323,7 +323,7 @@ describe('empty/null stored preferences', () => {
     await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalled());
     fireEvent.press(getByTestId('quiz-option-living-room'));
     fireEvent.press(getByTestId('quiz-option-modern'));
-    fireEvent.press(getByTestId('quiz-option-seating'));       // "Everyday Seating"
+    fireEvent.press(getByTestId('quiz-option-seating')); // "Everyday Seating"
     // useName fallback ('') would produce "optimized for ." — must not appear
     expect(queryByText(/optimized for \./i)).toBeNull();
     expect(getByText(/everyday seating/i)).toBeTruthy();
@@ -343,8 +343,8 @@ describe('empty/null stored preferences', () => {
     await waitFor(() => expect(AsyncStorage.getItem).toHaveBeenCalled());
     // User overrides the bad stored values with valid selections
     fireEvent.press(getByTestId('quiz-option-guest-room')); // "Guest Room"
-    fireEvent.press(getByTestId('quiz-option-rustic'));     // "Rustic & Warm"
-    fireEvent.press(getByTestId('quiz-option-seating'));    // "Everyday Seating"
+    fireEvent.press(getByTestId('quiz-option-rustic')); // "Rustic & Warm"
+    fireEvent.press(getByTestId('quiz-option-seating')); // "Everyday Seating"
     expect(getByText(/rustic & warm/i)).toBeTruthy();
     expect(getByText(/guest room/i)).toBeTruthy();
   });
