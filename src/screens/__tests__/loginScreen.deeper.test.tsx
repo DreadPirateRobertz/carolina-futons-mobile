@@ -4,12 +4,15 @@ import { LoginScreen } from '../LoginScreen';
 import { AuthProvider } from '@/hooks/useAuth';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 
-jest.mock('expo-local-authentication', () => ({
-  AuthenticationType: { FINGERPRINT: 1, FACIAL_RECOGNITION: 2, IRIS: 3 },
-  hasHardwareAsync: jest.fn(() => Promise.resolve(true)),
-  isEnrolledAsync: jest.fn(() => Promise.resolve(true)),
-  supportedAuthenticationTypesAsync: jest.fn(() => Promise.resolve([2])),
-  authenticateAsync: jest.fn(() => Promise.resolve({ success: true })),
+const mockGetBiometricStatus = jest.fn();
+const mockIsBiometricEnabled = jest.fn();
+const mockAuthenticate = jest.fn();
+
+jest.mock('@/services/biometric', () => ({
+  getBiometricStatus: (...args: unknown[]) => mockGetBiometricStatus(...args),
+  isBiometricEnabled: (...args: unknown[]) => mockIsBiometricEnabled(...args),
+  authenticate: (...args: unknown[]) => mockAuthenticate(...args),
+  setBiometricEnabled: jest.fn().mockResolvedValue(undefined),
 }));
 
 const mockAuthService = {
@@ -29,7 +32,18 @@ jest.mock('@/services/wix/wixAuth', () => ({
   WixAuthService: jest.fn(() => mockAuthService),
 }));
 
-const expoLocalAuth = require('expo-local-authentication');
+const faceIdStatus = { isAvailable: true, isEnrolled: true, biometricType: 'facial' as const };
+const touchIdStatus = {
+  isAvailable: true,
+  isEnrolled: true,
+  biometricType: 'fingerprint' as const,
+};
+const unavailableStatus = { isAvailable: false, isEnrolled: false, biometricType: 'none' as const };
+const notEnrolledStatus = {
+  isAvailable: true,
+  isEnrolled: false,
+  biometricType: 'facial' as const,
+};
 
 function renderLogin(props: Partial<React.ComponentProps<typeof LoginScreen>> = {}) {
   return render(
@@ -46,10 +60,9 @@ describe('LoginScreen — deeper edge cases', () => {
     jest.clearAllMocks();
     mockAuthService.restoreSession.mockResolvedValue(false);
     mockAuthService.getCurrentMember.mockResolvedValue(null);
-    expoLocalAuth.hasHardwareAsync.mockResolvedValue(true);
-    expoLocalAuth.isEnrolledAsync.mockResolvedValue(true);
-    expoLocalAuth.supportedAuthenticationTypesAsync.mockResolvedValue([2]);
-    expoLocalAuth.authenticateAsync.mockResolvedValue({ success: true });
+    mockGetBiometricStatus.mockResolvedValue(faceIdStatus);
+    mockIsBiometricEnabled.mockResolvedValue(true);
+    mockAuthenticate.mockResolvedValue({ success: true });
   });
 
   describe('Loading state', () => {
@@ -237,7 +250,7 @@ describe('LoginScreen — deeper edge cases', () => {
     });
 
     it('hides biometric button when hardware not available', async () => {
-      expoLocalAuth.hasHardwareAsync.mockResolvedValue(false);
+      mockGetBiometricStatus.mockResolvedValue(unavailableStatus);
 
       const { queryByTestId } = renderLogin();
       await waitFor(() => expect(queryByTestId('google-sign-in-button')).toBeTruthy());
@@ -245,7 +258,15 @@ describe('LoginScreen — deeper edge cases', () => {
     });
 
     it('hides biometric button when not enrolled', async () => {
-      expoLocalAuth.isEnrolledAsync.mockResolvedValue(false);
+      mockGetBiometricStatus.mockResolvedValue(notEnrolledStatus);
+
+      const { queryByTestId } = renderLogin();
+      await waitFor(() => expect(queryByTestId('google-sign-in-button')).toBeTruthy());
+      expect(queryByTestId('biometric-sign-in-button')).toBeNull();
+    });
+
+    it('hides biometric button when user has not enabled biometric', async () => {
+      mockIsBiometricEnabled.mockResolvedValue(false);
 
       const { queryByTestId } = renderLogin();
       await waitFor(() => expect(queryByTestId('google-sign-in-button')).toBeTruthy());
@@ -253,26 +274,26 @@ describe('LoginScreen — deeper edge cases', () => {
     });
 
     it('shows Face ID label when facial recognition available', async () => {
-      expoLocalAuth.supportedAuthenticationTypesAsync.mockResolvedValue([2]);
+      mockGetBiometricStatus.mockResolvedValue(faceIdStatus);
 
       const { getByTestId } = renderLogin();
       await waitFor(() => expect(getByTestId('biometric-sign-in-button')).toBeTruthy());
-      const btn = getByTestId('biometric-sign-in-button');
-      expect(btn.props.accessibilityLabel).toContain('Face ID');
+      expect(getByTestId('biometric-sign-in-button').props.accessibilityLabel).toContain('Face ID');
     });
 
     it('shows Touch ID label when fingerprint available', async () => {
-      expoLocalAuth.supportedAuthenticationTypesAsync.mockResolvedValue([1]);
+      mockGetBiometricStatus.mockResolvedValue(touchIdStatus);
 
       const { getByTestId } = renderLogin();
       await waitFor(() => expect(getByTestId('biometric-sign-in-button')).toBeTruthy());
-      const btn = getByTestId('biometric-sign-in-button');
-      expect(btn.props.accessibilityLabel).toContain('Touch ID');
+      expect(getByTestId('biometric-sign-in-button').props.accessibilityLabel).toContain(
+        'Touch ID',
+      );
     });
 
     it('calls onBiometricSuccess when biometric auth succeeds', async () => {
       const onBiometricSuccess = jest.fn();
-      expoLocalAuth.authenticateAsync.mockResolvedValue({ success: true });
+      mockAuthenticate.mockResolvedValue({ success: true });
 
       const { getByTestId } = renderLogin({ onBiometricSuccess });
       await waitFor(() => expect(getByTestId('biometric-sign-in-button')).toBeTruthy());
@@ -283,19 +304,19 @@ describe('LoginScreen — deeper edge cases', () => {
 
     it('does not call onBiometricSuccess when biometric auth fails', async () => {
       const onBiometricSuccess = jest.fn();
-      expoLocalAuth.authenticateAsync.mockResolvedValue({ success: false, error: 'UserCancel' });
+      mockAuthenticate.mockResolvedValue({ success: false, error: 'UserCancel' });
 
       const { getByTestId } = renderLogin({ onBiometricSuccess });
       await waitFor(() => expect(getByTestId('biometric-sign-in-button')).toBeTruthy());
       fireEvent.press(getByTestId('biometric-sign-in-button'));
 
-      await waitFor(() => expect(getByTestId('biometric-sign-in-button')).toBeTruthy());
+      await waitFor(() => expect(mockAuthenticate).toHaveBeenCalled());
       expect(onBiometricSuccess).not.toHaveBeenCalled();
     });
 
     it('shows loading spinner during biometric authentication', async () => {
-      let resolveBio!: (v: unknown) => void;
-      expoLocalAuth.authenticateAsync.mockImplementation(
+      let resolveBio!: (v: { success: boolean }) => void;
+      mockAuthenticate.mockImplementation(
         () =>
           new Promise((res) => {
             resolveBio = res;
