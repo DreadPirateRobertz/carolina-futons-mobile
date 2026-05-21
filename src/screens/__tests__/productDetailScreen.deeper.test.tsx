@@ -313,7 +313,7 @@ jest.mock('@/services/wix/config', () => ({
   isWixConfigured: () => mockIsWixConfigured,
 }));
 
-const mockUseProductBySlug = jest.fn(() => ({
+const mockUseProductBySlug = jest.fn((_slug: string) => ({
   product: null as object | null,
   isLoading: false,
   error: null as Error | null,
