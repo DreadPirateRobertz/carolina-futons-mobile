@@ -470,7 +470,13 @@ describe('Promo code removal', () => {
     // Render with promo already applied
     mockUsePromoCode.mockReturnValue({
       status: 'applied',
-      coupon: { id: 'c1', code: 'SAVE10', name: '10% off', discountType: 'percentage', discountValue: 10 },
+      coupon: {
+        id: 'c1',
+        code: 'SAVE10',
+        name: '10% off',
+        discountType: 'percentage',
+        discountValue: 10,
+      },
       error: null,
       applyCode: mockApplyCode,
       removeCode: mockRemoveCode,
