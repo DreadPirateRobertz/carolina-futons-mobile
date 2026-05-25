@@ -176,9 +176,7 @@ const emptyAddressBook = {
 
 // ─── Share spy ────────────────────────────────────────────────────────────────
 
-const mockShareShare = jest
-  .spyOn(Share, 'share')
-  .mockResolvedValue({ action: Share.sharedAction });
+const mockShareShare = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
@@ -207,7 +205,12 @@ beforeEach(() => {
   });
 
   mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 250 });
-  mockUseStreak.mockReturnValue({ streak: 0, loading: false, wasExtendedToday: false, longestStreak: 0 });
+  mockUseStreak.mockReturnValue({
+    streak: 0,
+    loading: false,
+    wasExtendedToday: false,
+    longestStreak: 0,
+  });
   mockUseReferral.mockReturnValue(referralLoaded);
   mockUseSavedAddresses.mockReturnValue(emptyAddressBook);
 });
@@ -234,7 +237,12 @@ describe('loyalty tier display — loading state and mid-tier boundaries', () =>
   });
 
   it('shows Mountain Guide for 1499 pts (silver tier upper boundary)', () => {
-    mockUseLoyalty.mockReturnValue({ ...loyaltyBase, points: 1499, tier: 'silver', loading: false });
+    mockUseLoyalty.mockReturnValue({
+      ...loyaltyBase,
+      points: 1499,
+      tier: 'silver',
+      loading: false,
+    });
     const { getByTestId } = renderAccountScreen();
     expect(getByTestId('loyalty-tier-name').props.children).toBe('Mountain Guide');
   });
