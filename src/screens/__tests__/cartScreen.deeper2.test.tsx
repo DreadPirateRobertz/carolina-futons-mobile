@@ -24,6 +24,7 @@ import { CartProvider, useCart } from '@/hooks/useCart';
 import { ConnectivityProvider } from '@/hooks/useConnectivity';
 import { ThemeProvider } from '@/theme/ThemeProvider';
 import { FUTON_MODELS, FABRICS } from '@/data/futons';
+import type { PromoCodeState } from '@/hooks/usePromoCode';
 
 // ── Component mocks (avoid async native calls) ────────────────────────────────
 
@@ -34,7 +35,7 @@ jest.mock('@/components/CartItemDeliveryEstimate', () => ({
   },
 }));
 
-const mockBundleSuggestion = jest.fn(() => null);
+const mockBundleSuggestion = jest.fn((_props: any): React.ReactElement | null => null);
 jest.mock('@/components/BundleSuggestion', () => ({
   BundleSuggestion: (props: any) => mockBundleSuggestion(props),
 }));
@@ -151,8 +152,8 @@ jest.mock('@/hooks/useProductRecommendations', () => ({
 const mockRemoveCode = jest.fn();
 const mockApplyCode = jest.fn();
 const mockGetDiscount = jest.fn(() => 0);
-const mockUsePromoCode = jest.fn(() => ({
-  status: 'idle' as const,
+const mockUsePromoCode = jest.fn<PromoCodeState, []>(() => ({
+  status: 'idle',
   coupon: null,
   error: null,
   applyCode: mockApplyCode,
@@ -468,24 +469,24 @@ describe('Promo code removal', () => {
     mockGetDiscount.mockReset();
     // Render with promo already applied
     mockUsePromoCode.mockReturnValue({
-      status: 'applied' as const,
-      coupon: { code: 'SAVE10', discountType: 'percentage', discountValue: 10 },
+      status: 'applied',
+      coupon: { id: 'c1', code: 'SAVE10', name: '10% off', discountType: 'percentage', discountValue: 10 },
       error: null,
       applyCode: mockApplyCode,
       removeCode: mockRemoveCode,
-      getDiscount: (sub: number) => Math.round(sub * 0.1 * 100) / 100,
+      getDiscount: jest.fn((sub: number) => Math.round(sub * 0.1 * 100) / 100),
     });
   });
 
   afterEach(() => {
     // Restore default idle state
     mockUsePromoCode.mockReturnValue({
-      status: 'idle' as const,
+      status: 'idle',
       coupon: null,
       error: null,
       applyCode: mockApplyCode,
       removeCode: mockRemoveCode,
-      getDiscount: () => 0,
+      getDiscount: jest.fn(() => 0),
     });
   });
 
