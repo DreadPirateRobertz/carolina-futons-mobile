@@ -117,7 +117,11 @@ function makeOrder(overrides: Partial<Order> & { id: string }): Order {
 
 const DELIVERED_ORDER = makeOrder({ id: 'ord-edge-1' });
 
-const SHIPPED_ORDER = makeOrder({ id: 'ord-edge-2', orderNumber: 'CF-2026-0002', status: 'shipped' });
+const SHIPPED_ORDER = makeOrder({
+  id: 'ord-edge-2',
+  orderNumber: 'CF-2026-0002',
+  status: 'shipped',
+});
 
 function makeBaseHook(overrides = {}) {
   return {
@@ -332,9 +336,7 @@ describe('OrderHistoryScreen — order card accessibility', () => {
 
   it('order number text node renders the order number', () => {
     const { getByTestId } = renderScreen({ orders: [DELIVERED_ORDER] });
-    expect(getByTestId('order-number-ord-edge-1').props.children).toBe(
-      DELIVERED_ORDER.orderNumber,
-    );
+    expect(getByTestId('order-number-ord-edge-1').props.children).toBe(DELIVERED_ORDER.orderNumber);
   });
 
   it('reorder button on delivered order has accessibilityRole button', () => {

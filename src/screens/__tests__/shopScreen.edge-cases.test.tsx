@@ -30,6 +30,7 @@ import * as useProductsModule from '@/hooks/useProducts';
 import * as useRecentSearchesModule from '@/hooks/useRecentSearches';
 import * as CompareContextModule from '@/contexts/CompareContext';
 import type { ProductCategory, ProductFilters } from '@/hooks/useProducts';
+import type { Product } from '@/data/products';
 import { PRODUCTS } from '@/data/products';
 
 // ── Navigation mock (module-level so factory closure captures it) ──────────────
@@ -63,7 +64,7 @@ const EMPTY_FILTERS: ProductFilters = {
 };
 
 const BASE_PRODUCTS = {
-  products: [],
+  products: [] as Product[],
   categories: [],
   searchQuery: '',
   selectedCategory: null as ProductCategory | null,
