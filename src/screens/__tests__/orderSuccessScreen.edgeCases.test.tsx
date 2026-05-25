@@ -12,7 +12,7 @@
  *  - Multiple rapid presses — no call throttle
  */
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { Platform } from 'react-native';
 import { OrderSuccessScreen } from '../OrderSuccessScreen';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -49,12 +49,10 @@ beforeEach(() => {
 // ─── Haptics on mount ─────────────────────────────────────────────────────────
 
 describe('haptics on mount', () => {
-  it('fires notificationAsync on iOS', async () => {
+  it('fires notificationAsync on iOS', () => {
     const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', { value: 'ios', writable: true, configurable: true });
-    await act(async () => {
-      renderScreen();
-    });
+    renderScreen();
     expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
     expect(mockNotificationAsync).toHaveBeenCalledWith('success');
     Object.defineProperty(Platform, 'OS', {
@@ -64,16 +62,14 @@ describe('haptics on mount', () => {
     });
   });
 
-  it('fires notificationAsync on Android', async () => {
+  it('fires notificationAsync on Android', () => {
     const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', {
       value: 'android',
       writable: true,
       configurable: true,
     });
-    await act(async () => {
-      renderScreen();
-    });
+    renderScreen();
     expect(mockNotificationAsync).toHaveBeenCalledTimes(1);
     Object.defineProperty(Platform, 'OS', {
       value: originalOS,
@@ -82,12 +78,10 @@ describe('haptics on mount', () => {
     });
   });
 
-  it('does NOT fire notificationAsync on web', async () => {
+  it('does NOT fire notificationAsync on web', () => {
     const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', { value: 'web', writable: true, configurable: true });
-    await act(async () => {
-      renderScreen();
-    });
+    renderScreen();
     expect(mockNotificationAsync).not.toHaveBeenCalled();
     Object.defineProperty(Platform, 'OS', {
       value: originalOS,
@@ -96,15 +90,11 @@ describe('haptics on mount', () => {
     });
   });
 
-  it('silently swallows haptics rejection — does not throw', async () => {
+  it('silently swallows haptics rejection — does not throw', () => {
     const originalOS = Platform.OS;
     Object.defineProperty(Platform, 'OS', { value: 'ios', writable: true, configurable: true });
     mockNotificationAsync.mockRejectedValue(new Error('haptics unavailable'));
-    await expect(
-      act(async () => {
-        renderScreen();
-      }),
-    ).resolves.not.toThrow();
+    expect(() => renderScreen()).not.toThrow();
     Object.defineProperty(Platform, 'OS', {
       value: originalOS,
       writable: true,
